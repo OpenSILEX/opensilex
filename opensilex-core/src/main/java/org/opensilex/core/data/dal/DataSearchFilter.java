@@ -3,6 +3,7 @@ package org.opensilex.core.data.dal;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 public class DataSearchFilter extends MongoSearchFilter {
@@ -15,17 +16,21 @@ public class DataSearchFilter extends MongoSearchFilter {
 
     private List<URI> experiments;
 
-    private List<URI> objects;
+    private List<URI> targets;
 
     private List<URI> variables;
 
-    private List<URI> targets;
+    private List<URI> devices;
 
     private Float confidenceMin;
 
     private Float confidenceMax;
 
     private List<URI> provenances;
+
+    private List<URI> operators;
+
+    private String metadata;
 
     public String getStartDate() {
         return startDate;
@@ -63,12 +68,26 @@ public class DataSearchFilter extends MongoSearchFilter {
         return this;
     }
 
-    public List<URI> getObjects() {
-        return objects;
+    public DataSearchFilter setExperiments(URI experiment) {
+        if(experiment != null){
+            this.experiments = Collections.singletonList(experiment);
+        }
+        return this;
     }
 
-    public DataSearchFilter setObjects(List<URI> objects) {
-        this.objects = objects;
+    public List<URI> getTargets() {
+        return targets;
+    }
+
+    public DataSearchFilter setTargets(List<URI> targets) {
+        this.targets = targets;
+        return this;
+    }
+
+    public DataSearchFilter setTargets(URI target) {
+        if(target != null){
+            this.targets = Collections.singletonList(target);
+        }
         return this;
     }
 
@@ -78,6 +97,13 @@ public class DataSearchFilter extends MongoSearchFilter {
 
     public DataSearchFilter setVariables(List<URI> variables) {
         this.variables = variables;
+        return this;
+    }
+
+    public DataSearchFilter setVariables(URI variable) {
+        if(variable != null){
+            this.variables = Collections.singletonList(variable);
+        }
         return this;
     }
 
@@ -114,6 +140,31 @@ public class DataSearchFilter extends MongoSearchFilter {
 
     public DataSearchFilter setProvenances(List<URI> provenances) {
         this.provenances = provenances;
+        return this;
+    }
+
+    public DataSearchFilter setProvenances(URI provenance) {
+        if(provenance != null){
+            this.provenances = Collections.singletonList(provenance);
+        }
+        return this;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public DataSearchFilter setMetadata(String metadata) {
+        this.metadata = metadata;
+        return this;
+    }
+
+    public List<URI> getOperators() {
+        return operators;
+    }
+
+    public DataSearchFilter setOperators(List<URI> operators) {
+        this.operators = operators;
         return this;
     }
 }

@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
 import com.opencsv.CSVWriter;
 import org.apache.jena.sparql.core.Var;
@@ -16,7 +15,6 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.api.DataSearchDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
@@ -60,7 +58,7 @@ import java.util.stream.Collectors;
  *
  * @author sammy
  */
-public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
+public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     public static final String DATA_COLLECTION_NAME = "data";
     public static final String DATA_PREFIX = "data";
@@ -84,7 +82,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
 
         collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
         collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
-        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD)));
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD));
         collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending(DataModel.DATE_FIELD))));
         collection.createIndex(Indexes.descending(DataModel.DATE_FIELD));
 
@@ -179,7 +177,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
         // OR ( provenance.uri IN devices/operators Provenances list && provenance.provUsed.uri isEmpty or not exists)
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
 
         Set<URI> agentProvenances = provDAO.distinctUris(null, new ProvenanceSearchFilter().setAgents(agents));
 
@@ -275,7 +273,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         
         //user access
         if (!user.isAdmin()) {
-            ExperimentDAO expDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO expDAO = new ExperimentDAO(sparql, mongodb);
             Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
 
             if (experiments != null && !experiments.isEmpty()) {
@@ -492,18 +490,18 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
 
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> variableURIs = mongodb.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         String userLanguage = null;
         if(user != null){
             userLanguage = user.getLanguage();
         }
         // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
+        return new VariableDAO(sparql,mongodb,fs).getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> variableURIs = mongodb.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return variableURIs;
     }
     
@@ -596,7 +594,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,mongodb,fs).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -648,7 +646,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb);
         List<ProvenanceModel> listByURIs = provenanceDao.search(new ProvenanceSearchFilter().setUris(provenances.keySet())).getList();
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
@@ -858,7 +856,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,mongodb,fs).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
@@ -871,7 +869,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb);
 
         List<ProvenanceModel> listByURIs = provenanceDao.search(new ProvenanceSearchFilter().setUris(provenances.keySet())).getList();
         for (ProvenanceModel prov : listByURIs) {
@@ -1016,15 +1014,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
 
     public Set<URI> getUsedProvenances(String collectionName, AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, targets, variables, null, devices, null, null, null, null, null, null);
-        return nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-    }
-    
-    public Set<URI> getDataProvenances(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> devices) throws Exception {
-        return getUsedProvenances(DATA_COLLECTION_NAME, user, experiments, targets, variables, devices);
-    }
-    
-    public Set<URI> getDatafileProvenances(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
-        return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, null, devices);
+        return mongodb.distinct("provenance.uri", URI.class, collectionName, filter);
     }
 
     /**
@@ -1033,7 +1023,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
      * @return
      * @throws Exception
      */
-    private Set<URI> getAllDateVariables() throws Exception {
+    public Set<URI> getAllDateVariables() throws Exception {
         return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
             Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
             selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
@@ -1241,7 +1231,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         aggregations.add(projectMiddleSum);
         aggregations.add(projectFinal);
 
-        Set<DataComputedModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
+        Set<DataComputedModel> results = mongodb.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
 
         return results.stream().collect(Collectors.toList());
     }
@@ -1341,7 +1331,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         aggregations.add(groupDateAndProv);
         aggregations.add(projectFinal);
 
-        Set<DataComputedModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
+        Set<DataComputedModel> results = mongodb.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
 
         return results.stream().collect(Collectors.toList());
     }
@@ -1399,7 +1389,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
         aggregations.add(sort);
         aggregations.add(limit);
 
-        Set<DataModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataModel.class);
+        Set<DataModel> results = mongodb.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataModel.class);
 
         return results.stream().findFirst()
                 .map(DataComputedGetDTO::getDtoFromModel)

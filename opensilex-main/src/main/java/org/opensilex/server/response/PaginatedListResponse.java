@@ -7,6 +7,7 @@
 package org.opensilex.server.response;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,12 @@ import javax.ws.rs.core.Response.Status;
  * @param <T> response list generic type
  */
 public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
+
+    private static final PaginatedListResponse<?> EMPTY_RESPONSE = new PaginatedListResponse<>(Collections.emptyList());
+
+    public static PaginatedListResponse<?> empty(){
+        return EMPTY_RESPONSE;
+    }
 
     /**
      * Constructor.

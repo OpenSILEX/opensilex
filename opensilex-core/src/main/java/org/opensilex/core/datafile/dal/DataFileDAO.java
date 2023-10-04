@@ -14,7 +14,6 @@ import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.List;
 
 public class DataFileDAO extends MongoReadWriteDao<DataFileModel, DataFileSearchFilter> {
@@ -46,15 +45,15 @@ public class DataFileDAO extends MongoReadWriteDao<DataFileModel, DataFileSearch
 
         // Delegate data filters on the DataDao
         // Then add DataFile specific filters
-        List<Bson> filters =  dataDAO.getBsonFilters(filter);
+        List<Bson> filters = dataDAO.getBsonFilters(filter);
 
-        if(!StringUtils.isEmpty(filter.getPath())){
+        if (!StringUtils.isEmpty(filter.getPath())) {
             filters.add(Filters.eq(DataFileModel.PATH_FIELD, filter.getPath()));
         }
-        if(!StringUtils.isEmpty(filter.getFilename())){
+        if (!StringUtils.isEmpty(filter.getFilename())) {
             filters.add(Filters.eq(DataFileModel.FILENAME_FIELD, filter.getFilename()));
         }
-        if(filter.getArchive() != null){
+        if (filter.getArchive() != null) {
             filters.add(Filters.eq(DataFileModel.ARCHIVE_FIELD, filter.getArchive()));
         }
         return filters;

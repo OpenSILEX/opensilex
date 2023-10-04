@@ -248,6 +248,43 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         } else {
             return Filters.or(bsonFilters);
         }
+    }
 
+    @Override
+    public <T_RESULT> Set<T_RESULT> distinct(String field, Class<T_RESULT> resultClass, F filter, ClientSession session) {
+        return mongodb.distinct(field, resultClass, collection, filterToBson(filter), session);
+    }
+
+    @Override
+    public <T_RESULT> Set<T_RESULT> distinctAggregation(String field, Class<T_RESULT> resultClass, F filter, ClientSession session) {
+        return mongodb.distinctWithPagination(
+                collection,
+                field,
+                document -> document.get(field,resultClass),
+                filterToBson(filter),
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize(),
+                session
+        );
+    }
+
+    @Override
+    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(F filter, String lookupField,
+                                                                 String lookupCollectionName, Class<T_JOINED> lookupClass, Function<T_JOINED, T_RESULT> convertFunction, ClientSession session) {
+        return mongodb.lookupAggregation(
+                collection,
+                lookupCollectionName,
+                lookupField,
+                filterToBson(filter),
+                filter.getOrderByList(),
+                lookupClass,
+                convertFunction,
+                session
+        );
+    }
+
+    public MongoCollection<T> getCollection() {
+        return collection;
     }
 }

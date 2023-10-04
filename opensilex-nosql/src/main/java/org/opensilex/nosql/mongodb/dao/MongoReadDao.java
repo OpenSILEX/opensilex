@@ -8,6 +8,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -34,11 +35,22 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
 
     ListWithPagination<T> search(ClientSession session, F filter, Bson projection) throws MongoException;
 
-    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T,T_CONVERTED> convertFunction) throws MongoException;
+    <T_RESULT> ListWithPagination<T_RESULT> search(F filter, Function<T, T_RESULT> convertFunction) throws MongoException;
 
-    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, F filter, Bson projection, Function<T,T_CONVERTED> convertFunction) throws MongoException;
+    <T_RESULT> ListWithPagination<T_RESULT> search(ClientSession session, F filter, Bson projection, Function<T, T_RESULT> convertFunction) throws MongoException;
 
     Set<URI> distinctUris(ClientSession session, F filter) throws MongoException;
 
+    <T_RESULT> Set<T_RESULT> distinct(String field, Class<T_RESULT> resultClass, F filter, ClientSession session);
 
+    <T_RESULT> Set<T_RESULT> distinctAggregation(String field, Class<T_RESULT> resultClass, F filter, ClientSession session);
+
+    <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(
+            F filter,
+            String lookupCollectionName,
+            String lookupField,
+            Class<T_JOINED> lookupClass,
+            Function<T_JOINED, T_RESULT> convertFunction,
+            ClientSession session
+    );
 }

@@ -180,21 +180,20 @@ public class DataAPI {
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        List<DataModel> dataList = new ArrayList<>();
         try {
             if (dtoList.size() > SIZE_MAX) {
                 throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
             }
 
+            List<DataModel> dataList =  new ArrayList<>(dtoList.size());
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
             
             dataList = validData(dataList);
-
-            dataList = dao.createAll(dataList);
-            if(variablesToDevices.size() > 0) {
+            dao.create(dataList);
+            if(!variablesToDevices.isEmpty()) {
                
                 DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
                 for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
@@ -216,8 +215,8 @@ public class DataAPI {
                     ex.getMessage()).getResponse();
 
         } catch (MongoBulkWriteException duplicateError) {
-            List<DataCreationDTO> datas = new ArrayList();
             List<BulkWriteError> errors = duplicateError.getWriteErrors();
+            List<DataCreationDTO> datas = new ArrayList<>(errors.size());
             for (int i = 0; i < errors.size(); i++) {
                 int index = errors.get(i).getIndex();
                 datas.add(dtoList.get(index));
@@ -401,25 +400,29 @@ public class DataAPI {
             }
         }
 
-        ListWithPagination<DataModel> resultList = dao.search(
-                user,
-                experiments,
-                targets,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators,
-                orderByList,
-                page,
-                pageSize
-        );
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setAccountURI(user.getUri())
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
 
-        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
+        filter.setExperiments(experiments)
+                .setExperiments(experiments)
+                .setTargets(targets)
+                .setVariables(variables)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setMetadata(metadata)
+                .setOperators(operators)
+                .setExperiments(experiments)
+                .setConfidenceMax(confidenceMax)
+                .setConfidenceMin(confidenceMin);
+
+        Set<URI> dateVariables = dao.getAllDateVariables();
+
+        ListWithPagination<DataGetDTO> resultDTOList = dao.search(filter, dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables));
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
@@ -480,21 +483,24 @@ public class DataAPI {
             }
         }
 
-        int count = dao.count(
-                user,
-                experiments,
-                objects,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators
-        );
-        return new SingleObjectResponse<>(count).getResponse();
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setAccountURI(user.getUri());
+
+        filter.setExperiments(experiments)
+                .setExperiments(experiments)
+                .setTargets(objects)
+                .setVariables(variables)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setMetadata(metadata)
+                .setOperators(operators)
+                .setExperiments(experiments)
+                .setConfidenceMax(confidenceMax)
+                .setConfidenceMin(confidenceMin);
+
+        return new SingleObjectResponse<>(dao.count(filter)).getResponse();
     }
 
     @DELETE
@@ -601,7 +607,15 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        DeleteResult result = dao.deleteWithFilter(user, experimentUri, objectUri, variableUri, provenanceUri);
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setExperiments(experimentUri)
+                .setTargets(objectUri)
+                .setVariables(variableUri)
+                .setProvenances(provenanceUri);
+
+        filter.setAccountURI(user.getUri());
+
+        DeleteResult result = dao.delete(filter);
         return new SingleObjectResponse<>(result).getResponse();
     }
 
@@ -934,110 +948,6 @@ public class DataAPI {
 
     }
 
-    /**
-     * @param startDate     startDate
-     * @param endDate       endDate
-     * @param timezone      timezone
-     * @param experiments   experimentUris
-     * @param objects       objectUris
-     * @param variables     variableUris
-     * @param confidenceMin confidenceMin
-     * @param confidenceMax confidenceMax
-     * @param provenances   provenanceUris
-     * @param metadata      metadata json filter
-     * @param csvFormat     long or wide format
-     * @param orderByList   orderByList
-     * @param page          page number
-     * @param pageSize      page size
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    @GET
-    @Path("export")
-    @ApiOperation("Export data")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.TEXT_PLAIN})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
-    })
-    public Response exportData(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
-            @ApiParam(value = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-    ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
-
-        if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
-            }
-        }
-
-        Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
-        Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
-
-        Response prepareCSVExport = null;
-
-        if (csvFormat.equals("long")) {
-            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, withRawData);
-        } else {
-            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, withRawData);
-        }
-
-        Instant finish = Instant.now();
-        long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
-
-        return prepareCSVExport;
-    }
-
     @POST
     @Path("export")
     @ApiOperation("Export data")
@@ -1091,25 +1001,45 @@ public class DataAPI {
         Response prepareCSVExport = null;
 
         try{
-            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
-            Instant data = Instant.now();
-            LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+            DataSearchFilter filter = new DataSearchFilter();
+            filter.setAccountURI(user.getUri())
+                    .setOrderByList(dto.getOrderByList());
 
+            filter.setExperiments(dto.getExperiments())
+                    .setTargets(dto.getObjects())
+                    .setVariables(dto.getVariables())
+                    .setProvenances( dto.getProvenances())
+                    .setDevices( dto.getDevices())
+                    .setStartDate(dto.getStartDate())
+                    .setEndDate(dto.getEndDate())
+                    .setMetadata(dto.getMetadata())
+                    .setConfidenceMax(dto.getConfidenceMax())
+                    .setConfidenceMin(dto.getConfidenceMin());
+
+            Instant startTime = Instant.now();
+            List<DataModel> resultList = dao.search(filter).getList();
+            if(LOGGER.isDebugEnabled()){
+                Instant endTime = Instant.now();
+                LOGGER.debug("[EXPORT_SEARCH] { size: {}, duration: {}ms }", resultList.size(), Duration.between(startTime, endTime).toMillis());
+            }
+
+            startTime = Instant.now();
             if (dto.getCsvFormat().equals("long")) {
                 prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, dto.isWithRawData());
             } else {
                 prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, dto.isWithRawData());
             }
+
+            if(LOGGER.isDebugEnabled()){
+                Instant endTime = Instant.now();
+                LOGGER.debug("[EXPORT] { csvFormat: {}, duration: {}ms }", dto.getCsvFormat(), Duration.between(startTime, endTime).toMillis());
+            }
+            return prepareCSVExport;
+
         } catch (Exception e) {
-            System.out.println(e);
             return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "EXPORT FAILED", e.getMessage()).getResponse();
         }
 
-        Instant finish = Instant.now();
-        long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
-
-        return prepareCSVExport;
     }
 
     @GET
@@ -1145,9 +1075,6 @@ public class DataAPI {
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Targets uris") List<URI> targets
     ) throws Exception {
-        if (targets == null) {
-            targets = new ArrayList<>();
-        }
         return searchUsedProvenances(experiments, targets, variables, devices);
     }
 
@@ -1157,21 +1084,30 @@ public class DataAPI {
             List<URI> variables,
             List<URI> devices) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, targets, variables, devices);
+        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataSearchFilter filter = new DataSearchFilter()
+                .setExperiments(experiments)
+                .setTargets(targets)
+                .setVariables(variables)
+                .setDevices(devices);
+        filter.setAccountURI(user.getUri());
 
-        if(CollectionUtils.isEmpty(provenanceURIs)){
-            return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
-        }
-
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
-
-        List<ProvenanceGetDTO> resultDtoList = provenanceDAO.search(
-                new ProvenanceSearchFilter().setUris(provenanceURIs),
-                ProvenanceGetDTO::fromModel
-        ).getList();
-
-        return new PaginatedListResponse<>(resultDtoList).getResponse();
+//        Set<URI> provenanceURIs = dataDAO.distinct("provenance.uri", URI.class, filter, null);
+//
+//        if(CollectionUtils.isEmpty(provenanceURIs)){
+//            return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+//        }
+//
+//        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
+//
+//        List<ProvenanceGetDTO> resultDtoList = provenanceDAO.search(
+//                new ProvenanceSearchFilter().setUris(provenanceURIs),
+//                ProvenanceGetDTO::fromModel
+//        ).getList();
+//
+//        return new PaginatedListResponse<>(resultDtoList).getResponse();
+        List<ProvenanceGetDTO> dtoList = dao.lookupAggregation(filter, DataModel.PROVENANCE_FIELD, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class, ProvenanceGetDTO::fromModel, null);
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
     
     @GET
@@ -1249,7 +1185,7 @@ public class DataAPI {
                 //Transactions so that we don't create any Data or Annotations if either fail
                 nosql.startTransaction();
                 sparql.startTransaction();
-                dao.createAll(data);
+                dao.create(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
                     DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);

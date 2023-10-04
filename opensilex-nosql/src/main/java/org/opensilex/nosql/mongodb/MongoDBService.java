@@ -53,7 +53,6 @@ import org.opensilex.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.print.Doc;
 import javax.ws.rs.core.UriBuilder;
 
 import static com.mongodb.client.model.Filters.*;
@@ -103,10 +102,10 @@ public class MongoDBService extends BaseService {
 
     /**
      * Test if the connection to the MongoDB server is OK
-     * @param config MongoDB configuration
-     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeout()}
-     * @throws MongoSecurityException If the execution of this command is unauthorized by the MongoDB server
      *
+     * @param config MongoDB configuration
+     * @throws MongoTimeoutException  If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeout()}
+     * @throws MongoSecurityException If the execution of this command is unauthorized by the MongoDB server
      * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">MongoDB ping</a>
      */
     private void checkConnection(MongoDBConfig config) throws MongoTimeoutException, MongoSecurityException {
@@ -145,10 +144,10 @@ public class MongoDBService extends BaseService {
         return operationInTransaction(mongoClient.startSession(), preCommitOperation, null, null);
     }
 
-    private  <R> R operationInTransaction(ClientSession session,
-                                        ThrowingFunction<ClientSession,R, MongoException> preCommitOperation,
-                                        Runnable commitOperation,
-                                        Runnable rollbackOperation
+    private <R> R operationInTransaction(ClientSession session,
+                                         ThrowingFunction<ClientSession, R, MongoException> preCommitOperation,
+                                         Runnable commitOperation,
+                                         Runnable rollbackOperation
 
     ) throws MongoException {
 
@@ -211,7 +210,7 @@ public class MongoDBService extends BaseService {
     public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws MongoException, URISyntaxException {
         LOGGER.debug("[MONGO_CREATE] : { collection: {}}", collection.getNamespace().getCollectionName());
 
-        if(checkUris){
+        if (checkUris) {
             for (T instance : instances) {
                 if (instance.getUri() == null) {
                     generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collection);
@@ -220,8 +219,8 @@ public class MongoDBService extends BaseService {
         }
 
         // if a session is provided, simply use it
-        if(session != null){
-            return collection.insertMany(session,instances);
+        if (session != null) {
+            return collection.insertMany(session, instances);
         }
 
         // Transaction handling for data integrity since insertMany() can update several documents
@@ -231,7 +230,7 @@ public class MongoDBService extends BaseService {
     }
 
     public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) throws MongoException, URISyntaxException {
-        return createAll(instances,collection,session,null,false,false);
+        return createAll(instances, collection, session, null, false, false);
     }
 
     public <T> T findByURI(MongoCollection<T> collection, URI uri) throws NoSQLInvalidURIException {
@@ -247,7 +246,7 @@ public class MongoDBService extends BaseService {
      * @throws NoSQLInvalidURIException if no instance is found
      */
     public <T> T findByURI(MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
-        return findByURI(null,collection,uri,uriField);
+        return findByURI(null, collection, uri, uriField);
     }
 
     public <T> T findByURI(ClientSession session, MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
@@ -291,7 +290,7 @@ public class MongoDBService extends BaseService {
      * @return if an instance with the given uri exists
      */
     public <T> boolean uriExists(ClientSession session, MongoCollection<T> collection, URI uri) {
-        LOGGER.debug("[MONGO_URI_EXISTS] : { collection: {}, uri: {}}", collection.getNamespace().getCollectionName(),uri);
+        LOGGER.debug("[MONGO_URI_EXISTS] : { collection: {}, uri: {}}", collection.getNamespace().getCollectionName(), uri);
         try {
             findByURI(session, collection, uri, MongoModel.URI_FIELD);
             return true;
@@ -330,7 +329,7 @@ public class MongoDBService extends BaseService {
         return sort;
     }
 
-    public  <T extends MongoModel> Map.Entry<FindIterable<T>,Long> findWithPagination(MongoCollection<T> collection,
+    public <T extends MongoModel> Map.Entry<FindIterable<T>, Long> findWithPagination(MongoCollection<T> collection,
                                                                                       Bson filter,
                                                                                       Bson projection,
                                                                                       List<OrderBy> orderByList,
@@ -341,8 +340,8 @@ public class MongoDBService extends BaseService {
         long resultsNumber = collection.countDocuments(filter);
 
         // call isDebugEnabled before displaying log, since LogOrderList is a function. We don't want to call this method, is DEBUG logging is not enabled
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(),LogOrderList(orderByList), filter, resultsNumber);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter, resultsNumber);
         }
 
         if (resultsNumber == 0) {
@@ -350,14 +349,14 @@ public class MongoDBService extends BaseService {
         }
         FindIterable<T> queryResult = session == null ?
                 collection.find(filter) :
-                collection.find(session,filter);
+                collection.find(session, filter);
 
         queryResult.sort(buildSort(orderByList))
                 .skip(page * pageSize)
                 .limit(pageSize)
                 .projection(projection);
 
-        return new AbstractMap.SimpleImmutableEntry<>(queryResult,resultsNumber);
+        return new AbstractMap.SimpleImmutableEntry<>(queryResult, resultsNumber);
     }
 
     public <T extends MongoModel> ListWithPagination<T> searchWithPagination(
@@ -370,27 +369,26 @@ public class MongoDBService extends BaseService {
             ClientSession session) {
 
         Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(collection, filter, projection, orderByList, page, pageSize, session);
-        if(resultAndCount == null){
+        if (resultAndCount == null) {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
         // iterate over MongoDB result cursor and collect inside a List
         List<T> results = new ArrayList<>(pageSize);
-        CollectionUtils.addAll(results,resultAndCount.getKey());
+        CollectionUtils.addAll(results, resultAndCount.getKey());
 
         return new ListWithPagination<>(results, page, pageSize, resultAndCount.getValue().intValue());
     }
 
     public <T> long count(ClientSession session,
-            MongoCollection<T> collection,
-            Bson filter) {
+                          MongoCollection<T> collection,
+                          Bson filter) {
 
         LOGGER.debug("[MONGO_COUNT] : { collection: {},filter: {}}", collection.getNamespace().getCollectionName(), filter);
         return session == null ?
                 collection.countDocuments(filter) :
-                collection.countDocuments(session,filter);
+                collection.countDocuments(session, filter);
     }
-
 
 
     public <T> List<T> search(
@@ -402,10 +400,10 @@ public class MongoDBService extends BaseService {
         FindIterable<T> queryResult = collection.find(filter).sort(sort);
 
         List<T> results = new ArrayList<>();
-        CollectionUtils.addAll(results,queryResult);
+        CollectionUtils.addAll(results, queryResult);
 
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(),LogOrderList(orderByList), filter, results.size());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter, results.size());
         }
 
         return results;
@@ -415,13 +413,28 @@ public class MongoDBService extends BaseService {
             String field,
             Class<T> resultClass,
             String collectionName,
-            Document filter) {
+            Bson filter) {
 
-        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Field : " + field + " - Filter : " + filter.toString());
+        MongoCollection<?> collection = db.getCollection(collectionName);
+        return distinct(field, resultClass, collection, filter, null);
+    }
+
+    public <T> Set<T> distinct(
+            String field,
+            Class<T> resultClass,
+            MongoCollection<?> collection,
+            Bson filter,
+            ClientSession session
+    ) {
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[MONGO_DISTINCT] : { collection: {}, filter: {}, field: {}, resultClass: {} }", collection.getNamespace().getCollectionName(), filter, field, resultClass.getSimpleName());
+        }
+
         Set<T> results = new HashSet<>();
-        MongoCollection<T> collection = db.getCollection(collectionName, resultClass);
-
-        DistinctIterable<T> queryResult = collection.distinct(field, filter, resultClass);
+        DistinctIterable<T> queryResult = session == null ?
+                collection.distinct(field, filter, resultClass) :
+                collection.distinct(session, field, filter, resultClass);
 
         for (T res : queryResult) {
             results.add(res);
@@ -455,7 +468,9 @@ public class MongoDBService extends BaseService {
             ClientSession session
     ) {
 
-        LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(),LogOrderList(orderByList), filter);
+        if(LOGGER.isDebugEnabled()){
+            LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter);
+        }
 
         List<Bson> aggregatePipeline = new ArrayList<>();
 
@@ -472,9 +487,9 @@ public class MongoDBService extends BaseService {
         aggregatePipeline.add(Aggregates.sort(order.toBsonDocument()));
 
         // pagination : skip and limit
-        if(pageSize > 0){
+        if (pageSize > 0) {
             aggregatePipeline.add(Aggregates.limit(pageSize));
-            if(page > 0){
+            if (page > 0) {
                 aggregatePipeline.add(Aggregates.skip(page * pageSize));
             }
         }
@@ -487,11 +502,68 @@ public class MongoDBService extends BaseService {
         // map aggregation results a Document, since the aggregation will produce a different document schema
         AggregateIterable<Document> aggregateIt = session == null ?
                 collection.aggregate(aggregatePipeline, Document.class) :
-                collection.aggregate(session,aggregatePipeline,Document.class);
+                collection.aggregate(session, aggregatePipeline, Document.class);
 
         aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
 
         return distinct;
+    }
+
+    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(
+            MongoCollection<?> srcCollection,
+            String dstCollectionName,
+            String lookupField,
+            Bson filter,
+            List<OrderBy> orderByList,
+            Class<T_JOINED> lookupClass,
+            Function<T_JOINED, T_RESULT> convertFunction,
+            ClientSession session) {
+
+        List<Bson> pipeline = new ArrayList<>();
+
+        // filtering with match
+        if (filter != null) {
+            pipeline.add(Aggregates.match(filter));
+        }
+
+        // First projection, only restrict to joined fields
+        pipeline.add(Aggregates.project(Projections.include(lookupField)));
+
+        // group by foreign key
+        String outputFieldName = lookupField+"_join";
+        String outputFieldJoinKey = lookupField + "." + MongoModel.URI_FIELD;
+        String groupKey = "group";
+
+        pipeline.add(Aggregates.group(
+                "$" + outputFieldJoinKey,
+                Accumulators.first(groupKey, "$$ROOT")
+        ));
+
+        // replace root
+        pipeline.add(Aggregates.replaceRoot("$"+groupKey+"."+lookupField));
+
+        // lookup with destination collection
+        pipeline.add(Aggregates.lookup(dstCollectionName, MongoModel.URI_FIELD, MongoModel.URI_FIELD, outputFieldName));
+
+        // unwind
+        pipeline.add(Aggregates.unwind("$"+outputFieldName));
+
+        // replace root
+        pipeline.add(Aggregates.replaceRoot("$"+lookupField));
+
+        // sort
+        if(! CollectionUtils.isEmpty(orderByList)){
+            Document order = buildSort(orderByList);
+            pipeline.add(Aggregates.sort(order.toBsonDocument()));
+        }
+
+        List<T_RESULT> results = new ArrayList<>();
+        AggregateIterable<T_JOINED> aggregateIt = session == null ?
+                srcCollection.aggregate(pipeline, lookupClass) :
+                srcCollection.aggregate(session, pipeline, lookupClass);
+
+        aggregateIt.map(convertFunction::apply).forEach(results::add);
+        return results;
     }
 
     public <T> Set<T> aggregate(
@@ -562,16 +634,17 @@ public class MongoDBService extends BaseService {
 
     /**
      * Update the new model in the given collection according a filter
-     * @param newModel new model to write in database
+     *
+     * @param newModel   new model to write in database
      * @param collection collection of the current model in database
-     * @param filter additional BSON filter
-     * @param session current session
+     * @param filter     additional BSON filter
+     * @param session    current session
      * @throws NoSQLInvalidURIException if no previous corresponding model was found in the collection
      */
     public <T extends MongoModel> void update(T newModel, MongoCollection<T> collection, Bson filter, ClientSession session) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO UPDATE - Collection : {}", collection.getNamespace().getCollectionName());
 
-        FindOneAndReplaceOptions options =  new FindOneAndReplaceOptions().projection( // don't fetch the full old document
+        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().projection( // don't fetch the full old document
                 Projections.include(MongoModel.URI_FIELD) // only retrieve id
         );
         T updatedModel = session == null ?
@@ -679,7 +752,7 @@ public class MongoDBService extends BaseService {
 
     public <T extends MongoModel> DeleteResult deleteOnCriteria(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
 
-        if(session != null){
+        if (session != null) {
             return collection.deleteMany(filter);
         }
 

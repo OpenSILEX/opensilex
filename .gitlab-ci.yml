@@ -731,10 +731,10 @@ test:gabriel:front-test:
     - envsubst < /opensilex.yml > /opensilex_mod.yml
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
-#    - echo "START DOCKERS :"
-#    - cd opensilex-dev-tools/src/main/resources/docker
-#    - dockerd & # can go in base image
-#    - docker compose -p test up & # can go in base image
+    - echo "START DOCKERS :"
+    - cd opensilex-dev-tools/src/main/resources/docker
+    - dockerd &
+    - docker compose -p test up &
     - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml

@@ -8,7 +8,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -180,8 +179,8 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
             // iterate over MongoDB result and convert result on the fly before collect them inside a List
             List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
             resultAndCount.getKey().forEach(mongoResult ->
-                    convertedResults.add(convertFunction.apply(mongoResult)
-                    ));
+                convertedResults.add(convertFunction.apply(mongoResult)
+            ));
 
             return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
         }
@@ -284,7 +283,4 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         );
     }
 
-    public MongoCollection<T> getCollection() {
-        return collection;
-    }
 }

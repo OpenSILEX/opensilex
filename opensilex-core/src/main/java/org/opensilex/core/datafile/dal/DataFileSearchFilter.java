@@ -1,10 +1,11 @@
 package org.opensilex.core.datafile.dal;
 
 import org.opensilex.core.data.api.DataSearchDTO;
+import org.opensilex.core.data.dal.DataSearchFilter;
 
 import java.net.URI;
 
-public class DataFileSearchFilter extends DataSearchDTO {
+public class DataFileSearchFilter extends DataSearchFilter {
 
     private String filename;
     private String path;

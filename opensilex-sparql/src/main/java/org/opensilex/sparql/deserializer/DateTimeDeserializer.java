@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -18,12 +19,12 @@ import org.apache.jena.graph.NodeFactory;
 public class DateTimeDeserializer implements SPARQLDeserializer<OffsetDateTime> {
 
     @Override
-    public OffsetDateTime fromString(String value) throws Exception {
+    public OffsetDateTime fromString(String value) throws SPARQLException {
         return OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         OffsetDateTime date = (OffsetDateTime) value;
         return NodeFactory.createLiteralByValue(date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), getDataType());
     }

@@ -16,7 +16,7 @@ import org.apache.jena.graph.NodeFactory;
 public class LongDeserializer implements SPARQLDeserializer<Long> {
 
     @Override
-    public Long fromString(String value) throws Exception {
+    public Long fromString(String value) {
         if (value.isEmpty()) {
             return null;
         }
@@ -24,7 +24,7 @@ public class LongDeserializer implements SPARQLDeserializer<Long> {
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
 

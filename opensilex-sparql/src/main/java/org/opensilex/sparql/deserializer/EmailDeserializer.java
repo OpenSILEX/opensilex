@@ -17,6 +17,8 @@ import javax.mail.internet.InternetAddress;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 
 /**
  *
@@ -27,22 +29,26 @@ public class EmailDeserializer
         implements SPARQLDeserializer<InternetAddress> {
 
     @Override
-    public InternetAddress deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
+    public InternetAddress deserialize(JsonParser jp, DeserializationContext dc) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
         try {
-            return fromString(node.asText());
+            return new InternetAddress(node.asText().toLowerCase());
         } catch (AddressException ex) {
             throw new EmailDeserializationException("Invalid email address: " + node.asText(), jp.getCurrentLocation(), ex);
         }
     }
 
     @Override
-    public InternetAddress fromString(String value) throws AddressException {
-        return new InternetAddress(value.toLowerCase());
+    public InternetAddress fromString(String value) {
+        try{
+            return new InternetAddress(value.toLowerCase());
+        }catch (AddressException e){
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         return NodeFactory.createLiteral(value.toString().toLowerCase());
     }
 

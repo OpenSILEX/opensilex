@@ -8,6 +8,7 @@ package org.opensilex.sparql.deserializer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -16,12 +17,12 @@ import org.apache.jena.graph.NodeFactory;
 public class CharDeserializer implements SPARQLDeserializer<Character> {
 
     @Override
-    public Character fromString(String value) throws Exception {
+    public Character fromString(String value) throws SPARQLException {
         return value.charAt(0);
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         if (value == null) {
             return NodeFactory.createLiteral("");
         }

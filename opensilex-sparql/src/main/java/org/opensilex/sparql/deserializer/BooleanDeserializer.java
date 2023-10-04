@@ -8,8 +8,7 @@ package org.opensilex.sparql.deserializer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-
-
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 
 /**
@@ -19,12 +18,12 @@ import org.apache.jena.graph.NodeFactory;
 public class BooleanDeserializer implements SPARQLDeserializer<Boolean> {
 
     @Override
-    public Boolean fromString(String value) throws Exception {
+    public Boolean fromString(String value) throws SPARQLException {
         return Boolean.valueOf(value);
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
     

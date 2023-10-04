@@ -16,7 +16,7 @@ import org.apache.jena.graph.NodeFactory;
 public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
 
     @Override
-    public Integer fromString(String value) throws Exception {
+    public Integer fromString(String value) {
         if (value.isEmpty()) {
             return null;
         }
@@ -24,7 +24,7 @@ public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
 

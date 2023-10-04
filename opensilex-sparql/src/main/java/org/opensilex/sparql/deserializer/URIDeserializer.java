@@ -22,17 +22,24 @@ import java.util.Objects;
 public class URIDeserializer implements SPARQLDeserializer<URI> {
 
     @Override
-    public URI fromString(String value) throws Exception {
-        if (prefixes == null || !usePrefixes) {
-            return new URI(value);
+    public URI fromString(String value) {
+        try{
+            if (prefixes == null || !usePrefixes) {
+                return new URI(value);
+            }
+            return formatURI(new URI(value));
+        }catch (URISyntaxException e){
+            throw new IllegalArgumentException(e);
         }
-
-        return formatURI(new URI(value));
     }
 
     @Override
-    public Node getNodeFromString(String value) throws Exception {
-        return getNode(new URI(value));
+    public Node getNodeFromString(String value) {
+        try{
+            return getNode(new URI(value));
+        }catch (URISyntaxException e){
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public static URI formatURI(URI uri) {
@@ -99,7 +106,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         if (prefixes == null) {
             return NodeFactory.createURI(value.toString());
         }

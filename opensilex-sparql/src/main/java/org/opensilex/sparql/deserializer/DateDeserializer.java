@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -19,7 +20,7 @@ import org.apache.jena.graph.NodeFactory;
 public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
 
     @Override
-    public LocalDate fromString(String value) throws Exception {
+    public LocalDate fromString(String value) throws SPARQLException {
         if (value == null) {
             return null;
         }
@@ -51,7 +52,7 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) throws SPARQLException {
         LocalDate date = (LocalDate) value;
         if (value instanceof String) {
             date = fromString(value.toString());

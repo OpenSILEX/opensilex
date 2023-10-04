@@ -16,12 +16,12 @@ import org.apache.jena.graph.NodeFactory;
 public class ShortDeserializer implements SPARQLDeserializer<Short> {
 
     @Override
-    public Short fromString(String value) throws Exception {
+    public Short fromString(String value) {
         return Short.valueOf(value);
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value){
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
 

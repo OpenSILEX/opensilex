@@ -8,6 +8,7 @@ package org.opensilex.sparql.deserializer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -16,7 +17,7 @@ import org.apache.jena.graph.NodeFactory;
 public class FloatDeserializer implements SPARQLDeserializer<Float> {
 
     @Override
-    public Float fromString(String value) throws Exception {
+    public Float fromString(String value) throws SPARQLException {
         if (value.isEmpty()) {
             return null;
         }
@@ -24,7 +25,7 @@ public class FloatDeserializer implements SPARQLDeserializer<Float> {
     }
 
     @Override
-    public Node getNode(Object value) throws Exception {
+    public Node getNode(Object value) {
         return NodeFactory.createLiteralByValue(value, getDataType());
     }
 

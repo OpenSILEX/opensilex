@@ -666,7 +666,8 @@ public final class OntologyDAO {
             updateRestrictionRangeOnProperty(property.getUri(), property.getRange().getUri(), false);
             sparql.commitTransaction();
         } catch (Exception e) {
-            sparql.rollbackTransaction(e);
+            sparql.rollbackTransaction();
+            throw e;
         }
     }
 

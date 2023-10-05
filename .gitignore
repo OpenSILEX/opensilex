@@ -14,3 +14,5 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-bigdatagrapes
 **/*.iml
 
+/opensilex-front-tests/e2e/test-results/
+/opensilex-front-tests/e2e/playwright-report/

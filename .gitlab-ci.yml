@@ -710,14 +710,10 @@ test:gabriel:front-test:
   # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
   image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
 #  parallel: 7    for parallelization
-  before_script:
-    - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
   script:
     - echo "SETTING UP CONFIG"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
-    # Ports are hardcoded. Should find another way to do it.
     - yq -i '.ontologies.sparql.config.serverURI = "http://localhost:8667/rdf4j-server/"' /opensilex.yml
     - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - yq -i '.file-system.fs.config.connections.gridfs.config.host = "localhost"' /opensilex.yml
@@ -740,11 +736,10 @@ test:gabriel:front-test:
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
-    - cd $CI_PROJECT_DIR/opensilex-front-tests
+    - cd opensilex-front-tests/e2e
     - sleep 10
     - npm ci
     - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
-    # Penser à exit 0 ou 1 en fonction des résultats de tests + sauvegarder les traces en
 
   after_script:
     - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"

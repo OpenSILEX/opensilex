@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core;
 
+import com.auth0.jwt.JWTCreator;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.jena.riot.Lang;
@@ -13,6 +14,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
@@ -24,6 +26,9 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
@@ -40,14 +45,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension {
+public class CoreModule extends OpenSilexModule implements LoginExtension, APIExtension, SPARQLExtension, JCSApiCacheExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
@@ -311,5 +318,24 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         } catch (Exception e) {
             throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void login(AccountModel user, JWTCreator.Builder tokenBuilder) throws Exception {
+        LoginExtension.super.login(user, tokenBuilder);
+
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+
+        MongoDBService mongodb = getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+
+        // Retrieve the list of experiences the user can access
+        ExperimentDAO dao = new ExperimentDAO(sparql, mongodb);
+        Set<URI> accessExperimentsList= dao.getUserExperiments(user);
+        List<String> listExperiments = new ArrayList<>();
+        accessExperimentsList.forEach((URI uriExperiment) -> listExperiments.add(uriExperiment.toString()));
+
+        // Add list of experiments to the Authentication token
+        tokenBuilder.withArrayClaim("experiments_list", listExperiments.toArray(new String[listExperiments.size()]));
     }
 }

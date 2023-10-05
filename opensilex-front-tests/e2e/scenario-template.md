@@ -7,6 +7,7 @@ Example of description : The user creates a new experiment
 A step is an action with a small description. List of actions :
 * __CLICK__
 * __TYPE__
+* __KEYPRESS__
 
 Example of steps :
 * __CLICK__ on login field

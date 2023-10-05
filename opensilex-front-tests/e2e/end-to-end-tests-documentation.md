@@ -28,6 +28,7 @@ You can now go to the "Testing" menu on the left (Flask icon). The existing test
 
 The scenario file describes every step that is taken for a usage scenario.
 It has a descriptive name that will be reused for the test name.
+It assumes that the user is already connected as an admin.
 See "scenario-template.md".
 
 ### Recording new test template
@@ -65,3 +66,10 @@ See [playwright docs](https://playwright.dev/docs/running-tests) for more detail
 __[Playwright docs](https://playwright.dev/docs)__
 The test templates you will receive will need refinement especially for the locators. Different types of locators are available (<https://playwright.dev/docs/other-locators>) but the best practice is to use `data-testid`s.
 If this locator doesn't already exist on the components used in the test template you should add them manually.
+Using the adminLoggedPage fixture from opensilex-test-fixtures.ts will give you a base state where the user is connected as admin.
+
+## Possible improvements
+* Caching the rdf4j and mongodb images used by gitlab-ci would speed up tests
+* Test files and scenarios can be consolidated according to OpenSILEX elements (ex: all tests for "Experiments" in a single file)
+* Integrate to maven tests
+* Add credentials in a config file

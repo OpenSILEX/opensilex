@@ -23,8 +23,8 @@
       <opensilex-CSVInputFile
         v-on:updated="uploaded"
         :returnDataAsArrayOfArrays="true"
-        :nonDuplicatableHeaders="['uri', 'name']"
-        :headersPresent="['uri', 'name']"
+        :duplicatableHeaders="existingDuplicatablePropertiesNameList"
+        :headersPresent="['name']"
       >
       </opensilex-CSVInputFile>
       <b-button
@@ -238,7 +238,9 @@ export default class GermplasmTable extends Vue {
 
   existingRdfAttributesObjects: Array<SelectableItem> = [];
 
-  existingRdfAttributesStringRule:string;
+  existingRdfAttributesStringRule:string = "";
+
+  existingDuplicatablePropertiesNameList: string[] = [];
 
   tabulator:Tabulator = null;
 
@@ -265,6 +267,7 @@ export default class GermplasmTable extends Vue {
 
   private langUnwatcher;
   mounted() {
+    console.debug("mounted!!!!!!");
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       (lang) => {
@@ -543,6 +546,8 @@ export default class GermplasmTable extends Vue {
     this.disableInsert = false;
   }
 
+
+
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
       this.tableData.push({ rowNumber: i });
@@ -577,9 +582,13 @@ export default class GermplasmTable extends Vue {
   }
 
   /**
-   * Adds a new column, will be stored in Mongo
+   * Adds a new column, will be stored in Mongo.
+   * Does a check to make sure there aren't any duplications
    */
   addNonExistingColumn(columnName: string, positionTarget: string) {
+    console.debug("oldStringRule", this.existingRdfAttributesStringRule);
+    this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + columnName;
+    console.debug("newStringRule", this.existingRdfAttributesStringRule);
     this.addColumnToTabulator(columnName, columnName, positionTarget);
     this.suppColumnsNames.push(columnName);
   }
@@ -844,22 +853,24 @@ export default class GermplasmTable extends Vue {
 
   async created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
-
     //Existing duplicatable rdf property stuff
     let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
     let existingPropertiesRessourceTree: Array<ResourceTreeDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
       return http.response.result;
     }).catch(this.$opensilex.errorHandler);
-    let existingPropertiesNameList: Array<string> = [];
+    this.existingDuplicatablePropertiesNameList = [];
     existingPropertiesRessourceTree.forEach(resourceTree => {
           this.existingRdfAttributesObjects.push({
             id: resourceTree.uri,
             label: resourceTree.name});
-          existingPropertiesNameList.push(resourceTree.name);
+            this.existingDuplicatablePropertiesNameList.push(resourceTree.name);
         }
     );
-    this.existingRdfAttributesStringRule = "existingProperty:" + existingPropertiesNameList.toString();
+    //Add stuff to existing property string rule (to prevent duplicates)
+    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+col.title}).toString();
+    this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString() + (tableStartingHeaderTitlesFields!=="" ? "," + tableStartingHeaderTitlesFields : "");
   }
+
 
   tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem{
     let filtered:Array<SelectableItem> = this.existingRdfAttributesObjects.filter(e => e.label == columnName);

@@ -40,10 +40,10 @@ export default class CSVInputFile extends Vue {
 
   /**
    * To check some headers don't show up more that once.
-   * Only gets checked if we are returning an array of arrays in data, that permits duplicated headers.
+   * Only gets checked if we are returning an array of arrays in data.
    */
   @Prop()
-  nonDuplicatableHeaders: string[];
+  duplicatableHeaders: string[];
 
   /**
    * Data's first array will be headers, allows for duplicated headers but this changes the output format.
@@ -92,20 +92,19 @@ export default class CSVInputFile extends Vue {
           let objectToCheck : Array<string> = (this.returnDataAsArrayOfArrays ? result.data[0] : Object.keys(result.data[0]));
 
           //Check non duplicatable headers if we are returning array of arrays
-          if(this.returnDataAsArrayOfArrays && this.nonDuplicatableHeaders){
-            let headerQuantaties = {};
-            this.nonDuplicatableHeaders.forEach(e=>headerQuantaties[e] = 0);
+          if(this.returnDataAsArrayOfArrays){
+            let visitedHeaders = [];
             for(let header of objectToCheck){
-              if(this.nonDuplicatableHeaders.includes(header)){
-                headerQuantaties[header]++;
-              }
-            }
-            for(let nonDuplicatableHeader  of Object.keys(headerQuantaties)){
-              if(headerQuantaties[nonDuplicatableHeader] > 1){
-                this.errors.push(
-                    "This header can't be duplicated: " +
-                    nonDuplicatableHeader
-                );
+              if(visitedHeaders.includes(header)){
+                if(!this.duplicatableHeaders.includes(header)){
+                  this.errors.push(
+                      "This header can't be duplicated: " +
+                      header
+                  );
+                  break;
+                }
+              }else{
+                visitedHeaders.push(header);
               }
             }
           }

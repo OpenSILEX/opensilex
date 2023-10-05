@@ -335,8 +335,15 @@ extend("nameFiltered", ( value) => {
   return valid;
 });
 
+//Has the same functionality as the existing vee-validate excluded rule. But ignores case and white spaces
 extend("existingProperty", {
-  ...excluded
+  validate: (value: string, args: string[])=>{
+    //Remove white spaces and turn all capital letters into normal letters
+    let flattenedValue = value.toLowerCase().replaceAll(" ", "");
+    let flattenedArgs: string[] = [];
+    args.forEach(arg=>flattenedArgs.push(arg.toLowerCase().replaceAll(" ", "")))
+    return !flattenedArgs.includes(flattenedValue);
+}
 });
 
 

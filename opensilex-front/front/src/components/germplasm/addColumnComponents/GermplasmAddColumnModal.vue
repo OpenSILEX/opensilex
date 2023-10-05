@@ -21,13 +21,13 @@
             ref="uncontrolledAttributeInput"
             :key="inputFormKey"
             :value.sync="uncontrolledColName"
-            :disabled="false"
+            :disabled="pickedExisting"
             :rules="existingRdfAttributesStringRule"
             label="GermplasmAddColumnModal.nonExistingAttributeFieldLabel"
             type="text"
             :required="false"
         ></opensilex-InputForm>
-        <b-button class="mt-3" variant="primary" block @click="checkValidationAndAddColumn">{{
+        <b-button class="mt-3 btn greenThemeColor" variant="primary" block @click="checkValidationAndAddColumn">{{
             $t("GermplasmAddColumnModal.addColumn")
           }}</b-button>
 
@@ -47,15 +47,7 @@ import Oeso from "../../../ontologies/Oeso";
 import { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
 import InputForm from "@/components/common/forms/InputForm.vue";
 
-@Component({
-  /*watch: {
-    pickedExisting(newVal) {
-      // When pickedExisting changes, increment the unique key
-      console.debug("rebuilding input", newVal);
-      this.inputFormKey++;
-    },
-  },*/
-})
+@Component({})
 /**
  * Modal that pops up when the user hits the add column button.
  */
@@ -85,7 +77,7 @@ export default class GermplasmAddColumnModal extends Vue {
   existingRdfAttributesStringRule:string;
 
   //Thisd didnt work
-  pickedExisting: any = false;
+  pickedExisting: boolean = false;
 
 
   /**
@@ -98,14 +90,20 @@ export default class GermplasmAddColumnModal extends Vue {
 
   async checkValidationAndAddColumn(){
     let isValid: boolean = await this.validatorRef.validate();
-    if(isValid){
+    /*if(isValid){
       if(!this.chosenPropertyUri){
         this.$emit('addingUncontrolledColumn', this.uncontrolledColName);
       }else{
         this.$emit('addingExistingColumn', this.getColumnNameForExistingPropertyUri(), this.chosenPropertyUri);
       }
+    }*/
+    if(!this.chosenPropertyUri){
+      if(isValid){
+        this.$emit('addingUncontrolledColumn', this.uncontrolledColName);
+      }
+    }else{
+      this.$emit('addingExistingColumn', this.getColumnNameForExistingPropertyUri(), this.chosenPropertyUri);
     }
-
   }
 
   validateForm(){
@@ -114,10 +112,12 @@ export default class GermplasmAddColumnModal extends Vue {
 
   selectedExistingProperty(){
     console.debug("disabling");
+    this.pickedExisting = true;
     //this.uncontrolledAttributeInput.setDisabled(true);
 
   }
   clearedExistingPropertyField(){
+    this.pickedExisting = false;
     //this.uncontrolledAttributeInput.setDisabled(false);
   }
 

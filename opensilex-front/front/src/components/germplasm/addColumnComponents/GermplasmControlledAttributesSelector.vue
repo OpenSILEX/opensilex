@@ -7,8 +7,8 @@
       :options="existingRdfAttributes"
       :clearable="true"
       placeholder="GermplasmControlledAttributesSelector.placeholder"
-      @clear="selected"
-      @select="cleared"
+      @clear="$emit('clear')"
+      @select="$emit('select')"
   ></opensilex-SelectForm>
 </template>
 
@@ -19,7 +19,6 @@ import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import Oeso from "../../..//ontologies/Oeso";
-import {RDFTypeDTO} from "opensilex-core/model/rDFTypeDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {Prop, PropSync, Ref} from 'vue-property-decorator';
@@ -28,20 +27,12 @@ import {SelectableItem} from "../../../components/common/forms/SelectForm.vue";
 @Component({})
 export default class GermplasmControlledAttributesSelector extends Vue {
 
-/*:searchMethod="searchProperties"
-:itemLoadingMethod="load"
-:conversionMethod="propertyToSelectNode"
-*/
-
 
   @Ref("selectForm") readonly selectForm!: any;
 
   $opensilex: OpenSilexVuePlugin;
 
   service: OntologyService;
-
-  @PropSync("pickedOne")
-  havePickedOne: boolean;
 
   @Prop()
   existingRdfAttributes: Array<SelectableItem>;
@@ -55,15 +46,6 @@ export default class GermplasmControlledAttributesSelector extends Vue {
 
   setDisableSelector(disabled:boolean){
     this.selectForm.disabled = disabled;
-  }
-
-  selected(){
-    this.pickedOne = true;
-    this.$emit('select');
-  }
-  cleared(){
-    this.pickedOne = false;
-    this.$emit('clear');
   }
 
   searchProperties() {

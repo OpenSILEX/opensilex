@@ -7,6 +7,7 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
@@ -17,32 +18,7 @@ import java.util.Objects;
  * Entity model used in "prov:used"
  * @author Alice Boizet
  */
-public class ProvEntityModel {
-
-    @ValidURI
-    @NotNull
-    @JsonProperty("rdf_type")
-    URI type;
-
-    @ValidURI
-    @NotNull
-    URI uri;
-
-    public URI getType() {
-        return type;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
-    }
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
+public class ProvEntityModel extends MongoModel {
 
     @Override
     public boolean equals(Object o) {

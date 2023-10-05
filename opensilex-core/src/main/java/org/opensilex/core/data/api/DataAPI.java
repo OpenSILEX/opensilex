@@ -49,6 +49,7 @@ import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
@@ -150,10 +151,10 @@ public class DataAPI {
     public static final int SIZE_MAX = 50000;
     
     Map<URI, URI> rootDeviceTypes = null;
-    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     @Inject
-    private MongoDBService nosql;
+    private MongoDBService mongodb;
 
     @Inject
     private SPARQLService sparql;
@@ -177,35 +178,36 @@ public class DataAPI {
     public Response addListData(
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
         try {
             if (dtoList.size() > SIZE_MAX) {
                 throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
             }
 
-            List<DataModel> dataList =  new ArrayList<>(dtoList.size());
+            final List<DataModel> models =  new ArrayList<>(dtoList.size());
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
-                dataList.add(model);
+                models.add(model);
             }
             
-            dataList = validData(dataList);
-            dao.create(dataList);
-            if(!variablesToDevices.isEmpty()) {
-               
-                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    
-                    deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                    
+            validData(models);
+
+            // create data, update associated devices <-> variables, update annotations
+            SparqlMongoTransaction distributedTrx = new SparqlMongoTransaction(sparql,mongodb);
+            distributedTrx.execute((sparql,session) -> {
+
+                dao.create(models,session);
+
+                if(!variablesToDevices.isEmpty()) {
+                    DeviceDAO deviceDAO = new DeviceDAO(sparql, mongodb, fs);
+                    for(Map.Entry<DeviceModel,List<URI>> entry : variablesToDevices.entrySet()){
+                        deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
+                    }
                 }
-            }
-            // do the  variable/device associations here ..
-            
-            List<URI> createdResources = new ArrayList<>();
-            for (DataModel data : dataList) {
-                createdResources.add(data.getUri());
-            }
+                return models;
+            });
+
+            List<URI> createdResources = models.stream().map(DataModel::getUri).collect(Collectors.toList());
             return new CreatedUriResponse(createdResources).getResponse();
 
         } catch (NoSQLTooLargeSetException ex) {
@@ -215,8 +217,8 @@ public class DataAPI {
         } catch (MongoBulkWriteException duplicateError) {
             List<BulkWriteError> errors = duplicateError.getWriteErrors();
             List<DataCreationDTO> datas = new ArrayList<>(errors.size());
-            for (int i = 0; i < errors.size(); i++) {
-                int index = errors.get(i).getIndex();
+            for (BulkWriteError error : errors) {
+                int index = error.getIndex();
                 datas.add(dtoList.get(index));
             }
             ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
@@ -250,7 +252,7 @@ public class DataAPI {
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
 
         try {
             DataModel model = dao.get(uri);
@@ -293,10 +295,10 @@ public class DataAPI {
         //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
         if(germplasmGroup!=null){
 
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, mongodb);
             Set<URI> finalTargetsFilter = new HashSet<>(targets);
             //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
             List<URI> includedExperimentsForTargetsSearch = experiments;
             if(experiments == null || experiments.isEmpty()){
                 ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
@@ -366,7 +368,7 @@ public class DataAPI {
             int page,
             int pageSize) throws Exception{
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
 
         //convert dates
         Instant startInstant = null;
@@ -410,9 +412,9 @@ public class DataAPI {
                 .setVariables(variables)
                 .setProvenances(provenances)
                 .setDevices(devices)
-                .setStartDate(startDate)
-                .setEndDate(endDate)
-                .setMetadata(metadata)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter)
                 .setOperators(operators)
                 .setExperiments(experiments)
                 .setConfidenceMax(confidenceMax)
@@ -449,7 +451,7 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
 
         //convert dates
         Instant startInstant = null;
@@ -516,7 +518,7 @@ public class DataAPI {
             @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            DataDAO dao = new DataDAO(nosql, sparql, fs);
+            DataDAO dao = new DataDAO(mongodb, sparql, fs);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -540,7 +542,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
         try {
             DataModel data = dao.get(uri);
             data.setConfidence(dto.getConfidence());
@@ -568,7 +570,7 @@ public class DataAPI {
             //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
 
         try {
             DataModel model = dto.newModel();
@@ -604,7 +606,7 @@ public class DataAPI {
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setExperiments(experimentUri)
                 .setTargets(objectUri)
@@ -651,7 +653,7 @@ public class DataAPI {
      */
     private void variablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
         
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, mongodb, fs);
         URI provenanceURI = data.getProvenance().getUri();
         DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO); 
         if (deviceFromProvWasAssociated == null) {
@@ -841,9 +843,9 @@ public class DataAPI {
      * @param dataList
      * @throws Exception
      */
-    private List<DataModel> validData(List<DataModel> dataList) throws Exception {
+    private void validData(List<DataModel> dataList) throws Exception {
 
-        VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs);
+        VariableDAO variableDAO = new VariableDAO(sparql, mongodb,fs);
 
         Map<URI, VariableModel> variableURIs = new HashMap<>();
         Set<URI> notFoundedVariableURIs = new HashSet<>();
@@ -856,7 +858,6 @@ public class DataAPI {
         Map<DeviceModel, URI> variableCheckedDevice =  new HashMap<>();
         Map<URI, DeviceModel> provenanceToDevice =  new HashMap<>();
         
-        List<DataModel> validData = new ArrayList<>();
         int dataIndex = 0;
         for (DataModel data : dataList) {
             
@@ -883,10 +884,7 @@ public class DataAPI {
                     setDataValidValue(variable, data);
                     dataIndex++;
                 }
-                
-              
             }
-            
 
             //check targets uri
             if (data.getTarget() != null) {
@@ -901,7 +899,7 @@ public class DataAPI {
             }
 
             //check provenance uri and variables device association
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.exists(data.getProvenance().getUri())) {
@@ -924,9 +922,6 @@ public class DataAPI {
                     }
                 }
             }
-            
-            validData.add(data);
-
         }
 
         if (!notFoundedVariableURIs.isEmpty()) {
@@ -941,8 +936,6 @@ public class DataAPI {
         if (!notFoundedExpURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs)); // NOSQL Exception ? come from sparql request
         }
-        
-        return validData;
 
     }
 
@@ -959,7 +952,7 @@ public class DataAPI {
     public Response exportData(
             @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -1082,7 +1075,7 @@ public class DataAPI {
             List<URI> variables,
             List<URI> devices) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataDAO dao = new DataDAO(mongodb, sparql, null);
         DataSearchFilter filter = new DataSearchFilter()
                 .setExperiments(experiments)
                 .setTargets(targets)
@@ -1124,7 +1117,7 @@ public class DataAPI {
             @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
         
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDAO dataDAO = new DataDAO(mongodb, sparql, null);
         List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances, devices);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -1149,12 +1142,12 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql, fs);
         AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
         ProvenanceModel provenanceModel = null;
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1162,7 +1155,7 @@ public class DataAPI {
         }
         // test exp
         if(experiment != null) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, mongodb);
             xpDAO.validateExperimentAccess(experiment, user);
         }
 
@@ -1174,63 +1167,59 @@ public class DataAPI {
 
         validation.setInsertionStep(true);
         validation.setValidCSV(!validation.hasErrors()); 
-        validation.setNbLinesToImport(validation.getData().size()); 
+        validation.setNbLinesToImport(validation.getData().size());
 
-        if (validation.isValidCSV()) {
-            Instant start = Instant.now();
-            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
-            try {
-                //Transactions so that we don't create any Data or Annotations if either fail
-                nosql.startTransaction();
-                sparql.startTransaction();
-                dao.create(data);
-                
+        if(! validation.isValidCSV()){
+            csvValidation.setDataErrors(validation);
+            return new SingleObjectResponse<>(csvValidation).getResponse();
+        }
+
+        List<DataModel> models = new ArrayList<>(validation.getData().keySet());
+
+        try {
+
+            // create data, update associated devices <-> variables, update annotations
+            SparqlMongoTransaction distributedTrx = new SparqlMongoTransaction(sparql,mongodb);
+            distributedTrx.execute((sparql,session) -> {
+
+                dao.create(models,session);
+
                 if(!validation.getVariablesToDevices().isEmpty()){
-                    DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                    for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
-                        deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                    DeviceDAO deviceDAO = new DeviceDAO(sparql, mongodb, fs);
+                    for(Map.Entry<DeviceModel,List<URI>> entry : validation.getVariablesToDevices().entrySet()){
+                        deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
                     }
                 }
-                validation.setNbLinesImported(data.size());
-                //If the data import was successful, post the annotations on objects
                 annotationDAO.create(validation.getAnnotationsOnObjects());
-                nosql.commitTransaction();
-                sparql.commitTransaction();
-            } catch (NoSQLTooLargeSetException ex) {
-                validation.setTooLargeDataset(true);
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
+                return models;
+            });
 
-            } catch (MongoBulkWriteException duplicateError) {
-                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
-                for (int i = 0; i < bulkErrors.size(); i++) {
-                    int index = bulkErrors.get(i).getIndex();
-                    DataModel dataModel = data.get(index);
-                    int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
-                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
-                    validation.addDuplicatedDataError(csvCell);
-                }
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
-            } catch (MongoCommandException e) {
-                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
+            validation.setNbLinesImported(models.size());
+
+        } catch (NoSQLTooLargeSetException ex) {
+            validation.setTooLargeDataset(true);
+
+        } catch (MongoBulkWriteException duplicateError) {
+            List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
+            for (int i = 0; i < bulkErrors.size(); i++) {
+                int index = bulkErrors.get(i).getIndex();
+                DataModel dataModel = models.get(index);
+                int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
+                String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
+                CSVCell csvCell = new CSVCell(validation.getData().get(models.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
                 validation.addDuplicatedDataError(csvCell);
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
-            } catch (DataTypeException e) {
-                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
-                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
-                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
             }
-            Instant finish = Instant.now();
-            long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-            
-            validation.setValidCSV(!validation.hasErrors());
+        } catch (MongoCommandException e) {
+            CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
+            validation.addDuplicatedDataError(csvCell);
+        } catch (DataTypeException e) {
+            int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
+            String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
+            validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
         }
+
+        validation.setValidCSV(!validation.hasErrors());
+
         csvValidation.setDataErrors(validation); 
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
@@ -1258,7 +1247,7 @@ public class DataAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1267,7 +1256,7 @@ public class DataAPI {
 
         // test exp
         if(experiment != null) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, mongodb);
             xpDAO.validateExperimentAccess(experiment, user);
         }
         DataCSVValidationModel validation;
@@ -1276,7 +1265,7 @@ public class DataAPI {
         validation = validateWholeCSV(provenanceModel, experiment, file, user);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Validation " + timeElapsed + " milliseconds elapsed");
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -1288,13 +1277,13 @@ public class DataAPI {
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
     
-    private final String expHeader = "experiment";
-    private final String targetHeader = "target";
-    private final String dateHeader = "date";
-    private final String deviceHeader = "device";
-    private final String rawdataHeader = "raw_data";
-    private final String soHeader = "scientific_object";
-    private final String annotationHeader = "object_annotation";
+    private static final String expHeader = "experiment";
+    private static final String targetHeader = "target";
+    private static final String dateHeader = "date";
+    private static final String deviceHeader = "device";
+    private static final String rawdataHeader = "raw_data";
+    private static final String soHeader = "scientific_object";
+    private static final String annotationHeader = "object_annotation";
 
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
@@ -1303,18 +1292,18 @@ public class DataAPI {
         List<String> notExistingTargets = new ArrayList<>();
         List<String> duplicatedTargets = new ArrayList<>();
         
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, mongodb);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();
 
 
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, mongodb);
         Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 
         
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, mongodb, fs);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();
@@ -1349,16 +1338,16 @@ public class DataAPI {
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(Collections.singletonList(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }
             // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
             if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
-                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(Collections.singletonList(targetHeader + " or " + soHeader));
             }
             
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
-            VariableDAO dao = new VariableDAO(sparql,nosql,fs);
+            VariableDAO dao = new VariableDAO(sparql, mongodb,fs);
 
             if (ids != null) {
 
@@ -1492,7 +1481,7 @@ public class DataAPI {
             Map<String, DeviceModel> nameURIDevices,
             HashMap<URI, URI> mapVariableUriDataType, 
             List<ImportDataIndex> duplicateDataByIndex) 
-        throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
+        throws Exception {
         
         boolean validRow = true;
 
@@ -1983,7 +1972,7 @@ public class DataAPI {
     }
 
     // Map who associate each type with its root type
-    private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
+    private Map<URI, URI> getRootDeviceTypes() throws Exception {
 
         SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
@@ -2037,7 +2026,7 @@ public class DataAPI {
             dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
         }
         else {
-            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+            ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb);
             ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());
@@ -2063,8 +2052,8 @@ public class DataAPI {
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+        DataDAO dataDAO = new DataDAO(mongodb, sparql, fs);
+        VariableDAO variableDAO = new VariableDAO(sparql, mongodb, fs);
 
         Instant start, end;
 
@@ -2102,7 +2091,7 @@ public class DataAPI {
                 startInstant,
                 endInstant);
         end = Instant.now();
-        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Duration.between(start, end).toMillis() + " milliseconds elapsed");
 
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 
@@ -2168,7 +2157,7 @@ public class DataAPI {
                     endInstant);
             List<DataComputedGetDTO> averageSerieDtos = averageSerie
                     .stream()
-                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
+                    .map(DataComputedGetDTO::getDtoFromModel)
                     .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
                     .collect(Collectors.toList());
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerieDtos));

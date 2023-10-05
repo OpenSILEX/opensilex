@@ -733,7 +733,8 @@ public final class OntologyDAO {
             }
             sparql.commitTransaction();
         }catch (Exception e){
-            sparql.rollbackTransaction(e);
+            sparql.rollbackTransaction();
+            throw e;
         }
 
     }
@@ -788,7 +789,7 @@ public final class OntologyDAO {
             sparql.commitTransaction();
 
         } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+            sparql.rollbackTransaction();
             throw ex;
         }
     }

@@ -8,6 +8,7 @@ package org.opensilex.core.data.dal;
 
 import com.mongodb.client.model.*;
 import com.opencsv.CSVWriter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
@@ -56,7 +57,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author sammy
+ * @author rcolin
  */
 public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
@@ -65,10 +66,13 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     protected final SPARQLService sparql;
     protected final FileStorageService fs;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
 
+    private static final String DATA_PROVENANCE_URI_FIELD =   DataModel.PROVENANCE_FIELD + "." + DataProvenanceModel.URI_FIELD;
 
+    private static final String DATA_PROVENANCE_AGENTS_FIELD = DataModel.PROVENANCE_FIELD + "."+ DataProvenanceModel.PROV_WAS_ASSOCIATED_FIELD;
+
+    private static final String DATA_PROVENANCE_AGENTS_URI_FIELD =  DATA_PROVENANCE_AGENTS_FIELD + "." + ProvEntityModel.URI_FIELD;
 
     public DataDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
         super(mongodb,DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
@@ -88,28 +92,87 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     }
 
-    public Document getSelectedAgents(List<URI> agents){
+    private Bson getSelectedAgents(List<URI> agents){
 
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
         // OR ( provenance.uri IN devices/operators Provenances list && provenance.provUsed.uri isEmpty or not exists)
         ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
-
         Set<URI> agentProvenances = provDAO.distinctUris(null, new ProvenanceSearchFilter().setAgents(agents));
 
-        Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
-
-        Document globalProvUsed = new Document("provenance.uri", new Document("$in", agentProvenances));
-        globalProvUsed.put("$or", Arrays.asList(
-                new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
-                new Document("provenance.provWasAssociatedWith", new ArrayList<>())
-            )
+        return Filters.or(
+                Filters.in(
+                        DATA_PROVENANCE_AGENTS_URI_FIELD, agents),
+                Filters.and(
+                        Filters.in("provenance.uri", agentProvenances),
+                        Filters.or(
+                              Filters.exists(DATA_PROVENANCE_AGENTS_FIELD, false),
+                              Filters.eq(DATA_PROVENANCE_AGENTS_FIELD,Collections.emptyList())
+                        )
+                )
         );
 
-        return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
+//        Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
+//
+//        Document globalProvUsed = new Document("provenance.uri", new Document("$in", agentProvenances));
+//        globalProvUsed.put("$or", Arrays.asList(
+//                new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
+//                new Document("provenance.provWasAssociatedWith", new ArrayList<>())
+//            )
+//        );
+//
+//        return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
 
+    @Override
+    public List<Bson> getBsonFilters(DataSearchFilter filter) {
+        List<Bson> bsonFilters =  super.getBsonFilters(filter);
+
+        if(!CollectionUtils.isEmpty(filter.getTargets())){
+            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD,filter.getTargets()));
+        }
+        if(!CollectionUtils.isEmpty(filter.getVariables())){
+            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD,filter.getVariables()));
+        }
+        if(!CollectionUtils.isEmpty(filter.getProvenances())){
+            bsonFilters.add(Filters.in(DataModel.PROVENANCE_FIELD,filter.getProvenances()));
+        }
+        if(!CollectionUtils.isEmpty(filter.getTargets())){
+            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD,filter.getTargets()));
+        }
+
+        if (filter.getStartDate() != null) {
+            bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, filter.getStartDate()));
+        }
+        if (filter.getEndDate() != null) {
+            bsonFilters.add(Filters.lt(DataModel.DATE_FIELD, filter.getEndDate()));
+        }
+
+        if (filter.getConfidenceMin() != null) {
+            bsonFilters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, filter.getStartDate()));
+        }
+        if (filter.getConfidenceMax() != null) {
+            bsonFilters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, filter.getEndDate()));
+        }
+        if(filter.getMetadata() != null){
+            filter.getMetadata().forEach((key,value) -> {
+                bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + key, value));
+            });
+        }
+        List<URI> agents = new LinkedList<>();
+        if(! CollectionUtils.isEmpty(filter.getOperators())){
+            agents.addAll(filter.getOperators());
+        }
+        if(! CollectionUtils.isEmpty(filter.getDevices())){
+            agents.addAll(filter.getDevices());
+        }
+        if(! agents.isEmpty()){
+            bsonFilters.add(getSelectedAgents(agents));
+        }
+
+        return bsonFilters;
+    }
 
     public Document searchFilter(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata, List<URI> operators) throws Exception {
 
@@ -118,69 +181,6 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         // handle case some case in which some service/dao must have access to data collection, even if the user don't have direct access to xp
         if(user != null){
             appendExperimentUserAccessFilter(filter, user, experiments);
-        }
-
-        if (targets != null && !targets.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", targets);
-            filter.put("target", inFilter);
-        }
-
-        if (variables != null && !variables.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", variables);
-            filter.put("variable", inFilter);
-        }
-
-        if (provenances != null && !provenances.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", provenances);
-            filter.put("provenance.uri", inFilter);
-        }
-
-        if (startDate != null || endDate != null) {
-            Document dateFilter = new Document();
-            if (startDate != null) {
-                dateFilter.put("$gte", startDate);
-            }
-            if (endDate != null) {
-                dateFilter.put("$lt", endDate);
-
-            }
-            filter.put("date", dateFilter);
-        }
-
-        if (confidenceMin != null || confidenceMax != null) {
-            Document confidenceFilter = new Document();
-            if (confidenceMin != null) {
-                confidenceFilter.put("$gte", confidenceMin);
-            }
-
-            if (confidenceMax != null) {
-                confidenceFilter.put("$lte", confidenceMax);
-
-            }
-            filter.put("confidence", confidenceFilter);
-        }
-
-        if (metadata != null) {
-            for (String key:metadata.keySet()) {
-                filter.put("metadata." + key, metadata.get(key));
-            }
-        }
-
-        List<Document> operatorAndDeviceFilters = new ArrayList<>();
-
-        if (operators != null && !operators.isEmpty()) {
-            operatorAndDeviceFilters.add(getSelectedAgents(operators));
-        }
-
-        if (devices != null && !devices.isEmpty()) {
-            operatorAndDeviceFilters.add(getSelectedAgents(devices));
-        }
-
-        if (!operatorAndDeviceFilters.isEmpty()) {
-            filter.put("$and", operatorAndDeviceFilters);
         }
 
         return filter;
@@ -311,7 +311,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
 
@@ -373,7 +373,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         defaultColumns.add("Provenance URI");
 
         Instant variableTime = Instant.now();
-        LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + variables.size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
 
         // Provides the experiment as context if there is only one
@@ -387,7 +387,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb);
         List<ProvenanceModel> listByURIs = provenanceDao.search(new ProvenanceSearchFilter().setUris(provenances.keySet())).getList();
@@ -395,7 +395,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -403,7 +403,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");    
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
         
         // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
@@ -530,7 +530,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
-            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
                     .header("Content-Disposition", "attachment; filename=" + fileName )
@@ -550,7 +550,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         Map<URI, VariableModel> variables = new HashMap<>();
         Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
-        Map<URI, ExperimentModel> experiments = new HashMap();
+        Map<URI, ExperimentModel> experiments = new HashMap<>();
 
         HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
         for (DataModel dataModel : resultList) {
@@ -577,7 +577,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
 
@@ -603,14 +603,14 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
-        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
         List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), null);
         for (SPARQLNamedResourceModel obj : objectsList) {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb);
 
@@ -619,7 +619,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -627,7 +627,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
 
         // See defaultColumns order
         //        Target

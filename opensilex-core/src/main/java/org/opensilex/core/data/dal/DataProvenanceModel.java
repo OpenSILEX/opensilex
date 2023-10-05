@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ import java.util.Objects;
  * @author Alice Boizet
  */
 @JsonPropertyOrder({"uri", "prov_used", "prov_was_associated_with", "settings"})
-public class DataProvenanceModel {
+public class DataProvenanceModel extends MongoModel {
     @NotNull
     @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
     URI uri;
@@ -45,14 +46,6 @@ public class DataProvenanceModel {
 
     @ApiModelProperty(value = "a key-value system to store specific information")
     Document settings; 
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public List<URI> getExperiments() {
         return experiments;

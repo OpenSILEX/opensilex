@@ -220,7 +220,7 @@ public class DataValidateUtils {
         return parsedDateTimeMongo;
     }
     
-    public static Instant getDateInstant(String date, String timezone, Boolean isEndDate) throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
+    public static Instant getDateInstant(String date, String timezone, boolean isEndDate) throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         Instant instant = null;
         String defaultTimezone = MongoDBService.getDefaultTimeZone();
         

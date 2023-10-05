@@ -1,16 +1,18 @@
 package org.opensilex.core.data.dal;
 
+import org.bson.Document;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
 public class DataSearchFilter extends MongoSearchFilter {
 
-    private String startDate;
+    private Instant startDate;
 
-    private String endDate;
+    private Instant endDate;
 
     private String timezone;
 
@@ -30,22 +32,22 @@ public class DataSearchFilter extends MongoSearchFilter {
 
     private List<URI> operators;
 
-    private String metadata;
+    private Document metadata;
 
-    public String getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public DataSearchFilter setStartDate(String startDate) {
+    public DataSearchFilter setStartDate(Instant startDate) {
         this.startDate = startDate;
         return this;
     }
 
-    public String getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public DataSearchFilter setEndDate(String endDate) {
+    public DataSearchFilter setEndDate(Instant endDate) {
         this.endDate = endDate;
         return this;
     }
@@ -150,11 +152,11 @@ public class DataSearchFilter extends MongoSearchFilter {
         return this;
     }
 
-    public String getMetadata() {
+    public Document getMetadata() {
         return metadata;
     }
 
-    public DataSearchFilter setMetadata(String metadata) {
+    public DataSearchFilter setMetadata(Document metadata) {
         this.metadata = metadata;
         return this;
     }

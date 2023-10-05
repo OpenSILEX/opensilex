@@ -36,7 +36,7 @@ public class DataModel extends MongoModel {
     public static final String DATE_FIELD = "date";
 
 
-    private Boolean isDateTime;
+    private boolean isDateTime;
     
     private String offset;
 
@@ -47,9 +47,14 @@ public class DataModel extends MongoModel {
     
     private List<Object> rawData;
     
-    private Float confidence = null;
+    private Float confidence;
 
-    private Document metadata;  
+    public static final String CONFIDENCE_FIELD = "confidence";
+
+
+    private Document metadata;
+    public static final String METADATA_FIELD = "metadata";
+
 
 
     public URI getTarget() {

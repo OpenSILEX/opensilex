@@ -5,21 +5,13 @@
 This repository contains the docker image for testing the frontend of OpenSILEX with playwright.
 This image is meant to be used on gitlab ci.
 
-## Importing the docker image localy
-
-If you want to test the image localy you can import it with this command :
-
-```sh
-docker import ./dockerimage.tar
-```
-
 ## Making changes/updating the image
 
 To make changes you can update the `Dockerfile`.
 Once the changes are done you can build the image like this :
 
 ```sh
-docker build -t registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests .
+docker build -t registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests ../.. -f Dockerfile
 ```
 
 ## Updating the image used by gitlab ci

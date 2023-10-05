@@ -771,7 +771,7 @@ test:gabriel:deploy:
     - if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
       when: on_success
   needs:
-    - gabriel:front-test
+    - test:gabriel:front-test
 
 
 

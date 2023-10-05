@@ -22,17 +22,14 @@ public abstract class SearchFilter {
 
     protected Collection<URI> includedUris;
     protected Collection<URI> rdfTypes;
-
-
     protected List<OrderBy> orderByList;
     protected Integer page;
     protected Integer pageSize;
 
     @JsonIgnore
     protected String lang;
-
     @JsonIgnore
-    private URI accountURI;
+    protected URI accountURI;
 
     protected SearchFilter() {
         this.lang = OpenSilex.DEFAULT_LANGUAGE;
@@ -113,21 +110,21 @@ public abstract class SearchFilter {
         }
     }
 
-    public URI getAccountURI() {
-        return accountURI;
-    }
-
-    public SearchFilter setAccountURI(URI accountURI) {
-        this.accountURI = accountURI;
-        return this;
-    }
-
     public Collection<URI> getRdfTypes() {
         return rdfTypes;
     }
 
     public SearchFilter setRdfTypes(Collection<URI> rdfTypes) {
         this.rdfTypes = rdfTypes;
+        return this;
+    }
+
+    public URI getAccountURI() {
+        return accountURI;
+    }
+
+    public SearchFilter setAccountURI(URI accountURI) {
+        this.accountURI = accountURI;
         return this;
     }
 }

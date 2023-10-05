@@ -41,20 +41,20 @@ public class DataFileDAO extends MongoReadWriteDao<DataFileModel, DataFileSearch
     }
 
     @Override
-    public List<Bson> getBsonFilters(DataFileSearchFilter filter) {
+    public List<Bson> getBsonFilters(DataFileSearchFilter searchQuery) {
 
         // Delegate data filters on the DataDao
         // Then add DataFile specific filters
-        List<Bson> filters = dataDAO.getBsonFilters(filter);
+        List<Bson> filters = dataDAO.getBsonFilters(searchQuery);
 
-        if (!StringUtils.isEmpty(filter.getPath())) {
-            filters.add(Filters.eq(DataFileModel.PATH_FIELD, filter.getPath()));
+        if (!StringUtils.isEmpty(searchQuery.getPath())) {
+            filters.add(Filters.eq(DataFileModel.PATH_FIELD, searchQuery.getPath()));
         }
-        if (!StringUtils.isEmpty(filter.getFilename())) {
-            filters.add(Filters.eq(DataFileModel.FILENAME_FIELD, filter.getFilename()));
+        if (!StringUtils.isEmpty(searchQuery.getFilename())) {
+            filters.add(Filters.eq(DataFileModel.FILENAME_FIELD, searchQuery.getFilename()));
         }
-        if (filter.getArchive() != null) {
-            filters.add(Filters.eq(DataFileModel.ARCHIVE_FIELD, filter.getArchive()));
+        if (searchQuery.getArchive() != null) {
+            filters.add(Filters.eq(DataFileModel.ARCHIVE_FIELD, searchQuery.getArchive()));
         }
         return filters;
     }

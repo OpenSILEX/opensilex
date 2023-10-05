@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- *
  * @author sammy
  */
 public class DataModel extends MongoModel {
@@ -27,26 +26,25 @@ public class DataModel extends MongoModel {
 
     private URI variable;
     public static final String VARIABLE_FIELD = "variable";
-    
+
     private DataProvenanceModel provenance;
     public static final String PROVENANCE_FIELD = "provenance";
-
 
     private Instant date;
     public static final String DATE_FIELD = "date";
 
 
     private boolean isDateTime;
-    
+
     private String offset;
 
     public static final String IS_VALUE_DATE_FIELD = "isValueDate";
 
     private Object value;
     public static final String VALUE_FIELD = "value";
-    
+
     private List<Object> rawData;
-    
+
     private Float confidence;
 
     public static final String CONFIDENCE_FIELD = "confidence";
@@ -54,7 +52,6 @@ public class DataModel extends MongoModel {
 
     private Document metadata;
     public static final String METADATA_FIELD = "metadata";
-
 
 
     public URI getTarget() {
@@ -96,7 +93,7 @@ public class DataModel extends MongoModel {
     public void setIsDateTime(Boolean isDateTime) {
         this.isDateTime = isDateTime;
     }
-    
+
     public String getOffset() {
         return offset;
     }
@@ -136,12 +133,12 @@ public class DataModel extends MongoModel {
     public void setMetadata(Document metadata) {
         this.metadata = metadata;
     }
-           
+
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };
-    } 
+    }
 
 }

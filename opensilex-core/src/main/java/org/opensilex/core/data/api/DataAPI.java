@@ -26,6 +26,7 @@ import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.service.DataService;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
@@ -1116,9 +1117,17 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
-        
-        DataDAO dataDAO = new DataDAO(mongodb, sparql, null);
-        List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances, devices);
+
+        DataService service = new DataService(sparql,mongodb);
+
+        // Build data filter
+        DataSearchFilter dataFilter = new DataSearchFilter()
+                .setExperiments(experiments)
+                .setTargets(objects)
+                .setDevices(devices);
+        dataFilter.setAccountURI(user.getUri());
+
+        List<VariableModel> variables = service.getUsedVariables(dataFilter, user.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

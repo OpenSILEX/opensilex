@@ -42,29 +42,29 @@ public class ProvenanceDAO extends MongoReadWriteDao<ProvenanceModel,ProvenanceS
     }
 
     @Override
-    public List<Bson> getBsonFilters(ProvenanceSearchFilter filter) {
-        List<Bson> filters = super.getBsonFilters(filter);
+    public List<Bson> getBsonFilters(ProvenanceSearchFilter searchQuery) {
+        List<Bson> filters = super.getBsonFilters(searchQuery);
 
-        if (!CollectionUtils.isEmpty(filter.getUris())) {
-            filters.add(Filters.in(MongoModel.URI_FIELD, filter.getUris()));
+        if (!CollectionUtils.isEmpty(searchQuery.getUris())) {
+            filters.add(Filters.in(MongoModel.URI_FIELD, searchQuery.getUris()));
         }
-        if(!StringUtils.isEmpty(filter.getName())){
-            filters.add(Filters.regex(ProvenanceModel.NAME_FIELD, ".*" + filter.getName() + ".*", "i"));
+        if(!StringUtils.isEmpty(searchQuery.getName())){
+            filters.add(Filters.regex(ProvenanceModel.NAME_FIELD, ".*" + searchQuery.getName() + ".*", "i"));
         }
-        if(!StringUtils.isEmpty(filter.getDescription())){
-            filters.add(Filters.regex(ProvenanceModel.NAME_FIELD, ".*" + filter.getDescription() + ".*", "i"));
+        if(!StringUtils.isEmpty(searchQuery.getDescription())){
+            filters.add(Filters.regex(ProvenanceModel.NAME_FIELD, ".*" + searchQuery.getDescription() + ".*", "i"));
         }
-        if(filter.getActivityUri() != null){
-            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.URI_FIELD, filter.getActivityUri()));
+        if(searchQuery.getActivityUri() != null){
+            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.URI_FIELD, searchQuery.getActivityUri()));
         }
-        if(filter.getActivityType() != null){
-            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.TYPE_FIELD, filter.getActivityType()));
+        if(searchQuery.getActivityType() != null){
+            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.TYPE_FIELD, searchQuery.getActivityType()));
         }
-        if(! CollectionUtils.isEmpty(filter.getAgents())){
-            filters.add(Filters.in(ProvenanceModel.AGENTS_FIELD+"."+ActivityModel.URI_FIELD, filter.getAgents()));
+        if(! CollectionUtils.isEmpty(searchQuery.getAgents())){
+            filters.add(Filters.in(ProvenanceModel.AGENTS_FIELD+"."+ActivityModel.URI_FIELD, searchQuery.getAgents()));
         }
-        if(filter.getAgentType() != null){
-            filters.add(Filters.eq(ProvenanceModel.AGENTS_FIELD+"."+AgentModel.TYPE_FIELD, filter.getAgentType()));
+        if(searchQuery.getAgentType() != null){
+            filters.add(Filters.eq(ProvenanceModel.AGENTS_FIELD+"."+AgentModel.TYPE_FIELD, searchQuery.getAgentType()));
         }
         return filters;
     }

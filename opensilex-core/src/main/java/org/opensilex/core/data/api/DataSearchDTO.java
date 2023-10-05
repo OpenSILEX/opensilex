@@ -13,7 +13,7 @@ import java.net.URI;
 import java.util.List;
 
 @JsonPropertyOrder({"start_date", "end_date","timezone", "experiments", "objects", "variables", "devices", "provenances", "min_confidence", "max_confidence","metadata","mode","with_raw_data","order_by"})
-public class DataSearchDTO extends MongoSearchFilter {
+public class DataSearchDTO {
 
     @ApiModelProperty(value = "start date" ,example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
     @JsonProperty("start_date")

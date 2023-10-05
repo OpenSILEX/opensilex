@@ -131,6 +131,9 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      */
     Set<URI> distinctUris(ClientSession session, F filter) throws MongoException;
 
+    Set<URI> distinctUris(F filter) throws MongoException;
+
+
     /**
      * Get distinct values for a specific field based on the provided filter within a client session.
      *
@@ -176,4 +179,5 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
             Function<T_JOINED, T_RESULT> convertFunction,
             ClientSession session
     );
+
 }

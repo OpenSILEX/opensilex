@@ -19,6 +19,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
@@ -78,13 +79,13 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     protected final DataDAO dataDAO;
 
-    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) throws URISyntaxException {
+    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         super(VariableModel.class, sparql);
         this.dataDAO = new DataDAO(nosql, sparql, fs);
     }
 
     public void delete(URI uri) throws Exception {
-        int linkedDataNb = getLinkedDataNb(uri);
+        long linkedDataNb = getLinkedDataNb(uri);
         if (linkedDataNb > 0) {
             throw new ForbiddenURIAccessException(uri, "Variable can't be deleted. " + linkedDataNb + " linked data");
         }
@@ -106,8 +107,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         sparql.executeDeleteQuery(delete);
     }
 
-    protected int getLinkedDataNb(URI uri) throws Exception {
-        return dataDAO.count(null, null, null, Collections.singletonList(uri), null, null, null, null, null, null, null, null);
+    protected long getLinkedDataNb(URI uri) throws Exception {
+        return dataDAO.count(new DataSearchFilter().setVariables(uri));
     }
 
     @Override
@@ -120,7 +121,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         // if the datatype has changed, check that they are no linked data
         if (!SPARQLDeserializers.compareURIs(oldInstance.getDataType(), instance.getDataType())) {
-            int linkedDataNb = getLinkedDataNb(instance.getUri());
+            long linkedDataNb = getLinkedDataNb(instance.getUri());
             if (linkedDataNb > 0) {
                 throw new ForbiddenURIAccessException(instance.getUri(), "Variable datatype can't be updated. " + linkedDataNb + " linked data");
             }
@@ -191,12 +192,25 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
-        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
+        // Build data filter
+        DataSearchFilter dataFilter = new DataSearchFilter()
+                .setExperiments(filter.getExperiments())
+                .setTargets(filter.getObjects())
+                .setDevices(filter.getDevices());
+        dataFilter.setAccountURI(filter.getUserModel().getUri());
+
+
+        // Filter variables according linked data
+        final Set<URI> variableUriList = filter.isWithAssociatedData() ?
+                null :
+                dataDAO.getUsedVariablesByExpeSoDevice(dataFilter, null);
+
         if(variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
+            return new ListWithPagination<>(dataDAO.getUsedVariables(dataFilter, filter.getLang()));
         }
         filter.setIncludedUris(variableUriList);
 
+        // sparql search
         Map<Expr, Order> orderByExprMap = new HashMap<>();
         List<OrderBy> newOrderByList = new LinkedList<>();
         appendSpecificOrderBy(filter.getOrderByList(), orderByExprMap, newOrderByList);

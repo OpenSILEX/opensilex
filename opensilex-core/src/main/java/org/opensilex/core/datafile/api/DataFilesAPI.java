@@ -270,7 +270,7 @@ public class DataFilesAPI {
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setAccountURI(user.getUri());
         filter.setDevices(devices);
-        filter.setObjects(targets);
+        filter.setTargets(targets);
 
         return new SingleObjectResponse<>(dao.count(filter)).getResponse();
     }
@@ -551,7 +551,7 @@ public class DataFilesAPI {
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setRdfTypes(rdfTypes);
         filter.setExperiments(experiments);
-        filter.setObjects(targets);
+        filter.setTargets(targets);
         filter.setProvenances(provenances);
 //        filter.setStartDate(startDate);
 //        filter.setEndDate(endDate);
@@ -699,7 +699,7 @@ public class DataFilesAPI {
 
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setExperiments(experiments)
-                .setObjects(targets)
+                .setTargets(targets)
                 .setDevices(devices)
                 .setAccountURI(user.getUri());
 

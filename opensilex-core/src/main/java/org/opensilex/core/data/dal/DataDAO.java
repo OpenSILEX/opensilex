@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.*;
 import com.opencsv.CSVWriter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,14 +41,11 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -55,8 +53,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opensilex.core.data.dal.DataModel.*;
+
 /**
- *
  * @author rcolin
  */
 public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
@@ -66,16 +65,13 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     protected final SPARQLService sparql;
     protected final FileStorageService fs;
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
 
-    private static final String DATA_PROVENANCE_URI_FIELD =   DataModel.PROVENANCE_FIELD + "." + DataProvenanceModel.URI_FIELD;
+    public static final String PROVENANCE_URI_FIELD = PROVENANCE_FIELD + "." + DataProvenanceModel.URI_FIELD;
+    public static final String PROVENANCE_AGENTS_FIELD = PROVENANCE_FIELD + "." + DataProvenanceModel.PROV_WAS_ASSOCIATED_FIELD;
+    public static final String PROVENANCE_AGENTS_URI_FIELD = PROVENANCE_AGENTS_FIELD + "." + ProvEntityModel.URI_FIELD;
 
-    private static final String DATA_PROVENANCE_AGENTS_FIELD = DataModel.PROVENANCE_FIELD + "."+ DataProvenanceModel.PROV_WAS_ASSOCIATED_FIELD;
-
-    private static final String DATA_PROVENANCE_AGENTS_URI_FIELD =  DATA_PROVENANCE_AGENTS_FIELD + "." + ProvEntityModel.URI_FIELD;
-
-    public DataDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
-        super(mongodb,DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
+    public DataDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) {
+        super(mongodb, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         this.sparql = sparql;
         this.fs = fs;
     }
@@ -85,14 +81,29 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
         collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
-        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
         collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD));
-        collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending(DataModel.DATE_FIELD))));
+        collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD), Indexes.descending(DataModel.DATE_FIELD))));
         collection.createIndex(Indexes.descending(DataModel.DATE_FIELD));
 
     }
 
-    private Bson getSelectedAgents(List<URI> agents){
+    /**
+     *
+     * @param searchQuery
+     * @return
+     */
+    private Bson getSelectedAgents(DataSearchFilter searchQuery) {
+
+        // Group the two agents types (devices+operations) in the same filter
+        // During search, if the document d match
+        List<URI> agents = new LinkedList<>();
+        if (!CollectionUtils.isEmpty(searchQuery.getOperators())) {
+            agents.addAll(searchQuery.getOperators());
+        }
+        if (!CollectionUtils.isEmpty(searchQuery.getDevices())) {
+            agents.addAll(searchQuery.getDevices());
+        }
 
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
@@ -101,85 +112,60 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         Set<URI> agentProvenances = provDAO.distinctUris(null, new ProvenanceSearchFilter().setAgents(agents));
 
         return Filters.or(
-                Filters.in(
-                        DATA_PROVENANCE_AGENTS_URI_FIELD, agents),
+                Filters.in(PROVENANCE_AGENTS_URI_FIELD, agents),
                 Filters.and(
-                        Filters.in("provenance.uri", agentProvenances),
+                        Filters.in(PROVENANCE_URI_FIELD, agentProvenances),
                         Filters.or(
-                              Filters.exists(DATA_PROVENANCE_AGENTS_FIELD, false),
-                              Filters.eq(DATA_PROVENANCE_AGENTS_FIELD,Collections.emptyList())
+                                Filters.exists(PROVENANCE_AGENTS_FIELD, false),
+                                Filters.eq(PROVENANCE_AGENTS_FIELD, Collections.emptyList())
                         )
                 )
         );
-
-//        Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
-//
-//        Document globalProvUsed = new Document("provenance.uri", new Document("$in", agentProvenances));
-//        globalProvUsed.put("$or", Arrays.asList(
-//                new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
-//                new Document("provenance.provWasAssociatedWith", new ArrayList<>())
-//            )
-//        );
-//
-//        return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
 
     @Override
-    public List<Bson> getBsonFilters(DataSearchFilter filter) {
-        List<Bson> bsonFilters =  super.getBsonFilters(filter);
+    public List<Bson> getBsonFilters(DataSearchFilter searchQuery) {
+        List<Bson> bsonFilters = super.getBsonFilters(searchQuery);
 
-        if(!CollectionUtils.isEmpty(filter.getTargets())){
-            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD,filter.getTargets()));
+        if (!CollectionUtils.isEmpty(searchQuery.getTargets())) {
+            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD, searchQuery.getTargets()));
         }
-        if(!CollectionUtils.isEmpty(filter.getVariables())){
-            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD,filter.getVariables()));
+        if (!CollectionUtils.isEmpty(searchQuery.getVariables())) {
+            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD, searchQuery.getVariables()));
         }
-        if(!CollectionUtils.isEmpty(filter.getProvenances())){
-            bsonFilters.add(Filters.in(DataModel.PROVENANCE_FIELD,filter.getProvenances()));
-        }
-        if(!CollectionUtils.isEmpty(filter.getTargets())){
-            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD,filter.getTargets()));
+        if (!CollectionUtils.isEmpty(searchQuery.getProvenances())) {
+            bsonFilters.add(Filters.in(PROVENANCE_FIELD, searchQuery.getProvenances()));
         }
 
-        if (filter.getStartDate() != null) {
-            bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, filter.getStartDate()));
+        if (searchQuery.getStartDate() != null) {
+            bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, searchQuery.getStartDate()));
         }
-        if (filter.getEndDate() != null) {
-            bsonFilters.add(Filters.lt(DataModel.DATE_FIELD, filter.getEndDate()));
+        if (searchQuery.getEndDate() != null) {
+            bsonFilters.add(Filters.lt(DataModel.DATE_FIELD, searchQuery.getEndDate()));
         }
 
-        if (filter.getConfidenceMin() != null) {
-            bsonFilters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, filter.getStartDate()));
+        if (searchQuery.getConfidenceMin() != null) {
+            bsonFilters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, searchQuery.getStartDate()));
         }
-        if (filter.getConfidenceMax() != null) {
-            bsonFilters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, filter.getEndDate()));
+        if (searchQuery.getConfidenceMax() != null) {
+            bsonFilters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, searchQuery.getEndDate()));
         }
-        if(filter.getMetadata() != null){
-            filter.getMetadata().forEach((key,value) -> {
+        if (searchQuery.getMetadata() != null) {
+            searchQuery.getMetadata().forEach((key, value) -> {
                 bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + key, value));
             });
         }
-        List<URI> agents = new LinkedList<>();
-        if(! CollectionUtils.isEmpty(filter.getOperators())){
-            agents.addAll(filter.getOperators());
-        }
-        if(! CollectionUtils.isEmpty(filter.getDevices())){
-            agents.addAll(filter.getDevices());
-        }
-        if(! agents.isEmpty()){
-            bsonFilters.add(getSelectedAgents(agents));
-        }
-
         return bsonFilters;
     }
+
 
     public Document searchFilter(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata, List<URI> operators) throws Exception {
 
         Document filter = new Document();
 
         // handle case some case in which some service/dao must have access to data collection, even if the user don't have direct access to xp
-        if(user != null){
+        if (user != null) {
             appendExperimentUserAccessFilter(filter, user, experiments);
         }
 
@@ -188,39 +174,39 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     public void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments) throws Exception {
         String experimentField = "provenance.experiments";
-        
+
         //user access
         if (!user.isAdmin()) {
             ExperimentDAO expDAO = new ExperimentDAO(sparql, mongodb);
-            Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
+            Set<URI> userExperiments = expDAO.getUserExperiments(user);
 
             if (experiments != null && !experiments.isEmpty()) {
-                
+
                 //Transform experiments and userExperiments in long format to compare the two lists
                 Set<URI> longUserExp = new HashSet<>();
-                for (URI exp:userExperiments) {
+                for (URI exp : userExperiments) {
                     longUserExp.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
-                }                
-                Set <URI> longExpURIs = new HashSet<>();
-                for (URI exp:experiments) {
+                }
+                Set<URI> longExpURIs = new HashSet<>();
+                for (URI exp : experiments) {
                     longExpURIs.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
                 }
                 longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
-                
+
                 if (longExpURIs.isEmpty()) {
                     throw new Exception("you can't access to the given experiments");
                 } else {
-                    Document inFilter = new Document(); 
+                    Document inFilter = new Document();
                     inFilter.put("$in", longExpURIs);
                     filter.put("provenance.experiments", inFilter);
                 }
             } else {
-                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));                
+                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));
                 Document notExistingExpFilter = new Document(experimentField, new Document("$exists", false));
-                Document emptyExpFilter = new Document(experimentField, new ArrayList());                
+                Document emptyExpFilter = new Document(experimentField, new ArrayList());
                 List<Document> expFilter = Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter);
-             
-                filter.put("$or", expFilter);  
+
+                filter.put("$or", expFilter);
             }
         } else {
             if (experiments != null && !experiments.isEmpty()) {
@@ -231,23 +217,10 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
     }
 
-    public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
-        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null, null);
-        Set<URI> variableURIs = mongodb.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        String userLanguage = null;
-        if(user != null){
-            userLanguage = user.getLanguage();
-        }
-        // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,mongodb,fs).getList(new ArrayList<>(variableURIs), userLanguage);
+    public Set<URI> getUsedVariablesByExpeSoDevice(DataSearchFilter filter, ClientSession session) throws Exception {
+       return distinct(DataModel.VARIABLE_FIELD, URI.class, filter, session);
     }
 
-    public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
-        Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = mongodb.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        return variableURIs;
-    }
-    
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, AccountModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
@@ -259,12 +232,12 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
         Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
         Map<URI, ExperimentModel> experiments = new HashMap();
-        
+
         for (DataModel dataModel : resultList) {
             if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
                 objects.put(dataModel.getTarget(), null);
             }
-            
+
             if (!variables.contains(dataModel.getVariable())) {
                 variables.add(dataModel.getVariable());
             }
@@ -272,42 +245,42 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
                 provenances.put(dataModel.getProvenance().getUri(), null);
             }
-            
+
             if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
                 dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
             }
-            
+
             if (dataModel.getProvenance().getExperiments() != null) {
-                for (URI exp:dataModel.getProvenance().getExperiments()) {           
+                for (URI exp : dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
                         experiments.put(exp, null);
                     }
-                    
+
                     ExportDataIndex exportDataIndex = new ExportDataIndex(
                             exp,
-                            dataModel.getProvenance().getUri(), 
+                            dataModel.getProvenance().getUri(),
                             dataModel.getTarget()
                     );
 
                     if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                         dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
-                    } 
+                    }
                     dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
-                }                
+                }
             } else {
                 ExportDataIndex exportDataIndex = new ExportDataIndex(
-                                null,
-                                dataModel.getProvenance().getUri(), 
-                                dataModel.getTarget()
-                        );
-                    
+                        null,
+                        dataModel.getProvenance().getUri(),
+                        dataModel.getTarget()
+                );
+
                 if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
-                        dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
-                    } 
+                    dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                }
                 dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null, dateVariables));
 
             }
-            
+
         }
 
         Instant dataTransform = Instant.now();
@@ -317,7 +290,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         // first static columns
 
-        defaultColumns.add("Experiment");        
+        defaultColumns.add("Experiment");
         defaultColumns.add("Target");
         defaultColumns.add("Date");
 
@@ -337,7 +310,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,mongodb,fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, fs).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -404,7 +377,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
         Instant expTime = Instant.now();
         LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
-        
+
         // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
             // Method
@@ -423,14 +396,14 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                 Map<ExportDataIndex, List<DataExportDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
                 // Search in map indexed by  prov and data
                 for (Map.Entry<ExportDataIndex, List<DataExportDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
-                    List<DataExportDTO> val = provUriObjectEntry.getValue();             
+                    List<DataExportDTO> val = provUriObjectEntry.getValue();
 
                     ArrayList<String> csvRow = new ArrayList<>();
                     //first is used to have value with the same dates on the same line
                     boolean first = true;
 
                     for (DataExportDTO dataGetDTO : val) {
-                                            
+
 
                         if (first) {
 
@@ -440,29 +413,29 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                             ExperimentModel experiment = null;
                             if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
                                 experiment = experiments.get(dataGetDTO.getExperiment());
-                            } 
+                            }
 
                             if (experiment != null) {
                                 csvRow.add(experiment.getName());
-                            } else {                        
+                            } else {
                                 csvRow.add("");
-                            }                            
+                            }
 
                             // target
                             SPARQLNamedResourceModel target = null;
-                            if(dataGetDTO.getTarget() != null){
-                               target = objects.get(dataGetDTO.getTarget());
+                            if (dataGetDTO.getTarget() != null) {
+                                target = objects.get(dataGetDTO.getTarget());
                             }
 
-                            if(target != null){
+                            if (target != null) {
                                 csvRow.add(target.getName());
-                            }else{
+                            } else {
                                 csvRow.add("");
                             }
 
                             // date
                             csvRow.add(dataGetDTO.getDate());
-                            
+
                             // write blank columns for value and rawData
                             for (int i = 0; i < variables.size(); i++) {
                                 csvRow.add("");
@@ -476,19 +449,19 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                                 csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
                             } else {
                                 csvRow.add("");
-                            }                            
+                            }
 
                             // experiment URI
                             if (experiment != null) {
                                 csvRow.add(experiment.getUri().toString());
-                            } else {                        
+                            } else {
                                 csvRow.add("");
                             }
 
                             // target URI
-                             if(target != null){
+                            if (target != null) {
                                 csvRow.add(target.getUri().toString());
-                            }else{
+                            } else {
                                 csvRow.add("");
                             }
 
@@ -501,30 +474,30 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                         URI dataGetDTOVariable = URI.create(SPARQLDeserializers.getExpandedURI(dataGetDTO.getVariable()));
 
                         // value
-                        if (dataGetDTO.getValue() == null){
+                        if (dataGetDTO.getValue() == null) {
                             csvRow.set(variableUriIndex.get(dataGetDTOVariable), null);
                         } else {
                             csvRow.set(variableUriIndex.get(dataGetDTOVariable), dataGetDTO.getValue().toString());
                         }
-                        
+
                         // raw data
                         if (withRawData) {
-                            if (dataGetDTO.getRawData() == null){
-                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, null);
+                            if (dataGetDTO.getRawData() == null) {
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable) + 1, null);
                             } else {
-                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
-                            } 
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable) + 1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                            }
                         }
-                        
+
                     }
-                    
+
 
                     String[] row = csvRow.toArray(new String[csvRow.size()]);
-                    writer.writeNext(row);                        
-                    
+                    writer.writeNext(row);
+
                 }
             }
-            
+
             LocalDate date = LocalDate.now();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
             String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
@@ -533,7 +506,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
-                    .header("Content-Disposition", "attachment; filename=" + fileName )
+                    .header("Content-Disposition", "attachment; filename=" + fileName)
                     .build();
 
         } catch (Exception e) {
@@ -565,14 +538,14 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             }
             if (!dataByInstant.containsKey(dataModel.getDate())) {
                 dataByInstant.put(dataModel.getDate(), new ArrayList<>());
-            }                        
+            }
             dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel, dateVariables));
             if (dataModel.getProvenance().getExperiments() != null) {
-                for (URI exp:dataModel.getProvenance().getExperiments()) {
+                for (URI exp : dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
                         experiments.put(exp, null);
                     }
-                }                
+                }
             }
         }
 
@@ -581,7 +554,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         List<String> defaultColumns = new ArrayList<>();
 
-        defaultColumns.add("Experiment"); 
+        defaultColumns.add("Experiment");
         defaultColumns.add("Target");
         defaultColumns.add("Date");
         defaultColumns.add("Variable");
@@ -590,16 +563,16 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         defaultColumns.add("Value");
         if (withRawData) {
             defaultColumns.add("Raw data");
-        }        
+        }
         defaultColumns.add("Data Description");
         defaultColumns.add("");
-        defaultColumns.add("Experiment URI"); 
+        defaultColumns.add("Experiment URI");
         defaultColumns.add("Target URI");
         defaultColumns.add("Variable URI");
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,mongodb,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, fs).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
@@ -646,35 +619,35 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             for (Map.Entry<Instant, List<DataGetDTO>> entry : dataByInstant.entrySet()) {
                 List<DataGetDTO> val = entry.getValue();
                 for (DataGetDTO dataGetDTO : val) {
-                    
+
                     //1 row per experiment 
                     int maxRows = 1;
-                    if (dataGetDTO.getProvenance().getExperiments() != null && dataGetDTO.getProvenance().getExperiments().size()>1) {
+                    if (dataGetDTO.getProvenance().getExperiments() != null && dataGetDTO.getProvenance().getExperiments().size() > 1) {
                         maxRows = dataGetDTO.getProvenance().getExperiments().size();
                     }
 
-                    for (int j=0; j<maxRows; j++) {
+                    for (int j = 0; j < maxRows; j++) {
                         ArrayList<String> csvRow = new ArrayList<>();
                         // experiment
                         ExperimentModel experiment = null;
                         if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
                             experiment = experiments.get(dataGetDTO.getProvenance().getExperiments().get(j));
-                        } 
+                        }
 
                         if (experiment != null) {
                             csvRow.add(experiment.getName());
-                        } else {                        
+                        } else {
                             csvRow.add("");
-                        }            
-                    
+                        }
+
                         SPARQLNamedResourceModel target = null;
-                        if(dataGetDTO.getTarget() != null){
-                           target = objects.get(dataGetDTO.getTarget());
+                        if (dataGetDTO.getTarget() != null) {
+                            target = objects.get(dataGetDTO.getTarget());
                         }
                         // target name
-                        if(target != null){
+                        if (target != null) {
                             csvRow.add(target.getName());
-                        }else{
+                        } else {
                             csvRow.add("");
                         }
 
@@ -691,17 +664,17 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                         // unit
                         csvRow.add(variables.get(dataGetDTO.getVariable()).getUnit().getName());
                         // value
-                        if(dataGetDTO.getValue() == null){
+                        if (dataGetDTO.getValue() == null) {
                             csvRow.add(null);
-                        }else{
+                        } else {
                             csvRow.add(dataGetDTO.getValue().toString());
                         }
-                        
+
                         // rawData
                         if (withRawData) {
-                            if(dataGetDTO.getRawData() == null){
+                            if (dataGetDTO.getRawData() == null) {
                                 csvRow.add(null);
-                            }else{
+                            } else {
                                 csvRow.add(Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
                             }
                         }
@@ -713,11 +686,11 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                             csvRow.add("");
                         }
                         csvRow.add("");
-                    
+
                         // experiment URI
                         if (experiment != null) {
                             csvRow.add(experiment.getUri().toString());
-                        } else {                        
+                        } else {
                             csvRow.add("");
                         }
 
@@ -806,9 +779,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     /**
      * Retrieve median per hour data series
-     * @details
-     *  data are collected and grouped by [target, variable, provenance].
-     *  The median per hour is then computed for each data series
+     *
      * @param user
      * @param target
      * @param variable
@@ -816,12 +787,14 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
      * @param endDate
      * @return a list of median values
      * @throws Exception
+     * @details data are collected and grouped by [target, variable, provenance].
+     * The median per hour is then computed for each data series
      */
     public List<DataComputedModel> computeAllMediansPerHour(AccountModel user,
-                                                   URI target,
-                                                   URI variable,
-                                                   Instant startDate,
-                                                   Instant endDate) throws Exception {
+                                                            URI target,
+                                                            URI variable,
+                                                            Instant startDate,
+                                                            Instant endDate) throws Exception {
 
         List<Bson> aggregations = new ArrayList<>();
 
@@ -981,6 +954,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     /**
      * Compute the daily average from data
+     *
      * @param user
      * @param target
      * @param variable
@@ -990,10 +964,10 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
      * @throws Exception
      */
     public List<DataComputedModel> computeAllMeanPerDay(AccountModel user,
-                                                            URI target,
-                                                            URI variable,
-                                                            Instant startDate,
-                                                            Instant endDate) throws Exception {
+                                                        URI target,
+                                                        URI variable,
+                                                        Instant startDate,
+                                                        Instant endDate) throws Exception {
 
         List<Bson> aggregations = new ArrayList<>();
 
@@ -1081,7 +1055,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     /**
      * Return the last data stored in the system
-     * @details In the case there are multiple last data, keep only the first returned
+     *
      * @param user
      * @param experiments
      * @param targets
@@ -1096,19 +1070,20 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
      * @param operators
      * @return the last data
      * @throws Exception
+     * @details In the case there are multiple last data, keep only the first returned
      */
     public DataComputedGetDTO getLastDataFound(AccountModel user,
-                                             List<URI> experiments,
-                                             List<URI> targets,
-                                             List<URI> variables,
-                                             List<URI> provenances,
-                                             List<URI> devices,
-                                             Instant startDate,
-                                             Instant endDate,
-                                             Float confidenceMin,
-                                             Float confidenceMax,
-                                             Document metadata,
-                                             List<URI> operators) throws Exception {
+                                               List<URI> experiments,
+                                               List<URI> targets,
+                                               List<URI> variables,
+                                               List<URI> provenances,
+                                               List<URI> devices,
+                                               Instant startDate,
+                                               Instant endDate,
+                                               Float confidenceMin,
+                                               Float confidenceMax,
+                                               Document metadata,
+                                               List<URI> operators) throws Exception {
 
         List<Bson> aggregations = new ArrayList<>();
 

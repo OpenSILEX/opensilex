@@ -11,6 +11,7 @@ public class MongoSearchFilter extends SearchFilter {
     URI uri;
 
     boolean logicalAnd;
+
     public static final boolean LOGICAL_AND_FOR_FILTERS_BY_DEFAULT = true;
 
     public MongoSearchFilter(){

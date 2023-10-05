@@ -14,6 +14,8 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,12 +27,14 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     protected final MongoDBService mongodb;
     protected final MongoCollection<T> collection;
     protected final String createPrefix;
+    protected final Logger LOGGER;
 
     protected MongoReadWriteDao(MongoDBService mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
-        this.collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
+        collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
         this.createPrefix = createPrefix;
+        LOGGER = LoggerFactory.getLogger(getClass());
     }
 
     protected void createIndexes() {
@@ -122,7 +126,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
 
     @Override
     public DeleteResult delete(URI uri) throws MongoException {
-        return delete(uri,null);
+        return delete(uri, null);
     }
 
 
@@ -132,7 +136,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public long count(F filter) throws MongoException {
+    public final long count(F filter) throws MongoException {
         return count(null, filter);
     }
 
@@ -141,7 +145,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         return mongodb.count(session, collection, filterToBson(filter));
     }
 
-    public ListWithPagination<T> search(F filter) throws MongoException {
+    public final ListWithPagination<T> search(F filter) throws MongoException {
         return search(null, filter, null);
     }
 
@@ -166,28 +170,25 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(
                 collection,
                 filterToBson(filter),
-                null,
+                projection,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize(),
                 session
         );
-
-        if (resultAndCount != null) {
-            int resultCount = resultAndCount.getValue().intValue();
-
-            // iterate over MongoDB result and convert result on the fly before collect them inside a List
-            List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
-            resultAndCount.getKey().forEach(mongoResult ->
-                convertedResults.add(convertFunction.apply(mongoResult)
-            ));
-
-            return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
+        if (resultAndCount == null) {
+            return new ListWithPagination<>(Collections.emptyList());
         }
-        return new ListWithPagination<>(Collections.emptyList());
+
+        // iterate over MongoDB result and convert result on the fly before collect them inside a List
+        int resultCount = resultAndCount.getValue().intValue();
+        List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
+        resultAndCount.getKey().forEach(mongoResult -> convertedResults.add(convertFunction.apply(mongoResult)));
+
+        return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
     }
 
-    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
+    public final <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
         return search(null, filter, null, convertFunction);
     }
 
@@ -205,6 +206,11 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         );
     }
 
+    @Override
+    public Set<URI> distinctUris(F filter) throws MongoException {
+        return distinctUris(null, filter);
+    }
+
     protected Bson getIdFilter(URI id) {
         return Filters.eq(idField(), id);
     }
@@ -214,17 +220,17 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
 
-    public List<Bson> getBsonFilters(F searchFilter) {
+    public List<Bson> getBsonFilters(F searchQuery) {
         List<Bson> filters = new ArrayList<>();
 
-        if (searchFilter.getUri() != null) {
-            filters.add(getIdFilter(searchFilter.getUri()));
+        if (searchQuery.getUri() != null) {
+            filters.add(getIdFilter(searchQuery.getUri()));
         }
-        if(!CollectionUtils.isEmpty(searchFilter.getIncludedUris())){
-            filters.add(Filters.in(idField(), searchFilter.getIncludedUris()));
+        if (!CollectionUtils.isEmpty(searchQuery.getIncludedUris())) {
+            filters.add(Filters.in(idField(), searchQuery.getIncludedUris()));
         }
-        if(!CollectionUtils.isEmpty(searchFilter.getRdfTypes())){
-            filters.add(Filters.in(MongoModel.TYPE_FIELD, searchFilter.getRdfTypes()));
+        if (!CollectionUtils.isEmpty(searchQuery.getRdfTypes())) {
+            filters.add(Filters.in(MongoModel.TYPE_FIELD, searchQuery.getRdfTypes()));
         }
 
         return filters;
@@ -259,7 +265,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         return mongodb.distinctWithPagination(
                 collection,
                 field,
-                document -> document.get(field,resultClass),
+                document -> document.get(field, resultClass),
                 filterToBson(filter),
                 filter.getOrderByList(),
                 filter.getPage(),
@@ -282,5 +288,4 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
                 session
         );
     }
-
 }

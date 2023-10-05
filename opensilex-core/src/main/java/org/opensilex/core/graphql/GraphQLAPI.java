@@ -8,6 +8,7 @@
  ******************************************************************************/
 package org.opensilex.core.graphql;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -28,11 +29,16 @@ import org.opensilex.core.device.dal.DeviceAttributeModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -119,15 +125,23 @@ public class GraphQLAPI {
         TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schemaFile);
 
         // Chercher en bdd
+        GeospatialDAO geoDAO = new GeospatialDAO(mongo);
+        ObjectMapper objectMapper = new ObjectMapper();
         RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
                 .type("Query", typeWiring -> typeWiring
                         .dataFetcher("hello", new StaticDataFetcher("world"))
                         .dataFetcher("experiments", environment -> sparql.search(ExperimentModel.class, "en"))
+                        .dataFetcher("factorLevels", environment -> sparql.search(FactorLevelModel.class, "en"))
                         .dataFetcher("provenances", environment -> mongo.search(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new Document(), null))
                         .dataFetcher("deviceAttributes", environment -> mongo.search(DeviceAttributeModel.class, DeviceDAO.ATTRIBUTES_COLLECTION_NAME, new Document(), null))
+                        .dataFetcher("scientificObjects", environment -> sparql.search(SPARQLDeserializers.nodeURI(new URI("dev:id/experiment/sa_expe")),ScientificObjectModel.class, "en", null, null,null,null,0,environment.getArgument("limit")))
                 )
                 .type("DeviceAttribute", typeWiring -> typeWiring
                         .dataFetcher("device", environment -> sparql.getByURI(DeviceModel.class, environment.<DeviceAttributeModel>getSource().getUri(), "en"))
+                        .dataFetcher("attributes", environment -> objectMapper.writeValueAsString(environment.<DeviceAttributeModel>getSource().getAttribute()))
+                )
+                .type("ScientificObject", typeWiring -> typeWiring
+                        .dataFetcher("geometry", environment -> geoDAO.getGeometryByURI(environment.<ScientificObjectModel>getSource().getUri(), new URI("dev:id/experiment/sa_expe")))
                 )
                 .build();
 
@@ -213,7 +227,7 @@ public class GraphQLAPI {
     }
 
     private ExecutionResult execute(ExecutionInput input) {
-        GraphQL graphQL = GraphQL.newGraphQL(computeSchema()).build();
+        GraphQL graphQL = GraphQL.newGraphQL(exampleSchema()).build();
         return graphQL.execute(input);
     }
 }

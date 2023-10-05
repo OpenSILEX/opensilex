@@ -7,6 +7,8 @@ type Query {
     experiments: [Experiment]
     provenances: [Provenance]
     deviceAttributes: [DeviceAttribute]
+    scientificObjects (limit: Int): [ScientificObject]
+    factorLevels: [FactorLevel]
 }
 
 type Experiment {
@@ -32,6 +34,11 @@ type Provenance {
     uri: String!
     name: String!
     description: String
+    activity: [Activity]
+}
+
+type Activity {
+    rdfType: String
 }
 
 type Device {
@@ -42,4 +49,40 @@ type Device {
 type DeviceAttribute {
     uri: String!
     device: Device
+    attributes: String!
+}
+
+type ScientificObject {
+    uri: String!
+    name: String
+    type : String
+    creationDate : String
+    destructionDate : String
+    factorLevels : [FactorLevel]
+    geometry: Geospatial
+}
+
+type FactorLevel{
+    uri: String!
+    name: String
+    description: String
+    factor : Factor
+}
+
+type Factor {
+    uri: String!
+    name: String
+    description: String
+}
+type Geospatial {
+    uri: String!
+    name : String
+    rdfType : String
+    graph : String
+    geometry : Geometry
+}
+
+type Geometry {
+    type : String
+    coordinates: String
 }

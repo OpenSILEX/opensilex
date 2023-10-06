@@ -1284,7 +1284,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
-        SPARQLClassAnalyzer analyzer = mapper.getClassAnalizer();
+        SPARQLClassAnalyzer analyzer = mapper.getClassAnalyzer();
 
         // dont handle model with no custom properties or model with default type
         if (!analyzer.isHandleCustomProperties() || instance.getType() == null) {
@@ -1304,7 +1304,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return;
         }
 
-        Set<String> managedPropUris = mapper.getClassAnalizer().getManagedPropertiesUris();
+        Set<String> managedPropUris = mapper.getClassAnalyzer().getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
         Set<URI> customProperties = classModel.getRestrictionsByProperties()

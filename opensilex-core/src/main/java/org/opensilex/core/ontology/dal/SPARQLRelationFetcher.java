@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -78,7 +77,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
-        URI rootTypeURI = mapper.getClassAnalizer().getRdfTypeURI();
+        URI rootTypeURI = mapper.getClassAnalyzer().getRdfTypeURI();
 
         this.graph = graph;
         this.graphUri = graph != null ? new URI(graph.getURI()) : null;
@@ -90,7 +89,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         Set<URI> types = results.stream().map(SPARQLResourceModel::getType).collect(Collectors.toSet());
 
         Set<URI> managedProperties = new HashSet<>();
-        for (Property property : mapper.getClassAnalizer().getManagedProperties()) {
+        for (Property property : mapper.getClassAnalyzer().getManagedProperties()) {
             managedProperties.add(URIDeserializer.formatURI(property.toString()));
         }
 

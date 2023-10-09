@@ -5,12 +5,14 @@ This repo contains tools for automated testing of the frontend of OpenSILEX.
 ## Integration in OpenSILEX dev workflow
 
 The steps of the end-to-end testing is as follows :
+
 * scenario conception = what is usually done by a user when using the new feature
 * test template recording = recording of the scenario on the solution that was developed
 * template correction = correcting the test template to get a finalised, working, stable test.
 * run test
 
 The development of the end-to-end tests will be integrated in the usual development workflow in multiple places :
+
 * The scenario conception will be inserted before the development step. This will help the developer to understand the functionality.
 * The test template recording will be done just before the template correction
 * The template correction will be done just before the test step
@@ -21,6 +23,14 @@ The development of the end-to-end tests will be integrated in the usual developm
 Install vscode and start it. In the extensions menu on the left (four squares symbol) search for "Playwright Test for VSCode" and install the extension.
 __TODO : Check if install needed__
 You can now go to the "Testing" menu on the left (Flask icon). The existing tests will appear in the "TEST EXPLORER" sub-menu. At the bottom left you can find the "PLAYWRIGHT" sub-menu.
+
+## (mandatory) Install Playwright
+
+To install playwright run the following command in opensilex-front-tests/e2e :
+
+```sh
+npm install 
+```
 
 ## Playwright help for testers
 
@@ -42,18 +52,25 @@ If you are satisfied with the result, send this test template file to a develope
 ## Help for developers
 
 ### Running the tests locally
+
 If you're using vscode the interface is self-explanatory.
 
 Otherwise, you have different options :
+
 * UI mode :
-```sh 
+
+```sh
 npx playwright test --ui
 ```
+
 * Command line run all tests :
+
 ```sh
 npx playwright test
 ```
+
 * Command line run single test file :
+
 ```sh
 npx playwright test <file-name>
 ```
@@ -63,12 +80,14 @@ See [playwright docs](https://playwright.dev/docs/running-tests) for more detail
 ### Gitlab-ci
 
 ### Template refining
+
 __[Playwright docs](https://playwright.dev/docs)__
 The test templates you will receive will need refinement especially for the locators. Different types of locators are available (<https://playwright.dev/docs/other-locators>) but the best practice is to use `data-testid`s.
 If this locator doesn't already exist on the components used in the test template you should add them manually.
 Using the adminLoggedPage fixture from opensilex-test-fixtures.ts will give you a base state where the user is connected as admin.
 
 ## Possible improvements
+
 * Caching the rdf4j and mongodb images used by gitlab-ci would speed up tests
 * Test files and scenarios can be consolidated according to OpenSILEX elements (ex: all tests for "Experiments" in a single file)
 * Integrate to maven tests

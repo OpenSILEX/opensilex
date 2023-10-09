@@ -119,6 +119,10 @@ export default class GroupList extends Vue {
     this.tableRef.changeCurrentPage(1);
   }
 
+  updateSelectedGroup(){
+    this.$opensilex.updateURLParameters(this.filter);
+  }
+
   searchGroups(options) {
     return this.$opensilex
       .getService("opensilex.SecurityService")

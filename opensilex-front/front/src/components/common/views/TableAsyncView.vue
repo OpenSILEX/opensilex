@@ -1,6 +1,7 @@
 <template>
   <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
     <div class="card">
+      <!-- on selectable tables -->
       <div v-if="isSelectable && tableRef" class="card-header clearfix">
         <div>
             <h3 class="d-inline mr-1">
@@ -11,6 +12,33 @@
             <span v-else-if="selectMode!=='single'" class="badge badge-pill greenThemeColor" v-b-tooltip.hover.top="$t(badgeHelpMessage)">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
+          <span class="numberOfElementsPerPageSelector">
+            <select 
+              v-model="selectedItemPerPage" 
+              @change="updateItemsPerPage" 
+              :title="$t('component.common.list.pagination.numberOfElementsPerPageSelector')"
+            >
+              <option value="10">{{$t('component.common.list.pagination.tenElements')}}</option>
+              <option value="20">{{$t('component.common.list.pagination.twentyElements')}}</option>
+              <option value="50">{{$t('component.common.list.pagination.fiftyElements')}}</option>
+              <option value="100">{{$t('component.common.list.pagination.hundredElements')}}</option>
+            </select>
+          </span>
+      </div>
+      <!-- on other tables -->
+      <div v-if="!isSelectable && tableRef" class="numberOfElementsSelectorListsWthCheckbox">
+          <span class="numberOfElementsPerPageSelector">
+            <select 
+              v-model="selectedItemPerPage" 
+              @change="updateItemsPerPage" 
+              :title="$t('component.common.list.pagination.numberOfElementsPerPageSelector')"
+            >
+              <option value="10">{{$t('component.common.list.pagination.tenElements')}}</option>
+              <option value="20">{{$t('component.common.list.pagination.twentyElements')}}</option>
+              <option value="50">{{$t('component.common.list.pagination.fiftyElements')}}</option>
+              <option value="100">{{$t('component.common.list.pagination.hundredElements')}}</option>
+            </select>
+          </span>
       </div>
 
       <b-input-group size="sm">
@@ -80,14 +108,14 @@
           <slot name="row-details" v-bind:data="data"></slot>
         </template>
       </b-table>
-      <b-pagination
-        v-if="totalRow>0" 
-        v-model="currentPage"
-        :total-rows="totalRow"
-        :per-page="pageSize"
-        :page="currentPage"
-        @change="pageChange"
-      ></b-pagination>
+        <b-pagination
+          v-if="totalRow>0" 
+          v-model="currentPage"
+          :total-rows="totalRow"
+          :per-page="pageSize"
+          :page="currentPage"
+          @change="pageChange"
+        ></b-pagination>
     </div>
   </opensilex-Overlay>
 </template>
@@ -138,10 +166,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   })
   defaultSortDesc;
 
-  @Prop({
-    default: 20
-  })
-  defaultPageSize;
+  defaultPageSize: number = 20;
 
   @Prop({
     default: false
@@ -180,10 +205,16 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   definePath(){
     if (this.routeArr[1] === localStorage.getItem("startPath") || localStorage.getItem("startPath") === this.routeArr[1] + "s") {
       // if the section parameter in the url is the same as the one stored,
-      // we get the number of the last page visited and update the url with
-      // expect a number when we get "page" but localStorage get and set strings
-      this.currentPage = parseInt(localStorage.getItem("page"), 10);
-      this.$opensilex.updateURLParameter("page", this.currentPage, "");
+      if (this.routeArr[2]){ 
+        // if a second parameter exist, for exemple we are in events from an OS,
+        // reset page to load first page of the events listed
+        this.currentPage = 1
+      } else {
+        // we get the number of the last page visited and update the url with
+        // expect a number when we get "page" but localStorage get and set strings
+        this.currentPage = parseInt(localStorage.getItem("page"), 10);
+        this.$opensilex.updateURLParameter("page", this.currentPage, "");
+      }
     } else {
       // otherwise we store the new section parameter and display the first page
       localStorage.setItem("startPath", this.routeArr[1]);
@@ -191,6 +222,12 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       this.currentPage = 1;
       this.tableRef.refresh()
     }
+  }
+
+  @Watch("selectedItemPerPage")
+  defineNumberOfElements(){
+    this.$opensilex.updateURLParameter("page_size", this.selectedItemPerPage, 20);
+    localStorage.setItem("numberOfElements", this.selectedItemPerPage);
   }
 
   currentPage: number = 1;
@@ -203,6 +240,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   isSearching = false;
   selectAll = false;
   onlySelected: boolean = false; // false if you display all the elements, true if you display only the selected elements
+  selectedItemPerPage: string = "20";
   
   @Prop({
     default: 10000
@@ -210,8 +248,15 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   selectAllLimit; 
 
   created() {
-     this.currentPage = parseInt(localStorage.getItem("page"), 10);
-     this.currentStartPath = localStorage.getItem("startPath");
+    this.currentPage = parseInt(localStorage.getItem("page"), 10);
+    this.currentStartPath = localStorage.getItem("startPath");
+
+    if (localStorage.getItem("numberOfElements") === null || localStorage.getItem("numberOfElements") === undefined) {
+      localStorage.setItem("numberOfElements", "20");
+      this.selectedItemPerPage = "20";
+    }
+     this.selectedItemPerPage = localStorage.getItem("numberOfElements");
+     this.defaultPageSize = parseInt(this.selectedItemPerPage, 10);
 
     if (this.isSelectable && this.selectMode!="single") {
       this.fields.unshift({
@@ -539,6 +584,12 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
 
+  updateItemsPerPage() {
+    this.pageSize = parseInt(this.selectedItemPerPage)
+    this.defaultPageSize = this.pageSize
+    this.changeCurrentPage(1)
+    this.refresh();
+  }
 
 }
 </script>
@@ -612,6 +663,54 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 .title-icon {
   position:relative;
   top: -5px;
+}
+
+// .elementsOfPagination {
+//   display: flex;
+//   align-items: baseline;
+// }
+
+//  Selector of number of elements to display in lists
+
+.numberOfElementsPerPageSelector{
+  padding-left: 10px;
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.numberOfElementsPerPageSelector select {
+  color: #00A38D;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px;
+  width: 100px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.numberOfElementsPerPageSelector select::-ms-expand {
+  color: #fff; /* Arrow color for IE/Edge */
+}
+
+.numberOfElementsPerPageSelector select:hover {
+  border-color: #00A38D;
+}
+
+.numberOfElementsPerPageSelector select option{
+  background-color: #fff;
+  color: #00A38D;
+  font-weight: bold;
+}
+
+.numberOfElementsPerPageSelector select option:checked {
+  background-color: #00A38D;
+  color: #fff;
+}
+
+.numberOfElementsSelectorListsWthCheckbox{
+  display: flex;
+  margin-top: 10px
 }
 
 </style>

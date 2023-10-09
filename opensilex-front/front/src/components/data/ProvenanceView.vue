@@ -18,7 +18,7 @@
       icon="fa#seedling"
       modalSize="lg"
       @onCreate="provList.refresh()"
-      @onUpdate="provList.refresh()"
+      @onUpdate="provList.updateSelectedProvenance()"
       :successMessage="successMessage"
       :key="lang"
     ></opensilex-ModalForm>

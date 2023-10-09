@@ -224,7 +224,7 @@
 
         <opensilex-DeviceModalForm
             ref="deviceForm"
-            @onUpdate="refresh()"
+            @onUpdate="updateSelectedDevice()"
         ></opensilex-DeviceModalForm>
 
         <opensilex-VariableModalList
@@ -408,14 +408,14 @@ export default class DeviceList extends Vue {
     ];
 
     refresh() {
-      
-        this.$opensilex.updateURLParameters(this.filter);
+        this.updateSelectedDevice();
+        this.tableRef.changeCurrentPage(1);
+    }
 
+    updateSelectedDevice(){
+        this.$opensilex.updateURLParameters(this.filter);
         if(this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.changeCurrentPage(1);
-        } else {
-            this.tableRef.changeCurrentPage(1);
         }
     }
 

@@ -317,14 +317,9 @@ export default class ExperimentList extends Vue {
   }
 
   refresh() {
-    this.$opensilex.updateURLParameters(this.filter);
-
-    if(this.tableRef.onlySelected) {
-      this.tableRef.onlySelected = false;
-      this.tableRef.changeCurrentPage(1);
-    } else {
-      this.tableRef.changeCurrentPage(1);
-    }
+    this.updateSelectedExperiment();
+    this.tableRef.changeCurrentPage(1);
+    
   }
 
   filter = {
@@ -362,6 +357,13 @@ export default class ExperimentList extends Vue {
   refreshProjectSelector() {
    
     this.projectSelector.refreshModalSearch();
+  }
+
+  updateSelectedExperiment(){
+    this.$opensilex.updateURLParameters(this.filter);
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+    }
   }
 
   searchExperiments(options) {

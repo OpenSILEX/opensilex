@@ -25,7 +25,7 @@
       modalSize="lg"
       icon="ik#ik-users"
       @onCreate="groupList.refresh()"
-      @onUpdate="groupList.refresh()"
+      @onUpdate="groupList.updateSelectedGroup()"
     ></opensilex-ModalForm>
   </div>
 </template>

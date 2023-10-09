@@ -2375,15 +2375,9 @@ export default class MapView extends Vue {
 
   ///////////// DATE RANGE METHODS ////////////
   onChangeDateRange(event) {
-    //this.$opensilex.showLoader();
     this.range = { from: event.args.from, to: event.args.to };
     let startDate: string = this.formatDate(this.range.from);
     let endDate: string = this.formatDate(this.range.to);
-
-    // this.filter.from =  startDate;
-    // this.filter.to =  endDate;
-    // this.$opensilex.updateURLParameters(this.filter);
-
     this.recoveryScientificObjects(startDate, endDate);
     this.zoomRestriction();
   }

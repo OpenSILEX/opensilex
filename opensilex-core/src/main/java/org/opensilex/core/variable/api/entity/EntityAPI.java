@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.atlas.lib.ListUtils;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.agroportal.api.OntologyAgroportalDTO;
 import org.opensilex.core.agroportal.config.AgroportalAPIConfigDTO;
@@ -365,6 +366,7 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAgroportalOntologies(
+            @ApiParam(value = "List of ontologies to get (aconyms)", example = "AGROVOC, PO") @DefaultValue("") @QueryParam("ontologies") List<String> ontologies,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
@@ -374,12 +376,26 @@ public class EntityAPI {
 
         String url = agroportalConfig.getApiUrl() + "/ontologies";
 
-        JsonNode searchResults = jsonToNode(get(url, agroportalConfig.getApiKey())).get("collection");
+        String json = get(url, agroportalConfig.getApiKey());
+        JsonNode searchResults = jsonToNode(json);
 
-        List<OntologyAgroportalModel> ontologies = mapper.readValue(searchResults.traverse(), new TypeReference<List<OntologyAgroportalModel>>(){});
+        List<OntologyAgroportalModel> ontologiesModel = mapper.readValue(searchResults.traverse(), new TypeReference<List<OntologyAgroportalModel>>(){});
 
-        return new SingleObjectResponse<>(ontologies.stream().map(OntologyAgroportalDTO::fromModel).collect(Collectors.toList()))
-                .getResponse();
+        String strJoin = ontologies.stream().collect(Collectors.joining(","));
+        if (ontologies != null && !strJoin.isEmpty()) {
+            ontologiesModel = ontologiesModel
+                    .stream()
+                    .filter(model -> ontologies.contains(model.getAcronym()))
+                    .collect(Collectors.toList());
+        }
+
+        return new SingleObjectResponse<>(
+                    ontologiesModel
+                            .stream()
+                            .map(OntologyAgroportalDTO::fromModel)
+                            .sorted(Comparator.comparing(OntologyAgroportalDTO::getAcronym))
+                            .collect(Collectors.toList())
+                ).getResponse();
     }
 
     private static JsonNode jsonToNode(String json) {

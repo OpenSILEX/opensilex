@@ -19,6 +19,8 @@
                   label="component.common.name"
                   type="text"
                   placeholder="search"
+                  :baseOntologies="baseOntologies"
+                  :selected.sync="ontologies"
                   @change="onSearchTextChange"
               ></opensilex-AgroportalSearch>
 
@@ -28,7 +30,7 @@
                   <opensilex-AgroportalResults
                       ref="searchResults"
                       :text.sync="text"
-                      :ontologies="ontologies"
+                      :ontologies.sync="ontologies"
                       @import="selectItem">
                   </opensilex-AgroportalResults>
                 </div>
@@ -96,6 +98,7 @@ export default class AgroportalEntityForm extends Vue {
 
     uriGenerated = true;
     text = "";
+    baseOntologies: string[] = [];
     ontologies: string[] = [];
 
     @Prop()

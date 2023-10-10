@@ -60,6 +60,7 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
+import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
 
 @Component
 export default class AgroportalResults extends Vue {
@@ -102,6 +103,7 @@ export default class AgroportalResults extends Vue {
   }
 
   @Watch("text")
+  @Watch("ontologies")
   updateResults() {
 
     if (!this.text) {
@@ -110,6 +112,8 @@ export default class AgroportalResults extends Vue {
     }
 
     this.isDataLoading = true;
+
+    console.debug(this.ontologies);
 
     this.$opensilex.disableLoader();
     this.entityService.searchThroughAgroportal(
@@ -121,7 +125,6 @@ export default class AgroportalResults extends Vue {
     ).then((http) => {
       if (http.response && http.response.result) {
         let results = http.response.result as Array<EntityAgroportalDTO>;
-        console.debug(results);
         this.entities = [...new Map(results.map(item =>
             [item.id, item])).values()];
         this.isDataLoading = false;

@@ -7,7 +7,7 @@
           <opensilex-ExternalReferencesForm
             :references.sync="form"
             :displayInsertButton="false"
-            :includeAgroportalSearch="true"
+            :includeAgroportalSearch="false"
             :ontologiesToSelect="selectedOntologies">
           </opensilex-ExternalReferencesForm>
 

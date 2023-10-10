@@ -120,6 +120,7 @@
                 :uri="germplasm.accession"
                 :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.accession)}"
               ></opensilex-LabelUriView>
+
               <opensilex-MetadataView
               v-if="germplasm.publisher && germplasm.publisher.uri"
                 :publisher="germplasm.publisher"
@@ -282,6 +283,9 @@ export default class GermplasmDetails extends Vue {
     description: null,
     metadata: null,
     website: null,
+    has_parent_germplasm: [],
+    has_parent_germplasm_m: [],
+    has_parent_germplasm_f: [],
     synonyms: []
   };
 
@@ -300,6 +304,7 @@ export default class GermplasmDetails extends Vue {
       .getGermplasm(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
         this.germplasm = http.response.result;
+
         this.loadExperiments;
         this.getAddInfo();
       })

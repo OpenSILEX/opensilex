@@ -33,6 +33,23 @@ import java.util.List;
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel>{
 
+    public static GermplasmModel fromSPARQLNamedResourceModel(SPARQLNamedResourceModel sparqlNamedResourceModel){
+        GermplasmModel germplasmModel = new GermplasmModel();
+        if(sparqlNamedResourceModel.getUri()!=null){
+            germplasmModel.setUri(sparqlNamedResourceModel.getUri());
+        }
+        if(sparqlNamedResourceModel.getName()!=null){
+            germplasmModel.setName(sparqlNamedResourceModel.getName());
+        }
+        if(sparqlNamedResourceModel.getType()!=null){
+            germplasmModel.setType(sparqlNamedResourceModel.getType());
+        }
+        if(sparqlNamedResourceModel.getTypeLabel()!=null){
+            germplasmModel.setTypeLabel(sparqlNamedResourceModel.getTypeLabel());
+        }
+        return germplasmModel;
+    }
+
     public static final String GRAPH = "germplasm";
 
     @SPARQLIgnore

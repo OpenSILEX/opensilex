@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
@@ -19,7 +20,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  */
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "synonyms", "code",
     "production_year", "description", "species", "species_name","variety", 
-    "variety_name", "accession", "accession_name", "institute", "website", "metadata"})
+    "variety_name", "accession", "accession_name", "institute", "website", "has_parent_germplasm", "has_parent_germplasm_m", "has_parent_germplasm_f", "metadata"})
 public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
 
     /**
@@ -105,6 +106,15 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
 
         if (model.getWebsite() != null) {
             dto.setWebsite(model.getWebsite());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentGermplasms())){
+            dto.setHasParentGermplasm(model.getParentGermplasms());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentMGermplasms())){
+            dto.setHasParentGermplasmM(model.getParentMGermplasms());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentFGermplasms())){
+            dto.setHasParentGermplasmF(model.getParentFGermplasms());
         }
         
         return dto;

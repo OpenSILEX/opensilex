@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
@@ -19,7 +21,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  */
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
     "production_year", "description", "species", "species_name","variety", 
-    "variety_name", "accession", "accession_name", "institute", "website"})
+    "variety_name", "accession", "accession_name", "institute", "website", "has_parent_germplasm", "has_parent_germplasm_m", "has_parent_germplasm_f"})
 public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
     /**
@@ -59,6 +61,15 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
      */
     @JsonProperty("production_year")
     protected Integer productionYear;
+
+    @JsonProperty("has_parent_germplasm")
+    protected List<GermplasmModel> hasParentGermplasm;
+
+    @JsonProperty("has_parent_germplasm_m")
+    protected List<GermplasmModel> hasParentGermplasmM;
+
+    @JsonProperty("has_parent_germplasm_f")
+    protected List<GermplasmModel> hasParentGermplasmF;
 
     /**
      * description
@@ -149,6 +160,30 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.website = website;
     }
 
+    public List<GermplasmModel> getHasParentGermplasm() {
+        return hasParentGermplasm;
+    }
+
+    public void setHasParentGermplasm(List<GermplasmModel> hasParentGermplasm) {
+        this.hasParentGermplasm = hasParentGermplasm;
+    }
+
+    public List<GermplasmModel> getHasParentGermplasmM() {
+        return hasParentGermplasmM;
+    }
+
+    public void setHasParentGermplasmM(List<GermplasmModel> hasParentGermplasmM) {
+        this.hasParentGermplasmM = hasParentGermplasmM;
+    }
+
+    public List<GermplasmModel> getHasParentGermplasmF() {
+        return hasParentGermplasmF;
+    }
+
+    public void setHasParentGermplasmF(List<GermplasmModel> hasParentGermplasmF) {
+        this.hasParentGermplasmF = hasParentGermplasmF;
+    }
+
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -209,6 +244,15 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         
         if (model.getWebsite() != null) {
             dto.setWebsite(model.getWebsite());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentGermplasms())){
+            dto.setHasParentGermplasm(model.getParentGermplasms());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentMGermplasms())){
+            dto.setHasParentGermplasmM(model.getParentMGermplasms());
+        }
+        if(!CollectionUtils.isEmpty(model.getParentFGermplasms())){
+            dto.setHasParentGermplasmF(model.getParentFGermplasms());
         }
 
         return dto;

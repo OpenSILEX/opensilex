@@ -11,6 +11,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -18,7 +19,9 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -26,6 +29,8 @@ import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
@@ -33,6 +38,7 @@ import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -47,6 +53,7 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
@@ -524,5 +531,6 @@ public class GermplasmDAO {
                 page,
                 pageSize);
     }
+
 
 }

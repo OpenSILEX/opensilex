@@ -40,22 +40,6 @@ import org.opensilex.sparql.service.SPARQLService;
     "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
 public class GermplasmCreationDTO extends RDFObjectDTO {
 
-    //TODO delete this once i'm sure extzending rdfObject didnt f*** anything up
-
-    /**
-     * Germplasm URI
-     */
-    //@ValidURI
-    //@ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    //protected URI uri;
-    
-    /**
-     * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
-     */
-    /*@NotNull
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    @JsonProperty("rdf_type")
-    protected URI rdfType;*/
     
     /**
      * Germplasm label

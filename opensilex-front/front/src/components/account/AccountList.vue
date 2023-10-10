@@ -70,7 +70,7 @@
               :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+              v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
               @click="$emit('onEdit', data.item)"
               label="component.account.update"
               :small="true"
@@ -204,7 +204,7 @@ export default class AccountList extends Vue {
 
   displayEnableButton(accountRow) {
     let isUserConnected = accountRow.email === this.user.email
-    return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
+    return this.user.hasCredential(this.credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)
         && !accountRow.admin
         && !isUserConnected
   }

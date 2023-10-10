@@ -27,7 +27,7 @@
           <b-input-group-append>
             <b-button
                 :disabled="! validOrcid"
-                class="createButton greenThemeColor"
+                :class=" validOrcid ? 'createButton greenThemeColor' : '' "
                 @click="startOrcidSuggestion()"
             >
               {{ $t('component.person.load-orcid-infos') }}
@@ -100,7 +100,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
@@ -170,6 +169,7 @@ export default class PersonForm extends Vue {
   }
 
   async create(form: PersonDTO) {
+    this.showLoader()
     this.prepareFormBeforeSending(form)
 
     try {
@@ -178,20 +178,26 @@ export default class PersonForm extends Vue {
       return response
     } catch (error) {
       this.$opensilex.errorHandler(error);
+    } finally {
+      this.hideLoader()
     }
+
   }
 
-  update(form: PersonDTO) {
-    this.prepareFormBeforeSending(form)
+  async update(form: PersonDTO) {
+    try {
+      this.showLoader()
+      this.prepareFormBeforeSending(form)
 
-    return this.$opensilex
-        .getService<SecurityService>("opensilex.SecurityService")
-        .updatePerson(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Person updated", uri);
-        })
-        .catch(this.$opensilex.errorHandler);
+      return await this.$opensilex
+          .getService<SecurityService>("opensilex.SecurityService")
+          .updatePerson(form)
+    } catch {
+      this.$opensilex.errorHandler
+    } finally {
+      this.hideLoader()
+    }
+
   }
 
   private getCompleteUrlOrcid(orcid): string {
@@ -244,6 +250,16 @@ export default class PersonForm extends Vue {
 
   private updatePhoneNumber(number: string, phoneObject: any): void{
     this.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
+  }
+
+  showLoader() {
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
+  }
+
+  hideLoader() {
+    this.$opensilex.hideLoader();
+    this.$opensilex.disableLoader();
   }
 
 }

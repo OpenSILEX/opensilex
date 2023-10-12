@@ -58,6 +58,7 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 
 @Component
 export default class AgroportalSearch extends Vue {
@@ -81,8 +82,8 @@ export default class AgroportalSearch extends Vue {
 
   loadOntologies(ontologieAcronyms): Promise<Array<OntologyAgroportalDTO>> {
     return this.$opensilex
-        .getService<VariablesService>("opensilex.VariablesService")
-        .getAgroportalOntologies(ontologieAcronyms, undefined, 0, 0)
+        .getService<AgroportalAPIService>("opensilex.VariablesService")
+        .getAgroportalOntologies("", ontologieAcronyms, undefined, 0, 0)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http.response.result;
         })
@@ -93,8 +94,8 @@ export default class AgroportalSearch extends Vue {
     console.debug(this.ontologiesURIs);
     console.debug(this.baseOntologies);
     return this.$opensilex
-        .getService<VariablesService>("opensilex.VariablesService")
-        .getAgroportalOntologies(undefined, undefined, 0, 0)
+        .getService<AgroportalAPIService>("opensilex.VariablesService")
+        .getAgroportalOntologies(searchQuery, undefined, undefined, 0, 0)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http;
         })

@@ -58,9 +58,8 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from 'vue';
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
-import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
+import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
 @Component
 export default class AgroportalResults extends Vue {

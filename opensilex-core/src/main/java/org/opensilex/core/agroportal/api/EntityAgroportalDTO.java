@@ -3,12 +3,13 @@
 // Copyright © INRAE 2020
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.api.entity;
+package org.opensilex.core.agroportal.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.codehaus.plexus.util.StringUtils;
-import org.opensilex.core.variable.dal.*;
+import org.opensilex.core.agroportal.dal.EntityAgroportalModel;
+import org.opensilex.core.agroportal.dal.LinksAgroportalModel;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;

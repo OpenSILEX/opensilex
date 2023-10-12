@@ -1,4 +1,4 @@
-package org.opensilex.core.variable.dal;
+package org.opensilex.core.agroportal.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

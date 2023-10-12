@@ -163,8 +163,8 @@
     import {Skos} from "../../../models/Skos";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-    import {VariablesService} from "opensilex-core/api/variables.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+    import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 
     @Component
     export default class ExternalReferencesForm extends Vue {
@@ -173,7 +173,7 @@
         $t: any;
         $i18n: any;
 
-        variablesService: VariablesService;
+        agroportalAPIService: AgroportalAPIService;
 
         currentRelation: string = "";
         currentExternalUri: string = "";
@@ -204,7 +204,7 @@
         isAgroportalReachable: boolean = false;
 
         checkAgroportalReachable() {
-          this.variablesService.pingAgroportal(1000).then((http) => {
+          this.agroportalAPIService.pingAgroportal(1000).then((http) => {
             if (http && http.response) {
               let isReachable = http.response.result;
               this.isAgroportalReachable = isReachable;
@@ -230,7 +230,7 @@
 
         created() {
            this.setOptions();
-           this.variablesService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
+           this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
            this.checkAgroportalReachable();
         }
 

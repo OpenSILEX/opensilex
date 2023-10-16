@@ -16,7 +16,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Interface for dependency injection in order to get Calls attributes. * 
+ * Abstract class containing most of the logic for calls description
+ * 
+ * @see BrapiVersion
+ * @see CallsAPI
  * @author Gabriel Besombes
  */
 abstract class BrapiCall {

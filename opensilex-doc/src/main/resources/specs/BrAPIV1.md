@@ -1,9 +1,15 @@
-******
-* This document follows the Specification Guidelines draft (as of 2023-09-19)
-* Author : gabriel.besombes@inrae.fr
-* Date : 2023-09-19
-******
+**History**
 
+| Date       | Author           | Developer(s)     | OpenSILEX version | Comment                      |
+|------------|------------------|------------------|-------------------|------------------------------|
+| 16/10/2023 | Gabriel Besombes | Gabriel Besombes | 1.0.1             | Document creation & mappings |
+
+---
+
+# General description
+
+The BrAPI module is an implementation of the [BrAPI API specification](https://brapi.org/specification) for OpenSILEX.   
+As such the specs are relatively straightforward. They are simple mappings of BrAPI notions and OpenSILEX notions.
 
 # Mapping between BrAPI V1.3 concepts and OpenSILEX concepts
 

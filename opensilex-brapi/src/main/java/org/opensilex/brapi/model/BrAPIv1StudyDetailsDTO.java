@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
  * @author Alice Boizet
  */
 public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
+    private final String SCIENTIFIC_SUPERVISOR = "ScientificSupervisor";
+    private final String TECHNICAL_SUPERVISOR = "TechnicalSupervisor";
+
     private List<BrAPIv1ContactDTO> contacts;
     private List<BrAPIv1DataLinkDTO> dataLinks;
     private String license;
@@ -167,11 +170,11 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         List<BrAPIv1ContactDTO> studyContacts = new ArrayList<>();
         List<PersonModel> experimentScientificSupervisors = model.getScientificSupervisors();
         if (!experimentScientificSupervisors.isEmpty()) {
-            studyContacts.addAll(experimentScientificSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, "ScientificSupervisor")).collect(Collectors.toList()));
+            studyContacts.addAll(experimentScientificSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, SCIENTIFIC_SUPERVISOR)).collect(Collectors.toList()));
         }
         List<PersonModel> experimentTechnicalSupervisors = model.getTechnicalSupervisors();
         if (!experimentTechnicalSupervisors.isEmpty()) {
-            studyContacts.addAll(experimentTechnicalSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, "TechnicalSupervisor")).collect(Collectors.toList()));
+            studyContacts.addAll(experimentTechnicalSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, TECHNICAL_SUPERVISOR)).collect(Collectors.toList()));
         }
         this.setContacts(studyContacts);
 

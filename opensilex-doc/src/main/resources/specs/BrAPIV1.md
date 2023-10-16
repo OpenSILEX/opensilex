@@ -2,7 +2,7 @@
 
 | Date       | Author           | Developer(s)     | OpenSILEX version | Comment                      |
 |------------|------------------|------------------|-------------------|------------------------------|
-| 16/10/2023 | Gabriel Besombes | Gabriel Besombes | 1.0.1             | Document creation & mappings |
+| 16/10/2023 | Gabriel Besombes | Gabriel Besombes | 1.1.0             | Document creation & mappings |
 
 ---
 

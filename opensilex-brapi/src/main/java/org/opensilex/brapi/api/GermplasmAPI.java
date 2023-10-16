@@ -7,7 +7,7 @@
 package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.brapi.brapiresponses.BrAPIv1GermplasmListResponse;
+import org.opensilex.brapi.responses.BrAPIv1GermplasmListResponse;
 import org.opensilex.brapi.model.BrAPIv1GermplasmDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;

@@ -205,21 +205,24 @@ public class OrganizationDAO {
      * accessible.
      * </p>
      *
-     * @param nameFilter Regex filter on the organization name. If empty, no filter is applied.
-     * @param restrictedOrganizations List of organizations to restrict the search to. If null, no filter is applied. An
-     *                                empty list will filter out all organizations and return no result.
-     * @param user The current user
+     * @param filter an {@link OrganizationSearchFilter} object containing the filtering parameters
      * @return The accessible organizations
      */
-    public List<OrganizationModel> search(String nameFilter, List<URI> restrictedOrganizations, AccountModel user) throws Exception {
-        if (Objects.isNull(user)) {
+    public List<OrganizationModel> search(OrganizationSearchFilter filter) throws Exception {
+        if (Objects.isNull(filter.getUser())) {
             throw new IllegalArgumentException("User cannot be null");
         }
 
-        Set<URI> restrictedOrganizationSet = Objects.nonNull(restrictedOrganizations) ?  new HashSet<>(restrictedOrganizations) : null;
-        Pattern pattern = StringUtils.isNotEmpty(nameFilter) ? Pattern.compile(nameFilter, Pattern.CASE_INSENSITIVE) : null;
-        return searchWithoutFilters(user).stream().filter(org -> {
+        Set<URI> restrictedOrganizationSet = Objects.nonNull(filter.getRestrictedOrganizations()) ?  new HashSet<>(filter.getRestrictedOrganizations()) : null;
+        Pattern pattern = StringUtils.isNotEmpty(filter.getNameFilter()) ? Pattern.compile(filter.getNameFilter(), Pattern.CASE_INSENSITIVE) : null;
+        return searchWithoutFilters(filter.getUser()).stream().filter(org -> {
             if (Objects.nonNull(pattern) && !pattern.matcher(org.getName()).find()) {
+                return false;
+            }
+            if (org.getFacilities().stream().noneMatch(facilityModel -> SPARQLDeserializers.compareURIs(filter.getFacilityURI(),facilityModel.getUri()))) {
+                return false;
+            }
+            if (org.getChildren().stream().noneMatch(parentOrga -> SPARQLDeserializers.compareURIs(filter.getDirectChildURI(),parentOrga.getUri()))) {
                 return false;
             }
             return Objects.isNull(restrictedOrganizationSet) || restrictedOrganizationSet.contains(org.getUri());
@@ -284,21 +287,5 @@ public class OrganizationDAO {
         userOrganizationCache.invalidateAll();
 
         return instance;
-    }
-
-    public Set<OrganizationModel> getOrganizationsByFacilityURI(URI facilityURI, AccountModel user) throws Exception {
-        return searchWithoutFilters(user).stream().filter(
-                orga -> orga.getFacilities().stream().anyMatch(
-                        facilityModel -> SPARQLDeserializers.compareURIs(facilityURI,facilityModel.getUri())
-                )
-        ).collect(Collectors.toSet());
-    }
-
-    public Set<OrganizationModel> getDirectParentOrganizations(URI organizationURI, AccountModel user) throws Exception {
-        return searchWithoutFilters(user).stream().filter(
-                orga -> orga.getParents().stream().anyMatch(
-                        parentOrga -> SPARQLDeserializers.compareURIs(organizationURI,parentOrga.getUri())
-                )
-        ).collect(Collectors.toSet());
     }
 }

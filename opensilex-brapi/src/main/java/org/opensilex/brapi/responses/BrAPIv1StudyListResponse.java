@@ -1,4 +1,4 @@
-package org.opensilex.brapi.brapiresponses;
+package org.opensilex.brapi.responses;
 
 import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.BrAPIv1StudyDTO;

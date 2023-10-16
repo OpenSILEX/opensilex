@@ -1,6 +1,5 @@
-package org.opensilex.brapi.brapiresponses;
+package org.opensilex.brapi.responses;
 
-import org.opensilex.brapi.model.BrAPIv1StudyDTO;
 import org.opensilex.brapi.model.BrAPIv1SuperStudyDTO;
 import org.opensilex.server.response.SingleObjectResponse;
 

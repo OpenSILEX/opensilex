@@ -7,10 +7,8 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.service.SPARQLService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -84,7 +82,7 @@ class BrAPIv1ObservationSummaryDTO {
         this.value = value;
     }
 
-    public BrAPIv1ObservationSummaryDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+    public BrAPIv1ObservationSummaryDTO extractFromModel(DataModel dataModel, OntologyDAO ontologyDAO, AccountModel currentUser) throws Exception {
 
         if (dataModel.getUri() != null) {
             this.setObservationDbId(dataModel.getUri().toString());
@@ -112,8 +110,8 @@ class BrAPIv1ObservationSummaryDTO {
         return this;
     }
 
-    public static BrAPIv1ObservationSummaryDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+    public static BrAPIv1ObservationSummaryDTO fromModel(DataModel dataModel, OntologyDAO ontologyDAO, AccountModel currentUser) throws Exception {
         BrAPIv1ObservationSummaryDTO observation = new BrAPIv1ObservationSummaryDTO();
-        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser);
+        return observation.extractFromModel(dataModel, ontologyDAO, currentUser);
     }
 }

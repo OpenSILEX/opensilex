@@ -7,6 +7,8 @@
 package org.opensilex.brapi.api;
 
 
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections.SetUtils;
 import org.opensilex.brapi.model.BrAPIv1CallDTO;
 import org.reflections.Reflections;
 
@@ -14,6 +16,8 @@ import javax.ws.rs.*;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.collections4.SetUtils.union;
 
 /**
  * Abstract class containing most of the logic for calls description
@@ -36,18 +40,11 @@ abstract class BrapiCall {
                 List<Method> calls = Arrays.stream(brapiClass.getDeclaredMethods())
                         .filter(m -> m.isAnnotationPresent(BrapiVersion.class))
                         .collect(Collectors.toList());
-                List<String> names = new ArrayList<>();
-                HashMap<String, HashMap<String, Set<String>>> results = new HashMap<>();
+                HashMap<String, BrAPIv1CallDTO> results = new HashMap<>();
 
                 for (Method call: calls) {
                     String[] path = call.getAnnotation(Path.class).value().split("/");
                     String callName = String.join("/", Arrays.copyOfRange(path, 1, path.length));
-
-                    Set<String> callDatatypes = new HashSet<>(
-                            Arrays.asList(call.getAnnotation(Produces.class).value())
-                    );
-
-                    Set<String> callVersions = Collections.singleton(call.getAnnotation(BrapiVersion.class).value());
 
                     Set<String> callMethods = new HashSet<>();
                     if (call.isAnnotationPresent(GET.class)) {
@@ -60,29 +57,28 @@ abstract class BrapiCall {
                         callMethods.add("DELETE");
                     }
 
-                    if (names.contains(callName)) {
-                        callDatatypes.addAll(results.get(callName).get("callDatatypes"));
-                        callVersions.addAll(results.get(callName).get("callVersions"));
-                        callMethods.addAll(results.get(callName).get("callMethods"));
-                    } else {
-                        names.add(callName);
-                    }
-                    HashMap<String, Set<String>> newValue = new HashMap<String, Set<String>>(){{
-                        put("callDatatypes", callDatatypes);
-                        put("callVersions", callVersions);
-                        put("callMethods", callMethods);
-                    }};
-                    results.put(callName, newValue);
+                    BrAPIv1CallDTO currentCall = new BrAPIv1CallDTO(
+                            callName,
+                            new HashSet<>(
+                                    Arrays.asList(call.getAnnotation(Produces.class).value())
+                            ),
+                            callMethods,
+                            Collections.singleton(call.getAnnotation(BrapiVersion.class).value())
+                    );
+
+                    results.merge(
+                            callName,
+                            currentCall,
+                            (BrAPIv1CallDTO existingCall, BrAPIv1CallDTO newCall) -> new BrAPIv1CallDTO(
+                                    callName,
+                                    union(existingCall.getDataTypes(), newCall.getDataTypes()),
+                                    union(existingCall.getMethods(), newCall.getMethods()),
+                                    union(existingCall.getVersions(), newCall.getVersions())
+                            )
+                    );
                 }
 
-                for (String name : results.keySet()) {
-                    brapiCallsInfo.add(new BrAPIv1CallDTO(
-                            name,
-                            new ArrayList<>(results.get(name).get("callDatatypes")),
-                            new ArrayList<>(results.get(name).get("callMethods")),
-                            new ArrayList<>(results.get(name).get("callVersions"))
-                    ));
-                }
+                brapiCallsInfo.addAll(results.values());
             }
         }
         return brapiCallsInfo;

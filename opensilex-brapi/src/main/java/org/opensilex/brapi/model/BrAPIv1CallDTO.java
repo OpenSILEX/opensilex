@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -14,12 +14,12 @@ import java.util.ArrayList;
  */
 public class BrAPIv1CallDTO {
     private String call;
-    private ArrayList<String> dataTypes;
-    private ArrayList<String> methods;
-    private ArrayList<String> versions;
+    private Set<String> dataTypes;
+    private Set<String> methods;
+    private Set<String> versions;
 
     //Constructor with parameters
-    public BrAPIv1CallDTO(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {
+    public BrAPIv1CallDTO(String call, Set<String> dataTypes, Set<String> methods, Set<String> versions) {
         this.call = call;
         this.dataTypes = dataTypes;
         this.methods = methods;
@@ -34,27 +34,27 @@ public class BrAPIv1CallDTO {
         this.call = call;
     }
 
-    public ArrayList<String> getDataTypes() {
+    public Set<String> getDataTypes() {
         return dataTypes;
     }
 
-    public void setDataTypes(ArrayList<String> dataTypes) {
+    public void setDataTypes(Set<String> dataTypes) {
         this.dataTypes = dataTypes;
     }
 
-    public ArrayList<String> getMethods() {
+    public Set<String> getMethods() {
         return methods;
     }
 
-    public void setMethods(ArrayList<String> methods) {
+    public void setMethods(Set<String> methods) {
         this.methods = methods;
     }
 
-    public ArrayList<String> getVersions() {
+    public Set<String> getVersions() {
         return versions;
     }
 
-    public void setVersions(ArrayList<String> versions) {
+    public void setVersions(Set<String> versions) {
         this.versions = versions;
     }
 }

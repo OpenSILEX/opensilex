@@ -12,6 +12,7 @@ import org.geotools.geojson.geom.GeometryJSON;
 import org.locationtech.jts.geom.Point;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
@@ -162,41 +163,44 @@ class BrAPIv1LocationDTO {
             }
         }
 
-        Set<OrganizationModel> hostedOrganizations = organizationDAO.getOrganizationsByFacilityURI(model.getUri(), currentAccount);
-        if (!hostedOrganizations.isEmpty()) {
-            Set<OrganizationModel> directParentOrganizations = organizationDAO.getDirectParentOrganizations(model.getUri(), currentAccount);
-            while (!directParentOrganizations.isEmpty()){
-                List<OrganizationModel> parentsWithOneAddress = directParentOrganizations.stream().map(parentOrg -> {
-                    OrganizationModel parentModel;
-                    try {
-                        parentModel = organizationDAO.get(parentOrg.getUri(), currentAccount);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    if (parentModel.getSites().size() == 1) {
-                        return parentModel;
-                    } else {
-                        return null;
-                    }
-                }).collect(Collectors.toList());
-                if (parentsWithOneAddress.size()==1) {
-                    OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
-                    SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
-                    this.setInstituteAddress(parentAddress.toString());
-                    this.setInstituteName(institute.getName());
-                    String countryName = parentAddress.getCountryName();
-                    this.setCountryName(countryName);
-                    this.setCountryCode(new Locale(countryName).getISO3Country());
-                    directParentOrganizations.remove(parentsWithOneAddress.get(0));
-                } else if (parentsWithOneAddress.size()>1) {
-                    Set<OrganizationModel> newParents = new HashSet<>();
-                    for (OrganizationModel childOrga : directParentOrganizations) {
-                        newParents.addAll(organizationDAO.getDirectParentOrganizations(childOrga.getUri(), currentAccount));
-                    }
-                    directParentOrganizations = newParents;
-                } else {
-                    directParentOrganizations = Collections.emptySet();
+        // Try to get a Site from the hierarchy of Organisations
+        // Initialize with the Organisations hosted by the facility
+        Set<OrganizationModel> directParentOrganizations = new HashSet<>(organizationDAO.search(new OrganizationSearchFilter()
+                .setFacilityURI(model.getUri())
+                .setUser(currentAccount)));
+        while (!directParentOrganizations.isEmpty()){
+            List<OrganizationModel> parentsWithOneAddress = directParentOrganizations.stream().map(parentOrg -> {
+                OrganizationModel parentModel;
+                try {
+                    parentModel = organizationDAO.get(parentOrg.getUri(), currentAccount);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+                if (parentModel.getSites().size() == 1) {
+                    return parentModel;
+                } else {
+                    return null;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+            if (parentsWithOneAddress.size()==1) { // If exactly one organisation on this level with exactly one site
+                OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
+                SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
+                this.setInstituteAddress(parentAddress.toString());
+                this.setInstituteName(institute.getName());
+                String countryName = parentAddress.getCountryName();
+                this.setCountryName(countryName);
+                this.setCountryCode(new Locale(countryName).getISO3Country());
+                directParentOrganizations.remove(parentsWithOneAddress.get(0));
+            } else if (parentsWithOneAddress.size()>1) { // If more than one, go an Organisation level above
+                Set<OrganizationModel> newParents = new HashSet<>();
+                for (OrganizationModel childOrga : directParentOrganizations) {
+                    newParents.addAll(organizationDAO.search(new OrganizationSearchFilter()
+                            .setDirectChildURI(childOrga.getUri())
+                            .setUser(currentAccount)));
+                }
+                directParentOrganizations = newParents;
+            } else {
+                directParentOrganizations = Collections.emptySet();
             }
         }
 

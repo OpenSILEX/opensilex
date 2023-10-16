@@ -9,7 +9,7 @@ package org.opensilex.brapi.api;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.opensilex.brapi.brapiresponses.*;
+import org.opensilex.brapi.responses.*;
 import org.opensilex.brapi.model.*;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;

@@ -7,7 +7,7 @@
 package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.brapi.brapiresponses.BrAPIv1CallListResponse;
+import org.opensilex.brapi.responses.BrAPIv1CallListResponse;
 import org.opensilex.brapi.model.BrAPIv1CallDTO;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.utils.ListWithPagination;

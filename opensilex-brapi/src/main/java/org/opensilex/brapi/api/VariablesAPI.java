@@ -7,8 +7,8 @@
 package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.brapi.brapiresponses.BrAPIv1ObservationVariableListResponse;
-import org.opensilex.brapi.brapiresponses.BrAPIv1SingleObservationVariableResponse;
+import org.opensilex.brapi.responses.BrAPIv1ObservationVariableListResponse;
+import org.opensilex.brapi.responses.BrAPIv1SingleObservationVariableResponse;
 import org.opensilex.brapi.model.BrAPIv1ObservationVariableDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;

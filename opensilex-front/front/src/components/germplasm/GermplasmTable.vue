@@ -10,7 +10,7 @@
         v-model="colName"
         placeholder="Enter column name"
       ></b-form-input>
-      <b-button class="mt-3" variant="primary" block @click="addColumn">{{
+      <b-button class="mt-3 greenThemeColor" block @click="addColumn">{{
         $t("GermplasmTable.addColumn")
       }}</b-button>
     </b-modal>

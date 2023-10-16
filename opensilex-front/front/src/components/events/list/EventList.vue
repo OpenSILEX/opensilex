@@ -219,7 +219,7 @@
             ref="modalForm"
             :target="target"
             @onCreate="displayAfterCreation"
-            @onUpdate="refresh"
+            @onUpdate="updateSelectedEvent"
             :context="context"
         ></opensilex-EventModalForm>
 
@@ -383,6 +383,10 @@ export default class EventList extends Vue {
     refresh() {
         this.$opensilex.updateURLParameters(this.filter);
         this.tableRef.changeCurrentPage(1);
+    }
+
+    updateSelectedEvent(){
+        this.$opensilex.updateURLParameters(this.filter);
     }
 
     displayAfterCreation(event) {

@@ -27,17 +27,24 @@ public class OntologyFileDefinition {
 
     private final URI prefixUri;
 
+    private final boolean addToStaple;
+
     public OntologyFileDefinition(String uri, String filePath, Lang fileType, String prefix) throws URISyntaxException {
         this(uri, filePath, fileType, prefix, null);
     }
 
     public OntologyFileDefinition(String uri, String filePath, Lang fileType, String prefix, String prefixUri) throws URISyntaxException {
+        this(uri, filePath, fileType, prefix, prefixUri, false);
+    }
+
+    public OntologyFileDefinition(String uri, String filePath, Lang fileType, String prefix, String prefixUri, boolean addToStaple) throws URISyntaxException {
         String baseUri = uri.replaceAll("#", "");
         this.uri = new URI(baseUri);
         this.prefixUri = new URI(StringUtils.defaultIfEmpty(prefixUri, baseUri + "#"));
         this.filePath = filePath;
         this.fileType = fileType;
         this.prefix = prefix;
+        this.addToStaple = addToStaple;
     }
 
     public URI getUri() {
@@ -60,4 +67,7 @@ public class OntologyFileDefinition {
         return prefixUri;
     }
 
+    public boolean getAddToStaple() {
+        return addToStaple;
+    }
 }

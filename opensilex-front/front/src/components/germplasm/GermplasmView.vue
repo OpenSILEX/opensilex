@@ -36,7 +36,7 @@
       icon="fa#seedling"
       modalSize="lg"
       @onCreate="germplasmList.refresh()"
-      @onUpdate="germplasmList.refresh()"
+      @onUpdate="germplasmList.updateSelectedGermplasm()"
     ></opensilex-ModalForm>
     <b-modal ref="helpModal" size="xl" hide-header hide-footer>
       <opensilex-GermplasmHelp @hideBtnIsClicked="hide()"></opensilex-GermplasmHelp>

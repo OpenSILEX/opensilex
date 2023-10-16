@@ -419,13 +419,15 @@ export default class GermplasmList extends Vue {
 
   refresh() {
     this.tableRef.selectAll = false;
-    this.$opensilex.updateURLParameters(this.filter);
+    this.updateSelectedGermplasm()
+    this.tableRef.changeCurrentPage(1);     
+    }
 
+    updateSelectedGermplasm(){
+        this.tableRef.selectAll = false;
+        this.$opensilex.updateURLParameters(this.filter);
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.changeCurrentPage(1);
-        } else {
-            this.tableRef.changeCurrentPage(1);
         }
     }
 

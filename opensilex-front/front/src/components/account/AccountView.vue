@@ -1,6 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-CreateButton
+        v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       @click="AccountForm.showCreateForm()"
       label="AccountView.create"
       class="createButton">
@@ -16,7 +17,7 @@
     </opensilex-PageContent>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       ref="AccountForm"
       component="opensilex-AccountForm"
       createTitle="AccountView.create"

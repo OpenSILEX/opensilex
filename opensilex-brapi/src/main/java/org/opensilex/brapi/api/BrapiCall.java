@@ -47,9 +47,7 @@ abstract class BrapiCall {
                             Arrays.asList(call.getAnnotation(Produces.class).value())
                     );
 
-                    Set<String> callVersions = new HashSet<>(
-                            Collections.singletonList(call.getAnnotation(BrapiVersion.class).value())
-                    );
+                    Set<String> callVersions = Collections.singleton(call.getAnnotation(BrapiVersion.class).value());
 
                     Set<String> callMethods = new HashSet<>();
                     if (call.isAnnotationPresent(GET.class)) {

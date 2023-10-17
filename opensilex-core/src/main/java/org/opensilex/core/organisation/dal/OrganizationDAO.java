@@ -219,10 +219,10 @@ public class OrganizationDAO {
             if (Objects.nonNull(pattern) && !pattern.matcher(org.getName()).find()) {
                 return false;
             }
-            if (org.getFacilities().stream().noneMatch(facilityModel -> SPARQLDeserializers.compareURIs(filter.getFacilityURI(),facilityModel.getUri()))) {
+            if (Objects.nonNull(filter.getFacilityURI()) &&  org.getFacilities().stream().noneMatch(facilityModel -> SPARQLDeserializers.compareURIs(filter.getFacilityURI(),facilityModel.getUri()))) {
                 return false;
             }
-            if (org.getChildren().stream().noneMatch(parentOrga -> SPARQLDeserializers.compareURIs(filter.getDirectChildURI(),parentOrga.getUri()))) {
+            if (Objects.nonNull(filter.getDirectChildURI()) &&  org.getChildren().stream().noneMatch(parentOrga -> SPARQLDeserializers.compareURIs(filter.getDirectChildURI(),parentOrga.getUri()))) {
                 return false;
             }
             return Objects.isNull(restrictedOrganizationSet) || restrictedOrganizationSet.contains(org.getUri());

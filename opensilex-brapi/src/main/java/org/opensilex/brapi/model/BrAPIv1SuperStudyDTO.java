@@ -1,37 +1,33 @@
 //******************************************************************************
-//                          StudyDTO.java
+//                          BrAPIv1StudyDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
+import java.time.LocalDate;
+import java.util.Map;
+
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class StudyDTO {
+public class BrAPIv1SuperStudyDTO {
     private String active;
-    private Map additionalInfo;
+    private Map<String, String> additionalInfo;
     private String commonCropName;
     private String documentationURL;
     private String endDate;
     private String locationDbId;
     private String locationName;
-    private String name;
     private String programDbId;
     private String programName;
-    private List<Season> seasons;
     private String startDate;
     private String studyDbId;
     private String studyName;
-    private String studyType;
     private String studyTypeDbId;
     private String studyTypeName;
     private String trialDbId;
@@ -45,11 +41,11 @@ public class StudyDTO {
         this.active = active;
     }
 
-    public Map getAdditionalInfo() {
+    public Map<String, String> getAdditionalInfo() {
         return additionalInfo;
     }
 
-    public void setAdditionalInfo(Map additionalInfo) {
+    public void setAdditionalInfo(Map<String, String> additionalInfo) {
         this.additionalInfo = additionalInfo;
     }
 
@@ -93,14 +89,6 @@ public class StudyDTO {
         this.locationName = locationName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getProgramDbId() {
         return programDbId;
     }
@@ -115,14 +103,6 @@ public class StudyDTO {
 
     public void setProgramName(String programName) {
         this.programName = programName;
-    }
-
-    public List<Season> getSeasons() {
-        return seasons;
-    }
-
-    public void setSeasons(List<Season> seasons) {
-        this.seasons = seasons;
     }
 
     public String getStartDate() {
@@ -147,14 +127,6 @@ public class StudyDTO {
 
     public void setStudyName(String studyName) {
         this.studyName = studyName;
-    }
-
-    public String getStudyType() {
-        return studyType;
-    }
-
-    public void setStudyType(String studyType) {
-        this.studyType = studyType;
     }
 
     public String getStudyTypeDbId() {
@@ -188,36 +160,39 @@ public class StudyDTO {
     public void setTrialName(String trialName) {
         this.trialName = trialName;
     }
-    
-    public static StudyDTO fromModel(ExperimentModel model) {
-        StudyDTO study = new StudyDTO();
-        
-        if (model.getUri() != null) {
-            study.setStudyDbId(model.getUri().toString());
-        }        
-        study.setName(model.getName());
-        study.setStudyName(model.getName());
-        
+
+    public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model) {
+
+        this.setStudyDbId(model.getUri().toString());
+        this.setStudyName(model.getName());
+
         if (model.getStartDate() != null) {
-            study.setStartDate(model.getStartDate().toString());
+            this.setStartDate(model.getStartDate().toString());
         }
-        
+
         if (model.getEndDate() != null) {
-            study.setEndDate(model.getEndDate().toString());
-        }        
-        
+            this.setEndDate(model.getEndDate().toString());
+        }
+
         LocalDate date = LocalDate.now();
         if ((model.getStartDate() != null && model.getStartDate().isAfter(date)) || (model.getEndDate() != null && model.getEndDate().isBefore(date)))  {
-            study.setActive("false");
+            this.setActive("false");
         } else {
-            study.setActive("true");
+            this.setActive("true");
         }
-        List<Season> seasons = new ArrayList<>();
-        Season season = new Season();
-        //season.setYear(model.getCampaign());
-        seasons.add(season);
-        study.setSeasons(seasons);
-        
-        return study;
+
+        if (!model.getProjects().isEmpty()){
+            // ProgramName not a list so only the first one is kept
+            this.setProgramName(model.getProjects().get(0).getName());
+            this.setProgramDbId(model.getProjects().get(0).getUri().toString());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1SuperStudyDTO fromModel(ExperimentModel model) {
+        BrAPIv1SuperStudyDTO study = new BrAPIv1SuperStudyDTO();
+        return study.extractFromModel(model);
+
     }
 }

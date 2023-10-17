@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -156,10 +157,10 @@ public class OrganizationAPI {
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
 
-        List<OrganizationModel> organizations = dao.search(
-                pattern,
-                restrictedOrganizationUris.isEmpty() ? null : restrictedOrganizationUris,
-                currentUser);
+        List<OrganizationModel> organizations = dao.search(new OrganizationSearchFilter()
+                .setNameFilter(pattern)
+                .setRestrictedOrganizations(restrictedOrganizationUris.isEmpty() ? null : restrictedOrganizationUris)
+                .setUser(currentUser));
         ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
         return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }

@@ -6,59 +6,34 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.opensilex.brapi.model.Call;
-import org.opensilex.brapi.model.GermplasmDTO;
+import io.swagger.annotations.*;
+import org.opensilex.brapi.responses.BrAPIv1GermplasmListResponse;
+import org.opensilex.brapi.model.BrAPIv1GermplasmDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+
 /**
- * @see BrAPI documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * The BrAPI germplasm corresponds to an accession in OpenSILEX
  * @author Alice BOIZET
  */
 @Api("BRAPI")
-@Path("/brapi/v1/")
-public class GermplasmAPI implements BrapiCall {
-    
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> call1Methods = new ArrayList<>();
-        call1Methods.add("GET");
-        ArrayList<String> call1Versions = new ArrayList<>();
-        call1Versions.add("1.3");
-        Call call1 = new Call("germplasm", calldatatypes, call1Methods, call1Versions);
-       
-        calls.add(call1);
-        
-        return calls;
-    }    
+@Path("/brapi/")
+public class GermplasmAPI extends BrapiCall {
     
     @Inject
     private SPARQLService sparql;
@@ -70,12 +45,13 @@ public class GermplasmAPI implements BrapiCall {
     AccountModel currentUser;
     
     @GET
-    @Path("germplasm")
+    @Path("v1/germplasm")
+    @BrapiVersion("1.3")
     @ApiOperation("Submit a search request for germplasm")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = GermplasmDTO.class),
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1GermplasmListResponse.class),
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -92,7 +68,7 @@ public class GermplasmAPI implements BrapiCall {
         if (germplasmPUI != null && uri == null) {
             uri = germplasmPUI;
         }
-        
+
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
                 currentUser,
                 uri,
@@ -103,11 +79,11 @@ public class GermplasmAPI implements BrapiCall {
         );
         
         // Convert paginated list to DTO
-        ListWithPagination<GermplasmDTO> resultDTOList = resultList.convert(
-                GermplasmDTO.class,
-                GermplasmDTO::fromModel
+        ListWithPagination<BrAPIv1GermplasmDTO> resultDTOList = resultList.convert(
+                BrAPIv1GermplasmDTO.class,
+                BrAPIv1GermplasmDTO::fromModel
         );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new BrAPIv1GermplasmListResponse(resultDTOList).getResponse();
     }
     
 }

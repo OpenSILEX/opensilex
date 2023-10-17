@@ -1,20 +1,22 @@
 //******************************************************************************
-//                          Scale.java
+//                          BrAPIv1ScaleDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
+
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class Scale {
+public class BrAPIv1ScaleDTO {
     private String dataType; // - Code - Duration - Nominal - Numerical - Ordinal - Text - Date
     private String decimalPlaces;
-    private String name;
-    private OntologyReference ontologyReference;
+    private BrAPIv1OntologyReferenceDTO ontologyReference;
     private String scaleDbId;
     private String scaleName;
     private String validValues;
@@ -36,19 +38,11 @@ public class Scale {
         this.decimalPlaces = decimalPlaces;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public OntologyReference getOntologyReference() {
+    public BrAPIv1OntologyReferenceDTO getOntologyReference() {
         return ontologyReference;
     }
 
-    public void setOntologyReference(OntologyReference ontologyReference) {
+    public void setOntologyReference(BrAPIv1OntologyReferenceDTO ontologyReference) {
         this.ontologyReference = ontologyReference;
     }
 
@@ -83,5 +77,22 @@ public class Scale {
     public void setXref(String xref) {
         this.xref = xref;
     }
-    
+
+    public BrAPIv1ScaleDTO extractFromModel(UnitModel unitModel){
+
+        if (unitModel.getUri() != null){
+            this.setScaleDbId(unitModel.getUri().toString());
+        }
+
+        if (unitModel.getName() != null){
+            this.setScaleName(unitModel.getName());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1ScaleDTO fromModel(UnitModel unitModel){
+        BrAPIv1ScaleDTO scale = new BrAPIv1ScaleDTO();
+        return scale.extractFromModel(unitModel);
+    }
 }

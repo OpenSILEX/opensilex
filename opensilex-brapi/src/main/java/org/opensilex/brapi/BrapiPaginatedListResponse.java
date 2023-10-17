@@ -6,13 +6,14 @@
 //******************************************************************************
 package org.opensilex.brapi;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.core.Response;
 import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.MetadataDTO;
 import org.opensilex.server.response.PaginationDTO;
 import org.opensilex.utils.ListWithPagination;
+
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -20,24 +21,16 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class BrapiPaginatedListResponse<T> extends JsonResponse<BrapiDataResponsePart<List<T>>> {
 
-    /**
-     * Constructor.
-     *
-     * @param paginatedList
-     */
     public BrapiPaginatedListResponse(ListWithPagination<T> paginatedList) {
         this(Response.Status.OK, paginatedList);
     }
 
     /**
      * Constructor with specific status.
-     *
-     * @param status
-     * @param paginatedList
      */
     public BrapiPaginatedListResponse(Response.Status status, ListWithPagination<T> paginatedList) {
         super(status);
-        this.result = new BrapiDataResponsePart(paginatedList.getList());
+        this.result = new BrapiDataResponsePart<>(paginatedList.getList());
         this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
     }
 
@@ -50,22 +43,10 @@ public class BrapiPaginatedListResponse<T> extends JsonResponse<BrapiDataRespons
 
     /**
      * Constructor for a list without pagination with a specific status.
-     *
-     * @param status
-     * @param list
      */
     public BrapiPaginatedListResponse(Response.Status status, List<T> list) {
         super(status);
-        setResult(new BrapiDataResponsePart(list));
-    }
-
-    /**
-     * Constructor for a list without pagination with OK status.
-     *
-     * @param list
-     */
-    public BrapiPaginatedListResponse(List<T> list) {
-        this(Response.Status.OK, list);
+        setResult(new BrapiDataResponsePart<>(list));
     }
 
     @Override

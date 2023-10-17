@@ -1,52 +1,48 @@
 //******************************************************************************
-//                          GermplasmDTO.java
+//                          BrAPIv1GermplasmDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.util.List;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
+import java.util.List;
+
 /**
- * @see Brapi documentation V1.3
- * https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice BOIZET
  */
-public class GermplasmDTO {
+public class BrAPIv1GermplasmDTO {
 
     protected String accessionNumber;
     protected String acquisitionDate;
-    protected String additionalInfo;
-    protected String biologicalStatusOfAccessionCode;
-    protected String biologicalStatusOfAccessionDescription;
+    protected Integer biologicalStatusOfAccessionCode;
     protected String breedingMethodDbId;
-    protected String collection;
     protected String commonCropName;
     protected String countryOfOriginCode;
     protected String defaultDisplayName;
     protected String documentationURL;
-    protected List donors;
-    protected List externalReferences;
-    protected String genus;
+    protected List<Object> donors; // type Donor has no equivalent in OpenSILEX
     protected String germplasmDbId;
+    protected String germplasmGenus;
     protected String germplasmName;
-    protected List germplasmOrigin;
-    protected String germplasmPreprocessing;
+    protected String germplasmPUI;
+
+    protected String germplasmSpecies;
     protected String instituteCode;
     protected String instituteName;
     protected String pedigree;
     protected String seedSource;
-    protected String seedSourceDescription;
-    protected String species;
     protected String speciesAuthority;
-    protected List storageTypes;
     protected String subtaxa;
     protected String subtaxaAuthority;
-    protected List synonyms;
-    protected List taxonIds;
-
+    protected List<String> synonyms;
+    protected List<Object> taxonIds; // type TaxonId has no equivalent in OpenSILEX
+    protected String sourceName;
+    protected String taxonId;
+    protected List<String> typeOfGermplasmStorageCode;
     public String getAccessionNumber() {
         return accessionNumber;
     }
@@ -63,28 +59,12 @@ public class GermplasmDTO {
         this.acquisitionDate = acquisitionDate;
     }
 
-    public String getAdditionalInfo() {
-        return additionalInfo;
-    }
-
-    public void setAdditionalInfo(String additionalInfo) {
-        this.additionalInfo = additionalInfo;
-    }
-
-    public String getBiologicalStatusOfAccessionCode() {
+    public Integer getBiologicalStatusOfAccessionCode() {
         return biologicalStatusOfAccessionCode;
     }
 
-    public void setBiologicalStatusOfAccessionCode(String biologicalStatusOfAccessionCode) {
+    public void setBiologicalStatusOfAccessionCode(Integer biologicalStatusOfAccessionCode) {
         this.biologicalStatusOfAccessionCode = biologicalStatusOfAccessionCode;
-    }
-
-    public String getBiologicalStatusOfAccessionDescription() {
-        return biologicalStatusOfAccessionDescription;
-    }
-
-    public void setBiologicalStatusOfAccessionDescription(String biologicalStatusOfAccessionDescription) {
-        this.biologicalStatusOfAccessionDescription = biologicalStatusOfAccessionDescription;
     }
 
     public String getBreedingMethodDbId() {
@@ -93,14 +73,6 @@ public class GermplasmDTO {
 
     public void setBreedingMethodDbId(String breedingMethodDbId) {
         this.breedingMethodDbId = breedingMethodDbId;
-    }
-
-    public String getCollection() {
-        return collection;
-    }
-
-    public void setCollection(String collection) {
-        this.collection = collection;
     }
 
     public String getCommonCropName() {
@@ -135,28 +107,12 @@ public class GermplasmDTO {
         this.documentationURL = documentationURL;
     }
 
-    public List getDonors() {
+    public List<Object> getDonors() {
         return donors;
     }
 
-    public void setDonors(List donors) {
+    public void setDonors(List<Object> donors) {
         this.donors = donors;
-    }
-
-    public List getExternalReferences() {
-        return externalReferences;
-    }
-
-    public void setExternalReferences(List externalReferences) {
-        this.externalReferences = externalReferences;
-    }
-
-    public String getGenus() {
-        return genus;
-    }
-
-    public void setGenus(String genus) {
-        this.genus = genus;
     }
 
     public String getGermplasmDbId() {
@@ -167,6 +123,14 @@ public class GermplasmDTO {
         this.germplasmDbId = germplasmDbId;
     }
 
+    public String getGermplasmGenus() {
+        return germplasmGenus;
+    }
+
+    public void setGermplasmGenus(String germplasmGenus) {
+        this.germplasmGenus = germplasmGenus;
+    }
+
     public String getGermplasmName() {
         return germplasmName;
     }
@@ -175,20 +139,20 @@ public class GermplasmDTO {
         this.germplasmName = germplasmName;
     }
 
-    public List getGermplasmOrigin() {
-        return germplasmOrigin;
+    public String getGermplasmPUI() {
+        return germplasmPUI;
     }
 
-    public void setGermplasmOrigin(List germplasmOrigin) {
-        this.germplasmOrigin = germplasmOrigin;
+    public void setGermplasmPUI(String germplasmPUI) {
+        this.germplasmPUI = germplasmPUI;
     }
 
-    public String getGermplasmPreprocessing() {
-        return germplasmPreprocessing;
+    public String getGermplasmSpecies() {
+        return germplasmSpecies;
     }
 
-    public void setGermplasmPreprocessing(String germplasmPreprocessing) {
-        this.germplasmPreprocessing = germplasmPreprocessing;
+    public void setGermplasmSpecies(String germplasmSpecies) {
+        this.germplasmSpecies = germplasmSpecies;
     }
 
     public String getInstituteCode() {
@@ -223,36 +187,12 @@ public class GermplasmDTO {
         this.seedSource = seedSource;
     }
 
-    public String getSeedSourceDescription() {
-        return seedSourceDescription;
-    }
-
-    public void setSeedSourceDescription(String seedSourceDescription) {
-        this.seedSourceDescription = seedSourceDescription;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
     public String getSpeciesAuthority() {
         return speciesAuthority;
     }
 
     public void setSpeciesAuthority(String speciesAuthority) {
         this.speciesAuthority = speciesAuthority;
-    }
-
-    public List getStorageTypes() {
-        return storageTypes;
-    }
-
-    public void setStorageTypes(List storageTypes) {
-        this.storageTypes = storageTypes;
     }
 
     public String getSubtaxa() {
@@ -271,20 +211,44 @@ public class GermplasmDTO {
         this.subtaxaAuthority = subtaxaAuthority;
     }
 
-    public List getSynonyms() {
+    public List<String> getSynonyms() {
         return synonyms;
     }
 
-    public void setSynonyms(List synonyms) {
+    public void setSynonyms(List<String> synonyms) {
         this.synonyms = synonyms;
     }
 
-    public List getTaxonIds() {
+    public List<Object> getTaxonIds() {
         return taxonIds;
     }
 
-    public void setTaxonIds(List taxonIds) {
+    public void setTaxonIds(List<Object> taxonIds) {
         this.taxonIds = taxonIds;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public String getTaxonId() {
+        return taxonId;
+    }
+
+    public void setTaxonId(String taxonId) {
+        this.taxonId = taxonId;
+    }
+
+    public List<String> getTypeOfGermplasmStorageCode() {
+        return typeOfGermplasmStorageCode;
+    }
+
+    public void setTypeOfGermplasmStorageCode(List<String> typeOfGermplasmStorageCode) {
+        this.typeOfGermplasmStorageCode = typeOfGermplasmStorageCode;
     }
 
     /**
@@ -293,12 +257,14 @@ public class GermplasmDTO {
      * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
-    public static GermplasmDTO fromModel(GermplasmModel model) {
-        GermplasmDTO dto = new GermplasmDTO();
+    public static BrAPIv1GermplasmDTO fromModel(GermplasmModel model) {
+        BrAPIv1GermplasmDTO dto = new BrAPIv1GermplasmDTO();
         dto.setGermplasmDbId(model.getUri().toString());
+        dto.setGermplasmPUI(model.getUri().toString());
 
         if (model.getLabel() != null) {
             dto.setGermplasmName(model.getLabel().toString());
+            dto.setDefaultDisplayName(model.getLabel().toString());
         }
 
         if (model.getCode() != null) {
@@ -307,16 +273,16 @@ public class GermplasmDTO {
 
         if (model.getSpecies() != null) {
             try {
-                dto.setSpecies(model.getSpecies().getLabel().getDefaultValue());
+                dto.setGermplasmSpecies(model.getSpecies().getLabel().getDefaultValue());
                 dto.setCommonCropName(model.getSpecies().getLabel().getDefaultValue());
             } catch (Exception e) {
-                dto.setSpecies(model.getSpecies().getUri().toString());
+                dto.setGermplasmSpecies(model.getSpecies().getUri().toString());
             }
         }
 
         if (model.getVariety() != null) {
             try {
-                dto.setSubtaxa(model.getVariety().getLabel().getDefaultValue());
+                dto.setSubtaxa("var. " + model.getVariety().getLabel().getDefaultValue()); //TODO : change this to latin label when Multilabels are added because the name isn't necessarily in latin
             } catch (Exception e) {
                 dto.setSubtaxa(model.getVariety().getUri().toString());
             }
@@ -324,6 +290,14 @@ public class GermplasmDTO {
 
         if (model.getInstitute() != null) {
             dto.setInstituteCode(model.getInstitute());
+        }
+
+        if (model.getWebsite() != null) {
+            dto.setDocumentationURL(model.getWebsite().toString());
+        }
+
+        if (model.getSynonyms() != null) {
+            dto.setSynonyms(model.getSynonyms());
         }
 
         return dto;

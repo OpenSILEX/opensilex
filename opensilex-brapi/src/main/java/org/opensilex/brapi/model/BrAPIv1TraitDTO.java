@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          Trait.java
+//                          BrAPIv1TraitDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -10,24 +10,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class Trait {
-        List<String> alternativeAbbreviations;
-        String attribute;
-        @JsonProperty("class")
-        String brapiClass;
-        String description;
-        String entity;
-        String mainAbbreviation;
-        String name;
-        OntologyReference ontologyReference;
-        String status;
-        List<String> synonyms;
-        String traitDbId;
-        String traitName;
-        String xref;
+public class BrAPIv1TraitDTO {
+    private List<String> alternativeAbbreviations;
+    private String attribute;
+    @JsonProperty("class")
+    private String brapiClass;
+    private String description;
+    private String entity;
+    private String mainAbbreviation;
+    private String name;
+    private BrAPIv1OntologyReferenceDTO ontologyReference;
+    private String status;
+    private List<String> synonyms;
+    private String traitDbId;
+    private String traitName;
+    private String xref;
 
     public List<String> getAlternativeAbbreviations() {
         return alternativeAbbreviations;
@@ -85,11 +85,11 @@ public class Trait {
         this.name = name;
     }
 
-    public OntologyReference getOntologyReference() {
+    public BrAPIv1OntologyReferenceDTO getOntologyReference() {
         return ontologyReference;
     }
 
-    public void setOntologyReference(OntologyReference ontologyReference) {
+    public void setOntologyReference(BrAPIv1OntologyReferenceDTO ontologyReference) {
         this.ontologyReference = ontologyReference;
     }
 

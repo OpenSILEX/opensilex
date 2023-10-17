@@ -1,28 +1,28 @@
 //******************************************************************************
-//                          OntologyReference.java
+//                          BrAPIv1OntologyReferenceDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
 import java.util.List;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class OntologyReference {
-    private List<DocumentationLink> documentationLinks;
+public class BrAPIv1OntologyReferenceDTO {
+    private List<BrAPIv1DocumentationLinkDTO> documentationLinks;
     private String ontologyDbId;
     private String ontologyName;
     private String version;
 
-    public List<DocumentationLink> getDocumentationLinks() {
+    public List<BrAPIv1DocumentationLinkDTO> getDocumentationLinks() {
         return documentationLinks;
     }
 
-    public void setDocumentationLinks(List<DocumentationLink> documentationLinks) {
+    public void setDocumentationLinks(List<BrAPIv1DocumentationLinkDTO> documentationLinks) {
         this.documentationLinks = documentationLinks;
     }
 

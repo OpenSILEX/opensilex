@@ -2252,6 +2252,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
+    public List<URI> getRdfTypes(URI uri, Node graph) throws SPARQLException {
+
+        Var typeVar = makeVar("type");
+        SelectBuilder select = new SelectBuilder().addVar(typeVar).setDistinct(true);
+        Node subject = SPARQLDeserializers.nodeURI(uri);
+
+        if(graph != null){
+            select.addGraph(graph,subject, RDF.type, typeVar);
+        }else{
+            select.addWhere(subject, RDF.type, typeVar);
+        }
+
+        return connection.executeSelectQueryAsStream(select)
+                .map(result -> URIDeserializer.formatURI(result.getStringValue(typeVar.getVarName())))
+                .collect(Collectors.toList());
+    }
+
     /**
      *
      * @param graph the SPARQL graph (optional)

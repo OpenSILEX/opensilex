@@ -29,9 +29,25 @@ import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
     export default class AgroportalEntityCreate extends Vue {
+
+        $opensilex: OpenSilexVuePlugin;
+
+        entityService: VariablesService;
+        agroportalService: AgroportalAPIService;
+
+        static selectedOntologies: string[] = [
+            ExternalOntologies.AGROVOC,
+            ExternalOntologies.AGROPORTAL,
+            ExternalOntologies.BIOPORTAL,
+            ExternalOntologies.CROP_ONTOLOGY,
+            ExternalOntologies.PLANTEOME,
+            ExternalOntologies.PLANT_ONTOLOGY
+        ];
 
         steps = [
             {component: "opensilex-AgroportalEntityForm",
@@ -48,25 +64,15 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
             }
         ];
 
-        static selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
-
         title = "";
         uriGenerated = true;
         editMode = false;
         errorMsg: String = "";
-        service: VariablesService;
 
         @Ref("wizardRef") readonly wizardRef!: any;
 
         checkAgroportalReachable() {
-          return this.service.pingAgroportal(1000).then((http) => {
+          return this.agroportalService.pingAgroportal(1000).then((http) => {
             if (http && http.response) {
               let isReachable = http.response.result;
               if (!isReachable) {
@@ -77,7 +83,12 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         created(){
-            this.service = this.$opensilex.getService("opensilex.VariablesService");
+            this.entityService =
+                this.$opensilex
+                    .getService<VariablesService>("opensilex.VariablesService");
+            this.agroportalService =
+                this.$opensilex
+                    .getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
         }
 
         handleErrorMessage(errorMsg: string) {
@@ -93,7 +104,6 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
             this.wizardRef.showEditForm(form);
         }
 
-        $opensilex: any;
 
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
@@ -111,7 +121,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         create(form: EntityCreationDTO){
-            return this.service
+            return this.entityService
                 .createEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
@@ -129,7 +139,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         update(form: EntityUpdateDTO) {
-            return this.service
+            return this.entityService
                 .updateEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;

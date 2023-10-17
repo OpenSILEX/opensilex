@@ -60,12 +60,13 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 
 @Component
 export default class AgroportalResults extends Vue {
 
   $opensilex: OpenSilexVuePlugin;
-  entityService: VariablesService;
+  service: AgroportalAPIService;
 
   @Prop({
     default: ""
@@ -115,7 +116,7 @@ export default class AgroportalResults extends Vue {
     console.debug(this.ontologies);
 
     this.$opensilex.disableLoader();
-    this.entityService.searchThroughAgroportal(
+    this.service.searchThroughAgroportal(
         this.text,
         this.ontologies.join(","),
         undefined,
@@ -148,7 +149,7 @@ export default class AgroportalResults extends Vue {
   }
 
   created() {
-    this.entityService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
+    this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
 
 }

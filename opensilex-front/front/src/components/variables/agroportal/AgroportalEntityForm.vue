@@ -19,7 +19,6 @@
                   label="component.common.name"
                   type="text"
                   placeholder="search"
-                  :baseOntologies="baseOntologies"
                   :selected.sync="ontologies"
                   @change="onSearchTextChange"
               ></opensilex-AgroportalSearch>
@@ -98,7 +97,6 @@ export default class AgroportalEntityForm extends Vue {
 
     uriGenerated = true;
     text = "";
-    baseOntologies: string[] = [];
     ontologies: string[] = [];
 
     @Prop()

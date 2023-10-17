@@ -228,7 +228,7 @@ public class GermplasmGroupApi {
                 .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.search(
-                filter,false
+                filter,false, false
         );
 
         // Convert paginated list to DTO

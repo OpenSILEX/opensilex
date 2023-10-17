@@ -29,6 +29,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -207,7 +208,6 @@ public class GermplasmGroupDAO {
                 .addVar(object_type)
                 .addVar(object_name)
                 .addGraph(subjectDefaultGraph, new WhereBuilder()
-                        .addWhere(subjectVar, RDF.type, subjectType)
                         .addWhere(subjectVar, predicate, objectVar))
                 .addGraph(objectDefaultGraph, new WhereBuilder()
                         .addWhere(objectVar, RDFS.label, object_name)
@@ -254,8 +254,8 @@ public class GermplasmGroupDAO {
     }
 
     public static class ManyToManyNestedUpdateData {
-        String subjectUri;
-        SPARQLNamedResourceModel nestedModel;
+        public String subjectUri;
+        public SPARQLNamedResourceModel nestedModel;
 
         ManyToManyNestedUpdateData(String subjectUri, SPARQLNamedResourceModel nestedModel){
             this.subjectUri = subjectUri;

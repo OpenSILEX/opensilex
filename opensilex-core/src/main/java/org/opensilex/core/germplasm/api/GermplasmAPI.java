@@ -20,6 +20,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -39,7 +40,9 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -55,10 +58,12 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -187,7 +192,7 @@ public class GermplasmAPI {
     ) throws Exception {
         // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        GermplasmModel model = germplasmDAO.get(uri, currentUser);
+        GermplasmModel model = germplasmDAO.get(uri, currentUser, true);
 
         // Check if germplasm is found
         if (model != null) {
@@ -229,7 +234,7 @@ public class GermplasmAPI {
         filter.setLang(currentUser.getLanguage());
         filter.setUris(uris);
 
-        List<GermplasmModel> models = germplasmDAO.search(filter,false).getList();
+        List<GermplasmModel> models = germplasmDAO.search(filter,false, false).getList();
 
     if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
@@ -395,8 +400,8 @@ public class GermplasmAPI {
                  .setMetadata(metadata)
                  .setGroup(group)
                  .setParentGermplasms(parentGermplasms)
-                 .setParentAGermplasms(parentGermplasmsM)
-                 .setParentBGermplasms(parentGermplasmsF);
+                 .setParentMGermplasms(parentGermplasmsM)
+                 .setParentFGermplasms(parentGermplasmsF);
 
          searchFilter.setOrderByList(orderByList)
                  .setPage(page)
@@ -406,7 +411,7 @@ public class GermplasmAPI {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
 
         ListWithPagination<GermplasmModel> resultList = dao.search(
-               searchFilter,false
+               searchFilter,false, false
         );
 
         // Convert paginated list to DTO
@@ -433,17 +438,33 @@ public class GermplasmAPI {
     ) throws Exception {
 
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> resultList = dao.search(searchFilter,true).getList();
+        List<GermplasmModel> resultList = dao.search(searchFilter,true, true).getList();
 
         return buildCSV(resultList);
     }
     
-    private Response buildCSV(List<GermplasmModel> germplasmList) throws IOException {
-                // Convert list to DTO
+    private Response buildCSV(List<GermplasmModel> germplasmList) throws Exception {
+        // Convert list to DTO
+        //During this operation count the maximum number of occurrences of each duplicatable column
         List<GermplasmGetSingleDTO> resultDTOList = new ArrayList<>();
+        int maximumParentAmount = 0;
+        int maximumParentMAmount = 0;
+        int maximumParentFAmount = 0;
         Set<String> metadataKeys = new HashSet<>();
         for (GermplasmModel germplasm : germplasmList) {
             GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(germplasm);
+            List<GermplasmGetAllDTO> parents = dto.getHasParentGermplasm();
+            if(!CollectionUtils.isEmpty(parents) && parents.size() > maximumParentAmount){
+                maximumParentAmount = parents.size();
+            }
+            List<GermplasmGetAllDTO> parentsM = dto.getHasParentGermplasmM();
+            if(!CollectionUtils.isEmpty(parentsM) && parentsM.size() > maximumParentMAmount){
+                maximumParentMAmount = parentsM.size();
+            }
+            List<GermplasmGetAllDTO> parentsF = dto.getHasParentGermplasmF();
+            if(!CollectionUtils.isEmpty(parentsF) && parentsF.size() > maximumParentFAmount){
+                maximumParentFAmount = parentsF.size();
+            }
             resultDTOList.add(dto);
             Map<String,String> metadata = dto.getMetadata();
             if (metadata != null) {
@@ -456,6 +477,7 @@ public class GermplasmAPI {
         }
         
         //Construct manually json with metadata to convert it to csv
+        //Handle the creation of duplicated columns here
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
 
@@ -463,6 +485,40 @@ public class GermplasmAPI {
         if(jsonTree.isArray()) {
             for(JsonNode jsonNode : jsonTree) {
                 ObjectNode objectNode = jsonNode.deepCopy();
+
+                //Capture parent information, remove then add duplicated nodes with a suffix
+                JsonNode parents = objectNode.get(GermplasmGetExportDTO.hasParentGermplasmFieldName);
+                JsonNode parentsM = objectNode.get(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
+                JsonNode parentsF = objectNode.get(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
+                objectNode.remove(GermplasmGetExportDTO.hasParentGermplasmFieldName);
+                objectNode.remove(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
+                objectNode.remove(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
+
+                int i = 0;
+                Iterator<JsonNode> parentsIterator = parents.elements();
+                while(parentsIterator.hasNext()){
+                    JsonNode parent = parentsIterator.next();
+                    String nextParentUri = parent.get("uri").asText();
+                    objectNode.put(GermplasmGetExportDTO.hasParentGermplasmFieldName + i, nextParentUri);
+                    i++;
+                }
+                i = 0;
+                parentsIterator = parentsM.elements();
+                while(parentsIterator.hasNext()){
+                    JsonNode parent = parentsIterator.next();
+                    String nextParentUri = parent.get("uri").asText();
+                    objectNode.put(GermplasmGetExportDTO.hasParentMGermplasmFieldName + i, nextParentUri);
+                    i++;
+                }
+                i = 0;
+                parentsIterator = parentsF.elements();
+                while(parentsIterator.hasNext()){
+                    JsonNode parent = parentsIterator.next();
+                    String nextParentUri = parent.get("uri").asText();
+                    objectNode.put(GermplasmGetExportDTO.hasParentFGermplasmFieldName + i, nextParentUri);
+                    i++;
+                }
+
                 JsonNode metadata = objectNode.get("metadata");
                 objectNode.remove("metadata");
                 JsonNode value = null;
@@ -492,18 +548,41 @@ public class GermplasmAPI {
         JsonNode firstObject = arrayNode.elements().next();
         firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
-        StringWriter str = new StringWriter();
+        StringWriter stringWriter = new StringWriter();
 
         CsvMapper csvMapper = new CsvMapper();
         csvMapper.writerFor(JsonNode.class)
                 .with(csvSchema)
-                .writeValue(str, arrayNode);
+                .writeValue(stringWriter, arrayNode);
+
+        //Modify final exported gigantic string to replace our temporary duplicated column names with their real name
+        //Remove any white spaces from these real names, as it seems to replace white spaces with a new column symbol
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        String giganticResultString = stringWriter.toString();
+        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentAmount; duplicatedIndex++){
+            giganticResultString = giganticResultString.replaceAll(
+                    GermplasmGetExportDTO.hasParentGermplasmFieldName + duplicatedIndex,
+                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasm.getURI()), currentUser.getLanguage())
+            );
+        }
+        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentMAmount; duplicatedIndex++){
+            giganticResultString = giganticResultString.replaceAll(
+                    GermplasmGetExportDTO.hasParentMGermplasmFieldName + duplicatedIndex,
+                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasmM.getURI()), currentUser.getLanguage()).replaceAll(" ","")
+            );
+        }
+        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentFAmount; duplicatedIndex++){
+            giganticResultString = giganticResultString.replaceAll(
+                    GermplasmGetExportDTO.hasParentFGermplasmFieldName + duplicatedIndex,
+                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasmF.getURI()), currentUser.getLanguage()).replaceAll(" ","")
+            );
+        }
 
         LocalDate date = LocalDate.now();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         String fileName = "export_germplasm" + dtf.format(date) + ".csv";
 
-        return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM)
+        return Response.ok(giganticResultString, MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
     }
@@ -563,7 +642,7 @@ public class GermplasmAPI {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
 
         //check
-        GermplasmModel germplasmToDelete = dao.get(uri, currentUser);
+        GermplasmModel germplasmToDelete = dao.get(uri, currentUser, false);
 
         if (germplasmToDelete == null) {
             throw new NotFoundURIException("Invalid or unknown Germplasm URI ", uri);
@@ -765,7 +844,7 @@ public class GermplasmAPI {
     public boolean checkVarietySpecies(URI speciesURI, URI varietyURI) {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel variety = dao.get(varietyURI, currentUser);
+            GermplasmModel variety = dao.get(varietyURI, currentUser, false);
             if (SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), speciesURI.toString())) {
                 return true;
             } else {
@@ -783,7 +862,7 @@ public class GermplasmAPI {
     private boolean checkAccessionSpecies(URI speciesURI, URI accessionURI) {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser);
+            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
             if (SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), speciesURI.toString())) {
                 return true;
             } else {
@@ -801,7 +880,7 @@ public class GermplasmAPI {
     private boolean checkAccessionVariety(URI varietyURI, URI accessionURI) {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser);
+            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
             if (SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), varietyURI.toString())) {
                 return true;
             } else {
@@ -938,7 +1017,7 @@ public class GermplasmAPI {
     private GermplasmModel getGermplasm(KeyGermplasm key) {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
-            GermplasmModel germplasm = dao.get(key.uri, currentUser);
+            GermplasmModel germplasm = dao.get(key.uri, currentUser, false);
             return germplasm;
         } catch (Exception e) {
             return null;

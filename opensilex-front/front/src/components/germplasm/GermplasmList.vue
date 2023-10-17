@@ -104,6 +104,19 @@
                                 </opensilex-FilterField>
                             </div>
 
+                          <!-- Germplasm Parents filter -->
+                          <div>
+                            <opensilex-FilterField>
+                              <opensilex-GermplasmSelector
+                                  label="GermplasmList.filter.parents"
+                                  :multiple="true"
+                                  :germplasm.sync="filter.parent_germplasms"
+                                  class="searchFilter"
+                                  @handlingEnterKey="refresh()"
+                              ></opensilex-GermplasmSelector>
+                            </opensilex-FilterField>
+                          </div>
+
                           <!-- Germplasm Group -->
                           <div>
                             <opensilex-FilterField>
@@ -321,9 +334,9 @@ export default class GermplasmList extends Vue {
     production_year: undefined,
     institute: undefined,
     experiment: undefined,
-    parents: [],
-    parents_a: [],
-    parents_b: [],
+    parent_germplasms: [],
+    parent_germplasms_m: [],
+    parent_germplasms_f: [],
     germplasm_group: undefined,
     uri: undefined,
     metadataKey: undefined,
@@ -338,9 +351,9 @@ export default class GermplasmList extends Vue {
           production_year: undefined,
           institute: undefined,
           experiment: undefined,
-          parents: [],
-          parents_a: [],
-          parents_b: [],
+          parent_germplasms: [],
+          parent_germplasms_m: [],
+          parent_germplasms_f: [],
           germplasm_group: undefined,
           uri: undefined,
           metadataKey: undefined,
@@ -449,9 +462,9 @@ export default class GermplasmList extends Vue {
       this.filter.germplasm_group,
       this.filter.institute,
       this.filter.experiment,
-      this.filter.parents,
-      this.filter.parents_a,
-      this.filter.parents_b,
+      this.filter.parent_germplasms,
+      this.filter.parent_germplasms_m,
+      this.filter.parent_germplasms_f,
       this.addMetadataFilter(),
       options.orderBy,
       options.currentPage,
@@ -657,6 +670,7 @@ en:
           metadataKey: Attribute name
           metadataValue: Attribute value
           germplasm-group: Germplasm Group
+          parents: Parents
 
 fr:
     GermplasmList:
@@ -694,5 +708,6 @@ fr:
           metadataKey: Nom de l'attribut
           metadataValue: Valeur de l'attribut
           germplasm-group: Groupe de ressources génétiques
+          parents: Parents
 
 </i18n>

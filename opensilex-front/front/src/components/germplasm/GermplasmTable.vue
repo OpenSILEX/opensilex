@@ -4,7 +4,7 @@
       <opensilex-GermplasmAddColumnModal
           class="searchFilter"
           ref="colModal"
-          :existingRdfAttributesObjects="existingRdfAttributesObjects"
+          :existingRdfAttributesObjects="existingDuplicatableRdfAttributesObjects"
           :existingRdfAttributesStringRule="existingRdfAttributesStringRule"
           @addingExistingColumn="addExistingColumnFromColModal"
           @addingUncontrolledColumn="addNonExistingColumnFromColModal"
@@ -236,7 +236,7 @@ export default class GermplasmTable extends Vue {
     },
   ];
 
-  existingRdfAttributesObjects: Array<SelectableItem> = [];
+  existingDuplicatableRdfAttributesObjects: Array<SelectableItem> = [];
 
   existingRdfAttributesStringRule:string = "";
 
@@ -860,7 +860,7 @@ export default class GermplasmTable extends Vue {
     }).catch(this.$opensilex.errorHandler);
     this.existingDuplicatablePropertiesNameList = [];
     existingPropertiesRessourceTree.forEach(resourceTree => {
-          this.existingRdfAttributesObjects.push({
+          this.existingDuplicatableRdfAttributesObjects.push({
             id: resourceTree.uri,
             label: resourceTree.name});
             this.existingDuplicatablePropertiesNameList.push(resourceTree.name);
@@ -871,9 +871,15 @@ export default class GermplasmTable extends Vue {
     this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString() + (tableStartingHeaderTitlesFields!=="" ? "," + tableStartingHeaderTitlesFields : "");
   }
 
-
+  /**
+   *
+   * @param columnName
+   * white spaces will be ignored (example parentA will be registered as parent A)
+   */
   tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem{
-    let filtered:Array<SelectableItem> = this.existingRdfAttributesObjects.filter(e => e.label == columnName);
+    let filtered:Array<SelectableItem> = this.existingDuplicatableRdfAttributesObjects.filter(
+        e => e.label.toLowerCase().replaceAll(" ", "") == columnName.toLowerCase().replaceAll(" ", "")
+    );
     if(filtered.length>0){
       return filtered[0];
     }
@@ -987,6 +993,7 @@ export default class GermplasmTable extends Vue {
       let uriColIndex = (data[0] as Array<string>).indexOf("uri");
       let nameColIndex = (data[0] as Array<string>).indexOf("name");
 
+      //Perform checks
       for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
         let currentUri = data[rowIndex][uriColIndex];
         let currentName = data[rowIndex][nameColIndex];
@@ -1033,8 +1040,9 @@ export default class GermplasmTable extends Vue {
         }
       }
 
-
       if (insertionOK) {
+        //Prepare pop-up to add any required columns
+
         let csvColumns : string[] = data[0];
         let tableColNames = [];
 
@@ -1042,37 +1050,40 @@ export default class GermplasmTable extends Vue {
           tableColNames.push(this.tableColumns[colNumber].field);
         }
         let duplicatableProperyOccurencesInCsv: Map<string, number> = new Map<string, number>();
+        //Add new column to metadata if it is not already present.
+        //If the column is one that can be duplicated, then calculate number of times it comes up
         for(let csvCol of csvColumns){
-          if(duplicatableProperyOccurencesInCsv.has(csvCol)){
-            duplicatableProperyOccurencesInCsv.set(csvCol, duplicatableProperyOccurencesInCsv.get(csvCol) + 1);
-          }else{
-            let existingDuplicatableProperty: SelectableItem = this.tryToGetExistingPropertyFromColumnName(csvCol);
-            if(existingDuplicatableProperty){
-              duplicatableProperyOccurencesInCsv.set(csvCol, 1);
+          let existingDuplicatableProperty: SelectableItem = this.tryToGetExistingPropertyFromColumnName(csvCol);
+          if(existingDuplicatableProperty){
+            if(duplicatableProperyOccurencesInCsv.has(existingDuplicatableProperty.label)){
+              duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, duplicatableProperyOccurencesInCsv.get(existingDuplicatableProperty.label) + 1);
             }else{
-              if(!tableColNames.includes(csvCol)){
-                this.newColumns.push(csvCol);
-                if(this.newColumnModalCheckboxData.filter((e) => e.value===csvCol).length === 0){
-                  this.newColumnModalCheckboxData.push({"value": csvCol, "name": csvCol});
-                }
+              duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, 1);
+            }
+          }else{
+            if(!tableColNames.includes(csvCol)){
+              this.newColumns.push(csvCol);
+              if(this.newColumnModalCheckboxData.filter((e) => e.value===csvCol).length === 0){
+                this.newColumnModalCheckboxData.push({"value": csvCol, "name": csvCol});
               }
             }
           }
         }
+        //Calculate the amount of missing columns for the duplicatable ones
         for(let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()){
-          let duplicatableColumnIdInCsv = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv).id;
-          let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumnIdInCsv);
+          let duplicatableColumn : SelectableItem = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv);
+          let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumn.id);
           if(!tableColumnQuantity){
             tableColumnQuantity = 0;
           }
           let missingColumnQuantity: number = duplicatableProperyOccurencesInCsv.get(duplicatablePropertyNameInCsv) - tableColumnQuantity;
           if(missingColumnQuantity > 0){
             this.newColumnModalCheckboxData.push(
-                {"value": duplicatablePropertyNameInCsv,
-                  "name": duplicatablePropertyNameInCsv + " (x" + missingColumnQuantity + ")"
+                {"value": duplicatableColumn.label,
+                  "name": duplicatableColumn.label + " (x" + missingColumnQuantity + ")"
                 });
             for(let index = 0; index < missingColumnQuantity; index++){
-              this.newColumns.push(duplicatablePropertyNameInCsv);
+              this.newColumns.push(duplicatableColumn.label);
             }
           }
         }

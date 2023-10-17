@@ -312,7 +312,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         dao.create(model2);
 
         // search models and ensure that metadata are OK for each model
-        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true);
+        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true, false);
 
         GermplasmModel model1FromDb = models.getList().stream()
                 .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))

@@ -329,31 +329,9 @@ public class OntologyAPI {
             @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
             @ApiParam(value = "Flag to determine if only sub-properties must be included in result") @DefaultValue("false") @QueryParam("ignoreRootProperty") boolean ignoreRootProperty
     ) throws Exception {
-
-        //Get root property
-        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
-        AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, null, domainURI, currentUser.getLanguage());
-        //RDFPropertyGetDTO dto = new RDFPropertyGetDTO(model, currentUser.getLanguage());
-        String rootPropertyName = model.getName();
-
-        //Get resource tree
-        BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) -> SPARQLDeserializers.compareURIs(property.getUri(), propertyURI));
-        List<ResourceTreeDTO> propertiesFromRoot = ResourceTreeDTO.fromResourceTree(
-                ontologyStore.searchObjectProperties(domainURI, rootPropertyName, currentUser.getLanguage(), true, objectPropFilter)
-        );
-        if(propertiesFromRoot.size()>1){
-            return new ErrorResponse(new Exception("Multiple root properties with this uri found")).getResponse();
-        }
-        ResourceTreeDTO rootProperty = propertiesFromRoot.get(0);
-        List<ResourceTreeDTO> result = rootProperty.getChildren();
-
-        //Add root if required, set children to empty list to get rid of duplicated information
-        if(!ignoreRootProperty){
-            rootProperty.setChildren(Collections.emptyList());
-            result.add(rootProperty);
-        }
+        OntologyDAO dao = new OntologyDAO(sparql);
+        List<ResourceTreeDTO> result = dao.getSubPropertiesOf(domainURI, propertyURI, ignoreRootProperty, currentUser.getLanguage());
         return new ResourceTreeResponse(result).getResponse();
-
     }
 
     @DELETE

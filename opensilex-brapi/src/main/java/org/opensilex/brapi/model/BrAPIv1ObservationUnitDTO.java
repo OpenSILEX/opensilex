@@ -361,7 +361,7 @@ public class BrAPIv1ObservationUnitDTO {
         if (!objectData.getList().isEmpty()){
             List<BrAPIv1ObservationSummaryDTO> observations = new ArrayList<>();
             for (DataModel data : objectData.getList()) {
-                observations.add(BrAPIv1ObservationSummaryDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser));
+                observations.add(BrAPIv1ObservationSummaryDTO.fromModel(data, ontologyDAO, currentUser));
             }
             observationUnit.setObservations(observations);
         }

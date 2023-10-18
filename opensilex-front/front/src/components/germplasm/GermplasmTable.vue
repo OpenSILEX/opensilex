@@ -511,6 +511,14 @@ export default class GermplasmTable extends Vue {
       ];
     }
 
+    //Add stuff to existing property string rule (to prevent duplicates)
+    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+col.title}).toString();
+    if(this.existingRdfAttributesStringRule===""){
+      this.existingRdfAttributesStringRule = "existingProperty:" + tableStartingHeaderTitlesFields;
+    }else{
+      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + tableStartingHeaderTitlesFields;
+    }
+
     this.tableData = [];
     this.addInitialXRows(5);
 
@@ -864,8 +872,11 @@ export default class GermplasmTable extends Vue {
         }
     );
     //Add stuff to existing property string rule (to prevent duplicates)
-    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+col.title}).toString();
-    this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString() + (tableStartingHeaderTitlesFields!=="" ? "," + tableStartingHeaderTitlesFields : "");
+    if(this.existingRdfAttributesStringRule===""){
+      this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
+    }else{
+      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
+    }
   }
 
   /**

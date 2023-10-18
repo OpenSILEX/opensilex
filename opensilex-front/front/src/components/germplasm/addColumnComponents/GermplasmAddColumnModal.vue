@@ -5,8 +5,6 @@
       :title="$t('GermplasmTable.addColumn')"
       size="md"
   >
-<!--  Pointless ? delete at end   <ValidationObserver ref="validatorRef" v-slot="{ handleSubmit }">
-      <form @submit="handleSubmit(validateForm)">-->
     <ValidationObserver ref="validatorRef">
         <!-- Existing property -->
         <opensilex-GermplasmControlledAttributesSelector
@@ -53,10 +51,6 @@ import InputForm from "@/components/common/forms/InputForm.vue";
  */
 export default class GermplasmAddColumnModal extends Vue {
 
-
-  //:havePickedOne.sync="pickedExisting"
-
-
   @Ref("colModal") readonly colModal!: any;
   @Ref("uncontrolledAttributeInput") readonly uncontrolledAttributeInput!: any;
   @Ref("controlledAttributeSelector") readonly controlledAttributeSelector!: any;
@@ -90,13 +84,6 @@ export default class GermplasmAddColumnModal extends Vue {
 
   async checkValidationAndAddColumn(){
     let isValid: boolean = await this.validatorRef.validate();
-    /*if(isValid){
-      if(!this.chosenPropertyUri){
-        this.$emit('addingUncontrolledColumn', this.uncontrolledColName);
-      }else{
-        this.$emit('addingExistingColumn', this.getColumnNameForExistingPropertyUri(), this.chosenPropertyUri);
-      }
-    }*/
     if(!this.chosenPropertyUri){
       if(isValid){
         this.$emit('addingUncontrolledColumn', this.uncontrolledColName);
@@ -106,29 +93,14 @@ export default class GermplasmAddColumnModal extends Vue {
     }
   }
 
-  validateForm(){
-    this.validatorRef.validate();
-  }
-
   selectedExistingProperty(){
-    console.debug("disabling");
     this.pickedExisting = true;
-    //this.uncontrolledAttributeInput.setDisabled(true);
 
   }
   clearedExistingPropertyField(){
     this.pickedExisting = false;
-    //this.uncontrolledAttributeInput.setDisabled(false);
   }
 
-  evaluateDisableControlledAttributesSelector(){
-    if(this.uncontrolledColName!=null && this.uncontrolledColName!=""){
-      this.controlledAttributeSelector.setDisableSelector(true);
-    }else{
-      this.controlledAttributeSelector.setDisableSelector(false);
-    }
-
-  }
   show(){
     this.colModal.show();
   }

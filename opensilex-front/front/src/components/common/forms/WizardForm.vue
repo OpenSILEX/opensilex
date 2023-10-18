@@ -40,7 +40,7 @@
               <b-button
                   id="btn-finish"
                   class="greenThemeColor"
-                  variant="warning"
+                  variant="success"
                   v-if="!isBlockingStep && !props.isLastStep"
                   @click="validate(props)"
               >{{getStepBtnFinishTitle(props)}}</b-button>

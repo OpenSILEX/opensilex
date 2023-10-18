@@ -7,7 +7,8 @@
           type="text"
           v-model="searchBar"
           placeholder="search"
-          v-on:change="$emit('change', searchBar)">
+          v-on:change="$emit('change', searchBar)"
+          @keyup.enter.native="$emit('change', searchBar)">
       </b-input>
       <template #append>
         <opensilex-Button
@@ -29,20 +30,32 @@
 
     <!-- Advanced options -->
     <b-collapse id="advanced-options">
-      <opensilex-SelectForm
-          ref="soSelector"
-          label="Ontologies"
-          :selected.sync="ontologiesURIs"
-          :multiple="true"
-          :searchMethod="searchOntologies"
-          :itemLoadingMethod="loadOntologies"
-          :conversionMethod="ontologyToSelectNode"
-          @reset="reset"
-          @select="select"
-          @deselect="deselect"
-          @keyup.enter.native="onEnter"
-      >
-      </opensilex-SelectForm>
+      <b-row align-v="center">
+        <b-col sm="8">
+          <opensilex-SelectForm
+              ref="soSelector"
+              label="Ontologies"
+              :selected.sync="ontologiesURIs"
+              :multiple="true"
+              :searchMethod="searchOntologies"
+              :itemLoadingMethod="loadOntologies"
+              :conversionMethod="ontologyToSelectNode"
+              @select="select"
+              @deselect="deselect"
+              @keyup.enter.native="onEnter"
+          >
+          </opensilex-SelectForm>
+        </b-col>
+        <b-col sm="4">
+          <b-form-checkbox
+              id="cb-all-ontologies"
+              v-model="isAllOntologiesSelected"
+              value="accepted"
+          >
+            All
+          </b-form-checkbox>
+        </b-col>
+      </b-row>
     </b-collapse>
 
   </div>
@@ -65,11 +78,14 @@ export default class AgroportalSearch extends Vue {
 
   $opensilex: OpenSilexVuePlugin;
 
-  searchBar;
-  advancedSearchOpen: boolean = false;
-
   @PropSync("selected")
   ontologiesURIs;
+
+  @PropSync("isAllOntologies", { default: false })
+  isAllOntologiesSelected: boolean;
+
+  searchBar;
+  advancedSearchOpen: boolean = false;
 
   created() {
     this.searchBar = "";
@@ -86,7 +102,6 @@ export default class AgroportalSearch extends Vue {
   }
 
   searchOntologies(searchQuery, page, pageSize) {
-    console.debug(this.ontologiesURIs);
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
         .getAgroportalOntologies(searchQuery, undefined, undefined, 0, 0)
@@ -103,13 +118,8 @@ export default class AgroportalSearch extends Vue {
     };
   }
 
-  reset() {
-    console.debug("selected" + this.ontologiesURIs);
-  }
-
   select(value) {
     this.$emit("select", value);
-    console.debug(value);
   }
 
   deselect(value) {
@@ -125,6 +135,10 @@ export default class AgroportalSearch extends Vue {
 
 
 <style scoped>
+
+#advanced-options {
+  padding: 10px;
+}
 
 </style>
 

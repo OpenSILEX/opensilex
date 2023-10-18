@@ -4,11 +4,11 @@
       <div class="wrapper">
 
         <div v-if="isNothingFound && !isDataLoading">
-          Nothing found for '{{ this.text }}'
+          {{ this.$t("AgroportalResults.nothing-found", [this.text]) }}
         </div>
 
         <div v-if="isAgroportalDown && !isDataLoading">
-          Nothing found for '{{ this.text }}'
+          {{ this.$t("AgroportalResults.nothing-found", [this.text]) }}
         </div>
 
         <opensilex-AgroportalResultItem v-for="(entity, index) in entities" v-bind:key="entity.id"
@@ -37,8 +37,8 @@
 
           <template v-else v-slot:btnValidate>
             <opensilex-CreateButton
-                label="Use"
-                title="Use"
+                :label="$t('AgroportalResults.btn-choose')"
+                :title="$t('AgroportalResults.btn-choose')"
                 @click="$emit('import', entity)"
             >
             </opensilex-CreateButton>
@@ -56,7 +56,6 @@
 
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from 'vue';
-import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
@@ -102,23 +101,23 @@ export default class AgroportalResults extends Vue {
     return (this.text.trim().length === 0);
   }
 
-  @Watch("text")
-  @Watch("ontologies")
-  updateResults() {
+  //@Watch("text")
+  updateResults(searchedText: string, withAllOntologies: boolean) {
 
-    if (!this.text) {
+    console.debug(searchedText);
+
+    if (!searchedText) {
       this.clear();
       return;
     }
 
     this.isDataLoading = true;
-
-    console.debug(this.ontologies);
+    this.entities = [];
 
     this.$opensilex.disableLoader();
     this.service.searchThroughAgroportal(
-        this.text,
-        this.ontologies.join(","),
+        searchedText,
+        !withAllOntologies? this.ontologies.join(",") : undefined,
         undefined,
         0,
         0
@@ -183,6 +182,9 @@ en:
     close-match: close match
     broad-match: broad match
     narrow-match: narrow match
+    nothing-found: Nothing found for '{0}'
+    btn-map-term: Map term as
+    btn-choose: Choose
 
 fr:
   AgroportalResults:
@@ -190,5 +192,8 @@ fr:
     close-match: close match
     broad-match: broad match
     narrow-match: narrow match
+    nothing-found: Aucun résultat pour '{0}'
+    btn-map-term: Lier en tant que
+    btn-choose: Choisir
 
 </i18n>

@@ -27,8 +27,6 @@ import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 

@@ -1,8 +1,8 @@
 <template>
     <ValidationObserver ref="validatorRef">
 
-        <div class="row">
-            <div class="col-lg-8">
+        <b-row>
+            <b-col sm="12" lg="8">
 
               <!-- Title -->
               <b-form-group
@@ -20,6 +20,7 @@
                   type="text"
                   placeholder="search"
                   :selected.sync="ontologies"
+                  :isAllOntologies.sync="isAllOntologies"
                   @change="onSearchTextChange"
               ></opensilex-AgroportalSearch>
 
@@ -35,50 +36,45 @@
                 </div>
               </div>
 
-            </div>
+            </b-col>
 
-          <div class="col-lg-4">
+            <b-col lg="4" id="selected-term-panel">
 
-            <b-form-group
-                label="component.skos.ontologies-references-label"
-                label-size="lg"
-                label-class="font-weight-bold pt-0"
-                class="mb-0"
-            >
-              <template v-slot:label>
-                <b-row>
-                  <b-col>
-                    Selected entity
-                  </b-col>
-                  <b-col v-if="!!entity">
-                    <opensilex-Button
-                        @click="removeSelected"
-                        variant="outline-danger"
-                        :small="true"
-                        icon="fa#trash-alt"
-                    >
-                    </opensilex-Button>
-                  </b-col>
-                </b-row>
-              </template>
+              <b-form-group
+                  label-size="lg"
+                  label-class="font-weight-bold pt-0"
+                  class="mb-0"
+              >
+                <template v-slot:label>
+                  <b-row align-h="left">
+                    <b-col xs="6">
+                      Selected entity
+                    </b-col>
+                    <b-col xs="2" v-if="!!entity">
+                      <opensilex-Button
+                          @click="removeSelected"
+                          variant="outline-danger"
+                          :small="true"
+                          icon="fa#trash-alt"
+                      >
+                      </opensilex-Button>
+                    </b-col>
+                  </b-row>
+                </template>
 
-            </b-form-group>
+              </b-form-group>
 
-            <opensilex-AgroportalResultItem
-                v-if="!!entity"
-                :entity="entity"
-            >
-            </opensilex-AgroportalResultItem>
-            <div v-else>
-              {{ $t('AgroportalEntityForm.no-selected-item') }}
-            </div>
+              <opensilex-AgroportalResultItem
+                  v-if="!!entity"
+                  :entity="entity"
+              >
+              </opensilex-AgroportalResultItem>
+              <div v-else>
+                {{ $t('AgroportalEntityForm.no-selected-item') }}
+              </div>
 
-          </div>
-        </div>
-
-        <div class="row">
-
-        </div>
+            </b-col>
+        </b-row>
     </ValidationObserver>
 </template>
 
@@ -90,6 +86,7 @@ import EntityCreate from "./AgroportalEntityCreate.vue";
 // @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+    import AgroportalResults from "../AgroportalResults.vue";
 
 @Component
 export default class AgroportalEntityForm extends Vue {
@@ -98,6 +95,8 @@ export default class AgroportalEntityForm extends Vue {
     uriGenerated = true;
     text = "";
     ontologies: string[] = [];
+    isAllOntologies: boolean = false;
+
 
     @Prop()
     editMode;
@@ -115,6 +114,7 @@ export default class AgroportalEntityForm extends Vue {
     }
 
     @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("searchResults") readonly searchResults!: AgroportalResults;
 
     created() {
       this.ontologies = this.$opensilex.getConfig().agroportal.entityOntologies;
@@ -122,6 +122,7 @@ export default class AgroportalEntityForm extends Vue {
 
     onSearchTextChange(searchedText: string) {
       this.text = searchedText;
+      this.searchResults.updateResults(searchedText, this.isAllOntologies);
     }
 
     importResult(entity: EntityAgroportalDTO) {
@@ -152,7 +153,7 @@ export default class AgroportalEntityForm extends Vue {
 
     clear() {
       this.entityDto.name = "";
-      for(var member in this.entityDto) {
+      for(let member in this.entityDto) {
         this.entityDto[member] = null;
       }
       console.debug(this.entityDto);

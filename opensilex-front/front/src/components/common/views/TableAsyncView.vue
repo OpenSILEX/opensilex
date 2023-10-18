@@ -203,22 +203,33 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   @Watch("currentPage")
   definePath(){
+    // if the section parameter in the url is the same as the one stored,
     if (this.routeArr[1] === localStorage.getItem("startPath") || localStorage.getItem("startPath") === this.routeArr[1] + "s") {
-      // if the section parameter in the url is the same as the one stored,
+      // if a tab parameter exist in the url and is the same as the one stored,
       if (this.routeArr[2]){ 
-        // if a second parameter exist, for exemple we are in events from an OS,
-        // reset page to load first page of the events listed
-        this.currentPage = 1
-      } else {
+        if(this.routeArr[2] === localStorage.getItem("tabPath")){
+          this.currentPage = parseInt(localStorage.getItem("tabPage"), 10);
+          this.$opensilex.updateURLParameter("tabPage", this.currentPage, "");
+        // if a tab parameter exist but is another tab
+        } else {
+          localStorage.setItem("tabPath", this.routeArr[2]);
+          localStorage.setItem("tabPage", "1");
+          this.currentPage = 1;
+          this.tableRef.refresh()
+        }
+      } 
+      else {
         // we get the number of the last page visited and update the url with
         // expect a number when we get "page" but localStorage get and set strings
         this.currentPage = parseInt(localStorage.getItem("page"), 10);
         this.$opensilex.updateURLParameter("page", this.currentPage, "");
-      }
+      } 
     } else {
       // otherwise we store the new section parameter and display the first page
       localStorage.setItem("startPath", this.routeArr[1]);
       localStorage.setItem("page", "1");
+      localStorage.setItem("tabPath", this.routeArr[2]);
+      localStorage.setItem("tabPage", "1");
       this.currentPage = 1;
       this.tableRef.refresh()
     }
@@ -231,7 +242,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
   currentPage: number = 1;
+  tabPage: number = 1;
   currentStartPath: string = "";
+  currentTabPath: string ="";
   routeArr : string = this.$route.path.split('/');
   pageSize: number;
   totalRow = 0;
@@ -248,8 +261,15 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   selectAllLimit; 
 
   created() {
-    this.currentPage = parseInt(localStorage.getItem("page"), 10);
-    this.currentStartPath = localStorage.getItem("startPath");
+
+    if (this.routeArr[2]){ 
+      this.currentPage = parseInt(localStorage.getItem("tabPage"), 10);
+      this.currentStartPath = localStorage.getItem("startPath");
+      this.currentTabPath = localStorage.getItem("tabPath");
+    } else {
+      this.currentPage = parseInt(localStorage.getItem("page"), 10);
+      this.currentStartPath = localStorage.getItem("startPath");
+      }
 
     if (localStorage.getItem("numberOfElements") === null || localStorage.getItem("numberOfElements") === undefined) {
       localStorage.setItem("numberOfElements", "20");
@@ -289,9 +309,15 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   } 
 
   pageChange(newPage) {
+    if (this.routeArr[2]){ 
+      localStorage.setItem("tabPage", newPage);
+      this.currentPage = newPage;
+      this.tableRef.refresh()
+    } else {
     localStorage.setItem("page", newPage);
     this.currentPage = newPage;
     this.tableRef.refresh();
+    }
   }
 
   get isGlobalLoaderVisible() {
@@ -364,7 +390,11 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   changeCurrentPage(page: any) {
     this.currentPage = page;
-    localStorage.setItem("page", page);
+    if (this.routeArr[2]){ 
+      localStorage.setItem("tabPage", page);
+    } else {
+      localStorage.setItem("page", page);
+    }
     this.refresh()
   }
 

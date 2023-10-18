@@ -187,6 +187,7 @@ export default class ProvenanceDetailsPage extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
+  routeArr : string = this.$route.path.split('/');
   $router: any;
   $t: any;
   $i18n: any;
@@ -218,6 +219,8 @@ export default class ProvenanceDetailsPage extends Vue {
   }
 
   isDetailsTab() {
+      localStorage.setItem("tabPath", this.routeArr[2]);
+      localStorage.setItem("tabPage", "1");
       return this.$route.path.startsWith("/provenances/details/");
   }
 

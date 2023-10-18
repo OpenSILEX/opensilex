@@ -267,7 +267,6 @@ export default class GermplasmTable extends Vue {
 
   private langUnwatcher;
   mounted() {
-    console.debug("mounted!!!!!!");
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       (lang) => {
@@ -586,9 +585,7 @@ export default class GermplasmTable extends Vue {
    * Does a check to make sure there aren't any duplications
    */
   addNonExistingColumn(columnName: string, positionTarget: string) {
-    console.debug("oldStringRule", this.existingRdfAttributesStringRule);
     this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + columnName;
-    console.debug("newStringRule", this.existingRdfAttributesStringRule);
     this.addColumnToTabulator(columnName, columnName, positionTarget);
     this.suppColumnsNames.push(columnName);
   }

@@ -39,10 +39,10 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
-import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -55,7 +55,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,7 +62,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -454,17 +452,11 @@ public class GermplasmAPI {
         for (GermplasmModel germplasm : germplasmList) {
             GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(germplasm);
             List<GermplasmGetAllDTO> parents = dto.getHasParentGermplasm();
-            if(!CollectionUtils.isEmpty(parents) && parents.size() > maximumParentAmount){
-                maximumParentAmount = parents.size();
-            }
+            maximumParentAmount = checkMaximumParentListSize(maximumParentAmount, parents);
             List<GermplasmGetAllDTO> parentsM = dto.getHasParentGermplasmM();
-            if(!CollectionUtils.isEmpty(parentsM) && parentsM.size() > maximumParentMAmount){
-                maximumParentMAmount = parentsM.size();
-            }
+            maximumParentMAmount = checkMaximumParentListSize(maximumParentMAmount, parentsM);
             List<GermplasmGetAllDTO> parentsF = dto.getHasParentGermplasmF();
-            if(!CollectionUtils.isEmpty(parentsF) && parentsF.size() > maximumParentFAmount){
-                maximumParentFAmount = parentsF.size();
-            }
+            maximumParentFAmount = checkMaximumParentListSize(maximumParentFAmount, parentsF);
             resultDTOList.add(dto);
             Map<String,String> metadata = dto.getMetadata();
             if (metadata != null) {
@@ -485,40 +477,7 @@ public class GermplasmAPI {
         if(jsonTree.isArray()) {
             for(JsonNode jsonNode : jsonTree) {
                 ObjectNode objectNode = jsonNode.deepCopy();
-
-                //Capture parent information, remove then add duplicated nodes with a suffix
-                JsonNode parents = objectNode.get(GermplasmGetExportDTO.hasParentGermplasmFieldName);
-                JsonNode parentsM = objectNode.get(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
-                JsonNode parentsF = objectNode.get(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
-                objectNode.remove(GermplasmGetExportDTO.hasParentGermplasmFieldName);
-                objectNode.remove(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
-                objectNode.remove(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
-
-                int i = 0;
-                Iterator<JsonNode> parentsIterator = parents.elements();
-                while(parentsIterator.hasNext()){
-                    JsonNode parent = parentsIterator.next();
-                    String nextParentUri = parent.get("uri").asText();
-                    objectNode.put(GermplasmGetExportDTO.hasParentGermplasmFieldName + i, nextParentUri);
-                    i++;
-                }
-                i = 0;
-                parentsIterator = parentsM.elements();
-                while(parentsIterator.hasNext()){
-                    JsonNode parent = parentsIterator.next();
-                    String nextParentUri = parent.get("uri").asText();
-                    objectNode.put(GermplasmGetExportDTO.hasParentMGermplasmFieldName + i, nextParentUri);
-                    i++;
-                }
-                i = 0;
-                parentsIterator = parentsF.elements();
-                while(parentsIterator.hasNext()){
-                    JsonNode parent = parentsIterator.next();
-                    String nextParentUri = parent.get("uri").asText();
-                    objectNode.put(GermplasmGetExportDTO.hasParentFGermplasmFieldName + i, nextParentUri);
-                    i++;
-                }
-
+                divideParentColumnsIntoMultiple(objectNode);
                 JsonNode metadata = objectNode.get("metadata");
                 objectNode.remove("metadata");
                 JsonNode value = null;
@@ -536,9 +495,7 @@ public class GermplasmAPI {
                         }                            
                     }
                 }
-                
                 list.add(objectNode);
-               
             }
          }
         
@@ -557,26 +514,29 @@ public class GermplasmAPI {
 
         //Modify final exported gigantic string to replace our temporary duplicated column names with their real name
         //Remove any white spaces from these real names, as it seems to replace white spaces with a new column symbol
-        OntologyDAO ontologyDao = new OntologyDAO(sparql);
         String giganticResultString = stringWriter.toString();
-        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentAmount; duplicatedIndex++){
-            giganticResultString = giganticResultString.replaceAll(
-                    GermplasmGetExportDTO.hasParentGermplasmFieldName + duplicatedIndex,
-                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasm.getURI()), currentUser.getLanguage())
-            );
-        }
-        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentMAmount; duplicatedIndex++){
-            giganticResultString = giganticResultString.replaceAll(
-                    GermplasmGetExportDTO.hasParentMGermplasmFieldName + duplicatedIndex,
-                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasmM.getURI()), currentUser.getLanguage()).replaceAll(" ","")
-            );
-        }
-        for(int duplicatedIndex = 0; duplicatedIndex < maximumParentFAmount; duplicatedIndex++){
-            giganticResultString = giganticResultString.replaceAll(
-                    GermplasmGetExportDTO.hasParentFGermplasmFieldName + duplicatedIndex,
-                    ontologyDao.getURILabel(new URI(Oeso.hasParentGermplasmF.getURI()), currentUser.getLanguage()).replaceAll(" ","")
-            );
-        }
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        giganticResultString = replaceTemporaryDuplicateColumnName(
+                giganticResultString,
+                maximumParentAmount,
+                GermplasmGetExportDTO.hasParentGermplasmFieldName,
+                Oeso.hasParentGermplasm.getURI(),
+                ontologyDao
+        );
+        giganticResultString = replaceTemporaryDuplicateColumnName(
+                giganticResultString,
+                maximumParentMAmount,
+                GermplasmGetExportDTO.hasParentMGermplasmFieldName,
+                Oeso.hasParentGermplasmM.getURI(),
+                ontologyDao
+        );
+        giganticResultString = replaceTemporaryDuplicateColumnName(
+                giganticResultString,
+                maximumParentFAmount,
+                GermplasmGetExportDTO.hasParentFGermplasmFieldName,
+                Oeso.hasParentGermplasmF.getURI(),
+                ontologyDao
+        );
 
         LocalDate date = LocalDate.now();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -587,6 +547,49 @@ public class GermplasmAPI {
                 .build();
     }
 
+    //Some private functions used in the the above buildCsv function
+
+    private String replaceTemporaryDuplicateColumnName(String csvString, int temporaryColumnQuantity, String dtoField, String propertyUri, OntologyDAO ontologyDao) throws URISyntaxException, SPARQLException {
+        for(int duplicatedIndex = 0; duplicatedIndex < temporaryColumnQuantity; duplicatedIndex++){
+            csvString = csvString.replaceAll(
+                    dtoField + duplicatedIndex,
+                    ontologyDao.getURILabel(new URI(propertyUri), currentUser.getLanguage()).replaceAll(" ", "")
+            );
+        }
+        return csvString;
+    }
+
+    private void addTemporaryColsForDuplicateProp(JsonNode propValueAsListJsonNode, ObjectNode objectNode, String dtoFieldName){
+        int i = 0;
+        Iterator<JsonNode> parentsIterator = propValueAsListJsonNode.elements();
+        while(parentsIterator.hasNext()){
+            JsonNode parent = parentsIterator.next();
+            String nextParentUri = parent.get("uri").asText();
+            objectNode.put(dtoFieldName + i, nextParentUri);
+            i++;
+        }
+    }
+
+    private void divideParentColumnsIntoMultiple(ObjectNode objectNode){
+        //Capture parent information, remove then add duplicated nodes with a suffix
+        JsonNode parents = objectNode.get(GermplasmGetExportDTO.hasParentGermplasmFieldName);
+        JsonNode parentsM = objectNode.get(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
+        JsonNode parentsF = objectNode.get(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
+        objectNode.remove(GermplasmGetExportDTO.hasParentGermplasmFieldName);
+        objectNode.remove(GermplasmGetExportDTO.hasParentMGermplasmFieldName);
+        objectNode.remove(GermplasmGetExportDTO.hasParentFGermplasmFieldName);
+
+        addTemporaryColsForDuplicateProp(parents, objectNode, GermplasmGetExportDTO.hasParentGermplasmFieldName);
+        addTemporaryColsForDuplicateProp(parentsM, objectNode, GermplasmGetExportDTO.hasParentMGermplasmFieldName);
+        addTemporaryColsForDuplicateProp(parentsF, objectNode, GermplasmGetExportDTO.hasParentFGermplasmFieldName);
+    }
+
+    private int checkMaximumParentListSize(int oldMaximum, List<GermplasmGetAllDTO> nextListToCheck){
+        if(!CollectionUtils.isEmpty(nextListToCheck) && nextListToCheck.size() > oldMaximum){
+            return nextListToCheck.size();
+        }
+        return oldMaximum;
+    }
 
     /**
      * @param germplasmDTO the germplasm to update

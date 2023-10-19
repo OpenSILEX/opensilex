@@ -125,6 +125,7 @@ let store = new Vuex.Store({
       CREDENTIAL_PROFILE_DELETE_ID: "profile-delete",
       CREDENTIAL_PROJECT_MODIFICATION_ID: "project-modification",
       CREDENTIAL_PROJECT_DELETE_ID: "project-delete",
+      CREDENTIAL_ACCOUNT_MODIFICATION_ID: "account-modification",
       CREDENTIAL_USER_MODIFICATION_ID: "user-modification",
       CREDENTIAL_USER_DELETE_ID: "user-delete",
       CREDENTIAL_PERSON_MODIFICATION_ID: "person-modification",

@@ -114,6 +114,10 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         URIDeserializer.usePrefixes = usePrefixes;
     }
 
+    public static PrefixMapping getPrefixes() {
+        return prefixes;
+    }
+
     public static void clearPrefixes() {
         prefixes = null;
         usePrefixes = false;

@@ -250,13 +250,13 @@ menu:
   - id: configuration
     label: component.menu.configuration
     children:
-      - id: users
+      - id: Accounts
         label: component.menu.security.accounts
         route:
           path: /accounts
           component: opensilex-AccountView
           credentials:
-            - user-access
+            - account-access
           icon: ik#ik-user
           title: AccountView.title
           description: AccountView.description

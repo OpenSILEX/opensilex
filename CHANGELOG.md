@@ -68,6 +68,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.?.?]
+
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes *TO DO - Credential migration (yvan)*](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
+> Also available [here *TO DO - Credential migration (yvan)*](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
+
+### Changes and new features
+
+- [Credentials] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface)
+
+### Fixed or optimized
+
+- [?] ??
+
+
 ## [1.1.0] - Blazing Basalt
 
 > WARNING : upgrading to this new version require manual operations. Please

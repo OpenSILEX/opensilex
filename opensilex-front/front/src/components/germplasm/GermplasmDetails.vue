@@ -263,6 +263,7 @@ export default class GermplasmDetails extends Vue {
   }
 
   get parentList() {
+    console.debug("parents, ", this.germplasm.has_parent_germplasm);
     return this.germplasm.has_parent_germplasm.map(parent => {
       return {
         uri: parent.uri,
@@ -274,6 +275,7 @@ export default class GermplasmDetails extends Vue {
     });
   }
   get parentMList() {
+    console.debug("parentsM, ", this.germplasm.has_parent_germplasm_m);
     return this.germplasm.has_parent_germplasm_m.map(parent => {
       return {
         uri: parent.uri,
@@ -285,6 +287,7 @@ export default class GermplasmDetails extends Vue {
     });
   }
   get parentFList() {
+    console.debug("parentsF, ", this.germplasm.has_parent_germplasm_f);
     return this.germplasm.has_parent_germplasm_f.map(parent => {
       return {
         uri: parent.uri,

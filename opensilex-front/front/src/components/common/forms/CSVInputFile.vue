@@ -41,6 +41,8 @@ export default class CSVInputFile extends Vue {
   /**
    * To check some headers don't show up more that once.
    * Only gets checked if we are returning an array of arrays in data.
+   *
+   * Note that this list will be transformed into no caps no spaces.
    */
   @Prop()
   duplicatableHeaders: string[];
@@ -94,9 +96,11 @@ export default class CSVInputFile extends Vue {
           //Check non duplicatable headers if we are returning array of arrays
           if(this.returnDataAsArrayOfArrays){
             let visitedHeaders = [];
+            let noCapsNoSpacesDuplicatableHeaders : Array<string> = this.duplicatableHeaders.map(e=>e.toLowerCase().replaceAll(" ",""));
             for(let header of objectToCheck){
-              if(visitedHeaders.includes(header)){
-                if(!this.duplicatableHeaders.includes(header)){
+              let noCapsNoSpacesHeader = header.toLowerCase().replaceAll(" ", "");
+              if(visitedHeaders.includes(noCapsNoSpacesHeader)){
+                if(!noCapsNoSpacesDuplicatableHeaders.includes(noCapsNoSpacesHeader)){
                   this.errors.push(
                       "This header can't be duplicated: " +
                       header

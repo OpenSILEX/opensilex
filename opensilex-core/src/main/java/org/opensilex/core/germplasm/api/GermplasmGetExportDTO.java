@@ -252,13 +252,13 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
             dto.setWebsite(model.getWebsite());
         }
         if(!CollectionUtils.isEmpty(model.getParentGermplasms())){
-            dto.setHasParentGermplasmM(model.getParentGermplasms().stream().map((GermplasmGetAllDTO::fromModel)).collect(Collectors.toList()));
+            dto.setHasParentGermplasm(model.getParentGermplasms().stream().map((GermplasmGetAllDTO::fromModel)).collect(Collectors.toList()));
         }
         if(!CollectionUtils.isEmpty(model.getParentMGermplasms())){
             dto.setHasParentGermplasmM(model.getParentMGermplasms().stream().map((GermplasmGetAllDTO::fromModel)).collect(Collectors.toList()));
         }
         if(!CollectionUtils.isEmpty(model.getParentFGermplasms())){
-            dto.setHasParentGermplasmM(model.getParentFGermplasms().stream().map((GermplasmGetAllDTO::fromModel)).collect(Collectors.toList()));
+            dto.setHasParentGermplasmF(model.getParentFGermplasms().stream().map((GermplasmGetAllDTO::fromModel)).collect(Collectors.toList()));
         }
 
         return dto;

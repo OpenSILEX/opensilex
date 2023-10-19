@@ -91,7 +91,7 @@ public class SPARQLClassObjectMapperIndex {
         }
 
         for (SPARQLClassObjectMapper<? extends SPARQLResourceModel> mapperInit : classesMapper.values()) {
-            Set<Class<? extends SPARQLResourceModel>> resources = mapperInit.classAnalizer.getRelatedResources();
+            Set<Class<? extends SPARQLResourceModel>> resources = mapperInit.classAnalyzer.getRelatedResources();
 
             Class<? extends SPARQLResourceModel> currentObjectClass = mapperInit.getObjectClass();
             if (!reverseRelationIndex.containsKey(currentObjectClass)) {
@@ -104,7 +104,7 @@ public class SPARQLClassObjectMapperIndex {
                 }
                 Map<Class<? extends SPARQLResourceModel>, Field> relatedMap = reverseRelationIndex.get(relatedObjectClass);
 
-                Set<Field> fields = mapperInit.classAnalizer.getFieldsRelatedTo(relatedObjectClass);
+                Set<Field> fields = mapperInit.classAnalyzer.getFieldsRelatedTo(relatedObjectClass);
 
                 fields.forEach(field -> {
                     if (!mapperInit.isReverseRelation(field)) {

@@ -105,15 +105,11 @@
 
               <!-- Germplasm -->
               <div>
-              <opensilex-FilterField>
-                <opensilex-GermplasmSelector
-                  :multiple="false"
-                  :germplasm.sync="filter.germplasm"
-                  :experiment="filter.experiment"
-                  class="searchFilter"
-                  @handlingEnterKey="soList.refresh()"
-                ></opensilex-GermplasmSelector>
-              </opensilex-FilterField>
+                <opensilex-FilterField quarterWidth="false">
+                  <opensilex-GermplasmSelectorWithFilter
+                      :germplasmsUris.sync="filter.germplasm"
+                  ></opensilex-GermplasmSelectorWithFilter>
+                </opensilex-FilterField>
               </div>
 
               <!-- Factors levels -->
@@ -243,7 +239,7 @@ export default class ScientificObjectsView extends Vue {
   filter = {
     name: "",
     experiment: undefined,
-    germplasm: undefined,
+    germplasm: [],
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -320,7 +316,7 @@ export default class ScientificObjectsView extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: undefined,
+      germplasm: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,

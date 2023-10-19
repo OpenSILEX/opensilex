@@ -291,14 +291,15 @@ export default class ProvenanceList extends Vue {
     return tableFields;
   }
 
-  refresh() {
-    this.$opensilex.updateURLParameters(this.filter);
+  refresh(){
+    this.updateSelectedProvenance()
+    this.tableRef.changeCurrentPage(1);
+  }
 
-    if(this.tableRef.onlySelected) {
+  updateSelectedProvenance(){
+    this.$opensilex.updateURLParameter(this.filter);
+    if(this.tableRef.onlySelected){
       this.tableRef.onlySelected = false;
-      this.tableRef.changeCurrentPage(1);
-    } else {
-      this.tableRef.changeCurrentPage(1);
     }
   }
 

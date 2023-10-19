@@ -51,7 +51,9 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 OesoExt.NS,
                 "ontologies/oeso-ext.owl",
                 Lang.RDFXML,
-                OesoExt.PREFIX
+                OesoExt.PREFIX,
+                null,
+                true
         ));
         return list;
     }

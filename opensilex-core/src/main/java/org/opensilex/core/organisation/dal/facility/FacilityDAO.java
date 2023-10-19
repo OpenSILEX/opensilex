@@ -25,6 +25,7 @@ import org.opensilex.core.organisation.api.site.SiteAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
+import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
@@ -142,7 +143,9 @@ public class FacilityDAO {
         filter.validate();
 
         final List<URI> userOrganizations = filter.getUser().isAdmin() ? null :
-                organizationDAO.search(null, filter.getOrganizations(), filter.getUser())
+                organizationDAO.search(new OrganizationSearchFilter()
+                                .setRestrictedOrganizations(filter.getOrganizations())
+                                .setUser(filter.getUser()))
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
@@ -309,7 +312,7 @@ public class FacilityDAO {
             return;
         }
 
-        final List<URI> userOrganizations = organizationDAO.search(null, null, accountModel)
+        final List<URI> userOrganizations = organizationDAO.search(new OrganizationSearchFilter().setUser(accountModel))
                         .stream().map(SPARQLResourceModel::getUri)
                         .collect(Collectors.toList());
 

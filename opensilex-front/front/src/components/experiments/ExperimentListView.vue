@@ -25,7 +25,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
       ref="experimentForm"
       @onCreate="redirectToCreatedExperiment"
-      @onUpdate="refresh()"
+      @onUpdate="this.experimentList.updateSelectedExperiment()"
     ></opensilex-ExperimentForm>
 
   </div>

@@ -183,7 +183,7 @@ export default class ScientificObjectList extends Vue {
       return {
         name: "",
         experiment: undefined,
-        germplasm: undefined,
+        germplasm: [],
         factorLevels: [],
         types: [],
         existenceDate: undefined,
@@ -276,7 +276,7 @@ export default class ScientificObjectList extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: undefined,
+      germplasm: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,

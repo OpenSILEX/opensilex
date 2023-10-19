@@ -49,10 +49,6 @@ public class AccountAPI {
     public static final String CREDENTIAL_ACCOUNT_MODIFICATION_ID = "account-modification";
     public static final String CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
-    public static final String CREDENTIAL_ACCOUNT_DELETE_ID = "account-modification";
-    public static final String CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY = "credential.default.modification";
-
-
     @CurrentUser
     AccountModel currentUser;
     @Inject
@@ -161,8 +157,8 @@ public class AccountAPI {
     @ApiOperation("Update an account")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -384,8 +380,8 @@ public class AccountAPI {
     @ApiOperation("Delete a favorite")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

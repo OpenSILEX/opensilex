@@ -44,6 +44,12 @@ delete {?s ?p_in ?uri. ?uri ?p_out ?o} where {
 - An account can be linked to a person only if the person does not already have an account.
 - the person linked to an account can't be changed nor removed
 
+### credentials
+
+Credentials for POST and PUT access to the account API, and for accessing the account page, are available and already used in the Vue client
+
+see [store.ts](../../../../../opensilex-front/front/src/models/Store.ts) and [credentials.yml](../../../../../opensilex-security/src/main/resources/credentials/credentials.yml) to find them
+
 ### tests
 Several integrations tests are located in `AccountAPITest.java` to ensure both success and error POST, PUT and GET scenarios
 

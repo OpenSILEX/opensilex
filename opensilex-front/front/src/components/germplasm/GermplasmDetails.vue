@@ -231,6 +231,7 @@ export default class GermplasmDetails extends Vue {
   $route: any;
   $store: any;
   $router: any;
+  routeArr : string = this.$route.path.split('/');
   $t: any;
   $i18n: any;
   service: GermplasmService;
@@ -296,7 +297,9 @@ export default class GermplasmDetails extends Vue {
   }
 
   isDetailsTab() {
-      return this.$route.path.startsWith("/germplasm/details/");
+      localStorage.setItem("tabPath", this.routeArr[2]);
+      localStorage.setItem("tabPage", "1");
+      return this.$route.path.startsWith("/germplasm/details/");    
   }
 
   isDocumentTab() {

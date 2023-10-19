@@ -133,11 +133,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         concatVarNameByFields = new LinkedHashMap<>();
 
         for (String fieldName : fieldsToFetch) {
-            Field field = mapper.classAnalizer.getFieldFromName(fieldName);
+            Field field = mapper.classAnalyzer.getFieldFromName(fieldName);
             if (field == null) {
                 throw new IllegalArgumentException("Unknown custom field " + fieldName + " from SPARQL model : " + mapper.getObjectClass().getName());
             }
-            if (mapper.classAnalizer.getDataListPropertyByField(field) == null && mapper.classAnalizer.getObjectListPropertyByField(field) == null) {
+            if (mapper.classAnalyzer.getDataListPropertyByField(field) == null && mapper.classAnalyzer.getObjectListPropertyByField(field) == null) {
                 throw new IllegalArgumentException("Custom field" + fieldName + " is not a multi-valued data/object property from SPARQL model : " + mapper.getObjectClass().getName());
             }
             concatVarNameByFields.put(field, field.getName() + CONCAT_VAR_SUFFIX);
@@ -152,7 +152,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             Field field = entry.getKey();
             String concatFieldName = entry.getValue();
 
-            listSetters.add(mapper.classAnalizer.getSetterFromField(field));
+            listSetters.add(mapper.classAnalyzer.getSetterFromField(field));
             Class<?> listGenericType = ClassUtils.getGenericTypeFromField(field);
 
             try {
@@ -284,9 +284,9 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         // append var and BGP for each multivalued field
         concatVarNameByFields.keySet().forEach(field -> {
 
-            Property property = mapper.classAnalizer.getDataListPropertyByField(field);
+            Property property = mapper.classAnalyzer.getDataListPropertyByField(field);
             if (property == null) {
-                property = mapper.classAnalizer.getObjectListPropertyByField(field);
+                property = mapper.classAnalyzer.getObjectListPropertyByField(field);
             }
 
             Var fieldVar = makeVar(field.getName());
@@ -302,11 +302,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             }
 
             // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
-            Triple triple = mapper.classAnalizer.isReverseRelation(field)
+            Triple triple = mapper.classAnalyzer.isReverseRelation(field)
                     ? new Triple(fieldVar, property.asNode(), uriVar)
                     : new Triple(uriVar, property.asNode(), fieldVar);
 
-            if (mapper.classAnalizer.isOptional(field)) {
+            if (mapper.classAnalyzer.isOptional(field)) {
                 ElementTriplesBlock elementTriple = new ElementTriplesBlock();
                 elementTriple.addTriple(triple);
                 graphElemGroup.addElement(new ElementOptional(elementTriple));

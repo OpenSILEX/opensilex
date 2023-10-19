@@ -212,10 +212,13 @@ export default class ExperimentDetail extends Vue {
   installationsList = [];
   organizationsList = [];
   recordAuthor :AccountGetDTO = null;
+  routeArr : string = this.$route.path.split('/');
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    localStorage.setItem("tabPath", this.routeArr[2]);
+    localStorage.setItem("tabPage", "1");
     this.loadExperiment();
   }
 

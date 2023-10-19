@@ -324,6 +324,17 @@ export default class ProjectList extends Vue {
     });
   }
 
+  updateSelectedProject(){
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+    }
+    this.$nextTick(() => {
+      if (!this.noUpdateURL) {
+        this.$opensilex.updateURLParameters(this.filter);
+      }
+    });
+  }
+
   loadData(options) {
     return this.service.searchProjects(
       this.filter.name,

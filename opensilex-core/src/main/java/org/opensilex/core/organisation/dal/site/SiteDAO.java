@@ -18,6 +18,7 @@ import org.opensilex.core.organisation.api.site.SiteAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
+import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -89,7 +90,9 @@ public class SiteDAO {
 
         final List<URI> userOrganizations = filter.getSkipUserOrganizationFetch() // if user organizations have already been fetched, don't fetch it again
                 ? filter.getUserOrganizations()
-                : organizationDAO.search(null, filter.getOrganizations(), filter.getUser())
+                : organizationDAO.search(new OrganizationSearchFilter()
+                        .setRestrictedOrganizations(filter.getOrganizations())
+                        .setUser(filter.getUser()))
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
@@ -207,7 +210,7 @@ public class SiteDAO {
                 throw new BadRequestException("A site must be attached to at least one organization");
             }
 
-            List<URI> userOrganizationList = organizationDAO.search(null, null, user)
+            List<URI> userOrganizationList = organizationDAO.search(new OrganizationSearchFilter().setUser(user))
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList());
             for (URI siteOrganizationUri : siteOrganizationUriList) {
@@ -371,7 +374,7 @@ public class SiteDAO {
             return;
         }
 
-        List<URI> userOrganizations = organizationDAO.search(null, null, userModel)
+        List<URI> userOrganizations = organizationDAO.search(new OrganizationSearchFilter().setUser(userModel))
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 

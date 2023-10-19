@@ -157,6 +157,8 @@ export default class FilterMap extends Vue {
               undefined,
               undefined,
               undefined,
+              undefined,
+              undefined,
               [],
               0,
               pageSize

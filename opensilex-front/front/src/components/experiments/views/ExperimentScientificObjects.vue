@@ -515,10 +515,12 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
-         JSON.stringify(this.filters.criteriaDto),
+        undefined,
+        undefined,
+           JSON.stringify(this.filters.criteriaDto),
         orderBy,
-        page,
-        pageSize );
+         page,
+         pageSize );
 
     } else {
 
@@ -547,10 +549,12 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
-          undefined,
-          [],// orderBy?: ,
-        page, // page?: number,
-        pageSize // pageSize?: number
+        undefined,
+        undefined,
+        undefined,
+        [],
+          page,
+          pageSize
       )
       .then(http => {
         let nodeList = [];
@@ -681,11 +685,13 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.parent,
         undefined, 
         this.filters.factorLevels,
-        undefined, 
-        undefined, 
         undefined,
-          JSON.stringify(this.filters.criteriaDto),
-          undefined,
+        undefined,
+        undefined, 
+        undefined, 
+        undefined, 
+        JSON.stringify(this.filters.criteriaDto),
+        undefined,
         0,
         this.selectAllLimit)
       .then((http) => {

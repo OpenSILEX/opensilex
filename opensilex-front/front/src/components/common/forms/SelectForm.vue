@@ -122,6 +122,7 @@
         :searchFilter.sync="searchModalFilter"
         :withAssociatedData="withAssociatedData"
         :experiment="experiment"
+        v-bind="modalComponentProps"
         :objects="objects"
         :devices="devices"
         @onClose="$emit('onClose')"
@@ -208,6 +209,9 @@ export default class SelectForm extends Vue {
 
   @Prop()
   modalComponent;
+
+  @Prop()
+  modalComponentProps: {[key: string]: any};
 
   @PropSync("filter")
   searchModalFilter;

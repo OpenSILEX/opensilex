@@ -13,6 +13,7 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
@@ -28,6 +29,7 @@ import SelectForm from "../../common/forms/SelectForm.vue";
 @Component
 export default class UnitSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  pageSize = 10;
 
   @PropSync("unit")
   unitURI;
@@ -68,7 +70,7 @@ export default class UnitSelector extends Vue {
 
   searchUnits(name): Promise<HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchUnits(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
+    .searchUnits(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => {
         return http;
     });
@@ -84,6 +86,14 @@ export default class UnitSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
   }
 }
 </script>

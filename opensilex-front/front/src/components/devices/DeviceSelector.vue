@@ -16,6 +16,7 @@
     @deselect="$emit('deselect')"
     :showCount="true"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
@@ -33,6 +34,7 @@ export default class DeviceSelector extends Vue {
   $opensilex: any;
   $service: DevicesService;
   $store: any;
+  pageSize = 10;
 
   renderComponent = true;
 
@@ -85,7 +87,7 @@ export default class DeviceSelector extends Vue {
         undefined, //metadata filter
         ["name=asc"],
         page,
-        pageSize,
+        this.pageSize,
     ).then((http) => {
 
         if (http && http.response) {
@@ -120,6 +122,14 @@ export default class DeviceSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.deviceSelector.refresh();
+    this.$nextTick(() => {
+      this.deviceSelector.openTreeselect();
+    })
   }
 }
 </script>

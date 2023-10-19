@@ -1,5 +1,6 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :helpMessage="helpMessage"
     :selected.sync="usersURI"
@@ -12,19 +13,22 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService } from "opensilex-security/index";
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class AccountSelector extends Vue {
   $opensilex: any;
   service: SecurityService;
+  pageSize = 10;
 
   @PropSync("users")
   usersURI;
@@ -38,6 +42,8 @@ export default class AccountSelector extends Vue {
   @Prop()
   helpMessage: string;
 
+  @Ref("selectForm") readonly selectForm!: SelectForm;
+  
   loadAccounts(accountsURIs) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
@@ -51,7 +57,7 @@ export default class AccountSelector extends Vue {
   searchAccounts(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchAccounts(searchQuery, undefined, page, pageSize);
+      .searchAccounts(searchQuery, undefined, page, this.pageSize);
   }
 
   userToSelectNode(dto: AccountGetDTO) {
@@ -73,6 +79,15 @@ export default class AccountSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    let selectForm: any = this.$refs.selectForm;
+    selectForm.refresh();
+    this.$nextTick(() => {
+      selectForm.openTreeselect();
+    })
   }
 }
 </script>

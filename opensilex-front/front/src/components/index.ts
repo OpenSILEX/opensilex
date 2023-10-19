@@ -144,8 +144,6 @@ import FactorDetails from './experiments/factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
 import FactorLevelTable from './experiments/factors/FactorLevelTable.vue';
 components["opensilex-FactorLevelTable"] = FactorLevelTable;
-import FactorSelector from './experiments/factors/FactorSelector.vue';
-components["opensilex-FactorSelector"] = FactorSelector;
 import FactorCategorySelector from './experiments/factors/FactorCategorySelector.vue';
 components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
 import FactorsHelp from './experiments/factors/FactorsHelp.vue';

@@ -512,7 +512,7 @@ export default class GermplasmTable extends Vue {
     }
 
     //Add stuff to existing property string rule (to prevent duplicates)
-    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+col.title}).toString();
+    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+ this._removeSpanRequiredBlockFromTitle(col.title)}).toString();
     if(this.existingRdfAttributesStringRule===""){
       this.existingRdfAttributesStringRule = "existingProperty:" + tableStartingHeaderTitlesFields;
     }else{
@@ -553,7 +553,13 @@ export default class GermplasmTable extends Vue {
     this.disableInsert = false;
   }
 
-
+  _removeSpanRequiredBlockFromTitle(title: string): string{
+    let result = title;
+    if(title.includes("<span")){
+      result = result.substring(0, title.indexOf("<span"));
+    }
+    return result;
+  }
 
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {

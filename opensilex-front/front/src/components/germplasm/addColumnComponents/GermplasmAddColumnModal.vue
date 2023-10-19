@@ -65,12 +65,11 @@ export default class GermplasmAddColumnModal extends Vue {
   chosenPropertyUri: string = "";
 
   @Prop()
-  existingRdfAttributesObjects: Array<SelectableItem> = [];
+  existingRdfAttributesObjects: Array<SelectableItem>;
 
   @Prop()
   existingRdfAttributesStringRule:string;
 
-  //Thisd didnt work
   pickedExisting: boolean = false;
 
 

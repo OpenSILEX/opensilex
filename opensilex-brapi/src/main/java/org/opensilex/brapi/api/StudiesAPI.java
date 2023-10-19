@@ -49,6 +49,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation 1.3</a>
@@ -101,8 +102,15 @@ public class StudiesAPI extends BrapiCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-        if (studyDbId != null && xpDao.get(studyDbId, currentUser) == null) {
-            throw new NotFoundURIException(studyDbId);
+        ListWithPagination<ExperimentModel> resultList;
+
+        if (studyDbId != null) {
+            ExperimentModel expeModel = xpDao.get(studyDbId, currentUser);
+            if (Objects.nonNull(expeModel)){
+                resultList = new ListWithPagination<>(Collections.singletonList(expeModel));
+            } else {
+                throw new NotFoundURIException(studyDbId);
+            }
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
                     .setEnded(isEnded)
@@ -111,10 +119,10 @@ public class StudiesAPI extends BrapiCall {
                     .setPage(page)
                     .setPageSize(pageSize);
 
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
-            ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
-            return new BrAPIv1StudyListResponse(resultDTOList).getResponse();
+            resultList = xpDao.search(filter);
         }
+        ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
+        return new BrAPIv1StudyListResponse(resultDTOList).getResponse();
     }
 
 

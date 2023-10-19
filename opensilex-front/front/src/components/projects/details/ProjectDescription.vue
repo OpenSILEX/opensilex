@@ -150,6 +150,7 @@ export default class ProjectDescription extends Vue {
   administrativeContactsList = [];
   relatedProjectsList = [];
   experimentName = "";
+  routeArr : string = this.$route.path.split('/');
   fields = [
     {
       key: "name",
@@ -177,6 +178,8 @@ export default class ProjectDescription extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    localStorage.setItem("tabPath", this.routeArr[2]);
+    localStorage.setItem("tabPage", "1");
     this.loadProject();
   }
 

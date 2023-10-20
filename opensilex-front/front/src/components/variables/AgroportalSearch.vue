@@ -33,6 +33,7 @@
       <b-row align-v="center">
         <b-col sm="8">
           <opensilex-SelectForm
+              :disabled="isAllOntologiesSelected"
               ref="soSelector"
               label="Ontologies"
               :selected.sync="ontologiesURIs"
@@ -48,11 +49,10 @@
         </b-col>
         <b-col sm="4">
           <b-form-checkbox
-              id="cb-all-ontologies"
               v-model="isAllOntologiesSelected"
               value="accepted"
           >
-            All
+            {{$t("AgroportalSearch.all-ontologies")}}
           </b-form-checkbox>
         </b-col>
       </b-row>
@@ -64,7 +64,7 @@
 
 <script lang="ts">
 
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Watch} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
@@ -144,5 +144,12 @@ export default class AgroportalSearch extends Vue {
 
 
 <i18n>
+en:
+  AgroportalSearch:
+    all-ontologies: Use all ontologies
+
+fr:
+  AgroportalSearch:
+    all-ontologies: Dans toutes les ontologies
 
 </i18n>

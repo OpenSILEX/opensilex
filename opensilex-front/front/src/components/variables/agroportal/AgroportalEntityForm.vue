@@ -97,9 +97,8 @@ export default class AgroportalEntityForm extends Vue {
     ontologies: string[] = [];
     isAllOntologies: boolean = false;
 
-
     @Prop()
-    editMode;
+    editMode: boolean;
 
     errorMsg: String = "";
 

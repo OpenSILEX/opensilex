@@ -21,8 +21,8 @@
 
           <template v-if="isMappingMode" v-slot:btnValidate>
             <b-dropdown
-                dropright
-                class="mb-2 mr-2"
+                dropdown
+                class="m-md-2"
                 :small="true"
                 text="Map term as">
 
@@ -30,7 +30,7 @@
                  class="btn-dropdown"
                  @click="$emit('importMapping', entity, relation)"
               >
-                {{relation.label}}
+                {{ relation.label }}
               </b-dropdown-item>
             </b-dropdown>
           </template>

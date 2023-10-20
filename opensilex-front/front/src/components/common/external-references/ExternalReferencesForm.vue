@@ -14,6 +14,8 @@
                         label="component.common.name"
                         type="text"
                         placeholder="search"
+                        :selected.sync="ontologies"
+                        :isAllOntologies.sync="isAllOntologies"
                         @change="onSearchTextChange"
                     ></opensilex-AgroportalSearch>
 
@@ -178,6 +180,8 @@
         currentRelation: string = "";
         currentExternalUri: string = "";
         text: string = "";
+        ontologies: string[] = [];
+        isAllOntologies: boolean = false;
 
         @PropSync("references")
         skosReferences: any;

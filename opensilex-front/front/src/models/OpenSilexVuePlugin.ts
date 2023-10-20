@@ -1,10 +1,10 @@
-import { Container } from 'inversify';
-import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
-import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
+import {Container} from 'inversify';
+import {VueJsOntologyExtensionService} from './../lib/api/vueJsOntologyExtension.service';
+import {SystemService} from '../../../../opensilex-core/front/src/lib/api/system.service';
 import Vue from 'vue';
-import { VueCookies } from 'vue-cookies';
+import {VueCookies} from 'vue-cookies';
 import VueI18n from 'vue-i18n';
-import { Store } from 'vuex';
+import {Store} from 'vuex';
 import {
     ApiServiceBinder,
     FrontConfigDTO,
@@ -21,13 +21,13 @@ import Oeev from '../ontologies/Oeev';
 import Time from '../ontologies/Time';
 import Rdfs from '../ontologies/Rdfs';
 
-import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import {ModuleComponentDefinition} from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
-import { UploadFileBody } from './UploadFileBody';
-import { User } from './User';
+import {UploadFileBody} from './UploadFileBody';
+import {User} from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
-import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
+import {OntologyService, VariableDatatypeDTO, VariablesService} from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
@@ -104,13 +104,13 @@ export default class OpenSilexVuePlugin {
     }
 
     // get ressources linked to loaded theme
-    getResourceURI(path: string, acceptedExt: Array<string>=[]): string {
+    getResourceURI(path: string, acceptedExt: Array<string> = []): string {
         if (this.config.themeModule && this.config.themeName) {
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
             let args = "?filePath=" + encodeURIComponent(path);
-                for (let ext of acceptedExt) {
-                    args += "&acceptedExtensions=" + encodeURIComponent(ext)
-                }
+            for (let ext of acceptedExt) {
+                args += "&acceptedExtensions=" + encodeURIComponent(ext)
+            }
             return resourceURI + args;
         } else {
             return this.getURL(path);
@@ -133,13 +133,13 @@ export default class OpenSilexVuePlugin {
         });
         return path;
     }
-    
+
     // get front ressources depending to a specific module theme
-    getModuleFrontResourceURI(moduleName : string, themeName :string, path: string): string {
+    getModuleFrontResourceURI(moduleName: string, themeName: string, path: string): string {
         if (moduleName && themeName) {
             // if module and theme are named, get ressource from them
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(moduleName) + "/" + encodeURIComponent(themeName) + "/resource";
-            return resourceURI + "?filePath=" + encodeURIComponent(path);   
+            return resourceURI + "?filePath=" + encodeURIComponent(path);
         } else {
             // search the resource into the main module theme
             let resourceURI = this.baseApi + "/vuejs/theme/opensilex-front/opensilex/resource";
@@ -174,6 +174,7 @@ export default class OpenSilexVuePlugin {
     }
 
     loaderEnabled = true;
+
     enableLoader() {
         this.loaderEnabled = true;
     }
@@ -454,7 +455,7 @@ export default class OpenSilexVuePlugin {
     public setCookieValue(user: User) {
         this.clearCookie();
         let secure: boolean = ('https:' == document.location.protocol);
-        console.debug("Set cookie value:", this.getCookieName(), this.getPathPrefix(),  user.getToken());
+        console.debug("Set cookie value:", this.getCookieName(), this.getPathPrefix(), user.getToken());
         let domain = location.hostname;
         $cookies.set(this.getCookieName(), user.getToken(), user.getDurationUntilExpirationSeconds() + "s",
             this.getPathPrefix(), domain, secure);
@@ -481,7 +482,7 @@ export default class OpenSilexVuePlugin {
     private handleError(error, message?) {
         if (!message && !!error.response && !!error.response.result && !!error.response.result.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
-        }else if(error.response.result.message){
+        } else if (error.response.result.message) {
             message = error.response.result.message;
         }
 
@@ -564,8 +565,8 @@ export default class OpenSilexVuePlugin {
         });
     }
 
-    public showSuccessToastWithDelay(message: string, delay : number) {
-        if(delay == null){
+    public showSuccessToastWithDelay(message: string, delay: number) {
+        if (delay == null) {
             delay = 2500
         }
         this.showToast(message, {
@@ -707,8 +708,8 @@ export default class OpenSilexVuePlugin {
 
         //Filter out the parents/children that does not exist (e.g. if use doesn't have the rights to see them)
         dagList.forEach(dagNode => {
-           dagNode.parents = dagNode.parents.filter(parentUri => dagMap.has(parentUri));
-           dagNode.children = dagNode.children.filter(childUri => dagMap.has(childUri));
+            dagNode.parents = dagNode.parents.filter(parentUri => dagMap.has(parentUri));
+            dagNode.children = dagNode.children.filter(childUri => dagMap.has(childUri));
         });
 
         let rootNodes: Array<GenericTreeOption> = [];
@@ -762,6 +763,7 @@ export default class OpenSilexVuePlugin {
     }
 
     private flatOntologies = {};
+
     setOntologyClasses(result: any[]) {
         result.forEach(item => {
             this.flatOntologies[item.uri] = item;
@@ -830,12 +832,12 @@ export default class OpenSilexVuePlugin {
         try {
             let queryParams = new URLSearchParams(window.location.search);
             let rootQuery = window.location.pathname;
-            if (!value || (defaultValue != null && value == defaultValue) || (Array.isArray(value) && value.length==0)) {
+            if (!value || (defaultValue != null && value == defaultValue) || (Array.isArray(value) && value.length == 0)) {
                 queryParams.delete(key);
             } else {
                 if (Array.isArray(value)) {
                     queryParams.set(key, encodeURI(value.toString()));
-                } else if (typeof(value) === 'object') {
+                } else if (typeof (value) === 'object') {
                     queryParams.set(key, encodeURI(JSON.stringify(value)));
                 } else {
                     queryParams.set(key, encodeURI(value));
@@ -862,9 +864,9 @@ export default class OpenSilexVuePlugin {
     public updateFiltersFromURL(query, filter) {
         for (let [key, value] of Object.entries(filter)) {
             if (query[key]) {
-                if (Array.isArray(filter[key])){
+                if (Array.isArray(filter[key])) {
                     filter[key] = decodeURIComponent(query[key]).split(",");
-                } else if (typeof(filter[key]) === 'object') {
+                } else if (typeof (filter[key]) === 'object') {
                     filter[key] = JSON.parse(query[key]);
                 } else {
                     filter[key] = decodeURIComponent(query[key]);
@@ -992,7 +994,7 @@ export default class OpenSilexVuePlugin {
         return new Promise((resolve, reject) => {
             let promise = fetch(url, options)
                 .then((response) => {
-                    return response.json().then(data => ({metadata: { status : response.status}, result: data.result}))
+                    return response.json().then(data => ({metadata: {status: response.status}, result: data.result}))
                 })
 
             promise
@@ -1024,24 +1026,43 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-    * @param servicePath a string defines path which will
-    * @param name name of the returned file
-    * @param extension extension of the file
-    * @param body body of a post request
-    */
+     * @param servicePath a string defines path which will
+     * @param name name of the returned file
+     * @param extension extension of the file
+     * @param body body of a post request
+     */
     downloadFilefromPostService(servicePath: string, name: string, extension: string, body: any, lang: string) {
         return this.downloadFilefromPostOrGetService(servicePath, name, extension, "POST", null, body)
     }
 
-    /**    * 
-    * @param servicePath a string defines path which will
-    * @param name name of the returned file
-    * @param extension extension of the file
-    * @param method REST service method (POST or GET)
-    * @param queryParams params of get request
-    * @param body body of a post request
-    */
+    /**    *
+     * @param servicePath a string defines path which will
+     * @param name name of the returned file
+     * @param extension extension of the file
+     * @param method REST service method (POST or GET)
+     * @param queryParams params of get request
+     * @param body body of a post request
+     */
     downloadFilefromPostOrGetService(servicePath: string, name: string, extension: string, method: string, queryParams: any, body: any) {
+        return this.getBlobFileFromPostOrGetService(servicePath, method, queryParams, body)
+            .then((result) => {
+                if (result != undefined) {
+                    let objectURL = URL.createObjectURL(result);
+                    let link = document.createElement("a");
+                    link.href = objectURL;
+                    link.setAttribute("download", name + (extension === undefined ? "" : "." + extension));
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                }
+            })
+            .catch((error) => {
+                this.errorHandler(error);
+                throw error;
+            });
+    }
+
+    public getBlobFileFromPostOrGetService(servicePath: string, method: string, queryParams: any, body: any) {
         this.showLoader();
         let url =
             this.baseApi +
@@ -1095,33 +1116,20 @@ export default class OpenSilexVuePlugin {
 
         return promise
             .then((response) => {
-                if (response.status === 500) {
-                    response.json().then((data) => {
-                        this.showErrorToast(data.result.title + ": " + data.result.message)
-                    })
-                    this.errorHandler(response);
-                    return undefined;
-                } else {
+                // if status = 2xx (200, 201, 202, ...)
+                if (response.status >= 200 && response.status < 300) {
                     return response.blob();
                 }
-            })
-            .then((result) => {
-                if (result != undefined) {
-                    let objectURL = URL.createObjectURL(result);
-                    let link = document.createElement("a");
-                    link.href = objectURL;
-                    link.setAttribute("download", name + (extension === undefined ?  "" : "." + extension));
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                }
+                response.json().then((data) => {
+                    this.showErrorToast(data.result.title + ": " + data.result.message)
+                })
+                this.errorHandler(response);
+                return undefined;
+
+            }).catch(this.errorHandler)
+            .finally(() => {
                 this.hideLoader();
             })
-            .catch((error) => {
-                this.hideLoader();
-                this.errorHandler(error);
-                throw error;
-            });
     }
 
     previewFilefromGetService(servicePath: string, name: string, extension: string) {
@@ -1165,15 +1173,15 @@ export default class OpenSilexVuePlugin {
                     let divPreview = document.getElementById("preview");
                     let content = document.createTextNode(message as string);
                     let error = document.createElement("p");
-                    if(divPreview.hasChildNodes()){
-                        while( divPreview.firstChild) {
+                    if (divPreview.hasChildNodes()) {
+                        while (divPreview.firstChild) {
                             divPreview.removeChild(divPreview.firstChild);
                         }
                     }
                     divPreview.appendChild(error.appendChild(content));
                 }
-                let blob = new Blob([file as BlobPart], { type: type });
-                
+                let blob = new Blob([file as BlobPart], {type: type});
+
                 if (type != null) {
                     let url = URL.createObjectURL(blob);
                     let iframe = document.createElement("iframe");
@@ -1188,7 +1196,7 @@ export default class OpenSilexVuePlugin {
     }
 
     viewImageFromGetService(servicePath: string) {
-        
+
         let url =
             this.baseApi +
             servicePath;
@@ -1211,7 +1219,7 @@ export default class OpenSilexVuePlugin {
         return promise
             .then(function (response) {
                 return response.blob();
-                
+
             }).catch(this.errorHandler).then((result) => {
                 let file = result;
                 let blob = new Blob([file as BlobPart]);
@@ -1222,7 +1230,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public datatypes: Array<VueDataTypeDTO> = [];
-    private datatypesByURI: Map<string,VueDataTypeDTO> = new Map<string, VueDataTypeDTO>();
+    private datatypesByURI: Map<string, VueDataTypeDTO> = new Map<string, VueDataTypeDTO>();
 
     public getDatatype(uri: string): VueDataTypeDTO {
         return this.datatypesByURI.get(uri);
@@ -1237,8 +1245,8 @@ export default class OpenSilexVuePlugin {
                     this.datatypesByURI = new Map<string, VueDataTypeDTO>();
 
                     this.datatypes.forEach(dataType => {
-                        this.datatypesByURI.set(dataType.uri,dataType);
-                        this.datatypesByURI.set(dataType.short_uri,dataType);
+                        this.datatypesByURI.set(dataType.uri, dataType);
+                        this.datatypesByURI.set(dataType.short_uri, dataType);
                     });
                     resolve(this.datatypes);
                 })
@@ -1256,12 +1264,12 @@ export default class OpenSilexVuePlugin {
      */
     public getVariableDatatypeLabel(uri: string): string {
         if (!uri) {
-          return undefined;
+            return undefined;
         }
         let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
         return label.charAt(0).toUpperCase() + label.slice(1);
     }
-    
+
     /**
      * It loads the variable data types from the server and stores them in the variableDatatypes variable
      * @returns A promise that will resolve when the variable datatypes have been loaded.
@@ -1288,7 +1296,7 @@ export default class OpenSilexVuePlugin {
         return new Promise((resolve, reject) => {
             this.getService<OntologyService>("opensilex.OntologyService")
                 .getNameSpace()
-                .then((http) => {                    
+                .then((http) => {
                     this.namespaces = http.response.result;
                     resolve(this.namespaces);
                 })
@@ -1301,23 +1309,23 @@ export default class OpenSilexVuePlugin {
      * @param {string} uri - The full URI of the resource.
      * @returns The short uri
      */
-    public getShortUri(uri: string) {         
+    public getShortUri(uri: string) {
         for (let prefix in this.namespaces) {
-            if(uri.startsWith(this.namespaces[prefix])){           
+            if (uri.startsWith(this.namespaces[prefix])) {
                 return uri.replace(this.namespaces[prefix], prefix + ":");
             }
         }
         return uri;
     }
-    
+
     /**
      * It takes a URI and replaces the prefix with the full namespace
      * @param {string} uri - The uri to be converted
      * @returns The long URI of the given URI.
      */
     public getLongUri(uri: string) {
-        for(let prefix in this.namespaces) {
-            if(uri.startsWith(prefix)) {
+        for (let prefix in this.namespaces) {
+            if (uri.startsWith(prefix)) {
                 return uri.replace(prefix + ":", this.namespaces[prefix]);
             }
         }
@@ -1353,14 +1361,15 @@ export default class OpenSilexVuePlugin {
     public getFactorCategoryName(uri) {
         return this.categoriesNameByUri[uri];
     }
-    private deepWalkObject(walkProperty : string,object :any, objectToFill : any, walkValidationFunction : Function,  workFunction : Function) {
 
-        if(walkValidationFunction(object)){
+    private deepWalkObject(walkProperty: string, object: any, objectToFill: any, walkValidationFunction: Function, workFunction: Function) {
+
+        if (walkValidationFunction(object)) {
             for (var childObject of object[walkProperty]) {
-                this.deepWalkObject(walkProperty,childObject,objectToFill,walkValidationFunction,workFunction);
-            } 
-        }else{
-            workFunction(object,objectToFill);
+                this.deepWalkObject(walkProperty, childObject, objectToFill, walkValidationFunction, workFunction);
+            }
+        } else {
+            workFunction(object, objectToFill);
         }
     }
 
@@ -1372,19 +1381,19 @@ export default class OpenSilexVuePlugin {
                     (http
                     ) => {
                         this.categoriesNameByUri = {};
-                        
+
                         http.response.result.forEach((categoryDto) => {
                             // fill this.categoriesNameByUri by traversing category dto-tree
-                            this.deepWalkObject("children",categoryDto,this.categoriesNameByUri, 
-                            function (object) { 
-                                if(object == undefined){
-                                    return false;
-                                }else{
-                                    return (object.children.length > 0 ? true : false) ;
-                                }
-                            },function (object, arrayToFill) {
-                                arrayToFill[object.uri] = object.name;
-                            })
+                            this.deepWalkObject("children", categoryDto, this.categoriesNameByUri,
+                                function (object) {
+                                    if (object == undefined) {
+                                        return false;
+                                    } else {
+                                        return (object.children.length > 0 ? true : false);
+                                    }
+                                }, function (object, arrayToFill) {
+                                    arrayToFill[object.uri] = object.name;
+                                })
                         });
                         resolve(this.categoriesNameByUri)
                     }
@@ -1394,7 +1403,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public objectTypes: Array<VueObjectTypeDTO> = [];
-    private objectTypesByURI: Map<string,VueObjectTypeDTO> = new Map<string, VueObjectTypeDTO>();
+    private objectTypesByURI: Map<string, VueObjectTypeDTO> = new Map<string, VueObjectTypeDTO>();
 
     public getObjectType(uri: string): VueObjectTypeDTO {
         return this.objectTypesByURI.get(uri);
@@ -1409,8 +1418,8 @@ export default class OpenSilexVuePlugin {
                     this.objectTypesByURI = new Map<string, VueObjectTypeDTO>();
 
                     this.objectTypes.forEach(objectType => {
-                        this.objectTypesByURI.set(objectType.uri,objectType);
-                        this.objectTypesByURI.set(objectType.short_uri,objectType);
+                        this.objectTypesByURI.set(objectType.uri, objectType);
+                        this.objectTypesByURI.set(objectType.short_uri, objectType);
                     });
 
                     resolve(this.objectTypes);
@@ -1458,14 +1467,14 @@ export default class OpenSilexVuePlugin {
     getGuideFile() {
         let path = this.getResourceURI('documents/GuideOpenSilex_V1-1Oct21.pdf');
         fetch(path)
-          .then((response) => response.blob())
-          .then(function(blob){
-            var fileURL = URL.createObjectURL(blob);
-            var fileLink = document.createElement('a');
-            fileLink.href = fileURL;
-            fileLink.setAttribute('download', 'GuideOpenSilex_V1-1Oct21.pdf');
-            document.body.appendChild(fileLink);
-            fileLink.click();
-          }) 
+            .then((response) => response.blob())
+            .then(function (blob) {
+                var fileURL = URL.createObjectURL(blob);
+                var fileLink = document.createElement('a');
+                fileLink.href = fileURL;
+                fileLink.setAttribute('download', 'GuideOpenSilex_V1-1Oct21.pdf');
+                document.body.appendChild(fileLink);
+                fileLink.click();
+            })
     }
 }

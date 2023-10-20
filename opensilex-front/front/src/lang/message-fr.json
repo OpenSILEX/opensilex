@@ -234,9 +234,12 @@
             "devices": "Appareils",
             "events" : "Évènements",
             "vocabulary" : "Vocabulaire",
+            "about" : {
+                "label": "A propos",
+                "system": "System"
+            },
             "tools" : {
                 "label": "Outils",
-                "system": "Système",
                 "packages": "Librairies"
             },
             "web-api" : "API web"

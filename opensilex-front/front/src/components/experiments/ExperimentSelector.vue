@@ -24,7 +24,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 // @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class ExperimentSelector extends Vue {

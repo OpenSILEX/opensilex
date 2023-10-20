@@ -234,6 +234,10 @@
             "devices": "Devices",
             "events" : "Events",
             "vocabulary" : "Vocabulary",
+            "about" : {
+                "label": "About",
+                "system": "System"
+            },
             "tools" : {
                 "label": "Tools",
                 "system": "System",
@@ -779,6 +783,10 @@
         "component": {
             "menu": {
                 "default": "ik-folder",
+                "about": {
+                    "label": "ik-info",
+                    "gdpr": "ik-user"
+                },
                 "dashboard": "ik-grid",
                 "data": {
                     "label": "ik-bar-chart-line"

@@ -845,7 +845,9 @@ components["opensilex-AssociatedPositionList"] = AssociatedPosition;
 import PackagesView from './tools/PackagesView.vue';
 components["opensilex-PackagesView"] = PackagesView;
 import SystemView from './tools/SystemView.vue';
-components["opensilex-SystemView"] = SystemView; 
- 
- 
+components["opensilex-SystemView"] = SystemView;
+import GDPR from './tools/GDPR.vue'
+components["opensilex-GDPR"] = GDPR;
+
+
 export default components;

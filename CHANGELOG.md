@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes and new features
 
+- [GDPR] New page to show a pdf about GDPR and/or privacy policy. To set up PDFs files, follow instructions in  [rgpd_config.md](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Finstallation%2Fconfiguration%2Frgpd_config.md)
 - [Credentials] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface)
 
 ### Fixed or optimized

@@ -22,7 +22,7 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService } from "opensilex-security/index";
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class AccountSelector extends Vue {

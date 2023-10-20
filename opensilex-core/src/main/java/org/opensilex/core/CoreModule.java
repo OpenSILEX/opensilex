@@ -335,11 +335,11 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
 
         // Retrieve the list of experiences the user can access
         ExperimentDAO dao = new ExperimentDAO(sparql, mongodb);
-        Set<URI> accessExperimentsList= dao.getUserExperiments(user);
-        List<String> listExperiments = new ArrayList<>();
-        accessExperimentsList.forEach((URI uriExperiment) -> listExperiments.add(uriExperiment.toString()));
+        String[] accessExperimentsList = dao.getUserExperiments(user).stream()
+                .map(URI::toString)
+                .toArray(String[]::new);
 
         // Add list of experiments to the Authentication token
-        tokenBuilder.withArrayClaim("experiments_list", listExperiments.toArray(new String[listExperiments.size()]));
+        tokenBuilder.withArrayClaim(EXPERIMENT_LIST_JWT_CLAIM, accessExperimentsList);
     }
 }

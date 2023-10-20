@@ -58,6 +58,8 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
+    private static final String EXPERIMENT_LIST_JWT_CLAIM = "experiments_list";
+
 
     @Override
     public Class<?> getConfigClass() {

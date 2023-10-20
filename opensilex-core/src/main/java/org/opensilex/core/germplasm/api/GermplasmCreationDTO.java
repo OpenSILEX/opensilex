@@ -285,13 +285,5 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         }
 
         return model;
-    }   
-
-    private List<GermplasmModel> createGermplasmListFromUriList(List<URI> uris){
-        return uris.stream().map(uri -> {
-            GermplasmModel nextGerm = new GermplasmModel();
-            nextGerm.setUri(uri);
-            return nextGerm;
-        }).collect(Collectors.toList());
     }
 }

@@ -75,6 +75,7 @@ public class StudiesAPI extends BrapiCall {
     protected Response standardGetStudies(URI studyDbId, String active, String sortBy, String sortOrder, int page, int pageSize) throws Exception {
 
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ArrayList<OrderBy> orderByList = new ArrayList<>();
 
@@ -121,7 +122,13 @@ public class StudiesAPI extends BrapiCall {
 
             resultList = xpDao.search(filter);
         }
-        ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
+        ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, experimentModel -> {
+            try {
+                return BrAPIv1StudyDTO.fromModel(experimentModel, germplasmDAO, currentUser);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return new BrAPIv1StudyListResponse(resultDTOList).getResponse();
     }
 
@@ -195,9 +202,10 @@ public class StudiesAPI extends BrapiCall {
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         if (model != null) {
-            return new BrAPIv1SingleStudyResponse(BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser)).getResponse();
+            return new BrAPIv1SingleStudyResponse(BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser, germplasmDAO)).getResponse();
         } else {
             throw new NotFoundURIException(studyDbId);
         }

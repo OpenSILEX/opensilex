@@ -20,12 +20,7 @@ file-system:
                 #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
                 #         config:
                 #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-                gridfs:
-                    implementation: org.opensilex.fs.gridfs.GridFSConnection
-                    config:
-                        host: localhost
-                        port: 8668
-                        database: opensilex
+
             # customPath:
             #     datafile/: irods
 
@@ -83,6 +78,11 @@ core:
 
 front:
     agroportal:
+        ontologyPortals:
+            - name: AgroPortal
+              url: "https://agroportal.lirmm.fr/"
+            - name: BioPortal
+              url: "http://bioportal.bioontology.org/"
         entity:
             - AGROVOC
             - PO

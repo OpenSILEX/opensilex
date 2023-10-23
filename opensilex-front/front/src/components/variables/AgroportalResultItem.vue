@@ -72,11 +72,19 @@ export default class AgroportalResultItem extends Vue {
   font-size: medium;
 }
 
+a {
+  color: #007bff;
+}
+
 .result {
   font-size: medium;
   margin-bottom: 10px;
   padding: 10px;
   margin-right: 1px;
+}
+
+.result:hover {
+  background: rgba(0, 0, 0, .1);
 }
 
 .selectedResult {

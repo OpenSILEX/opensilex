@@ -6,7 +6,7 @@
       <b-input
           type="text"
           v-model="searchBar"
-          placeholder="search"
+          :placeholder="$t('AgroportalSearch.enter-search-text')"
           v-on:change="$emit('change', searchBar)"
           @keyup.enter.native="$emit('change', searchBar)">
       </b-input>
@@ -33,7 +33,6 @@
       <b-row align-v="center">
         <b-col sm="8">
           <opensilex-SelectForm
-              :disabled="isAllOntologiesSelected"
               ref="soSelector"
               label="Ontologies"
               :selected.sync="ontologiesURIs"
@@ -41,6 +40,7 @@
               :searchMethod="searchOntologies"
               :itemLoadingMethod="loadOntologies"
               :conversionMethod="ontologyToSelectNode"
+              :disabled="isAllOntologiesSelected"
               @select="select"
               @deselect="deselect"
               @keyup.enter.native="onEnter"
@@ -146,10 +146,12 @@ export default class AgroportalSearch extends Vue {
 <i18n>
 en:
   AgroportalSearch:
-    all-ontologies: Use all ontologies
+    enter-search-text: Enter a name
+    all-ontologies: All ontologies
 
 fr:
   AgroportalSearch:
-    all-ontologies: Dans toutes les ontologies
+    enter-search-text: Entrer un nom
+    all-ontologies: Toutes les ontologies
 
 </i18n>

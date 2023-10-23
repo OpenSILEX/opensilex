@@ -20,7 +20,7 @@
               >
                 <template v-slot:label>
                   <b-row align-h="left">
-                    Search for mapping
+                    Search for mapping...
                   </b-row>
                 </template>
 
@@ -45,16 +45,34 @@
                     @importMapping="onImportMapping">
                 </opensilex-AgroportalResults>
               </div>
+
+              <b-form-group
+                  label-size="lg"
+                  label-class="font-weight-bold pt-0"
+                  class="mb-0"
+              >
+                <template v-slot:label>
+                  <b-row
+                      align-h="left"
+                      id="manual-mapping"
+                  >
+                    ...Or map manually
+                  </b-row>
+                </template>
+
+              </b-form-group>
+
               <b-row>
                 <!-- URI -->
-                <opensilex-FilterField :fullWidth="true">
+                <opensilex-FilterField
+                    :fullWidth="true"
+                >
                   <b-form-group>
                     <div class="helperAndBlueStar"> <!-- petite triche pour faire apparaitre l'étoile en bleu -->
                       <opensilex-FormInputLabelHelper
-                          label="component.skos.uri"
+                          label="AgroportalEntityExternalReferencesForm.manual-mapping"
                           helpMessage="AgroportalEntityExternalReferencesForm.ontologies-help"
                       ></opensilex-FormInputLabelHelper>
-                      <pre class="blueStar"> *</pre>
                     </div>
                     <ValidationProvider
                         :name="$t('component.skos.uri')"
@@ -193,6 +211,7 @@ import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Skos} from "../../../models/Skos";
 import AgroportalResults from "../AgroportalResults.vue";
 import {LinksAgroportalModel} from "opensilex-core/model/linksAgroportalModel";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
 
 @Component
@@ -207,7 +226,6 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
 
   @PropSync("form")
   entityDto: EntityCreationDTO;
-  selectedEntity: EntityAgroportalDTO;
 
   currentRelation: string = "";
   currentExternalUri: string = "";
@@ -224,8 +242,6 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
   includeAgroportalSearch: boolean = true;
   isAgroportalReachable: boolean = false;
 
-  ontologiesToSelect: string[] = AgroportalEntityCreate.selectedOntologies;
-
   checkAgroportalReachable() {
     this.agroportalAPIService.pingAgroportal(1000).then((http) => {
       if (http && http.response) {
@@ -240,25 +256,6 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
   skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
 
   options: any[] = [];
-
-  entityDtoToAgroportalDto() {
-    let dto: EntityAgroportalDTO = new class implements EntityAgroportalDTO {
-      definitions: Array<string>;
-      id: string;
-      links: LinksAgroportalModel;
-      name: string;
-      obsolete: boolean;
-      synonym: Array<string>;
-      type: string;
-    };
-    dto.id = this.entityDto.uri;
-    dto.name = this.entityDto.name;
-    dto.definitions = [this.entityDto.description];
-    dto.links = {};
-    dto.synonym = [];
-    dto.obsolete = false;
-    return dto;
-  }
 
   setOptions(){
     this.options = [];
@@ -275,7 +272,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
     this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
     this.checkAgroportalReachable();
     this.ontologies = this.$opensilex.getConfig().agroportal.entityOntologies;
-    this.selectedEntity = this.entityDtoToAgroportalDto();
+    //this.text = (this.entityDto.name) ? this.entityDto.name : "";
   }
 
   private langUnwatcher;
@@ -462,9 +459,6 @@ a {
 .helperAndBlueStar {
   display: flex;
 }
-.blueStar {
-  color: #007bff;
-}
 
 .result-name {
   font-weight: bold;
@@ -472,9 +466,8 @@ a {
   margin-bottom: 5px;
 }
 
-#result-ontology {
-  font-weight: normal;
-  font-size: medium;
+#manual-mapping {
+  padding-top: 10px;
 }
 
 .result {
@@ -484,16 +477,29 @@ a {
   margin-right: 1px;
 }
 
+ul {
+  list-style-type: none;
+}
+
 </style>
 
 <i18n>
 en:
   AgroportalEntityExternalReferencesForm:
     uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
-    ontologies-help: "You can find URIs in this locations: <li><ul><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul></li>"
+    ontologies-help: "You can find URIs in this locations:
+      <li>
+        <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
+        <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
+      </li>"
+    manual-mapping: "URI"
 fr:
   AgroportalEntityExternalReferencesForm:
     uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
-    ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
-
+    ontologies-help: "Vous pouvez chercher des URIs via ces portails:
+      <li>
+        <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
+        <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
+      </li>"
+    manual-mapping: "URI"
 </i18n>

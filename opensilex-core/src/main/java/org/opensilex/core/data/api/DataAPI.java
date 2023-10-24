@@ -493,9 +493,9 @@ public class DataAPI {
                 .setVariables(variables)
                 .setProvenances(provenances)
                 .setDevices(devices)
-                .setStartDate(startDate)
-                .setEndDate(endDate)
-                .setMetadata(metadata)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter)
                 .setOperators(operators)
                 .setExperiments(experiments)
                 .setConfidenceMax(confidenceMax)
@@ -689,7 +689,7 @@ public class DataAPI {
                 ProvEntityModel agent = new ProvEntityModel();
                 agent.setUri(device.getUri());
                 URI rootType = rootDeviceTypes.get(device.getType()); 
-                agent.setType(rootType);
+                agent.setRdfType(rootType);
                 agents.add(agent);
                 provMod.setProvWasAssociatedWith(agents);
                 data.setProvenance(provMod);
@@ -783,11 +783,11 @@ public class DataAPI {
        if(data.getProvenance().getProvWasAssociatedWith()!= null && !data.getProvenance().getProvWasAssociatedWith().isEmpty()){
             for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
                 
-                    if(agent.getType() == null) {
+                    if(agent.getRdfType() == null) {
                         throw new ProvenanceAgentTypeException(agent.getUri().toString());
                     }
                     
-                    if (deviceDAO.isDeviceType(agent.getType())) {
+                    if (deviceDAO.isDeviceType(agent.getRdfType())) {
                         if(!deviceIsLinked) {
                             deviceIsLinked = true;
                             agentToReturn = agent.getUri();
@@ -1002,9 +1002,9 @@ public class DataAPI {
                     .setVariables(dto.getVariables())
                     .setProvenances( dto.getProvenances())
                     .setDevices( dto.getDevices())
-                    .setStartDate(dto.getStartDate())
-                    .setEndDate(dto.getEndDate())
-                    .setMetadata(dto.getMetadata())
+                    .setStartDate(startInstant)
+                    .setEndDate(endInstant)
+                    .setMetadata(metadataFilter)
                     .setConfidenceMax(dto.getConfidenceMax())
                     .setConfidenceMin(dto.getConfidenceMin());
 
@@ -1794,7 +1794,7 @@ public class DataAPI {
                                         rootDeviceTypes = getRootDeviceTypes();
                                     }
                                     URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
-                                    agent.setType(rootType);
+                                    agent.setRdfType(rootType);
                                     agent.setUri(deviceFromDeviceColumn.getUri());
                                     agents.add(agent);
                                     provenanceModel.setProvWasAssociatedWith(agents);
@@ -1807,7 +1807,7 @@ public class DataAPI {
                                         rootDeviceTypes = getRootDeviceTypes();
                                     }
                                     URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                    agent.setType(rootType);
+                                    agent.setRdfType(rootType);
                                     agent.setUri(checkedDevice.getUri());
                                     agents.add(agent);
                                     provenanceModel.setProvWasAssociatedWith(agents);

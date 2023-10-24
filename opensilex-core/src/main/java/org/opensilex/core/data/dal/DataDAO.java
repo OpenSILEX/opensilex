@@ -76,7 +76,6 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         this.fs = fs;
     }
 
-
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
@@ -85,7 +84,6 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD));
         collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD), Indexes.descending(DataModel.DATE_FIELD))));
         collection.createIndex(Indexes.descending(DataModel.DATE_FIELD));
-
     }
 
     /**
@@ -125,38 +123,38 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
 
     @Override
-    public List<Bson> getBsonFilters(DataSearchFilter searchQuery) {
-        List<Bson> bsonFilters = super.getBsonFilters(searchQuery);
+    public List<Bson> getBsonFilters(DataSearchFilter query) {
+        List<Bson> filters = super.getBsonFilters(query);
 
-        if (!CollectionUtils.isEmpty(searchQuery.getTargets())) {
-            bsonFilters.add(Filters.in(DataModel.TARGET_FIELD, searchQuery.getTargets()));
+        if (!CollectionUtils.isEmpty(query.getTargets())) {
+            filters.add(Filters.in(DataModel.TARGET_FIELD, query.getTargets()));
         }
-        if (!CollectionUtils.isEmpty(searchQuery.getVariables())) {
-            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD, searchQuery.getVariables()));
+        if (!CollectionUtils.isEmpty(query.getVariables())) {
+            filters.add(Filters.in(DataModel.VARIABLE_FIELD, query.getVariables()));
         }
-        if (!CollectionUtils.isEmpty(searchQuery.getProvenances())) {
-            bsonFilters.add(Filters.in(PROVENANCE_FIELD, searchQuery.getProvenances()));
-        }
-
-        if (searchQuery.getStartDate() != null) {
-            bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, searchQuery.getStartDate()));
-        }
-        if (searchQuery.getEndDate() != null) {
-            bsonFilters.add(Filters.lt(DataModel.DATE_FIELD, searchQuery.getEndDate()));
+        if (!CollectionUtils.isEmpty(query.getProvenances())) {
+            filters.add(Filters.in(PROVENANCE_FIELD, query.getProvenances()));
         }
 
-        if (searchQuery.getConfidenceMin() != null) {
-            bsonFilters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, searchQuery.getStartDate()));
+        if (query.getStartDate() != null) {
+            filters.add(Filters.gte(DataModel.DATE_FIELD, query.getStartDate()));
         }
-        if (searchQuery.getConfidenceMax() != null) {
-            bsonFilters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, searchQuery.getEndDate()));
+        if (query.getEndDate() != null) {
+            filters.add(Filters.lt(DataModel.DATE_FIELD, query.getEndDate()));
         }
-        if (searchQuery.getMetadata() != null) {
-            searchQuery.getMetadata().forEach((key, value) -> {
-                bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + key, value));
+
+        if (query.getConfidenceMin() != null) {
+            filters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, query.getStartDate()));
+        }
+        if (query.getConfidenceMax() != null) {
+            filters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, query.getEndDate()));
+        }
+        if (query.getMetadata() != null) {
+            query.getMetadata().forEach((key, value) -> {
+                filters.add(Filters.eq(DataModel.METADATA_FIELD + "." + key, value));
             });
         }
-        return bsonFilters;
+        return filters;
     }
 
 

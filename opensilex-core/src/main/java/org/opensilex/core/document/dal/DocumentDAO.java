@@ -98,7 +98,8 @@ public class DocumentDAO {
             fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
             sparql.commitTransaction();
         }catch (IOException e){
-            sparql.rollbackTransaction(e);
+            sparql.rollbackTransaction();
+            throw e;
         }
 
         return instance;
@@ -150,7 +151,8 @@ public class DocumentDAO {
             fs.delete(FS_DOCUMENT_PREFIX, uri);
             sparql.commitTransaction();
         }catch (IOException e){
-            sparql.rollbackTransaction(e);
+            sparql.rollbackTransaction();
+            throw e;
         }
     }
 

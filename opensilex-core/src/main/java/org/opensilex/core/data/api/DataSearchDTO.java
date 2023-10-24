@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.utils.OrderBy;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -64,6 +65,8 @@ public class DataSearchDTO {
     @ApiModelProperty(value = "format wide or long", example = "wide")
     @JsonProperty("mode")
     protected String csvFormat;
+
+    protected List<OrderBy> orderByList;
 
     @JsonProperty("with_raw_data")
     @ApiModelProperty(value = "export also raw_data", example = "false")
@@ -183,6 +186,15 @@ public class DataSearchDTO {
 
     public DataSearchDTO setWithRawData(boolean withRawData) {
         this.withRawData = withRawData;
+        return this;
+    }
+
+    public List<OrderBy> getOrderByList() {
+        return orderByList;
+    }
+
+    public DataSearchDTO setOrderByList(List<OrderBy> orderByList) {
+        this.orderByList = orderByList;
         return this;
     }
 }

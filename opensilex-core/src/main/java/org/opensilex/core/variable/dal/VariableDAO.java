@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static org.opensilex.core.data.dal.DataModel.VARIABLE_FIELD;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -199,14 +200,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 .setDevices(filter.getDevices());
         dataFilter.setAccountURI(filter.getUserModel().getUri());
 
-
         // Filter variables according linked data
         final Set<URI> variableUriList = filter.isWithAssociatedData() ?
                 null :
                 dataDAO.getUsedVariablesByExpeSoDevice(dataFilter, null);
 
         if(variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(dataFilter, filter.getLang()));
+            Set<URI> variableURIs = dataDAO.distinct(VARIABLE_FIELD, URI.class, dataFilter, null);
+            return new ListWithPagination<>(getList(variableURIs, filter.getLang()));
         }
         filter.setIncludedUris(variableUriList);
 
@@ -236,7 +237,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     @Override
-    public List<VariableModel> getList(List<URI> uris, String lang) throws Exception {
+    public List<VariableModel> getList(Collection<URI> uris, String lang) throws Exception {
         List<VariableModel> models =  super.getList(uris, lang);
         if(CollectionUtils.isEmpty(models)){
             return models;

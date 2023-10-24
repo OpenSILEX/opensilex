@@ -34,10 +34,8 @@ public class DataService {
     }
 
     public List<VariableModel> getUsedVariables(DataSearchFilter filter, String lang) throws Exception {
-
-        // #TODO don't copy set -> list
         Set<URI> variableURIs = dataDAO.distinct(VARIABLE_FIELD, URI.class, filter, null);
-        return variableDAO.getList(new ArrayList<>(variableURIs), lang);
+        return variableDAO.getList(variableURIs, lang);
     }
 
 

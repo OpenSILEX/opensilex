@@ -60,13 +60,11 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class ExperimentDAO {
 
     protected final SPARQLService sparql;
-    protected final MongoDBService nosql;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExperimentDAO.class);
 
-    public ExperimentDAO(SPARQLService sparql, MongoDBService nosql) {
+    public ExperimentDAO(SPARQLService sparql) {
         this.sparql = sparql;
-        this.nosql = nosql;
     }
 
     public ExperimentModel create(ExperimentModel instance) throws Exception {
@@ -548,7 +546,7 @@ public class ExperimentDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
         if (!organizationUriFilter.isEmpty()) {

@@ -133,7 +133,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
         );
     }
 
-    public List<T> getList(List<URI> uris, String lang) throws Exception {
+    public List<T> getList(Collection<URI> uris, String lang) throws Exception {
         return sparql.getListByURIs(
                 defaultGraph,
                 objectClass,

@@ -1,7 +1,6 @@
 package org.opensilex.nosql.mongodb.dao;
 
 
-import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.query.SearchFilter;
 
 import java.net.URI;

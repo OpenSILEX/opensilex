@@ -25,6 +25,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
@@ -52,154 +53,27 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 /**
  * @author Arnaud CHARLEROY
  */
-public class MetricDAO {
-    protected final SPARQLService sparql;
-    protected final MongoDBService nosql;
+public class MetricDAO extends MongoReadWriteDao<SystemSummaryModel, SystemSummarySearchFilter> {
 
     private AccountModel user;
+    protected final SPARQLService sparql;
 
     private final static Logger Logger = LoggerFactory.getLogger(MetricDAO.class);
     public static final String METRICS_COLLECTION = "metrics";
 
-    public MetricDAO(SPARQLService sparql, MongoDBService nosql) {
+    public MetricDAO(MongoDBService mongodb, SPARQLService sparql) {
+        super(mongodb, SystemSummaryModel.class, METRICS_COLLECTION, "system");
         this.sparql = sparql;
-        this.nosql = nosql;
     }
 
-    public MetricDAO(SPARQLService sparql, MongoDBService nosql, AccountModel user) {
-        this.sparql = sparql;
-        this.nosql = nosql;
-        this.user = user;
-    }
 
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection<GlobalSummaryModel> metricsCollection = nosql.getDatabase()
+        MongoCollection<GlobalSummaryModel> metricsCollection = mongodb.getDatabase()
                 .getCollection(METRICS_COLLECTION, GlobalSummaryModel.class);
         metricsCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
         metricsCollection.createIndex(Indexes.descending(GlobalSummaryModel.CREATION_DATE_FIELD));
-    }
-
-    public ListWithPagination<ExperimentSummaryModel> getExperimentSummaries(List<URI> experimentURIs, Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws URISyntaxException, Exception {
-        List<OrderBy> orderByList = Arrays.asList(new OrderBy(ExperimentSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
-        Document searchFilter = searchFilter(ExperimentSummaryModel.SUMMARY_TYPE, experimentURIs, startInstant, endInstant);
-
-        ListWithPagination<ExperimentSummaryModel> searchWithPagination = nosql.searchWithPagination(ExperimentSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
-
-        HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
-
-        // for each entry in metrics
-        searchWithPagination.getList().forEach(metric -> {
-            // get items uris
-            List<URI> scientificObjectsURIs = metric.getScientificObjectsByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            List<URI> germplasmsURIs = metric.getGermplasmByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            try {
-                //scientific objects
-                HashMap<URI, String> scientificObjects = new HashMap<>();
-                for (URI scientificObjectURI : scientificObjectsURIs) {
-                    ClassModel scientificObjectType = SPARQLModule.getOntologyStoreInstance().getClassModel(scientificObjectURI, URI.create(Oeso.ScientificObject.getURI()), currentLanguage);
-                    scientificObjects.put(scientificObjectURI, scientificObjectType.getName());
-                }
-                for (CountItemModel item : metric.getScientificObjectsByType().getItems()) {
-                    item.setName(scientificObjects.get(item.getUri()));
-                }
-
-                //germplasms
-                HashMap<URI, String> germplasms = new HashMap<>();
-                for (URI germplasmURI : germplasmsURIs) {
-                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI, URI.create(Oeso.Germplasm.getURI()), currentLanguage);
-                    germplasms.put(germplasmURI, germplasmType.getName());
-                }
-                for (CountItemModel item : metric.getGermplasmByType().getItems()) {
-                    item.setName(germplasms.get(item.getUri()));
-                }
-
-                //variables
-                for (CountItemModel item : metric.getDataByVariables().getItems()) {
-                    item.setName(variables.get(item.getUri()));//TODO replace URI by name
-                }
-                
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        return searchWithPagination;
-
-    }
-
-    public ListWithPagination<SystemSummaryModel> getSystemSummaryWithPagination(Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws Exception {
-        List<OrderBy> orderByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
-        Document searchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, endInstant);
-
-        ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
-
-        HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
-
-        // for each entry in metrics
-        searchWithPagination.getList().forEach(summary -> {
-            // get items uris
-            List<URI> deviceURIs = summary.getDeviceByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            List<URI> scientificObjectsURIs = summary.getScientificObjectsByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            List<URI> germplasmsURIs = summary.getGermplasmByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            List<URI> experimentURIs = summary.getExperimentByType() == null ? Collections.emptyList() :
-                    summary.getExperimentByType().getItems().stream()
-                    .map(CountItemModel::getUri)
-                    .collect(Collectors.toList());
-            try {
-                // devices: map uri to its name
-                HashMap<URI, String> devices = new HashMap<>();
-                for (URI deviceURI : deviceURIs) {
-                    ClassModel deviceType = SPARQLModule.getOntologyStoreInstance().getClassModel(deviceURI,URI.create(Oeso.Device.getURI()),currentLanguage);
-                    devices.put(deviceURI, deviceType.getName());
-                }
-                // add name to metric entry
-                for (CountItemModel item : summary.getDeviceByType().getItems()) {
-                    item.setName(devices.get(item.getUri()));
-                }
-
-                //scientific objects
-                HashMap<URI, String> scientificObjects = new HashMap<>();
-                for (URI scientificObjectURI : scientificObjectsURIs) {
-                    ClassModel scientificObjectType = SPARQLModule.getOntologyStoreInstance().getClassModel(scientificObjectURI,URI.create(Oeso.ScientificObject.getURI()),currentLanguage);
-                    scientificObjects.put(scientificObjectURI, scientificObjectType.getName());
-                }
-                for (CountItemModel item : summary.getScientificObjectsByType().getItems()) {
-                    item.setName(scientificObjects.get(item.getUri()));
-                }
-
-                //germplasms
-                HashMap<URI, String> germplasms = new HashMap<>();
-                for (URI germplasmURI : germplasmsURIs) {
-                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI,URI.create(Oeso.Germplasm.getURI()),currentLanguage);
-                    germplasms.put(germplasmURI, germplasmType.getName());
-                }
-                for (CountItemModel item : summary.getGermplasmByType().getItems()) {
-                    item.setName(germplasms.get(item.getUri()));
-                }
-
-                //variables
-                for (CountItemModel item : summary.getDataByVariables().getItems()) {
-                    item.setName(variables.get(item.getUri()));//TODO replace URI by name
-                }
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        return searchWithPagination;
-
     }
 
     public List<SystemSummaryModel> getSystemSummaryFirstAndLastByPeriod(Instant startInstant, Instant endInstant, String currentLanguage) throws Exception {
@@ -223,7 +97,7 @@ public class MetricDAO {
     }
 
     private SystemSummaryModel setSystemSummaryModelForSearchResult(Document searchFilter, List<OrderBy> orderByList, String currentLanguage, Instant startInstant, Instant endInstant) throws Exception {
-        ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, 0, 1);
+        ListWithPagination<SystemSummaryModel> searchWithPagination = mongodb.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, 0, 1);
         HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
 
         SystemSummaryModel summary = (searchWithPagination.getTotal() == 0) ? null : searchWithPagination.getList().get(0);
@@ -298,7 +172,6 @@ public class MetricDAO {
                         germplasms.put(germplasmURI, germplasmType.getName());
                     } catch (SPARQLInvalidURIException e) {
                         Logger.warn("Germplasm URI not found", e);
-                        continue;
                     }
                 }
                 for (CountItemModel item : summary.getGermplasmByType().getItems()) {
@@ -316,50 +189,13 @@ public class MetricDAO {
         return summary;
     }
 
-    private HashMap<URI, String> getUsedVariablesFromDataDAO() throws Exception {
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<VariableModel> usedVariables = dataDAO.getUsedVariables(user, null, null, null, null);
-
-        HashMap<URI, String> variables = new HashMap<>();
-
-        for (VariableModel usedVariable : usedVariables) {
-            variables.put(usedVariable.getUri(), usedVariable.getName());
-        }
-
-        return variables;
-    }
-
-    public Document searchFilter(String summaryType, List<URI> experiments, Instant startDate, Instant endDate) {
-        Document filter = new Document();//MongoDB class Document
-        filter.append(GlobalSummaryModel.SUMMARY_TYPE_FIELD, summaryType);
-        if (experiments != null && !experiments.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", experiments);
-            filter.put(ExperimentSummaryModel.EXPERIMENT_FIELD, inFilter);
-        }
-
-        if (startDate != null || endDate != null) {
-            Document dateFilter = new Document();
-            if (startDate != null) {
-                dateFilter.put("$gte", startDate);
-            }
-
-            if (endDate != null) {
-                dateFilter.put("$lt", endDate);
-            }
-            filter.put(SystemSummaryModel.CREATION_DATE_FIELD, dateFilter);
-        }
-        Logger.debug("MetricsDAO:searchFilter() set to: " + filter.toString());
-        return filter;
-    }
-
     public void createExperimentSummary() throws Exception {
 
         createIndexes();
 
         AccountModel currentUser = AccountModel.getSystemUser();
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
 
         Set<URI> experiments = experimentDAO.getUserExperiments(currentUser);
 
@@ -375,7 +211,7 @@ public class MetricDAO {
             model.setDataByVariables(variables);
             model.setGermplasmByType(germplasmByCount);
 
-            nosql.create(model, GlobalSummaryModel.class, METRICS_COLLECTION, "experiment");
+            mongodb.create(model, GlobalSummaryModel.class, METRICS_COLLECTION, "experiment");
         }
 
     }
@@ -406,7 +242,7 @@ public class MetricDAO {
 
         SPARQLConfig sparqlConfig = sparql.getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         model.setBaseSystemAlias(sparqlConfig.baseURIAlias());
-        nosql.create(model, SystemSummaryModel.class, METRICS_COLLECTION, "system");
+        mongodb.create(model, SystemSummaryModel.class, METRICS_COLLECTION, "system");
     }
 
     private CountListItemModel getDataCountByVariables(URI experimentURI, AccountModel currentUser) throws Exception {
@@ -414,7 +250,7 @@ public class MetricDAO {
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
         }
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDAO dataDAO = new DataDAO(mongodb, sparql, null);
 
         List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, experiments, null, null, null);
         Map<URI, VariableModel> tmpVariable = new HashMap<>();
@@ -431,7 +267,7 @@ public class MetricDAO {
         dataDAO.appendExperimentUserAccessFilter(filter, currentUser, experiments);
         // 1.match - Filter data on these variables
         // 2.group - Group variables with number of data  
-        Set<Document> variablesWithDataCount = nosql.aggregate(
+        Set<Document> variablesWithDataCount = mongodb.aggregate(
                 DataDAO.DATA_COLLECTION_NAME,
                 Arrays.asList(match(filter),
                     group("$variable", Accumulators.sum("count", 1))),
@@ -465,7 +301,7 @@ public class MetricDAO {
             Node context = SPARQLDeserializers.nodeURI(contextURI);
             select.addGraph(context, varUri, RDF.type, varType);
         } else if (!currentUser.isAdmin() && isExperimentContext) {
-            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDO = new ExperimentDAO(sparql, mongodb);
             Set<URI> graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
             select.addGraph(varG, varUri, RDF.type, varType);

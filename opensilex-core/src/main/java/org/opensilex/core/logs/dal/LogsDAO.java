@@ -6,26 +6,22 @@
 package org.opensilex.core.logs.dal;
 
 import com.mongodb.MongoWriteException;
-import org.opensilex.nosql.mongodb.MongoDBService; 
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 /**
  *
  * @author charlero
  */
-public class LogsDAO {
+public class LogsDAO extends MongoReadWriteDao<LogModel, MongoSearchFilter> {
 
-    protected final MongoDBService nosql;
-    
+
     public static final String LOGS_COLLECTION_NAME = "log";
     public static final String LOG_PREFIX = "log";
 
-    public LogsDAO(MongoDBService nosql) {
-        this.nosql = nosql;
-    }
-
-    public LogModel create(LogModel instance)  throws Exception, MongoWriteException {
-        nosql.create(instance, LogModel.class, LOGS_COLLECTION_NAME, LOG_PREFIX);
-        return instance;
+    public LogsDAO(MongoDBService mongodb) {
+        super(mongodb, LogModel.class, LOGS_COLLECTION_NAME, LOG_PREFIX);
     }
 
 }

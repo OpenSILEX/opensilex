@@ -2,6 +2,7 @@ package org.opensilex.core.metrics.service;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Accumulators;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -12,7 +13,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.metrics.dal.*;
@@ -21,6 +21,7 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -52,12 +53,20 @@ public class MetricsService {
     private final VariableDAO variableDAO;
     private final ExperimentDAO experimentDAO;
 
+    protected static final URI deviceTypeURI = URI.create(Oeso.Device.getURI());
+    protected static final URI osTypeURI = URI.create(Oeso.ScientificObject.getURI());
+    protected static final URI germplasmTypeURI = URI.create(Oeso.Germplasm.getURI());
+
+    private static final OrderBy createDateAscendingOrderBy = new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING);
+    private static final OrderBy createDateDescendingOrderBy = new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING);
+
+
     public MetricsService(MongoDBService mongodb, SPARQLService sparql) {
         this.mongodb = mongodb;
         this.sparql = sparql;
         dataDAO = new DataDAO(mongodb, sparql, null);
         variableDAO = new VariableDAO(sparql, mongodb, null);
-        experimentDAO = new ExperimentDAO(sparql);
+        experimentDAO = new ExperimentDAO(sparql, mongodb);
         experimentSummaryDao = new ExperimentSummaryDao(mongodb);
         systemSummaryDao = new SystemSummaryDao(mongodb);
     }
@@ -84,6 +93,19 @@ public class MetricsService {
         }
     }
 
+    protected void updateSummaryModel(GlobalSummaryModel model, String lang) throws SPARQLException {
+        updateSummaryEntries(model.getGermplasmByType(), germplasmTypeURI, lang);
+        updateSummaryEntries(model.getScientificObjectsByType(), osTypeURI, lang);
+    }
+
+    protected void updateSummaryModel(SystemSummaryModel model, String lang) throws SPARQLException {
+        updateSummaryModel((GlobalSummaryModel) model, lang);
+
+        ClassModel experimentClass = SPARQLModule.getOntologyStoreInstance().getClassModel(URI.create(Oeso.Experiment.getURI()), null, lang);
+        updateSummaryEntries(model.getExperimentByType(), experimentClass.getUri(), lang);
+        updateSummaryEntries(model.getDeviceByType(), deviceTypeURI, lang);
+    }
+
     public ListWithPagination<ExperimentSummaryModel> searchExperimentSummaries(ExperimentSummarySearchFilter filter) throws Exception {
 
         List<OrderBy> orderByList = Collections.singletonList(new OrderBy(ExperimentSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
@@ -91,14 +113,10 @@ public class MetricsService {
 
         ListWithPagination<ExperimentSummaryModel> results = experimentSummaryDao.search(filter);
 
-        URI osTypeURI = URI.create(Oeso.ScientificObject.getURI());
-        URI germplasmTypeURI = URI.create(Oeso.Germplasm.getURI());
         HashMap<URI, String> variables = getUsedVariablesFromDataDAO(filter.getLang());
 
         for (ExperimentSummaryModel model : results.getList()) {
-            updateSummaryEntries(model.getScientificObjectsByType(), osTypeURI, filter.getLang());
-            updateSummaryEntries(model.getGermplasmByType(), germplasmTypeURI, filter.getLang());
-
+            updateSummaryModel(model, filter.getLang());
             for (CountItemModel item : model.getDataByVariables().getItems()) {
                 item.setName(variables.get(item.getUri()));
             }
@@ -114,16 +132,10 @@ public class MetricsService {
 
         ListWithPagination<SystemSummaryModel> results = systemSummaryDao.search(filter);
 
-        URI deviceTypeURI = URI.create(Oeso.Device.getURI());
-        URI osTypeURI = URI.create(Oeso.ScientificObject.getURI());
-        URI germplasmTypeURI = URI.create(Oeso.Germplasm.getURI());
         HashMap<URI, String> variables = getUsedVariablesFromDataDAO(filter.getLang());
 
         for (SystemSummaryModel model : results.getList()) {
-            updateSummaryEntries(model.getScientificObjectsByType(), osTypeURI, filter.getLang());
-            updateSummaryEntries(model.getGermplasmByType(), germplasmTypeURI, filter.getLang());
-            updateSummaryEntries(model.getDeviceByType(), deviceTypeURI, filter.getLang());
-
+            updateSummaryModel(model, filter.getLang());
             for (CountItemModel item : model.getDataByVariables().getItems()) {
                 item.setName(variables.get(item.getUri()));
             }
@@ -151,6 +163,34 @@ public class MetricsService {
 
 //            mongodb.create(model, GlobalSummaryModel.class, METRICS_COLLECTION, "experiment");
         }
+    }
+
+    public void createSystemSummary() throws Exception {
+
+        AccountModel currentUser = AccountModel.getSystemUser();
+
+        SystemSummaryModel model = new SystemSummaryModel();
+        model.setCreationDate(Instant.now());
+        CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(null, currentUser, Oeso.ScientificObject, false);
+        CountListItemModel deviceTypesByCount = getCountByTypeAndContext(null, currentUser, Oeso.Device, false);
+        CountListItemModel variablesByCount = getDataCountByVariables(null, currentUser);
+        CountListItemModel germplasmByCount = getCountByTypeAndContext(null, currentUser, Oeso.Germplasm, false);
+        // TODO : Refactor experiment , don't use
+        CountListItemModel experimentsByCount = new CountListItemModel();
+        experimentsByCount.setName("Experiment");
+        experimentsByCount.setType(new URI(Oeso.Experiment.getURI()));
+        ExperimentDAO expDao = new ExperimentDAO(sparql, mongodb);
+        experimentsByCount.setCalculatedTotalCount(expDao.count());
+
+        model.setScientificObjectsByType(scientificObjectTypesByCount);
+        model.setDeviceByType(deviceTypesByCount);
+        model.setDataByVariables(variablesByCount);
+        model.setGermplasmByType(germplasmByCount);
+        model.setExperimentByType(experimentsByCount);
+
+        SPARQLConfig sparqlConfig = sparql.getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+        model.setBaseSystemAlias(sparqlConfig.baseURIAlias());
+//        mongodb.create(model, SystemSummaryModel.class, METRICS_COLLECTION, "system");
     }
 
 
@@ -250,6 +290,40 @@ public class MetricsService {
         }
 
         return variablesByCount;
+    }
+
+    public Pair<SystemSummaryModel, SystemSummaryModel> getSystemSummaryFirstAndLastByPeriod(Instant startInstant, Instant endInstant, String lang) throws Exception {
+
+        //latest only
+        SystemSummarySearchFilter filter = new SystemSummarySearchFilter();
+        filter.setEndInstant(endInstant)
+                .setPageSize(1)
+                .setOrderByList(Collections.singletonList(createDateDescendingOrderBy));
+
+        List<SystemSummaryModel> searchResults = systemSummaryDao.search(filter).getList();
+        if (searchResults.isEmpty()) {
+            return null;
+        }
+
+        SystemSummaryModel latestModel = searchResults.get(0);
+        updateSummaryModel(latestModel, lang);
+
+        // reset the filter
+        filter.setEndInstant(null).setStartInstant(startInstant);
+        filter.setOrderByList(Collections.singletonList(createDateAscendingOrderBy));
+
+        // search the oldest model
+        searchResults = systemSummaryDao.search(filter).getList();
+
+        // return (last,null)
+        if (searchResults.isEmpty()) {
+            return Pair.of(latestModel, new SystemSummaryModel());
+        }
+
+        // return (last,old)
+        SystemSummaryModel oldestModel = searchResults.get(0);
+        updateSummaryModel(oldestModel, lang);
+        return Pair.of(latestModel, oldestModel);
     }
 
 }

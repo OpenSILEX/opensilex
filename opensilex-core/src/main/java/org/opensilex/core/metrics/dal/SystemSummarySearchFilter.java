@@ -1,6 +1,10 @@
 package org.opensilex.core.metrics.dal;
 
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
+public class SystemSummarySearchFilter extends GlobalSummarySearchFilter {
 
-public class SystemSummarySearchFilter extends MongoSearchFilter {
+    @Override
+    public String getType() {
+        return SystemSummaryModel.SUMMARY_TYPE;
+    }
+
 }

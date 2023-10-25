@@ -6,11 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.metrics.schedule;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
-import javax.ws.rs.ext.Provider;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -19,13 +14,19 @@ import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.CoreConfig;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.metrics.dal.MetricDAO;
+import org.opensilex.core.MetricsConfig;
+import org.opensilex.core.metrics.service.MetricsService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.core.MetricsConfig;
+
+import javax.inject.Inject;
+import javax.ws.rs.ext.Provider;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Create System metrics with a delay defined by user for experiment and system
@@ -48,7 +49,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
             case INITIALIZATION_APP_FINISHED:
                 SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
                 SPARQLService sparql = factory.provide();
-                MongoDBService nosql = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+                MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
 
                 try {
                     CoreConfig coreConfig = opensilex.getModuleConfig(CoreModule.class, CoreConfig.class);
@@ -59,7 +60,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     int delayBetweenExperimentsMetrics = metrics.experiments().delayBetweenMetrics();
                     String experimentsMetricsTimeUnit = metrics.experiments().metricsTimeUnit();
 
-                    TimeUnit experimentsTimeUnit = null;
+                    TimeUnit experimentsTimeUnit;
                     try {
                         experimentsTimeUnit = TimeUnit.valueOf(experimentsMetricsTimeUnit);
                     } catch (IllegalArgumentException e) {
@@ -75,17 +76,14 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     try {
                         systemTimeUnit = TimeUnit.valueOf(systemMetricsTimeUnit);
                     } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Bad experiment time unit set" + systemTimeUnit);
+                        throw new RuntimeException("Bad experiment time unit set" + systemMetricsTimeUnit);
                     }
-                    MetricDAO metricsDao = new MetricDAO(sparql, nosql);
-                    scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
-                    scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsDao), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
+                    MetricsService metricsService = new MetricsService(mongodb, sparql);
+                    scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsService), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
+                    scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsService), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
 
-                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit.toString() + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit.toString());
-                } catch (OpenSilexModuleNotFoundException ex) {
-                    LOGGER.debug("error on start " + SCHEDULE_METRICS);
-                    LOGGER.error(ex.getMessage(), ex);
-                } catch (RuntimeException ex) {
+                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit);
+                } catch (OpenSilexModuleNotFoundException | RuntimeException ex) {
                     LOGGER.debug("error on start " + SCHEDULE_METRICS);
                     LOGGER.error(ex.getMessage(), ex);
                 }
@@ -106,18 +104,18 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private class CreateExperimentSummaries implements Runnable {
+    private static class CreateExperimentSummaries implements Runnable {
 
-        private final MetricDAO metricsDao;
+        private final MetricsService metricsService;
 
-        public CreateExperimentSummaries(MetricDAO metricsDao) {
-            this.metricsDao = metricsDao;
+        public CreateExperimentSummaries(MetricsService metricsService) {
+            this.metricsService = metricsService;
         }
 
         @Override
         public void run() {
             try {
-                metricsDao.createExperimentSummary();
+                metricsService.createExperimentSummary(null);
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
             }
@@ -128,18 +126,18 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private class CreateSystemSummary implements Runnable {
+    private static class CreateSystemSummary implements Runnable {
 
-        private final MetricDAO metricsDao;
+        private final MetricsService metricsService;
 
-        public CreateSystemSummary(MetricDAO metricsDao) {
-            this.metricsDao = metricsDao;
+        public CreateSystemSummary(MetricsService metricsService) {
+            this.metricsService = metricsService;
         }
 
         @Override
         public void run() {
             try {
-                metricsDao.createSystemSummary();
+                metricsService.createSystemSummary();
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
             }

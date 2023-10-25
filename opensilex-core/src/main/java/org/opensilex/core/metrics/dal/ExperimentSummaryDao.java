@@ -21,11 +21,11 @@ public class ExperimentSummaryDao extends MongoReadWriteDao<ExperimentSummaryMod
         if (!CollectionUtils.isEmpty(searchQuery.getExperiments())) {
             filters.add(Filters.in(ExperimentSummaryModel.EXPERIMENT_FIELD, searchQuery.getExperiments()));
         }
-        if (searchQuery.getStart() != null) {
-            filters.add(Filters.gte(ExperimentSummaryModel.CREATION_DATE_FIELD, searchQuery.getStart()));
+        if (searchQuery.getStartInstant() != null) {
+            filters.add(Filters.gte(ExperimentSummaryModel.CREATION_DATE_FIELD, searchQuery.getStartInstant()));
         }
-        if (searchQuery.getEnd() != null) {
-            filters.add(Filters.lt(ExperimentSummaryModel.CREATION_DATE_FIELD, searchQuery.getEnd()));
+        if (searchQuery.getEndInstant() != null) {
+            filters.add(Filters.lt(ExperimentSummaryModel.CREATION_DATE_FIELD, searchQuery.getEndInstant()));
         }
 
         return filters;

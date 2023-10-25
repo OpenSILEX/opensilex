@@ -676,7 +676,7 @@ public class OntologyAPI {
             sparql.renameGraph(uri, newUri);
             sparql.commitTransaction();
         } catch (Exception e) {
-            sparql.rollbackTransaction(e);
+            sparql.rollbackTransaction();
             throw e;
         }
         return new ObjectUriResponse(Response.Status.OK, newUri).getResponse();

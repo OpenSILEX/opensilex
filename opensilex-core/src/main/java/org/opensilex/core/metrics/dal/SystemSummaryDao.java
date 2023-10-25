@@ -9,5 +9,4 @@ public class SystemSummaryDao extends MongoReadWriteDao<SystemSummaryModel, Syst
         super(mongodb, SystemSummaryModel.class, "metrics", "system");
     }
 
-
 }

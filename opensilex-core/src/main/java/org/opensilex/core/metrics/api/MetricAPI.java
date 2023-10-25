@@ -7,6 +7,8 @@
 package org.opensilex.core.metrics.api;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreConfig;
 import org.opensilex.core.CoreModule;
@@ -16,6 +18,7 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.metrics.dal.*;
+import org.opensilex.core.metrics.service.MetricsService;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -40,9 +43,9 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
@@ -76,7 +79,7 @@ public class MetricAPI {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBService nosql;
+    private MongoDBService mongodb;
 
     @Inject
     private FileStorageService fs;
@@ -119,12 +122,23 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql);
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        MetricsService metricsService = new MetricsService(mongodb, sparql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
         Set<URI> runningUserExperiments = experimentDAO.getRunningUserExperiments(currentUser);
-        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(new ArrayList<>(runningUserExperiments), startInstant, endInstant, page, pageSize, currentUser.getLanguage());
 
-        // Convert paginated list to DTO
+        // Build filter, run search and concert to DTOs
+        ExperimentSummarySearchFilter filter = new ExperimentSummarySearchFilter();
+        filter.setStartInstant(startInstant)
+                .setEndInstant(endInstant);
+
+        filter.setExperiments(runningUserExperiments)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsService.searchExperimentSummaries(filter);
+
+        // #TODO allow the use of direct transformation of model inside DTO (avoid double list create)
         ListWithPagination<MetricDTO> dtoList = experimentSummaries.convert(MetricDTO.class, MetricDTO::getDTOfromExperimentSummaryModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -168,10 +182,17 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
-        ListWithPagination<SystemSummaryModel> systemSummaries = metricsDao.getSystemSummaryWithPagination(startInstant, endInstant, page, pageSize, currentUser.getLanguage());
+        MetricsService metricsService = new MetricsService(mongodb, sparql);
 
-        //Convert paginated list to DTO
+        // Build filter, run search and concert to DTOs
+        SystemSummarySearchFilter filter = new SystemSummarySearchFilter();
+        filter.setStartInstant(startInstant)
+                .setEndInstant(endInstant)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<SystemSummaryModel> systemSummaries = metricsService.searchSystemSummaries(filter);
         ListWithPagination<MetricDTO> dtoList = systemSummaries.convert(MetricDTO.class, MetricDTO::getDTOfromSystemSummaryModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -217,14 +238,15 @@ public class MetricAPI {
                 startInstant = ZonedDateTime.now().minusYears(1).toInstant();
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
+        MetricsService metricsService = new MetricsService(mongodb, sparql);
+
 
         //Get SystemSummaryModels for startInstant and endInstant in order to calculate later the differences between both SystemSummaryModels
-        List<SystemSummaryModel> firstAndLastPeriodSystemSummaries = metricsDao.getSystemSummaryFirstAndLastByPeriod(startInstant, endInstant, currentUser.getLanguage());
+        Pair<SystemSummaryModel, SystemSummaryModel> firstAndLastPeriodSystemSummaries = metricsService.getSystemSummaryFirstAndLastByPeriod(startInstant, endInstant, currentUser.getLanguage());
 
         //Calculate differences between start and end instant summaries -> substract entity-specific counts
         if(firstAndLastPeriodSystemSummaries != null){
-            MetricPeriodDTO dto =  substractMetricModel(firstAndLastPeriodSystemSummaries);
+            MetricPeriodDTO dto = substractSummaries(firstAndLastPeriodSystemSummaries);
             dto.setStartDate(startInstant);
             dto.setEndDate(endInstant);
 
@@ -254,6 +276,8 @@ public class MetricAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
+        validateContextAccess(experimentURI);
+
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -274,187 +298,77 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql);
+        MetricsService metricsService = new MetricsService(mongodb, sparql);
 
-        validateContextAccess(experimentURI);
-        List<URI> experimentUri = Arrays.asList(experimentURI);
-        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(experimentUri, startInstant, endInstant, page, pageSize, currentUser.getLanguage());
-        ExperimentSummaryModel experimentSummary = null;
-        if (experimentSummaries != null && !experimentSummaries.getList().isEmpty()) {
-            experimentSummary = experimentSummaries.getList().get(0);
-        }
-        if (experimentSummary == null) {
+        // Build filter, run search and concert to DTOs
+        ExperimentSummarySearchFilter filter = new ExperimentSummarySearchFilter();
+        filter.setStartInstant(startInstant)
+                .setEndInstant(endInstant);
+
+        filter.setExperiments(Collections.singletonList(experimentURI))
+                .setPage(page)
+                .setPageSize(1)
+                .setLang(currentUser.getLanguage());
+
+        List<ExperimentSummaryModel> experimentSummaries = metricsService.searchExperimentSummaries(filter).getList();
+
+        if (CollectionUtils.isEmpty(experimentSummaries)) {
             throw new NotFoundURIException("Metrics on experiment URI not found:", experimentURI);
         }
-        return new SingleObjectResponse<>(MetricDTO.getDTOfromExperimentSummaryModel(experimentSummary)).getResponse();
+        return new SingleObjectResponse<>(MetricDTO.getDTOfromExperimentSummaryModel(experimentSummaries.get(0))).getResponse();
+    }
+
+    private CountListItemPeriodDTO substractItemListModel(CountListItemModel latest, CountListItemModel oldest) {
+        Objects.requireNonNull(latest);
+
+        CountListItemPeriodDTO periodDTO = new CountListItemPeriodDTO();
+        periodDTO.setType(latest.getType());
+        periodDTO.setName(latest.getName());
+        periodDTO.setTotalItemsCount(latest.getTotalCount());
+
+        if (oldest != null) {
+            periodDTO.setTotalDifferenceItemsCount(latest.getTotalCount() - oldest.getTotalCount());
+        } else {
+            periodDTO.setTotalDifferenceItemsCount(0);
+        }
+        return periodDTO;
     }
 
     //substractMetricModel() substracts two SystemSummaryModels (latest and oldest)
     //and returns a MetricPeriodDTO containing the differences as entity-specific CountListItemPeriodDTO lists
-    private MetricPeriodDTO substractMetricModel(List<SystemSummaryModel> searchFirstLast) {
+    private MetricPeriodDTO substractSummaries(Pair<SystemSummaryModel, SystemSummaryModel> latestAndOldestSummaries) {
         MetricPeriodDTO periodDTO = new MetricPeriodDTO();
+        if (latestAndOldestSummaries == null) {
+            return periodDTO;
+        }
 
-        if(searchFirstLast != null) {
-            SystemSummaryModel latestSummary = searchFirstLast.get(0);
-            SystemSummaryModel oldestSummary = (searchFirstLast.size() == 1) ? null : searchFirstLast.get(1); //check if there is a second SystemSummaryModel or not (searchFirstLast.size() == 1)
+        SystemSummaryModel latestSummary = latestAndOldestSummaries.getLeft();
+        SystemSummaryModel oldestSummary = latestAndOldestSummaries.getRight(); //check if there is a second SystemSummaryModel or not (searchFirstLast.size() == 1)
 
-            //Experiment
-            if (latestSummary.getExperimentByType() != null) {
-                CountListItemPeriodDTO experimentList = new CountListItemPeriodDTO();
-                experimentList.setType(latestSummary.getExperimentByType().getType());
-                experimentList.setName(latestSummary.getExperimentByType().getName());
-                experimentList.setTotalItemsCount((latestSummary.getExperimentByType().getTotalCount()));
-
-                if ((oldestSummary != null) && (oldestSummary.getExperimentByType() != null)) {
-                    experimentList.setTotalDifferenceItemsCount(latestSummary.getExperimentByType().getTotalCount() - oldestSummary.getExperimentByType().getTotalCount());
-                }
-                else{
-                    experimentList.setTotalDifferenceItemsCount(0);
-                }
-
-                periodDTO.setExperimentList(experimentList);
-            }
-
-            //OS
-            if (latestSummary.getScientificObjectsByType() != null) {
-                CountListItemPeriodDTO scientificObjectList = new CountListItemPeriodDTO();
-
-                if ((oldestSummary != null) && (oldestSummary.getScientificObjectsByType() != null)) {
-                    List<CountItemModel> latestOSitemList = latestSummary.getScientificObjectsByType().getItems();
-                    List<CountItemModel> oldestOSitemList = oldestSummary.getScientificObjectsByType().getItems();
-
-                    scientificObjectList = substractTwoCountItemModelLists(latestOSitemList, oldestOSitemList); //contains recently added Scientific Objects
-                }
-                else{
-                    scientificObjectList.setTotalDifferenceItemsCount(0);
-                }
-                scientificObjectList.setType(latestSummary.getScientificObjectsByType().getType());
-                scientificObjectList.setName(latestSummary.getScientificObjectsByType().getName());
-                scientificObjectList.setTotalItemsCount(latestSummary.getScientificObjectsByType().getTotalCount());
-
-                periodDTO.setScientificObjectList(scientificObjectList);
-            }
-
-            //Variables
-            if (latestSummary.getDataByVariables() != null) {
-                CountListItemPeriodDTO dataList = new CountListItemPeriodDTO();
-
-                if ((oldestSummary != null) && (oldestSummary.getDataByVariables() != null)) {
-                    List<CountItemModel> latestVarItemList = latestSummary.getDataByVariables().getItems();
-                    List<CountItemModel> oldestVarItemList = oldestSummary.getDataByVariables().getItems();
-
-                    dataList = substractTwoCountItemModelLists(latestVarItemList, oldestVarItemList); //contains recently added data
-                }
-                else{
-                    dataList.setTotalDifferenceItemsCount(0);
-                }
-
-                dataList.setType(latestSummary.getDataByVariables().getType());
-                dataList.setName(latestSummary.getDataByVariables().getName());
-                dataList.setTotalItemsCount(latestSummary.getDataByVariables().getTotalCount());
-
-                periodDTO.setDataList(dataList);
-            }
-
-            //Device
-            if (latestSummary.getDeviceByType() != null) {
-                CountListItemPeriodDTO deviceList = new CountListItemPeriodDTO();
-
-                if ((oldestSummary != null) && (oldestSummary.getDeviceByType() != null)) {
-                    List<CountItemModel> latestDeviceItemList = latestSummary.getDeviceByType().getItems();
-                    List<CountItemModel> oldestDeviceItemList = oldestSummary.getDeviceByType().getItems();
-
-                    deviceList = substractTwoCountItemModelLists(latestDeviceItemList, oldestDeviceItemList); //contains recently added devices
-                }
-                else{
-                    deviceList.setTotalDifferenceItemsCount(0);
-                }
-                deviceList.setType(latestSummary.getDeviceByType().getType());
-                deviceList.setName(latestSummary.getDeviceByType().getName());
-                deviceList.setTotalItemsCount(latestSummary.getDeviceByType().getTotalCount());
-
-                periodDTO.setDeviceList(deviceList);
-            }
-
-            //Germplasm
-            if (latestSummary.getGermplasmByType() != null) {
-                CountListItemPeriodDTO germplasmList = new CountListItemPeriodDTO();
-
-                if ((oldestSummary != null) && (oldestSummary.getGermplasmByType() != null)) {
-                    List<CountItemModel> latestGermplasmItemList = latestSummary.getGermplasmByType().getItems();
-                    List<CountItemModel> oldestGermplasmItemList = oldestSummary.getGermplasmByType().getItems();
-
-                    germplasmList = substractTwoCountItemModelLists(latestGermplasmItemList, oldestGermplasmItemList); //contains recently added germplasms
-                }
-                else{
-                    germplasmList.setTotalDifferenceItemsCount(0);
-                }
-                germplasmList.setType(latestSummary.getGermplasmByType().getType());
-                germplasmList.setName(latestSummary.getGermplasmByType().getName());
-                germplasmList.setTotalItemsCount(latestSummary.getGermplasmByType().getTotalCount());
-
-                periodDTO.setGermplasmList(germplasmList);
-            }
+        if (latestSummary.getExperimentByType() != null) {
+            periodDTO.setExperimentList(substractItemListModel(latestSummary.getExperimentByType(), oldestSummary.getExperimentByType()));
+        }
+        if (latestSummary.getScientificObjectsByType() != null) {
+            periodDTO.setScientificObjectList(substractItemListModel(latestSummary.getScientificObjectsByType(), oldestSummary.getScientificObjectsByType()));
+        }
+        if (latestSummary.getGermplasmByType() != null) {
+            periodDTO.setGermplasmList(substractItemListModel(latestSummary.getGermplasmByType(), oldestSummary.getGermplasmByType()));
+        }
+        if (latestSummary.getDeviceByType() != null) {
+            periodDTO.setDeviceList(substractItemListModel(latestSummary.getDeviceByType(), oldestSummary.getDeviceByType()));
+        }
+        if (latestSummary.getDataByVariables() != null) {
+            periodDTO.setDataList(substractItemListModel(latestSummary.getDataByVariables(), oldestSummary.getDataByVariables()));
         }
 
         return periodDTO;
     }
 
 
-    //substractTwoCountItemModelLists() calculates the count differences (latest minus oldest) of two List<CountItemModel>
-    //and returns a List<CountListItemPeriodDTO> containing all items which were recently added (since oldestItemList)
-    public CountListItemPeriodDTO substractTwoCountItemModelLists(List<CountItemModel> latestItemList, List<CountItemModel> oldestItemList){
-        CountListItemPeriodDTO periodList = new CountListItemPeriodDTO();
-        Integer totalCountDiff = 0; //count over all item counts which were added within a specific entity type (i.e. over all ScientificObject item counts)
-
-        if (latestItemList != null) {
-            for (CountItemModel item : latestItemList) {
-                //CountItemModel diffCountItemModel = new CountItemModel();
-                Boolean itemIsInOldSysSummary = false;
-                Integer countDiff = 0; //NEW
-
-                if (oldestItemList != null) {
-                    //check if actual item is present in oldestSummary()
-                    for (CountItemModel oldItem : oldestItemList) {
-                        if (item.getUri().equals(oldItem.getUri())) {
-                            //do substraction of period specific item counts
-                            countDiff = item.getCount() - oldItem.getCount();
-                            itemIsInOldSysSummary = true; //indicate that this item is present in oldestSystemSummary
-                            break;
-                        }
-                    }
-                }
-
-                //if item is NOT contained in oldestSummary => add count of latestSysSummary
-                if (!itemIsInOldSysSummary) {
-                    countDiff = item.getCount();//NEW
-                }
-
-                if(countDiff > 0){
-                    //CountItemDTO addedItem = new CountItemDTO();
-                    CountItemPeriodDTO addedItem = new CountItemPeriodDTO();
-                    addedItem.setName(item.getName());
-                    addedItem.setType(item.getType());
-                    addedItem.setUri(item.getUri());
-                    addedItem.setCount(item.getCount());
-                    addedItem.setDifferenceCount(countDiff);
-
-                    periodList.addDifferenceItem(addedItem);
-
-                }
-
-                totalCountDiff += countDiff;
-                //diffCountListItemModel.addItem(diffCountItemModel); //add item to common item list
-            }
-        }
-        periodList.setTotalDifferenceItemsCount(totalCountDiff);
-        return periodList;
-    }
-
 
     private void validateContextAccess(URI contextURI) throws Exception {
         if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, mongodb);
 
             xpDAO.validateExperimentAccess(contextURI, currentUser);
         } else {

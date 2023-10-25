@@ -1,41 +1,19 @@
 package org.opensilex.core.metrics.dal;
 
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
-import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 
-public class ExperimentSummarySearchFilter extends MongoSearchFilter {
+public class ExperimentSummarySearchFilter extends GlobalSummarySearchFilter {
 
-    private List<URI> experiments;
-    private Instant start;
-    private Instant end;
+    private Collection<URI> experiments;
 
-    public List<URI> getExperiments() {
+    public Collection<URI> getExperiments() {
         return experiments;
     }
 
-    public ExperimentSummarySearchFilter setExperiments(List<URI> experiments) {
+    public ExperimentSummarySearchFilter setExperiments(Collection<URI> experiments) {
         this.experiments = experiments;
-        return this;
-    }
-
-    public Instant getStart() {
-        return start;
-    }
-
-    public ExperimentSummarySearchFilter setStart(Instant start) {
-        this.start = start;
-        return this;
-    }
-
-    public Instant getEnd() {
-        return end;
-    }
-
-    public ExperimentSummarySearchFilter setEnd(Instant end) {
-        this.end = end;
         return this;
     }
 }

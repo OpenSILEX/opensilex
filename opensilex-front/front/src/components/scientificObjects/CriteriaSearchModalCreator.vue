@@ -1,6 +1,5 @@
 <template>
   <opensilex-FormField
-      :rules="rules"
       :required="required"
       :requiredBlue="requiredBlue"
       :label="$t('CriteriaSearchModalCreator.filter-label')"
@@ -29,7 +28,6 @@
             @deselect="removeCriteriaAndSave"
             :limit="10"
         >
-
         </treeselect>
 
         <b-input-group-append>
@@ -70,7 +68,7 @@
             <div>
               <p>{{ $t('CriteriaSearchModalCreator.modal-explanation') }}</p>
             </div>
-
+            <ValidationObserver ref="validatorRef">
             <div
                 v-for="(singleCriteria, index) in criteriaList"
                 v-bind:key="index"
@@ -85,6 +83,7 @@
                 ></opensilex-VariableSelector>
                 <opensilex-CriteriaOperatorSelector
                     :operator.sync="singleCriteria.criteria_operator"
+                    :rules="singleCriteria.criteria_rules"
                     @select="loadCriteriaInformation($event, singleCriteria)"
                     class="col-md-2"
                 ></opensilex-CriteriaOperatorSelector>
@@ -120,7 +119,16 @@
                       :disabled="false"
                       :required="true"
                   ></opensilex-DateTimeForm>
-                  <!--  Disabled string filter if no variable has been  or if the variable's datatype isn't registered yet, non disabled string filter if variable's datatype is deciaml or int -->
+                  <opensilex-SelectForm
+                      v-else-if="$opensilex.checkURIs(singleCriteria.datatype, Xsd.BOOLEAN)"
+                      :selected.sync="singleCriteria.value"
+                      :multiple="false"
+                      placeholder="CriteriaSearchModalCreator.boolean-field-palceholder"
+                      :showCount="false"
+                      :required="false"
+                      :options="trueFalseList"
+                  ></opensilex-SelectForm>
+                  <!--  Disabled string filter if no variable has been selected or if the variable's datatype isn't registered yet, non disabled string filter if variable's datatype is deciaml or int -->
                   <opensilex-StringFilter
                       v-else
                       id="value"
@@ -131,6 +139,7 @@
                 </div>
 
             </div>
+            </ValidationObserver>
 
             <div class="add-criteria-button-container">
               <opensilex-Button
@@ -152,12 +161,15 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { Prop, PropSync } from 'vue-property-decorator';
+import { Prop, PropSync, Ref } from 'vue-property-decorator';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import Xsd from "../../ontologies/Xsd";
 import XSDIntegerInput from "../ontology/XSDIntegerInput.vue";
+import { SelectableItem } from '../common/forms/SelectForm.vue';
+import HttpResponse, { OpenSilexResponse } from 'opensilex-security/HttpResponse';
+import { VariableDetailsDTO } from 'opensilex-core/index';
 
 interface SingleCriteriaDTO {
   variable_uri: string,
@@ -172,7 +184,8 @@ interface SingleCriteriaAttributesUsedInFront {
   datatype: string,
   variable_name: string,
   criteria_symbol: string,
-  id: string
+  id: string,
+  criteria_rules:string
 }
 
 interface CriteriaDTO {
@@ -187,6 +200,9 @@ interface TreeselectItem{
 @Component({
   components: {XSDIntegerInput},
   computed: {
+    CriteriaSearchModalCreator() {
+      return CriteriaSearchModalCreator
+    },
     Xsd() {
       return Xsd
     },
@@ -198,6 +214,8 @@ interface TreeselectItem{
   }
 })
 export default class CriteriaSearchModalCreator extends Vue {
+
+  @Ref("validatorRef") readonly validatorRef!: any;
 
   @Prop({ default: false })
   disabled: boolean;
@@ -211,8 +229,6 @@ export default class CriteriaSearchModalCreator extends Vue {
   @PropSync("criteria_dto")
   criteriaDto: CriteriaDTO;
 
-  @Prop()
-  rules: string | Function;
 
   $opensilex: OpenSilexVuePlugin;
   loading : boolean = false;
@@ -224,21 +240,25 @@ export default class CriteriaSearchModalCreator extends Vue {
   criteriaListOnLastValidate: Array<SingleCriteriaAttributesUsedInFront> = [];
   criteriaIdCount : number = 0;
   idCountOnLastValidate : number = 0;
+  trueFalseList: Array<SelectableItem> = [{id: "true", label: "true"}, {id: "false", label: "false"}];
 
   treeselectRefreshKey = 0;
   modalRefreshKey = 0;
 
-  loadVariableInformation(variableIdAndLabelJson : any, singleCriteria: SingleCriteriaAttributesUsedInFront){
+  async loadVariableInformation(variableIdAndLabelJson : any, singleCriteria: SingleCriteriaAttributesUsedInFront){
     let variableUri : string = variableIdAndLabelJson.id;
     singleCriteria.variable_name = variableIdAndLabelJson.label;
     let allreadyFetchedType : string = this.savedVariablesDatatypes.get(variableUri);
     if(!allreadyFetchedType){
-      this.variableService.getVariable(variableUri).then(httpResponseVariable=>{
-        singleCriteria.datatype = httpResponseVariable.response.result.datatype;
-        this.savedVariablesDatatypes.set(variableUri, singleCriteria.datatype);
-      });
+      let response: HttpResponse<OpenSilexResponse<VariableDetailsDTO>> = await this.variableService.getVariable(variableUri);
+      singleCriteria.datatype = response.response.result.datatype;
+      this.savedVariablesDatatypes.set(variableUri, singleCriteria.datatype);
     }else{
       singleCriteria.datatype = allreadyFetchedType;
+    }
+    singleCriteria.criteria_rules="";
+    if(this.$opensilex.checkURIs(singleCriteria.datatype, Xsd.BOOLEAN)){
+      singleCriteria.criteria_rules="refuseOperators:vocabulary:LessThan,vocabulary:MoreThan,vocabulary:MoreOrEqualThan,vocabulary:LessOrEqualThan"
     }
   }
 
@@ -284,7 +304,8 @@ export default class CriteriaSearchModalCreator extends Vue {
       datatype: "",
       variable_name: "",
       criteria_symbol: "",
-      id: this.criteriaIdCount.toString()
+      id: this.criteriaIdCount.toString(),
+      criteria_rules:""
     }
   }
 
@@ -334,17 +355,21 @@ export default class CriteriaSearchModalCreator extends Vue {
     this.idCountOnLastValidate = this.criteriaIdCount;
   }
 
-  hide(validate: boolean) {
+  async hide(validate: boolean) {
     let modalRef: any = this.$refs.modalRef;
-    modalRef.hide();
     if (validate) {
-      this.setOnLastValidateParameters();
-      this.setCriteriaDto();
+      if(await this.validatorRef.validate()){
+        this.setOnLastValidateParameters();
+        this.setCriteriaDto();
+        modalRef.hide();
+        this.treeselectRefreshKey += 1;
+      }
     }else{
       this.criteriaIdCount = this.idCountOnLastValidate;
       this.criteriaList = this.criteriaListOnLastValidate.map(e=>e);
+      modalRef.hide();
+      this.treeselectRefreshKey += 1;
     }
-    this.treeselectRefreshKey += 1;
   }
 
   clearIfNeeded(values : Array<SingleCriteriaAttributesUsedInFront>){
@@ -475,6 +500,7 @@ en:
     value-placeholder: Enter value
     validate-button: Validate criteria list
     cancel-button: Revert changes
+    boolean-field-palceholder: Enter true or false
 
 fr:
   CriteriaSearchModalCreator:
@@ -489,5 +515,6 @@ fr:
     value-placeholder: Entrez valeur
     validate-button: Validez liste de critères
     cancel-button: Annulez modifications
+    boolean-field-palceholder: Entrez vrai ou faux
 
 </i18n>

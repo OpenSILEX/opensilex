@@ -802,7 +802,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -822,7 +822,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Arrays.asList(moreThan10Dot5SingleCriteria, equalToo20201011SingleCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -841,7 +841,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(wrongDatatypeForIntCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -850,7 +850,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(inexistingVariableCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);

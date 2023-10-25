@@ -8,6 +8,7 @@
       :itemLoadingMethod="load"
       :conversionMethod="operatorToSelectNode"
       :clearable="false"
+      :rules=rules
       placeholder="OperatorSelector.placeholder"
       :required="required"
       :defaultSelectedValue="defaultSelectedValue"
@@ -37,6 +38,9 @@ export default class CriteriaOperatorSelector extends Vue {
 
   @PropSync("operator")
   operatorURI: string;
+
+  @Prop()
+  rules: string;
 
   @Prop()
   defaultSelectedValue;

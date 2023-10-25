@@ -16,6 +16,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -41,6 +42,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class OrganizationDAO {
 
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
     protected final OrganizationSPARQLHelper organizationSPARQLHelper;
 
     /**
@@ -52,8 +54,10 @@ public class OrganizationDAO {
     private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
             .build();
 
-    public OrganizationDAO(SPARQLService sparql) throws Exception {
+    public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
         this.sparql = sparql;
+        this.nosql = nosql;
+
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }
 

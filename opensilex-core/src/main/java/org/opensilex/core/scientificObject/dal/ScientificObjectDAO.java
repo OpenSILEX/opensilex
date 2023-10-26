@@ -35,6 +35,7 @@ import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
@@ -80,7 +81,7 @@ public class ScientificObjectDAO {
 
     private final SPARQLService sparql;
 
-    private final MongoDBService nosql;
+    private final MongoDBService mongodb;
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
@@ -91,7 +92,7 @@ public class ScientificObjectDAO {
 
     public ScientificObjectDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
-        this.nosql = nosql;
+        this.mongodb = nosql;
 
         try{
             defaultGraphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
@@ -819,18 +820,14 @@ public class ScientificObjectDAO {
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
-        try {
-            sparql.startTransaction();
-            nosql.startTransaction();
+        // experimental context + no URI set
+        if (!SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(), contextURI) && objectURI == null) {
+            // generate a globally unique URI
+            // (by taking account of all OS into global graph, which also includes OS from any xp)
+            sparql.generateUniqueURI(defaultGraphNode, object, object, true);
+        }
 
-            // experimental context + no URI set
-            if(! SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI) && objectURI == null) {
-
-                // generate a globally unique URI
-                // (by taking account of all OS into global graph, which also includes OS from any xp)
-                sparql.generateUniqueURI(defaultGraphNode, object, object, true);
-            }
-
+        return new SparqlMongoTransaction(sparql, mongodb).execute((sparqlConn, session) -> {
             // if URI is already set, the service will check that URI is unique inside the provided graph
             // if the graph is global : check if OS is unique inside global graph
             // if the graph is an experiment : check if OS is unique inside experiment graph
@@ -839,20 +836,14 @@ public class ScientificObjectDAO {
             // that we reuse this OS inside the experiment, so no need to performs additional checking
             sparql.create(graphNode, object);
 
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+            MoveEventDAO moveDAO = new MoveEventDAO(sparql, mongodb);
             MoveModel facilityMoveEvent = new MoveModel();
             if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moveDAO.create(facilityMoveEvent);
             }
             sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
-            nosql.commitTransaction();
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-        }
-
-        return object;
+            return object;
+        });
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
@@ -905,9 +896,9 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public void update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
 
-        checkUniqueNameByGraph(contextURI,name,objectURI,false);
+        checkUniqueNameByGraph(contextURI, name, objectURI, false);
 
         SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
@@ -922,29 +913,23 @@ public class ScientificObjectDAO {
                     select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
                 });
 
-        boolean hasFacilityURI = false;
-        for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
-                hasFacilityURI = true;
-                break;
-            }
-        }
+        boolean hasFacilityURI = object.getRelations().stream().anyMatch(
+                relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())
+        );
 
-        try {
-            sparql.startTransaction();
-            nosql.startTransaction();
+        new SparqlMongoTransaction(sparql, mongodb).execute((sparqlConn, mongoSession) -> {
             sparql.deleteByURI(graphNode, objectURI);
             sparql.create(graphNode, object);
-            if (childrenURIs.size() > 0) {
+            if (!childrenURIs.isEmpty()) {
                 sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }
 
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+            MoveEventDAO moveDAO = new MoveEventDAO(sparql, mongodb);
             MoveModel event = moveDAO.getLastMoveEvent(objectURI);
-            if(event != null){
+            if (event != null) {
                 //retrieve the position to the move event to link it to the new OS for the update
                 MoveEventNoSqlModel moveNoSql = moveDAO.getMoveEventNoSqlModel(event.getUri());
-                if(moveNoSql != null){
+                if (moveNoSql != null) {
                     event.setNoSqlModel(moveNoSql);
                 }
             }
@@ -967,7 +952,7 @@ public class ScientificObjectDAO {
                             newTargets.add(item);
                         }
                     }
-                    if (newTargets.size() == 0) {
+                    if (newTargets.isEmpty()) {
                         moveDAO.delete(event.getUri());
                     } else {
                         event.setTargets(newTargets);
@@ -986,16 +971,8 @@ public class ScientificObjectDAO {
                 }
             }
             sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
-
-            sparql.commitTransaction();
-            nosql.commitTransaction();
-        } catch (Exception ex) {
-            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-
-        }
-
-        return object.getUri();
+            return object;
+        });
     }
 
     private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {

@@ -14,6 +14,7 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
@@ -74,6 +75,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     private final MoveEventDAO moveDAO;
     private final ScientificObjectDAO scientificObjectDAO;
     private final ExperimentDAO experimentDAO;
+    private final MongoDBService mongodb;
 
     /**
      * @param sparql     SPARQL service
@@ -91,6 +93,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         Objects.requireNonNull(mongoDB);
         Objects.requireNonNull(user);
 
+        this.mongodb = mongoDB;
         this.experiment = experiment;
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
 
@@ -323,46 +326,49 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     @Override
     public void create(CSVValidationModel validation, List<ScientificObjectModel> models) throws Exception {
 
-        scientificObjectDAO.create(models, graph);
+        new SparqlMongoTransaction(sparql, mongodb).execute((sparqlConn, mongoClient) -> {
+            scientificObjectDAO.create(models, graph);
 
-        // associated moves creation
-        List<MoveModel> moves = new ArrayList<>();
-        for (ScientificObjectModel object : models) {
-            MoveModel facilityMoveEvent = new MoveModel();
-            if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
-                moves.add(facilityMoveEvent);
+            // associated moves creation
+            List<MoveModel> moves = new ArrayList<>();
+            for (ScientificObjectModel object : models) {
+                MoveModel facilityMoveEvent = new MoveModel();
+                if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+                    moves.add(facilityMoveEvent);
+                }
             }
-        }
-        moveDAO.create(moves);
+            moveDAO.create(moves);
 
-        // Global OS copy and species update inside xp
-        if (withinExperiment()) {
-            scientificObjectDAO.copyIntoGlobalGraph(models);
-            experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
-        }
+            // Global OS copy and species update inside xp
+            if (withinExperiment()) {
+                scientificObjectDAO.copyIntoGlobalGraph(models);
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
+            }
 
-        Object geometryMetadatas = validation.getObjectsMetadata().get(Oeso.hasGeometry.getURI());
+            Object geometryMetadatas = validation.getObjectsMetadata().get(Oeso.hasGeometry.getURI());
 
-        // Geometry creation into MongoDB
-        if (geometryMetadatas != null) {
+            // Geometry creation into MongoDB
+            if (geometryMetadatas != null) {
 
-            Map<SPARQLNamedResourceModel,Geometry> objectsGeometry = (Map<SPARQLNamedResourceModel,Geometry>) geometryMetadatas;
+                Map<SPARQLNamedResourceModel, Geometry> objectsGeometry = (Map<SPARQLNamedResourceModel, Geometry>) geometryMetadatas;
 
-            // convert (object,geometry) map into list of GeospatialModel
-             List<GeospatialModel> geospatialModels = objectsGeometry
-                     .entrySet()
-                     .stream()
-                     .map(entry -> new GeospatialModel(entry.getKey(),graph,entry.getValue()))
-                     .collect(Collectors.toList());
+                // convert (object,geometry) map into list of GeospatialModel
+                List<GeospatialModel> geospatialModels = objectsGeometry
+                        .entrySet()
+                        .stream()
+                        .map(entry -> new GeospatialModel(entry.getKey(), graph, entry.getValue()))
+                        .collect(Collectors.toList());
 
-            geoDAO.createAll(geospatialModels);
+                geoDAO.createAll(geospatialModels);
 
-            // clear map and values
-            objectsGeometry.clear();
-            geospatialModels.clear();
+                // clear map and values
+                objectsGeometry.clear();
+                geospatialModels.clear();
 
-            validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
-        }
+                validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
+            }
+            return null;
+        });
     }
 
 }

@@ -827,23 +827,14 @@ public class ScientificObjectDAO {
             sparql.generateUniqueURI(defaultGraphNode, object, object, true);
         }
 
-        return new SparqlMongoTransaction(sparql, mongodb).execute((sparqlConn, session) -> {
-            // if URI is already set, the service will check that URI is unique inside the provided graph
-            // if the graph is global : check if OS is unique inside global graph
-            // if the graph is an experiment : check if OS is unique inside experiment graph
+        // if URI is already set, the service will check that URI is unique inside the provided graph
+        // if the graph is global : check if OS is unique inside global graph
+        // if the graph is an experiment : check if OS is unique inside experiment graph
 
-            // if the graph is an experiment and the OS already exist into global graph -> OK, since here we consider
-            // that we reuse this OS inside the experiment, so no need to performs additional checking
-            sparql.create(graphNode, object);
-
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, mongodb);
-            MoveModel facilityMoveEvent = new MoveModel();
-            if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
-                moveDAO.create(facilityMoveEvent);
-            }
-            sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
-            return object;
-        });
+        // if the graph is an experiment and the OS already exist into global graph -> OK, since here we consider
+        // that we reuse this OS inside the experiment, so no need to performs additional checking
+        sparql.create(graphNode, object);
+        return object;
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {

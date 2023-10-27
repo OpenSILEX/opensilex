@@ -22,5 +22,10 @@ public interface AgroportalOntologiesConfig {
     )
     List<String> trait();
 
+    @ConfigDescription(
+            value = "Ontologies for methods"
+    )
+    List<String> method();
+
 }
 

@@ -9,6 +9,7 @@ public class AgroportalOntologiesConfigDTO {
     private List<OntologyPortalItem> ontologyPortals;
     private List<String> entityOntologies;
     private List<String> traitOntologies;
+    private List<String> methodOntologies;
 
     public List<OntologyPortalItem> getOntologyPortals() {
         return ontologyPortals;
@@ -16,6 +17,14 @@ public class AgroportalOntologiesConfigDTO {
 
     public void setOntologyPortals(List<OntologyPortalItem> ontologyPortals) {
         this.ontologyPortals = ontologyPortals;
+    }
+
+    public List<String> getMethodOntologies() {
+        return methodOntologies;
+    }
+
+    public void setMethodOntologies(List<String> methodOntologies) {
+        this.methodOntologies = methodOntologies;
     }
 
     public List<String> getEntityOntologies() {

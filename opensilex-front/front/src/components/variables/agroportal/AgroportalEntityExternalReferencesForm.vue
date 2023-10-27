@@ -4,10 +4,10 @@
     <div>
       <ValidationObserver ref="validatorRef">
         <b-form>
-          <p v-if="entityDto.uri">
+          <p v-if="formDto.uri">
             {{$t('component.skos.addTo')}}
             <em>
-              <strong class="text-primary">{{this.entityDto.uri}}</strong>
+              <strong class="text-primary">{{ this.formDto.uri }}</strong>
             </em>
           </p>
 
@@ -130,7 +130,7 @@
               >
                 <template v-slot:label>
                   <b-row align-h="left">
-                      Selected entity
+                    {{$t("AgroportalEntityForm.selected-term")}}
                   </b-row>
                 </template>
 
@@ -140,17 +140,17 @@
                 <b-row class="mx-0 jqx-max-size">
                   <b-col col lg="12">
                     <div class="result-name">
-                      {{entityDto.name}}
+                      {{ formDto.name }}
                     </div>
                     <div>
-                      <a v-bind:href="entityDto.uri" target="_blank" rel="noopener noreferrer">{{entityDto.uri}}</a>
+                      <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
                     </div>
                   </b-col>
                 </b-row>
 
                 <b-row class="mx-0 jqx-max-size">
                   <b-col col lg="12">
-                    {{entityDto.description}}
+                    {{ formDto.description }}
                   </b-col>
                 </b-row>
               </b-container>
@@ -205,13 +205,10 @@ import Vue from "vue";
 // @ts-ignore
 import {EntityCreationDTO} from "opensilex-core/index";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Skos} from "../../../models/Skos";
 import AgroportalResults from "../AgroportalResults.vue";
-import {LinksAgroportalModel} from "opensilex-core/model/linksAgroportalModel";
-import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
 
 @Component
@@ -225,7 +222,10 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
   agroportalAPIService: AgroportalAPIService;
 
   @PropSync("form")
-  entityDto: EntityCreationDTO;
+  formDto: any;
+
+  @Prop()
+  props;
 
   currentRelation: string = "";
   currentExternalUri: string = "";
@@ -271,8 +271,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
     this.setOptions();
     this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
     this.checkAgroportalReachable();
-    this.ontologies = this.$opensilex.getConfig().agroportal.entityOntologies;
-    //this.text = (this.entityDto.name) ? this.entityDto.name : "";
+    this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
   }
 
   private langUnwatcher;
@@ -316,9 +315,9 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
 
   get relations() {
     this.relationsInternal = [];
-    if (this.entityDto !== undefined) {
+    if (this.formDto !== undefined) {
       for (let [key, value] of this.skosRelationsMap) {
-        this.updateRelations(key, this.entityDto[key]);
+        this.updateRelations(key, this.formDto[key]);
       }
     }
     return this.relationsInternal;
@@ -350,7 +349,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
       if (isValid) {
         this.addRelationToSkosReferences();
         return new Promise((resolve, reject) => {
-          this.$emit("onAdd", this.entityDto, result => {
+          this.$emit("onAdd", this.formDto, result => {
             if (result instanceof Promise) {
               result.then(resolve).catch(reject);
             } else {
@@ -365,7 +364,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
   addRelationToSkosReferences() {
     let isIncludedInRelations = this.isIncludedInRelations();
     if (!isIncludedInRelations) {
-      this.entityDto[this.currentRelation].push(this.currentExternalUri);
+      this.formDto[this.currentRelation].push(this.currentExternalUri);
       this.resetExternalUriForm();
     }
   }
@@ -380,7 +379,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
     let isIncludedInRelations = this.isIncludedInRelations();
     let isValidUri = this.validateURIFormat(this.currentExternalUri);
     if (!isIncludedInRelations && isValidUri) {
-      this.entityDto[relation].push(this.currentExternalUri);
+      this.formDto[relation].push(this.currentExternalUri);
       this.resetExternalUriForm();
     }
   }
@@ -395,7 +394,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
     }
     let includedInRelations = false;
     for (let [key, value] of this.skosRelationsMap) {
-      if (this.entityDto[key].includes(this.currentExternalUri)) {
+      if (this.formDto[key].includes(this.currentExternalUri)) {
         includedInRelations = true;
         break;
       }
@@ -405,7 +404,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
 
   removeRelationsToSkosReferences(row: any) {
     for (let [key, value] of this.skosRelationsMap) {
-      this.entityDto[key] = this.entityDto[key].filter(function (
+      this.formDto[key] = this.formDto[key].filter(function (
           value,
           index,
           arr
@@ -414,7 +413,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
       });
     }
     return new Promise((resolve, reject) => {
-      this.$emit("onDelete", this.entityDto, result => {
+      this.$emit("onDelete", this.formDto, result => {
         if (result instanceof Promise) {
           result.then(resolve).catch(reject);
         } else {
@@ -426,7 +425,7 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
 
   async update() {
     return new Promise((resolve, reject) => {
-      this.$emit("onUpdate", this.entityDto, result => {
+      this.$emit("onUpdate", this.formDto, result => {
         if (result instanceof Promise) {
           result.then(resolve).catch(reject);
         } else {

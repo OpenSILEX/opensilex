@@ -22,8 +22,11 @@
           <component
             :ref="'step' + index"
             v-bind:is="step.component"
+            :props="step.props"
             :editMode="editMode"
             :form.sync="form"
+            @fill="fillForm"
+            @clear="clearForm"
           ></component>
         </tab-content>
 
@@ -114,6 +117,9 @@ export default class WizardForm extends Vue {
 
   @Prop()
   updateAction: Function;
+
+  @Prop()
+  convertAction: Function;
 
   @Prop()
   nextStepAction: Function;
@@ -282,6 +288,16 @@ export default class WizardForm extends Vue {
           .catch(console.error);
       }
     });
+  }
+
+  fillForm(dto) {
+    if (this.convertAction) {
+      this.form = this.convertAction(this.form, dto);
+    }
+  }
+
+  clearForm() {
+    this.form = this.initForm();
   }
 
   skipStep() {

@@ -66,9 +66,7 @@ export default class AgroportalEntityEnrichForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityCreationDTO;
-
-    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
+    formDto: any;
 
     handleErrorMessage(errorMsg: string) {
         this.errorMsg = errorMsg;

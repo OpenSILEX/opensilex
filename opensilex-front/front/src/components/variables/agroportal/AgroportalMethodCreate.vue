@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="AgroportalEntityForm.add"
-            editTitle="AgroportalEntityForm.edit"
+            createTitle="AgroportalMethodForm.add"
+            editTitle="AgroportalMethodForm.edit"
             icon="fa#vials"
             modalSize="xl"
             :initForm="getEmptyForm"
@@ -25,15 +25,17 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
-import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
+import {VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
+import {MethodUpdateDTO} from "opensilex-core/model/methodUpdateDTO";
+import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
 
 @Component
-    export default class AgroportalEntityCreate extends Vue {
+    export default class AgroportalMethodCreate extends Vue {
 
         $opensilex: OpenSilexVuePlugin;
 
@@ -51,21 +53,21 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
         steps = [
             {component: "opensilex-AgroportalEntityForm",
-              title: "AgroportalEntityForm.step1-title",
-              finish: "AgroportalEntityForm.import-and-save",
-              next: "AgroportalEntityForm.enrich",
+              title: "AgroportalMethodForm.step1-title",
+              finish: "AgroportalMethodForm.import-and-save",
+              next: "AgroportalMethodForm.enrich",
               props: {
-                ontologiesConfig: "entityOntologies"
+                ontologiesConfig: "methodOntologies"
               }
             }
             ,{component : "opensilex-AgroportalEntityEnrichForm",
-              title: "AgroportalEntityForm.step2-title",
-              finish: "AgroportalEntityForm.save"
+              title: "AgroportalMethodForm.step2-title",
+              finish: "AgroportalMethodForm.save"
             }
             ,{component : "opensilex-AgroportalEntityExternalReferencesForm",
-              title: "AgroportalEntityForm.step3-title",
+              title: "AgroportalMethodForm.step3-title",
               props: {
-                ontologiesConfig: "entityOntologies"
+                ontologiesConfig: "methodOntologies"
               }
             }
         ];
@@ -106,7 +108,7 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm(form : EntityGetDTO) {
+        showEditForm(form : MethodGetDTO) {
             this.wizardRef.showEditForm(form);
         }
 
@@ -114,7 +116,7 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm(): EntityCreationDTO {
+        getEmptyForm(): MethodCreationDTO {
             return {
                 uri: null,
                 name: null,
@@ -126,12 +128,12 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
             };
         }
 
-        create(form: EntityCreationDTO){
+        create(form: MethodCreationDTO){
             return this.entityService
-                .createEntity(form)
+                .createMethod(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("AgroportalMethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
@@ -144,12 +146,12 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
                 });
         }
 
-        update(form: EntityUpdateDTO) {
+        update(form: MethodUpdateDTO) {
             return this.entityService
-                .updateEntity(form)
+                .updateMethod(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("AgroportalMethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onUpdate", form);
                 })
@@ -204,13 +206,13 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
 <i18n>
 en:
-    AgroportalEntityForm:
+    AgroportalMethodForm:
         uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
         ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The entity
-        add: Add entity
-        edit: Edit entity
-        name-placeholder: Plant
+        name: The method
+        add: Add a method
+        edit: Edit a method
+        name-placeholder: Image analysis
         search-for-ontology-term: Search for ontology term
         selected-term: Selected term
         step1-title: Search
@@ -222,13 +224,13 @@ en:
         skip: Skip
         no-selected-item: No selected term
 fr:
-    AgroportalEntityForm:
+    AgroportalMethodForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
         ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
-        name: L'entité
-        add: Ajouter une entité
-        edit: Éditer une entité
-        name-placeholder: Plante
+        name: La méthode
+        add: Ajouter une méthode
+        edit: Éditer une méthode
+        name-placeholder: Analyse d'image
         search-for-ontology-term: Rechercher un terme
         selected-term: Terme sélectionné
         step1-title: Chercher

@@ -60,10 +60,10 @@
                         :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-InterestEntityCreate
+                    <opensilex-AgroportalEntityOfInterestCreate
                         ref="interestEntityForm"
                         @onCreate="setLoadedInterestEntity">
-                    </opensilex-InterestEntityCreate>
+                    </opensilex-AgroportalEntityOfInterestCreate>
                 </div>
 
                 <!-- Characteristic -->
@@ -84,10 +84,10 @@
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-CharacteristicModalForm
+                    <opensilex-AgroportalCharacteristicCreate
                         ref="characteristicForm"
                         @onCreate="setLoadedCharacteristic">
-                    </opensilex-CharacteristicModalForm>
+                    </opensilex-AgroportalCharacteristicCreate>
                 </div>
 
                 <!-- Species -->
@@ -119,10 +119,10 @@
                         noResultsText="VariableForm.no-method"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-MethodCreate
+                    <opensilex-AgroportalMethodCreate
                         ref="methodForm"
                         @onCreate="setLoadedMethod">
-                    </opensilex-MethodCreate>
+                    </opensilex-AgroportalMethodCreate>
                 </div>
                 
                 <!-- Trait button -->

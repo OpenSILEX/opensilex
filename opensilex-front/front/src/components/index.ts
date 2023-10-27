@@ -600,6 +600,13 @@ components["opensilex-EntitySelector"] = EntitySelector;
 // Agroportal
 import AgroportalEntityCreate from './variables/agroportal/AgroportalEntityCreate.vue';
 components["opensilex-AgroportalEntityCreate"] = AgroportalEntityCreate;
+import AgroportalEntityOfInterestCreate from './variables/agroportal/AgroportalEntityOfInterestCreate.vue';
+components["opensilex-AgroportalEntityOfInterestCreate"] = AgroportalEntityOfInterestCreate;
+import AgroportalCharacteristicCreate from './variables/agroportal/AgroportalCharacteristicCreate.vue';
+components["opensilex-AgroportalCharacteristicCreate"] = AgroportalCharacteristicCreate;
+import AgroportalMethodCreate from './variables/agroportal/AgroportalMethodCreate.vue';
+components["opensilex-AgroportalMethodCreate"] = AgroportalMethodCreate;
+
 import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
 components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;
 import AgroportalEntityEnrichForm from './variables/agroportal/AgroportalEntityEnrichForm.vue';

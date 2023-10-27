@@ -48,11 +48,11 @@
                 <template v-slot:label>
                   <b-row align-h="left">
                     <b-col xs="6">
-                      Selected entity
+                      {{$t("AgroportalEntityForm.selected-term")}}
                     </b-col>
-                    <b-col xs="2" v-if="!!entity">
+                    <b-col xs="2" v-if="!!selectedEntity">
                       <opensilex-Button
-                          @click="removeSelected"
+                          @click="clear"
                           variant="outline-danger"
                           :small="true"
                           icon="fa#trash-alt"
@@ -65,8 +65,8 @@
               </b-form-group>
 
               <opensilex-AgroportalResultItem
-                  v-if="!!entity"
-                  :entity="entity"
+                  v-if="!!selectedEntity"
+                  :entity="selectedEntity"
               >
               </opensilex-AgroportalResultItem>
               <div v-else>
@@ -81,12 +81,11 @@
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ExternalOntologies} from "../../../models/ExternalOntologies";
-import EntityCreate from "./AgroportalEntityCreate.vue";
 // @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResults from "../AgroportalResults.vue";
+
 
 @Component
 export default class AgroportalEntityForm extends Vue {
@@ -103,8 +102,12 @@ export default class AgroportalEntityForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityCreationDTO;
-    entity: EntityAgroportalDTO = null;
+    formDto: any;
+
+    @Prop()
+    props;
+
+    selectedEntity: EntityAgroportalDTO = null;
 
 
     handleErrorMessage(errorMsg: string) {
@@ -115,7 +118,7 @@ export default class AgroportalEntityForm extends Vue {
     @Ref("searchResults") readonly searchResults!: AgroportalResults;
 
     created() {
-      this.ontologies = this.$opensilex.getConfig().agroportal.entityOntologies;
+      this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
     }
 
     onSearchTextChange(searchedText: string) {
@@ -125,23 +128,18 @@ export default class AgroportalEntityForm extends Vue {
 
     importResult(entity: EntityAgroportalDTO) {
       if (!entity) return;
-      this.entityDto.uri = entity.id;
-      this.entityDto.name = entity.name;
-      this.entityDto.description = entity.definitions[0];
-      this.entityDto.exact_match = [];
-      this.entityDto.narrow_match = [];
-      this.entityDto.broad_match = [];
-      this.entityDto.close_match = [];
+      this.selectedEntity = entity;
+      this.$emit("fill", this.selectedEntity);
     }
 
-    removeSelected() {
-      this.entity = null;
-      this.clear();
+    clear() {
+      this.selectedEntity = null;
+      this.$emit("clear");
     }
 
     selectItem(entity: EntityAgroportalDTO) {
-      this.entity = entity;
-      this.importResult(this.entity);
+      this.selectedEntity = entity;
+      this.importResult(this.selectedEntity);
     }
 
     reset() {
@@ -149,16 +147,8 @@ export default class AgroportalEntityForm extends Vue {
         return this.validatorRef.reset();
     }
 
-    clear() {
-      this.entityDto.name = "";
-      for(let member in this.entityDto) {
-        this.entityDto[member] = null;
-      }
-      console.debug(this.entityDto);
-    }
-
     validate() {
-        this.importResult(this.entity);
+        this.importResult(this.selectedEntity);
         return this.validatorRef.validate();
     }
 }

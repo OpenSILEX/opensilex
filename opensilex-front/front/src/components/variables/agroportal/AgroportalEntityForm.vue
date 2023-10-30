@@ -134,7 +134,7 @@ export default class AgroportalEntityForm extends Vue {
 
     clear() {
       this.selectedEntity = null;
-      this.$emit("clear");
+      //this.$emit("clear");
     }
 
     selectItem(entity: EntityAgroportalDTO) {

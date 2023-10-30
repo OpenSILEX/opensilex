@@ -103,10 +103,13 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
         showCreateForm() {
             this.checkAgroportalReachable();
+            this.editMode = false;
             this.wizardRef.showCreateForm();
         }
 
         showEditForm(form : EntityGetDTO) {
+            this.checkAgroportalReachable();
+            this.editMode = true;
             this.wizardRef.showEditForm(form);
         }
 
@@ -159,7 +162,9 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
         }
 
         convert(form, entity: EntityAgroportalDTO) {
-            form.uri = entity.id;
+            if (!this.editMode) {
+              form.uri = entity.id;
+            }
             form.name = entity.name;
             form.description = entity.definitions[0];
             form.exact_match = [];
@@ -182,6 +187,8 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
           if(stepIndex == 0 && form.uri != null) {
+            if(this.editMode) return true;
+
             form.close_match.push(form.uri);
             form.uri = "";
             return true;

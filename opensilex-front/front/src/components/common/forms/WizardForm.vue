@@ -297,7 +297,7 @@ export default class WizardForm extends Vue {
   }
 
   clearForm() {
-    this.form = this.initForm();
+      this.form = this.initForm();
   }
 
   skipStep() {

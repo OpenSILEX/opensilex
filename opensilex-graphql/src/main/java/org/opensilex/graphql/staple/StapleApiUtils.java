@@ -43,15 +43,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class StapleApiUtils {
-    private final OpenSilex openSilex;
-
-    private final SPARQLService sparql;
+    @Inject
+    private OpenSilex openSilex;
 
     @Inject
-    public StapleApiUtils(OpenSilex openSilex, SPARQLService sparql) {
-        this.openSilex = openSilex;
-        this.sparql = sparql;
-    }
+    private SPARQLService sparql;
 
     //region Public methods
 

@@ -11,6 +11,7 @@
           {{ this.$t("AgroportalResults.nothing-found", [this.text]) }}
         </div>
 
+        <!-- List of results -->
         <opensilex-AgroportalResultItem v-for="(entity, index) in entities" v-bind:key="entity.id"
           ref="AgroportalResultItem"
           :entity="entity"
@@ -19,6 +20,7 @@
           @item-clicked="selectItem"
         >
 
+          <!-- Select button for mapping mode -->
           <template v-if="isMappingMode" v-slot:btnValidate>
             <b-dropdown
                 dropdown
@@ -35,6 +37,7 @@
             </b-dropdown>
           </template>
 
+          <!-- Default select button -->
           <template v-else v-slot:btnValidate>
             <opensilex-CreateButton
                 :label="$t('AgroportalResults.btn-choose')"

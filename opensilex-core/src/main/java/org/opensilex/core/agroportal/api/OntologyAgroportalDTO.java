@@ -12,6 +12,7 @@ import org.opensilex.core.agroportal.dal.OntologyAgroportalModel;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Represents an ontology from AgroPortal
  * @author brice
  */
 @JsonPropertyOrder({

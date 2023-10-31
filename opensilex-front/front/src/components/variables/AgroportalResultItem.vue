@@ -1,13 +1,14 @@
 <template>
     <b-container class="result"
-         v-on:click="$emit('item-clicked', index)"
+       v-on:click="$emit('item-clicked', index)"
       :class="(isSelected) ? 'selectedResult' : ''">
 
+      <!-- Name -->
       <b-row id="result-header" class="mx-0 jqx-max-size">
         <b-col col lg="12">
           <div id="result-name">
             {{entity.name}} -
-            <span id="result-ontology">{{getOntologyAcronym(entity.links.ontology)}}</span>
+            <span id="result-ontology">{{entity.ontologyName}}</span>
           </div>
           <div id="result-link">
             <a v-bind:href="entity.id" target="_blank" rel="noopener noreferrer">{{entity.id}}</a>
@@ -15,13 +16,15 @@
         </b-col>
       </b-row>
 
+      <!-- Definition -->
       <b-row id="result-body" class="mx-0 jqx-max-size">
         <b-col col lg="12" id="result-definition">
           {{entity.definitions[0]}}
         </b-col>
       </b-row>
 
-      <b-row v-if="isSelected">
+      <!-- Select button -->
+      <b-row v-if="isSelected" align-h="end">
         <b-col cols="auto">
           <slot name="btnValidate"></slot>
         </b-col>
@@ -50,10 +53,6 @@ export default class AgroportalResultItem extends Vue {
   index;
 
   isSelected: boolean = false;
-
-  getOntologyAcronym(url: string) {
-    return url.split('/').pop();
-  }
 
 }
 </script>

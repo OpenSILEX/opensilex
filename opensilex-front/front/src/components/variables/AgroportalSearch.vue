@@ -6,7 +6,7 @@
       <b-input
           type="text"
           v-model="searchBar"
-          :placeholder="$t('AgroportalSearch.enter-search-text')"
+          :placeholder="$t(placeholder)"
           v-on:change="$emit('change', searchBar)"
           @keyup.enter.native="$emit('change', searchBar)">
       </b-input>
@@ -83,6 +83,11 @@ export default class AgroportalSearch extends Vue {
 
   @PropSync("isAllOntologies", { default: false })
   isAllOntologiesSelected: boolean;
+
+  @Prop({
+    default: "AgroportalSearch.enter-search-text"
+  })
+  placeholder: string;
 
   searchBar;
   advancedSearchOpen: boolean = false;

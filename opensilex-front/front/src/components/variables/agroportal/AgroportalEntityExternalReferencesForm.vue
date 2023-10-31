@@ -4,13 +4,6 @@
     <div>
       <ValidationObserver ref="validatorRef">
         <b-form>
-          <p v-if="formDto.uri">
-            {{$t('component.skos.addTo')}}
-            <em>
-              <strong class="text-primary">{{ this.formDto.uri }}</strong>
-            </em>
-          </p>
-
           <b-row>
             <b-col md="6">
               <b-form-group
@@ -19,8 +12,8 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row>
-                    Search for mapping...
+                  <b-row align-h="left">
+                    {{$t('AgroportalEntityExternalReferencesForm.search-mapping-title')}}
                   </b-row>
                 </template>
 
@@ -30,7 +23,7 @@
                 <opensilex-AgroportalSearch
                     label="component.common.name"
                     type="text"
-                    placeholder="search"
+                    :placeholder="props.searchPlaceholder"
                     :selected.sync="ontologies"
                     :isAllOntologies.sync="isAllOntologies"
                     @change="onSearchTextChange"
@@ -52,8 +45,11 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row id="manual-mapping">
-                    ...Or map manually
+                  <b-row
+                      align-h="left"
+                      id="manual-mapping"
+                  >
+                    {{$t('AgroportalEntityExternalReferencesForm.map-manually-title')}}
                   </b-row>
                 </template>
 
@@ -126,7 +122,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row>
+                  <b-row align-h="left">
                     {{$t("AgroportalEntityForm.selected-term")}}
                   </b-row>
                 </template>
@@ -488,6 +484,8 @@ en:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
+    search-mapping-title: Search for mapping...
+    map-manually-title: ...Or map manually
     manual-mapping: "URI"
 fr:
   AgroportalEntityExternalReferencesForm:
@@ -497,5 +495,7 @@ fr:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
+    search-mapping-title: Rechercher des mapping...
+    map-manually-title: ...Ou mapper manuellement
     manual-mapping: "URI"
 </i18n>

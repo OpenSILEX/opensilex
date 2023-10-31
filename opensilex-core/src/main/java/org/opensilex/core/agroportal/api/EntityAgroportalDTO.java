@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Represents a term from AgroPortal
  * @author brice
  */
 @JsonPropertyOrder({
@@ -34,6 +35,9 @@ public class EntityAgroportalDTO {
     private List<String> synonym;
     @JsonProperty("definitions")
     private List<String> definitions;
+    @NotNull
+    @JsonProperty("ontologyName")
+    private String ontologyName;
     @JsonProperty("obsolete")
     private boolean obsolete;
     @JsonProperty("type")
@@ -72,6 +76,14 @@ public class EntityAgroportalDTO {
 
     public void setDefinitions(List<String> definitions) {
         this.definitions = definitions;
+    }
+
+    public String getOntologyName() {
+        return ontologyName;
+    }
+
+    public void setOntologyName(String ontologyName) {
+        this.ontologyName = ontologyName;
     }
 
     public boolean isObsolete() {
@@ -118,6 +130,12 @@ public class EntityAgroportalDTO {
         dto.setObsolete(model.isObsolete());
         dto.setType(model.getType());
         dto.setLinks(model.getLinks());
+
+        if (model.getLinks() != null) {
+            String str = model.getLinks().getOntology();
+            String last = str.substring(str.lastIndexOf('/') + 1);
+            dto.setOntologyName(last);
+        }
 
         return dto;
     }

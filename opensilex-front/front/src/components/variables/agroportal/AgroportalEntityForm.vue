@@ -18,7 +18,7 @@
               <opensilex-AgroportalSearch
                   label="component.common.name"
                   type="text"
-                  placeholder="search"
+                  :placeholder="$t(props.searchPlaceholder)"
                   :selected.sync="ontologies"
                   :isAllOntologies.sync="isAllOntologies"
                   @change="onSearchTextChange"
@@ -46,7 +46,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row>
+                  <b-row align-h="left">
                     <b-col xs="6">
                       {{$t("AgroportalEntityForm.selected-term")}}
                     </b-col>
@@ -157,3 +157,30 @@ export default class AgroportalEntityForm extends Vue {
 <style scoped lang="scss">
     a {color: #007bff;}
 </style>
+
+<i18n>
+en:
+  AgroportalEntityForm:
+    step1-title: Search
+    step2-title: Enrich
+    step3-title: Mapping
+    import-and-save: Import & Save
+    save: Save
+    enrich: Enrich
+    skip: Skip
+    search-for-ontology-term: Search for ontology term
+    selected-term: Selected term
+    no-selected-item: No selected term
+fr:
+  AgroportalEntityForm:
+    step1-title: Chercher
+    step2-title: Enrichir
+    step3-title: Mapper
+    import-and-save: Importer & Enregistrer
+    save: Enregistrer
+    enrich: Enrichir
+    skip: Passer
+    search-for-ontology-term: Rechercher un terme
+    selected-term: Terme sélectionné
+    no-selected-item: Aucun terme sélectionné
+</i18n>

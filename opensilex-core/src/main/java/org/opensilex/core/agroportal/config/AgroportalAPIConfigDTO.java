@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.AgroportalAPIConfig;
 
 /**
- * Describes a Shared Resource Instance (SRI). An SRI has a URI and a label.
+ * Describes the AgroPortal configuration
  *
- * @author Valentin Rigolle
+ * @author brice
  */
 public class AgroportalAPIConfigDTO {
 

@@ -11,17 +11,17 @@
                     label="component.common.uri"
                     :generated.sync="uriGenerated"
                     :required="true"
-                    helpMessage="EntityForm.uri-help"
+                    helpMessage="EntityEnrichForm.uri-help"
                     :editMode="editMode"
                 ></opensilex-UriForm>
 
                 <!-- Name -->
                 <opensilex-InputForm
-                        :value.sync="form.name"
-                        label="component.common.name"
-                        type="text"
-                        :required="true"
-                        placeholder="EntityForm.name-placeholder"
+                    :value.sync="form.name"
+                    label="component.common.name"
+                    type="text"
+                    :required="true"
+                    :placeholder="props.namePlaceholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -32,7 +32,6 @@
             </div>
 
             <div class="col">
-
                 <div class="row">
                     <div class="col">
                         TODO : add labels
@@ -68,6 +67,9 @@ export default class AgroportalEntityEnrichForm extends Vue {
     @PropSync("form")
     formDto: any;
 
+    @Prop()
+    props;
+
     handleErrorMessage(errorMsg: string) {
         this.errorMsg = errorMsg;
     }
@@ -89,3 +91,12 @@ export default class AgroportalEntityEnrichForm extends Vue {
 <style scoped lang="scss">
     a {color: #007bff;}
 </style>
+
+<i18n>
+en:
+  EntityEnrichForm:
+    uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
+fr:
+  EntityEnrichForm:
+    uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
+</i18n>

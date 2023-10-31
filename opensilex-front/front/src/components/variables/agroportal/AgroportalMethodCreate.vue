@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="AgroportalMethodForm.add"
-            editTitle="AgroportalMethodForm.edit"
+            createTitle="AgroportalMethodCreate.add"
+            editTitle="AgroportalMethodCreate.edit"
             icon="fa#vials"
             modalSize="xl"
             :initForm="getEmptyForm"
@@ -42,32 +42,28 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
         entityService: VariablesService;
         agroportalService: AgroportalAPIService;
 
-        static selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
-
         steps = [
             {component: "opensilex-AgroportalEntityForm",
-              title: "AgroportalMethodForm.step1-title",
-              finish: "AgroportalMethodForm.import-and-save",
-              next: "AgroportalMethodForm.enrich",
+              title: "AgroportalEntityForm.step1-title",
+              finish: "AgroportalEntityForm.import-and-save",
+              next: "AgroportalEntityForm.enrich",
               props: {
-                ontologiesConfig: "methodOntologies"
+                ontologiesConfig: "methodOntologies",
+                searchPlaceholder: "AgroportalMethodCreate.name-placeholder"
               }
             }
             ,{component : "opensilex-AgroportalEntityEnrichForm",
-              title: "AgroportalMethodForm.step2-title",
-              finish: "AgroportalMethodForm.save"
+              title: "AgroportalEntityForm.step2-title",
+              finish: "AgroportalEntityForm.save",
+              props: {
+                namePlaceholder: "AgroportalMethodCreate.name-placeholder"
+              }
             }
             ,{component : "opensilex-AgroportalEntityExternalReferencesForm",
-              title: "AgroportalMethodForm.step3-title",
+              title: "AgroportalEntityForm.step3-title",
               props: {
-                ontologiesConfig: "methodOntologies"
+                ontologiesConfig: "methodOntologies",
+                searchPlaceholder: "AgroportalMethodCreate.name-placeholder"
               }
             }
         ];
@@ -133,7 +129,7 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
                 .createMethod(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("AgroportalMethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("AgroportalMethodCreate.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
@@ -151,7 +147,7 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
                 .updateMethod(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("AgroportalMethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("AgroportalMethodCreate.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onUpdate", form);
                 })
@@ -210,39 +206,15 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
 
 <i18n>
 en:
-    AgroportalMethodForm:
-        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
-        ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The method
-        add: Add a method
-        edit: Edit a method
-        name-placeholder: Image analysis
-        search-for-ontology-term: Search for ontology term
-        selected-term: Selected term
-        step1-title: Search
-        step2-title: Enrich
-        step3-title: Mapping
-        import-and-save: Import & Save
-        save: Save
-        enrich: Enrich
-        skip: Skip
-        no-selected-item: No selected term
+  AgroportalMethodCreate:
+    name: The observation level
+    add: Add an observation level
+    edit: Edit an observation level
+    name-placeholder: Plot
 fr:
-    AgroportalMethodForm:
-        uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
-        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
-        name: La méthode
-        add: Ajouter une méthode
-        edit: Éditer une méthode
-        name-placeholder: Analyse d'image
-        search-for-ontology-term: Rechercher un terme
-        selected-term: Terme sélectionné
-        step1-title: Chercher
-        step2-title: Enrichir
-        step3-title: Mapper
-        import-and-save: Importer & Enregistrer
-        save: Enregistrer
-        enrich: Enrichir
-        skip: Passer
-        no-selected-item: Aucun terme sélectionné
+  AgroportalMethodCreate:
+    name: Le niveau d'observation
+    add: Ajouter un niveau d'observation
+    edit: Éditer un niveau d'observation
+    name-placeholder: Parcelle
 </i18n>

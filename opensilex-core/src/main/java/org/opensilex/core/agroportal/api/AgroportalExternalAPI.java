@@ -46,6 +46,10 @@ import static org.opensilex.core.agroportal.api.AgroportalExternalAPI.PATH;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
 
 
+/**
+ * Provide communication with the AgroPortal external API
+ * @author brice
+ */
 @Api(AgroportalExternalAPI.CREDENTIAL_AGROPORTAL_GROUP_ID)
 @Path(PATH)
 @ApiCredentialGroup(
@@ -68,6 +72,12 @@ public class AgroportalExternalAPI {
     static final ObjectMapper mapper = new ObjectMapper();
     static final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
+    /**
+     * Ping AgroPortal website
+     * @param timeout The maximum waiting time for response
+     * @return True if the service has been reached
+     * @throws Exception
+     */
     @GET
     @Path("/ping")
     @ApiOperation("Ping agroportal server")
@@ -88,26 +98,16 @@ public class AgroportalExternalAPI {
         return new SingleObjectResponse<>(isReachable).getResponse();
     }
 
-    private static boolean getStatus(String url, int timeout) throws IOException {
-
-        boolean result = false;
-        try {
-            URL urlObj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) urlObj.openConnection();
-            con.setRequestMethod("GET");
-            con.setConnectTimeout(timeout);
-            con.connect();
-
-            int code = con.getResponseCode();
-            if (code == 200) {
-                result = true;
-            }
-        } catch (Exception e) {
-            result = false;
-        }
-        return result;
-    }
-
+    /**
+     * Search a term in AgroPortal
+     * @param namePattern A regex to filter by name
+     * @param ontologies A list of ontologies acronym to filter in
+     * @param orderByList (unused) A list of fields to sort
+     * @param page (unused) The page index
+     * @param pageSize (unused) The maximum page size
+     * @return A list of {@link EntityAgroportalDTO}
+     * @throws Exception
+     */
     @GET
     @Path("/search")
     @ApiOperation("Search through agroportal")
@@ -142,6 +142,16 @@ public class AgroportalExternalAPI {
                 .getResponse();
     }
 
+    /**
+     * Retrieve ontologies present in AgroPortal.
+     * @param namePattern A regex to filter by ontologies acronym
+     * @param ontologies A list of ontologies acronym to retrieve only these
+     * @param orderByList (unused) A list of fields to sort
+     * @param page (unused) The page index
+     * @param pageSize (unused) The maximum page size
+     * @return A list of {@link OntologyAgroportalDTO}
+     * @throws Exception
+     */
     @GET
     @Path("/ontologies")
     @ApiOperation("Get ontologies from agroportal")
@@ -189,6 +199,38 @@ public class AgroportalExternalAPI {
                 ).getResponse();
     }
 
+    /**
+     * Check if a URL is reachable. Return true if the connection status code is '200'
+     * @param url The connection's URL
+     * @param timeout The maximum waiting time for response
+     * @return True if the connection has been done properly
+     * @throws IOException
+     */
+    private static boolean getStatus(String url, int timeout) throws IOException {
+
+        boolean result = false;
+        try {
+            URL urlObj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) urlObj.openConnection();
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(timeout);
+            con.connect();
+
+            int code = con.getResponseCode();
+            if (code == 200) {
+                result = true;
+            }
+        } catch (Exception e) {
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Convert a string to a JSON node
+     * @param json JSON object represented as string
+     * @return A JSON node
+     */
     private static JsonNode jsonToNode(String json) {
         JsonNode root = null;
         try {
@@ -201,6 +243,12 @@ public class AgroportalExternalAPI {
         return root;
     }
 
+    /**
+     * Perform a http GET method
+     * @param urlToGet The url
+     * @param apiKey The API key
+     * @return The result message as a string
+     */
     private static String get(String urlToGet, String apiKey) {
         URL url;
         HttpURLConnection conn;

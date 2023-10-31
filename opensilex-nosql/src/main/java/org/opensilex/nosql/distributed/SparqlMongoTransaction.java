@@ -16,7 +16,7 @@ public class SparqlMongoTransaction {
 
     private final SPARQLService sparql;
     private final MongoDBService mongodb;
-    private final Map<Class<Exception>, Function<Exception, Exception>> exceptionMapping;
+    private final Map<Class<? extends Exception>, Function<Exception, Exception>> exceptionMapping;
 
     public SparqlMongoTransaction(SPARQLService sparql, MongoDBService mongodb) {
         this.sparql = sparql;
@@ -24,7 +24,7 @@ public class SparqlMongoTransaction {
         exceptionMapping = new HashMap<>();
     }
 
-    public SparqlMongoTransaction registerCustomTransaction(Class<Exception> inputExceptionClass, Function<Exception, Exception> customExceptionLogic) {
+    public SparqlMongoTransaction handleCustomException(Class<? extends Exception> inputExceptionClass, Function<Exception, Exception> customExceptionLogic) {
         exceptionMapping.put(inputExceptionClass, customExceptionLogic);
         return this;
     }

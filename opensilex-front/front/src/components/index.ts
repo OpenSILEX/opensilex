@@ -613,14 +613,12 @@ import AgroportalEntityEnrichForm from './variables/agroportal/AgroportalEntityE
 components["opensilex-AgroportalEntityEnrichForm"] = AgroportalEntityEnrichForm;
 import AgroportalEntityExternalReferencesForm from './variables/agroportal/AgroportalEntityExternalReferencesForm.vue';
 components["opensilex-AgroportalEntityExternalReferencesForm"] = AgroportalEntityExternalReferencesForm;
-import AgroportalSearch from './variables/AgroportalSearch.vue';
+import AgroportalSearch from './variables/agroportal/AgroportalSearch.vue';
 components["opensilex-AgroportalSearch"] = AgroportalSearch;
-import AgroportalResults from './variables/AgroportalResults.vue';
+import AgroportalResults from './variables/agroportal/AgroportalResults.vue';
 components["opensilex-AgroportalResults"] = AgroportalResults;
-import AgroportalResultItem from './variables/AgroportalResultItem.vue';
+import AgroportalResultItem from './variables/agroportal/AgroportalResultItem.vue';
 components["opensilex-AgroportalResultItem"] = AgroportalResultItem;
-import TestPage from './TestPage.vue';
-components["opensilex-TestPage"] = TestPage;
 
 
 // Entity of interest

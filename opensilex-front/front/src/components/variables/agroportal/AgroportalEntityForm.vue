@@ -84,7 +84,7 @@ import Vue from "vue";
 // @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-import AgroportalResults from "../AgroportalResults.vue";
+import AgroportalResults from "./AgroportalResults.vue";
 
 
 @Component

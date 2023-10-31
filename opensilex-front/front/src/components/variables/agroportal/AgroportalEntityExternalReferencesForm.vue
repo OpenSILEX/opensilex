@@ -201,7 +201,7 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Skos} from "../../../models/Skos";
-import AgroportalResults from "../AgroportalResults.vue";
+import AgroportalResults from "./AgroportalResults.vue";
 
 
 @Component

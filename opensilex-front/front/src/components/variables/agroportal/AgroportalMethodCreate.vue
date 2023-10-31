@@ -207,14 +207,14 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
 <i18n>
 en:
   AgroportalMethodCreate:
-    name: The observation level
-    add: Add an observation level
-    edit: Edit an observation level
-    name-placeholder: Plot
+    name: The method
+    add: Add a method
+    edit: Edit a method
+    name-placeholder: Image analysis
 fr:
   AgroportalMethodCreate:
-    name: Le niveau d'observation
-    add: Ajouter un niveau d'observation
-    edit: Éditer un niveau d'observation
-    name-placeholder: Parcelle
+    name: La méthode
+    add: Ajouter une méthode
+    edit: Éditer une méthode
+    name-placeholder: Analyse d'image
 </i18n>

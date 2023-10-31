@@ -62,17 +62,17 @@
                 ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
             ></opensilex-AgroportalEntityCreate>
 
-            <opensilex-InterestEntityCreate
+            <opensilex-AgroportalEntityOfInterestCreate
                 ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-InterestEntityCreate>
+            ></opensilex-AgroportalEntityOfInterestCreate>
 
-            <opensilex-CharacteristicModalForm
+            <opensilex-AgroportalCharacteristicCreate
                 ref="characteristicForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-CharacteristicModalForm>
+            ></opensilex-AgroportalCharacteristicCreate>
 
-            <opensilex-MethodCreate
+            <opensilex-AgroportalMethodCreate
                 ref="methodForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-MethodCreate>
+            ></opensilex-AgroportalMethodCreate>
 
             <opensilex-UnitCreate
                 ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"

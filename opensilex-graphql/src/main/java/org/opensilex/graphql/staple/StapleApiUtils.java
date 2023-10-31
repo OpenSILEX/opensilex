@@ -60,7 +60,7 @@ public class StapleApiUtils {
         SPARQLClassObjectMapperIndex index = sparql.getMapperIndex();
         for (Class<?> resourceClass : openSilex.getAnnotatedClasses(SPARQLResource.class)) {
             if (!(SPARQLResourceModel.class.isAssignableFrom(resourceClass))) {
-                break;
+                continue;
             }
             SPARQLClassObjectMapper<?> mapper = index.getForClass(resourceClass);
             if (mapper.getDefaultGraphURI() != null) {

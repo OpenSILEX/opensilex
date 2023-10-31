@@ -56,6 +56,7 @@ public class StapleAPI {
 
         return Response.ok(baos.toByteArray(), new MediaType("application", "x-turtle")).build();
     }
+
     @GET
     @Path("resource_graph")
     @ApiOperation("Get all graphs associated with resources")

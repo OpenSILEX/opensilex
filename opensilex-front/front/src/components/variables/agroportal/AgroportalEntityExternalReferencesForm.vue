@@ -19,7 +19,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row align-h="left">
+                  <b-row>
                     Search for mapping...
                   </b-row>
                 </template>
@@ -52,10 +52,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row
-                      align-h="left"
-                      id="manual-mapping"
-                  >
+                  <b-row id="manual-mapping">
                     ...Or map manually
                   </b-row>
                 </template>
@@ -129,7 +126,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row align-h="left">
+                  <b-row>
                     {{$t("AgroportalEntityForm.selected-term")}}
                   </b-row>
                 </template>

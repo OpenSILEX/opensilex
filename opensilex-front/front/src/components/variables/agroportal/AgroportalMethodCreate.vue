@@ -161,7 +161,9 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
         }
 
         convert(form, entity: EntityAgroportalDTO) {
-            form.uri = entity.id;
+            if (!this.editMode) {
+              form.uri = entity.id;
+            }
             form.name = entity.name;
             form.description = entity.definitions[0];
             form.exact_match = [];
@@ -184,6 +186,8 @@ import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
 
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
           if(stepIndex == 0 && form.uri != null) {
+            if(this.editMode) return true;
+
             form.close_match.push(form.uri);
             form.uri = "";
             return true;

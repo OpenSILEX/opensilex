@@ -21,7 +21,7 @@
         </b-col>
       </b-row>
 
-      <b-row v-if="isSelected" align-h="end">
+      <b-row v-if="isSelected">
         <b-col cols="auto">
           <slot name="btnValidate"></slot>
         </b-col>

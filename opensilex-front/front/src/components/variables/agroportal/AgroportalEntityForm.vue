@@ -46,7 +46,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row align-h="left">
+                  <b-row>
                     <b-col xs="6">
                       {{$t("AgroportalEntityForm.selected-term")}}
                     </b-col>

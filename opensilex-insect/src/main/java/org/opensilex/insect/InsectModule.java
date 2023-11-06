@@ -70,7 +70,6 @@ public class InsectModule extends OpenSilexModule implements APIExtension, SPARQ
 
     private void insertInsectDefaultSpecies()  {
         try {
-
             SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
             SPARQLService sparql = factory.provide();
 

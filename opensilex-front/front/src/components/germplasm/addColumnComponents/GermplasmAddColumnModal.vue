@@ -39,11 +39,10 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from 'vue-property-decorator';
-import { OntologyService, ResourceTreeDTO } from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import Oeso from "../../../ontologies/Oeso";
 import { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
 import InputForm from "@/components/common/forms/InputForm.vue";
+import GermplasmControlledAttributesSelector from './GermplasmControlledAttributesSelector.vue';
 
 @Component({})
 /**
@@ -52,8 +51,8 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 export default class GermplasmAddColumnModal extends Vue {
 
   @Ref("colModal") readonly colModal!: any;
-  @Ref("uncontrolledAttributeInput") readonly uncontrolledAttributeInput!: any;
-  @Ref("controlledAttributeSelector") readonly controlledAttributeSelector!: any;
+  @Ref("uncontrolledAttributeInput") readonly uncontrolledAttributeInput!: InputForm;
+  @Ref("controlledAttributeSelector") readonly controlledAttributeSelector!: GermplasmControlledAttributesSelector;
   @Ref("validatorRef") readonly validatorRef!: any;
 
   inputFormKey = 0;

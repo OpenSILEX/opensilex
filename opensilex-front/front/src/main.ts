@@ -264,7 +264,7 @@ import { configure, extend } from 'vee-validate';
 import validationMessagesEN from 'vee-validate/dist/locale/en.json';
 import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
 import * as rules from 'vee-validate/dist/rules';
-import {email, excluded} from 'vee-validate/dist/rules';
+import {email} from 'vee-validate/dist/rules';
 
 for (let [rule, validation] of Object.entries(rules)) {
   let anyVal: any = validation;

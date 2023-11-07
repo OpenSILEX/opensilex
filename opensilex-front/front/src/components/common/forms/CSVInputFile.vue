@@ -102,7 +102,7 @@ export default class CSVInputFile extends Vue {
               if(visitedHeaders.includes(noCapsNoSpacesHeader)){
                 if(!noCapsNoSpacesDuplicatableHeaders.includes(noCapsNoSpacesHeader)){
                   this.errors.push(
-                      "This header can't be duplicated: " +
+                      this.$i18n.t('CSVInputFile.headerCantBeDuplicatedMessage') + ": " +
                       header
                   );
                   break;
@@ -115,11 +115,11 @@ export default class CSVInputFile extends Vue {
           //Check that some headers are present
           if(this.headersPresent && !CSVInputFile.containsAll(objectToCheck, this.headersPresent)){
             this.errors.push(
-                "Some of these headers are missing: [" +
+                this.$i18n.t('CSVInputFile.headersMissingMessage') + ": [" +
                 this.headersPresent + "]"
             );
           }
-          //Check the headers have exactly the same quantity and content as headersToCheck
+          //Check the headers have exactly the same quantity and content as headersExactMatch
           if (this.headersExactMatch != null && this.headersExactMatch.length > 0) {
             if (
               !CSVInputFile.equalArrays(
@@ -128,11 +128,11 @@ export default class CSVInputFile extends Vue {
               )
             ) {
               this.errors.push(
-                "Bad data : [" +
+                  this.$i18n.t('CSVInputFile.wrongColumns') + ": [" +
                   this.headersExactMatch.toString() +
-                  "] is expected. [" +
+                  "] " + this.$i18n.t('CSVInputFile.isExpected')  + ". [" +
                   objectToCheck +
-                  "] has been found."
+                  "] " + this.$i18n.t('CSVInputFile.found') + "."
               );
             }
           }
@@ -177,3 +177,23 @@ export default class CSVInputFile extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+  CSVInputFile:
+    headerCantBeDuplicatedMessage: This header can't be duplicated
+    headersMissingMessage: Some of these headers are missing
+    wrongColumns: Wrong columns
+    isExpected: is expected
+    found: has been found
+
+fr:
+  CSVInputFile:
+    headerCantBeDuplicatedMessage: Cette colonne n'est pas duplicable
+    headersMissingMessage: Des colonnes parmi les suivantes sont manquantes
+    wrongColumns: Mauvaises colonnes
+    isExpected: est attendue
+    found: a été trouvé
+
+</i18n>

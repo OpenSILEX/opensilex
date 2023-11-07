@@ -18,17 +18,16 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import Oeso from "../../..//ontologies/Oeso";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {Prop, PropSync, Ref} from 'vue-property-decorator';
-import { ResourceTreeDTO } from 'opensilex-core/index';
 import {SelectableItem} from "../../../components/common/forms/SelectForm.vue";
+import SelectForm from "@/components/common/forms/SelectForm.vue";
 @Component({})
 export default class GermplasmControlledAttributesSelector extends Vue {
 
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   $opensilex: OpenSilexVuePlugin;
 
@@ -42,24 +41,6 @@ export default class GermplasmControlledAttributesSelector extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.OntologyService");
-  }
-
-  setDisableSelector(disabled:boolean){
-    this.selectForm.disabled = disabled;
-  }
-
-  searchProperties() {
-    return this.service.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
-      return http;
-    }).catch(this.$opensilex.errorHandler);
-
-  }
-
-  propertyToSelectNode(dto: ResourceTreeDTO) {
-    return {
-      id: dto.uri,
-      label: dto.name
-    };
   }
 
   load(properties: Array<string>) {

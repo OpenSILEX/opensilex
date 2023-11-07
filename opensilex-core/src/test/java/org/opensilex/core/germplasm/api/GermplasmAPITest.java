@@ -12,8 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -72,66 +70,119 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         
     }
 
-    /**
-     * Tests creation, updating and recuperation of germplasms with parents.
-     */
+    //CRUD tests for germs with parents
+
     @Test
-    public void testParentStuff() throws Exception {
-
+    public void testCreateWithParents() throws Exception {
         //Create some parents
-        GermplasmCreationDTO someParentADTO = new GermplasmCreationDTO();
-        someParentADTO.setName("jack");
-        someParentADTO.setRdfType(new URI(Oeso.Species.toString()));
-        final Response postResultParentA = getJsonPostResponseAsAdmin(target(createPath), someParentADTO);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultParentA.getStatus());
-        URI someParentAURI = extractUriFromResponse(postResultParentA);
+        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentMURI = extractUriFromResponse(postResultSpecies);
 
-        GermplasmCreationDTO someSecondParentADTO = new GermplasmCreationDTO();
-        someSecondParentADTO.setName("bla");
-        someSecondParentADTO.setRdfType(new URI(Oeso.Species.toString()));
-        final Response postResultSecondParentA = getJsonPostResponseAsAdmin(target(createPath), someSecondParentADTO);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultSecondParentA.getStatus());
-        URI someSecondParentAURI = extractUriFromResponse(postResultSecondParentA);
+        final Response postResultSpeciesF = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentFURI = extractUriFromResponse(postResultSpeciesF);
 
-        GermplasmCreationDTO someParentBDTO = new GermplasmCreationDTO();
-        someParentBDTO.setName("john");
-        someParentBDTO.setRdfType(new URI(Oeso.Species.toString()));
-        final Response postResultParentB = getJsonPostResponseAsAdmin(target(createPath), someParentBDTO);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultParentB.getStatus());
-        URI someParentBURI = extractUriFromResponse(postResultParentB);
-
-        //create some children, they have the same B parent, different A parents. One seperate child that has a parent that isnt of type A or B
-        GermplasmCreationDTO someAccessionChildDTO = new GermplasmCreationDTO();
-        someAccessionChildDTO.setName("john junior");
-        someAccessionChildDTO.setRdfType(new URI(Oeso.Species.toString()));
+        //Test create
+        GermplasmCreationDTO someChildDTO = new GermplasmCreationDTO();
+        someChildDTO.setName("john junior");
+        someChildDTO.setRdfType(new URI(Oeso.Species.toString()));
         List<RDFObjectRelationDTO> someAccessionChildDTORelations = new ArrayList<>();
-        RDFObjectRelationDTO someAccessionChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someParentAURI.toString(), false);
+        RDFObjectRelationDTO someAccessionChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someParentMURI.toString(), false);
         someAccessionChildDTORelations.add(someAccessionChildDTORelation1);
-
-        RDFObjectRelationDTO someAccessionChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someSecondParentAURI.toString(), false);
-        someAccessionChildDTORelations.add(someAccessionChildDTORelation2);
-
-        RDFObjectRelationDTO someAccessionChildDTORelation3 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentBURI.toString(), false);
+        RDFObjectRelationDTO someAccessionChildDTORelation3 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
         someAccessionChildDTORelations.add(someAccessionChildDTORelation3);
+        someChildDTO.setRelations(someAccessionChildDTORelations);
+        final Response postResultChild1 = getJsonPostResponseAsAdmin(target(createPath), someChildDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultChild1.getStatus());
 
-        someAccessionChildDTO.setRelations(someAccessionChildDTORelations);
-        final Response postResultAccessionChild = getJsonPostResponseAsAdmin(target(createPath), someAccessionChildDTO);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultAccessionChild.getStatus());
-        URI someAccessionChildURI = extractUriFromResponse(postResultAccessionChild);
-
-        GermplasmCreationDTO someVarietyChildDTO = new GermplasmCreationDTO();
-        someVarietyChildDTO.setName("bla junior");
-        someVarietyChildDTO.setRdfType(new URI(Oeso.Species.toString()));
-        List<RDFObjectRelationDTO> someVarietyChildDTORelations = new ArrayList<>();
-        RDFObjectRelationDTO someVarietyChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someAccessionChildURI.toString(), false);
+        GermplasmCreationDTO someChildDTO2 = new GermplasmCreationDTO();
+        someChildDTO2.setName("bla junior");
+        someChildDTO2.setRdfType(new URI(Oeso.Species.toString()));
+        List<RDFObjectRelationDTO> childDTORelations2 = new ArrayList<>();
+        RDFObjectRelationDTO someVarietyChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someParentMURI.toString(), false);
         someAccessionChildDTORelations.add(someVarietyChildDTORelation1);
-
-        RDFObjectRelationDTO someVarietyChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentBURI.toString(), false);
-        someVarietyChildDTORelations.add(someVarietyChildDTORelation2);
-        someVarietyChildDTO.setRelations(someVarietyChildDTORelations);
-
-        final Response postResultVarietyChild = getJsonPostResponseAsAdmin(target(createPath), someVarietyChildDTO);
+        RDFObjectRelationDTO someVarietyChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
+        childDTORelations2.add(someVarietyChildDTORelation2);
+        someChildDTO2.setRelations(childDTORelations2);
+        final Response postResultVarietyChild = getJsonPostResponseAsAdmin(target(createPath), someChildDTO2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVarietyChild.getStatus());
+
+    }
+
+    @Test
+    public void testUpdateWithParents() throws Exception {
+        //Create some parents
+        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentFURI = extractUriFromResponse(postResultSpecies);
+
+        //create a germplasm to update
+        GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
+        final Response germplasmToUpdatePostResponse = getJsonPostResponseAsAdmin(target(createPath), germplasmToUpdateDTO);
+        URI germplasmToUpdateURI = extractUriFromResponse(germplasmToUpdatePostResponse);
+
+        //Test update
+        List<RDFObjectRelationDTO> newRelations = new ArrayList<>();
+        RDFObjectRelationDTO parentFRelation = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
+        newRelations.add(parentFRelation);
+
+        germplasmToUpdateDTO.setUri(germplasmToUpdateURI);
+        germplasmToUpdateDTO.setRelations(newRelations);
+        final Response updateResponse = getJsonPutResponse(target(updatePath), germplasmToUpdateDTO);
+        assertEquals(Status.OK.getStatusCode(), updateResponse.getStatus());
+
+        //Test a search on updated germplasm to make sure the update worked properly
+        HashMap<String, Object> params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms_f", Collections.singletonList(someParentFURI));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 1);
+        assertEquals(germplasmList.get(0).uri, germplasmToUpdateURI);
+    }
+
+    @Test
+    public void testSearchWithParents() throws Exception {
+        //Create some parents
+        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentMURI = extractUriFromResponse(postResultSpecies);
+
+        final Response postResultSpecies2 = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentM2URI = extractUriFromResponse(postResultSpecies2);
+
+        final Response postResultSpeciesF = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
+        URI someParentFURI = extractUriFromResponse(postResultSpeciesF);
+
+        //create children
+        GermplasmCreationDTO someChildDTO = new GermplasmCreationDTO();
+        someChildDTO.setName("john junior");
+        someChildDTO.setRdfType(new URI(Oeso.Species.toString()));
+        List<RDFObjectRelationDTO> someAccessionChildDTORelations = new ArrayList<>();
+        RDFObjectRelationDTO someAccessionChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someParentMURI.toString(), false);
+        someAccessionChildDTORelations.add(someAccessionChildDTORelation1);
+        RDFObjectRelationDTO someAccessionChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), someParentM2URI.toString(), false);
+        someAccessionChildDTORelations.add(someAccessionChildDTORelation2);
+        RDFObjectRelationDTO someAccessionChildDTORelation3 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
+        someAccessionChildDTORelations.add(someAccessionChildDTORelation3);
+        someChildDTO.setRelations(someAccessionChildDTORelations);
+        final Response postResultChild1 = getJsonPostResponseAsAdmin(target(createPath), someChildDTO);
+        URI child1Uri = extractUriFromResponse(postResultChild1);
+
+        GermplasmCreationDTO someChildDTO2 = new GermplasmCreationDTO();
+        someChildDTO2.setName("bla junior");
+        someChildDTO2.setRdfType(new URI(Oeso.Species.toString()));
+        List<RDFObjectRelationDTO> childDTORelations2 = new ArrayList<>();
+        RDFObjectRelationDTO someVarietyChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), child1Uri.toString(), false);
+        someAccessionChildDTORelations.add(someVarietyChildDTORelation1);
+        RDFObjectRelationDTO someVarietyChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
+        childDTORelations2.add(someVarietyChildDTORelation2);
+        someChildDTO2.setRelations(childDTORelations2);
+        final Response postResultVarietyChild = getJsonPostResponseAsAdmin(target(createPath), someChildDTO2);
         URI uriNotUsedInAParentTillNow = extractUriFromResponse(postResultVarietyChild);
 
         GermplasmCreationDTO someChildWithNoParentTypeDTO = new GermplasmCreationDTO();
@@ -140,7 +191,6 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         List<RDFObjectRelationDTO> someChildWithNoParentTypeDTORelations = new ArrayList<>();
         RDFObjectRelationDTO someChildWithNoParentTypeDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasm.getURI()), uriNotUsedInAParentTillNow.toString(), false);
         someChildWithNoParentTypeDTORelations.add(someChildWithNoParentTypeDTORelation1);
-
         someChildWithNoParentTypeDTO.setRelations(someChildWithNoParentTypeDTORelations);
         final Response postResultChildNoParentType = getJsonPostResponseAsAdmin(target(createPath), someChildWithNoParentTypeDTO);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultChildNoParentType.getStatus());
@@ -149,7 +199,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         //Test search by parentA
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("parent_germplasms_m", Collections.singletonList(someParentAURI));
+                put("parent_germplasms_m", Collections.singletonList(someParentMURI));
             }
         };
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
@@ -161,12 +211,12 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         });
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
         assertEquals(germplasmList.size(), 1);
-        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
+        assertEquals(germplasmList.get(0).uri, child1Uri);
 
         //Test search by parent B
         params = new HashMap<String, Object>() {
             {
-                put("parent_germplasms_f", Collections.singletonList(someParentBURI));
+                put("parent_germplasms_f", Collections.singletonList(someParentFURI));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
@@ -181,7 +231,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         //Test search parent with a parentA property
         params = new HashMap<String, Object>() {
             {
-                put("parent_germplasms", Collections.singletonList(someParentAURI));
+                put("parent_germplasms", Collections.singletonList(someParentMURI));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
@@ -192,7 +242,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         });
         germplasmList = germplasmListResponse.getResult();
         assertEquals(germplasmList.size(), 1);
-        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
+        assertEquals(germplasmList.get(0).uri, child1Uri);
 
         //Test search by parent when the child's parent was defined with no type (not a or b)
         params = new HashMap<String, Object>() {
@@ -209,29 +259,8 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         germplasmList = germplasmListResponse.getResult();
         assertEquals(germplasmList.size(), 1);
         assertEquals(germplasmList.get(0).uri, childWithNoParentTypeUri);
-
-        //Test update by setting a parentB to a parentA value and making sure this is the only returned element on a parentB search
-        RDFObjectRelationDTO someAccessionChildDTORelation4 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentAURI.toString(), false);
-        someAccessionChildDTORelations.add(someAccessionChildDTORelation4);
-        someAccessionChildDTO.setUri(someAccessionChildURI);
-        someAccessionChildDTO.setRelations(someAccessionChildDTORelations);
-        final Response updateResponse = getJsonPutResponse(target(updatePath), someAccessionChildDTO);
-        assertEquals(Status.OK.getStatusCode(), updateResponse.getStatus());
-        params = new HashMap<String, Object>() {
-            {
-                put("parent_germplasms_f", Collections.singletonList(someParentAURI));
-            }
-        };
-        searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        getResult = appendAdminToken(searchTarget).get();
-        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
-        node = getResult.readEntity(JsonNode.class);
-        germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
-        });
-        germplasmList = germplasmListResponse.getResult();
-        assertEquals(germplasmList.size(), 1);
-        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
     }
+
 
     @Test
     public void testGetByUri() throws Exception {
@@ -279,7 +308,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
     /**
      * Run this test at Dao level since the search method don't return attributes.
-     * For now the {@link GermplasmDAO#search(GermplasmSearchFilter, boolean)} with fetchMetada = true
+     * For now the {@link GermplasmDAO#search(GermplasmSearchFilter, boolean, boolean)} with fetchMetada = true
      * is only used into {@link GermplasmAPI#exportGermplasm(GermplasmSearchFilter)}.
      *
      */

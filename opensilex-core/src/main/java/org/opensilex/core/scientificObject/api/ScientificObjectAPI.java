@@ -16,7 +16,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.bson.Document;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -25,7 +24,6 @@ import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
@@ -325,12 +323,14 @@ public class ScientificObjectAPI {
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
             @ApiParam(value = "Parent URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") @ValidURI URI parentURI,
-            @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
+            @ApiParam(value = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasms") @ValidURI List<URI> germplasms,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "Variables URI") @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Devices URI") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
-            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_dto") @Valid CriteriaDTO criteriaDTO,
+            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_on_data") @Valid CriteriaDTO criteriaDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -369,11 +369,16 @@ public class ScientificObjectAPI {
                     .setPattern(pattern)
                     .setRdfTypes(rdfTypes)
                     .setParentURI(parentURI)
-                    .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
+                    .setGermplasm(germplasms)
                     .setFactorLevels(factorLevels)
                     .setFacility(facility)
                     .setExistenceDate(existenceDate)
                     .setCreationDate(creationDate);
+
+        if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables));
+        }
 
             searchFilter.setPage(page)
                     .setPageSize(pageSize)

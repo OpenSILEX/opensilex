@@ -69,6 +69,8 @@ export default class ScientificObjectSelector extends Vue {
                 undefined,
                 undefined,
                 undefined,
+                undefined,
+                undefined,
                 ["name=asc"], // orderBy?: ,
                 page, // page?: number,
                 pageSize // pageSize?: number

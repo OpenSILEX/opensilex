@@ -13,6 +13,7 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
@@ -29,6 +30,7 @@ import SelectForm from "../common/forms/SelectForm.vue";
 @Component
 export default class GroupVariablesSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  pageSize = 10;
 
   @PropSync("variableGroup", {default: () => []})
   vgURI;
@@ -69,7 +71,7 @@ export default class GroupVariablesSelector extends Vue {
 
   searchVariablesGroups(searchQuery, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchVariablesGroups(searchQuery, undefined, ["name=asc"], page, pageSize, this.sharedResourceInstance)
+    .searchVariablesGroups(searchQuery, undefined, ["name=asc"], page, this.pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });
@@ -85,6 +87,14 @@ export default class GroupVariablesSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
   }
 }
 </script>

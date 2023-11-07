@@ -145,7 +145,12 @@
                 },
                 "pagination" : {
                     "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
-                    "noEntries" : "No entries found"
+                    "noEntries" : "No entries found",
+                    "numberOfElementsPerPageSelector": "Select number of entries to display",
+                    "tenElements": "10 entries",
+                    "twentyElements": "20 entries",
+                    "fiftyElements": "50 entries",
+                    "hundredElements": "100 entries"
                 }
             },
             "addDocument": "Add document",
@@ -229,6 +234,10 @@
             "devices": "Devices",
             "events" : "Events",
             "vocabulary" : "Vocabulary",
+            "about" : {
+                "label": "About",
+                "system": "System"
+            },
             "tools" : {
                 "label": "Tools",
                 "system": "System",
@@ -768,12 +777,17 @@
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
         "dateDiff" : "The {_field_} must not be before the start date",
-        "nameFiltered" : "The {_field_} must not contains -,+,=,<,>,=,?,/,*,&"
+        "nameFiltered" : "The {_field_} must not contain -,+,=,<,>,=,?,/,*,&",
+        "refuseOperators": "This operator can't be applied"
     },
     "icon": {
         "component": {
             "menu": {
                 "default": "ik-folder",
+                "about": {
+                    "label": "ik-info",
+                    "gdpr": "ik-user"
+                },
                 "dashboard": "ik-grid",
                 "data": {
                     "label": "ik-bar-chart-line"

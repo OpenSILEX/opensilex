@@ -14,6 +14,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -284,6 +285,7 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
@@ -293,14 +295,14 @@ public class DataAPI {
             targets = new ArrayList<>();
         }
         //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        if(germplasmGroup!=null){
-
+        //Or/And scientific objects associated with passed germplasms
+        if(germplasmGroup!=null || !CollectionUtils.isEmpty(germplasmUris)){
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
             Set<URI> finalTargetsFilter = new HashSet<>(targets);
             //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
             ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
             List<URI> includedExperimentsForTargetsSearch = experiments;
-            if(experiments == null || experiments.isEmpty()){
+            if(CollectionUtils.isEmpty(experiments)){
                 ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
                 experimentSearchFilter.setUser(user);
                 int xpQuantity = experimentDAO.count();
@@ -310,7 +312,7 @@ public class DataAPI {
             }
 
             List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
-                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, user.getLanguage());
+                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, germplasmUris);
             finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
             targets = new ArrayList<>(finalTargetsFilter);
             //if targets is still empty when a group was passed then we don't want any data to be returned

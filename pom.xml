@@ -68,6 +68,7 @@
         <!-- Documentation module -->
         <module>opensilex-doc</module>
         <module>opensilex-migration</module>
+        <module>opensilex-graphql</module>
     </modules>
     
     <dependencies>
@@ -138,6 +139,12 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-migration</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-graphql</artifactId>
             <version>${revision}</version>
         </dependency>
 

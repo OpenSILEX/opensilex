@@ -8,6 +8,8 @@
       :selectedInJsonFormat= "this.mapMode ? scObj : null"
       :filter.sync="soFilter"
       :multiple="true"
+      :devices="devices"
+      :modalComponentProps="modalComponentProps"
       :maximumSelectedItems="maximumSelectedRows"
       :clearable="true"
       :required="required"
@@ -67,6 +69,14 @@ export default class UsedScientificObjectSelector extends Vue {
   soFilter;
   @Prop()
   maximumSelectedRows: number;
+  @Prop()
+  variables;
+  @Prop()
+  devices;
+
+  get modalComponentProps(){
+    return {variables: this.variables, devices: this.devices}
+  }
 
   @Ref("soSelector") readonly soSelector!: SelectForm;
 

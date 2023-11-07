@@ -178,12 +178,20 @@ export default class ScientificObjectList extends Vue {
   @Prop()
   maximumSelectedRows: number;
 
+  @Prop()
+  variables: Array<string>;
+
+  @Prop()
+  devices: Array<string>;
+
   @PropSync("searchFilter", {
     default: () => {
       return {
         name: "",
         experiment: undefined,
-        germplasm: undefined,
+        germplasm: [],
+        variables: [],
+        devices: [],
         factorLevels: [],
         types: [],
         existenceDate: undefined,
@@ -276,7 +284,7 @@ export default class ScientificObjectList extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: undefined,
+      germplasm: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,
@@ -339,6 +347,8 @@ export default class ScientificObjectList extends Vue {
       this.filter.germplasm,
       this.filter.factorLevels,
       undefined,
+      this.variables,
+      this.devices,
       this.filter.existenceDate,
       this.filter.creationDate,
       JSON.stringify(this.filter.criteriaDto),

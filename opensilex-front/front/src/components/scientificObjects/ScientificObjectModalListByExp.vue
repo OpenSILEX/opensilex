@@ -122,6 +122,8 @@
         :noActions="true"
         :pageSize="5"
         :searchFilter.sync="filter"
+        :variables="variables"
+        :devices="devices"
         :noUpdateURL="true"
         @select="$emit('select', $event)"
         @unselect="$emit('unselect', $event)"
@@ -156,6 +158,12 @@ export default class ScientificObjectModalListByExp extends ScientificObjectModa
 
   @Prop()
   maximumSelectedRows: number;
+
+  @Prop()
+  variables: Array<string>;
+
+  @Prop()
+  devices: Array<string>;
  
   data(){
     return {

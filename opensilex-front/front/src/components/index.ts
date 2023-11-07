@@ -144,8 +144,6 @@ import FactorDetails from './experiments/factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
 import FactorLevelTable from './experiments/factors/FactorLevelTable.vue';
 components["opensilex-FactorLevelTable"] = FactorLevelTable;
-import FactorSelector from './experiments/factors/FactorSelector.vue';
-components["opensilex-FactorSelector"] = FactorSelector;
 import FactorCategorySelector from './experiments/factors/FactorCategorySelector.vue';
 components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
 import FactorsHelp from './experiments/factors/FactorsHelp.vue';
@@ -871,7 +869,9 @@ components["opensilex-AssociatedPositionList"] = AssociatedPosition;
 import PackagesView from './tools/PackagesView.vue';
 components["opensilex-PackagesView"] = PackagesView;
 import SystemView from './tools/SystemView.vue';
-components["opensilex-SystemView"] = SystemView; 
- 
- 
+components["opensilex-SystemView"] = SystemView;
+import GDPR from './tools/GDPR.vue'
+components["opensilex-GDPR"] = GDPR;
+
+
 export default components;

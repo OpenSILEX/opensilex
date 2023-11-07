@@ -474,9 +474,6 @@ routes:
   - path: /provenances/documents/:uri
     component: opensilex-ProvenanceDetailsPage
 
-  - path: /test
-    component: opensilex-TestPage
-
 
   # Route item example:
   #  - path: /users/create

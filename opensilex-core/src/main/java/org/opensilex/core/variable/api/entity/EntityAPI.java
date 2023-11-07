@@ -261,5 +261,4 @@ public class EntityAPI {
         return new PaginatedListResponse<>(service.search(EntityAPI.PATH, searchParams, EntityGetDTO.class))
                 .getResponse();
     }
-
 }

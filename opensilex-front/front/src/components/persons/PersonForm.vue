@@ -104,8 +104,6 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
 import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
-import { PersonDTO } from 'opensilex-security/index';
-
 @Component
 export default class PersonForm extends Vue {
   $opensilex: OpenSilexVuePlugin;

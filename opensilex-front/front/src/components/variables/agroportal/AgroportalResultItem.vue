@@ -39,7 +39,7 @@
 import {Component, Prop, Watch} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {EntityAgroportalDTO} from "opensilex-core/index";
 
 @Component
 export default class AgroportalResultItem extends Vue {

@@ -12,7 +12,6 @@ import org.apache.jena.vocabulary.OA;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.core.agroportal.config.AgroportalAPIConfigDTO;
 import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
@@ -135,11 +134,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         } catch (BadRequestException ignored) {
             return null;
         }
-    }
-
-    public AgroportalAPIConfigDTO getAgroportalAPIConfiguration() {
-        CoreConfig coreConfig = getConfig(CoreConfig.class);
-        return AgroportalAPIConfigDTO.fromConfig(coreConfig.agroportal());
     }
 
     @Override

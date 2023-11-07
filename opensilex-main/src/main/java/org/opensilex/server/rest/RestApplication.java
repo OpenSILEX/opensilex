@@ -198,9 +198,15 @@ public class RestApplication extends ResourceConfig {
                 // Make opensilex instance injectable
                 bind(opensilex).to(OpenSilex.class);
 
-                // Make every module injectable
+                // Make every module and their config injectable
                 for (OpenSilexModule module : opensilex.getModules()) {
                     bind(module).to((Class<? super OpenSilexModule>) module.getClass());
+
+                    // Make the module config injectable
+                    Class<?> moduleConfigClass = module.getConfigClass();
+                    if (moduleConfigClass != null) {
+                        bind(module.getConfig()).to((Class<? super Object>) moduleConfigClass);
+                    }
                 }
 
                 // Make every service injectable

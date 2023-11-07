@@ -12,8 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.CoreModule;
-import org.opensilex.core.agroportal.config.AgroportalAPIConfigDTO;
+import org.opensilex.core.CoreConfig;
 import org.opensilex.core.agroportal.dal.EntityAgroportalModel;
 import org.opensilex.core.agroportal.dal.OntologyAgroportalModel;
 import org.opensilex.core.variable.api.VariableAPI;
@@ -63,7 +62,7 @@ public class AgroportalExternalAPI {
     public static final String PATH = "/core/agroportal";
 
     @Inject
-    private CoreModule coreModule;
+    private CoreConfig config;
 
     @Context
     protected HttpServletRequest httpRequest;
@@ -91,10 +90,7 @@ public class AgroportalExternalAPI {
     public Response pingAgroportal(
             @ApiParam(value = "Timeout", example = "1000") @QueryParam("timeout") Integer timeout
     ) throws Exception {
-
-        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
-
-        boolean isReachable = getStatus(agroportalConfig.getServerPath(), timeout);
+        boolean isReachable = getStatus(config.agroportal().basePath(), timeout);
         return new SingleObjectResponse<>(isReachable).getResponse();
     }
 
@@ -125,16 +121,14 @@ public class AgroportalExternalAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
     ) throws Exception {
-
-        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
-
-        String url = agroportalConfig.getApiUrl() + "/search?q=" + URLEncoder.encode(namePattern, StandardCharsets.UTF_8.toString());
+        String url = config.agroportal().baseAPIPath() + "/search?q=" + URLEncoder.encode(namePattern,
+                StandardCharsets.UTF_8.toString());
 
         if(StringUtils.isNotEmpty(ontologies)) {
             url += "&ontologies=" + ontologies;
         }
 
-        JsonNode searchResults = jsonToNode(get(url, agroportalConfig.getApiKey())).get("collection");
+        JsonNode searchResults = jsonToNode(get(url, config.agroportal().externalAPIKey())).get("collection");
 
         List<EntityAgroportalModel> entities = mapper.readValue(searchResults.traverse(), new TypeReference<List<EntityAgroportalModel>>(){});
 
@@ -164,17 +158,14 @@ public class AgroportalExternalAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAgroportalOntologies(
             @ApiParam(value = "Name (regex)", example = ".*") @QueryParam("name") @DefaultValue(".*") String namePattern ,
-            @ApiParam(value = "List of ontologies to get (aconyms)", example = "AGROVOC, PO") @DefaultValue("") @QueryParam("ontologies") List<String> ontologies,
+            @ApiParam(value = "List of ontologies to get (acronyms)", example = "AGROVOC, PO") @DefaultValue("") @QueryParam("ontologies") List<String> ontologies,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
     ) throws Exception {
+        String url = config.agroportal().baseAPIPath() + "/ontologies";
 
-        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
-
-        String url = agroportalConfig.getApiUrl() + "/ontologies";
-
-        String json = get(url, agroportalConfig.getApiKey());
+        String json = get(url, config.agroportal().externalAPIKey());
         JsonNode searchResults = jsonToNode(json);
 
         List<OntologyAgroportalModel> ontologiesModel = mapper.readValue(searchResults.traverse(), new TypeReference<List<OntologyAgroportalModel>>(){});

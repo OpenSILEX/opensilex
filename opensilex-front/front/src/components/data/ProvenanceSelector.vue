@@ -16,6 +16,7 @@
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    @loadMoreItems="loadMoreItems"
     :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
@@ -36,6 +37,7 @@ import SelectForm from "../common/forms/SelectForm.vue";
 export default class ProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
+  pageSize = 10;
 
   @Ref("selectForm") readonly selectForm!: SelectForm;
 
@@ -105,10 +107,11 @@ export default class ProvenanceSelector extends Vue {
     
     return this.$opensilex
       .getService("opensilex.DataService")
-      .searchProvenance(this.filterLabel)
+      .searchProvenance(this.filterLabel, undefined, undefined, undefined, undefined, undefined, undefined, undefined, this.pageSize)
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
           http
+          // trouver la bone place pour cibler pageSize et le remplacer par this.pageSize 
       );
   }
 
@@ -128,6 +131,14 @@ export default class ProvenanceSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
   }
 }
 </script>

@@ -301,9 +301,11 @@ searchMethod(nodeURI, page, pageSize) {
         undefined,
         undefined,
         undefined,
+        undefined,
+        undefined,
         orderBy,
         page,
-        pageSize );
+        pageSize);
 
     } else {
 
@@ -330,6 +332,8 @@ searchMethod(nodeURI, page, pageSize) {
         undefined, // Germplasm
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
+        undefined,
+        undefined,
         undefined,
         undefined,
           undefined,

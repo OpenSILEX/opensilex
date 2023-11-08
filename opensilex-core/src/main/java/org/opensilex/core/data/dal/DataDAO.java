@@ -843,6 +843,13 @@ public class DataDAO {
         return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
+
+    public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables) throws Exception {
+        Document filter = searchFilter(user, null, null, variables, null, devices, null, null, null, null, null, null);
+        Set<URI> targetURIs = nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter);
+        return new ArrayList<>(targetURIs);
+    }
+
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);

@@ -1279,16 +1279,6 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-     * @precondition The last part of the uri doesn't have a ':' in it.
-     * @param {string} uri - Long or short uri
-     * @returns The ending part of a uri that comes after the prefix
-     */
-    public getUriSuffix(uri: string): string {
-        let shortUri: string = this.getShortUri(uri);
-        return shortUri.split(":")[1];
-    }
-
-    /**
      * > This function checks if two URIs are the same
      * @param uri1 - The first URI to compare.
      * @param uri2 - The URI to check against.

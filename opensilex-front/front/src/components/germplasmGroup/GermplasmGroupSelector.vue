@@ -13,6 +13,7 @@
       @select="select"
       @deselect="deselect"
       @keyup.enter.native="onEnter"
+      @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
@@ -28,6 +29,7 @@ import SelectForm from "../common/forms/SelectForm.vue";
 @Component
 export default class GermplasmGroupSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  pageSize = 10;
 
   @PropSync("germplasmGroup")
   groupURI: string;
@@ -60,7 +62,7 @@ export default class GermplasmGroupSelector extends Vue {
 
   searchGermplasmGroups(name): Promise<HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>> {
     return this.$opensilex.getService<GermplasmService>("opensilex.GermplasmService")
-        .searchGermplasmGroups(name, undefined, ["name=asc"], 0, 10)
+        .searchGermplasmGroups(name, undefined, ["name=asc"], 0, this.pageSize)
         .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>) => {
           return http;
         });
@@ -76,6 +78,14 @@ export default class GermplasmGroupSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
   }
 }
 </script>

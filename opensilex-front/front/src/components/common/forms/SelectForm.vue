@@ -64,6 +64,7 @@
           @select="select"
           @input="clearIfNeeded"
           @close="close(field)"
+          @search-change="onSearchChange"
           :noResultsText="$t(noResultsText)"
           :searchPromptText="$t('component.common.search-prompt-text')"
           :disable-branch-nodes="disableBranchNodes"
@@ -72,7 +73,7 @@
           :limit="limit"
           @keyup.enter.native="onEnter"
           :key="treeselectRefreshKey"
-
+          ref="treeref"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}</div></slot>
@@ -83,7 +84,7 @@
           </template>
 
           <template v-if="resultCount < totalCount" v-slot:after-list>
-            <div class="refineSearchMessage">
+            <div class="refineSearchMessage" @click="refine($event)">
               <i class="more-results-info">{{
                 $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
               }}</i>
@@ -122,6 +123,7 @@
         :searchFilter.sync="searchModalFilter"
         :withAssociatedData="withAssociatedData"
         :experiment="experiment"
+        v-bind="modalComponentProps"
         :objects="objects"
         :devices="devices"
         @onClose="$emit('onClose')"
@@ -159,6 +161,7 @@ export default class SelectForm extends Vue {
   loading = false;
 
   @Ref("searchModal") readonly searchModal!: any;
+  @Ref("treeref") readonly  treeref!: any;
 
   @PropSync("selected")
   selection;
@@ -208,6 +211,9 @@ export default class SelectForm extends Vue {
 
   @Prop()
   modalComponent;
+
+  @Prop()
+  modalComponentProps: {[key: string]: any};
 
   @PropSync("filter")
   searchModalFilter;
@@ -641,6 +647,8 @@ export default class SelectForm extends Vue {
 
   totalCount = -1;
   resultCount = 0;
+  countCache = new Map<String, { total: number , result: number}>()
+
 
   created() {
     let self = this;
@@ -653,12 +661,18 @@ export default class SelectForm extends Vue {
         .searchMethod(query, 0, self.resultLimit)
         .then((http) => {
           let list = http.response.result;
-          self.totalCount = http.response.metadata.pagination.totalCount;
-          if (http.response.size && http.response.size != list.length) {
-            self.resultCount = http.response.size;
-          } else {
-            self.resultCount = list.length;
+
+          // at start if the research is empty field
+          // after, onSearchChange() replace lastSearchQuery by the value entered by user
+          if(self.lastSearchQuery === query){
+            self.totalCount = http.response.metadata.pagination.totalCount;
+            if (http.response.size && http.response.size != list.length) {
+              self.resultCount = http.response.size;
+            } else {
+              self.resultCount = list.length;
+            }
           }
+          self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
           
           let nodeList = [];
           list.forEach((item) => {
@@ -729,6 +743,29 @@ export default class SelectForm extends Vue {
     }
   }
 
+  lastSearchQuery = ".*";
+
+  onSearchChange(searchQuery) {
+    if (searchQuery == "") {
+      searchQuery = ".*";
+    }
+
+    if(this.countCache.has(searchQuery)){
+      this.resultCount = this.countCache.get(searchQuery).result;
+      this.totalCount = this.countCache.get(searchQuery).total;
+    }
+    this.lastSearchQuery = searchQuery;
+  }
+
+  openTreeselect() {
+    this.treeref.focusInput();
+    this.treeref.openMenu();
+    this.treeref.getInput().value = this.lastSearchQuery;
+  }
+
+  refine($event){
+    this.$emit("loadMoreItems")
+  }
 }
 </script>
 
@@ -802,19 +839,20 @@ i.more-results-info {
   font-weight: bold;
   background-color: #00A28C;
   color: #FFFFFF ;
+  cursor:pointer;
 }
 </style>
 
 <i18n>
 en:
   SelectorForm:
-    refineSearchMessage: "{0} / {1} results displayed, please refine your search..."
+    refineSearchMessage: "{0} / {1} results displayed, please refine your search or click HERE to display all results"
     showDetails : "Show details"
     hideDetails : "Hide details"
   
 fr:
   SelectorForm:
-    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche..."
+    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche ou de cliquer ICI pour afficher tous les résultats"
     showDetails : "Afficher les détails"
     hideDetails : "Masquer les détails"
 

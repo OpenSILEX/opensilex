@@ -89,6 +89,7 @@
                     :multiple="false"
                     :required="false"
                     :searchMethod="searchParents"
+                    :placeholder="$t('ExperimentScientificObjects.parent-placeholder')"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
@@ -515,10 +516,12 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
-         JSON.stringify(this.filters.criteriaDto),
+        undefined,
+        undefined,
+           JSON.stringify(this.filters.criteriaDto),
         orderBy,
-        page,
-        pageSize );
+         page,
+         pageSize );
 
     } else {
 
@@ -547,10 +550,12 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
-          undefined,
-          [],// orderBy?: ,
-        page, // page?: number,
-        pageSize // pageSize?: number
+        undefined,
+        undefined,
+        undefined,
+        [],
+          page,
+          pageSize
       )
       .then(http => {
         let nodeList = [];
@@ -681,11 +686,13 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.parent,
         undefined, 
         this.filters.factorLevels,
-        undefined, 
-        undefined, 
         undefined,
-          JSON.stringify(this.filters.criteriaDto),
-          undefined,
+        undefined,
+        undefined, 
+        undefined, 
+        undefined, 
+        JSON.stringify(this.filters.criteriaDto),
+        undefined,
         0,
         this.selectAllLimit)
       .then((http) => {
@@ -778,6 +785,7 @@ en:
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
     parent-label: Parent
+    parent-placeholder: Select a parent
     export-csv: Export CSV
     geometry-label: Geometry
     geometry-comment: Geospatial coordinates
@@ -795,6 +803,7 @@ fr:
     delete-scientific-object: Supprimer l'objet scientifique
     add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
+    parent-placeholder: Sélectionner un parent
     export-csv: Exporter en CSV
     geometry-label: Géometrie
     geometry-comment: Coordonnées géospatialisées

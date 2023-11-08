@@ -8,6 +8,7 @@
     :itemLoadingMethod="loadCharacteristics"
     :clearable="clearable"
     :placeholder="placeholder"
+    @loadMoreItems="loadMoreItems"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -28,6 +29,8 @@ import SelectForm from "../../common/forms/SelectForm.vue";
 @Component
 export default class CharacteristicSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  currentPage: number = 0;
+  pageSize = 10;
 
   @PropSync("characteristic")
   characteristicURI;
@@ -57,18 +60,26 @@ export default class CharacteristicSelector extends Vue {
       : "component.characteristic.form.selector.placeholder";
   }
 
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
+  }
+
   loadCharacteristics(characteristics): Promise<Array<CharacteristicGetDTO>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
       .getCharacteristicsByURIs(characteristics, this.sharedResourceInstance)
       .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
         return http.response.result;
       })
-      .catch(this.$opensilex.errorHandler); 
+      .catch(this.$opensilex.errorHandler)
   }
 
   searchCharacteristics(name): Promise<HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchCharacteristics(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
+    .searchCharacteristics(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
       return http;
     });

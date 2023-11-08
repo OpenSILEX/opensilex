@@ -113,14 +113,14 @@ export default class CSVInputFile extends Vue {
             }
           }
           //Check that some headers are present
-          if(this.headersPresent && !CSVInputFile.containsAll(objectToCheck, this.headersPresent)){
+          if(Array.isArray(this.headersPresent) && !CSVInputFile.containsAll(objectToCheck, this.headersPresent)){
             this.errors.push(
                 this.$i18n.t('CSVInputFile.headersMissingMessage') + ": [" +
                 this.headersPresent + "]"
             );
           }
           //Check the headers have exactly the same quantity and content as headersExactMatch
-          if (this.headersExactMatch != null && this.headersExactMatch.length > 0) {
+          if (Array.isArray(this.headersExactMatch)) {
             if (
               !CSVInputFile.equalArrays(
                 objectToCheck,

@@ -58,9 +58,17 @@
             ></opensilex-VariableCreate>
 
             <!-- Create form -->
-            <opensilex-AgroportalEntityCreate
-                ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-AgroportalEntityCreate>
+          <opensilex-AgroportalCreateForm
+            ref="entityForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+            ontologiesConfig="entityOntologies"
+            searchPlaceholder="AgroportalMethodCreate.name-placeholder"
+            createTitle="AgroportalEntityCreate.add"
+            editTitle="AgroportalEntityCreate.edit"
+            :createMethod="service.createEntity.bind(service)"
+            :updateMethod="service.updateEntity.bind(service)"
+          ></opensilex-AgroportalCreateForm>
 
             <opensilex-AgroportalEntityOfInterestCreate
                 ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"

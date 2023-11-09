@@ -604,6 +604,8 @@ import AgroportalCharacteristicCreate from './variables/agroportal/AgroportalCha
 components["opensilex-AgroportalCharacteristicCreate"] = AgroportalCharacteristicCreate;
 import AgroportalMethodCreate from './variables/agroportal/AgroportalMethodCreate.vue';
 components["opensilex-AgroportalMethodCreate"] = AgroportalMethodCreate;
+import AgroportalCreateForm from './variables/agroportal/AgroportalCreateForm.vue';
+components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
 
 import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
 components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;

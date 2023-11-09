@@ -71,6 +71,7 @@
                         :name="$t('component.skos.uri')"
                         :rules="{
                           required: true,
+                          //@todo pourquoi cette regex qui ne correspond pas à la définition d'URI ?
                           regex: /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
                         }"
                         v-slot="{ errors }"

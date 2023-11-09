@@ -63,24 +63,45 @@
             @onCreate="refresh($event.uri)"
             @onUpdate="refresh($event.uri)"
             ontologiesConfig="entityOntologies"
-            searchPlaceholder="AgroportalMethodCreate.name-placeholder"
-            createTitle="AgroportalEntityCreate.add"
-            editTitle="AgroportalEntityCreate.edit"
+            searchPlaceholder="VariableView.entity-placeholder"
+            createTitle="VariableView.add-entity"
+            editTitle="VariableView.edit-method"
             :createMethod="service.createEntity.bind(service)"
             :updateMethod="service.updateEntity.bind(service)"
           ></opensilex-AgroportalCreateForm>
-
-            <opensilex-AgroportalEntityOfInterestCreate
-                ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-AgroportalEntityOfInterestCreate>
-
-            <opensilex-AgroportalCharacteristicCreate
-                ref="characteristicForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-AgroportalCharacteristicCreate>
-
-            <opensilex-AgroportalMethodCreate
-                ref="methodForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-AgroportalMethodCreate>
+          <opensilex-AgroportalCreateForm
+            ref="interestEntityForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+            ontologiesConfig="entityOntologies"
+            searchPlaceholder="VariableView.entityOfInterest-placeholder"
+            createTitle="VariableView.add-entityOfInterest"
+            editTitle="VariableView.edit-method"
+            :createMethod="service.createInterestEntity.bind(service)"
+            :updateMethod="service.updateInterestEntity.bind(service)"
+          ></opensilex-AgroportalCreateForm>
+          <opensilex-AgroportalCreateForm
+            ref="characteristicForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+            ontologiesConfig="traitOntologies"
+            searchPlaceholder="VariableView.characteristic-placeholder"
+            createTitle="VariableView.add-characteristic"
+            editTitle="VariableView.edit-method"
+            :createMethod="service.createCharacteristic.bind(service)"
+            :updateMethod="service.updateCharacteristic.bind(service)"
+          ></opensilex-AgroportalCreateForm>
+          <opensilex-AgroportalCreateForm
+            ref="methodForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+            ontologiesConfig="methodOntologies"
+            searchPlaceholder="VariableView.method-placeholder"
+            createTitle="VariableView.add-method"
+            editTitle="VariableView.edit-method"
+            :createMethod="service.createMethod.bind(service)"
+            :updateMethod="service.updateMethod.bind(service)"
+          ></opensilex-AgroportalCreateForm>
 
             <opensilex-UnitCreate
                 ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
@@ -558,12 +579,16 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
+        entity-placeholder: Plant
         entityOfInterest: Entity of interest
         add-entityOfInterest: Add observation level
+        entityOfInterest-placeholder: Canopy
         characteristic: Characteristic
         add-characteristic: Add characteristic
+        characteristic-placeholder: Height
         method: Method
         add-method: Add method
+        method-placeholder: Image analysis
         unit: "Unit/Scale"
         add-unit: Add unit
         groupVariable: Group of variables
@@ -581,12 +606,16 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
+        entity-placeholder: Plante
         entityOfInterest: Entité d'intérêt
         add-entityOfInterest: Ajouter un niveau d'observation
+        entityOfInterest-placeholder: Canopée
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
+        characteristic-placeholder: Hauteur
         method: Méthode
         add-method: Ajouter une méthode
+        method-placeholder: Analyse d'image
         unit: "Unité/Echelle"
         add-unit: Ajouter une unité
         groupVariable: Groupe de variables

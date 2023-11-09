@@ -21,12 +21,12 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Prop, Ref} from "vue-property-decorator";
-import WizardForm from "../../../components/common/forms/WizardForm.vue";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import WizardForm from "../../../common/forms/WizardForm.vue";
+import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
 export interface BaseAgroportalCreationDTO {
@@ -58,8 +58,10 @@ export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> e
   @Prop()
   editTitle: string;
 
-  @Prop()
-  icon: string = "fa#vials";
+  @Prop({
+    default: "fa#vials"
+  })
+  icon: string;
 
   @Prop()
   createMethod: (form: T) => Promise<HttpResponse<OpenSilexResponse<string>>>;
@@ -74,24 +76,24 @@ export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> e
   get steps() {
     return [
       {
-        component: "opensilex-AgroportalEntityForm",
-        title: "AgroportalEntityForm.step1-title",
-        finish: "AgroportalEntityForm.import-and-save",
-        next: "AgroportalEntityForm.enrich",
+        component: "opensilex-AgroportalSearchFormPart",
+        title: "AgroportalSearchFormPart.step1-title",
+        finish: "AgroportalSearchFormPart.import-and-save",
+        next: "AgroportalSearchFormPart.enrich",
         props: {
           ontologiesConfig: this.ontologiesConfig,
           searchPlaceholder: this.searchPlaceholder
         }
       }, {
-        component: "opensilex-AgroportalEntityEnrichForm",
-        title: "AgroportalEntityForm.step2-title",
-        finish: "AgroportalEntityForm.save",
+        component: "opensilex-AgroportalEnrichFormPart",
+        title: "AgroportalSearchFormPart.step2-title",
+        finish: "AgroportalSearchFormPart.save",
         props: {
           namePlaceholder: this.searchPlaceholder
         }
       }, {
-        component: "opensilex-AgroportalEntityExternalReferencesForm",
-        title: "AgroportalEntityForm.step3-title",
+        component: "opensilex-AgroportalExternalReferencesFormPart",
+        title: "AgroportalSearchFormPart.step3-title",
         props: {
           ontologiesConfig: this.ontologiesConfig,
           searchPlaceholder: this.searchPlaceholder

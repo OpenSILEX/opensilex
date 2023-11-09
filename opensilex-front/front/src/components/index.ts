@@ -596,20 +596,20 @@ import EntitySelector from './variables/form/EntitySelector.vue';
 components["opensilex-EntitySelector"] = EntitySelector;
 
 // Agroportal
-import AgroportalCreateForm from './variables/agroportal/AgroportalCreateForm.vue';
+import AgroportalCreateForm from './variables/agroportal/wizard/AgroportalCreateForm.vue';
 components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
 
-import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
-components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;
-import AgroportalEntityEnrichForm from './variables/agroportal/AgroportalEntityEnrichForm.vue';
-components["opensilex-AgroportalEntityEnrichForm"] = AgroportalEntityEnrichForm;
-import AgroportalEntityExternalReferencesForm from './variables/agroportal/AgroportalEntityExternalReferencesForm.vue';
-components["opensilex-AgroportalEntityExternalReferencesForm"] = AgroportalEntityExternalReferencesForm;
-import AgroportalSearch from './variables/agroportal/AgroportalSearch.vue';
+import AgroportalSearchFormPart from './variables/agroportal/wizard/AgroportalSearchFormPart.vue';
+components["opensilex-AgroportalSearchFormPart"] = AgroportalSearchFormPart;
+import AgroportalEnrichFormPart from './variables/agroportal/wizard/AgroportalEnrichFormPart.vue';
+components["opensilex-AgroportalEnrichFormPart"] = AgroportalEnrichFormPart;
+import AgroportalExternalReferencesFormPart from './variables/agroportal/wizard/AgroportalExternalReferencesFormPart.vue';
+components["opensilex-AgroportalExternalReferencesFormPart"] = AgroportalExternalReferencesFormPart;
+import AgroportalSearch from './variables/agroportal/wizard/AgroportalSearch.vue';
 components["opensilex-AgroportalSearch"] = AgroportalSearch;
-import AgroportalResults from './variables/agroportal/AgroportalResults.vue';
+import AgroportalResults from './variables/agroportal/wizard/AgroportalResults.vue';
 components["opensilex-AgroportalResults"] = AgroportalResults;
-import AgroportalResultItem from './variables/agroportal/AgroportalResultItem.vue';
+import AgroportalResultItem from './variables/agroportal/wizard/AgroportalResultItem.vue';
 components["opensilex-AgroportalResultItem"] = AgroportalResultItem;
 
 

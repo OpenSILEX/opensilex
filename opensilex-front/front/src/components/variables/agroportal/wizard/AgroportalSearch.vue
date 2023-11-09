@@ -66,7 +66,7 @@
 
 import {Component, Prop, PropSync, Watch} from "vue-property-decorator";
 import Vue from 'vue';
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";

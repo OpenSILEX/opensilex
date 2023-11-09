@@ -11,7 +11,7 @@
                   label-class="font-weight-bold pt-0"
                   class="mb-0"
               >
-                <template v-slot:label>{{ $t('AgroportalEntityForm.search-for-ontology-term') }}</template>
+                <template v-slot:label>{{ $t('AgroportalSearchFormPart.search-for-ontology-term') }}</template>
               </b-form-group>
 
               <!-- Search bar -->
@@ -48,7 +48,7 @@
                 <template v-slot:label>
                   <b-row align-h="left">
                     <b-col xs="6">
-                      {{$t("AgroportalEntityForm.selected-term")}}
+                      {{$t("AgroportalSearchFormPart.selected-term")}}
                     </b-col>
                     <b-col xs="2" v-if="!!selectedEntity">
                       <opensilex-Button
@@ -70,7 +70,7 @@
               >
               </opensilex-AgroportalResultItem>
               <div v-else>
-                {{ $t('AgroportalEntityForm.no-selected-item') }}
+                {{ $t('AgroportalSearchFormPart.no-selected-item') }}
               </div>
 
             </b-col>
@@ -82,13 +82,13 @@
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { EntityCreationDTO } from "opensilex-core/index";
+import { EntityCreationDTO } from "opensilex-core";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResults from "./AgroportalResults.vue";
 
 
 @Component
-export default class AgroportalEntityForm extends Vue {
+export default class AgroportalSearchFormPart extends Vue {
     $opensilex: any;
 
     uriGenerated = true;
@@ -160,7 +160,7 @@ export default class AgroportalEntityForm extends Vue {
 
 <i18n>
 en:
-  AgroportalEntityForm:
+  AgroportalSearchFormPart:
     step1-title: Search
     step2-title: Enrich
     step3-title: Mapping
@@ -172,7 +172,7 @@ en:
     selected-term: Selected term
     no-selected-item: No selected term
 fr:
-  AgroportalEntityForm:
+  AgroportalSearchFormPart:
     step1-title: Chercher
     step2-title: Enrichir
     step3-title: Mapper

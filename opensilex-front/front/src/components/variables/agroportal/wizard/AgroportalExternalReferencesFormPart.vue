@@ -13,7 +13,7 @@
               >
                 <template v-slot:label>
                   <b-row align-h="left">
-                    {{$t('AgroportalEntityExternalReferencesForm.search-mapping-title')}}
+                    {{$t('AgroportalExternalReferencesFormPart.search-mapping-title')}}
                   </b-row>
                 </template>
 
@@ -49,7 +49,7 @@
                       align-h="left"
                       id="manual-mapping"
                   >
-                    {{$t('AgroportalEntityExternalReferencesForm.map-manually-title')}}
+                    {{$t('AgroportalExternalReferencesFormPart.map-manually-title')}}
                   </b-row>
                 </template>
 
@@ -63,8 +63,8 @@
                   <b-form-group>
                     <div class="helperAndBlueStar"> <!-- petite triche pour faire apparaitre l'étoile en bleu -->
                       <opensilex-FormInputLabelHelper
-                          label="AgroportalEntityExternalReferencesForm.manual-mapping"
-                          helpMessage="AgroportalEntityExternalReferencesForm.ontologies-help"
+                          label="AgroportalExternalReferencesFormPart.manual-mapping"
+                          helpMessage="AgroportalExternalReferencesFormPart.ontologies-help"
                       ></opensilex-FormInputLabelHelper>
                     </div>
                     <ValidationProvider
@@ -124,7 +124,7 @@
               >
                 <template v-slot:label>
                   <b-row align-h="left">
-                    {{$t("AgroportalEntityForm.selected-term")}}
+                    {{$t("AgroportalSearchFormPart.selected-term")}}
                   </b-row>
                 </template>
 
@@ -197,16 +197,16 @@
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {EntityCreationDTO} from "opensilex-core/index";
+import {EntityCreationDTO} from "opensilex-core";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import {Skos} from "../../../models/Skos";
+import {Skos} from "../../../../models/Skos";
 import AgroportalResults from "./AgroportalResults.vue";
 
 
 @Component
-export default class AgroportalEntityExternalReferencesForm extends Vue {
+export default class AgroportalExternalReferencesFormPart extends Vue {
 
   $opensilex: OpenSilexVuePlugin;
   $store: any;
@@ -478,7 +478,7 @@ ul {
 
 <i18n>
 en:
-  AgroportalEntityExternalReferencesForm:
+  AgroportalExternalReferencesFormPart:
     uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
     ontologies-help: "You can find URIs in this locations:
       <li>
@@ -489,7 +489,7 @@ en:
     map-manually-title: ...Or map manually
     manual-mapping: "URI"
 fr:
-  AgroportalEntityExternalReferencesForm:
+  AgroportalExternalReferencesFormPart:
     uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
     ontologies-help: "Vous pouvez chercher des URIs via ces portails:
       <li>

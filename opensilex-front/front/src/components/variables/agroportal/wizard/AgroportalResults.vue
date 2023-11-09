@@ -59,7 +59,7 @@
 
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from 'vue';
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";

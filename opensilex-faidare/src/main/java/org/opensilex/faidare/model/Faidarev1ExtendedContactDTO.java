@@ -2,6 +2,8 @@ package org.opensilex.faidare.model;
 
 import org.opensilex.security.person.dal.PersonModel;
 
+import java.util.Objects;
+
 public class Faidarev1ExtendedContactDTO {
     private String name;
     private String type;
@@ -66,10 +68,10 @@ public class Faidarev1ExtendedContactDTO {
 
     public static Faidarev1ExtendedContactDTO fromModel(PersonModel personModel){
         Faidarev1ExtendedContactDTO dto = new Faidarev1ExtendedContactDTO();
-        dto.setContactDbId(personModel.getUri().toString())
-                .setEmail(personModel.getEmail().toString())
+        dto.setContactDbId(Objects.toString(personModel.getUri(), null))
+                .setEmail(Objects.toString(personModel.getEmail(), null))
                 .setName(personModel.getFirstName() + " " + personModel.getLastName())
-                .setOrcid(personModel.getOrcid().toString())
+                .setOrcid(Objects.toString(personModel.getOrcid(), null))
                 .setInstituteName(personModel.getAffiliation());
         return dto;
     }

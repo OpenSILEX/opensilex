@@ -11,7 +11,9 @@ import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +22,7 @@ import java.util.stream.Stream;
  */
 public class Faidarev1TrialDTO {
     private Boolean active;
-    private HashMap<String, Object> additionalInfo;
+    private Faidarev1TrialAdditionalInfoDTO additionalInfo;
     private String documentationURL;
     private String endDate;
     private String startDate;
@@ -42,11 +44,11 @@ public class Faidarev1TrialDTO {
         return this;
     }
 
-    public HashMap<String, Object> getAdditionalInfo() {
+    public Faidarev1TrialAdditionalInfoDTO getAdditionalInfo() {
         return additionalInfo;
     }
 
-    public Faidarev1TrialDTO setAdditionalInfo(HashMap<String, Object> additionalInfo) {
+    public Faidarev1TrialDTO setAdditionalInfo(Faidarev1TrialAdditionalInfoDTO additionalInfo) {
         this.additionalInfo = additionalInfo;
         return this;
     }
@@ -175,13 +177,17 @@ public class Faidarev1TrialDTO {
                                 .collect(Collectors.toList())
                 )
                 .setAdditionalInfo(
-                        new HashMap<String, Object>() {{
-                            put("shortName", projectModel.getShortname());
-                            put("description", projectModel.getDescription());
-                            put("financialFunding", projectModel.getFinancialFunding());
-                            put("relatedProjects", projectModel.getRelatedProjects());
-                            put("coordinators", projectModel.getCoordinators());
-                        }}
+                        new Faidarev1TrialAdditionalInfoDTO(
+                                projectModel.getShortname(),
+                                projectModel.getDescription(),
+                                projectModel.getFinancialFunding(),
+                                projectModel.getRelatedProjects()
+                                        .stream().map(projectModel1 -> projectModel1.getUri().toString())
+                                        .collect(Collectors.toList()),
+                                projectModel.getCoordinators()
+                                        .stream().map(Faidarev1ExtendedContactDTO::fromModel)
+                                        .collect(Collectors.toList())
+                        )
                 );
 
         return dto;

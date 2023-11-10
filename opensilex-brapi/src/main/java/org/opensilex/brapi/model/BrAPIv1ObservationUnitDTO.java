@@ -336,8 +336,10 @@ public class BrAPIv1ObservationUnitDTO {
 
         Set<SPARQLModelRelation> germplasms = model.getRelations(Oeso.hasGermplasm).collect(Collectors.toSet());
         if (germplasms.size() == 1){
-            observationUnit.setGermplasmDbId(germplasms.toString());
-            observationUnit.setGermplasmName(facilityDAO.get(URI.create(germplasms.toString()), currentUser).getName());
+            for (SPARQLModelRelation germplasm: germplasms) {
+                observationUnit.setGermplasmDbId(germplasm.toString());
+                observationUnit.setGermplasmName(facilityDAO.get(URI.create(germplasm.toString()), currentUser).getName());
+            }
         }
 
         ListWithPagination<DataModel> objectData = dataDAO.search(

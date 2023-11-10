@@ -49,6 +49,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation 1.3</a>
@@ -74,6 +75,7 @@ public class StudiesAPI extends BrapiCall {
     protected Response standardGetStudies(URI studyDbId, String active, String sortBy, String sortOrder, int page, int pageSize) throws Exception {
 
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ArrayList<OrderBy> orderByList = new ArrayList<>();
 
@@ -101,8 +103,15 @@ public class StudiesAPI extends BrapiCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-        if (studyDbId != null && xpDao.get(studyDbId, currentUser) == null) {
-            throw new NotFoundURIException(studyDbId);
+        ListWithPagination<ExperimentModel> resultList;
+
+        if (studyDbId != null) {
+            ExperimentModel expeModel = xpDao.get(studyDbId, currentUser);
+            if (Objects.nonNull(expeModel)){
+                resultList = new ListWithPagination<>(Collections.singletonList(expeModel));
+            } else {
+                throw new NotFoundURIException(studyDbId);
+            }
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
                     .setEnded(isEnded)
@@ -111,10 +120,16 @@ public class StudiesAPI extends BrapiCall {
                     .setPage(page)
                     .setPageSize(pageSize);
 
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
-            ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
-            return new BrAPIv1StudyListResponse(resultDTOList).getResponse();
+            resultList = xpDao.search(filter);
         }
+        ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, experimentModel -> {
+            try {
+                return BrAPIv1StudyDTO.fromModel(experimentModel, germplasmDAO, currentUser);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return new BrAPIv1StudyListResponse(resultDTOList).getResponse();
     }
 
 
@@ -187,9 +202,10 @@ public class StudiesAPI extends BrapiCall {
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         if (model != null) {
-            return new BrAPIv1SingleStudyResponse(BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser)).getResponse();
+            return new BrAPIv1SingleStudyResponse(BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser, germplasmDAO)).getResponse();
         } else {
             throw new NotFoundURIException(studyDbId);
         }

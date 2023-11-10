@@ -14,6 +14,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -77,7 +78,10 @@ public class GermplasmAPI extends BrapiCall {
                 page,
                 pageSize
         );
-        
+        if (resultList.getList().isEmpty()){
+            throw new NotFoundURIException("No accession could be found with this URI ", uri);
+        }
+
         // Convert paginated list to DTO
         ListWithPagination<BrAPIv1GermplasmDTO> resultDTOList = resultList.convert(
                 BrAPIv1GermplasmDTO.class,

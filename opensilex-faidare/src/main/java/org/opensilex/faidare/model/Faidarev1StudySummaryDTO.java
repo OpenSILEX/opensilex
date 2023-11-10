@@ -1,7 +1,5 @@
 package org.opensilex.faidare.model;
 
-import org.opensilex.core.experiment.dal.ExperimentModel;
-
 public class Faidarev1StudySummaryDTO {
     private String locationDbId;
     private String studyDbId;
@@ -42,12 +40,5 @@ public class Faidarev1StudySummaryDTO {
     public Faidarev1StudySummaryDTO setStudyName(String studyName) {
         this.studyName = studyName;
         return this;
-    }
-
-    public static Faidarev1StudySummaryDTO fromModel(ExperimentModel experimentModel){
-        Faidarev1StudySummaryDTO dto = new Faidarev1StudySummaryDTO();
-        dto.setStudyDbId(experimentModel.getUri().toString())
-                .setStudyName(experimentModel.getName());
-        return dto;
     }
 }

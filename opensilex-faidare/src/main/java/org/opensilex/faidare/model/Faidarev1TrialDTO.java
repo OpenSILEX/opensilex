@@ -6,16 +6,7 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.account.dal.AccountModel;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Gabriel Besombes
@@ -150,46 +141,5 @@ public class Faidarev1TrialDTO {
     public Faidarev1TrialDTO setProgramName(String programName) {
         this.programName = programName;
         return this;
-    }
-
-    public static Faidarev1TrialDTO fromModel(ProjectModel projectModel, ExperimentDAO experimentDAO, AccountModel accountModel) throws Exception {
-        Faidarev1TrialDTO dto = new Faidarev1TrialDTO();
-        dto.setDocumentationURL(Objects.toString(projectModel.getHomePage(), null))
-                .setEndDate(Objects.toString(projectModel.getEndDate(), null))
-                .setStartDate(Objects.toString(projectModel.getStartDate(), null))
-                .setTrialName(Objects.toString(projectModel.getName(), null))
-                .setTrialDbId(Objects.toString(projectModel.getUri(), null))
-                .setTrialType(Objects.toString(projectModel.getObjective(), null))
-                .setStudies(
-                        experimentDAO.search(
-                                        new ExperimentSearchFilter().setUser(accountModel)
-                                                .setProjects(Collections.singletonList(projectModel.getUri()))
-                                )
-                                .getList()
-                                .stream().map(Faidarev1StudySummaryDTO::fromModel).collect(Collectors.toList())
-                )
-                .setContacts(
-                        Stream.concat(
-                                        projectModel.getAdministrativeContacts()
-                                                .stream().map(Faidarev1ExtendedContactDTO::fromModel),
-                                        projectModel.getScientificContacts()
-                                                .stream().map(Faidarev1ExtendedContactDTO::fromModel))
-                                .collect(Collectors.toList())
-                )
-                .setAdditionalInfo(
-                        new Faidarev1TrialAdditionalInfoDTO(
-                                projectModel.getShortname(),
-                                projectModel.getDescription(),
-                                projectModel.getFinancialFunding(),
-                                projectModel.getRelatedProjects()
-                                        .stream().map(projectModel1 -> projectModel1.getUri().toString())
-                                        .collect(Collectors.toList()),
-                                projectModel.getCoordinators()
-                                        .stream().map(Faidarev1ExtendedContactDTO::fromModel)
-                                        .collect(Collectors.toList())
-                        )
-                );
-
-        return dto;
     }
 }

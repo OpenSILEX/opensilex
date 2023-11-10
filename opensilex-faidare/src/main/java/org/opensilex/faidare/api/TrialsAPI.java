@@ -10,17 +10,13 @@ import io.swagger.annotations.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.faidare.model.Faidarev1ObservationVariableDTO;
+import org.opensilex.faidare.builder.Faidarev1TrialDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1TrialDTO;
-import org.opensilex.faidare.responses.Faidarev1ObservationVariableListResponse;
 import org.opensilex.faidare.responses.Faidarev1TrialListResponse;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -30,8 +26,6 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.Collections;
 
 /**
  * @author Gabriel Besombes
@@ -72,11 +66,12 @@ public class TrialsAPI extends FaidareCall {
         );
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
+        Faidarev1TrialDTOBuilder builder = new Faidarev1TrialDTOBuilder(experimentDAO);
         ListWithPagination<Faidarev1TrialDTO> resultDTOList = projects.convert(
                 Faidarev1TrialDTO.class,
                 projectModel -> {
                     try {
-                        return Faidarev1TrialDTO.fromModel(projectModel, experimentDAO, currentUser);
+                        return builder.fromModel(projectModel, currentUser);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

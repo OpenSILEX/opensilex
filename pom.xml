@@ -49,6 +49,9 @@
 
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
+
+        <!-- FAIDARE module-->
+        <module>opensilex-faidare</module>
         
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
@@ -133,6 +136,13 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- FAIDARE dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-faidare</artifactId>
             <version>${revision}</version>
         </dependency>
         

@@ -598,6 +598,10 @@ components["opensilex-EntitySelector"] = EntitySelector;
 // Agroportal
 import AgroportalCreateForm from './variables/agroportal/wizard/AgroportalCreateForm.vue';
 components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
+import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
+components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;
+
+
 
 import AgroportalSearchFormPart from './variables/agroportal/wizard/AgroportalSearchFormPart.vue';
 components["opensilex-AgroportalSearchFormPart"] = AgroportalSearchFormPart;

@@ -8,22 +8,20 @@ package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.faidare.responses.*;
-import org.opensilex.faidare.model.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.faidare.builder.Faidarev1StudyDTOBuilder;
+import org.opensilex.faidare.model.Faidarev1StudyDTO;
+import org.opensilex.faidare.responses.Faidarev1StudyListResponse;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -48,9 +46,6 @@ public class StudiesAPI extends FaidareCall {
 
     @Inject
     private MongoDBService nosql;
-
-    @Inject
-    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -116,14 +111,13 @@ public class StudiesAPI extends FaidareCall {
 
             OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
             FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+            Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
             ListWithPagination<Faidarev1StudyDTO> resultDTOList = resultList.convert(
                     Faidarev1StudyDTO.class,
                     experimentModel -> {
                         try {
-                            return Faidarev1StudyDTO.fromModel(
+                            return studyDTOBuilder.fromModel(
                                     experimentModel,
-                                    facilityDAO,
-                                    organizationDAO,
                                     currentUser);
                         } catch (Exception e) {
                             throw new RuntimeException(e);

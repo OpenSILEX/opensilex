@@ -13,13 +13,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Faidarev1TrialDTOBuilder {
-    private ExperimentDAO experimentDAO;
+    private final ExperimentDAO experimentDAO;
 
     public Faidarev1TrialDTOBuilder(ExperimentDAO experimentDAO) {
         this.experimentDAO = experimentDAO;
     }
 
     public Faidarev1TrialDTO fromModel(ProjectModel projectModel, AccountModel accountModel) throws Exception {
+        Faidarev1StudySummaryDTOBuilder studySummaryDTOBuilder = new Faidarev1StudySummaryDTOBuilder();
+        Faidarev1ExtendedContactDTOBuilder extendedContactDTOBuilder = new Faidarev1ExtendedContactDTOBuilder();
         Faidarev1TrialDTO dto = new Faidarev1TrialDTO();
         dto.setDocumentationURL(Objects.toString(projectModel.getHomePage(), null))
                 .setEndDate(Objects.toString(projectModel.getEndDate(), null))
@@ -33,14 +35,14 @@ public class Faidarev1TrialDTOBuilder {
                                                 .setProjects(Collections.singletonList(projectModel.getUri()))
                                 )
                                 .getList()
-                                .stream().map(Faidarev1StudySummaryDTOBuilder::fromModel).collect(Collectors.toList())
+                                .stream().map(studySummaryDTOBuilder::fromModel).collect(Collectors.toList())
                 )
                 .setContacts(
                         Stream.concat(
                                         projectModel.getAdministrativeContacts()
-                                                .stream().map(Faidarev1ExtendedContactDTOBuilder::fromModel),
+                                                .stream().map(extendedContactDTOBuilder::fromModel),
                                         projectModel.getScientificContacts()
-                                                .stream().map(Faidarev1ExtendedContactDTOBuilder::fromModel))
+                                                .stream().map(extendedContactDTOBuilder::fromModel))
                                 .collect(Collectors.toList())
                 )
                 .setAdditionalInfo(
@@ -52,7 +54,7 @@ public class Faidarev1TrialDTOBuilder {
                                         .stream().map(projectModel1 -> projectModel1.getUri().toString())
                                         .collect(Collectors.toList()),
                                 projectModel.getCoordinators()
-                                        .stream().map(Faidarev1ExtendedContactDTOBuilder::fromModel)
+                                        .stream().map(extendedContactDTOBuilder::fromModel)
                                         .collect(Collectors.toList())
                         )
                 );

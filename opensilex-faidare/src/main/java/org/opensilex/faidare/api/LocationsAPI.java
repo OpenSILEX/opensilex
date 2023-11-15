@@ -8,6 +8,7 @@ import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.faidare.builder.Faidarev1LocationDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1LocationDTO;
 import org.opensilex.faidare.responses.Faidarev1LocationListResponse;
 import org.opensilex.fs.service.FileStorageService;
@@ -36,8 +37,6 @@ public class LocationsAPI extends FaidareCall {
     private SPARQLService sparql;
     @Inject
     private MongoDBService nosql;
-    @Inject
-    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -59,11 +58,12 @@ public class LocationsAPI extends FaidareCall {
         FacilitySearchFilter filter = new FacilitySearchFilter().setUser(currentUser);
         ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
 
+        Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityDAO, organizationDAO);
         ListWithPagination<Faidarev1LocationDTO> resultDTOList = facilities.convert(
                 Faidarev1LocationDTO.class,
                 facilityModel -> {
                     try {
-                        return Faidarev1LocationDTO.fromModel(facilityModel, facilityDAO, organizationDAO, currentUser);
+                        return locationDTOBuilder.fromModel(facilityModel, currentUser);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

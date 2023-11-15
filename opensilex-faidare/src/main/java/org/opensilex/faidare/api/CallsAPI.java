@@ -7,8 +7,8 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.faidare.responses.Faidarev1CallListResponse;
 import org.opensilex.faidare.model.Faidarev1CallDTO;
+import org.opensilex.faidare.responses.Faidarev1CallListResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;

@@ -7,7 +7,6 @@
 package org.opensilex.faidare.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.opensilex.core.variable.dal.MethodModel;
 
 /**
  * @author Gabriel Besombes
@@ -21,73 +20,57 @@ public class Faidarev1MethodDTO {
     private String methodName;
     private String reference;
 
-    public String getfaidareClass() {
+    public String getFaidareClass() {
         return faidareClass;
     }
 
-    public void setfaidareClass(String faidareClass) {
+    public Faidarev1MethodDTO setFaidareClass(String faidareClass) {
         this.faidareClass = faidareClass;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Faidarev1MethodDTO setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getFormula() {
         return formula;
     }
 
-    public void setFormula(String formula) {
+    public Faidarev1MethodDTO setFormula(String formula) {
         this.formula = formula;
+        return this;
     }
 
     public String getMethodDbId() {
         return methodDbId;
     }
 
-    public void setMethodDbId(String methodDbId) {
+    public Faidarev1MethodDTO setMethodDbId(String methodDbId) {
         this.methodDbId = methodDbId;
+        return this;
     }
 
     public String getMethodName() {
         return methodName;
     }
 
-    public void setMethodName(String methodName) {
+    public Faidarev1MethodDTO setMethodName(String methodName) {
         this.methodName = methodName;
+        return this;
     }
 
     public String getReference() {
         return reference;
     }
 
-    public void setReference(String reference) {
+    public Faidarev1MethodDTO setReference(String reference) {
         this.reference = reference;
-    }    
-
-    public Faidarev1MethodDTO extractFromModel(MethodModel methodModel){
-
-        if (methodModel.getUri() != null){
-            this.setMethodDbId(methodModel.getUri().toString());
-        }
-
-        if (methodModel.getName() != null){
-            this.setMethodName(methodModel.getName());
-        }
-
-        if (methodModel.getDescription() != null){
-            this.setDescription(methodModel.getDescription());
-        }
-
         return this;
-    }
-
-    public static Faidarev1MethodDTO fromModel(MethodModel methodModel){
-        Faidarev1MethodDTO method = new Faidarev1MethodDTO();
-        return method.extractFromModel(methodModel);
     }
 }

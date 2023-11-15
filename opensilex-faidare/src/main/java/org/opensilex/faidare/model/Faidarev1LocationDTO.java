@@ -7,19 +7,7 @@
 package org.opensilex.faidare.model;
 
 
-import com.mongodb.client.model.geojson.Geometry;
-import org.geotools.geojson.geom.GeometryJSON;
-import org.locationtech.jts.geom.Point;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.organisation.dal.site.SiteAddressModel;
-import org.opensilex.security.account.dal.AccountModel;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 /**
  * @author Gabriel Besombes
@@ -43,177 +31,116 @@ public class Faidarev1LocationDTO {
         return abbreviation;
     }
 
-    public void setAbbreviation(String abbreviation) {
+    public Faidarev1LocationDTO setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
+        return this;
     }
 
     public Map<String, String> getAdditionalInfo() {
         return additionalInfo;
     }
 
-    public void setAdditionalInfo(Map<String, String> additionalInfo) {
+    public Faidarev1LocationDTO setAdditionalInfo(Map<String, String> additionalInfo) {
         this.additionalInfo = additionalInfo;
+        return this;
     }
 
     public Double getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(Double altitude) {
+    public Faidarev1LocationDTO setAltitude(Double altitude) {
         this.altitude = altitude;
+        return this;
     }
 
     public String getCountryCode() {
         return countryCode;
     }
 
-    public void setCountryCode(String countryCode) {
+    public Faidarev1LocationDTO setCountryCode(String countryCode) {
         this.countryCode = countryCode;
+        return this;
     }
 
     public String getCountryName() {
         return countryName;
     }
 
-    public void setCountryName(String countryName) {
+    public Faidarev1LocationDTO setCountryName(String countryName) {
         this.countryName = countryName;
+        return this;
     }
 
     public String getDocumentationURL() {
         return documentationURL;
     }
 
-    public void setDocumentationURL(String documentationURL) {
+    public Faidarev1LocationDTO setDocumentationURL(String documentationURL) {
         this.documentationURL = documentationURL;
+        return this;
     }
 
     public String getInstituteAddress() {
         return instituteAddress;
     }
 
-    public void setInstituteAddress(String instituteAddress) {
+    public Faidarev1LocationDTO setInstituteAddress(String instituteAddress) {
         this.instituteAddress = instituteAddress;
+        return this;
     }
 
     public String getInstituteName() {
         return instituteName;
     }
 
-    public void setInstituteName(String instituteName) {
+    public Faidarev1LocationDTO setInstituteName(String instituteName) {
         this.instituteName = instituteName;
+        return this;
     }
 
     public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Double latitude) {
+    public Faidarev1LocationDTO setLatitude(Double latitude) {
         this.latitude = latitude;
+        return this;
     }
 
     public String getLocationDbId() {
         return locationDbId;
     }
 
-    public void setLocationDbId(String locationDbId) {
+    public Faidarev1LocationDTO setLocationDbId(String locationDbId) {
         this.locationDbId = locationDbId;
+        return this;
     }
 
     public String getLocationName() {
         return locationName;
     }
 
-    public void setLocationName(String locationName) {
+    public Faidarev1LocationDTO setLocationName(String locationName) {
         this.locationName = locationName;
+        return this;
     }
 
     public String getLocationType() {
         return locationType;
     }
 
-    public void setLocationType(String locationType) {
+    public Faidarev1LocationDTO setLocationType(String locationType) {
         this.locationType = locationType;
+        return this;
     }
 
     public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Double longitude) {
+    public Faidarev1LocationDTO setLongitude(Double longitude) {
         this.longitude = longitude;
-    }
-
-    public Faidarev1LocationDTO extractFromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
-        this.setLocationDbId(model.getUri().toString());
-
-        this.setLocationName(model.getName());
-        this.setLocationType(model.getType().toString());
-
-        if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){
-            Geometry facilityGeometry = facilityDAO.getFacilityGeospatialModel(model.getUri()).getGeometry();
-
-            org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeometryJSON().read(facilityGeometry.toJson());
-
-            if (!facilityJtsGeometry.isEmpty()){
-
-                Point centroid = facilityJtsGeometry.getCentroid();
-                this.setLongitude(centroid.getX());
-                this.setLatitude(centroid.getY());
-            }
-        }
-
-        // Try to get a Site from the hierarchy of Organisations
-        // Initialize with the Organisations hosted by the facility
-        Set<OrganizationModel> directParentOrganizations = new HashSet<>(organizationDAO.search(new OrganizationSearchFilter()
-                .setFacilityURI(model.getUri())
-                .setUser(currentAccount)));
-        while (!directParentOrganizations.isEmpty()){
-            List<OrganizationModel> parentsWithOneAddress = directParentOrganizations.stream().map(parentOrg -> {
-                OrganizationModel parentModel;
-                try {
-                    parentModel = organizationDAO.get(parentOrg.getUri(), currentAccount);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                if (parentModel.getSites().size() == 1) {
-                    return parentModel;
-                } else {
-                    return null;
-                }
-            }).filter(Objects::nonNull).collect(Collectors.toList());
-            if (parentsWithOneAddress.size()==1) { // If exactly one organisation on this level with exactly one site
-                OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
-                SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
-                this.setInstituteAddress(parentAddress.toString());
-                this.setInstituteName(institute.getName());
-                String countryName = parentAddress.getCountryName();
-                this.setCountryName(countryName);
-                this.setCountryCode(new Locale(countryName).getISO3Country());
-                directParentOrganizations.remove(parentsWithOneAddress.get(0));
-            } else if (parentsWithOneAddress.size()>1) { // If more than one, go an Organisation level above
-                Set<OrganizationModel> newParents = new HashSet<>();
-                for (OrganizationModel childOrga : directParentOrganizations) {
-                    newParents.addAll(organizationDAO.search(new OrganizationSearchFilter()
-                            .setDirectChildURI(childOrga.getUri())
-                            .setUser(currentAccount)));
-                }
-                directParentOrganizations = newParents;
-            } else {
-                directParentOrganizations = Collections.emptySet();
-            }
-        }
-
-        if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
-            String countryName = model.getAddress().getCountryName();
-            this.setCountryName(countryName);
-            this.setCountryCode(new Locale(countryName).getISO3Country());
-        }
-
         return this;
-    }
-
-    public static Faidarev1LocationDTO fromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
-        Faidarev1LocationDTO location = new Faidarev1LocationDTO();
-        return location.extractFromModel(model, facilityDAO, organizationDAO, currentAccount);
     }
 }

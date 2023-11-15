@@ -7,10 +7,11 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
-import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.faidare.builder.Faidarev1GermplasmDTOBuilder;
+import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
+import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
@@ -78,11 +79,12 @@ public class GermplasmAPI extends FaidareCall {
         );
         
         // Convert paginated list to DTO
+        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
         ListWithPagination<Faidarev1GermplasmDTO> resultDTOList = resultList.convert(
                 Faidarev1GermplasmDTO.class,
                 germplasmModel -> {
                     try {
-                        return Faidarev1GermplasmDTO.fromModel(germplasmModel, germplasmDAO, currentUser);
+                        return germplasmDTOBuilder.fromModel(germplasmModel, currentUser);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

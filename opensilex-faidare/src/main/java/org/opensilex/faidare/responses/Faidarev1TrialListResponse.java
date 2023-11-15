@@ -1,7 +1,6 @@
 package org.opensilex.faidare.responses;
 
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.faidare.model.Faidarev1ObservationVariableDTO;
 import org.opensilex.faidare.model.Faidarev1TrialDTO;
 import org.opensilex.utils.ListWithPagination;
 

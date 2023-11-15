@@ -19,32 +19,35 @@ public class Faidarev1DataLinkDTO {
         return dataLinkName;
     }
 
-    public void setDataLinkName(String dataLinkName) {
+    public Faidarev1DataLinkDTO setDataLinkName(String dataLinkName) {
         this.dataLinkName = dataLinkName;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Faidarev1DataLinkDTO setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public Faidarev1DataLinkDTO setType(String type) {
         this.type = type;
+        return this;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public Faidarev1DataLinkDTO setUrl(String url) {
         this.url = url;
+        return this;
     }
-    
 }

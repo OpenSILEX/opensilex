@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 /**
@@ -29,87 +28,98 @@ public class Faidarev1TraitDTO {
         return traitDbId;
     }
 
-    public void setTraitDbId(String traitDbId) {
+    public Faidarev1TraitDTO setTraitDbId(String traitDbId) {
         this.traitDbId = traitDbId;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Faidarev1TraitDTO setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Faidarev1TraitDTO setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public List<String> getSynonyms() {
         return synonyms;
     }
 
-    public void setSynonyms(List<String> synonyms) {
+    public Faidarev1TraitDTO setSynonyms(List<String> synonyms) {
         this.synonyms = synonyms;
+        return this;
     }
 
     public String getMainAbbreviation() {
         return mainAbbreviation;
     }
 
-    public void setMainAbbreviation(String mainAbbreviation) {
+    public Faidarev1TraitDTO setMainAbbreviation(String mainAbbreviation) {
         this.mainAbbreviation = mainAbbreviation;
+        return this;
     }
 
     public List<String> getAlternativeAbbreviations() {
         return alternativeAbbreviations;
     }
 
-    public void setAlternativeAbbreviations(List<String> alternativeAbbreviations) {
+    public Faidarev1TraitDTO setAlternativeAbbreviations(List<String> alternativeAbbreviations) {
         this.alternativeAbbreviations = alternativeAbbreviations;
+        return this;
     }
 
     public String getEntity() {
         return entity;
     }
 
-    public void setEntity(String entity) {
+    public Faidarev1TraitDTO setEntity(String entity) {
         this.entity = entity;
+        return this;
     }
 
     public String getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(String attribute) {
+    public Faidarev1TraitDTO setAttribute(String attribute) {
         this.attribute = attribute;
+        return this;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public Faidarev1TraitDTO setStatus(String status) {
         this.status = status;
+        return this;
     }
 
     public String getXref() {
         return xref;
     }
 
-    public void setXref(String xref) {
+    public Faidarev1TraitDTO setXref(String xref) {
         this.xref = xref;
+        return this;
     }
 
     public String getTraitClass() {
         return traitClass;
     }
 
-    public void setTraitClass(String traitClass) {
+    public Faidarev1TraitDTO setTraitClass(String traitClass) {
         this.traitClass = traitClass;
+        return this;
     }
 }

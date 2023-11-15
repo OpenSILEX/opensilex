@@ -7,10 +7,11 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.faidare.model.Faidarev1ObservationVariableDTO;
-import org.opensilex.faidare.responses.Faidarev1ObservationVariableListResponse;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.faidare.builder.Faidarev1ObservationVariableDTOBuilder;
+import org.opensilex.faidare.model.Faidarev1ObservationVariableDTO;
+import org.opensilex.faidare.responses.Faidarev1ObservationVariableListResponse;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -74,7 +75,11 @@ public class VariablesAPI extends FaidareCall {
             variables = varDAO.search(null, null, page, pageSize,currentUser.getLanguage());
         }
 
-        ListWithPagination<Faidarev1ObservationVariableDTO> resultDTOList = variables.convert(Faidarev1ObservationVariableDTO.class, Faidarev1ObservationVariableDTO::fromModel);
+        Faidarev1ObservationVariableDTOBuilder observationVariableDTOBuilder = new Faidarev1ObservationVariableDTOBuilder();
+        ListWithPagination<Faidarev1ObservationVariableDTO> resultDTOList = variables.convert(
+                Faidarev1ObservationVariableDTO.class,
+                observationVariableDTOBuilder::fromModel
+        );
         return new Faidarev1ObservationVariableListResponse(resultDTOList).getResponse();
     }
     

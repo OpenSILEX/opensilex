@@ -6,12 +6,10 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
-import org.opensilex.security.person.dal.PersonModel;
-
 /**
  * @author Gabriel Besombes
  */
-class Faidarev1ContactDTO {
+public class Faidarev1ContactDTO {
     private String contactDbId;
     private String email;
     private String instituteName;
@@ -23,66 +21,53 @@ class Faidarev1ContactDTO {
         return contactDbId;
     }
 
-    public void setContactDbId(String contactDbId) {
+    public Faidarev1ContactDTO setContactDbId(String contactDbId) {
         this.contactDbId = contactDbId;
+        return this;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public Faidarev1ContactDTO setEmail(String email) {
         this.email = email;
+        return this;
     }
 
     public String getInstituteName() {
         return instituteName;
     }
 
-    public void setInstituteName(String instituteName) {
+    public Faidarev1ContactDTO setInstituteName(String instituteName) {
         this.instituteName = instituteName;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Faidarev1ContactDTO setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getOrcid() {
         return orcid;
     }
 
-    public void setOrcid(String orcid) {
+    public Faidarev1ContactDTO setOrcid(String orcid) {
         this.orcid = orcid;
+        return this;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public Faidarev1ContactDTO setType(String type) {
         this.type = type;
-    }
-
-    public Faidarev1ContactDTO extractFromModel(PersonModel model, String role) {
-        if (model.getEmail() != null && !model.getEmail().toString().isEmpty()) {
-            this.setEmail(model.getEmail().toString());
-        }
-        this.setContactDbId(model.getUri().toString());
-        this.setName(model.getLastName().toUpperCase() + model.getFirstName().substring(0,1).toUpperCase() + model.getFirstName().substring(1));
-        if (model.getOrcid() != null && !model.getOrcid().toString().isEmpty()){
-            this.setOrcid(model.getOrcid().toString());
-        }
-        this.setType(role);
-
         return this;
-    }
-
-    public static Faidarev1ContactDTO fromModel(PersonModel model, String role) {
-        Faidarev1ContactDTO contact = new Faidarev1ContactDTO();
-        return contact.extractFromModel(model, role);
     }
 }

@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
-import org.opensilex.core.variable.dal.UnitModel;
-
 /**
  * @author Gabriel Besombes
  */
@@ -23,65 +21,53 @@ public class Faidarev1ScaleDTO {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
+    public Faidarev1ScaleDTO setDataType(String dataType) {
         this.dataType = dataType;
+        return this;
     }
 
     public String getDecimalPlaces() {
         return decimalPlaces;
     }
 
-    public void setDecimalPlaces(String decimalPlaces) {
+    public Faidarev1ScaleDTO setDecimalPlaces(String decimalPlaces) {
         this.decimalPlaces = decimalPlaces;
+        return this;
     }
 
     public String getScaleDbId() {
         return scaleDbId;
     }
 
-    public void setScaleDbId(String scaleDbId) {
+    public Faidarev1ScaleDTO setScaleDbId(String scaleDbId) {
         this.scaleDbId = scaleDbId;
+        return this;
     }
 
     public String getScaleName() {
         return scaleName;
     }
 
-    public void setScaleName(String scaleName) {
+    public Faidarev1ScaleDTO setScaleName(String scaleName) {
         this.scaleName = scaleName;
+        return this;
     }
 
     public String getValidValues() {
         return validValues;
     }
 
-    public void setValidValues(String validValues) {
+    public Faidarev1ScaleDTO setValidValues(String validValues) {
         this.validValues = validValues;
+        return this;
     }
 
     public String getXref() {
         return xref;
     }
 
-    public void setXref(String xref) {
+    public Faidarev1ScaleDTO setXref(String xref) {
         this.xref = xref;
-    }
-
-    public Faidarev1ScaleDTO extractFromModel(UnitModel unitModel){
-
-        if (unitModel.getUri() != null){
-            this.setScaleDbId(unitModel.getUri().toString());
-        }
-
-        if (unitModel.getName() != null){
-            this.setScaleName(unitModel.getName());
-        }
-
         return this;
-    }
-
-    public static Faidarev1ScaleDTO fromModel(UnitModel unitModel){
-        Faidarev1ScaleDTO scale = new Faidarev1ScaleDTO();
-        return scale.extractFromModel(unitModel);
     }
 }

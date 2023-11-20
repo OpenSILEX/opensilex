@@ -63,39 +63,21 @@
             @onCreate="refresh($event.uri)"
             @onUpdate="refresh($event.uri)"
           ></opensilex-AgroportalEntityForm>
-          <opensilex-AgroportalCreateForm
+          <opensilex-AgroportalEntityOfInterestForm
             ref="interestEntityForm"
             @onCreate="refresh($event.uri)"
             @onUpdate="refresh($event.uri)"
-            ontologiesConfig="entityOntologies"
-            searchPlaceholder="VariableView.entityOfInterest-placeholder"
-            createTitle="VariableView.add-entityOfInterest"
-            editTitle="VariableView.edit-method"
-            :createMethod="service.createInterestEntity.bind(service)"
-            :updateMethod="service.updateInterestEntity.bind(service)"
-          ></opensilex-AgroportalCreateForm>
-          <opensilex-AgroportalCreateForm
-            ref="characteristicForm"
-            @onCreate="refresh($event.uri)"
-            @onUpdate="refresh($event.uri)"
-            ontologiesConfig="traitOntologies"
-            searchPlaceholder="VariableView.characteristic-placeholder"
-            createTitle="VariableView.add-characteristic"
-            editTitle="VariableView.edit-method"
-            :createMethod="service.createCharacteristic.bind(service)"
-            :updateMethod="service.updateCharacteristic.bind(service)"
-          ></opensilex-AgroportalCreateForm>
-          <opensilex-AgroportalCreateForm
+          ></opensilex-AgroportalEntityOfInterestForm>
+          <opensilex-AgroportalMethodForm
             ref="methodForm"
             @onCreate="refresh($event.uri)"
             @onUpdate="refresh($event.uri)"
-            ontologiesConfig="methodOntologies"
-            searchPlaceholder="VariableView.method-placeholder"
-            createTitle="VariableView.add-method"
-            editTitle="VariableView.edit-method"
-            :createMethod="service.createMethod.bind(service)"
-            :updateMethod="service.updateMethod.bind(service)"
-          ></opensilex-AgroportalCreateForm>
+          ></opensilex-AgroportalMethodForm>
+          <opensilex-AgroportalCharacteristicForm
+            ref="characteristicForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalCharacteristicForm>
 
             <opensilex-UnitCreate
                 ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
@@ -203,6 +185,8 @@ import DTOConverter from "../../models/DTOConverter";
 import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
+import {BaseAgroportalCreateForm} from "@/components/variables/agroportal/wizard/AgroportalCreateForm.vue";
+import VariableForm from "@/components/variables/form/VariableForm.vue";
 
 
 @Component
@@ -238,10 +222,10 @@ export default class VariablesView extends Vue {
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
-    @Ref("entityForm") readonly entityForm!: EntityCreate;
-    @Ref("interestEntityForm") readonly interestEntityForm!: InterestEntityCreate;
-    @Ref("characteristicForm") readonly characteristicForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
+    @Ref("entityForm") readonly entityForm!: BaseAgroportalCreateForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseAgroportalCreateForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseAgroportalCreateForm;
+    @Ref("methodForm") readonly methodForm!: BaseAgroportalCreateForm;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
 
     /**
@@ -374,7 +358,7 @@ export default class VariablesView extends Vue {
         this.variableStructureList.refresh(false, uri);
     }
 
-    private getForm() {
+    private getForm(): BaseAgroportalCreateForm | VariableCreate {
         switch (this.elementType) {
             case VariablesView.VARIABLE_TYPE : {
                 return this.variableCreate;

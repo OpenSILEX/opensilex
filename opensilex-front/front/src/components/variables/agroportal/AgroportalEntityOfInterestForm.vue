@@ -4,11 +4,11 @@
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
       ontologiesConfig="entityOntologies"
-      searchPlaceholder="AgroportalEntityForm.name-placeholder"
-      createTitle="AgroportalEntityForm.add"
-      editTitle="AgroportalEntityForm.edit"
-      :createMethod="service.createEntity.bind(service)"
-      :updateMethod="service.updateEntity.bind(service)"
+      searchPlaceholder="AgroportalEntityOfInterestForm.name-placeholder"
+      createTitle="AgroportalEntityOfInterestForm.add"
+      editTitle="AgroportalEntityOfInterestForm.edit"
+      :createMethod="service.createInterestEntity.bind(service)"
+      :updateMethod="service.updateInterestEntity.bind(service)"
   ></opensilex-AgroportalCreateForm>
 </template>
 
@@ -21,7 +21,7 @@ import {BaseAgroportalCreateForm} from "@/components/variables/agroportal/wizard
 import {Ref} from "vue-property-decorator";
 
 @Component({})
-export default class AgroportalEntityForm extends Vue implements BaseAgroportalCreateForm {
+export default class AgroportalEntityOfInterestForm extends Vue implements BaseAgroportalCreateForm {
   $opensilex: OpenSilexVuePlugin
   service: VariablesService;
 
@@ -48,13 +48,13 @@ export default class AgroportalEntityForm extends Vue implements BaseAgroportalC
 
 <i18n>
 en:
-  AgroportalEntityForm:
-    add: Add entity
-    edit: Edit entity
-    name-placeholder: Plant
+  AgroportalEntityOfInterestForm:
+    add: Add entity of interest
+    edit: Edit entity of interest
+    name-placeholder: Canopy
 fr:
-  AgroportalEntityForm:
-    add: Ajouter une entité
-    edit: Modifier une entité
-    name-placeholder: Plante
+  AgroportalEntityOfInterestForm:
+    add: Ajouter une entité d'intérêt
+    edit: Modifier une entité d'intérêt
+    name-placeholder: Canopée
 </i18n>

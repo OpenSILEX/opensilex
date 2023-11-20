@@ -39,8 +39,14 @@ export interface BaseAgroportalCreationDTO {
   narrow_match?: Array<string>
 }
 
+export interface BaseAgroportalCreateForm {
+  showCreateForm: () => void,
+  showEditForm: (dto: BaseAgroportalCreationDTO) => void
+}
+
 @Component({})
-export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> extends Vue {
+export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> extends Vue implements
+    BaseAgroportalCreateForm {
   $opensilex: OpenSilexVuePlugin;
 
   variablesService: VariablesService;

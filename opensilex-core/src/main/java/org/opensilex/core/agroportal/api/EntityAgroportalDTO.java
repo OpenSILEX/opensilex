@@ -18,6 +18,8 @@ import java.util.List;
 
 /**
  * Represents a term from AgroPortal
+ * @todo renommer cette classe pour ne pas confondre avec le composant de variable "entité"
+ *
  * @author brice
  */
 @JsonPropertyOrder({

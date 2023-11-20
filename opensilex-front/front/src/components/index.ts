@@ -600,6 +600,12 @@ import AgroportalCreateForm from './variables/agroportal/wizard/AgroportalCreate
 components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
 import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
 components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;
+import AgroportalEntityOfInterestForm from './variables/agroportal/AgroportalEntityOfInterestForm.vue';
+components["opensilex-AgroportalEntityOfInterestForm"] = AgroportalEntityOfInterestForm;
+import AgroportalCharacteristicForm from "./variables/agroportal/AgroportalCharacteristicForm.vue";
+components["opensilex-AgroportalCharacteristicForm"] = AgroportalCharacteristicForm;
+import AgroportalMethodForm from "./variables/agroportal/AgroportalMethodForm.vue";
+components["opensilex-AgroportalMethodForm"] = AgroportalMethodForm;
 
 
 

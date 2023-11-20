@@ -45,7 +45,10 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author Vincent MIGOT
  * <p>
- * Abstract class used for Secure API testing
+ * Abstract class used in OpenSILEX for Secure API testing.
+ * This is used for testing services that necessitate any authentication.
+ * This will not include any support for direct Mongodb setup and teardown.
+ * For that you should use the AbstractMongoIntegrationTest class.
  */
 public abstract class AbstractSecurityIntegrationTest extends AbstractIntegrationTest {
 

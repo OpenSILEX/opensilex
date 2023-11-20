@@ -50,8 +50,11 @@ import java.util.Map;
 /**
  * @author Renaud COLIN
  * @author Vincent MIGOT
- *
- * Abstract class used for API testing
+ * <p>
+ * Base abstract class used in OpenSILEX for API testing.
+ * This should not be used as is. Use the abstract classes that inherit from this one :
+ *      - AbstractSecurityIntegrationTest
+ *      - AbstractMongoIntegrationTest
  */
 public abstract class AbstractIntegrationTest extends JerseyTest {
 

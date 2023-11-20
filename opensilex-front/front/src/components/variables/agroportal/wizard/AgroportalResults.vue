@@ -24,6 +24,7 @@
           <template v-if="isMappingMode" v-slot:btnValidate>
             <b-dropdown
                 dropdown
+                boundary="window"
                 class="m-md-2"
                 :small="true"
                 text="Map term as">

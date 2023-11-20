@@ -34,7 +34,7 @@
                     :text.sync="text"
                     :ontologies.sync="ontologies"
                     :isMappingMode="true"
-                    :mappingOptions="options"
+                    :mappingOptions="skosRelationOptions"
                     @importMapping="onImportMapping">
                 </opensilex-AgroportalResults>
               </div>
@@ -97,7 +97,7 @@
                               :small="true"
                               text="Map term as">
 
-                            <b-dropdown-item v-for="(relation, index) in options" v-bind:key="relation.id"
+                            <b-dropdown-item v-for="(relation, index) in skosRelationOptions" v-bind:key="relation.id"
                                              class="btn-dropdown"
                                              @click="addRelationToTerm(relation.id)"
                             >
@@ -159,7 +159,20 @@
                        :items="relations"
                        :fields="fields">
                 <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
-                <template v-slot:cell(relation)="data">{{$t(data.value)}}</template>
+                <template v-slot:cell(relation)="data">
+                  <b-dropdown
+                      dropdown
+                      boundary="window"
+                      :small="true"
+                      :text="$t(data.value)">
+                      <b-dropdown-item v-for="relation in skosRelationOptions" v-bind:key="relation.id"
+                                       class="btn-dropdown"
+                                       @click="updateRelation(relation.id, data.item.relationURI);"
+                      >
+                      {{ $t(relation.label) }}
+                    </b-dropdown-item>
+                  </b-dropdown>
+                </template>
                 <template v-slot:head(relationURI)="data">{{$t(data.label)}}</template>
                 <template v-slot:cell(relationURI)="data">
                   <a :href="data.value" target="_blank">{{ data.value }}</a>
@@ -170,7 +183,7 @@
                     <b-button-group size="md">
                       <b-button
                           size="md"
-                          @click="removeRelationsToSkosReferences(data.item)"
+                          @click="removeRelationsToSkosReferences(data.item.relationURI)"
                           variant="danger"
                       >
                         <opensilex-Icon icon="fa#trash-alt" />
@@ -196,13 +209,12 @@
 
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {EntityCreationDTO} from "opensilex-core";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Skos} from "../../../../models/Skos";
 import AgroportalResults from "./AgroportalResults.vue";
+import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 
 
 @Component
@@ -249,12 +261,12 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
 
-  options: any[] = [];
+  skosRelationOptions: Array<SelectableItem> = [];
 
   setOptions(){
-    this.options = [];
+    this.skosRelationOptions = [];
     for (let [key, value] of this.skosRelationsMap) {
-      this.$set(this.options, this.options.length, {
+      this.$set(this.skosRelationOptions, this.skosRelationOptions.length, {
         id: key,
         label: this.$t(value)
       });
@@ -317,6 +329,11 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     return this.relationsInternal;
   }
 
+  updateRelation(relation: string, relationURI: string) {
+    this.removeRelationsToSkosReferences(relationURI);
+    this.addRelationWithURI(relation, relationURI);
+  }
+
   updateRelations(relation: string, references: string[]) {
     if(references !== undefined){
       for (let index = 0; index < references.length; index++) {
@@ -338,35 +355,16 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     return validatorRef.validate();
   }
 
-  addRelationsToSkosReferences() {
-    this.validateForm().then(isValid => {
-      if (isValid) {
-        this.addRelationToSkosReferences();
-        return new Promise((resolve, reject) => {
-          this.$emit("onAdd", this.formDto, result => {
-            if (result instanceof Promise) {
-              result.then(resolve).catch(reject);
-            } else {
-              resolve(result);
-            }
-          });
-        });
-      }
-    });
-  }
-
-  addRelationToSkosReferences() {
-    let isIncludedInRelations = this.isIncludedInRelations();
-    if (!isIncludedInRelations) {
-      this.formDto[this.currentRelation].push(this.currentExternalUri);
-      this.resetExternalUriForm();
-    }
-  }
-
   validateURIFormat(uri: string): boolean {
     let regex: RegExp;
     regex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([-.][a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
     return (regex.exec(uri) != null);
+  }
+
+  addRelationWithURI(relation: string, relationURI: string) {
+    this.currentExternalUri = relationURI;
+    this.currentRelation = relation;
+    this.addRelationToTerm(relation);
   }
 
   addRelationToTerm(relation: string) {
@@ -396,14 +394,14 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     return includedInRelations;
   }
 
-  removeRelationsToSkosReferences(row: any) {
+  removeRelationsToSkosReferences(relationURI: string) {
     for (let [key, value] of this.skosRelationsMap) {
       this.formDto[key] = this.formDto[key].filter(function (
           value,
           index,
           arr
       ) {
-        return value != row.relationURI;
+        return value != relationURI;
       });
     }
     return new Promise((resolve, reject) => {

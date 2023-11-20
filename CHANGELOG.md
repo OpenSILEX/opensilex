@@ -1,19 +1,20 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.1.0] - BB](#110---bb)
-    * [New features](#new-features)
+  * [[1.1.2] Next Release](#112-next-release)
+    * [Versions changes](#versions-changes)
+    * [Updated Dependencies](#updated-dependencies)
     * [Fixed or optimized](#fixed-or-optimized)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
     * [Fixed or optimized](#fixed-or-optimized-1)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
-    * [New features](#new-features-1)
+    * [New features](#new-features)
     * [Fixed or optimized](#fixed-or-optimized-2)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
-    * [New features](#new-features-2)
+    * [New features](#new-features-1)
     * [Fixed or optimized](#fixed-or-optimized-3)
   * [[1.0.0-rc+6]](#100-rc6)
     * [Fixed or optimized](#fixed-or-optimized-4)
@@ -68,52 +69,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.?.?]
+## [1.1.2] Next Release
 
-> WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes *TO DO - Credential migration (yvan)*](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
-> Also available [here *TO DO - Credential migration (yvan)*](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
+### Versions changes
 
-### Changes and new features
+> Java 8 to Java 11
 
-- [GDPR] New page to show a pdf about GDPR and/or privacy policy. To set up PDFs files, follow instructions in  [rgpd_config.md](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Finstallation%2Fconfiguration%2Frgpd_config.md)
-- [Credentials] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface)
+- [**WARNING**] This requires to have an installed JRE with a version >= 11 on the server host which run OpenSILEX
+- Ensures that the JRE is well installed before upgrading your OpenSILEX version
+
+- You can check the documentation [here](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-18-04-fr)
+if your need more information or contact our team for support.
+
+> Docker mongodb
+
+- The dockerfile for the usage mongodb in a development environnement now rely on the
+  version [6.0.4](https://hub.docker.com/layers/library/mongo/6.0.4/images/sha256-3c8dd1b08f8a2ec0338902affd432b40130e5acf49d6e3a1ca05ff5168100059?context=explore)
+  of mongodb
+- See the
+  dockerfile :  [mongo-with-transactions.docker](opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fdocker%2Fmongo-with-transactions.docker)
+
+### Updated Dependencies
+
+> Maven plugins
+
+| Dependency                                                                         | Old version | New version | Notes                          |
+|------------------------------------------------------------------------------------|-------------|-------------|--------------------------------|
+| [deploy](https://maven.apache.org/plugins/maven-deploy-plugin/)                    | 3.0.0       | 3.1.1       |                                |
+| [install](https://maven.apache.org/plugins/maven-install-plugin/)                  | 3.0.0       | 3.1.1       |                                |
+| [enforcer](https://maven.apache.org/plugins/maven-enforcer-plugin/)                | 3.0.0       | 3.1.1       |                                |
+| [surefire](https://maven.apache.org/plugins/maven-surefire-plugin/)                | 3.0.0       | 3.1.1       |                                |
+| [failsafe](https://maven.apache.org/plugins/maven-failsafe-plugin/)                | 3.0.0       | 3.1.1       |                                |
+| [site](https://maven.apache.org/plugins/maven-site-plugin/)                        | 3.8.2       | 3.12.1      |                                |
+| [version](https://maven.apache.org/plugins/maven-version-plugin/)                  | 2.7         | 2.16.0      |                                |
+| [plugin-api](https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api) | 3.6.0       | 3.9.0       | Maven plugin in swagger module |
+
+> Others Dependencies
+
+| Dependency                                                                                           | Old version | New version | Notes                                    |
+|------------------------------------------------------------------------------------------------------|-------------|-------------|------------------------------------------|
+| [caffeine](https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine/)               | 3.1.1       | 3.1.8       |                                          |
+| [bcrypt](https://mvnrepository.com/artifact/at.favre.lib/bcrypt/0.10.2)                              | 0.9.0       | 0.10.2      |                                          |
+| [jwt](https://mvnrepository.com/artifact/com.auth0/java-jwt)                                         | 3.11.0      | 4.4.0       |                                          |
+| [picocli](https://mvnrepository.com/artifact/com.auth0/java-jwt)                                     | 4.6.3       | 4.7.5       |                                          |
+| [jena.query.builder](https://mvnrepository.com/artifact/org.apache.jena/jena-querybuilderwt)         | 4.5.0       | 4.9.0       |                                          |
+| [bytebuddy](https://mvnrepository.com/artifact/org.apache.jena/jena-querybuilderwt)                  | 1.10.18     | 4.9.0       |                                          |
+| [httpcore](https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore)                    | 4.4.14      | 4.4.16      |                                          |
+| [httpclient](https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient)                | 4.5.13      | 4.5.14      |                                          |
+| [apache-tika](https://mvnrepository.com/artifact/org.apache.tika/tika-core)                          | 2.3.0       | 2.9.1       |                                          |
+| [apache-commons-io](https://mvnrepository.com/artifact/commons-io/commons-io)                        | 2.11.0      | 2.13.0      |                                          |
+| [mongodb-driver-sync](https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync/)           | 4.5.0       | 4.11.0      |                                          |
+| [mongodb-embed (for-test)](https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync/)      | 3.4.2       | 3.5.4       | Update mongo test version 5.0.6 to 6.0.2 |
+| [glassfish-jersey*](https://mvnrepository.com/artifact/org.glassfish.jersey.core)                    | 2.3.5       | 2.3.7       |                                          |
+| [swagger.jersey2.jaxrs](https://mvnrepository.com/artifact/io.swagger/swagger-jersey2-jaxrs)         | 1.6.2       | 1.6.5       |                                          |
+| [git-commit-id-plugin](https://mvnrepository.com/artifact/pl.project13.maven/git-commit-id-plugin)   | 4.0.0       | 4.0.5       |                                          |
+| [tomcat-embed-core](https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core)    | 9.0.39      | 9.0.82      |                                          |
+| [jackson*](https://mvnrepository.com/artifact/com.fasterxml.jackson)                                 | 2.13        | 2.15.3      |                                          |
+| [janino](https://mvnrepository.com/artifact/org.codehaus.janino/janino)                              | 3.1.6       | 3.1.9       |                                          |
+| [awaitility](https://mvnrepository.com/artifact/org.awaitility/awaitility)                           | 4.1.1       | 4.2.0       |                                          |
+| [logstash-encoder](https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder) | 7.0.1       | 7.4         |                                          |
+
+> Removed dependencies
+
+| Name                                                                                                           | Note |
+|----------------------------------------------------------------------------------------------------------------|------|
+| [medeia-validator-jackson](https://mvnrepository.com/artifact/com.worldturner.medeia/medeia-validator-jackson) |      |
 
 ### Fixed or optimized
 
-- [?] ??
+- [**Scientific Object search**] Small Criteria search changes -> e0534d35b
+- Displaying RGPD as a pdf file -> cc2a416b6
+- [**UI**] Possibility of displaying all results on selectors locked to 10 elements -> 3ccabae51
+- [**Devices Visualisation**] Ajout filtre d'OS / modification service searchScientificObjects -> 22462defa
+- Define graphic dates filters to defined period or manip start and end dates -> 89c027650
+- [**Fix**] pagination in tabs remains page 1 -> be399edc9
+- [**BrAPI**] V1.3 fix -> 3721ad9f2
+- [**Dataverse**] Changes to dataverse docs -> 9a4e44235
+- [**credentials**] adding account credentials -> 0865dd7ca
+- [**Front**] Possibility to choose number of results displayed -> 26158449d
+- [**GraphQL**] added service for generating a Staple API config file -> 73b2d8adf
+- [**TabularData, Germplasms**] Possibility to search data by germplasms -> 500c2f9ec
+- [**Person**] new component for phone number -> c9238820d
+- [**BugFix**] Variable group selector -> 40dfd0fcb
+- [**Metrics**] Fix variable name in metrics -> 4ab1fa1a2
+- [**ORCID**] pré-remplissage du formulaire des personnes via ORCID -> 3361a1c8f
+- [**Map**] Fix filterMap -> 8f5facd17
+- [**Metadata**] Add metadata on all opensilex model -> bf7211997
 
 
-## [1.1.0] - Blazing Basalt
-
-> WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
-> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
-
-### Changes and new features
-
-- [Map] You can now visualize data in a chart by selecting an object in the map view
-- [Person] You can now search persons by their ORCID
-- [User] The User API is now deprecated
-- [Account] The form for creating accounts has been simplified
-- [Experiment] Associated facilities are now part of the available facilities for scientific objects of the experiments
-- [Experiment] The "Visualization" tab of a scientific object in an experiment has been removed
-- [Experiment] Scientific object count is now displayed on the scientific objects tab
-- [Germplasm group] Added documentation that you can read by hovering the question mark
-
-### Fixed or optimized
-
-- [Front] Minor visual fixes
-- [Experiment] On the "Data" page of an experiment, targets are now always correctly displayed
-- [Data] Importing multiple variables in one CSV no longer duplicates devices in provenance
-- [Data] Adding annotation during data import now uses the correct date and time
-- [Map] Fixed some issues with the zoom
-- [Organization] Fixed an issue where you had to click twice on "create organization" or "create site" to perform the action
-- [Facility] Tweaked the "Monitoring" page of a facility for better ergonomy
-- [Charts] Tweaked the display of graphs with multi-scale axis for better ergonomy
-- [Charts] Fixed a bug where data with the value 0 where sometimes displayed as undefined
-- [Charts] Charts no longer aggregate data points
-- [PHIS] PHIS logo is now displayed if the dashboard chart is not configured
 
 ## [1.0.1] - Ambitious Amber
 
@@ -131,27 +174,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - Ambitious Amber
 
 > WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
+> see
+>
+the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
 > Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0.md)
 
 ### New features
 
 - [MongoDB] You can now specify credentials to connect to a MongoDB server -> d02b3c8d
-- [Facility] Environmental data can be visualized in the facility detail page, including mean and median graphs ->  d9a705bf
+- [Facility] Environmental data can be visualized in the facility detail page, including mean and median graphs ->
+  d9a705bf
 - [Data] Added new filters for data search : devices, facilities, operators -> ea0cc36b
-- [Data] Scientific objects can now be annotated during data import by adding an "annotation" column in the CSV -> 816f5ecf
+- [Data] Scientific objects can now be annotated during data import by adding an "annotation" column in the CSV ->
+  816f5ecf
 - [Map] Various enhancements -> 89ce4fa6
 - [Map] Scientific objects can now be exported as Shapefiles with the selected properties -> fa9fb97e
 - [Germplasm] Germplasm groups can be created to manage a set of germplasms at the same type -> bc29624d
 - [User / Person / Account] The web interface now reflects the changes in the API, where the `User` concept was split in
   two `Person` and `Account` concepts -> b8457f7b
 - [Person] A person can now have an ORCID, a phone number and an organization -> 0718f5e5
-- [Person] Everal links to Users are replaced by links to Persons (for projects, experiments, provenances and devices)
+- [Person] Several links to Users are replaced by links to Persons (for projects, experiments, provenances and devices)
 - [Variable] Added a "not included in group" filter for searching variables -> 98fde231
 - [Experiment] Added a germplasm filter for searching scientific objects in an experiment -> 25f5c93f
 - [API] All resources now have a publisher, publication date and last update date -> 2a3140bd
 - [Dashboard] You can now display a media in the dashboard if the graph component is not configured -> d1aa16ef
-- [Recherche Data Gouv] Added the possibility to create a `Dataset` draft on Recherche Data Gouv from OpenSILEX -> 63251bc2
+- [Recherche Data Gouv] Added the possibility to create a `Dataset` draft on Recherche Data Gouv from OpenSILEX ->
+  63251bc2
 
 ### Fixed or optimized
 
@@ -160,7 +208,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Data] Fixed export when sending too many parameters (e.g. a variable URI list) -> 1bc02a68
 - [Data] Exporting data with a "long" format without selecting a variable first now correctly works -> 1bc02a68
 - [API] Services returning a paginated list now only returns the list once -> e1b01648
-- [Event] When importing a CSV file containing events, the beginning and end date are now checked to be coherent -> 94cf74db
+- [Event] When importing a CSV file containing events, the beginning and end date are now checked to be coherent ->
+  94cf74db
 - [Organization] Organization and site search now uses an internal cache to improve performance -> 2f077837
 - [Variable] SKOS references are now included in detailed export -> aa969f05
 - [Variable] Fixed some errors when using variables from a shared resource instance -> b18d55fd, cd848c61
@@ -178,21 +227,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Details] Incoming custom properties are now clearly displayed in a distinct section (for scientific objects and
   facilities) -> 167130fb
 - [Variable] Changing the source instance now reloads all the filters correctly -> e5997c5d
-- [Data] Added an indication to the CSV template to specify the expected format when using a boolean variable -> e318a0ea
+- [Data] Added an indication to the CSV template to specify the expected format when using a boolean variable ->
+  e318a0ea
 - [Datafile] Image datafiles can now be visualized without problems -> 28c38f05
 - [Map] When zooming out, scientific objects are grouped into clusters to enhance performance and visibility -> c394c7fc
-- [Person] Enhanced display of persons of contact (for accounts, projects, experiments, devices and provenances) -> 70daab17
+- [Person] Enhanced display of persons of contact (for accounts, projects, experiments, devices and provenances) ->
+  70daab17
 - [Germplasm] Searching a germplasm by URI now works correctly -> aad496dc
 
 ## [1.0.0-rc+7]
 
 > WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
+> see
+>
+the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
 > Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0-rc%2B7.md)
 
 ### New features
 
-- **[Dashboard]** Add a dashboard functionality for visualizing data, scientific objects, devices and germplasm statistics -> 38970ef6
+- **[Dashboard]** Add a dashboard functionality for visualizing data, scientific objects, devices and germplasm
+  statistics -> 38970ef6
 - **[Variables]** Allow to browse and import variables from a remote instance ("shared resource instance") -> 5aa3e0482
 - **[UI]** Indication of elements number in tabs -> 5eb24aac4
 - **[UI]** Enter Key press no longer necessary in auto-complet fields -> 7dc8ff333
@@ -207,21 +261,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed or optimized
 
 - **[Ontology]** move some subclass and properties from oeso-ext ontology (phis) to oeso-core ontology -> ac1a451c3
-- **[Data]** Fix bad redirection of scientific object inside experimental context. Fix display error in case of data with no target defined -> d9830177d
+- **[Data]** Fix bad redirection of scientific object inside experimental context. Fix display error in case of data
+  with no target defined -> d9830177d
 - **[Experiment/Visualisation]** Fix graphic visualizations in experiment module -> 43dbfe29d
 - **[Provenance]** Fix creation of provenance with an operator -> abd7ba2a9
-- **[Event]** Append Fertilization  event french translation -> 2dd981f06
+- **[Event]** Append Fertilization event french translation -> 2dd981f06
 - **[Scientific Object]** fix storage/search of name composed only of digit in global graph -> 3268a4bf3
 - **[Scientific Object]** fix germplasm and custom properties export -> 0ede9443d
 - **[Move/Location]** Enhance OS positions historic -> 89553d5e0
 - **[Scientific Object]** new rooting for SO tabs / fix links redirect -> c37bc6273
 - **[Scientific Objects]** Fix SO form if it contains subtype properties -> 4d8b93899
 - **[FileSystem]** Fix import from local files to mongodb import -> 9436ce94d
-- **[Scientific Object]** fix no display of object name for each experiment (if name are equals in global and experimental context) -> 1eeff0fcd
+- **[Scientific Object]** fix no display of object name for each experiment (if name are equals in global and
+  experimental context) -> 1eeff0fcd
 - **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d
-- **[Scientific Object]** Fix form if it contains custom/subtype properties  -> 4d8b9389
+- **[Scientific Object]** Fix form if it contains custom/subtype properties -> 4d8b9389
 - **[FileSystem]** Fix import from local files to MongoDB import -> 9436ce94
-- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d 
+- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d
 - **[Document]** Fix error on Document creation when using a fixed URI -> 6e766fbe
 - **[Facility]** Fix display of associated device -> 465c364f
 - **[User/Account]** Extract Account and Person from User -> 8ed0303a
@@ -233,23 +289,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed or optimized
 
-- **[Installation]** The dockerized version of rdf4j-workbench provided with OpenSILEX has been upgraded to version 3.7.7 -> e6bbbaf3
+- **[Installation]** The dockerized version of rdf4j-workbench provided with OpenSILEX has been upgraded to version
+  3.7.7 -> e6bbbaf3
 - **[Server CLI]** It is now impossible to create duplicate users by CLI -> d8e10669
-- **[Ontology]** Fixed the deletion of custom properties, which would not delete the restriction and cause an error on the next launch -> 44aa61aa
+- **[Ontology]** Fixed the deletion of custom properties, which would not delete the restriction and cause an error on
+  the next launch -> 44aa61aa
 - **[Web Client]** Removed moment.js dependency -> 0a42b846
 - **[Web Client]** Selector fields now use the whole line to display item names -> 46957e0f
-- **[Web Client]** Selectors that allow to select multiple items no longer reset their selection after performing a second search  -> 46957e0f
+- **[Web Client]** Selectors that allow to select multiple items no longer reset their selection after performing a
+  second search -> 46957e0f
 - **[Web Client]** The base type is now selectable on multiple forms (scientific objects, events, devices) -> 44aa61aa
 - **[Web Client]** Fixed several issues with the modal selector -> 564539a7
 - **[Geospatial]** Creation, visualization, modification and deletion of areas now functions properly -> f8416c7c
-- **[Geospatial]** Services for managing temporal areas were simplified and manage the associated events. It is no longer needed to call the event
-service manually. -> f8416c7c
+- **[Geospatial]** Services for managing temporal areas were simplified and manage the associated events. It is no
+  longer needed to call the event
+  service manually. -> f8416c7c
 - **[Data Visualization]** Graphs now take the optimal amount of screen space -> 66428cf5
-- **[Data Visualization]** If there is no data to plot, a message is shown and an empty graph is still displayed -> 66428cf5
+- **[Data Visualization]** If there is no data to plot, a message is shown and an empty graph is still displayed ->
+  66428cf5
 - **[Variable]** It is no longer possible to delete a variable component if it is associated to a variable -> fbc69422
 - **[Variable]** The update of SKOS properties of a variable now works properly -> fbc69422
 - **[Variable]** Fixed a wrong link in the variable modal list -> fbc69422
-- **[Organization]** The organization / facility / site access check system has been reworked to function properly -> 540f2adc
+- **[Organization]** The organization / facility / site access check system has been reworked to function properly ->
+  540f2adc
 - **[Germplasm]** Germplasm names no longer need to be unique -> a92e43e3
 - **[Germplasm]** More than 20 germplasms can now be exported at the same time -> 4c1e68c2
 - **[Event]** CSV template columns are now correctly generated when the event type is `oeev:Move` -> 6c7a8043
@@ -259,12 +321,14 @@ service manually. -> f8416c7c
 
 ### Added or changed
 
-- **[Authentication]** SAML protocol can now be used for authentication to supported federations (e.g. RENATER) -> 701f988c
+- **[Authentication]** SAML protocol can now be used for authentication to supported federations (e.g. RENATER) ->
+  701f988c
 - **[File Storage]** Amazon S3 can now be used for file storage -> 5386906b
 - **[Geospatial]** Devices are now displayed on the map -> 93b2c8b7
 - **[Data Visualization]** Images associated with data can now be visualized from a data graph -> a48a59a6
 - **[Data Visualization]** Filter forms are now reduced after launching the visualization action -> 46957e0f
-- **[Experiment / Variable]** Germplasm-related fields are no longer displayed if the germplasm menu is excluded on the instance -> 3652ae43
+- **[Experiment / Variable]** Germplasm-related fields are no longer displayed if the germplasm menu is excluded on the
+  instance -> 3652ae43
 - **[Experiment]** Added "record author" field on the experiment description -> 3652ae43
 - **[Facility]** Associated experiments and devices can now be viewed in the facility details -> 91758cb9
 
@@ -287,13 +351,17 @@ Fix OpenSILEX commands initialization and append test scripts -> cd19dd5
 ## [1.0.0-rc+5]
 
 > Warning : upgrading to this new version may require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
+> see
+>
+the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
 
 > Warning: since version 1.0.0-rc+2, if you have created scientific objects with the same name in different experiments
-> (with automatic URI generation), their URI would end up being the same. That may cause problems if you intended to create
+> (with automatic URI generation), their URI would end up being the same. That may cause problems if you intended to
+> create
 > distinct scientific objects, such as some scientific objects being associated with the wrong data.
 >
-> This bug has been fixed in this version. If you suspect that may have happened to you, please contact us ([opensilex-help@groupes.renater.fr](mailto:opensilex-help@groupes.renater.fr)).
+> This bug has been fixed in this version. If you suspect that may have happened to you, please contact
+> us ([opensilex-help@groupes.renater.fr](mailto:opensilex-help@groupes.renater.fr)).
 
 ### Added or changed
 
@@ -305,9 +373,9 @@ Fix OpenSILEX commands initialization and append test scripts -> cd19dd5
 - **Web client**:  Add loader on scientific object tree view loading -> cf864292
 
 - **API/Web client** : A software (Device) can be linked to a variable -> 8d8cfb43
-- **API** : Prevent deletion of OS in case of associated experiment, children, data or datafile  -> e17caea7
+- **API** : Prevent deletion of OS in case of associated experiment, children, data or datafile -> e17caea7
 - **API** : When storing position for a move, we now use a String representation of x,y,z fields instead of
-a previous Integer representation -> 9b3a4a27.
+  a previous Integer representation -> 9b3a4a27.
 - **API** : Add the "Operating procedure" as a new type of technical document -> e39e3c6b
 - **API** : Remove opensilex-mobile module from default OpenSILEX modules -> 252e4565
 
@@ -315,7 +383,8 @@ a previous Integer representation -> 9b3a4a27.
 
 - **Web client** : Link for "reset password" in the login page now always redirect to the correct page -> f33941bc
 - **Web client** : Fixed a problem with a "germplasm" field when editing a scientific object -> df025f7d
-- **Web client** : optimize loading of variables and variables group tab. Optimize loading of variables and variable groups in forms -> b00c53ba
+- **Web client** : optimize loading of variables and variables group tab. Optimize loading of variables and variable
+  groups in forms -> b00c53ba
 - **Web client** : [Data visualization] Optimizations on date formatting into data visualisation -> 687bfcb3
 - **Web client** : several fixes for the map visualisation -> 9b3a4a27
 - **Web client** : [Geospatial] Display calibration position & enhance multi select -> 73811bcb
@@ -325,7 +394,8 @@ a previous Integer representation -> 9b3a4a27.
 - **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c
 - **API** : Fix URI generation when providing a URI on scientific object creation and CSV import -> e17caea7 , a77a3629
 - **API** : Remove no duplicate name constraint when importing OS into global graph -> 45bcf04a
-- **API** : Optimize search and loading for entities, characteristics, methods, units, variables and variable groups -> b00c53ba
+- **API** : Optimize search and loading for entities, characteristics, methods, units, variables and variable groups ->
+  b00c53ba
 - **API** : Fix deletion and existence checking for gridfs file-system connection -> e1034199
 
 ## [1.0.0-rc+4.1] - 2022-07-13
@@ -348,7 +418,8 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
 ### Added or changed
 
 - Add Device type and specifics properties management driven by ontologies: import template generation and driven forms.
-- The variable selector has been enhanced; variables are now selected through a modal form where they can be filtered by name, entity, characteristic, etc.
+- The variable selector has been enhanced; variables are now selected through a modal form where they can be filtered by
+  name, entity, characteristic, etc.
 - Variables can now be filtered by datatype and time interval.
 - When a groups of variables are created or Updated, there are a redirection on detail part of the group.
 - Associated experiments are now listed in the project description.
@@ -358,14 +429,15 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
 - Events can now be correctly filtered by end date (even if multiple events have the same end date).
 - Germplasm search and export have been optimized.
 - Fixed some variable bugs: filters, display of species, datatype and time interval translation.
-- Data exportation bug about  column offset.
+- Data exportation bug about column offset.
 - Fix germplasm export: optimize search and export in order to avoid timeout interruption.
 - Improve specific properties management of scientific objects.
 - Fix bug on ResetOntologies for not completed classes, properties ou restrictions.
 
 ## [1.0.0-rc+3] - 2022-05-05
 
-Be careful, updating to this new version need some manual operations to be done. See [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md).
+Be careful, updating to this new version need some manual operations to be done.
+See [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md).
 New installations don't need further action.
 
 ### Added or changed
@@ -378,10 +450,12 @@ New installations don't need further action.
 - In an experiment or in the global context, data can now be filtered by target uris
 - Documents can now reference an external resource by URL instead of uploading a file
 - Species can now be updated like any other germplasm
-- Documents can now be stored using the GridFS Mongo Connector (see [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md))
+- Documents can now be stored using the GridFS Mongo Connector (
+  see [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md))
 - Events and annotations can now be added on a device
 - Facilities are now part of their own menu entry
-- A new document type "Archive" was added to represent a compressed set of files, where each can be described as a document (but they cannot be downloaded)
+- A new document type "Archive" was added to represent a compressed set of files, where each can be described as a
+  document (but they cannot be downloaded)
 
 ### Fixed
 
@@ -411,7 +485,8 @@ New installations don't need further action.
 
 ## [1.0.0-rc+2] - 2022-01-23
 
-Be carful, updating to this new version need to execute some actions. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md).
+Be carful, updating to this new version need to execute some actions.
+See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md).
 New installations don't need updating action.
 
 ### Added
@@ -423,7 +498,8 @@ New installations don't need updating action.
 - New filter on variable in Search Device service, for provenance's agent.
 - Append FOAF.rdf ontology
 - OpenSILEX migration modules with command.
-- Command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI generation update
+- Command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI
+  generation update
 
 ### Added in pre-production
 
@@ -432,8 +508,13 @@ New installations don't need updating action.
 
 ### Fixed or improvement
 
-- **WARNING:** Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id" instead of "set" : **this improvement need an action**. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating.
-- **WARNING:** Organization and Facilities ontologies. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating
+- **WARNING:** Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id"
+  instead of "set" : **this improvement need an action**.
+  See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md)
+  if updating.
+- **WARNING:** Organization and Facilities ontologies.
+  See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md)
+  if updating
 - Control access in the Web interface, in progress
 - Variable and device association on data creation
 - Protect Device from removing when data exists
@@ -448,8 +529,10 @@ New installations don't need updating action.
 
 ### Some Known Issues
 
-- Problem of authentification when migrate. It's due to FOAF import. You need to remove `<http://xmlns.com/foaf/0.1/Agent> rdfs:label "Agent"`
-- When installing other version, PHIS ontology is imported. You need to remove <http://www.opensilex.org/vocabulary/oeso-ext> context
+- Problem of authentification when migrate. It's due to FOAF import. You need to
+  remove `<http://xmlns.com/foaf/0.1/Agent> rdfs:label "Agent"`
+- When installing other version, PHIS ontology is imported. You need to
+  remove <http://www.opensilex.org/vocabulary/oeso-ext> context
 - Some installation have problem with geospatial visualisation.
 
 ## [1.0.0-rc+1] - 2021-11-02
@@ -463,7 +546,8 @@ New installations don't need updating action.
 - User documentation at homepage.
 
 - Impove **Organization** in progress:
-  - Association of Groups to Organizations: you can now associate some groups with an organization at the creation or update of it.
+  - Association of Groups to Organizations: you can now associate some groups with an organization at the creation or
+    update of it.
 
 ### Fixed or optimized
 
@@ -477,7 +561,10 @@ New installations don't need updating action.
 - Data management:
   - Import, export in CSV format
   - A standard provenance for usual provenances or methods
-  - Ability to put data on other entities such as sites, areas, factors, etc. except people.  So now, you have to use target instead of scientificObject in the API. This is also the case for importing data via the web interface. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md) when upgrading.
+  - Ability to put data on other entities such as sites, areas, factors, etc. except people. So now, you have to use
+    target instead of scientificObject in the API. This is also the case for importing data via the web interface.
+    See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md)
+    when upgrading.
   - Ability to mention raw data of a measure (i.e. for repetition)
 
 - Variable:
@@ -497,7 +584,8 @@ New installations don't need updating action.
 - Event:
   - Add a document to an event (image, video, etc.)
 
-- Added system details in the administration menu : instance version, loaded modules, link to web API documentation, etc.
+- Added system details in the administration menu : instance version, loaded modules, link to web API documentation,
+  etc.
 
 ### Fixed or optimized
 
@@ -515,7 +603,8 @@ New installations don't need updating action.
 - Data Model : "scientificObject": "target"
 - DataFile Model : "scientificObject": "target"
 
-Link to the upgrade scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md)
+Link to the upgrade
+scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md)
 
 ### Major bugs identified
 
@@ -544,7 +633,8 @@ Link to the upgrade scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/o
 
 - Geospatial vizualisation improvement with control panel and simple filters
 - Global data management : tabular view and datafile view
-- Data vizualisation on device, object in or out of experiments : enriched with events view, manual data annotation and event addition.
+- Data vizualisation on device, object in or out of experiments : enriched with events view, manual data annotation and
+  event addition.
 - Add CHANGLOG.md file to track changes
 
 ### Changed

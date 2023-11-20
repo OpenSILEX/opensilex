@@ -96,11 +96,9 @@ public final class SPARQLClassAnalyzer {
 
     @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(SPARQLClassObjectMapperIndex mapperIndex, Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
-        LOGGER.debug("Start SPARQL model class analyze for: " + objectClass.getName());
         this.objectClass = objectClass;
         this.mapperIndex = mapperIndex;
 
-        LOGGER.debug("Determine RDF Type for class: " + objectClass.getName());
         SPARQLResource resourceAnnotation = ClassUtils.findClassAnnotationRecursivly(objectClass, SPARQLResource.class);
         if (resourceAnnotation == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "annotation not found: " + SPARQLResource.class.getCanonicalName());
@@ -129,7 +127,6 @@ public final class SPARQLClassAnalyzer {
             allowBlankNode = resourceAnnotation.allowBlankNode();
             handleCustomProperties = resourceAnnotation.handleCustomProperties();
 
-            LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
                 graph = resourceAnnotation.graph();
             } else {
@@ -148,14 +145,12 @@ public final class SPARQLClassAnalyzer {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Technical error while reading annotation: " + SPARQLResource.class.getCanonicalName(), ex);
         }
 
-        LOGGER.debug("Process fields annotations");
         relatedModelsFields = new HashMap<>();
 
         Map<String, Field> fieldMapping = new HashMap<>();
         ClassUtils.executeOnClassFieldsRecursivly(objectClass, (parentClass, field) -> {
             SPARQLIgnore ignoreProperty = field.getDeclaredAnnotation(SPARQLIgnore.class);
             if (ignoreProperty != null) {
-                LOGGER.debug("Ignore field: " + field.getName());
                 fieldMapping.remove(field.getName());
             } else {
                 if (field.getAnnotation(SPARQLProperty.class) != null
@@ -172,29 +167,24 @@ public final class SPARQLClassAnalyzer {
 
             SPARQLIgnore ignoreProperty = field.getAnnotation(SPARQLIgnore.class);
             if (ignoreProperty != null) {
-                LOGGER.debug("Ignore field: " + field.getName());
                 continue;
             }
 
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
             if (sProperty != null) {
-                LOGGER.debug("Analyse " + SPARQLProperty.class.getCanonicalName() + " annotation for field: " + field.getName());
                 analyzeSPARQLPropertyField(sProperty, field);
             } else {
                 SPARQLResourceURI sURI = field.getAnnotation(SPARQLResourceURI.class);
                 if (sURI != null) {
-                    LOGGER.debug("Analyse " + SPARQLResourceURI.class.getCanonicalName() + " annotation for field: " + field.getName());
                     analyzeSPARQLResourceURIField(field);
                 } else {
                     SPARQLTypeRDF sType = field.getAnnotation(SPARQLTypeRDF.class);
                     if (sType != null) {
-                        LOGGER.debug("Analyse " + SPARQLTypeRDF.class.getCanonicalName() + " annotation for field: " + field.getName());
                         analyzeSPARQLTypeField(field);
                     } else {
                         SPARQLTypeRDFLabel sTypeLabel = field.getAnnotation(SPARQLTypeRDFLabel.class);
                         if (sTypeLabel != null) {
-                            LOGGER.debug("Analyse " + SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation for field: " + field.getName());
                             analyzeSPARQLTypeLabelField(field);
                         }
                     }
@@ -202,22 +192,18 @@ public final class SPARQLClassAnalyzer {
             }
         }
 
-        LOGGER.debug("Check URI field is defined");
         if (fieldURI == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLResourceURI.class.getCanonicalName() + " annotation not found");
         }
 
-        LOGGER.debug("Check Type field is defined");
         if (fieldType == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDF.class.getCanonicalName() + " annotation not found");
         }
 
-        LOGGER.debug("Check Type label field is defined");
         if (fieldTypeLabel == null) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation not found");
         }
 
-        LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
         Method[] methods = objectClass.getMethods();
         fieldsByGetter = HashBiMap.create(fieldsByName.size());
         fieldsBySetter = HashBiMap.create(fieldsByName.size());
@@ -278,21 +264,17 @@ public final class SPARQLClassAnalyzer {
         } catch (Exception ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Property type " + sProperty.property() + " does not exists in ontology: " + sProperty.ontology().getName(), ex);
         }
-        LOGGER.debug("Analyse field type for: " + field.getName());
 
         Type fType = field.getGenericType();
         if (ClassUtils.isGenericType(fType)) {
             ParameterizedType parameterizedType = (ParameterizedType) fType;
             if (ClassUtils.isGenericList(parameterizedType)) {
                 Class<?> genericParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                LOGGER.debug("Field " + field.getName() + " is a list of: " + genericParameter.getName());
                 if (genericParameter == SPARQLLabel.class) {
                     throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, List<SPARQLLabel> are not supported");
                 } else if (SPARQLDeserializers.existsForClass(genericParameter)) {
-                    LOGGER.debug("Field " + field.getName() + " is a data property list of: " + objectClass.getName());
                     dataPropertiesLists.put(field.getName(), property);
                 } else if (mapperIndex.existsForClass((Class<? extends SPARQLResourceModel>) genericParameter)) {
-                    LOGGER.debug("Field " + field.getName() + " is an object property list of: " + objectClass.getName());
                     objectPropertiesLists.put(field.getName(), property);
                     Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) genericParameter;
                     addRelatedModelProperty(field, fieldClass);
@@ -309,13 +291,10 @@ public final class SPARQLClassAnalyzer {
                 throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " has an unsupported type, only List are allowed as generics");
             }
         } else if ((Class<?>) fType == SPARQLLabel.class) {
-            LOGGER.debug("Field " + field.getName() + " is a label of: " + objectClass.getName());
             labelProperties.put(field.getName(), property);
         } else if (SPARQLDeserializers.existsForClass((Class<?>) fType)) {
-            LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field.getName(), property);
         } else if (mapperIndex.existsForClass((Class<? extends SPARQLResourceModel>) fType)) {
-            LOGGER.debug("Field " + field.getName() + " is an object property of: " + objectClass.getName());
             objectProperties.put(field.getName(), property);
             Class<? extends SPARQLResourceModel> fieldClass = (Class<? extends SPARQLResourceModel>) fType;
             addRelatedModelProperty(field, fieldClass);
@@ -329,24 +308,20 @@ public final class SPARQLClassAnalyzer {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Field " + field.getName() + " refer to an invalid SPARQL class model: " + fType.getTypeName());
         }
 
-        LOGGER.debug("Determine if field " + field.getName() + " is a unique property (used only once for SPARQL property " + property.getLocalName() + ")");
         if (fieldsByUniqueProperty.containsKey(property)) {
             fieldsByUniqueProperty.remove(property);
         } else {
             fieldsByUniqueProperty.put(property, field.getName());
         }
 
-        LOGGER.debug("Determine if field " + field.getName() + " is required or optional");
         if (!sProperty.required()) {
             optionalFields.add(field.getName());
         }
 
-        LOGGER.debug("Determine if field " + field.getName() + " is stored in default graph");
         if (sProperty.useDefaultGraph()) {
             defaultGraphFields.add(field.getName());
         }
 
-        LOGGER.debug("Determine if field " + field.getName() + " is a reversed property or not");
         if (sProperty.inverse()) {
             checkAllowedReverseField(field);
             reverseRelationFields.add(field.getName());
@@ -354,7 +329,6 @@ public final class SPARQLClassAnalyzer {
 
         annotationsByField.put(field.getName(), sProperty);
 
-        LOGGER.debug("Store field " + field.getName() + " in global index by name");
         fieldsByName.put(field.getName(), field);
 
         managedProperties.add(property);
@@ -386,9 +360,7 @@ public final class SPARQLClassAnalyzer {
 
     private void analyzeSPARQLResourceURIField(Field field) throws SPARQLInvalidClassDefinitionException {
         if (fieldURI == null) {
-            LOGGER.debug("Field " + field.getName() + " defined as URI field for: " + objectClass.getName());
             fieldURI = field;
-            LOGGER.debug("Store field " + field.getName() + " in global index by name");
             fieldsByName.put(field.getName(), field);
         } else {
             throw new SPARQLInvalidClassDefinitionException(
@@ -402,9 +374,7 @@ public final class SPARQLClassAnalyzer {
 
     private void analyzeSPARQLTypeLabelField(Field field) throws SPARQLInvalidClassDefinitionException {
         if (fieldTypeLabel == null) {
-            LOGGER.debug("Field " + field.getName() + " defined as type label field for: " + objectClass.getName());
             fieldTypeLabel = field;
-            LOGGER.debug("Store field " + field.getName() + " in global index by name");
             fieldsByName.put(field.getName(), field);
         } else {
             throw new SPARQLInvalidClassDefinitionException(
@@ -418,9 +388,7 @@ public final class SPARQLClassAnalyzer {
 
     private void analyzeSPARQLTypeField(Field field) throws SPARQLInvalidClassDefinitionException {
         if (fieldType == null) {
-            LOGGER.debug("Field " + field.getName() + " defined as type field for: " + objectClass.getName());
             fieldType = field;
-            LOGGER.debug("Store field " + field.getName() + " in global index by name");
             fieldsByName.put(field.getName(), field);
         } else {
             throw new SPARQLInvalidClassDefinitionException(

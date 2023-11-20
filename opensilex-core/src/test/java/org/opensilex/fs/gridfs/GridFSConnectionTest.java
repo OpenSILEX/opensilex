@@ -1,10 +1,12 @@
 package org.opensilex.fs.gridfs;
 
+import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import org.bson.Document;
 import org.junit.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -13,7 +15,6 @@ import org.opensilex.fs.service.FileStorageService;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,7 +67,10 @@ public class GridFSConnectionTest extends AbstractMongoIntegrationTest {
 
         // ensure that the client has been closed, if so then access to any method should throw an IllegalStateException
         MongoClient mongoClient = (MongoClient) mongoClientField.get(gridFSConnection);
-        Assert.assertThrows(IllegalStateException.class, mongoClient::startSession);
+
+        // listDatabases() don't throw on call directly, we must use it (with forEach() or first()) in order to raise the Exception
+        ListDatabasesIterable<Document> databaseIt = mongoClient.listDatabases();
+        Assert.assertThrows(IllegalStateException.class, databaseIt::first);
 
         if(openSilex != null){
             openSilex.shutdown();

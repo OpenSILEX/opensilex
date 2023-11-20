@@ -16,7 +16,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
-import javax.mail.internet.InternetAddress;
+
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.security.EmailConfig;
 import org.opensilex.service.Service;
@@ -33,59 +33,53 @@ import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.mail.internet.InternetAddress;
+
 /**
  *
  * Default Email service implementation for OpenSilex
  * <pre>
- * @see https://github.com/bbottema/simple-java-mail/issues/23 => two factor authentification
+ * @see <a href="https://github.com/bbottema/simple-java-mail/issues/23">=> two factor authentification</a>
  * </pre>
  */
 @ServiceDefaultDefinition(config = EmailConfig.class)
 public class EmailService extends BaseService implements Service {
 
-    Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
-    public static Boolean ENABLE;
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
+    private final boolean enable;
 
-    private static String HOST;
-    private static String USER_ID;
-    private static int PORT;
-    private static String PASSWORD;
-    public static String SENDER;
-    public static boolean SIMULATE_SENDING;
+    private final String host;
+    private final String userId;
+    private final int port;
+    private final String password;
+    public final String sender;
+    public final boolean simulateSending;
     private Mailer mailer;
 
-    public static MustacheFactory mustacheFactory = new DefaultMustacheFactory();
+    public static final MustacheFactory mustacheFactory = new DefaultMustacheFactory();
 
     public EmailService(EmailConfig config) {
         super(config);
-        EmailService.HOST = config.smtp().host();
-        EmailService.USER_ID = config.smtp().userId();
-        EmailService.PORT = config.smtp().port();
-        EmailService.PASSWORD = config.smtp().userPassword();
-        EmailService.SENDER = config.sender();
-        EmailService.ENABLE = config.enable();
-        EmailService.SIMULATE_SENDING = config.simulateSending();
+        host = config.smtp().host();
+        userId = config.smtp().userId();
+        port = config.smtp().port();
+        password = config.smtp().userPassword();
+        sender = config.sender();
+        enable = config.enable();
+        simulateSending = config.simulateSending();
     }
 
     @Override
     public void startup() throws OpenSilexModuleNotFoundException {
-        if (EmailService.ENABLE) {
-            try {
-                mailer = getMailerInstance();
+        if (enable) {
+            mailer = getMailerInstance();
 
-                if (LOGGER.isDebugEnabled()) {
-                    System.out.println(mailer.getSession());
-                    System.out.println(mailer.getTransportStrategy());
-                    System.out.println(mailer.getServerConfig());
-                    System.out.println(mailer.getProxyConfig());
-                    System.out.println(mailer.getOperationalConfig());
-                    System.out.println(mailer.getEmailAddressCriteria());
-                    mailer.testConnection();
-                    mailer = null;
-                }
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+            LOGGER.debug("session : {}", mailer.getSession());
+            LOGGER.debug("transportStrategy: {}", mailer.getTransportStrategy());
+            LOGGER.debug("serverConfig: {}", mailer.getServerConfig());
+            LOGGER.debug("proxyConfig: {}", mailer.getProxyConfig());
+            LOGGER.debug("operationalConfig: {}", mailer.getOperationalConfig());
+            mailer.testConnection();
         }
     }
 
@@ -101,14 +95,14 @@ public class EmailService extends BaseService implements Service {
      * @return Mailer to send mail with simplemail java api
      */
     private Mailer getMailer() {
-        MailerRegularBuilder mailerBuilder = MailerBuilder
-                .withSMTPServer(HOST, PORT, USER_ID, PASSWORD)
+        MailerRegularBuilder<?> mailerBuilder = MailerBuilder
+                .withSMTPServer(host, port, userId, password)
                 .withSessionTimeout(60 * 1000)
                 .withTransportStrategy(TransportStrategy.SMTP_TLS)
-                .withProperty("mail.smtp.host", HOST)
-                .withProperty("mail.smtp.user", USER_ID)
-                .withProperty("mail.smtp.password", PASSWORD)
-                .withProperty("mail.smtp.port", PORT)
+                .withProperty("mail.smtp.host", host)
+                .withProperty("mail.smtp.user", userId)
+                .withProperty("mail.smtp.password", password)
+                .withProperty("mail.smtp.port", port)
                 .withProperty("mail.smtp.auth", "true")
                 .withProperty("mail.smtp.ssl.trust", "stmp.gmail.com")
                 .withProperty("mail.smtp.connectiontimeout", "5000")
@@ -116,10 +110,10 @@ public class EmailService extends BaseService implements Service {
                 .withProperty("mail.smtp.writetimeout", "5000")
                 .withProperty("mail.defaultEncoding", "UTF-8");
 
-        switch (PORT) {
+        switch (port) {
             case 465:
                 mailerBuilder
-                        .withProperty("mail.smtp.socketFactory.port", PORT)
+                        .withProperty("mail.smtp.socketFactory.port", port)
                         .withProperty("mail.smtp.ssl.enable", "true")
                         .withProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
                 break;
@@ -132,7 +126,7 @@ public class EmailService extends BaseService implements Service {
                 break;
         }
         if (LOGGER.isDebugEnabled() || getOpenSilex().isDebug()) {
-            mailerBuilder.withTransportModeLoggingOnly(EmailService.SIMULATE_SENDING);
+            mailerBuilder.withTransportModeLoggingOnly(simulateSending);
             mailerBuilder.withDebugLogging(true);
         }
         return mailerBuilder.buildMailer();
@@ -142,30 +136,6 @@ public class EmailService extends BaseService implements Service {
      * Send e-mail with e-mail service configuration
      *
      * @param to list of e-mail address
-     * @param from sender e-mail address
-     * @param subject mail subject
-     * @param emailMessage email message
-     * @param isTextHtml is text must be treated as HTML or plain text
-     */
-    public void sendAnEmail(List<InternetAddress> to, InternetAddress from, String subject, String emailMessage, Boolean isTextHtml) {
-        EmailPopulatingBuilder tempEmail = EmailBuilder.startingBlank()
-                .toMultipleAddresses(to)
-                .from(from)
-                .withSubject(subject);
-        if (isTextHtml) {
-            tempEmail.withHTMLText(emailMessage);
-        } else {
-            tempEmail.withPlainText(emailMessage);
-        }
-        Email email = tempEmail.buildEmail();
-        getMailerInstance().sendMail(email);
-    }
-
-    /**
-     * Send e-mail with e-mail service configuration
-     *
-     * @param to list of e-mail address
-     * @param from sender e-mail address
      * @param subject mail subject
      * @param templateName provide mustache template message to prepare an
      * e-mail
@@ -173,18 +143,20 @@ public class EmailService extends BaseService implements Service {
      * values. e.g: Hello {{name}} with map("name","opensilex) == Hello
      * opensilex
      * @param isTextHtml is text must be treated as HTML or plain text
-     * @throws java.io.IOException
      */
-    public void sendAnEmail(List<InternetAddress> to, InternetAddress from, String subject, String templateName, Map<String, Object> templateOptions, Boolean isTextHtml) throws IOException {
+    public void sendAnEmail(List<InternetAddress> to, String subject, String templateName, Map<String, Object> templateOptions, boolean isTextHtml) throws IOException {
+
         Reader targetReader = new InputStreamReader(new FileInputStream(ClassUtils.getFileFromClassArtifact(getClass(), "email/" + templateName)));
         Mustache mustache = mustacheFactory.compile(targetReader, templateName);
         StringWriter writer = new StringWriter();
         mustache.execute(writer, templateOptions).flush();
         String htmlText = writer.toString();
+
         EmailPopulatingBuilder tempEmail = EmailBuilder.startingBlank()
                 .toMultipleAddresses(to)
-                .from(from)
+                .from(sender)
                 .withSubject(subject);
+
         if (isTextHtml) {
             tempEmail.withHTMLText(htmlText);
         } else {
@@ -192,5 +164,9 @@ public class EmailService extends BaseService implements Service {
         }
         Email email = tempEmail.buildEmail();
         getMailerInstance().sendMail(email);
+    }
+
+    public boolean isEnable() {
+        return enable;
     }
 }

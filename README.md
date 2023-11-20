@@ -1,57 +1,59 @@
-OpenSILEX Developper's installation
+<!-- TOC -->
+* [OpenSILEX Developer's installation](#opensilex-developers-installation)
+* [Required software](#required-software)
+* [Check your installed software](#check-your-installed-software)
+* [Download sources](#download-sources)
+* [Build project](#build-project)
+* [Create opensilex command alias](#create-opensilex-command-alias)
+  * [Linux](#linux)
+  * [Windows](#windows)
+* [Setup configuration](#setup-configuration)
+* [Setup Databases with docker](#setup-databases-with-docker)
+* [Initialize system data](#initialize-system-data)
+  * [With Netbeans](#with-netbeans)
+  * [With command line](#with-command-line)
+* [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
+* [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
+* [Access to OpenSilex & tools](#access-to-opensilex--tools)
+  * [OpenSilex Application](#opensilex-application)
+  * [RDF4J workbench](#rdf4j-workbench)
+  * [MongoDB](#mongodb)
+* [Generate documentation](#generate-documentation)
+* [Other maven build profiles and options](#other-maven-build-profiles-and-options)
+  * [Generate release](#generate-release)
+  * [Skip unit and integration tests](#skip-unit-and-integration-tests)
+  * [Skip Vue js build parts](#skip-vue-js-build-parts)
+  * [Generate documentation](#generate-documentation-1)
+  * [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
+  * [Check javascript security issues](#check-javascript-security-issues)
+  * [Special profile for eclipse](#special-profile-for-eclipse)
+  * [Default configuration example](#default-configuration-example)
+<!-- TOC -->
+
+OpenSILEX Developer's installation
 =============================================
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
 NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md)
 
-- [OpenSILEX Developper's installation](#opensilex-developpers-installation)
-- [Pre-requesite softwares](#pre-requesite-softwares)
-- [Check your installated softwares](#check-your-installated-softwares)
-- [Download sources](#download-sources)
-- [Build project](#build-project)
-- [Create opensilex command alias](#create-opensilex-command-alias)
-  - [Linux](#linux)
-  - [Windows](#windows)
-- [Setup configuration](#setup-configuration)
-- [Setup Databases with docker](#setup-databases-with-docker)
-- [Initialize system data](#initialize-system-data)
-  - [With Netbeans](#with-netbeans)
-  - [With command line](#with-command-line)
-- [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
-- [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
-- [Access to OpenSilex \& tools](#access-to-opensilex--tools)
-  - [OpenSilex Appllication](#opensilex-appllication)
-  - [RDF4J workbench](#rdf4j-workbench)
-  - [MongoDB](#mongodb)
-- [Generate documentation](#generate-documentation)
-- [Other maven build profiles and options](#other-maven-build-profiles-and-options)
-  - [Generate release](#generate-release)
-  - [Skip unit and integration tests](#skip-unit-and-integration-tests)
-  - [Skip Vue js build parts](#skip-vue-js-build-parts)
-  - [Generate documentation](#generate-documentation-1)
-  - [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
-  - [Check javascript security issues](#check-javascript-security-issues)
-  - [Special profile for eclipse](#special-profile-for-eclipse)
-  - [Defaut configuration example](#defaut-configuration-example)
-
-# Pre-requesite softwares
+# Required software
 
 First you need to have these software installed :
 
-- [Java JDK 9+](https://jdk.java.net/) (Our project is tested with JDK versions 8, 9, 11, 13 and 14)
-- [Maven 3.5+](https://maven.apache.org/install.html)
+- [Java JDK 11+](https://jdk.java.net/) (Our project is tested with JDK versions 11, 13 and 14)
+- [Maven 3.6+](https://maven.apache.org/install.html)
 - [Git 2.17.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [docker 19.03.1+](https://docs.docker.com/install/)
 - [docker-compose 1.24.1+](https://docs.docker.com/compose/install/)
 
 Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation whee your user must have read and write permissions.
 
-# Check your installated softwares
+# Check your installed software
 
 Following commands should work from everywhere in your system without errors:
 
@@ -84,7 +86,7 @@ mvn install
 
 ## Linux
 
-Create file `.bash_aliases` in your home folder if it doesn't exists.
+Create file `.bash_aliases` in your home folder if it doesn't exist.
 
 Add this line in it replacing <BASE_DIR> variable:
 
@@ -117,7 +119,7 @@ Be careful if you change host and port of databases as you will have to update d
 
 Be sure to configure properly read and write rights for your user on configured folders.
 
-The only mandatory options to setup are:
+The only mandatory options to set up are:
 
 - file-system.storageBasePath: Base directory for file storage
 
@@ -139,8 +141,8 @@ docker-compose up -d
 
 Docker containers will be automatically started on your machine startup.
 
-You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior
-but you will have to run the preious command after each restart manually.
+You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior,
+but you will have to run the previous command after each restart manually.
 
 # Initialize system data
 
@@ -172,7 +174,8 @@ Right-click on `org.opensilex.dev.StartServerWithFront` class in opensilex-dev-t
 
 # Start OpenSILEX development server with command line
 
-With command line you need to recompile all modules to have your change in Java source code taking into account (but not for Vue-JS code if using hot relaod).
+With command line you need to recompile all modules to have your change in Java source code taking into account (but not
+for Vue-JS code if using hot reload).
 
 ## For web services only (with compiled Vue.js code)
 
@@ -188,7 +191,7 @@ opensilex dev start
 
 # Access to OpenSilex & tools
 
-## OpenSilex Appllication
+## OpenSilex Application
 
 - OpenSilex Vue App is accessible at: [http://localhost:8666/](http://localhost:8666/)
 
@@ -236,7 +239,7 @@ Uncompressed version is available in <BASE_DIR>/opensilex-release/target/opensil
 
 ## Skip unit and integration tests
 
-Avoid to do it, but it could be usefull if you need to rebuild very often at some point.
+Avoid to do it, but it could be useful if you need to rebuild very often at some point.
 
 ```
 mvn install -DskipTests=true
@@ -244,7 +247,7 @@ mvn install -DskipTests=true
 
 ## Skip Vue js build parts
 
-This could be usefull if you work only on web services to speed up build.
+This could be useful if you work only on web services to speed up build.
 
 ```
 mvn install -DskipFrontBuild
@@ -261,9 +264,9 @@ mvn site -Pwith-test-report -DskipFrontBuild
 
 ## Generate documentation with security report audit
 
-This buid may be very very very long because it as to download a lot of stuff from internet (OWASP report).
+This build may be very very very long because it as to download a lot of stuff from internet (OWASP report).
 
-You should better configure it periodicaly on a automated platform.
+You should better configure it periodically on a automated platform.
 
 ```
 mvn site -Pwith-test-report -Pwith-security-check -DskipFrontBuild
@@ -283,7 +286,7 @@ If you are using eclipse you may need to enable this profile to avoid build erro
 mvn install -Pfor-eclipse
 ```
 
-## Defaut configuration example
+## Default configuration example
 
 ```yml
 

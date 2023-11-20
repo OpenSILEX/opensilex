@@ -6,6 +6,7 @@ import org.opensilex.faidare.model.Faidarev1TraitDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Faidarev1ObservationVariableDTOBuilder {
@@ -29,7 +30,7 @@ public class Faidarev1ObservationVariableDTOBuilder {
                                                         variableModel.getCharacteristic().getName())
                                                 )
                                 )
-                                .setTraitDbId(variableModel.getTraitUri().toString())
+                                .setTraitDbId(Objects.toString(variableModel.getTraitUri(), null))
                 )
                 .setMethod(methodDTOBuilder.fromModel(variableModel.getMethod()))
                 .setScale(scaleDTOBuilder.fromModel(variableModel.getUnit(), variableModel.getDataType().toString()))

@@ -16,12 +16,12 @@ import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.faidare.builder.Faidarev1StudyDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1StudyDTO;
 import org.opensilex.faidare.responses.Faidarev1StudyListResponse;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -97,8 +97,18 @@ public class StudiesAPI extends FaidareCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
         if (studyDbId != null && xpDao.get(studyDbId, currentUser) == null) {
             throw new NotFoundURIException(studyDbId);
+        } else if (studyDbId != null) {
+            return new SingleObjectResponse<>(
+                    studyDTOBuilder.fromModel(
+                            xpDao.get(studyDbId, currentUser),
+                            currentUser
+                    )
+            ).getResponse();
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
                     .setEnded(isEnded)
@@ -109,9 +119,6 @@ public class StudiesAPI extends FaidareCall {
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
 
-            OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
-            FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
-            Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
             ListWithPagination<Faidarev1StudyDTO> resultDTOList = resultList.convert(
                     Faidarev1StudyDTO.class,
                     experimentModel -> {

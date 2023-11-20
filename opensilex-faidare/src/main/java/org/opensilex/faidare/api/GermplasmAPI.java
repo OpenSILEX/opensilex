@@ -17,6 +17,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -69,9 +70,19 @@ public class GermplasmAPI extends FaidareCall {
             uri = germplasmPUI;
         }
 
+        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
+        if(uri != null) {
+            return new SingleObjectResponse<>(
+                    germplasmDTOBuilder.fromModel(
+                            germplasmDAO.get(uri, currentUser),
+                            currentUser
+                    )
+            ).getResponse();
+        }
+
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
                 currentUser,
-                uri,
+                null,
                 germplasmName,
                 commonCropName,
                 page,
@@ -79,7 +90,6 @@ public class GermplasmAPI extends FaidareCall {
         );
         
         // Convert paginated list to DTO
-        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
         ListWithPagination<Faidarev1GermplasmDTO> resultDTOList = resultList.convert(
                 Faidarev1GermplasmDTO.class,
                 germplasmModel -> {

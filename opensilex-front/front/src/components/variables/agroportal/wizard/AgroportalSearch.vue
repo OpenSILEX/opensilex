@@ -119,7 +119,7 @@ export default class AgroportalSearch extends Vue {
   ontologyToSelectNode(dto: OntologyAgroportalDTO) {
     return {
       id: dto.acronym,
-      label: dto.acronym
+      label: `${dto.acronym} (${dto.name})`
     };
   }
 

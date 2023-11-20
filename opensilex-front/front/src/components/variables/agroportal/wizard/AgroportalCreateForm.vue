@@ -28,25 +28,11 @@ import {Prop, Ref} from "vue-property-decorator";
 import WizardForm from "../../../common/forms/WizardForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
-
-export interface BaseAgroportalCreationDTO {
-  uri?: string,
-  name?: string,
-  description?: string,
-  exact_match?: Array<string>,
-  close_match?: Array<string>,
-  broad_match?: Array<string>,
-  narrow_match?: Array<string>
-}
-
-export interface BaseAgroportalCreateForm {
-  showCreateForm: () => void,
-  showEditForm: (dto: BaseAgroportalCreationDTO) => void
-}
+import {BaseVariableCreateForm, BaseVariableCreationDTO} from "../../form/VariableFormTypes";
 
 @Component({})
-export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> extends Vue implements
-    BaseAgroportalCreateForm {
+export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> extends Vue implements
+    BaseVariableCreateForm {
   $opensilex: OpenSilexVuePlugin;
 
   variablesService: VariablesService;
@@ -135,7 +121,7 @@ export default class AgroportalCreateForm<T extends BaseAgroportalCreationDTO> e
     this.wizardRef.showEditForm(form);
   }
 
-  getEmptyForm(): BaseAgroportalCreationDTO {
+  getEmptyForm(): BaseVariableCreationDTO {
     return {
       uri: null,
       name: null,

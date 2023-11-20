@@ -185,9 +185,12 @@ import DTOConverter from "../../models/DTOConverter";
 import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
-import {BaseAgroportalCreateForm} from "@/components/variables/agroportal/wizard/AgroportalCreateForm.vue";
-import VariableForm from "@/components/variables/form/VariableForm.vue";
 
+import {BaseVariableCreateForm} from "./form/VariableFormTypes";
+import AgroportalEntityForm from "@/components/variables/agroportal/AgroportalEntityForm.vue";
+import AgroportalEntityOfInterestForm from "@/components/variables/agroportal/AgroportalEntityOfInterestForm.vue";
+import AgroportalCharacteristicForm from "@/components/variables/agroportal/AgroportalCharacteristicForm.vue";
+import AgroportalMethodForm from "@/components/variables/agroportal/AgroportalMethodForm.vue";
 
 @Component
 export default class VariablesView extends Vue {
@@ -222,10 +225,10 @@ export default class VariablesView extends Vue {
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
-    @Ref("entityForm") readonly entityForm!: BaseAgroportalCreateForm;
-    @Ref("interestEntityForm") readonly interestEntityForm!: BaseAgroportalCreateForm;
-    @Ref("characteristicForm") readonly characteristicForm!: BaseAgroportalCreateForm;
-    @Ref("methodForm") readonly methodForm!: BaseAgroportalCreateForm;
+    @Ref("entityForm") readonly entityForm!: BaseVariableCreateForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseVariableCreateForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseVariableCreateForm;
+    @Ref("methodForm") readonly methodForm!: BaseVariableCreateForm;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
 
     /**
@@ -358,7 +361,7 @@ export default class VariablesView extends Vue {
         this.variableStructureList.refresh(false, uri);
     }
 
-    private getForm(): BaseAgroportalCreateForm | VariableCreate {
+    private getForm(): BaseVariableCreateForm {
         switch (this.elementType) {
             case VariablesView.VARIABLE_TYPE : {
                 return this.variableCreate;

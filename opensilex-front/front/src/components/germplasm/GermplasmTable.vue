@@ -15,7 +15,8 @@
       <downloadCsv
         ref="downloadCsv"
         class="btn downloadTemplateBtn mb-2 mr-2"
-        :data="jsonForTemplate"
+        :data="[jsonForTemplate]"
+        :advancedOptions="{'header': false}"
         name="template.csv"
       >
         {{ $t("GermplasmTable.downloadTemplate") }}
@@ -540,13 +541,14 @@ export default class GermplasmTable extends Vue {
     });
 
     this.jsonForTemplate = [];
-    let jsonHeader = {};
+    //let jsonHeader = {};
     for (var i = 1; i < this.tableColumns.length; i++) {
       if (this.tableColumns[i].visible == true) {
-        jsonHeader[this.tableColumns[i].field] = null;
+        //jsonHeader[this.tableColumns[i].field] = null;
+        this.jsonForTemplate.push(this.tableColumns[i].field);
       }
     }
-    this.jsonForTemplate.push(jsonHeader);
+    //this.jsonForTemplate.push(jsonHeader);
     this.$attrs.downloadCsv;
     this.checkedLines = 0;
     this.disableCheck = false;
@@ -610,7 +612,8 @@ export default class GermplasmTable extends Vue {
         false,
         "comment"
     );
-    this.jsonForTemplate[0][columnID] = null;
+    //this.jsonForTemplate[0][columnID] = null;
+    this.jsonForTemplate.push(columnLabel);
     this.$attrs.downloadCsv;
   }
 

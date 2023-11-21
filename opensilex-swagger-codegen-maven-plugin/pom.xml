@@ -32,7 +32,7 @@
     <description>maven plugin to build modules from swagger codegen</description>
     
     <prerequisites>
-        <maven>3.2.5</maven>
+        <maven>3.6.0</maven>
     </prerequisites>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -59,9 +59,13 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <!-- A Maven Plugin is a Maven artifact which contains a plugin descriptor and one or more Mojos.
+                    A Mojo can be thought of as a goal in Maven, and every goal corresponds to a Mojo.
+                    The compiler:compile goal corresponds to the CompilerMojo class in the Maven Compiler Plugin, and the jar:jar goal corresponds to the JarMojo class in the Maven Jar Plugin.
+                    When you write your own plugin, you are simply grouping together a set of related Mojos (or goals) in a single plugin artifact -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.9.0</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                     </configuration>

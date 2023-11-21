@@ -169,7 +169,11 @@
                                        class="btn-dropdown"
                                        @click="updateRelation(relation.id, data.item.relationURI);"
                       >
-                      {{ $t(relation.label) }}
+                        {{ $t(relation.label) }}
+                        <font-awesome-icon
+                            icon="question-circle"
+                            v-b-tooltip.hover.top.html="$t(relation.title)"
+                        />
                     </b-dropdown-item>
                   </b-dropdown>
                 </template>
@@ -212,7 +216,7 @@ import Vue from "vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import {Skos} from "../../../../models/Skos";
+import SUPPORTED_SKOS_RELATIONS from "../../../../models/SkosRelations";
 import AgroportalResults from "./AgroportalResults.vue";
 import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 
@@ -259,16 +263,15 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   relationsInternal: any[] = [];
 
-  skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
-
   skosRelationOptions: Array<SelectableItem> = [];
 
-  setOptions(){
+  setOptions() {
     this.skosRelationOptions = [];
-    for (let [key, value] of this.skosRelationsMap) {
+    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
       this.$set(this.skosRelationOptions, this.skosRelationOptions.length, {
-        id: key,
-        label: this.$t(value)
+        id: skosRelation.dtoKey,
+        label: this.$t(skosRelation.label),
+        title: this.$t(skosRelation.description)
       });
     }
   }
@@ -322,8 +325,8 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   get relations() {
     this.relationsInternal = [];
     if (this.formDto !== undefined) {
-      for (let [key, value] of this.skosRelationsMap) {
-        this.updateRelations(key, this.formDto[key]);
+      for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+        this.updateRelations(skosRelation.dtoKey, this.formDto[skosRelation.dtoKey]);
       }
     }
     return this.relationsInternal;
@@ -345,7 +348,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   addRelation(relation: string, externalUri: string) {
     this.$set(this.relationsInternal, this.relationsInternal.length, {
-      relation: this.skosRelationsMap.get(relation),
+      relation: [...SUPPORTED_SKOS_RELATIONS].find(r => r.dtoKey === relation).label,
       relationURI: externalUri
     });
   }
@@ -385,8 +388,8 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       return false;
     }
     let includedInRelations = false;
-    for (let [key, value] of this.skosRelationsMap) {
-      if (this.formDto[key].includes(this.currentExternalUri)) {
+    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+      if (this.formDto[skosRelation.dtoKey].includes(this.currentExternalUri)) {
         includedInRelations = true;
         break;
       }
@@ -395,8 +398,8 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   }
 
   removeRelationsToSkosReferences(relationURI: string) {
-    for (let [key, value] of this.skosRelationsMap) {
-      this.formDto[key] = this.formDto[key].filter(function (
+    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+      this.formDto[skosRelation.dtoKey] = this.formDto[skosRelation.dtoKey].filter(function (
           value,
           index,
           arr

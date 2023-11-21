@@ -151,6 +151,7 @@ import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string,
   isDisabled?: boolean
 }
 

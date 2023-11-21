@@ -608,8 +608,14 @@
             "update": "Update references",
             "exactMatch": "Exact match",
             "closeMatch": "Close match",
-            "broadMatch": "Broader",
-            "narrowMatch": "Narrower",
+            "broadMatch": "Broad match",
+            "narrowMatch": "Narrow match",
+            "description": {
+                "exactMatch": "The term is equivalent to my concept",
+                "closeMatch": "The term is similar to my concept",
+                "broadMatch": "The term is more general than my concept",
+                "narrowMatch": "The term is more specific than my concept"
+            },
             "no-relation": "Please choose a relation type",
             "no-current-relation": "No relation selected",
             "current-relation": "Current selected relation",

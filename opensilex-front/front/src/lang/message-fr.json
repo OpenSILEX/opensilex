@@ -589,6 +589,12 @@
             "closeMatch": "Similaire",
             "broadMatch": "Plus général",
             "narrowMatch": "Plus spécifique",
+            "description": {
+                "exactMatch": "Le terme est équivalent à mon concept (skos:exactMatch)",
+                "closeMatch": "Le terme est similaire à mon concept (skos:closeMatch)",
+                "broadMatch": "Le terme est plus général que mon concept (skos:broadMatch)",
+                "narrowMatch": "Le terme est plus spécifique que mon concept (skos:narrowMatch)"
+            },
             "no-relation": "Sélectionner une relation",
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",

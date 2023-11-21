@@ -162,7 +162,7 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {Skos} from "../../../models/Skos";
+    import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -218,17 +218,16 @@
 
         relationsInternal: any[] = [];
 
-        skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
-
         options: any[] = [];
 
         setOptions(){
             this.options = [];
-            for (let [key, value] of this.skosRelationsMap) {
-                this.$set(this.options, this.options.length, {
-                    id: key,
-                    label: this.$t(value)
-                });
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+              this.$set(this.options, this.options.length, {
+                id: skosRelation.dtoKey,
+                label: this.$t(skosRelation.label),
+                title: this.$t(skosRelation.description)
+              });
             }
         }
 
@@ -278,13 +277,11 @@
         ];
 
         get relations() {
-            this.relationsInternal = [];
-            if (this.skosReferences !== undefined) {
-                for (let [key, value] of this.skosRelationsMap) {
-                    this.updateRelations(key, this.skosReferences[key]);
-                }
-            }
-            return this.relationsInternal;
+          this.relationsInternal = [];
+          for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+            this.updateRelations(skosRelation.dtoKey, this.skosReferences[skosRelation.dtoKey]);
+          }
+          return this.relationsInternal;
         }
 
         updateRelations(relation: string, references: string[]) {
@@ -298,7 +295,7 @@
 
         addRelation(relation: string, externalUri: string) {
             this.$set(this.relationsInternal, this.relationsInternal.length, {
-                relation: this.skosRelationsMap.get(relation),
+                relation: [...SUPPORTED_SKOS_RELATIONS].find(r => r.dtoKey === relation).label,
                 relationURI: externalUri
             });
         }
@@ -342,8 +339,8 @@
                 return false;
             }
             let includedInRelations = false;
-            for (let [key, value] of this.skosRelationsMap) {
-                if (this.skosReferences[key].includes(this.currentExternalUri)) {
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+                if (this.skosReferences[skosRelation.dtoKey].includes(this.currentExternalUri)) {
                     includedInRelations = true;
                     break;
                 }
@@ -352,8 +349,8 @@
         }
 
         removeRelationsToSkosReferences(row: any) {
-            for (let [key, value] of this.skosRelationsMap) {
-                this.skosReferences[key] = this.skosReferences[key].filter(function (
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+                this.skosReferences[skosRelation.dtoKey] = this.skosReferences[skosRelation.dtoKey].filter(function (
                     value,
                     index,
                     arr

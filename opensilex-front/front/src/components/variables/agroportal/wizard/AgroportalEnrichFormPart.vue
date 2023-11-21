@@ -30,15 +30,6 @@
                         label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>
-
-            <div class="col">
-                <div class="row">
-                    <div class="col">
-                        TODO : add labels
-                    </div>
-                </div>
-            </div>
-
         </div>
     </ValidationObserver>
 </template>

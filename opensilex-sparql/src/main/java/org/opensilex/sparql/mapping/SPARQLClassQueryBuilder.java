@@ -14,6 +14,9 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.ExprAggregator;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
@@ -256,12 +259,15 @@ class SPARQLClassQueryBuilder {
 
         SelectBuilder countBuilder = new SelectBuilder();
 
-        try {
-            // TODO generate properly count/distinct trought Jena API
-            countBuilder.addVar("(COUNT(DISTINCT ?" + uriFieldName + "))", makeVar(countFieldName));
-        } catch (ParseException ex) {
-            LOGGER.error("Error while building count query (should never happend)", ex);
-        }
+
+        // COUNT Aggregator
+        countBuilder.addVar(
+                AggregatorFactory.createCountExpr(
+                        true,
+                        SPARQLQueryHelper.getExprFactory().asVar(uriFieldName)
+                ).toString(),
+                makeVar(countFieldName)
+        );
 
         initializeQueryBuilder(countBuilder, graph, lang,customHandlerByFields);
 

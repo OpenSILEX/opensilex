@@ -104,18 +104,6 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-        <dependency>
-            <groupId>com.worldturner.medeia</groupId>
-            <artifactId>medeia-validator-core</artifactId>
-            <version>1.1.1</version>
-            <type>jar</type>
-        </dependency>
-        <!-- Json schema validator-->
-        <dependency>
-            <groupId>com.worldturner.medeia</groupId>
-            <artifactId>medeia-validator-jackson</artifactId>
-            <version>1.1.1</version>
-        </dependency>
     </dependencies>
     
     <build>

@@ -53,7 +53,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 Lang.RDFXML,
                 OesoExt.PREFIX,
                 null,
-                true
+                false
         ));
         return list;
     }

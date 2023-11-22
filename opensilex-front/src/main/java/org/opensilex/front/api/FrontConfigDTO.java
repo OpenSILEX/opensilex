@@ -65,6 +65,8 @@ public class FrontConfigDTO {
 
     DashboardConfigDTO dashboard;
 
+    Boolean gdprFileIsConfigured;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -248,4 +250,9 @@ public class FrontConfigDTO {
     public void setConnectAsGuest(boolean connectAsGuest) {
         this.connectAsGuest = connectAsGuest;
     }
+
+    @ApiModelProperty(value = "GDPR PDF is configured")
+    public Boolean getGdprFileIsConfigured() { return gdprFileIsConfigured; }
+
+    public void setGdprFileIsConfigured(Boolean gdprFileIsConfigured) { this.gdprFileIsConfigured = gdprFileIsConfigured; }
 }

@@ -330,7 +330,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Devices URI") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
-            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_dto") @Valid CriteriaDTO criteriaDTO,
+            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_on_data") @Valid CriteriaDTO criteriaDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize

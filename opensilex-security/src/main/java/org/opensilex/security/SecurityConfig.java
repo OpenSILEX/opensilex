@@ -9,7 +9,9 @@ package org.opensilex.security;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
- 
+
+import java.util.Map;
+
 /**
  * Default configuration for OpenSilex base module
  *
@@ -43,4 +45,9 @@ public interface SecurityConfig {
             value = "SAML configuration (disable by default)"
     )
     SAMLConfig saml();
+
+    @ConfigDescription(
+            value = "Map with a language (ex: 'en') matching absolute path to access the local GDPR PDF file written in the corresponding language"
+    )
+    Map<String, String> gdprPdfPathsByLanguages();
 }

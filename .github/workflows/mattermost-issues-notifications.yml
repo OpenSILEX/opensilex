@@ -1,0 +1,11 @@
+name: mattermost-issues-notifications
+on:
+  issues:
+    types: [reopened, opened]
+jobs:
+  send-issue-notifiaction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: call Mattermost webhook
+        run: |
+          curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "New issue on GitHub:\n* link = ${{ github.event.issue.url }}\n* title = ${{ github.event.issue.title }}\n* user = ${{ github.event.issue.user.login }}"}' https://team.forgemia.inra.fr/hooks/11snftmshpb97pjr9pygjeywkr

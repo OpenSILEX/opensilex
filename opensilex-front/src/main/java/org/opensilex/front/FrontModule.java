@@ -129,6 +129,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setDashboard(dashboard);
 
             try {
+                SecurityConfig securityConfig = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class);
+                config.setGdprFileIsConfigured( ! securityConfig.gdprPdfPathsByLanguages().isEmpty() );
+            } catch (OpenSilexModuleNotFoundException e){
+                config.setGdprFileIsConfigured(false);
+            }
+
+            try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {
             }

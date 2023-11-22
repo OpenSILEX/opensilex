@@ -89,6 +89,7 @@
                     :multiple="false"
                     :required="false"
                     :searchMethod="searchParents"
+                    :placeholder="$t('ExperimentScientificObjects.parent-placeholder')"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
@@ -784,6 +785,7 @@ en:
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
     parent-label: Parent
+    parent-placeholder: Select a parent
     export-csv: Export CSV
     geometry-label: Geometry
     geometry-comment: Geospatial coordinates
@@ -801,6 +803,7 @@ fr:
     delete-scientific-object: Supprimer l'objet scientifique
     add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
+    parent-placeholder: Sélectionner un parent
     export-csv: Exporter en CSV
     geometry-label: Géometrie
     geometry-comment: Coordonnées géospatialisées

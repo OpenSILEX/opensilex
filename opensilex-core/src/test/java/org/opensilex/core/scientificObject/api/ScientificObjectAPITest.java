@@ -25,12 +25,16 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
 import org.opensilex.core.data.DataFileAPITest;
-import org.opensilex.core.data.api.*;
+import org.opensilex.core.data.api.CriteriaDTO;
+import org.opensilex.core.data.api.DataCreationDTO;
+import org.opensilex.core.data.api.DataFileCreationDTO;
+import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.ontology.Oeso;
@@ -47,6 +51,8 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -57,7 +63,6 @@ import javax.ws.rs.core.Response.Status;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,7 +71,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static junit.framework.TestCase.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -84,6 +90,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
     public static final String searchGeomPath = path + "/geometry";
+    public static final String exportShpPath = path + "/export_shp";
 
     public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
     public static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
@@ -934,6 +941,69 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), getJsonPostResponseAsAdmin(target(createPath), duplicateInGlobal).getStatus());
     }
 
+    @Test
+    public void testExportOSasShp() throws Exception {
+
+        //Create one OS Model
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
+        URI uri = extractUriFromResponse(postResult);
+
+        ScientificObjectModel osModel = new ScientificObjectModel();
+
+        osModel.setName("SO " + soCount++);
+        osModel.setUri(uri);
+        osModel.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
+        osModel.setTypeLabel(new SPARQLLabel("ScientificObject","en"));
+
+        SPARQLModelRelation germplasmRelation = new SPARQLModelRelation();
+        germplasmRelation.setProperty(Oeso.hasGermplasm);
+        germplasmRelation.setValue(speciesUri.toString());
+
+        SPARQLModelRelation replicationRelation = new SPARQLModelRelation();
+        replicationRelation.setProperty(Oeso.hasReplication);
+        replicationRelation.setValue("2");
+
+        List<SPARQLModelRelation> relationList = new ArrayList<>();
+        relationList.add(germplasmRelation);
+        relationList.add(replicationRelation);
+
+        osModel.setRelations(relationList);
+
+        //build geometry
+        List<Position> list = new LinkedList<>();
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97171243, 43.61332417));
+        list.add(new Position(3.9717427, 43.61330558));
+        list.add(new Position(3.97170272, 43.61327122));
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97167246, 43.61328981));
+        Geometry geometry = new Polygon(list);
+
+        //build post request
+        GeometryDTO objToExport=new GeometryDTO();
+        objToExport.setGeometry(geometryToGeoJson(geometry));
+        objToExport.setUri(osModel.getUri());
+
+        ArrayList<GeometryDTO> objectsList= new ArrayList<>();
+        objectsList.add(objToExport);
+
+        //build params
+        ArrayList<URI> propsList= new ArrayList<>();
+        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        propsList.add(new URI("vocabulary:hasFactorLevel"));
+        propsList.add(new URI("vocabulary:hasGermplasm"));
+        propsList.add(new URI("vocabulary:hasReplication"));
+
+        Map<String, Object> params = new HashMap<String, Object>() {{
+            put(EXPERIMENT_QUERY_PARAM, experiment);
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        // assert service
+        final Response result =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportShpPath),params),objectsList);
+        assertEquals(Status.OK.getStatusCode(), result.getStatus());
+    }
 
 
 }

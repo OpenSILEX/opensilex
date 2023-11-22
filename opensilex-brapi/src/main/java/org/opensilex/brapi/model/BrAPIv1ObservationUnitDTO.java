@@ -7,8 +7,8 @@
 package org.opensilex.brapi.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.geotools.geojson.geom.GeometryJSON;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -373,7 +373,7 @@ public class BrAPIv1ObservationUnitDTO {
 
         GeospatialModel objectGeometryModel = geospatialDAO.getGeometryByURI(model.getUri(), experimentModel.getUri());
         if (objectGeometryModel != null && objectGeometryModel.getGeometry() != null && !objectGeometryModel.getGeometry().toString().isEmpty()) {
-            org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeometryJSON().read(objectGeometryModel.getGeometry().toJson());
+            org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeoJsonReader().read(objectGeometryModel.getGeometry().toJson());
 
             if (!objectJtsGeometry.isEmpty()){
 
@@ -386,7 +386,7 @@ public class BrAPIv1ObservationUnitDTO {
             PositionModel movePosition = moveEventDAO.getPosition(model.getUri(), moveModel.getUri());
             
             if (!movePosition.getCoordinates().toString().isEmpty()){
-                org.locationtech.jts.geom.Geometry moveJtsGeometry = new GeometryJSON().read(movePosition.getCoordinates().toJson());
+                org.locationtech.jts.geom.Geometry moveJtsGeometry = new GeoJsonReader().read(movePosition.getCoordinates().toJson());
 
                 if (!moveJtsGeometry.isEmpty()){
 

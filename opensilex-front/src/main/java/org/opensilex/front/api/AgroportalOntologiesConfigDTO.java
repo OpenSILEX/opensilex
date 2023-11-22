@@ -10,6 +10,7 @@ public class AgroportalOntologiesConfigDTO {
     private List<String> entityOntologies;
     private List<String> traitOntologies;
     private List<String> methodOntologies;
+    private List<String> unitOntologies;
 
     public List<OntologyPortalItem> getOntologyPortals() {
         return ontologyPortals;
@@ -41,5 +42,13 @@ public class AgroportalOntologiesConfigDTO {
 
     public void setTraitOntologies(List<String> traitOntologies) {
         this.traitOntologies = traitOntologies;
+    }
+
+    public List<String> getUnitOntologies() {
+        return unitOntologies;
+    }
+
+    public void setUnitOntologies(List<String> unitOntologies) {
+        this.unitOntologies = unitOntologies;
     }
 }

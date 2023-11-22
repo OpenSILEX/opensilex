@@ -78,10 +78,11 @@
             @onCreate="refresh($event.uri)"
             @onUpdate="refresh($event.uri)"
           ></opensilex-AgroportalCharacteristicForm>
-
-            <opensilex-UnitCreate
-                ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-UnitCreate>
+          <opensilex-AgroportalUnitForm
+            ref="unitForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalUnitForm>
 
             <opensilex-ModalForm
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadGroupForm"

@@ -27,5 +27,9 @@ public interface AgroportalOntologiesConfig {
     )
     List<String> method();
 
+    @ConfigDescription(
+            value = "Ontologies for units"
+    )
+    List<String> unit();
 }
 

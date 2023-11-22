@@ -398,11 +398,10 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     this.refresh()
   }
 
-
-   refresh() {
-      this.currentPage = 1;
-      this.pageSize=this.defaultPageSize;
-      this.tableRef.refresh();
+  refresh() {
+    this.currentPage = 1;
+    this.pageSize=this.defaultPageSize;
+    this.tableRef.refresh();
   }
 
   // function that reset the selected elements
@@ -420,7 +419,20 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   onRefreshed() {
     let that = this;
-    this.$emit('refreshed')
+    this.$emit('refreshed');
+
+    //Remove elements from the selection if they are deleted / update the number of badge elements displayed
+    this.selectedItems.forEach((element, index) => {
+      let tableIndex = this.tableRef.sortedItems.findIndex(
+        it => element.uri == it.uri
+      );
+      if (tableIndex < 0) {
+        this.selectedItems.splice(index, 1);
+      }
+    });
+
+    this.numberOfSelectedRows = this.selectedItems.length;
+
     setTimeout(function() {
       that.afterRefreshedItemsSelection();
     }, 1); //do it after real table refreshed

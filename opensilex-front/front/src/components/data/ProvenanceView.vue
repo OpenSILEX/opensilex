@@ -133,9 +133,8 @@ export default class ProvenanceView extends Vue {
     return form;
   }
 
-  deleteProvenance(uri: string) {
-    console.log("deleteProvenance " + uri);
 
+  deleteProvenance(uri: string) {
     this.service
       .deleteProvenance(uri)
       .then(() => {

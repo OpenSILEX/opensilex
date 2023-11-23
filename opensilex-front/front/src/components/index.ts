@@ -453,6 +453,10 @@ components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
 
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
+import GermplasmAddColumnModal from './germplasm/addColumnComponents/GermplasmAddColumnModal.vue';
+components["opensilex-GermplasmAddColumnModal"] = GermplasmAddColumnModal;
+import GermplasmControlledAttributesSelector from './germplasm/addColumnComponents/GermplasmControlledAttributesSelector.vue';
+components["opensilex-GermplasmControlledAttributesSelector"] = GermplasmControlledAttributesSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

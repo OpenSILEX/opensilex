@@ -300,6 +300,31 @@ OESO</rdfs:label>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:ObjectProperty>
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasMethod -->
@@ -1478,7 +1503,26 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm"/>
+                    <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM"/>
+                    <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF"/>
+                    <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+    </owl:Class>
 
 
 
@@ -2477,6 +2521,20 @@ Used in OpenSILEX for group things</rdfs:comment>
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm"/>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM"/>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF"/>
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
@@ -2637,6 +2695,18 @@ Used in OpenSILEX for group things</rdfs:comment>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
         <rdfs:label xml:lang="fr">Matériel génétique</rdfs:label>
         <rdfs:label xml:lang="en">Germplasm</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm">
+        <rdfs:label xml:lang="fr">Parent</rdfs:label>
+        <rdfs:label xml:lang="en">Parent</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmM">
+        <rdfs:label xml:lang="fr">Parent M</rdfs:label>
+        <rdfs:label xml:lang="en">Parent M</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasParentGermplasmF">
+        <rdfs:label xml:lang="fr">Parent F</rdfs:label>
+        <rdfs:label xml:lang="en">Parent F</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf">
         <rdfs:label xml:lang="fr">est une partie de</rdfs:label>

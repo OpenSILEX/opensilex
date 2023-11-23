@@ -1,13 +1,14 @@
 <template>
   <opensilex-FormField
     :rules="rules"
-    :required="required"
+    :required="isRequired"
     :label="label"
     :helpMessage="helpMessage"
     :vid="vid"
   >
     <template v-slot:field="field">
       <b-form-input
+        :ref="inputRef"
         :id="field.id"
         :value="stringValue"
         @update="updateValue($event)"
@@ -31,12 +32,15 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
+  Ref
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class InputForm extends Vue {
+  @Ref("inputRef") readonly inputRef!: any;
+
   $opensilex: any;
 
   @PropSync("value")
@@ -94,6 +98,7 @@ export default class InputForm extends Vue {
 
   @Prop()
   vid;
+
 }
 </script>
 

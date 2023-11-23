@@ -33,6 +33,7 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -1038,13 +1039,16 @@ public class ScientificObjectDAO {
         object.setType(soType);
         object.setName(name);
 
-        if (relations != null) {
+        /*if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
                 if (!ontologyDAO.validateObjectValue(contextURI, model, propertyShortURI, relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
+        }*/
+        if(relations != null){
+            RDFObjectDTO.validatePropertiesAndAddToObject(contextURI, model, object, relations, ontologyDAO);
         }
 
         return object;

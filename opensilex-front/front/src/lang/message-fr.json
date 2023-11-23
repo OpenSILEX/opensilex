@@ -830,6 +830,7 @@
         "wkt": "Le champ {_field_} doit être au format WKT",
         "dateDiff" : "La date du champ {_field_} ne doit pas être antérieur à la date de début",
         "nameFiltered" : "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&",
+        "existingProperty" : "Cette {_field_} est déjà existante",
         "refuseOperators": "Pas applicable"
     },
     "searchfilter": {

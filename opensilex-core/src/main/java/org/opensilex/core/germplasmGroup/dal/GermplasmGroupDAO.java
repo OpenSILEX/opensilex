@@ -11,31 +11,31 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.rdf.model.Property;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -46,7 +46,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class GermplasmGroupDAO {
 
     protected final SPARQLService sparql;
-    protected final Node defaultGraph;
+    protected final Node germplasmGroupsDefaultGraph;
     protected final Node defaultGermplasmGraph;
 
 
@@ -54,7 +54,7 @@ public class GermplasmGroupDAO {
         this.sparql = sparql;
 
         try{
-            defaultGraph = sparql.getDefaultGraph(GermplasmGroupModel.class);
+            germplasmGroupsDefaultGraph = sparql.getDefaultGraph(GermplasmGroupModel.class);
             defaultGermplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
         }catch (SPARQLException e){
            throw new RuntimeException(e);
@@ -114,7 +114,7 @@ public class GermplasmGroupDAO {
         if( model != null ){
             if(withGermplasms){
                 List<GermplasmGroupModel> singletonList = Collections.singletonList(model);
-                fetchGermplasmsGroup(singletonList, lang);
+                fetchGermplasmsOfGroup(singletonList, lang);
                 return singletonList.get(0);
             } else {
                 return model;
@@ -125,12 +125,11 @@ public class GermplasmGroupDAO {
 
     }
 
-    private void fetchGermplasmsGroup(List<GermplasmGroupModel> models, String lang) throws SPARQLException, ParseException {
+    private void fetchGermplasmsOfGroup(List<GermplasmGroupModel> models, String lang) throws SPARQLException, ParseException {
 
         if(models.isEmpty()){
             return;
         }
-
         Map<String, Integer> modelsIndexes = new PatriciaTrie<>();
         for (int i = 0; i < models.size(); i++) {
             GermplasmGroupModel model = models.get(i);
@@ -140,61 +139,128 @@ public class GermplasmGroupDAO {
 
         Stream<URI> uris = models.stream().map(SPARQLResourceModel::getUri);
 
-        Var germplasmGroup = makeVar("germplasm_group");
-        Var germplasm = makeVar("germplasm");
-        Var germplasmName = makeVar("germplasm_name");
-        Var germplasmType = makeVar("germplasm_type");
+        createManyToManySPARQLRequest(
+                germplasmGroupsDefaultGraph,
+                defaultGermplasmGraph,
+                uris,
+                (ManyToManyNestedUpdateData manyToManyNestedUpdateData) -> {
+                    Integer groupIdx = modelsIndexes.get(manyToManyNestedUpdateData.subjectUri);
+                    GermplasmGroupModel group = models.get(groupIdx);
+                    GermplasmModel nestedModelAsGermplasm = GermplasmModel.fromSPARQLNamedResourceModel(manyToManyNestedUpdateData.nestedModel);
+                    group.getGermplasmList().add(nestedModelAsGermplasm);
+                },
+                RDFS.member,
+                Oeso.GermplasmGroup,
+                models.size(),
+                sparql,
+                lang
+                );
+    }
+
+    /**
+     *
+     * Temporary function, to extract some of the above code that's used in multiple locations with different model types
+     * TODO speak with valentin or Renaud about where to do this properly
+     *
+     * original documentation :
+     * <pre>
+     * SELECT ?variable_group ?variable ?variable_type ?variable_name
+     * (GROUP_CONCAT(DISTINCT ?variable_group ; separator=',') AS ?variable_group__opensilex__concat)  WHERE {
+     *
+     *      GRAPH test:variablesGroup {
+     *          ?variable_group a vocabulary:VariablesGroup .
+     *          ?variable_group rdfs:member ?variable
+     *      }
+     *      GRAPH test:variables {
+     *          ?variable rdfs:label ?variable_name .
+     *          ?variable a ?variable_type .
+     *      }
+     *      VALUES ?variable_group {  test:variable_group1 test:variable_group2  }
+     *      GROUP BY ?variable ?variable_name ?variable_type
+     * }
+     * </pre>
+     *
+     * Considering n groups and m the total number of variables
+     * This method has the following complexity :
+     * <ul>
+     *     <li>Time complexity : O(n+m)</li>
+     *     <li>Query complexity : O(1)</li>
+     *     <li>Space complexity : O(n)</li>
+     * </ul>
+     */
+    public static void createManyToManySPARQLRequest(
+            Node subjectDefaultGraph,
+            Node objectDefaultGraph,
+            Stream<URI> subjectUriStream,
+            Consumer<ManyToManyNestedUpdateData> addModelToSubjectObjectList,
+            Property predicate,
+            Resource subjectType,
+            int subjectQuantity,
+            SPARQLService sparql,
+            String lang) throws ParseException, SPARQLException {
+
+        Var subjectVar = makeVar("subject_var");
+        Var objectVar = makeVar("object_var");
+        Var object_name = makeVar("object_name");
+        Var object_type = makeVar("object_type");
         SelectBuilder query = new SelectBuilder()
-                .addVar(germplasm)
-                .addVar(germplasmType)
-                .addVar(germplasmName)
-                .addGraph(defaultGraph, new WhereBuilder()
-                        .addWhere(germplasmGroup, RDF.type, Oeso.GermplasmGroup)
-                        .addWhere(germplasmGroup, RDFS.member, germplasm))
-                .addGraph(defaultGermplasmGraph, new WhereBuilder()
-                        .addWhere(germplasm, RDFS.label, germplasmName)
-                        .addWhere(germplasm, RDF.type, germplasmType)
+                .addVar(objectVar)
+                .addVar(object_type)
+                .addVar(object_name)
+                .addGraph(subjectDefaultGraph, new WhereBuilder()
+                        .addWhere(subjectVar, predicate, objectVar))
+                .addGraph(objectDefaultGraph, new WhereBuilder()
+                        .addWhere(objectVar, RDFS.label, object_name)
+                        .addWhere(objectVar, RDF.type, object_type)
                 )
-                .addGroupBy(germplasm)
-                .addGroupBy(germplasmType)
-                .addGroupBy(germplasmName);
+                .addGroupBy(objectVar)
+                .addGroupBy(object_type)
+                .addGroupBy(object_name);
 
 
         //Only get labels of correct language
         if (!StringUtils.isEmpty(lang)) {
-            Expr langFilter = SPARQLQueryHelper.langFilterWithDefault("germplasm_name", Locale.forLanguageTag(lang).getLanguage());
+            Expr langFilter = SPARQLQueryHelper.langFilterWithDefault("object_name", Locale.forLanguageTag(lang).getLanguage());
             query.addFilter(langFilter);
         }
 
         // aggregate groups with variables
-        SPARQLQueryHelper.appendGroupConcatAggregator(query, germplasmGroup, true);
+        SPARQLQueryHelper.appendGroupConcatAggregator(query, subjectVar, true);
 
-        SPARQLQueryHelper.addWhereUriValues(query, germplasmGroup.getVarName(), uris, models.size());
+        SPARQLQueryHelper.addWhereUriValues(query, subjectVar.getVarName(), subjectUriStream, subjectQuantity);
 
         // retrieve germplasm class from Ontology
-        ClassModel germplasmClass = SPARQLModule.getOntologyStoreInstance().getClassModel(URI.create(Oeso.Germplasm.getURI()), null, lang);
+        ClassModel objectModelClass = SPARQLModule.getOntologyStoreInstance().getClassModel(URI.create(Oeso.Germplasm.getURI()), null, lang);
 
         // read variables
         Stream<SPARQLResult> results = sparql.executeSelectQueryAsStream(query);
         results.forEach(result -> {
 
-            GermplasmModel nestedModel = new GermplasmModel();
-            nestedModel.setUri(URIDeserializer.formatURI(result.getStringValue(germplasm.getVarName())));
-            nestedModel.setName(result.getStringValue(germplasmName.getVarName()));
-            nestedModel.setType(URIDeserializer.formatURI(result.getStringValue(germplasmType.getVarName())));
-            nestedModel.setTypeLabel(germplasmClass.getLabel());
+            SPARQLNamedResourceModel nestedModel = new SPARQLNamedResourceModel();
+            nestedModel.setUri(URIDeserializer.formatURI(result.getStringValue(objectVar.getVarName())));
+            nestedModel.setName(result.getStringValue(object_name.getVarName()));
+            nestedModel.setType(URIDeserializer.formatURI(result.getStringValue(object_type.getVarName())));
+            nestedModel.setTypeLabel(objectModelClass.getLabel());
 
             // get groups associated to the variable
-            String joiningColumn = result.getStringValue(SPARQLQueryHelper.getConcatVarName(germplasmGroup.getVarName()));
+            String joiningColumn = result.getStringValue(SPARQLQueryHelper.getConcatVarName(subjectVar.getVarName()));
             String[] foreignKeys = joiningColumn.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
 
             for (String key : foreignKeys) {
                 String shortKey = URIDeserializer.formatURIAsStr(key);
-                Integer groupIdx = modelsIndexes.get(shortKey);
-                GermplasmGroupModel group = models.get(groupIdx);
-                group.getGermplasmList().add(nestedModel);
+                addModelToSubjectObjectList.accept(new ManyToManyNestedUpdateData(shortKey, nestedModel));
             }
         });
+    }
+
+    public static class ManyToManyNestedUpdateData {
+        public String subjectUri;
+        public SPARQLNamedResourceModel nestedModel;
+
+        ManyToManyNestedUpdateData(String subjectUri, SPARQLNamedResourceModel nestedModel){
+            this.subjectUri = subjectUri;
+            this.nestedModel = nestedModel;
+        }
 
     }
 

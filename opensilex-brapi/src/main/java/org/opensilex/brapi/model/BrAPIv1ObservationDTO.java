@@ -211,7 +211,7 @@ public class BrAPIv1ObservationDTO {
             ScientificObjectModel objectModel = scientificObjectDAO.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser.getLanguage());
             List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
             if (germplasms.size() >= 1){
-                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser);
+                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser, false);
                 this.setGermplasmDbId(germplasmModel.getUri().toString());
                 this.setGermplasmName(germplasmModel.getName());
             }

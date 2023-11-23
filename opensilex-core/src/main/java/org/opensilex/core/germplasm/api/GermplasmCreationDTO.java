@@ -11,14 +11,25 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * DTO representing JSON for posting germplasm
@@ -26,23 +37,9 @@ import org.opensilex.sparql.model.SPARQLLabel;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website", "metadata"})
-public class GermplasmCreationDTO {
-    
-    /**
-     * Germplasm URI
-     */
-    @ValidURI
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    protected URI uri;
-    
-    /**
-     * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
-     */
-    @NotNull
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    @JsonProperty("rdf_type")
-    protected URI rdfType;
+    "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
+public class GermplasmCreationDTO extends RDFObjectDTO {
+
     
     /**
      * Germplasm label
@@ -83,7 +80,7 @@ public class GermplasmCreationDTO {
      */
     @ApiModelProperty(value = "institute", example = "INRA")
     protected String institute;
-        
+
     /**
      * productionYear
      */
@@ -104,6 +101,9 @@ public class GermplasmCreationDTO {
     @ApiModelProperty(value = "website")
     protected URI website;
 
+    @Override
+    @ValidURI
+    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     public URI getUri() {
         return uri;
     }
@@ -112,12 +112,16 @@ public class GermplasmCreationDTO {
         this.uri = uri;
     }
 
-    public URI getRdfType() {
-        return rdfType;
+    @Override
+    @ValidURI
+    @NotNull
+    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", required = true)
+    public URI getType() {
+        return type;
     }
 
     public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+        super.setType(rdfType);
     }
 
     public String getName() {
@@ -211,18 +215,24 @@ public class GermplasmCreationDTO {
     public void setWebsite(URI website) {
         this.website = website;
     }
-    
-    public GermplasmModel newModel() {
+
+    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
         GermplasmModel model = new GermplasmModel();
         
         if (uri != null) {
             model.setUri(uri);
         }
+        if(relations != null){
+            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            ClassModel classModel1 = SPARQLModule.getOntologyStoreInstance().getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
+        }
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
-        if (rdfType != null) {
-            model.setType(rdfType);
+        if (type != null) {
+            model.setType(type);
         }
         
         if (species != null) {
@@ -275,6 +285,5 @@ public class GermplasmCreationDTO {
         }
 
         return model;
-    }   
-
+    }
 }

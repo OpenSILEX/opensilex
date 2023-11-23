@@ -30,6 +30,8 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -38,6 +40,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -50,6 +53,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -420,7 +424,11 @@ public final class OntologyDAO {
         buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI);
     }
 
-
+    /**
+     *
+     * Validates the relation, then adds it to the object.
+     * TODO Rename this function ??
+     */
     public boolean validateObjectValue(
             URI graph,
             ClassModel model,
@@ -1025,5 +1033,31 @@ public final class OntologyDAO {
 
         return resultList;
     }
+
+    public List<ResourceTreeDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {
+        //Get root property
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, null, domainURI, lang);
+        String rootPropertyName = model.getName();
+
+        //Get resource tree
+        BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) -> SPARQLDeserializers.compareURIs(property.getUri(), propertyURI));
+        List<ResourceTreeDTO> propertiesFromRoot = ResourceTreeDTO.fromResourceTree(
+                ontologyStore.searchObjectProperties(domainURI, rootPropertyName, lang, true, objectPropFilter)
+        );
+        if(propertiesFromRoot.size()>1){
+            throw new Exception("Multiple root properties with this uri found");
+        }
+        ResourceTreeDTO rootProperty = propertiesFromRoot.get(0);
+        List<ResourceTreeDTO> result = rootProperty.getChildren();
+
+        //Add root if required, set children to empty list to get rid of duplicated information
+        if(!ignoreRoot){
+            rootProperty.setChildren(Collections.emptyList());
+            result.add(rootProperty);
+        }
+        return result;
+    }
+
 
 }

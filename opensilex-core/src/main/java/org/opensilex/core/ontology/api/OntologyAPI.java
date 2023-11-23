@@ -32,6 +32,7 @@ import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -217,6 +218,7 @@ public class OntologyAPI {
     }
 
     public static final String PROPERTY_PATH = "property";
+    public static final String SUB_PROPERTY_OF_PATH = "subproperties_of";
 
     @POST
     @Path(PROPERTY_PATH)
@@ -311,6 +313,25 @@ public class OntologyAPI {
             dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
         return new SingleObjectResponse<>(dto).getResponse();
+    }
+
+    @GET
+    @Path(SUB_PROPERTY_OF_PATH)
+    @ApiOperation("Return property list from a parent property")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return property model definition ", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response getSubPropertiesOf(
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
+            @ApiParam(value = "Flag to determine if only sub-properties must be included in result") @DefaultValue("false") @QueryParam("ignoreRootProperty") boolean ignoreRootProperty
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+        List<ResourceTreeDTO> result = dao.getSubPropertiesOf(domainURI, propertyURI, ignoreRootProperty, currentUser.getLanguage());
+        return new ResourceTreeResponse(result).getResponse();
     }
 
     @DELETE

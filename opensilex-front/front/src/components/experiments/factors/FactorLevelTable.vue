@@ -25,7 +25,7 @@
                 }}</b-button
               >
               <opensilex-CSVInputFile
-                :headersToCheck="['name', 'description']"
+                :headersExactMatch="['name', 'description']"
                 v-on:updated="uploaded"
               ></opensilex-CSVInputFile>
               <b-button

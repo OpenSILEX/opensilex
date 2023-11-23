@@ -14,7 +14,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -26,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * @author Gabriel Besombes
@@ -83,16 +83,12 @@ public class LocationsAPI extends FaidareCall {
         Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityDAO, organizationDAO);
         if (locationDbId != null && facilityDAO.get(locationDbId, currentUser) == null) {
             throw new NotFoundURIException(locationDbId);
-        } else if (locationDbId != null) {
-            return new SingleObjectResponse<>(
-                    locationDTOBuilder.fromModel(
-                            facilityDAO.get(locationDbId, currentUser),
-                            currentUser
-                    )
-            ).getResponse();
         } else {
             FacilitySearchFilter filter = new FacilitySearchFilter()
                     .setUser(currentUser);
+            if (locationDbId != null) {
+                filter.setFacilities(Collections.singletonList(locationDbId));
+            }
             filter.setOrderByList(orderByList)
                     .setPage(page)
                     .setPageSize(pageSize);

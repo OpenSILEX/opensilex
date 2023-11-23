@@ -188,10 +188,6 @@ import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdate
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
 
 import {BaseVariableCreateForm} from "./form/VariableFormTypes";
-import AgroportalEntityForm from "@/components/variables/agroportal/AgroportalEntityForm.vue";
-import AgroportalEntityOfInterestForm from "@/components/variables/agroportal/AgroportalEntityOfInterestForm.vue";
-import AgroportalCharacteristicForm from "@/components/variables/agroportal/AgroportalCharacteristicForm.vue";
-import AgroportalMethodForm from "@/components/variables/agroportal/AgroportalMethodForm.vue";
 
 @Component
 export default class VariablesView extends Vue {
@@ -230,7 +226,7 @@ export default class VariablesView extends Vue {
     @Ref("interestEntityForm") readonly interestEntityForm!: BaseVariableCreateForm;
     @Ref("characteristicForm") readonly characteristicForm!: BaseVariableCreateForm;
     @Ref("methodForm") readonly methodForm!: BaseVariableCreateForm;
-    @Ref("unitForm") readonly unitForm!: UnitCreate;
+    @Ref("unitForm") readonly unitForm!: BaseVariableCreateForm;
 
     /**
      * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call

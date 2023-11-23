@@ -137,7 +137,9 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
     return this.createMethod(form)
         .then(http => {
           form.uri = http.response.result;
-          this.$opensilex.showSuccessToast("TODO success message"); //@todo
+          this.$opensilex.showSuccessToast(this.$t("component.common.success.creation-success-with-template", {
+            uri: form.uri
+          }).toString());
           this.$emit("onCreate", form);
         })
         .catch(this.$opensilex.errorHandler);
@@ -147,7 +149,9 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
     return this.updateMethod(form)
         .then(http => {
           form.uri = http.response.result;
-          this.$opensilex.showSuccessToast("TODO success message"); //@todo
+          this.$opensilex.showSuccessToast(this.$t("component.common.success.update-success-with-template", {
+            uri: form.uri
+          }).toString());
           this.$emit("onUpdate", form);
         })
         .catch(this.$opensilex.errorHandler);

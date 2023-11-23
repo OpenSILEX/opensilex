@@ -98,7 +98,9 @@
             "success": {
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
+                "creation-success-with-template": "{uri} has been created",
                 "update-success-message": " has been updated",
+                "update-success-with-template": "{uri} has been updated",
                 "delete-success-message": "has been deleted",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },

@@ -37,10 +37,10 @@
                         :actionHandler="editMode ? undefined : showEntityCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-AgroportalEntityCreate
+                    <opensilex-AgroportalEntityForm
                         ref="entityForm"
                         @onCreate="setLoadedEntity">
-                    </opensilex-AgroportalEntityCreate>
+                    </opensilex-AgroportalEntityForm>
                 </div>
 
                 <!-- Entity of interest -->
@@ -60,10 +60,10 @@
                         :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-AgroportalEntityOfInterestCreate
+                    <opensilex-AgroportalEntityOfInterestForm
                         ref="interestEntityForm"
                         @onCreate="setLoadedInterestEntity">
-                    </opensilex-AgroportalEntityOfInterestCreate>
+                    </opensilex-AgroportalEntityOfInterestForm>
                 </div>
 
                 <!-- Characteristic -->
@@ -84,10 +84,10 @@
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-AgroportalCharacteristicCreate
+                    <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
                         @onCreate="setLoadedCharacteristic">
-                    </opensilex-AgroportalCharacteristicCreate>
+                    </opensilex-AgroportalCharacteristicForm>
                 </div>
 
                 <!-- Species -->
@@ -119,10 +119,10 @@
                         noResultsText="VariableForm.no-method"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-AgroportalMethodCreate
+                    <opensilex-AgroportalMethodForm
                         ref="methodForm"
                         @onCreate="setLoadedMethod">
-                    </opensilex-AgroportalMethodCreate>
+                    </opensilex-AgroportalMethodForm>
                 </div>
                 
                 <!-- Trait button -->
@@ -168,10 +168,10 @@
                         noResultsText="VariableForm.no-unit"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-UnitCreate
+                    <opensilex-AgroportalUnitForm
                         ref="unitForm"
                         @onCreate="setLoadedUnit">
-                    </opensilex-UnitCreate>
+                    </opensilex-AgroportalUnitForm>
                 </div>
             </div>
 
@@ -263,7 +263,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
 import {
   CharacteristicCreationDTO,
@@ -279,6 +278,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+import {BaseVariableCreateForm} from "./VariableFormTypes";
 
 @Component
 export default class VariableForm extends Vue {
@@ -304,16 +304,16 @@ export default class VariableForm extends Vue {
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
     @Ref("entitySelectForm") entitySelectForm!: SelectForm;
-    @Ref("interestEntitySelectForm") interestEntitySelectForm!: any;
-    @Ref("characteristicSelectForm") characteristicSelectForm!: any;
-    @Ref("methodSelectForm") methodSelectForm!: any;
-    @Ref("unitSelectForm") unitSelectForm!: any;
+    @Ref("interestEntitySelectForm") interestEntitySelectForm!: SelectForm;
+    @Ref("characteristicSelectForm") characteristicSelectForm!: SelectForm;
+    @Ref("methodSelectForm") methodSelectForm!: SelectForm;
+    @Ref("unitSelectForm") unitSelectForm!: SelectForm;
 
-    @Ref("entityForm") readonly entityForm!: any;
-    @Ref("interestEntityForm") readonly interestEntityForm!: any;
-    @Ref("characteristicForm") readonly characteristicForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
-    @Ref("unitForm") readonly unitForm!: any;
+    @Ref("entityForm") readonly entityForm!: BaseVariableCreateForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseVariableCreateForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseVariableCreateForm;
+    @Ref("methodForm") readonly methodForm!: BaseVariableCreateForm;
+    @Ref("unitForm") readonly unitForm!: BaseVariableCreateForm;
 
     @Ref("traitForm") readonly traitForm!: any;
 

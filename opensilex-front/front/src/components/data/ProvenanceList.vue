@@ -214,7 +214,7 @@ export default class ProvenanceList extends Vue {
     default: false
   })
   noActions;
-
+  
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;

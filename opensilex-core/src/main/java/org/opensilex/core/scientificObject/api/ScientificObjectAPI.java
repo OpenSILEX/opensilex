@@ -822,7 +822,7 @@ public class ScientificObjectAPI {
 
         //Get OS exported URI
         selectedObjects.forEach(o ->{
-            selectedObjectsMap.put(o.getUri(), o.getGeometry());
+            selectedObjectsMap.put(URI.create(SPARQLDeserializers.getExpandedURI(o.getUri())), o.getGeometry());
         });
 
         // Search exported OS detail according the XP and selected uris, fetch os factors

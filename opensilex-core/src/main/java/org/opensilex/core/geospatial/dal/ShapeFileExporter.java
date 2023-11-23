@@ -163,7 +163,7 @@ public class ShapeFileExporter{
         //Create features
         objDetailList.forEach(el -> {
             //Get geometry from objects
-            GeoJsonObject geoJson = selectedObjectsMap.get(el.getUri());
+            GeoJsonObject geoJson = selectedObjectsMap.get(URI.create(SPARQLDeserializers.getExpandedURI(el.getUri())));
 
             try {
                 //Get the TYPE corresponding to the object geometry

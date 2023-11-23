@@ -138,10 +138,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.8</caffeine.version>
-        <geotools.version>29-RC1</geotools.version>
-
-
-
+        <geotools.version>29.2</geotools.version>
     </properties>
 
     <dependencyManagement>
@@ -478,7 +475,17 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-geojson</artifactId>
+            <artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
             <version>${geotools.version}</version>
         </dependency>
 
@@ -714,7 +721,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <useFile>false</useFile>
-                        <reuseForks>true</reuseForks> 
+                        <reuseForks>true</reuseForks>
                     </configuration>
                 </plugin>
                 <plugin>

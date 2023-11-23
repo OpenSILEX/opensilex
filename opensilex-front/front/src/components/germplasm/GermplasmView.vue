@@ -100,7 +100,6 @@ export default class GermplasmView extends Vue {
   }
 
   deleteGermplasm(uri: string) {
-    console.debug("deleteGermplasm " + uri);
     this.service
       .deleteGermplasm(uri)
       .then(() => {

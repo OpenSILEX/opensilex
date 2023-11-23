@@ -8,8 +8,8 @@ package org.opensilex.brapi.model;
 
 
 import com.mongodb.client.model.geojson.Geometry;
-import org.geotools.geojson.geom.GeometryJSON;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
@@ -152,8 +152,7 @@ class BrAPIv1LocationDTO {
 
         if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){
             Geometry facilityGeometry = facilityDAO.getFacilityGeospatialModel(model.getUri()).getGeometry();
-
-            org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeometryJSON().read(facilityGeometry.toJson());
+            org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
 
             if (!facilityJtsGeometry.isEmpty()){
 

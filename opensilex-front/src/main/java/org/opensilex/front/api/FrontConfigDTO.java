@@ -65,6 +65,8 @@ public class FrontConfigDTO {
 
     DashboardConfigDTO dashboard;
 
+    MatomoConfigDTO matomo;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -247,5 +249,13 @@ public class FrontConfigDTO {
 
     public void setConnectAsGuest(boolean connectAsGuest) {
         this.connectAsGuest = connectAsGuest;
+    }
+
+    public MatomoConfigDTO getMatomo() {
+        return matomo;
+    }
+
+    public void setMatomo(MatomoConfigDTO matomo) {
+        this.matomo = matomo;
     }
 }

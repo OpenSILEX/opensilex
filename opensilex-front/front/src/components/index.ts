@@ -582,12 +582,6 @@ import GroupVariablesDetails from './groupVariable/GroupVariablesDetails.vue';
 components["opensilex-GroupVariablesDetails"] = GroupVariablesDetails;
 
 // Entity
-import EntityForm from './variables/form/EntityForm.vue';
-components["opensilex-EntityForm"] = EntityForm;
-import EntityCreate from './variables/form/EntityCreate.vue';
-components["opensilex-EntityCreate"] = EntityCreate;
-import EntityExternalReferencesForm from './variables/form/EntityExternalReferencesForm.vue';
-components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
 import VariableStructureList from './variables/views/VariableStructureList.vue';
 components["opensilex-VariableStructureList"] = VariableStructureList;
 import VariableStructureDetails from './variables/views/VariableStructureDetails.vue';
@@ -624,43 +618,19 @@ components["opensilex-AgroportalResultItem"] = AgroportalResultItem;
 
 
 // Entity of interest
-import InterestEntityForm from './variables/form/InterestEntityForm.vue';
-components["opensilex-InterestEntityForm"] = InterestEntityForm;
-import InterestEntityCreate from './variables/form/InterestEntityCreate.vue';
-components["opensilex-InterestEntityCreate"] = InterestEntityCreate;
-import InterestEntityExternalReferencesForm from './variables/form/InterestEntityExternalReferencesForm.vue';
-components["opensilex-InterestEntityExternalReferencesForm"] = InterestEntityExternalReferencesForm;
 import InterestEntitySelector from './variables/form/InterestEntitySelector.vue';
 components["opensilex-InterestEntitySelector"] = InterestEntitySelector;
 
 // Method
-import MethodCreate from './variables/form/MethodCreate.vue';
-components["opensilex-MethodCreate"] = MethodCreate;
-import MethodForm from './variables/form/MethodForm.vue';
-components["opensilex-MethodForm"] = MethodForm;
-import MethodExternalReferencesForm from './variables/form/MethodExternalReferencesForm.vue';
-components["opensilex-MethodExternalReferencesForm"] = MethodExternalReferencesForm;
 import MethodSelector from './variables/form/MethodSelector.vue';
 components["opensilex-MethodSelector"] = MethodSelector;
 
 
 //Characteristic
-import CharacteristicForm from './variables/form/CharacteristicForm.vue';
-components["opensilex-CharacteristicForm"] = CharacteristicForm;
-import CharacteristicModalForm from './variables/form/CharacteristicModalForm.vue';
-components["opensilex-CharacteristicModalForm"] = CharacteristicModalForm;
-import CharacteristicExternalReferencesForm from './variables/form/CharacteristicExternalReferencesForm.vue';
-components["opensilex-CharacteristicExternalReferencesForm"] = CharacteristicExternalReferencesForm;
 import CharacteristicSelector from './variables/form/CharacteristicSelector.vue';
 components["opensilex-CharacteristicSelector"] = CharacteristicSelector;
 
 // Unit
-import UnitForm from './variables/form/UnitForm.vue';
-components["opensilex-UnitForm"] = UnitForm;
-import UnitCreate from './variables/form/UnitCreate.vue';
-components["opensilex-UnitCreate"] = UnitCreate;
-import UnitExternalReferencesForm from './variables/form/UnitExternalReferencesForm.vue';
-components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
 import UnitDetails from './variables/views/UnitDetails.vue';
 components["opensilex-UnitDetails"] = UnitDetails;
 import UnitSelector from './variables/form/UnitSelector.vue';

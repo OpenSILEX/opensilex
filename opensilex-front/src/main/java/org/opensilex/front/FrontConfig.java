@@ -7,6 +7,7 @@ package org.opensilex.front;
 
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.front.config.MatomoConfig;
 
 import java.util.List;
 
@@ -95,4 +96,9 @@ public interface FrontConfig {
             value = "Dashboard component"
     )
     DashboardConfig dashboard();
+
+    @ConfigDescription(
+            value = "Matomo configuration"
+    )
+    MatomoConfig matomo();
 }

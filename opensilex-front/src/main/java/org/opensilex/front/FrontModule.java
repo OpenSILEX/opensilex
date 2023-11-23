@@ -112,6 +112,16 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setApplicationName(frontConfig.applicationName());
             config.setConnectAsGuest(frontConfig.connectAsGuest());
 
+            if (frontConfig.matomo() != null) {
+                try {
+                    config.setMatomo(new MatomoConfigDTO());
+                    config.getMatomo().setServerUrl(new URI(frontConfig.matomo().serverUrl()));
+                    config.getMatomo().setSiteId(frontConfig.matomo().siteId());
+                } catch (URISyntaxException ignored) {
+                    LOGGER.warn("Invalid configuration for Matomo URL " + frontConfig.matomo().serverUrl());
+                }
+            }
+
             DashboardConfigDTO dashboard = new DashboardConfigDTO();
             try {
                 dashboard.setShowMetrics(getOpenSilex().getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics());

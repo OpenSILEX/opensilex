@@ -67,6 +67,8 @@ public class FrontConfigDTO {
 
     Boolean gdprFileIsConfigured;
 
+    MatomoConfigDTO matomo;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -255,4 +257,12 @@ public class FrontConfigDTO {
     public Boolean getGdprFileIsConfigured() { return gdprFileIsConfigured; }
 
     public void setGdprFileIsConfigured(Boolean gdprFileIsConfigured) { this.gdprFileIsConfigured = gdprFileIsConfigured; }
+
+    public MatomoConfigDTO getMatomo() {
+        return matomo;
+    }
+
+    public void setMatomo(MatomoConfigDTO matomo) {
+        this.matomo = matomo;
+    }
 }

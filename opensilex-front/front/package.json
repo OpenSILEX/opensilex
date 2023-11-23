@@ -63,7 +63,8 @@
         "vuejs-logger": "1.10.2",
         "vuelayers": "0.11.35",
         "weekstart": "^1.1.0",
-        "wkt": "^0.1.1"
+        "wkt": "^0.1.1",
+        "vue-matomo": "^4.2.0"
     },
     "devDependencies": {
         "@types/file-saver": "^2.0.5",

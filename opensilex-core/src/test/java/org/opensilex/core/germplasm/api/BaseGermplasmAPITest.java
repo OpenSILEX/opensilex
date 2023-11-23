@@ -1,17 +1,25 @@
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
 
@@ -65,5 +73,19 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Collections.singletonList(GermplasmModel.class);
+    }
+
+    protected void testSearchParams(Map<String, Object> params) throws Exception {
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        final Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<>() {
+        });
+        List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
+
+        assertFalse(germplasmList.isEmpty());
     }
 }

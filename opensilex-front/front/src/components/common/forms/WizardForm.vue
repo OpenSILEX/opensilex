@@ -1,13 +1,32 @@
 <template>
   <b-modal ref="modalRef" :size="modalSize" :static="static" no-close-on-backdrop no-close-on-esc >
-    <template v-slot:modal-title>
-      <i>
-        <slot name="icon">
-          <opensilex-Icon :icon="icon" class="icon-title" />
-        </slot>
-        <span v-if="editMode">{{ $t(editTitle) }}</span>
-        <span v-else>{{ $t(createTitle) }}</span>
-      </i>
+    <template v-slot:modal-header="modal">
+      <b-row class="mt-1" style="width:100%">
+        <b-col cols="10" >
+          <i>
+            <h4>
+              <slot name="icon">
+                <opensilex-Icon :icon="icon" class="icon-title" />
+              </slot>
+              <span v-if="editMode">{{ $t(editTitle) }}</span>
+              <span v-else>{{ $t(createTitle) }}</span>
+            </h4>
+          </i>
+        </b-col>
+        <b-col cols="2" class="modal-buttons">
+          <opensilex-HelpButton
+              v-if="currentStepHasTutorial && !editMode"
+              label="component.tutorial.name"
+              @click="startTutorial"
+              class="helpButton"
+          ></opensilex-HelpButton>
+
+          <!-- Emulate built in modal header close button action -->
+          <button type="button" class="close" @click="modal.close()" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </b-col>
+      </b-row>
     </template>
     <b-form ref="formRef" v-if="form">
       <form-wizard
@@ -17,6 +36,7 @@
         shape="square"
         :class="{'single-wizard' : steps.length == 1}"
         color="#00a38d"
+        @on-change="onChange"
       >
         <tab-content v-for="(step, index) in steps" :key="index" v-bind:title="$t(step.title)">
           <component
@@ -74,7 +94,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -108,6 +128,8 @@ export default class WizardForm extends Vue {
 
   @Prop({ default: "md" })
   modalSize;
+
+  private currentStepIndex?: number = -1;
 
   @Prop()
   initForm: Function;
@@ -164,6 +186,9 @@ export default class WizardForm extends Vue {
       }
     }
     this.wizardRef?.reset();
+    this.$nextTick(() => {
+      this.currentStepIndex = 0;
+    });
   }
 
   showEditForm(form) {
@@ -184,6 +209,9 @@ export default class WizardForm extends Vue {
       tab.checked = true;
     });
     this.wizardRef?.navigateToTab(0);
+    this.$nextTick(() => {
+      this.currentStepIndex = 0;
+    });
   }
 
   hide() {
@@ -303,6 +331,24 @@ export default class WizardForm extends Vue {
   skipStep() {
     this.wizardRef.nextTab();
   }
+
+  get currentStepHasTutorial(): boolean {
+    return !!(this.$refs["step" + this.currentStepIndex]
+        ?.[0]
+        ?.startTutorial);
+  }
+
+  startTutorial() {
+    this.$refs["step" + this.currentStepIndex]
+        ?.[0]
+        ?.startTutorial
+        ?.();
+  }
+
+  onChange(previousStep: number, nextStepIndex: number) {
+    console.debug(`change ! ${previousStep} to ${nextStepIndex}`);
+    this.currentStepIndex = nextStepIndex;
+  }
 }
 </script>
 
@@ -352,5 +398,14 @@ export default class WizardForm extends Vue {
 ::v-deep .single-wizard .wizard-progress-with-circle,
 ::v-deep .single-wizard .wizard-nav {
   display: none;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: right;
+}
+
+.close {
+  margin-left: 1rem;
 }
 </style>;

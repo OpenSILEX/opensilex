@@ -1,6 +1,10 @@
 <template>
     <ValidationObserver ref="validatorRef">
-
+      <opensilex-Tutorial
+          ref="tutorial"
+          :steps="tutorialSteps"
+      >
+      </opensilex-Tutorial>
         <b-row>
             <b-col sm="12" lg="8">
 
@@ -11,11 +15,14 @@
                   label-class="font-weight-bold pt-0"
                   class="mb-0"
               >
-                <template v-slot:label>{{ $t('AgroportalSearchFormPart.search-for-ontology-term') }}</template>
+                <template v-slot:label>
+                  {{ $t('AgroportalSearchFormPart.search-for-ontology-term') }}
+                </template>
               </b-form-group>
 
               <!-- Search bar -->
               <opensilex-AgroportalSearch
+                  id="v-step-search"
                   label="component.common.name"
                   type="text"
                   :placeholder="$t(props.searchPlaceholder)"
@@ -85,6 +92,7 @@ import Vue from "vue";
 import { EntityCreationDTO } from "opensilex-core";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResults from "./AgroportalResults.vue";
+import Tour from "vue-tour";
 
 
 @Component
@@ -108,6 +116,18 @@ export default class AgroportalSearchFormPart extends Vue {
     props;
 
     selectedEntity: EntityAgroportalDTO = null;
+
+    @Ref("tutorial")
+    tutorial: Tour;
+
+    tutorialSteps = [
+      {
+        target: "#v-step-search",
+        header: {title: "test header title"},
+        content: "test content",
+        params: {placement: "bottom"}
+      }
+    ]
 
 
     handleErrorMessage(errorMsg: string) {
@@ -150,6 +170,10 @@ export default class AgroportalSearchFormPart extends Vue {
     validate() {
         this.importResult(this.selectedEntity);
         return this.validatorRef.validate();
+    }
+
+    startTutorial() {
+      this.tutorial.start();
     }
 }
 </script>

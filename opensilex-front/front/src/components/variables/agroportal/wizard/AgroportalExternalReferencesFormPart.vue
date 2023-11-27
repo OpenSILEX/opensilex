@@ -12,7 +12,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row align-h="left">
+                  <b-row>
                     {{$t('AgroportalExternalReferencesFormPart.search-mapping-title')}}
                   </b-row>
                 </template>
@@ -46,7 +46,6 @@
               >
                 <template v-slot:label>
                   <b-row
-                      align-h="left"
                       id="manual-mapping"
                   >
                     {{$t('AgroportalExternalReferencesFormPart.map-manually-title')}}
@@ -123,7 +122,7 @@
                   class="mb-0"
               >
                 <template v-slot:label>
-                  <b-row align-h="left">
+                  <b-row>
                     {{$t("AgroportalSearchFormPart.selected-term")}}
                   </b-row>
                 </template>

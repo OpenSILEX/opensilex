@@ -3,7 +3,8 @@
     <opensilex-Tutorial
         ref="tutorial"
         :steps="tutorialSteps"
-        @onFinish="onTutorialFinish"
+        @onFinish="onTutorialFinishOrSkip"
+        @onSkip="onTutorialFinishOrSkip"
     >
     </opensilex-Tutorial>
     <b-row>
@@ -56,7 +57,7 @@
             class="mb-0"
         >
           <template v-slot:label>
-            <b-row align-h="start">
+            <b-row>
               <b-col xs="6">
                 {{ $t("AgroportalSearchFormPart.selected-term") }}
               </b-col>
@@ -77,6 +78,7 @@
         <opensilex-AgroportalResultItem
             v-if="!!selectedEntity"
             :entity="selectedEntity"
+            id="v-step-selected"
         >
         </opensilex-AgroportalResultItem>
         <div v-else>
@@ -128,9 +130,37 @@ export default class AgroportalSearchFormPart extends Vue {
   private tutorialSteps = [
     {
       target: "#v-step-search",
-      header: {title: "test header title"},
-      content: "test content",
+      header: {title: "TODO Search a term"},
+      content: "TODO Look for a term in Agroportal. You can change the searched ontologies using the filter button.",
       params: {placement: "bottom"}
+    },
+    {
+      target: "#v-step-result",
+      header: {title: "TODO Select a concept"},
+      content:
+          "TODO Select the concept that you want to import. If no concept exactly matches yours, you can select the closest one and enrich it on later steps.",
+      params: {placement: "left"},
+      before: this.beforeImportStep
+    },
+    {
+      target: "#v-step-selected",
+      header: {title: "TODO Selected concept"},
+      content:
+          "TODO The selected concept appears here. If you want to deselect it, you can click on the trash button above.",
+      params: {placement: "right"}
+    },
+    {
+      target: "#v-step-wizard-buttons",
+      header: {title: "TODO Validation"},
+      content:
+          `TODO If you want to import the concept as-is, click the '${this.$t("AgroportalSearchFormPart.import-and-save")}' button. If you want to use it as a basis for creating your own concept, click the '${this.$t("AgroportalSearchFormPart.enrich")}' button.`,
+      params: {placement: "top"}
+    },
+    {
+      header: {title: "TODO No concept"},
+      content:
+          `TODO If you didn't find any concept in Agroportal that matches yours, you can create your own by clicking the '${this.$t("AgroportalSearchFormPart.enrich")}' button when no concept is selected.`,
+      before: this.beforeNoSearchStep
     }
   ]
 
@@ -186,9 +216,21 @@ export default class AgroportalSearchFormPart extends Vue {
     this.tutorial.start();
   }
 
-  onTutorialFinish() {
-    console.debug("onFinish");
+  async beforeImportStep() {
+    this.searchResults.selectAndImportItem(0);
+  }
+
+  async beforeNoSearchStep() {
+    this.clearForTutorial();
+  }
+
+  onTutorialFinishOrSkip() {
+    this.clearForTutorial();
+  }
+
+  clearForTutorial() {
     this.searchComponent.setSearchTerm(this.savedSearchTerm);
+    this.selectedEntity = undefined;
   }
 }
 </script>

@@ -59,7 +59,7 @@
               >{{$t('component.common.form-wizard.cancel')}}</b-button>
             </div>
 
-            <div class="wizard-footer-right">
+            <div class="wizard-footer-right" id="v-step-wizard-buttons">
               <b-button
                   id="btn-finish"
                   class="greenThemeColor"

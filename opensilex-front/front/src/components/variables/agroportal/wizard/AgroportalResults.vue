@@ -13,7 +13,7 @@
 
         <!-- List of results -->
         <opensilex-AgroportalResultItem v-for="(entity, index) in entities" v-bind:key="entity.id"
-          ref="AgroportalResultItem"
+          ref="resultItems"
           :entity="entity"
           :index="index"
           @import="$emit('import', entity)"
@@ -95,7 +95,7 @@ export default class AgroportalResults extends Vue {
   isAgroportalDown: boolean = false;
   isDataLoading: boolean = false;
 
-  @Ref("AgroportalResultItem") readonly resultItems!: any;
+  @Ref("resultItems") readonly resultItems!: Array<AgroportalResultItem>;
 
   get isNothingFound() : boolean {
     return (this.entities.length === 0) && !(this.text.trim().length === 0);
@@ -146,6 +146,11 @@ export default class AgroportalResults extends Vue {
     this.selectedIndex = index;
   }
 
+  selectAndImportItem(index: number) {
+    this.selectItem(index);
+    this.$emit('import', this.entities[index]);
+  }
+
   clear() {
     this.entities = [];
     this.selectedIndex = null;
@@ -154,7 +159,6 @@ export default class AgroportalResults extends Vue {
   created() {
     this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
-
 }
 </script>
 

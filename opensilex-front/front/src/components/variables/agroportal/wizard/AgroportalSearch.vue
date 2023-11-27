@@ -89,7 +89,7 @@ export default class AgroportalSearch extends Vue {
   })
   placeholder: string;
 
-  searchBar;
+  searchBar: string = "";
   advancedSearchOpen: boolean = false;
 
   created() {
@@ -121,6 +121,12 @@ export default class AgroportalSearch extends Vue {
       id: dto.acronym,
       label: `${dto.acronym} (${dto.name})`
     };
+  }
+
+  setSearchTerm(searchQuery: string) {
+    console.debug("setSearchTerm", searchQuery);
+    this.searchBar = searchQuery;
+    this.$emit("change", searchQuery);
   }
 
   select(value) {

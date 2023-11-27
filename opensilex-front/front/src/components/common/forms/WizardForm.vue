@@ -339,10 +339,7 @@ export default class WizardForm extends Vue {
   }
 
   startTutorial() {
-    this.$refs["step" + this.currentStepIndex]
-        ?.[0]
-        ?.startTutorial
-        ?.();
+    this.$refs["step" + this.currentStepIndex][0].startTutorial();
   }
 
   onChange(previousStep: number, nextStepIndex: number) {

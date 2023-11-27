@@ -56,5 +56,5 @@ fr:
   AgroportalEntityForm:
     add: Ajouter une entité
     edit: Modifier une entité
-    name-placeholder: Plante
+    name-placeholder: Plant
 </i18n>

@@ -45,6 +45,9 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
   searchPlaceholder: string;
 
   @Prop()
+  descriptionPlaceholder: string;
+
+  @Prop()
   createTitle: string;
 
   @Prop()
@@ -81,7 +84,8 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
         title: "AgroportalSearchFormPart.step2-title",
         finish: "AgroportalSearchFormPart.save",
         props: {
-          namePlaceholder: this.searchPlaceholder
+          namePlaceholder: this.searchPlaceholder,
+          descriptionPlaceholder: this.descriptionPlaceholder
         }
       }, {
         component: "opensilex-AgroportalExternalReferencesFormPart",

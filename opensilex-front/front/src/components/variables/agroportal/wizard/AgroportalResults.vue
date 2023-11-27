@@ -25,7 +25,7 @@
             <b-dropdown
                 dropdown
                 boundary="window"
-                class="m-md-2"
+                class="m-md-2 v-step-result-mapping-button"
                 :small="true"
                 text="Map term as">
 
@@ -41,6 +41,7 @@
           <!-- Default select button -->
           <template v-else v-slot:btnValidate>
             <opensilex-CreateButton
+                class="v-step-result-import-button"
                 :label="$t('AgroportalResults.btn-choose')"
                 :title="$t('AgroportalResults.btn-choose')"
                 @click="$emit('import', entity)"
@@ -64,6 +65,7 @@ import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 
 @Component
 export default class AgroportalResults extends Vue {
@@ -82,7 +84,7 @@ export default class AgroportalResults extends Vue {
   ontologies: string[];
 
   @Prop()
-  mappingOptions;
+  mappingOptions: Array<SelectableItem>;
 
   @Prop({
     default: false
@@ -149,6 +151,11 @@ export default class AgroportalResults extends Vue {
   selectAndImportItem(index: number) {
     this.selectItem(index);
     this.$emit('import', this.entities[index]);
+  }
+
+  selectAndMapItem(index: number) {
+    this.selectItem(index);
+    this.$emit('importMapping', this.entities[index], this.mappingOptions[0]);
   }
 
   clear() {

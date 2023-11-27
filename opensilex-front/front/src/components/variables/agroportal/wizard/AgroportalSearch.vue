@@ -124,7 +124,6 @@ export default class AgroportalSearch extends Vue {
   }
 
   setSearchTerm(searchQuery: string) {
-    console.debug("setSearchTerm", searchQuery);
     this.searchBar = searchQuery;
     this.$emit("change", searchQuery);
   }

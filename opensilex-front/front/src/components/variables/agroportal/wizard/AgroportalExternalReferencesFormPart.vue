@@ -1,6 +1,12 @@
 <template>
   <ValidationObserver ref="entityValidatorRef">
-
+    <opensilex-Tutorial
+        ref="tutorial"
+        :steps="tutorialSteps"
+        @onFinish="onTutorialFinishOrSkip"
+        @onSkip="onTutorialFinishOrSkip"
+    >
+    </opensilex-Tutorial>
     <div>
       <ValidationObserver ref="validatorRef">
         <b-form>
@@ -21,6 +27,8 @@
 
               <div v-if="includeAgroportalSearch && isAgroportalReachable">
                 <opensilex-AgroportalSearch
+                    class="v-step-search"
+                    ref="searchComponent"
                     label="component.common.name"
                     type="text"
                     :placeholder="props.searchPlaceholder"
@@ -30,6 +38,7 @@
                 ></opensilex-AgroportalSearch>
 
                 <opensilex-AgroportalResults
+                    id="v-step-results"
                     ref="searchResultsRef"
                     :text.sync="text"
                     :ontologies.sync="ontologies"
@@ -60,7 +69,7 @@
                     :fullWidth="true"
                 >
                   <b-form-group>
-                    <div class="helperAndBlueStar"> <!-- petite triche pour faire apparaitre l'étoile en bleu -->
+                    <div class="helperAndBlueStar">
                       <opensilex-FormInputLabelHelper
                           label="AgroportalExternalReferencesFormPart.manual-mapping"
                           helpMessage="AgroportalExternalReferencesFormPart.ontologies-help"
@@ -83,6 +92,7 @@
                       <b-input-group>
                       <b-input
                           id="externalUri"
+                          class="v-step-manual-uri"
                           v-model.trim="currentExternalUri"
                           type="text"
                           required
@@ -92,6 +102,7 @@
                       </b-input>
                         <template #append>
                           <b-dropdown
+                              class="v-step-manual-mapping"
                               dropdown
                               :small="true"
                               text="Map term as">
@@ -149,6 +160,7 @@
               </b-container>
 
               <b-table v-if="relations.length !== 0"
+                       class="v-step-table"
                        striped
                        hover
                        small
@@ -161,6 +173,7 @@
                 <template v-slot:cell(relation)="data">
                   <b-dropdown
                       dropdown
+                      class="v-step-change-mapping"
                       boundary="window"
                       :small="true"
                       :text="$t(data.value)">
@@ -215,9 +228,12 @@ import Vue from "vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import SUPPORTED_SKOS_RELATIONS from "../../../../models/SkosRelations";
+import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH} from "../../../../models/SkosRelations";
 import AgroportalResults from "./AgroportalResults.vue";
 import {SelectableItem} from "../../../common/forms/SelectForm.vue";
+import {BaseVariableCreationDTO} from "@/components/variables/form/VariableFormTypes";
+import {Tour} from "vue-tour";
+import AgroportalSearch from "@/components/variables/agroportal/wizard/AgroportalSearch.vue";
 
 
 @Component
@@ -231,10 +247,13 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   agroportalAPIService: AgroportalAPIService;
 
   @PropSync("form")
-  formDto: any;
+  formDto: BaseVariableCreationDTO;
 
   @Prop()
-  props;
+  props: {
+    ontologiesConfig: string,
+    searchPlaceholder: string
+  };
 
   currentRelation: string = "";
   currentExternalUri: string = "";
@@ -243,13 +262,85 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   isAllOntologies: boolean = false;
 
   @Ref("validatorRef") readonly validatorRef!: any;
-  @Ref("searchResultsRef") readonly searchResultsRef!: AgroportalResults;
+  @Ref("searchComponent") readonly searchComponent!: AgroportalSearch;
+  @Ref("searchResultsRef") readonly searchResults!: AgroportalResults;
 
   @Prop({default: true})
   displayInsertButton: boolean;
 
   includeAgroportalSearch: boolean = true;
   isAgroportalReachable: boolean = false;
+
+  @Ref("tutorial")
+  private tutorial: Tour;
+
+  private tutorialSteps = [
+    {
+      target: ".v-step-search",
+      header: {title: "TODO Search"},
+      content: "TODO Search",
+      params: {placement: "left"}
+    },
+    {
+      target: "#v-step-results",
+      header: {title: "TODO Results"},
+      content: "TODO Results",
+      params: {placement: "left"}
+    },
+    {
+      target: "#v-step-results .v-step-result-mapping-button",
+      header: {title: "TODO Map"},
+      content: "TODO Map",
+      params: {placement: "right", enableScrolling: false},
+      before: this.beforeImportMappingStep
+    },
+    {
+      target: ".v-step-table",
+      header: {title: "TODO Mappings"},
+      content: "TODO Mappings",
+      params: {placement: "left"},
+      before: this.beforeMappingOverviewStep
+    },
+    {
+      target: ".v-step-change-mapping",
+      header: {title: "TODO Change mapping"},
+      content: "TODO Change mapping",
+      params: {placement: "left"}
+    },
+    {
+      target: ".v-step-manual-uri",
+      header: {title: "TODO Manual URI"},
+      content: "TODO Manual URI",
+      params: {placement: "top"},
+      before: this.beforeManualMappingStep
+    },
+    {
+      target: ".v-step-manual-mapping",
+      header: {title: "TODO Manual mapping"},
+      content: "TODO Manual mapping",
+      params: {placement: "top"}
+    },
+    {
+      target: ".v-step-table",
+      header: {title: "TODO Mappings bis"},
+      content: "TODO Mappings bis",
+      params: {placement: "left"},
+      before: this.beforeMappingOverviewAgainStep
+    },
+    {
+      target: "#v-step-wizard-buttons",
+      header: {title: "TODO Validation"},
+      content: "TODO Validation",
+      params: {placement: "top"}
+    },
+  ];
+
+  private savedStateBeforeTutorial : {
+    currentRelation: string,
+    currentExternalUri: string,
+    searchText: string,
+    formDto: BaseVariableCreationDTO
+  }
 
   checkAgroportalReachable() {
     this.agroportalAPIService.pingAgroportal(1000).then((http) => {
@@ -431,7 +522,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   onSearchTextChange(searchedText: string) {
     this.text = searchedText;
-    this.searchResultsRef.updateResults(searchedText, this.isAllOntologies);
+    this.searchResults.updateResults(searchedText, this.isAllOntologies);
   }
 
   onImportMapping(entity: EntityAgroportalDTO, relation) {
@@ -439,6 +530,65 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     this.currentRelation = relation.id;
     this.addRelationToTerm(relation.id);
   }
+
+  //region Tutorial
+
+  private saveStateBeforeTutorial() {
+    this.savedStateBeforeTutorial = {
+      currentRelation: this.currentRelation,
+      currentExternalUri: this.currentExternalUri,
+      searchText: this.text,
+      formDto: JSON.parse(JSON.stringify(this.formDto))
+    };
+  }
+
+  private clearCurrentState() {
+    this.currentExternalUri = "";
+    this.currentRelation = undefined;
+    this.text = "";
+    this.formDto.exact_match = [];
+    this.formDto.close_match = [];
+    this.formDto.broad_match = [];
+    this.formDto.narrow_match = [];
+  }
+
+  private restoreStateAfterTutorial() {
+    this.currentRelation = this.savedStateBeforeTutorial.currentRelation;
+    this.currentExternalUri = this.savedStateBeforeTutorial.currentExternalUri;
+    this.text = this.savedStateBeforeTutorial.searchText;
+    this.formDto = JSON.parse(JSON.stringify(this.savedStateBeforeTutorial.formDto));
+    this.searchComponent.setSearchTerm(this.text);
+  }
+
+  private async beforeImportMappingStep() {
+    this.searchResults.selectItem(0);
+  }
+
+  private async beforeMappingOverviewStep() {
+    this.searchResults.selectAndMapItem(0);
+  }
+
+  private async beforeManualMappingStep() {
+    this.searchComponent.setSearchTerm("");
+    this.currentExternalUri = "http://www.w3.org/2002/07/owl#Thing"
+  }
+
+  private async beforeMappingOverviewAgainStep() {
+    this.addRelationToTerm(BROAD_MATCH.dtoKey);
+  }
+
+  startTutorial() {
+    this.saveStateBeforeTutorial();
+    this.clearCurrentState();
+    this.searchComponent.setSearchTerm(this.$t(this.props.searchPlaceholder).toString());
+    this.tutorial.start();
+  }
+
+  onTutorialFinishOrSkip() {
+    this.restoreStateAfterTutorial();
+  }
+
+  //endregion
 }
 
 </script>

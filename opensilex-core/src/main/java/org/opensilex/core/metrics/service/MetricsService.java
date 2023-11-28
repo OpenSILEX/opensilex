@@ -64,7 +64,7 @@ public class MetricsService {
     public MetricsService(MongoDBService mongodb, SPARQLService sparql) {
         this.mongodb = mongodb;
         this.sparql = sparql;
-        dataDAO = new DataDAO(mongodb, sparql, null);
+        dataDAO = new DataDAO(mongodb, sparql);
         variableDAO = new VariableDAO(sparql, mongodb, null);
         experimentDAO = new ExperimentDAO(sparql, mongodb);
         experimentSummaryDao = new ExperimentSummaryDao(mongodb);

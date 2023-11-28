@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.*;
 import com.opencsv.CSVWriter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -210,10 +209,6 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
                 filter.put("provenance.experiments", inFilter);
             }
         }
-    }
-
-    public Set<URI> getUsedVariablesByExpeSoDevice(DataSearchFilter filter, ClientSession session) throws Exception {
-       return distinct(DataModel.VARIABLE_FIELD, URI.class, filter, session);
     }
 
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, AccountModel user, boolean withRawData) throws Exception {

@@ -6,12 +6,12 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.*;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataSearchFilter;
+import org.opensilex.core.data.service.DataService;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
@@ -20,7 +20,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -220,13 +219,29 @@ public class StudiesAPI implements BrapiCall {
 
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(studyDbId, currentUser);
-        List<URI> experiments = new ArrayList<>();
-        experiments.add(studyDbId);
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
-        ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
-        return new BrapiPaginatedListResponse<>(observations).getResponse();
+        DataDAO dataService = new DataDAO(nosql, sparql);
+
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setExperiments(studyDbId)
+                .setVariables(observationVariableDbIds)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
+
+        List<ObservationDTO> resultDTOList = dataService.search(filter)
+                .getList()
+                .stream()
+                .map(ObservationDTO::fromModel)
+                .collect(Collectors.toList());
+
+        return new BrapiPaginatedListResponse<>(new ListWithPagination<>(resultDTOList)).getResponse();
+
+//
+//        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+//        ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
+//        ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
+//        return new BrapiPaginatedListResponse<>(observations).getResponse();
 
     }
 
@@ -243,11 +258,16 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, studyDbId, page, pageSize);
+        DataService dataService = new DataService(sparql, nosql);
 
-        ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
-        return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
+        DataSearchFilter filter = new DataSearchFilter().setExperiments(studyDbId);
+        filter.setPage(page).setPageSize(pageSize);
+
+        List<ObservationVariableDTO> resultDTOList = dataService.getUsedVariables(filter, currentUser.getLanguage())
+                .stream().map(ObservationVariableDTO::fromModel)
+                .collect(Collectors.toList());
+
+        return new BrapiPaginatedListResponse<>(new ListWithPagination<>(resultDTOList)).getResponse();
     }
 
     @GET

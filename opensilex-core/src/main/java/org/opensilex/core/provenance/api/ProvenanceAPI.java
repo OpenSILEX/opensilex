@@ -218,14 +218,14 @@ public class ProvenanceAPI {
         filter.setProvenances(Collections.singletonList(uri));
         filter.setAccountURI(currentUser.getUri());
 
-        long dataCount = new DataDAO(nosql, sparql, null).count(filter);
+        long dataCount = new DataDAO(nosql, sparql).count(filter);
         if(dataCount > 0 ){
             return new ErrorResponse(
                     Response.Status.UNAUTHORIZED, "The provenance is linked to " + dataCount + "data", "You can't delete a provenance linked to data"
             ).getResponse();
         }
 
-        long datafilesCount = new DataFileDAO(nosql, sparql, null).count(filter);
+        long datafilesCount = new DataFileDAO(nosql, sparql).count(filter);
         if(datafilesCount > 0 ){
             return new ErrorResponse(
                     Response.Status.UNAUTHORIZED, "The provenance is linked to " + dataCount + "data files", "You can't delete a provenance linked to data files"

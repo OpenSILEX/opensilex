@@ -533,12 +533,12 @@ public class DeviceDAO {
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setDevices(Collections.singletonList(uri));
 
-        long dataCount = new DataDAO(nosql, sparql, fs).count(filter);
+        long dataCount = new DataDAO(nosql, sparql).count(filter);
         if (dataCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataCount + " data");
         }
 
-        long dataFileCount = new DataFileDAO(nosql, sparql, fs).count(filter);
+        long dataFileCount = new DataFileDAO(nosql, sparql).count(filter);
         if (dataFileCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataFileCount + " datafile(s)");
         }

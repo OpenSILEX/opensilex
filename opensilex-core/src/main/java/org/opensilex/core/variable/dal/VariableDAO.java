@@ -19,6 +19,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -202,7 +203,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         // Filter variables according linked data
         final Set<URI> variableUriList = filter.isWithAssociatedData() ?
                 null :
-                dataDAO.getUsedVariablesByExpeSoDevice(dataFilter, null);
+                dataDAO.distinct(DataModel.VARIABLE_FIELD, URI.class, dataFilter, null);
 
         if(variableUriList != null && variableUriList.isEmpty()) {
             Set<URI> variableURIs = dataDAO.distinct(VARIABLE_FIELD, URI.class, dataFilter, null);

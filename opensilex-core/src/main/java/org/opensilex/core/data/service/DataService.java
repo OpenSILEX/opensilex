@@ -17,7 +17,6 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +28,7 @@ public class DataService {
     private final VariableDAO variableDAO;
 
     public DataService(SPARQLService sparql, MongoDBService mongodb) {
-        this.dataDAO = new DataDAO(mongodb,sparql,null);
+        this.dataDAO = new DataDAO(mongodb, sparql);
         this.variableDAO = new VariableDAO(sparql,mongodb,null);
     }
 

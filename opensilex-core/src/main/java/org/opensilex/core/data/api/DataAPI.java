@@ -109,7 +109,7 @@ import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.data.utils.DataMathFunctions.*;
+import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHour;
 
 
 /**
@@ -179,7 +179,7 @@ public class DataAPI {
     public Response addListData(
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         try {
             if (dtoList.size() > SIZE_MAX) {
                 throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
@@ -253,7 +253,7 @@ public class DataAPI {
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
 
         try {
             DataModel model = dao.get(uri);
@@ -369,7 +369,7 @@ public class DataAPI {
             int page,
             int pageSize) throws Exception{
 
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
 
         //convert dates
         Instant startInstant = null;
@@ -452,7 +452,7 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
     ) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
 
         //convert dates
         Instant startInstant = null;
@@ -519,7 +519,7 @@ public class DataAPI {
             @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            DataDAO dao = new DataDAO(mongodb, sparql, fs);
+            DataDAO dao = new DataDAO(mongodb, sparql);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -543,7 +543,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         try {
             DataModel data = dao.get(uri);
             data.setConfidence(dto.getConfidence());
@@ -571,7 +571,7 @@ public class DataAPI {
             //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
 
         try {
             DataModel model = dto.newModel();
@@ -607,7 +607,7 @@ public class DataAPI {
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setExperiments(experimentUri)
                 .setTargets(objectUri)
@@ -953,7 +953,7 @@ public class DataAPI {
     public Response exportData(
             @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
     ) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -1076,7 +1076,7 @@ public class DataAPI {
             List<URI> variables,
             List<URI> devices) throws Exception {
 
-        DataDAO dao = new DataDAO(mongodb, sparql, null);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         DataSearchFilter filter = new DataSearchFilter()
                 .setExperiments(experiments)
                 .setTargets(targets)
@@ -1151,7 +1151,7 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataDAO dao = new DataDAO(mongodb, sparql, fs);
+        DataDAO dao = new DataDAO(mongodb, sparql);
         AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
@@ -2061,7 +2061,7 @@ public class DataAPI {
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(mongodb, sparql, fs);
+        DataDAO dataDAO = new DataDAO(mongodb, sparql);
         VariableDAO variableDAO = new VariableDAO(sparql, mongodb, fs);
 
         Instant start, end;

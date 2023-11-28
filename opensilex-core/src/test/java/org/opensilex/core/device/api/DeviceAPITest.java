@@ -19,13 +19,13 @@ import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.datafile.dal.DataFileDAO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
@@ -227,7 +227,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // link data to device
         ProvEntityModel provEntity = new ProvEntityModel();
-        provEntity.setType(sensingDeviceType);
+        provEntity.setRdfType(sensingDeviceType);
         provEntity.setUri(deviceDto.getUri());
         dataProv.setProvWasAssociatedWith(Collections.singletonList(provEntity));
 
@@ -356,7 +356,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     private MoveModel createMove(URI device, FacilityModel fromFacility, FacilityModel toFacility, String end) throws Exception {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
-        moveModel.setTargets(Arrays.asList(device));
+        moveModel.setTargets(Collections.singletonList(device));
         moveModel.setFrom(fromFacility);
         moveModel.setTo(toFacility);
         moveModel.setIsInstant(true);
@@ -422,7 +422,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
                 DeviceDAO.ATTRIBUTES_COLLECTION_NAME,
                 ProvenanceDAO.PROVENANCE_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
-                DataDAO.FILE_COLLECTION_NAME
+                DataFileDAO.FILE_COLLECTION_NAME
         );
     }
 

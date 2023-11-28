@@ -1,16 +1,15 @@
 package org.opensilex.core.mongoService;
 
+import com.mongodb.client.MongoCollection;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.sparql.model.C;
-import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.net.URI;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 
 /**
  * @author Hamza Ikiou
@@ -40,10 +39,11 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         model.setPublisher(URI.create("test:id/user/account.adminopensilexorg"));
 
         //creating the model
-        mongo.create(model, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, MONGO_MODEL_TEST_PREFIX);
+        MongoCollection<MongoModelTest> collection = mongo.getDatabase().getCollection(MONGO_MODEL_TEST_COLLECTION_NAME, MongoModelTest.class);
+        mongo.create(model, collection, MONGO_MODEL_TEST_PREFIX, null);
 
         //get the model created with a findByURI
-        MongoModelTest modelFromGetMethod = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, model.getUri());
+        MongoModelTest modelFromGetMethod = mongo.findByURI(collection, model.getUri());
 
         //check if all metadata are established
         Assert.assertNotNull(modelFromGetMethod);
@@ -62,10 +62,11 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         model.setPublisher(URI.create("test:id/user/account.adminopensilexorg"));
 
         //creating the model
-        mongo.create(model, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, MONGO_MODEL_TEST_PREFIX);
+        MongoCollection<MongoModelTest> collection = mongo.getDatabase().getCollection(MONGO_MODEL_TEST_COLLECTION_NAME, MongoModelTest.class);
+        mongo.create(model, collection, MONGO_MODEL_TEST_PREFIX, null);
 
         //get the model created with a findByURI
-        MongoModelTest modelFromGetMethod = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, model.getUri());
+        MongoModelTest modelFromGetMethod = mongo.findByURI(collection, model.getUri());
 
         Assert.assertNotNull(modelFromGetMethod);
         Assert.assertNotNull(modelFromGetMethod.getPublicationDate());
@@ -76,10 +77,10 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         modelFromGetMethod.setLabel("updated");
 
         //updating the model
-        mongo.update(modelFromGetMethod, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME);
+        mongo.update(modelFromGetMethod, collection, MongoModel.URI_FIELD, null);
 
         //get the model updated with a findByURI
-        MongoModelTest newModelFromGet = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, modelFromGetMethod.getUri());
+        MongoModelTest newModelFromGet = mongo.findByURI(collection, modelFromGetMethod.getUri());
 
         //check if all metadata are established
         Assert.assertNotNull(newModelFromGet);
@@ -101,10 +102,11 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         model.setPublisher(URI.create("test:id/user/account.adminopensilexorg"));
 
         //creating the model
-        mongo.create(model, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, MONGO_MODEL_TEST_PREFIX);
+        MongoCollection<MongoModelTest> collection = mongo.getDatabase().getCollection(MONGO_MODEL_TEST_COLLECTION_NAME, MongoModelTest.class);
+        mongo.create(model, collection, MONGO_MODEL_TEST_PREFIX, null);
 
         //get the model created with a findByURI
-        MongoModelTest modelFromGetMethod = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, model.getUri());
+        MongoModelTest modelFromGetMethod = mongo.findByURI(collection, model.getUri());
 
         Assert.assertNotNull(modelFromGetMethod);
         Assert.assertNotNull(modelFromGetMethod.getPublicationDate());
@@ -115,10 +117,10 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         modelFromGetMethod.setLabel("updated");
 
         //updating the model
-        mongo.update(modelFromGetMethod, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME);
+        mongo.update(modelFromGetMethod, collection, MongoModel.URI_FIELD, null);
 
         //get the first model updated with a findByURI
-        MongoModelTest firstUpdatedModel = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, modelFromGetMethod.getUri());
+        MongoModelTest firstUpdatedModel = mongo.findByURI(collection, modelFromGetMethod.getUri());
 
         Assert.assertNotNull(firstUpdatedModel);
         Assert.assertNotNull(firstUpdatedModel.getPublicationDate());
@@ -132,10 +134,10 @@ public class MongoMetadataTest extends AbstractMongoIntegrationTest {
         firstUpdatedModel.setLabel("second update");
 
         //updating again to check the new values
-        mongo.update(firstUpdatedModel, MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME);
+        mongo.update(firstUpdatedModel, collection, MongoModel.URI_FIELD, null);
 
         //get the second model updated with a findByURI
-        MongoModelTest secondUpdatedModel = mongo.findByURI(MongoModelTest.class, MONGO_MODEL_TEST_COLLECTION_NAME, firstUpdatedModel.getUri());
+        MongoModelTest secondUpdatedModel = mongo.findByURI(collection, firstUpdatedModel.getUri());
 
         //check if all metadata are established
         Assert.assertNotNull(secondUpdatedModel);

@@ -24,9 +24,10 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
 import org.opensilex.core.data.DataFileAPITest;
 import org.opensilex.core.data.api.DataCreationDTO;
-import org.opensilex.core.datafile.api.DataFileCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.datafile.api.DataFileCreationDTO;
+import org.opensilex.core.datafile.dal.DataFileDAO;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -133,7 +134,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         return Arrays.asList(
                 GeospatialDAO.GEOSPATIAL_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
-                DataDAO.FILE_COLLECTION_NAME,
+                DataFileDAO.FILE_COLLECTION_NAME,
                 ProvenanceDAO.PROVENANCE_COLLECTION_NAME
         );
     }

@@ -477,7 +477,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testProvenance() throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(getMongoDBService(),getSparqlService());
+        ProvenanceDAO dao = new ProvenanceDAO(getMongoDBService());
 
         ProvenanceModel model = new ProvenanceModel();
         model.setName("name");
@@ -493,7 +493,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
         VariableModel variable = getVariable("data_variable");
         getSparqlService().create(variable);
 
-        DataDAO dao = new DataDAO(getMongoDBService(),getSparqlService(),null);
+        DataDAO dao = new DataDAO(getMongoDBService(), getSparqlService());
 
         DataModel model = new DataModel();
         model.setDate(Instant.now());

@@ -46,7 +46,8 @@ public class VueOwlExtensionDAO {
             sparql.create(instanceExtension,false, false); // reuse the same URI as the ClassModel -> no need to check URI
             sparql.commitTransaction();
         } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+            sparql.rollbackTransaction();
+            throw ex;
         }
     }
 
@@ -58,7 +59,8 @@ public class VueOwlExtensionDAO {
 
             sparql.commitTransaction();
         } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+            sparql.rollbackTransaction();
+            throw ex;
         }
     }
 
@@ -89,7 +91,8 @@ public class VueOwlExtensionDAO {
             sparql.delete(VueClassExtensionModel.class, classURI);
             sparql.commitTransaction();
         } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+            sparql.rollbackTransaction();
+            throw ex;
         }
     }
 
@@ -198,7 +201,8 @@ public class VueOwlExtensionDAO {
             }
             sparql.commitTransaction();
         } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+            sparql.rollbackTransaction();
+            throw ex;
         }
     }
 

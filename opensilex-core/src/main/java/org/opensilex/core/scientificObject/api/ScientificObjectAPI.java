@@ -548,14 +548,14 @@ public class ScientificObjectAPI {
             dataFilter.setExperiments(xpList).setTargets(osList);
 
             // check that no data are associated (dao handle empty or not list)
-            DataDAO dataDAO = new DataDAO(mongodb, sparql, null);
+            DataDAO dataDAO = new DataDAO(mongodb, sparql);
             long dataCount = dataDAO.count(dataFilter);
             if (dataCount > 0) {
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE + " : object has associated data", "component.scientificObjects.error.delete.associated-data", Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString()));
             }
 
             // check that no data file are associated (dao handle empty or not list)
-            DataFileDAO dataFileDAO = new DataFileDAO(mongodb, sparql, null);
+            DataFileDAO dataFileDAO = new DataFileDAO(mongodb, sparql);
             long dataFileCount = dataFileDAO.count(dataFilter);
             if (dataFileCount > 0) {
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE + " : object has associated data files", "component.scientificObjects.error.delete.associated-data-files", Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString()));
@@ -585,11 +585,11 @@ public class ScientificObjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(@ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto, @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") File file, @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-            CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporter(sparql, mongodb, descriptionDto.getExperiment(), currentUser), descriptionDto.getValidationToken()
-            );
+        CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
+                new ScientificObjectCsvImporter(sparql, mongodb, descriptionDto.getExperiment(), currentUser), descriptionDto.getValidationToken()
+        );
         CSVValidationModel validationModel = csvImporter.importCSV(file, false);
-            return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     @POST

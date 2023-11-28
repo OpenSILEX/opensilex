@@ -43,7 +43,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -82,7 +81,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         super(VariableModel.class, sparql);
-        this.dataDAO = new DataDAO(nosql, sparql, fs);
+        this.dataDAO = new DataDAO(nosql, sparql);
     }
 
     public void delete(URI uri) throws Exception {

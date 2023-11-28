@@ -288,4 +288,12 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
                 session
         );
     }
+
+    public final MongoCollection<T> getCollection() {
+        return collection;
+    }
+
+    public final String getCreatePrefix() {
+        return createPrefix;
+    }
 }

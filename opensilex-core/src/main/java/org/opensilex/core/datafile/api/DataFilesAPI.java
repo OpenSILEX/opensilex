@@ -11,6 +11,7 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.ClientSession;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -25,6 +26,7 @@ import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.datafile.dal.DataFileDAO;
 import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.datafile.dal.DataFileSearchFilter;
+import org.opensilex.core.datafile.service.DataFileService;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
@@ -101,7 +103,7 @@ public class DataFilesAPI {
     public static final String DATAFILE_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Image";
     
     @Inject
-    private MongoDBService nosql;
+    private MongoDBService mongodb;
     
     @Inject
     private SPARQLService sparql;
@@ -140,38 +142,22 @@ public class DataFilesAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileService dataFileService = new DataFileService(mongodb, sparql, fs);
+        ClientSession mongoSession = mongodb.newSession();
         try {
             validDataFileDescription(Collections.singletonList(dto));
-            DataFileModel model = dto.newModel();  
+            DataFileModel model = dto.newModel();
             model.setFilename(fileContentDisposition.getFileName());
-            dao.insertFile(model, file);
+            dataFileService.insertFile(model, file);
             return new CreatedUriResponse(model.getUri()).getResponse();
+
         } catch (MongoWriteException duplicateKey) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Duplicate Data", duplicateKey.getMessage())
-                .getResponse();
+                    .getResponse();
         } catch (DateValidationException e) {
             return new DateMappingExceptionResponse().toResponse(e);
         } catch (NoSQLInvalidUriListException e) {
             throw new NotFoundException(e.getMessage());
-        }
-
-        //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
-
-        final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
-        model.setPath(filePath.toString());
-
-        nosql.startTransaction();
-        try {
-            createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
-            nosql.commitTransaction();
-        } catch (Exception e) {
-            nosql.rollbackTransaction();
-            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-            throw e;
         }
     }
     
@@ -214,7 +200,7 @@ public class DataFilesAPI {
             @Context HttpServletRequest context
     ) throws Exception {
 
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
 
         try {
             if (dtoList.size()> DataAPI.SIZE_MAX) {
@@ -284,7 +270,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("targets") List<URI> targets,
         @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("devices") List<URI> devices) throws  Exception {
 
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setAccountURI(user.getUri());
         filter.setDevices(devices);
@@ -314,7 +300,7 @@ public class DataFilesAPI {
             @Context HttpServletResponse response
     ) throws NotFoundURIException, IOException, URISyntaxException {
         try {
-            DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+            DataFileDAO dao = new DataFileDAO(mongodb, sparql);
 
             DataFileModel description = dao.get(uri);
 
@@ -368,7 +354,7 @@ public class DataFilesAPI {
     public Response getDataFileDescription(
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -405,7 +391,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Thumbnail height") @QueryParam("scaled_height") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
             @Context HttpServletResponse response) throws Exception {
 
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -525,7 +511,7 @@ public class DataFilesAPI {
             int pageSize
 
     ) throws Exception {
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, fs);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
 
         //convert dates
         Instant startInstant = null;
@@ -623,7 +609,7 @@ public class DataFilesAPI {
             }
         
             //check provenance uri
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(mongodb);
             if (!provenanceURIs.contains(dto.getProvenance().getUri())) {
                 provenanceURIs.add(dto.getProvenance().getUri());
                 if (!provDAO.exists(dto.getProvenance().getUri())) {
@@ -713,7 +699,7 @@ public class DataFilesAPI {
             List<URI> devices
     ) throws Exception {
 
-        DataFileDAO dao = new DataFileDAO(nosql, sparql, null);
+        DataFileDAO dao = new DataFileDAO(mongodb, sparql);
 
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setExperiments(experiments)

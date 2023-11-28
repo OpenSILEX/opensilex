@@ -7,13 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.sparql.service.SPARQLService;
 
-import java.net.URISyntaxException;
 import java.util.List;
 
 public class DataFileDAO extends MongoReadWriteDao<DataFileModel, DataFileSearchFilter> {
@@ -23,9 +21,9 @@ public class DataFileDAO extends MongoReadWriteDao<DataFileModel, DataFileSearch
 
     DataDAO dataDAO;
 
-    public DataFileDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
+    public DataFileDAO(MongoDBService mongodb, SPARQLService sparql) {
         super(mongodb, DataFileModel.class, FILE_COLLECTION_NAME, FS_FILE_PREFIX);
-        dataDAO = new DataDAO(mongodb, sparql, fs);
+        dataDAO = new DataDAO(mongodb, sparql);
     }
 
     @Override

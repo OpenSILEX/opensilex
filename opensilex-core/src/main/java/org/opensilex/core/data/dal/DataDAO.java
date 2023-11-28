@@ -28,7 +28,6 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
@@ -53,7 +52,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.data.dal.DataModel.*;
+import static org.opensilex.core.data.dal.DataModel.PROVENANCE_FIELD;
 
 /**
  * @author rcolin
@@ -64,16 +63,14 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     public static final String DATA_PREFIX = "data";
 
     protected final SPARQLService sparql;
-    protected final FileStorageService fs;
 
     public static final String PROVENANCE_URI_FIELD = PROVENANCE_FIELD + "." + DataProvenanceModel.URI_FIELD;
     public static final String PROVENANCE_AGENTS_FIELD = PROVENANCE_FIELD + "." + DataProvenanceModel.PROV_WAS_ASSOCIATED_FIELD;
     public static final String PROVENANCE_AGENTS_URI_FIELD = PROVENANCE_AGENTS_FIELD + "." + ProvEntityModel.URI_FIELD;
 
-    public DataDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) {
+    public DataDAO(MongoDBService mongodb, SPARQLService sparql) {
         super(mongodb, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         this.sparql = sparql;
-        this.fs = fs;
     }
 
     public void createIndexes() {
@@ -308,7 +305,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, null).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -570,7 +567,7 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb, null).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }

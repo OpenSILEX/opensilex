@@ -262,6 +262,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     private int transactionLevel = 0;
 
     @Override
+    public boolean hasActiveTransaction() {
+        return connection.hasActiveTransaction();
+    }
+
+    @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
             LOGGER.debug("SPARQL TRANSACTION START");

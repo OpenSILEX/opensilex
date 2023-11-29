@@ -231,6 +231,11 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     @Override
+    public boolean hasActiveTransaction() {
+        return rdf4JConnection.isActive();
+    }
+
+    @Override
     public void commitTransaction() throws SPARQLException {
         try {
             rdf4JConnection.commit();

@@ -164,6 +164,13 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      */
     Set<URI> distinctUris(@Nullable ClientSession session, @NotNull F filter) throws MongoException;
 
+    /**
+     * Get distinct URIs of models based on the provided filter
+     *
+     * @param filter The filter to apply.
+     * @return Set of distinct URIs matching the filter.
+     * @throws MongoException If a MongoDB error occurs.
+     */
     Set<URI> distinctUris(@NotNull F filter) throws MongoException;
 
     /**

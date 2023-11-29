@@ -10,6 +10,8 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBService;
@@ -51,22 +53,22 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public T get(URI uri) throws NoSQLInvalidURIException {
+    public T get(@NotNull URI uri) throws NoSQLInvalidURIException {
         return mongodb.findByURI(collection, uri, idField());
     }
 
     @Override
-    public T get(ClientSession session, URI uri) throws NoSQLInvalidURIException {
+    public T get(ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException {
         return mongodb.findByURI(session, collection, uri, idField());
     }
 
     @Override
-    public boolean exists(URI uri) throws MongoException {
+    public boolean exists(@NotNull URI uri) throws MongoException {
         return exists(null, uri);
     }
 
     @Override
-    public boolean exists(ClientSession session, URI uri) throws MongoException {
+    public boolean exists(ClientSession session, @NotNull URI uri) throws MongoException {
         return mongodb.uriExists(session, collection, uri);
     }
 
@@ -136,25 +138,25 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
 
     @Override
     public DeleteResult delete(F deleteFilter) throws MongoException {
-        return null;
+        return delete(deleteFilter, null);
     }
 
     @Override
-    public final long count(F filter) throws MongoException {
+    public final long count(@NotNull F filter) throws MongoException {
         return count(null, filter);
     }
 
     @Override
-    public long count(ClientSession session, F filter) throws MongoException {
+    public long count(ClientSession session, @NotNull F filter) throws MongoException {
         return mongodb.count(session, collection, filterToBson(filter));
     }
 
-    public final ListWithPagination<T> search(F filter) throws MongoException {
+    public final ListWithPagination<T> search(@NotNull F filter) throws MongoException {
         return search(null, filter, null);
     }
 
     @Override
-    public ListWithPagination<T> search(ClientSession session, F filter, Bson projection) throws MongoException {
+    public ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         return mongodb.searchWithPagination(
                 collection,
                 filterToBson(filter),
@@ -167,7 +169,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, F filter, Bson projection, Function<T, T_CONVERTED> convertFunction) throws MongoException {
+    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_CONVERTED> convertFunction) throws MongoException {
 
         Objects.requireNonNull(convertFunction);
 
@@ -194,17 +196,17 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
     }
 
-    public final <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
+    public final <T_CONVERTED> ListWithPagination<T_CONVERTED> search(@NotNull F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
         return search(null, filter, null, convertFunction);
     }
 
     @Override
-    public StreamWithPagination<T> searchAsStream(F filter) throws MongoException {
+    public StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException {
         return searchAsStream(null, filter, null);
     }
 
     @Override
-    public StreamWithPagination<T> searchAsStream(ClientSession session, F filter, Bson projection) throws MongoException {
+    public StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(
                 collection,
                 filterToBson(filter),
@@ -216,18 +218,18 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         );
 
         // no result, return StreamWithPagination with an empty Stream
-        if(resultAndCount == null){
+        if (resultAndCount == null) {
             return new StreamWithPagination<>();
         }
 
         // Build the StreamWithPagination with results Stream and results count
         int resultCount = resultAndCount.getValue().intValue();
-        Stream<T> resultStream = StreamSupport.stream(resultAndCount.getKey().spliterator(),false);
+        Stream<T> resultStream = StreamSupport.stream(resultAndCount.getKey().spliterator(), false);
         return new StreamWithPagination<>(resultStream, resultCount, filter.getPage(), filter.getPageSize());
     }
 
     @Override
-    public Set<URI> distinctUris(ClientSession session, F filter) throws MongoException {
+    public Set<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException {
         return mongodb.distinctWithPagination(
                 collection,
                 MongoModel.URI_FIELD,
@@ -241,7 +243,7 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public Set<URI> distinctUris(F filter) throws MongoException {
+    public Set<URI> distinctUris(@NotNull F filter) throws MongoException {
         return distinctUris(null, filter);
     }
 
@@ -272,7 +274,10 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
 
     protected Bson filterToBson(F searchFilter) {
 
-        Objects.requireNonNull(searchFilter);
+        if(searchFilter == null){
+            return null;
+        }
+
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
 
         if (bsonFilters.isEmpty()) {
@@ -290,12 +295,13 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public <T_RESULT> Set<T_RESULT> distinct(String field, Class<T_RESULT> resultClass, F filter, ClientSession session) {
+    public <T_RESULT> Set<T_RESULT> distinct(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, @Nullable ClientSession session) {
+        Objects.requireNonNull(field);
         return mongodb.distinct(field, resultClass, collection, filterToBson(filter), session);
     }
 
     @Override
-    public <T_RESULT> Set<T_RESULT> distinctAggregation(String field, Class<T_RESULT> resultClass, F filter, ClientSession session) {
+    public <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, @Nullable ClientSession session) {
         return mongodb.distinctWithPagination(
                 collection,
                 field,
@@ -309,8 +315,12 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(F filter, String lookupField,
-                                                                 String lookupCollectionName, Class<T_JOINED> lookupClass, Function<T_JOINED, T_RESULT> convertFunction, ClientSession session) {
+    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(@Nullable F filter,
+                                                                 @NotNull String lookupField,
+                                                                 @NotNull String lookupCollectionName,
+                                                                 @NotNull Class<T_JOINED> lookupClass,
+                                                                 @NotNull Function<T_JOINED, T_RESULT> convertFunction,
+                                                                 @Nullable ClientSession session) {
         return mongodb.lookupAggregation(
                 collection,
                 lookupCollectionName,

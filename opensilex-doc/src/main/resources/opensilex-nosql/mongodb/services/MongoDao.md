@@ -31,6 +31,7 @@
   * [Detailed explanations](#detailed-explanations)
   * [Tests](#tests)
     * [Ensure that the MongoDBService is stateless](#ensure-that-the-mongodbservice-is-stateless)
+    * [Test concurrents calls to MongoDBService](#test-concurrents-calls-to-mongodbservice-)
     * [Ensure that ClientSession is well closed in case of error](#ensure-that-clientsession-is-well-closed-in-case-of-error)
     * [Read Data Access Objects](#read-data-access-objects)
     * [Write Data Access Objects](#write-data-access-objects)

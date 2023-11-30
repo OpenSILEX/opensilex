@@ -1,17 +1,31 @@
 package org.opensilex.nosql.mongodb.dao;
 
-import org.junit.Test;
+import org.junit.*;
+import org.opensilex.nosql.EmbedMongoClient;
+import org.opensilex.nosql.MongoDBServiceTest;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-public class MongoReadDaoTest {
+public class MongoReadDaoTest extends MongoDBServiceTest {
+
+    @BeforeClass
+    public static void setUp() {
+        MongoDBServiceTest.setUp();
+    }
+
+    @AfterClass
+    public static void stop() {
+        MongoDBServiceTest.stop();
+    }
 
     @Test
     public void get() {
     }
 
     @Test
-    public void testGet() {
+    public void getWithSession() {
     }
 
     @Test
@@ -19,7 +33,7 @@ public class MongoReadDaoTest {
     }
 
     @Test
-    public void testExists() {
+    public void existsWithSession() {
     }
 
     @Test
@@ -27,7 +41,7 @@ public class MongoReadDaoTest {
     }
 
     @Test
-    public void testCount() {
+    public void countWithSession() {
     }
 
     @Test
@@ -35,23 +49,26 @@ public class MongoReadDaoTest {
     }
 
     @Test
-    public void testSearch() {
+    public void searchWithSession() {
     }
 
     @Test
-    public void testSearch1() {
+    public void searchWithProjection() {
     }
 
     @Test
-    public void testSearch2() {
+    public void searchWithConversion() {
     }
 
     @Test
     public void searchAsStream() {
     }
+    @Test
+    public void searchAsStreamWithSession() {
+    }
 
     @Test
-    public void testSearchAsStream() {
+    public void searchAsStreamWithProjection() {
     }
 
     @Test
@@ -59,7 +76,7 @@ public class MongoReadDaoTest {
     }
 
     @Test
-    public void testDistinctUris() {
+    public void distinctUrisWithSession() {
     }
 
     @Test

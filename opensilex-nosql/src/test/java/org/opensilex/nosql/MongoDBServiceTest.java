@@ -29,7 +29,7 @@ public class MongoDBServiceTest extends AbstractUnitTest {
     protected static EmbedMongoClient embedMongoClient;
 
     @BeforeClass
-    public static void start(){
+    public static void setUp(){
         try{
             embedMongoClient = EmbedMongoClient.getInstance();
         }catch (IOException | InterruptedException e){
@@ -38,14 +38,14 @@ public class MongoDBServiceTest extends AbstractUnitTest {
     }
 
     @AfterClass
-    public static void destroy() {
+    public static void stop() {
         embedMongoClient.stop();
     }
 
     @Test
     public void testConnection() throws IOException {
         try(Socket socket = new Socket(MONGO_HOST, MONGO_PORT)){
-            assertTrue("Embed mongo client start",socket.isConnected());
+            assertTrue("Embed mongo client started", socket.isConnected());
         }
     }
 
@@ -58,6 +58,5 @@ public class MongoDBServiceTest extends AbstractUnitTest {
     protected static MongoDBServiceV2 getNewMongoDBService(){
         return getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
     }
-
 
 }

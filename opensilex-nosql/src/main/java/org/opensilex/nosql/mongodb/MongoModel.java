@@ -19,6 +19,7 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     protected URI baseURI;
     protected URI uri;
+    protected URI rdfType;
     protected URI publisher;
     protected Instant publicationDate;
     protected Instant lastUpdateDate;
@@ -35,6 +36,14 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public URI getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public URI getPublisher() {

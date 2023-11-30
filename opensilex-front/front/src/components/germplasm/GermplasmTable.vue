@@ -995,7 +995,7 @@ export default class GermplasmTable extends Vue {
   }
 
   /**
-   * Called when we upload a csv. Verifies that each germplasm has a unique name and uri.
+   * Called when we upload a csv. Verifies that each germplasm has a unique uri.
    * Initialises this.newColumns to all from the csv that were not already present in this.tableColumns.
    */
   uploaded(data) {
@@ -1003,7 +1003,6 @@ export default class GermplasmTable extends Vue {
       alert(this.$t("GermplasmTable.alertFileSize"));
     } else {
       this.newColumns = [];
-      var uniqueNames = [];
       var uniqueURIs = [];
       let insertionOK = true;
 
@@ -1020,25 +1019,6 @@ export default class GermplasmTable extends Vue {
           );
           insertionOK = false;
           break;
-        } else {
-          if(!Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)){
-            if (
-                currentName !== "" &&
-                uniqueNames.indexOf(currentName) === -1
-            ) {
-              uniqueNames.push(currentName);
-            } else {
-              insertionOK = false;
-              alert(
-                  this.$t("GermplasmTable.alertDuplicateName") +
-                  " " +
-                  rowIndex +
-                  ", name= " +
-                  currentName
-              );
-              break;
-            }
-          }
         }
         if (currentUri !== "") {
           if (uniqueURIs.indexOf(currentUri) === -1) {
@@ -1289,7 +1269,6 @@ fr:
     seeErrorLines: See lines
     seeAll : see all 
     infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
-    alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
     missingName: Le nom n'est pas renseigné à la ligne

@@ -1,7 +1,7 @@
 package org.opensilex.nosql.distributed;
 
 import com.mongodb.client.ClientSession;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.functionnal.ThrowingBiFunction;
 
@@ -15,10 +15,10 @@ import java.util.function.Function;
 public class SparqlMongoTransaction {
 
     private final SPARQLService sparql;
-    private final MongoDBService mongodb;
+    private final MongoDBServiceV2 mongodb;
     private final Map<Class<? extends Exception>, Function<Exception, Exception>> exceptionMapping;
 
-    public SparqlMongoTransaction(SPARQLService sparql, MongoDBService mongodb) {
+    public SparqlMongoTransaction(SPARQLService sparql, MongoDBServiceV2 mongodb) {
         this.sparql = sparql;
         this.mongodb = mongodb;
         exceptionMapping = new HashMap<>();

@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
@@ -30,12 +30,12 @@ import java.util.stream.StreamSupport;
 
 public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter> implements MongoWriteDao<T, F>, MongoReadDao<T, F> {
 
-    protected final MongoDBService mongodb;
+    protected final MongoDBServiceV2 mongodb;
     protected final MongoCollection<T> collection;
     protected final String createPrefix;
     protected final Logger logger;
 
-    protected AbstractMongoReadWriteDao(MongoDBService mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
+    protected AbstractMongoReadWriteDao(MongoDBServiceV2 mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
         collection = mongodb.getDatabase().getCollection(collectionName, modelClass);

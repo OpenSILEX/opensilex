@@ -62,11 +62,11 @@ import static com.mongodb.client.model.Filters.*;
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
-public class MongoDBService extends BaseService {
+public class MongoDBServiceV2 extends BaseService {
 
-    public static final String DEFAULT_SERVICE = "mongodb";
+    public static final String DEFAULT_SERVICE = "mongodb2";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBServiceV2.class);
     public static final String CHECK_MONGO_SERVER_CONNECTION_LOG_MSG = "MONGO_SERVER_CHECK_CONNECTION";
     public static final String MONGO_SERVER_CONNECTION_FAIL_LOG_MSG = "MONGO_SERVER_CONNECTION_FAIL";
     public static final String MONGO_CREATE_LOG_MSG = "MONGO_CREATE";
@@ -79,7 +79,7 @@ public class MongoDBService extends BaseService {
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
-    public MongoDBService(MongoDBConfig config) {
+    public MongoDBServiceV2(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
@@ -147,10 +147,7 @@ public class MongoDBService extends BaseService {
      * @see ClientSession#startTransaction()
      */
     public ClientSession newSession() {
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
-        LOGGER.debug("MONGO TRANSACTION START");
-        return session;
+        return mongoClient.startSession();
     }
 
     private <R> R operationInTransaction(ThrowingFunction<ClientSession, R, MongoException> operationInTrx) throws MongoException {

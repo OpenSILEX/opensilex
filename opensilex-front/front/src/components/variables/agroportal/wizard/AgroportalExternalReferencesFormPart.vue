@@ -231,9 +231,9 @@ import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH} from "../../../../models/SkosRelations";
 import AgroportalResults from "./AgroportalResults.vue";
 import {SelectableItem} from "../../../common/forms/SelectForm.vue";
-import {BaseVariableCreationDTO} from "@/components/variables/form/VariableFormTypes";
+import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
 import {Tour} from "vue-tour";
-import AgroportalSearch from "@/components/variables/agroportal/wizard/AgroportalSearch.vue";
+import AgroportalSearch from "./AgroportalSearch.vue";
 
 
 @Component
@@ -277,60 +277,60 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   private tutorialSteps = [
     {
       target: ".v-step-search",
-      header: {title: "TODO Search"},
-      content: "TODO Search",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.content"),
       params: {placement: "left"}
     },
     {
       target: "#v-step-results",
-      header: {title: "TODO Results"},
-      content: "TODO Results",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.content"),
       params: {placement: "left"}
     },
     {
       target: "#v-step-results .v-step-result-mapping-button",
-      header: {title: "TODO Map"},
-      content: "TODO Map",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.content"),
       params: {placement: "right", enableScrolling: false},
       before: this.beforeImportMappingStep
     },
     {
       target: ".v-step-table",
-      header: {title: "TODO Mappings"},
-      content: "TODO Mappings",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewStep
     },
     {
       target: ".v-step-change-mapping",
-      header: {title: "TODO Change mapping"},
-      content: "TODO Change mapping",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.content"),
       params: {placement: "left"}
     },
     {
       target: ".v-step-manual-uri",
-      header: {title: "TODO Manual URI"},
-      content: "TODO Manual URI",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.content"),
       params: {placement: "top"},
       before: this.beforeManualMappingStep
     },
     {
       target: ".v-step-manual-mapping",
-      header: {title: "TODO Manual mapping"},
-      content: "TODO Manual mapping",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.content"),
       params: {placement: "top"}
     },
     {
       target: ".v-step-table",
-      header: {title: "TODO Mappings bis"},
-      content: "TODO Mappings bis",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewAgainStep
     },
     {
       target: "#v-step-wizard-buttons",
-      header: {title: "TODO Validation"},
-      content: "TODO Validation",
+      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-validation.title")},
+      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-validation.content"),
       params: {placement: "top"}
     },
   ];
@@ -638,6 +638,47 @@ en:
     search-mapping-title: Search for mapping...
     map-manually-title: ...Or map manually
     manual-mapping: "URI"
+    tutorial:
+      step-search:
+        title: Search
+        content: >
+          Search for a term on Agroportal that you might want to link to your concept.
+      step-results:
+        title: Results
+        content: >
+          Browse the results from Agroportal and select one that you want to link as a reference to your concept.
+      step-result-mapping:
+        title: Result mapping
+        content: >
+          Click on the button to select the type of mapping that describes the relation between your concept and this
+          one.
+      step-table:
+        title: References
+        content: >
+          The currently defined references are shown in this table. If your concept was created from an Agroportal
+          term selected in the first step, a 'close match' relation is already defined for you. You can modify or
+          delete it as any other reference.
+      step-change-mapping:
+        title: Change reference
+        content: >
+          You can change the type of relation for a reference using this button.
+      step-manual-uri:
+        title: Manual URI
+        content: >
+          You can also define an external reference by specifying its URI in this field.
+      step-manual-mapping:
+        title: Manual URI mapping
+        content: >
+          Select the type of relation for this external reference.
+      step-table-bis:
+        title: References
+        content: >
+          You can have as many references as your want for your concept.
+      step-validation:
+        title: Validation
+        content: >
+          Once you have linked your concept to external references, click the '@:component.common.form-wizard.done'
+          button.
 fr:
   AgroportalExternalReferencesFormPart:
     uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
@@ -649,4 +690,46 @@ fr:
     search-mapping-title: Rechercher des mapping...
     map-manually-title: ...Ou mapper manuellement
     manual-mapping: "URI"
+    tutorial:
+      step-search:
+        title: Recherche de terme
+        content: >
+          Cherchez un terme sur Agroportal que vous voudriez ajouter comme référence pour votre concept.
+      step-results:
+        title: Résultats
+        content: >
+          Parcourez les résultats de la recherche et sélectionnez le concept que vous souhaitez ajouter comme référence.
+      step-result-mapping:
+        title: Ajout de la relation
+        content: >
+          Cliquez sur ce bouton pour sélectionner le type de relation qui lie votre concept à celui-ci.
+      step-table:
+        title: Références
+        content: >
+          Les références actuellement définies pour votre concept sont montrées dans ce tableau. Si vous avez créé
+          votre concept à partir d'un terme d'Agroportal à l'étape 1, alors une relation de type 'similaire' a été
+          ajoutée automatiquement. Vous pouvez modifier ou supprimer cette relation, tout comme n'importe quelle
+          autre référence.
+      step-change-mapping:
+        title: Modifier une référence
+        content: >
+          Vous pouvez changer le type de relation d'une référence en utilisant ce bouton.
+      step-manual-uri:
+        title: Référence arbitraire
+        content: >
+          Vous pouvez également définir une référence vers un concept en spécifiant son URI dans ce champ, par
+          exemple dans le cas où vous ne le trouvez pas dans Agroportal.
+      step-manual-mapping:
+        title: Ajout de la relation
+        content: >
+          Sélectionnez le type de la relation qui lie votre concept à celui-ci.
+      step-table-bis:
+        title: Nombre de références
+        content: >
+          Vous pouvez avoir autant de références que vous le souhaitez pour votre concept.
+      step-validation:
+        title: Validation
+        content: >
+          Une fois votre concept lié à des références externes, cliquez sur le bouton
+          '@:component.common.form-wizard.done' pour créer votre concept.
 </i18n>

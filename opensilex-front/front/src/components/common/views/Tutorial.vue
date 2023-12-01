@@ -18,7 +18,7 @@ export default class Tutorial extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("tutorial") readonly tutorial!: Tour;
+  @Ref("tutorial") readonly tutorial; // Correct type is supposed to be 'Tour' but does not work for some reason
 
   @Prop({ default: false })
   editMode: boolean;

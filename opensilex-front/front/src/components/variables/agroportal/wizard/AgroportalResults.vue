@@ -107,11 +107,7 @@ export default class AgroportalResults extends Vue {
     return (this.text.trim().length === 0);
   }
 
-  //@Watch("text")
   updateResults(searchedText: string, withAllOntologies: boolean) {
-
-    console.debug(searchedText);
-
     if (!searchedText) {
       this.clear();
       return;

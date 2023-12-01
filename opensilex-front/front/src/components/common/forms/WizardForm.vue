@@ -343,7 +343,6 @@ export default class WizardForm extends Vue {
   }
 
   onChange(previousStep: number, nextStepIndex: number) {
-    console.debug(`change ! ${previousStep} to ${nextStepIndex}`);
     this.currentStepIndex = nextStepIndex;
   }
 }

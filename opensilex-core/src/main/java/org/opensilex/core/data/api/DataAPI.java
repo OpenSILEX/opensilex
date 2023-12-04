@@ -1578,6 +1578,9 @@ public class DataAPI {
             experiments.add(experiment);
         }
 
+        //Set to remember which columns to do at end of row iteration (in case required columns like target are at the end).
+        Set<Integer> colsToDoAtEnd = new HashSet<>();
+
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
@@ -1768,162 +1771,166 @@ public class DataAPI {
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
-                        if (validRow) {
-                            String variable = headerByIndex.get(colIndex);
-                            URI varURI = URI.create(variable);
-                            if (deviceFromDeviceColumn == null && target == null && object == null) {
-                                missingTargetOrDevice = true;
-                                validRow = false;
-                                break;
-                            }
-                            if (deviceFromDeviceColumn != null) {
-                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
-                                if (!variableIsChecked) {
-                                    if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
-                                        csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        colsToDoAtEnd.add(colIndex);
+                    }
+                }
+            }
+        }
+        //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
+        for(Integer colIndex : colsToDoAtEnd){
+            if (validRow) {
+                String variable = headerByIndex.get(colIndex);
+                URI varURI = URI.create(variable);
+                if (deviceFromDeviceColumn == null && target == null && object == null) {
+                    missingTargetOrDevice = true;
+                    validRow = false;
+                    break;
+                }
+                if (deviceFromDeviceColumn != null) {
+                    boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
+                    if (!variableIsChecked) {
+                        if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
+                            csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        }
+                        variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                    }
+
+                } else if (sensingDeviceFoundFromProvenance) {
+                    if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
+                        List<DeviceModel> devices = new ArrayList<>();
+                        List<DeviceModel> linkedDevice = new ArrayList<>();
+                        DeviceModel dev = null;
+                        for (AgentModel agent : provenance.getAgents()) {
+                            if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                if (dev != null) {
+
+                                    if (variableIsAssociatedToDevice(dev, varURI)) {
+                                        linkedDevice.add(dev);
                                     }
-                                    variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                                    devices.add(dev);
                                 }
-
-                            } else if (sensingDeviceFoundFromProvenance) {
-                                if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
-                                    List<DeviceModel> devices = new ArrayList<>();
-                                    List<DeviceModel> linkedDevice = new ArrayList<>();
-                                    DeviceModel dev = null;
-                                    for (AgentModel agent : provenance.getAgents()) {
-                                        if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
-                                            dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                            if (dev != null) {
-
-                                                if (variableIsAssociatedToDevice(dev, varURI)) {
-                                                    linkedDevice.add(dev);
-                                                }
-                                                devices.add(dev);
-                                            }
-                                        }
-                                    }
-                                    switch (linkedDevice.size()) {
-                                        case 0:
-                                            if (devices.size() > 1) {
-                                                //wich device to choose ?
-                                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                                csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                                validRow = false;
-                                                break;
-                                            } else {
-                                                if (!devices.isEmpty()) {
-                                                    csvValidation.addVariableToDevice(devices.get(0), varURI);
-                                                    variableCheckedProvDevice.put(variable, devices.get(0));
-                                                } else {
-                                                    if (target == null) {
-                                                        missingTargetOrDevice = true;
-                                                        validRow = false;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            break;
-                                        case 1:
-
-                                            variableCheckedProvDevice.put(variable, linkedDevice.get(0));
-                                            break;
-
-                                        default:
-                                            //witch device to choose ?
-                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
-                                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            }
+                        }
+                        switch (linkedDevice.size()) {
+                            case 0:
+                                if (devices.size() > 1) {
+                                    //which device to choose ?
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                    csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                    validRow = false;
+                                    break;
+                                } else {
+                                    if (!devices.isEmpty()) {
+                                        csvValidation.addVariableToDevice(devices.get(0), varURI);
+                                        variableCheckedProvDevice.put(variable, devices.get(0));
+                                    } else {
+                                        if (target == null) {
+                                            missingTargetOrDevice = true;
                                             validRow = false;
                                             break;
-                                    }
-                                    checkedVariables.add(variable);
-                                } else {
-                                    if (!variableCheckedProvDevice.containsKey(variable)) {
-                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                        csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                        break;
+                                        }
                                     }
                                 }
-                            }
-                            if(validRow) {
-                                DataModel dataModel = new DataModel();
-                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                                provenanceModel.setUri(provenance.getUri());
+                                break;
+                            case 1:
 
-                                if (!experiments.isEmpty()) {
-                                    provenanceModel.setExperiments(experiments);
-                                }
+                                variableCheckedProvDevice.put(variable, linkedDevice.get(0));
+                                break;
 
-                                if (deviceFromDeviceColumn != null) {
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(deviceFromDeviceColumn.getUri());
-                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
-
-                                } else if (sensingDeviceFoundFromProvenance) {
-
-                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(checkedDevice.getUri());
-                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
-
-                                }
-
-                                dataModel.setDate(parsedDateTimeMongo.getInstant());
-                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                                if (object != null) {
-                                    dataModel.setTarget(object.getUri());
-                                }
-                                if (target != null) {
-                                    dataModel.setTarget(target.getUri());
-                                }
-                                dataModel.setProvenance(provenanceModel);
-                                dataModel.setVariable(varURI);
-                                DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
-
-                                if (colIndex + 1 < values.length) {
-                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
-                                        dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
-                                    }
-                                }
-
-                                // check for duplicate data
-                                URI targetUri = null;
-                                URI deviceUri = null;
-                                if (target != null) {
-                                    targetUri = target.getUri();
-                                }
-                                if (object != null) {
-                                    targetUri = object.getUri();
-                                }
-                                if(deviceFromDeviceColumn != null) {
-                                    deviceUri = deviceFromDeviceColumn.getUri();
-                                }
-                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
-                                if (!duplicateDataByIndex.contains(importDataIndex)) {
-                                    duplicateDataByIndex.add(importDataIndex);
-                                } else {
-                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                    csvValidation.addDuplicatedDataError(duplicateCell);
-                                }
-                                csvValidation.addData(dataModel, rowIndex);
-
-                            }
-
+                            default:
+                                //which device to choose ?
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
+                                csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                validRow = false;
+                                break;
+                        }
+                        checkedVariables.add(variable);
+                    } else {
+                        if (!variableCheckedProvDevice.containsKey(variable)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            break;
                         }
                     }
                 }
+                if(validRow) {
+                    DataModel dataModel = new DataModel();
+                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                    provenanceModel.setUri(provenance.getUri());
+
+                    if (!experiments.isEmpty()) {
+                        provenanceModel.setExperiments(experiments);
+                    }
+
+                    if (deviceFromDeviceColumn != null) {
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
+                        agent.setType(rootType);
+                        agent.setUri(deviceFromDeviceColumn.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    } else if (sensingDeviceFoundFromProvenance) {
+
+                        DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                        agent.setType(rootType);
+                        agent.setUri(checkedDevice.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    }
+
+                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+
+                    if (object != null) {
+                        dataModel.setTarget(object.getUri());
+                    }
+                    if (target != null) {
+                        dataModel.setTarget(target.getUri());
+                    }
+                    dataModel.setProvenance(provenanceModel);
+                    dataModel.setVariable(varURI);
+                    DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
+
+                    if (colIndex + 1 < values.length) {
+                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                        }
+                    }
+
+                    // check for duplicate data
+                    URI targetUri = null;
+                    URI deviceUri = null;
+                    if (target != null) {
+                        targetUri = target.getUri();
+                    }
+                    if (object != null) {
+                        targetUri = object.getUri();
+                    }
+                    if(deviceFromDeviceColumn != null) {
+                        deviceUri = deviceFromDeviceColumn.getUri();
+                    }
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                    if (!duplicateDataByIndex.contains(importDataIndex)) {
+                        duplicateDataByIndex.add(importDataIndex);
+                    } else {
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
+                    }
+                    csvValidation.addData(dataModel, rowIndex);
+
+                }
+
             }
         }
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target

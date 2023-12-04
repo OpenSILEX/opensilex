@@ -7,9 +7,8 @@ package org.opensilex.core.agroportal.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.codehaus.plexus.util.StringUtils;
-import org.opensilex.core.agroportal.dal.EntityAgroportalModel;
-import org.opensilex.core.agroportal.dal.LinksAgroportalModel;
+import org.opensilex.core.external.agroportal.AgroportalTermModel;
+import org.opensilex.core.external.agroportal.AgroportalLinksModel;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -18,14 +17,13 @@ import java.util.List;
 
 /**
  * Represents a term from AgroPortal
- * @todo renommer cette classe pour ne pas confondre avec le composant de variable "entité"
  *
  * @author brice
  */
 @JsonPropertyOrder({
     "id", "name", "definitions", "type", "ontologyType"
 })
-public class EntityAgroportalDTO {
+public class AgroportalTermDTO {
 
     @NotNull
     @JsonProperty("id")
@@ -45,7 +43,7 @@ public class EntityAgroportalDTO {
     @JsonProperty("type")
     private String type;
     @JsonProperty("links")
-    private LinksAgroportalModel links;
+    private AgroportalLinksModel links;
 
 
     public String getId() {
@@ -104,20 +102,20 @@ public class EntityAgroportalDTO {
         this.type = type;
     }
 
-    public LinksAgroportalModel getLinks() {
+    public AgroportalLinksModel getLinks() {
         return links;
     }
 
-    public void setLinks(LinksAgroportalModel links) {
+    public void setLinks(AgroportalLinksModel links) {
         this.links = links;
     }
 
-    public EntityAgroportalDTO() {
+    public AgroportalTermDTO() {
         this.definitions = new ArrayList();
     }
 
-    public static EntityAgroportalDTO fromModel(EntityAgroportalModel model) {
-        EntityAgroportalDTO dto = new EntityAgroportalDTO();
+    public static AgroportalTermDTO fromModel(AgroportalTermModel model) {
+        AgroportalTermDTO dto = new AgroportalTermDTO();
 
         dto.setId(model.getId());
         dto.setName(model.getPrefLabel());
@@ -140,27 +138,6 @@ public class EntityAgroportalDTO {
         }
 
         return dto;
-    }
-
-    public EntityAgroportalModel toModel() {
-        EntityAgroportalModel model = new EntityAgroportalModel();
-
-        model.setId(id);
-        model.setPrefLabel(name);
-        model.setObsolete(obsolete);
-        model.setLinks(links);
-
-        if (!synonym.isEmpty()) {
-            model.setSynonym(synonym.toArray(new String[0]));
-        }
-        if (!definitions.isEmpty()) {
-            model.setDefinitions(definitions.toArray(new String[0]));
-        }
-        if(!StringUtils.isEmpty(type)){
-            model.setType(type);
-        }
-
-        return model;
     }
 
 }

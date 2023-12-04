@@ -86,6 +86,11 @@ framework that it can be injected as an implementation of this contract.
 A class member or a method parameter annotated with `@Contract` can be provided by the dependency injection framework
 instead of being instantiated by any class that depends on it.
 
+### `@SelfBound`
+
+A class annotated with `@Service` can also be annotated with `@SelfBound` to be automatically registered as both
+a **contract** and a **service implementation** of itself.
+
 ## Binding
 
 As said above, service implementations must be **bound** to contracts in order to become injectable. In OpenSILEX, 
@@ -215,6 +220,7 @@ Some services are registered at the startup by the `RestApplication` class. Thes
   - The instance of the configuration object, if defined (such as `CoreConfig` for the core module)
 - Classes that implements `Service` and their factory (such as `SPARQLServiceFactory` which provides `SPARQLService` 
   objects)
+- Classes that are annotated with both `@Service` and `@SelfBound` annotations
 
 ## Sources
 

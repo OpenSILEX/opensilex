@@ -1,4 +1,4 @@
-package org.opensilex.core.agroportal.dal;
+package org.opensilex.core.external.agroportal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "children", "parents", "descendants", "ancestors",
         "instances", "tree", "notes", "ui"
 })
-public class LinksAgroportalModel {
+public class AgroportalLinksModel {
 
     @JsonProperty("self")
     private String self;

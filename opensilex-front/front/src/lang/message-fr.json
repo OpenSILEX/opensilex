@@ -864,7 +864,9 @@
     },
     "server": {
         "errors": {
-            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
+            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-instance-connection": "Impossible de se connecter à Agroportal. Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-not-configured": "Agroportal n'est pas configuré pour cette instance."
         },
         "warnings": {
             "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance.",

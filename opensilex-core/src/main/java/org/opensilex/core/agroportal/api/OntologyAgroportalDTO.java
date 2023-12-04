@@ -7,7 +7,7 @@ package org.opensilex.core.agroportal.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.agroportal.dal.OntologyAgroportalModel;
+import org.opensilex.core.external.agroportal.OntologyAgroportalModel;
 
 import javax.validation.constraints.NotNull;
 

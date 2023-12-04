@@ -1,10 +1,10 @@
-package org.opensilex.core.agroportal.dal;
+package org.opensilex.core.external.agroportal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EntityAgroportalModel {
+public class AgroportalTermModel {
 
     @JsonProperty("prefLabel")
     private String prefLabel;
@@ -19,7 +19,7 @@ public class EntityAgroportalModel {
     @JsonProperty("@type")
     private String type;
     @JsonProperty("links")
-    private LinksAgroportalModel links;
+    private AgroportalLinksModel links;
 
     public String getPrefLabel() {
         return prefLabel;
@@ -69,11 +69,11 @@ public class EntityAgroportalModel {
         this.type = type;
     }
 
-    public LinksAgroportalModel getLinks() {
+    public AgroportalLinksModel getLinks() {
         return links;
     }
 
-    public void setLinks(LinksAgroportalModel links) {
+    public void setLinks(AgroportalLinksModel links) {
         this.links = links;
     }
 }

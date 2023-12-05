@@ -6,7 +6,8 @@
 
         <div>
             <opensilex-ExternalReferencesForm
-                    :references.sync="references"
+                    :references.sync="skosReferences"
+                    :includeAgroportalSearch="includeAgroportalSearch"
                     :displayInsertButton="false"
                     @onUpdate="update"
                     @onAdd="update"
@@ -34,6 +35,9 @@
 
         @PropSync("references")
         skosReferences: any;
+
+        @Prop({default: false})
+        includeAgroportalSearch: boolean;
 
         @Ref("validatorRef") readonly validatorRef!: any;
 

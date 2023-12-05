@@ -21,31 +21,12 @@
             {{ $t('AgroportalSearchFormPart.search-for-ontology-term') }}
           </template>
         </b-form-group>
-
-        <!-- Search bar -->
-        <opensilex-AgroportalSearch
-            id="v-step-search"
-            label="component.common.name"
-            type="text"
-            ref="searchComponent"
-            :placeholder="$t(props.searchPlaceholder)"
-            :selected.sync="ontologies"
-            :isAllOntologies.sync="isAllOntologies"
-            @change="onSearchTextChange"
-        ></opensilex-AgroportalSearch>
-
-        <!-- Search results -->
-        <div class="row">
-          <div class="col-lg-12">
-            <opensilex-AgroportalResults
-                id="v-step-result"
-                ref="searchResults"
-                :text.sync="text"
-                :ontologies.sync="ontologies"
-                @import="selectItem">
-            </opensilex-AgroportalResults>
-          </div>
-        </div>
+          <opensilex-AgroportalTermSelector
+              ref="agroportalTermSelector"
+              :placeholder="$t(props.searchPlaceholder)"
+              :selectedOntologies="ontologies"
+              @import="selectItem"
+          ></opensilex-AgroportalTermSelector>
 
       </b-col>
 
@@ -93,11 +74,10 @@
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import AgroportalResults from "./AgroportalResults.vue";
-import { Tour } from "vue-tour";
-import AgroportalSearch from "./AgroportalSearch.vue";
+import {Tour} from "vue-tour";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-
+import AgroportalTermSelector from "../../../common/external-references/agroportal/AgroportalTermSelector.vue";
+import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
 
 @Component
 export default class AgroportalSearchFormPart extends Vue {
@@ -129,13 +109,13 @@ export default class AgroportalSearchFormPart extends Vue {
 
   private tutorialSteps = [
     {
-      target: "#v-step-search",
+      target: ".v-step-agroportal-search",
       header: {title: this.$t("AgroportalSearchFormPart.tutorial.step-search.title")},
       content: this.$t("AgroportalSearchFormPart.tutorial.step-search.content"),
       params: {placement: "bottom"}
     },
     {
-      target: "#v-step-result",
+      target: ".v-step-agroportal-results",
       header: {title: this.$t("AgroportalSearchFormPart.tutorial.step-result.title")},
       content: this.$t("AgroportalSearchFormPart.tutorial.step-result.content"),
       params: {placement: "left"},
@@ -160,24 +140,23 @@ export default class AgroportalSearchFormPart extends Vue {
     }
   ]
 
-  private savedSearchTerm?: string;
+  private savedStateBeforeTutorial?: {
+    searchTerm: string,
+    formDto: BaseVariableCreationDTO
+  };
 
 
   handleErrorMessage(errorMsg: string) {
     this.errorMsg = errorMsg;
   }
 
-  @Ref("validatorRef") readonly validatorRef!: any;
-  @Ref("searchComponent") readonly searchComponent!: AgroportalSearch;
-  @Ref("searchResults") readonly searchResults!: AgroportalResults;
+  @Ref("validatorRef")
+  readonly validatorRef!: any;
+  @Ref("agroportalTermSelector")
+  private readonly agroportalTermSelector: AgroportalTermSelector;
 
   created() {
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
-  }
-
-  onSearchTextChange(searchedText: string) {
-    this.text = searchedText;
-    this.searchResults.updateResults(searchedText, this.isAllOntologies);
   }
 
   importResult(entity: AgroportalTermDTO) {
@@ -206,28 +185,44 @@ export default class AgroportalSearchFormPart extends Vue {
     return this.validatorRef.validate();
   }
 
-  startTutorial() {
-    this.savedSearchTerm = this.text;
-    this.searchComponent.setSearchTerm(this.$t(this.props.searchPlaceholder).toString());
+  //region Tutorial
+
+  public startTutorial() {
+    this.saveStateBeforeTutorial();
+    this.clearCurrentState();
+    this.agroportalTermSelector.setSearchText(this.$t(this.props.searchPlaceholder).toString());
     this.tutorial.start();
   }
 
-  async beforeImportStep() {
-    this.searchResults.selectAndImportItem(0);
+  private saveStateBeforeTutorial() {
+    this.savedStateBeforeTutorial = {
+      searchTerm: this.text,
+      formDto: JSON.parse(JSON.stringify(this.formDto))
+    };
   }
 
-  async beforeNoSearchStep() {
-    this.clearForTutorial();
-  }
-
-  onTutorialFinishOrSkip() {
-    this.clearForTutorial();
-  }
-
-  clearForTutorial() {
-    this.searchComponent.setSearchTerm(this.savedSearchTerm);
+  private clearCurrentState() {
+    this.agroportalTermSelector.setSearchText("");
     this.selectedEntity = undefined;
   }
+
+  private restoreStateAfterTutorial() {
+    this.text = this.savedStateBeforeTutorial.searchTerm;
+    this.formDto = JSON.parse(JSON.stringify(this.savedStateBeforeTutorial.formDto));
+  }
+
+  private async beforeImportStep() {
+    this.agroportalTermSelector.selectAndImportFirstItem();
+  }
+
+  private async beforeNoSearchStep() {
+    this.clearCurrentState();
+  }
+
+  private onTutorialFinishOrSkip() {
+    this.restoreStateAfterTutorial();
+  }
+  //endregion
 }
 </script>
 

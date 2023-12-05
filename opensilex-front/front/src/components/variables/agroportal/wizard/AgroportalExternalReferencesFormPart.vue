@@ -7,7 +7,9 @@
         @onSkip="onTutorialFinishOrSkip"
     >
     </opensilex-Tutorial>
-    <div>
+    <div
+        class="v-step-agroportalExternalReferencesForm"
+    >
       <ValidationObserver ref="validatorRef">
         <b-form>
           <b-row>
@@ -26,26 +28,13 @@
               </b-form-group>
 
               <div v-if="includeAgroportalSearch && isAgroportalReachable">
-                <opensilex-AgroportalSearch
-                    class="v-step-search"
-                    ref="searchComponent"
-                    label="component.common.name"
-                    type="text"
-                    :placeholder="props.searchPlaceholder"
-                    :selected.sync="ontologies"
-                    :isAllOntologies.sync="isAllOntologies"
-                    @change="onSearchTextChange"
-                ></opensilex-AgroportalSearch>
-
-                <opensilex-AgroportalResults
-                    id="v-step-results"
-                    ref="searchResultsRef"
-                    :text.sync="text"
-                    :ontologies.sync="ontologies"
+                <opensilex-AgroportalTermSelector
+                    ref="agroportalTermSelector"
+                    :placeholder="$t(props.searchPlaceholder)"
+                    :selectedOntologies="ontologies"
                     :isMappingMode="true"
-                    :mappingOptions="skosRelationOptions"
-                    @importMapping="onImportMapping">
-                </opensilex-AgroportalResults>
+                    @importMapping="onImportMapping"
+                ></opensilex-AgroportalTermSelector>
               </div>
 
               <b-form-group
@@ -222,19 +211,16 @@
 </template>
 
 <script lang="ts">
-
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH} from "../../../../models/SkosRelations";
-import AgroportalResults from "./AgroportalResults.vue";
 import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
 import {Tour} from "vue-tour";
-import AgroportalSearch from "./AgroportalSearch.vue";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-
+import AgroportalTermSelector from "../../../common/external-references/agroportal/AgroportalTermSelector.vue";
 
 @Component
 export default class AgroportalExternalReferencesFormPart extends Vue {
@@ -262,8 +248,8 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   isAllOntologies: boolean = false;
 
   @Ref("validatorRef") readonly validatorRef!: any;
-  @Ref("searchComponent") readonly searchComponent!: AgroportalSearch;
-  @Ref("searchResultsRef") readonly searchResults!: AgroportalResults;
+  @Ref("agroportalTermSelector")
+  private readonly agroportalTermSelector: AgroportalTermSelector;
 
   @Prop({default: true})
   displayInsertButton: boolean;
@@ -276,52 +262,52 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   private tutorialSteps = [
     {
-      target: ".v-step-search",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-search",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.content"),
       params: {placement: "left"}
     },
     {
-      target: "#v-step-results",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-results",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.content"),
       params: {placement: "left"}
     },
     {
-      target: "#v-step-results .v-step-result-mapping-button",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-results .v-step-result-mapping-button",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.content"),
       params: {placement: "right", enableScrolling: false},
       before: this.beforeImportMappingStep
     },
     {
-      target: ".v-step-table",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewStep
     },
     {
-      target: ".v-step-change-mapping",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-change-mapping",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.content"),
       params: {placement: "left"}
     },
     {
-      target: ".v-step-manual-uri",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-manual-uri",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.content"),
       params: {placement: "top"},
       before: this.beforeManualMappingStep
     },
     {
-      target: ".v-step-manual-mapping",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-manual-mapping",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.content"),
       params: {placement: "top"}
     },
     {
-      target: ".v-step-table",
+      target: ".v-step-agroportalExternalReferencesForm .v-step-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.content"),
       params: {placement: "left"},
@@ -520,11 +506,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     });
   }
 
-  onSearchTextChange(searchedText: string) {
-    this.text = searchedText;
-    this.searchResults.updateResults(searchedText, this.isAllOntologies);
-  }
-
   onImportMapping(entity: AgroportalTermDTO, relation) {
     this.currentExternalUri = entity.id;
     this.currentRelation = relation.id;
@@ -557,19 +538,19 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     this.currentExternalUri = this.savedStateBeforeTutorial.currentExternalUri;
     this.text = this.savedStateBeforeTutorial.searchText;
     this.formDto = JSON.parse(JSON.stringify(this.savedStateBeforeTutorial.formDto));
-    this.searchComponent.setSearchTerm(this.text);
+    this.agroportalTermSelector.setSearchText(this.text);
   }
 
   private async beforeImportMappingStep() {
-    this.searchResults.selectItem(0);
+    this.agroportalTermSelector.selectFirstItem();
   }
 
   private async beforeMappingOverviewStep() {
-    this.searchResults.selectAndMapItem(0);
+    this.agroportalTermSelector.selectAndMapFirstItem();
   }
 
   private async beforeManualMappingStep() {
-    this.searchComponent.setSearchTerm("");
+    this.agroportalTermSelector.setSearchText("");
     this.currentExternalUri = "http://www.w3.org/2002/07/owl#Thing"
   }
 
@@ -580,7 +561,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   startTutorial() {
     this.saveStateBeforeTutorial();
     this.clearCurrentState();
-    this.searchComponent.setSearchTerm(this.$t(this.props.searchPlaceholder).toString());
+    this.agroportalTermSelector.setSearchText(this.$t(this.props.searchPlaceholder).toString());
     this.tutorial.start();
   }
 

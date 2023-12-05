@@ -10,6 +10,7 @@
     * [`@Contract`](#contract)
     * [`@Service`](#service)
     * [`@Inject`](#inject)
+    * [`@SelfBound`](#selfbound)
   * [Binding](#binding)
     * [Other ways of binding contracts](#other-ways-of-binding-contracts)
   * [Usage](#usage)

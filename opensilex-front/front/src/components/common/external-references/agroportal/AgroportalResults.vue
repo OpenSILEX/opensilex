@@ -59,13 +59,14 @@
 
 <script lang="ts">
 
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import {SelectableItem} from "../../../common/forms/SelectForm.vue";
+import {SelectableItem} from "../../forms/SelectForm.vue";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import SUPPORTED_SKOS_RELATIONS from "../../../../models/SkosRelations";
 
 @Component
 export default class AgroportalResults extends Vue {
@@ -83,19 +84,18 @@ export default class AgroportalResults extends Vue {
   })
   ontologies: string[];
 
-  @Prop()
-  mappingOptions: Array<SelectableItem>;
-
   @Prop({
     default: false
   })
   isMappingMode: boolean;
 
   entities: Array<any> = [];
-  selectedIndex: number = null;
 
+  selectedIndex: number = null;
   isAgroportalDown: boolean = false;
+
   isDataLoading: boolean = false;
+  mappingOptions: Array<SelectableItem>;
 
   @Ref("resultItems") readonly resultItems!: Array<AgroportalResultItem>;
 
@@ -157,6 +157,15 @@ export default class AgroportalResults extends Vue {
   }
 
   created() {
+    const skosRelationOptions: Array<SelectableItem> = [];
+    for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+      skosRelationOptions.push({
+        id: skosRelation.dtoKey,
+        label: this.$t(skosRelation.label).toString(),
+        title: this.$t(skosRelation.description).toString()
+      });
+    }
+    this.mappingOptions = skosRelationOptions;
     this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
 }

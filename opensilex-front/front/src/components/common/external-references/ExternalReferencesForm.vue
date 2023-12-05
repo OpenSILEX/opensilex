@@ -160,15 +160,15 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-    import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
-    @Component
+@Component
     export default class ExternalReferencesForm extends Vue {
         $opensilex: OpenSilexVuePlugin;
         $store: any;
@@ -208,10 +208,9 @@
         isAgroportalReachable: boolean = false;
 
         checkAgroportalReachable() {
-          this.agroportalAPIService.pingAgroportal(1000).then((http) => {
+          this.agroportalAPIService.pingAgroportal().then((http) => {
             if (http && http.response) {
-              let isReachable = http.response.result;
-              this.isAgroportalReachable = isReachable;
+              this.isAgroportalReachable = http.response.result;
             }
           });
         }

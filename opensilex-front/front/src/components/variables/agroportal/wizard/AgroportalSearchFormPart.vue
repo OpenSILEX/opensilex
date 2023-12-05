@@ -93,10 +93,10 @@
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import AgroportalResults from "./AgroportalResults.vue";
 import { Tour } from "vue-tour";
 import AgroportalSearch from "./AgroportalSearch.vue";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 
 @Component
@@ -116,7 +116,7 @@ export default class AgroportalSearchFormPart extends Vue {
   @PropSync("form")
   formDto: any;
 
-  selectedEntity: EntityAgroportalDTO = null;
+  selectedEntity: AgroportalTermDTO = null;
 
   @Ref("tutorial")
   private tutorial: Tour;
@@ -180,7 +180,7 @@ export default class AgroportalSearchFormPart extends Vue {
     this.searchResults.updateResults(searchedText, this.isAllOntologies);
   }
 
-  importResult(entity: EntityAgroportalDTO) {
+  importResult(entity: AgroportalTermDTO) {
     if (!entity) return;
     this.selectedEntity = entity;
     this.$emit("fill", this.selectedEntity);
@@ -191,7 +191,7 @@ export default class AgroportalSearchFormPart extends Vue {
     //this.$emit("clear");
   }
 
-  selectItem(entity: EntityAgroportalDTO) {
+  selectItem(entity: AgroportalTermDTO) {
     this.selectedEntity = entity;
     this.importResult(this.selectedEntity);
   }

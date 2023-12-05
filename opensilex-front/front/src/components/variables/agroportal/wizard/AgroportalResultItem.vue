@@ -39,7 +39,7 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
-import {EntityAgroportalDTO} from "opensilex-core/index";
+import {AgroportalTermDTO} from "opensilex-core/index";
 
 @Component
 export default class AgroportalResultItem extends Vue {
@@ -47,7 +47,7 @@ export default class AgroportalResultItem extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   @Prop()
-  entity: EntityAgroportalDTO;
+  entity: AgroportalTermDTO;
 
   @Prop()
   index;

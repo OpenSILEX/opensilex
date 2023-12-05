@@ -225,7 +225,6 @@
 
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH} from "../../../../models/SkosRelations";
@@ -234,6 +233,7 @@ import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
 import {Tour} from "vue-tour";
 import AgroportalSearch from "./AgroportalSearch.vue";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 
 @Component
@@ -525,7 +525,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     this.searchResults.updateResults(searchedText, this.isAllOntologies);
   }
 
-  onImportMapping(entity: EntityAgroportalDTO, relation) {
+  onImportMapping(entity: AgroportalTermDTO, relation) {
     this.currentExternalUri = entity.id;
     this.currentRelation = relation.id;
     this.addRelationToTerm(relation.id);

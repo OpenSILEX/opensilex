@@ -102,7 +102,9 @@ public class AgroportalService {
         var params = new HashMap<String, List<String>>();
         params.put(SEARCH_QUERY_PARAMETER, Collections.singletonList(query));
         if (CollectionUtils.isNotEmpty(ontologies)) {
-            params.put(SEARCH_ONTOLOGIES_PARAMETER, ontologies);
+            params.put(SEARCH_ONTOLOGIES_PARAMETER, Collections.singletonList(
+                    formatOntologiesParameter(ontologies)
+            ));
         }
         return get(target, params, mapper.getTypeFactory().constructType(AgroportalSearchResultModel.class));
     }
@@ -136,6 +138,19 @@ public class AgroportalService {
             }
             return mapper.convertValue(jsonResponse, responseType);
         }
+    }
+
+    /**
+     * The `ontologies` parameter of the Agroportal search service only takes one parameter with all ontology
+     * acronyms separated by colons.
+     *
+     * @param ontologies The list of ontology acronyms
+     * @return A single string with all ontology acronyms separated by colons
+     */
+    private String formatOntologiesParameter(List<String> ontologies) {
+        return ontologies.stream()
+                .reduce((result, element) -> result + "," + element)
+                .orElse("");
     }
 
     //endregion

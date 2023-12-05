@@ -27,8 +27,8 @@ import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Prop, Ref} from "vue-property-decorator";
 import WizardForm from "../../../common/forms/WizardForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
-import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 import {BaseVariableCreateForm, BaseVariableCreationDTO} from "../../form/VariableFormTypes";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 @Component({})
 export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> extends Vue implements
@@ -161,7 +161,7 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
         .catch(this.$opensilex.errorHandler);
   }
 
-  convert(form: T, searchDTO: EntityAgroportalDTO) {
+  convert(form: T, searchDTO: AgroportalTermDTO) {
     if (!this.editMode) {
       form.uri = searchDTO.id;
     }

@@ -164,9 +164,9 @@
     import Vue from "vue";
     import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+    import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
     @Component
     export default class ExternalReferencesForm extends Vue {
@@ -385,7 +385,7 @@
           this.text = searchedText;
         }
 
-        onImportMapping(entity: EntityAgroportalDTO, relation) {
+        onImportMapping(entity: AgroportalTermDTO, relation) {
           this.currentExternalUri = entity.id;
           this.currentRelation = relation.id;
         }

@@ -848,7 +848,7 @@
     "server": {
         "errors": {
             "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect.",
-            "agroportal-instance-connection": "Could not reach Agroportal. The service may be unavailable, or the configuration is incorrect."
+            "agroportal-instance-connection": "Could not reach Agroportal. The service may be unavailable, or the configuration is incorrect.",
             "agroportal-not-configured": "Agroportal is not configured for this instance."
         },
         "warnings": {

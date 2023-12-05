@@ -96,10 +96,10 @@ export default class AgroportalSearch extends Vue {
     this.searchBar = "";
   }
 
-  loadOntologies(ontologieAcronyms): Promise<Array<OntologyAgroportalDTO>> {
+  loadOntologies(ontologieAcronyms: Array<string>): Promise<Array<OntologyAgroportalDTO>> {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
-        .getAgroportalOntologies("", ontologieAcronyms, undefined, 0, 0)
+        .getAgroportalOntologies("", ontologieAcronyms)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http.response.result;
         })
@@ -109,7 +109,7 @@ export default class AgroportalSearch extends Vue {
   searchOntologies(searchQuery, page, pageSize) {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
-        .getAgroportalOntologies(searchQuery, undefined, undefined, 0, 0)
+        .getAgroportalOntologies(searchQuery, undefined)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http;
         })

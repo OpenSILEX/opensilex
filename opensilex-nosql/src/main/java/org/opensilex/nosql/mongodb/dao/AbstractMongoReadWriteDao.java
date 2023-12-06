@@ -54,11 +54,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public T get(@NotNull URI uri) throws NoSQLInvalidURIException {
+        Objects.requireNonNull(uri);
         return mongodb.findByURI(collection, uri, idField());
     }
 
     @Override
-    public T get(ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException {
+    public T get(@Nullable ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException {
+        Objects.requireNonNull(uri);
         return mongodb.findByURI(session, collection, uri, idField());
     }
 
@@ -151,10 +153,12 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return mongodb.count(session, collection, filterToBson(filter));
     }
 
+    @NotNull
     public final ListWithPagination<T> search(@NotNull F filter) throws MongoException {
         return search(null, filter, null);
     }
 
+    @NotNull
     @Override
     public ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         return mongodb.searchWithPagination(
@@ -168,6 +172,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         );
     }
 
+    @NotNull
     @Override
     public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_CONVERTED> convertFunction) throws MongoException {
 
@@ -196,15 +201,18 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
     }
 
+    @NotNull
     public final <T_CONVERTED> ListWithPagination<T_CONVERTED> search(@NotNull F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
         return search(null, filter, null, convertFunction);
     }
 
+    @NotNull
     @Override
     public StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException {
         return searchAsStream(null, filter, null);
     }
 
+    @NotNull
     @Override
     public StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(

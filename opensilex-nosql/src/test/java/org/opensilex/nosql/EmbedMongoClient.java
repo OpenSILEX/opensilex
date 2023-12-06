@@ -20,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +44,7 @@ public class EmbedMongoClient {
         return INSTANCE;
     }
 
-    private EmbedMongoClient() throws IOException, InterruptedException {
+    private EmbedMongoClient() throws IOException {
 
         RuntimeConfig runtimeConfig = Defaults.runtimeConfigFor(Command.MongoD)
                 .processOutput(ProcessOutput.silent())
@@ -83,7 +81,7 @@ public class EmbedMongoClient {
             try {
                 mongod.stopInternal();
             } catch (IllegalStateException e) {
-
+                LOGGER.error(e.getMessage());
             } finally {
                 try {
                     mongod.stop();
@@ -97,7 +95,5 @@ public class EmbedMongoClient {
             mongoExec.stop();
         }
     }
-
-
 
 }

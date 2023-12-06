@@ -2,65 +2,99 @@ package org.opensilex.nosql.mongodb.model;
 
 import org.opensilex.nosql.mongodb.MongoModel;
 
-import java.time.OffsetDateTime;
+import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 
 public class MongoTestModel extends MongoModel {
 
-    private String string;
-    private List<String> stringList;
-    private Integer integer;
-    private List<Integer> integerList;
+    private String name;
+    public static final String NAME_FIELD = "name";
 
-    private MongoTestModel nestedMongoTestModel;
-    private List<MongoTestModel> nestedMongoTestModelList;
+    private Long id;
+    public static final String ID_FIELD = "id";
 
-    public String getString() {
-        return string;
+
+    private MongoNestTestModel target;
+    private URI variable;
+    private Object value;
+    private Instant timestamp;
+
+    public static final String TIMESTAMP_FIELD = "timestamp";
+    private List<MongoNestTestModel> agents;
+    private List<MongoNestTestModel> activities;
+
+    private URI experiment;
+
+    public String getName() {
+        return name;
     }
 
-    public void setString(String string) {
-        this.string = string;
+    public void setName(String name) {
+        this.name = name;
     }
 
-
-    public List<String> getStringList() {
-        return stringList;
+    public Long getId() {
+        return id;
     }
 
-    public void setStringList(List<String> stringList) {
-        this.stringList = stringList;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Integer getInteger() {
-        return integer;
+    public MongoNestTestModel getTarget() {
+        return target;
     }
 
-    public void setInteger(Integer integer) {
-        this.integer = integer;
+    public void setTarget(MongoNestTestModel target) {
+        this.target = target;
     }
 
-    public List<Integer> getIntegerList() {
-        return integerList;
+    public URI getVariable() {
+        return variable;
     }
 
-    public void setIntegerList(List<Integer> integerList) {
-        this.integerList = integerList;
+    public void setVariable(URI variable) {
+        this.variable = variable;
     }
 
-    public MongoTestModel getNestedMongoTestModel() {
-        return nestedMongoTestModel;
+    public Object getValue() {
+        return value;
     }
 
-    public void setNestedMongoTestModel(MongoTestModel nestedMongoTestModel) {
-        this.nestedMongoTestModel = nestedMongoTestModel;
+    public void setValue(Object value) {
+        this.value = value;
     }
 
-    public List<MongoTestModel> getNestedMongoTestModelList() {
-        return nestedMongoTestModelList;
+    public Instant getTimestamp() {
+        return timestamp;
     }
 
-    public void setNestedMongoTestModelList(List<MongoTestModel> nestedMongoTestModelList) {
-        this.nestedMongoTestModelList = nestedMongoTestModelList;
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public List<MongoNestTestModel> getAgents() {
+        return agents;
+    }
+
+    public void setAgents(List<MongoNestTestModel> agents) {
+        this.agents = agents;
+    }
+
+    public List<MongoNestTestModel> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<MongoNestTestModel> activities) {
+        this.activities = activities;
+    }
+
+    public URI getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
     }
 }

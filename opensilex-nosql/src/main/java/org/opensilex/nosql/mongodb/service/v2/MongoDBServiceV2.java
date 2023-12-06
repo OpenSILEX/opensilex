@@ -56,6 +56,7 @@ import static org.opensilex.utils.LogFilter.LOG_TYPE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
 import static com.mongodb.client.model.Filters.*;
@@ -71,6 +72,10 @@ public class MongoDBServiceV2 extends BaseService {
     public static final String MONGO_SERVER_CONNECTION_FAIL_LOG_MSG = "MONGO_SERVER_CONNECTION_FAIL";
     public static final String MONGO_CREATE_LOG_MSG = "MONGO_CREATE";
     public static final String MONGO_CHECK_URI_LOG_MSG = "MONGO_CHECK_URI";
+
+    private static final Bson EMPTY_PROJECTION = Projections.fields(
+            Projections.include(MongoModel.MONGO_ID_FIELD)
+    );
 
 
     private final String dbName;
@@ -122,16 +127,12 @@ public class MongoDBServiceV2 extends BaseService {
         // check that network connection is OK by running ping command, throw MongoTimeoutException else
         final Bson pingCommand = new BsonDocument("ping", new BsonInt32(1));
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Check MongoDB connection, timeout: {}", config.connectTimeoutMs(), kv(LOG_TYPE, CHECK_MONGO_SERVER_CONNECTION_LOG_MSG));
+            LOGGER.info("Check MongoDB connection, timeout: {} {}", config.connectTimeoutMs(), kv(LOG_TYPE, CHECK_MONGO_SERVER_CONNECTION_LOG_MSG));
         }
-        try {
-            db.runCommand(pingCommand);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("MongoDB connection OK", kv(LOG_TYPE, CHECK_MONGO_SERVER_CONNECTION_LOG_MSG));
-            }
-        } catch (MongoTimeoutException e) {
-            LOGGER.error("MongoDB connection error {}", e.getMessage(), kv(LOG_TYPE, MONGO_SERVER_CONNECTION_FAIL_LOG_MSG));
-            throw e;
+
+        db.runCommand(pingCommand);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("MongoDB connection OK {}", kv(LOG_TYPE, CHECK_MONGO_SERVER_CONNECTION_LOG_MSG));
         }
     }
 
@@ -150,7 +151,18 @@ public class MongoDBServiceV2 extends BaseService {
         return mongoClient.startSession();
     }
 
-    private <R> R operationInTransaction(ThrowingFunction<ClientSession, R, MongoException> operationInTrx) throws MongoException {
+    /**
+     * Execute the given operation with transaction management
+     * @param operationInTrx A Consumer which can execute database query by using a ClientSession
+     * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
+     */
+    public void runTransaction(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws MongoException {
+        computeTransaction(session -> {
+            operationInTrx.accept(session);
+            return null;
+        });
+    }
+    public  <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
 
         ClientSession session = mongoClient.startSession();
         session.startTransaction();
@@ -164,11 +176,13 @@ public class MongoDBServiceV2 extends BaseService {
             if (session.hasActiveTransaction()) {
                 session.abortTransaction();
             }
-            throw e;
+            throw MongoException.fromThrowableNonNull(e);
         } finally {
             session.close();
         }
     }
+
+
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
         return getOpenSilex().getModuleByClass(SPARQLModule.class).getGenerationPrefixURI();
@@ -249,7 +263,7 @@ public class MongoDBServiceV2 extends BaseService {
         }
 
         // Transaction handling for data integrity since insertMany() can update several documents
-        return operationInTransaction(
+        return computeTransaction(
                 createSession -> collection.insertMany(createSession, instances)
         );
     }
@@ -357,18 +371,18 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T> boolean uriExists(ClientSession session, MongoCollection<T> collection, URI uri) {
         if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("MongoDB uriExists",
+            LOGGER.debug("MongoDB uriExists {} {} {}",
                     kv(LOG_TYPE, MONGO_CHECK_URI_LOG_MSG),
                     kv("collection", collection.getNamespace().getCollectionName()),
                     kv("uri",uri)
             );
         }
-        try {
-            findByURI(session, collection, uri, MongoModel.URI_FIELD);
-            return true;
-        } catch (NoSQLInvalidURIException ex) {
-            return false;
-        }
+        FindIterable<T> findIt = session == null ?
+                collection.find(eq(MongoModel.URI_FIELD, uri)) :
+                collection.find(session, eq(MongoModel.URI_FIELD, uri));
+
+        // Use a minimal projection in order to avoid the fetching of fields which are useless here
+        return findIt.projection(EMPTY_PROJECTION).first() != null;
     }
 
     /**
@@ -426,7 +440,7 @@ public class MongoDBServiceV2 extends BaseService {
 
         // call isDebugEnabled before displaying log, since LogOrderList is a function. We don't want to call this method, is DEBUG logging is not enabled
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter, resultsNumber);
+            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), logOrderList(orderByList), filter, resultsNumber);
         }
 
         if (resultsNumber == 0) {
@@ -460,7 +474,7 @@ public class MongoDBServiceV2 extends BaseService {
      * @param session        The ClientSession for handling the transaction (can be null)
      * @return ListWithPagination<T>    The paginated list of search results
      */
-    public <T extends MongoModel> ListWithPagination<T> searchWithPagination(
+    public <T extends MongoModel> @NotNull ListWithPagination<T> searchWithPagination(
             MongoCollection<T> collection,
             Bson filter,
             Bson projection,
@@ -521,7 +535,7 @@ public class MongoDBServiceV2 extends BaseService {
         CollectionUtils.addAll(results, queryResult);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter, results.size());
+            LOGGER.debug("[MONGO_SEARCH_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}, results_count: {}}", collection.getNamespace().getCollectionName(), logOrderList(orderByList), filter, results.size());
         }
 
         return results;
@@ -608,7 +622,7 @@ public class MongoDBServiceV2 extends BaseService {
     ) {
 
         if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(), LogOrderList(orderByList), filter);
+            LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(), logOrderList(orderByList), filter);
         }
 
         List<Bson> aggregatePipeline = new ArrayList<>();
@@ -806,7 +820,7 @@ public class MongoDBServiceV2 extends BaseService {
      * @return DeleteResult The result of the deletion operation
      * @throws Exception   If an error occurs during the deletion process
      */
-    public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws Exception {
+    public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws MongoException {
         LOGGER.debug("MONGO DELETE - Collection : {}, {} uris to delete", collection.getNamespace().getCollectionName(), uris.size());
         return deleteOnCriteria(collection, session, Filters.in(MongoModel.URI_FIELD, uris));
     }
@@ -973,13 +987,13 @@ public class MongoDBServiceV2 extends BaseService {
 
         // if a session is provided use it, else generate a new one for transaction handling,
         // since deleteMany() can update several document inside a collection, transaction handling is always needed
-        return operationInTransaction(deleteSession ->
+        return computeTransaction(deleteSession ->
                 collection.deleteMany(filter)
         );
     }
 
 
-    private String LogOrderList(List<OrderBy> orders) {
+    private String logOrderList(List<OrderBy> orders) {
         if (orders == null || orders.isEmpty()) {
             return "No order";
         } else {

@@ -87,7 +87,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return List of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    ListWithPagination<T> search(@NotNull F filter) throws MongoException;
+    @NotNull ListWithPagination<T> search(@NotNull F filter) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session.
@@ -98,7 +98,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return List of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    ListWithPagination<T> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
+    @NotNull ListWithPagination<T> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
 
     /**
      * Search for models based on the provided filter and apply a conversion function.
@@ -110,7 +110,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @throws MongoException If a MongoDB error occurs.
      *
      */
-    <T_RESULT> ListWithPagination<T_RESULT> search(@NotNull F filter, @Nullable Function<T, T_RESULT> convertFunction) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@NotNull F filter, @Nullable Function<T, T_RESULT> convertFunction) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session and apply a conversion function.
@@ -132,7 +132,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *     </li>
      * </ul>
      */
-    <T_RESULT> ListWithPagination<T_RESULT> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection, @NotNull Function<T, T_RESULT> convertFunction) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection, @NotNull Function<T, T_RESULT> convertFunction) throws MongoException;
 
     /**
      * Search for models based on the provided filter.
@@ -141,7 +141,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException;
+    @NotNull StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session.
@@ -152,7 +152,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    StreamWithPagination<T> searchAsStream(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
+    @NotNull StreamWithPagination<T> searchAsStream(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter within a client session.

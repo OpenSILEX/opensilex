@@ -9,6 +9,7 @@ package org.opensilex.brapi.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -19,6 +20,8 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -26,14 +29,10 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -313,10 +312,10 @@ public class BrAPIv1ObservationUnitDTO {
             AccountModel currentUser, 
             DataDAO dataDAO, 
             ExperimentModel experimentModel, 
-            OntologyDAO ontologyDAO, 
-            SPARQLService sparql,
+            OntologyDAO ontologyDAO,
             MoveEventDAO moveEventDAO,
-            GeospatialDAO geospatialDAO
+            GeospatialDAO geospatialDAO,
+            GermplasmDAO germplasmDAO
     ) throws Exception {
         BrAPIv1ObservationUnitDTO observationUnit = new BrAPIv1ObservationUnitDTO();
 
@@ -330,14 +329,21 @@ public class BrAPIv1ObservationUnitDTO {
 
         Set<SPARQLModelRelation> hosts = model.getRelations(Oeso.isHosted).collect(Collectors.toSet());
         if (hosts.size() == 1){
-            observationUnit.setLocationDbId(hosts.toString());
-            observationUnit.setLocationName(facilityDAO.get(URI.create(hosts.toString()), currentUser).getName());
+            for (SPARQLModelRelation host:hosts) {
+                observationUnit.setLocationDbId(host.getValue());
+                observationUnit.setLocationName(facilityDAO.get(new URI(host.getValue()), currentUser).getName());
+            }
         }
 
         Set<SPARQLModelRelation> germplasms = model.getRelations(Oeso.hasGermplasm).collect(Collectors.toSet());
         if (germplasms.size() == 1){
-            observationUnit.setGermplasmDbId(germplasms.toString());
-            observationUnit.setGermplasmName(facilityDAO.get(URI.create(germplasms.toString()), currentUser).getName());
+            for (SPARQLModelRelation germplasm:germplasms) {
+                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasm.getValue()), currentUser, false);
+                if (Objects.equals(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
+                    observationUnit.setGermplasmDbId(germplasmModel.getUri().toString());
+                    observationUnit.setGermplasmName(germplasmModel.getName());
+                }
+            }
         }
 
         ListWithPagination<DataModel> objectData = dataDAO.search(

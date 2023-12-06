@@ -7,6 +7,7 @@
 package org.opensilex.brapi.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.MethodModel;
 
 /**
@@ -79,7 +80,8 @@ public class BrAPIv1MethodDTO {
         this.reference = reference;
     }    
 
-    public BrAPIv1MethodDTO extractFromModel(MethodModel methodModel){
+    public BrAPIv1MethodDTO extractFromModel(MethodModel methodModel, BaseVariableDAO<MethodModel> baseVariableDAO) throws Exception {
+        methodModel = baseVariableDAO.get(methodModel.getUri());
 
         if (methodModel.getUri() != null){
             this.setMethodDbId(methodModel.getUri().toString());
@@ -96,8 +98,8 @@ public class BrAPIv1MethodDTO {
         return this;
     }
 
-    public static BrAPIv1MethodDTO fromModel(MethodModel methodModel){
+    public static BrAPIv1MethodDTO fromModel(MethodModel methodModel, BaseVariableDAO<MethodModel> baseVariableDAO) throws Exception {
         BrAPIv1MethodDTO method = new BrAPIv1MethodDTO();
-        return method.extractFromModel(methodModel);
+        return method.extractFromModel(methodModel, baseVariableDAO);
     }
 }

@@ -9,6 +9,7 @@ package org.opensilex.brapi.model;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -26,6 +27,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -212,8 +214,10 @@ public class BrAPIv1ObservationDTO {
             List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
             if (germplasms.size() >= 1){
                 GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser, false);
-                this.setGermplasmDbId(germplasmModel.getUri().toString());
-                this.setGermplasmName(germplasmModel.getName());
+                if (Objects.equals(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
+                    this.setGermplasmDbId(germplasmModel.getUri().toString());
+                    this.setGermplasmName(germplasmModel.getName());
+                }
             }
         }
 

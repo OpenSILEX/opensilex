@@ -17,6 +17,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.rest.validation.model.OpenSilexLocale;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -188,7 +189,7 @@ class BrAPIv1LocationDTO {
                 this.setInstituteName(institute.getName());
                 String countryName = parentAddress.getCountryName();
                 this.setCountryName(countryName);
-                this.setCountryCode(new Locale(countryName).getISO3Country());
+                this.setCountryCode(new OpenSilexLocale(countryName).getISO3Country());
                 directParentOrganizations.remove(parentsWithOneAddress.get(0));
             } else if (parentsWithOneAddress.size()>1) { // If more than one, go an Organisation level above
                 Set<OrganizationModel> newParents = new HashSet<>();
@@ -206,7 +207,7 @@ class BrAPIv1LocationDTO {
         if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
             this.setCountryName(countryName);
-            this.setCountryCode(new Locale(countryName).getISO3Country());
+            this.setCountryCode(new OpenSilexLocale(countryName).getISO3Country());
         }
 
         return this;

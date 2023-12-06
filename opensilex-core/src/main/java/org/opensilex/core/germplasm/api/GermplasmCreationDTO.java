@@ -10,26 +10,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DTO representing JSON for posting germplasm
@@ -225,7 +222,6 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         if(relations != null){
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
             ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
-            ClassModel classModel1 = SPARQLModule.getOntologyStoreInstance().getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
             RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
         }
         if (name != null) {
@@ -270,9 +266,7 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
 
         if (synonyms != null) {
             List<String> synonymsList = new ArrayList<>(synonyms.size());
-            synonyms.forEach((String synonym) -> {
-                synonymsList.add(synonym);
-            });
+            synonymsList.addAll(synonyms);
             model.setSynonyms(synonymsList);
         }        
         

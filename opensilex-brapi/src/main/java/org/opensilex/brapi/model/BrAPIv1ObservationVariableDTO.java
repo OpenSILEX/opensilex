@@ -7,6 +7,8 @@
 package org.opensilex.brapi.model;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.VariableModel;
 
 import java.util.ArrayList;
@@ -200,7 +202,7 @@ public class BrAPIv1ObservationVariableDTO {
         this.trialName = trialName;
     }
 
-    public static BrAPIv1ObservationVariableDTO fromModel(VariableModel variableModel) {
+    public static BrAPIv1ObservationVariableDTO fromModel(VariableModel variableModel, BaseVariableDAO<MethodModel> baseVariableDAO) throws Exception {
 
         BrAPIv1ObservationVariableDTO variable = new BrAPIv1ObservationVariableDTO();
         if (variableModel.getUri() != null) {
@@ -210,7 +212,7 @@ public class BrAPIv1ObservationVariableDTO {
         
         BrAPIv1TraitDTO trait = new BrAPIv1TraitDTO();
         if (variableModel.getTraitName() != null) {
-            trait.setName(variableModel.getTraitName());
+            trait.setTraitName(variableModel.getTraitName());
         } else {
             String traitName = "";
             if (variableModel.getEntity() != null) {
@@ -219,22 +221,22 @@ public class BrAPIv1ObservationVariableDTO {
             if (variableModel.getCharacteristic() != null) {
                 traitName = traitName + variableModel.getCharacteristic().getName();
             }
-            trait.setName(traitName);
+            trait.setTraitName(traitName);
         }
         
         if (variableModel.getTraitUri() != null) {
           trait.setTraitDbId(variableModel.getTraitUri().toString());
-        }        
-        variable.setTrait(trait);
-        
-        BrAPIv1MethodDTO method = new BrAPIv1MethodDTO();
-        if (variableModel.getMethod() != null) {
-            method.setMethodName(variableModel.getMethod().getName());
-            if (variableModel.getMethod().getUri() != null) {
-                method.setMethodDbId(variableModel.getMethod().getUri().toString());
-            }   
         }
-        variable.setMethod(method);
+
+        if(variableModel.getEntity() != null){
+            trait.setEntity(variableModel.getEntity().getName());
+        }
+        if(variableModel.getCharacteristic() != null){
+            trait.setAttribute(variableModel.getCharacteristic().getName());
+        }
+        variable.setTrait(trait);
+
+        variable.setMethod(BrAPIv1MethodDTO.fromModel(variableModel.getMethod(), baseVariableDAO));
         
         BrAPIv1ScaleDTO scale = new BrAPIv1ScaleDTO();
         if (variableModel.getUnit() != null) {
@@ -246,7 +248,7 @@ public class BrAPIv1ObservationVariableDTO {
         variable.setScale(scale);
 
         if (variableModel.getSpecies() != null && variableModel.getSpecies().size() == 1) {
-            variable.setCrop(variableModel.getSpecies().get(0).toString());
+            variable.setCrop(variableModel.getSpecies().get(0).getName());
         }
 
         if (variableModel.getAlternativeName() != null) {
@@ -255,10 +257,6 @@ public class BrAPIv1ObservationVariableDTO {
 
         if (!CollectionUtils.isEmpty(variableModel.getExactMatch())) {
             variable.setXref(variableModel.getExactMatch().get(0).toString());
-        }
-
-        if (variableModel.getMethod() != null){
-            variable.setMethod(BrAPIv1MethodDTO.fromModel(variableModel.getMethod()));
         }
 
         if (variableModel.getTraitUri() != null){

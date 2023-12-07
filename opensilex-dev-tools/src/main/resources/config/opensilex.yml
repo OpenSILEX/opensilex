@@ -60,7 +60,18 @@ core:
             # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
             metricsTimeUnit: MINUTES
 
-#front:
+front:
     #dashboard:
         #graph1:
             #variable: http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius
+    menuExclusions:
+        - facilities
+        - devices
+        - experimentalDesign
+        #- data-menu
+        - data
+        - datafiles
+        - provenances
+        - events
+        - vocabulary
+        - tools

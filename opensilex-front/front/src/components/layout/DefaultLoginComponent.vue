@@ -10,10 +10,13 @@
           >
             <div id="imagesCarrousel">
               <slot name="loginMedia">
-                <!-- display from the last to the first one, first one must have class "bottom" -->
+                <!-- display from the last to the first one, first one must have class "bottom" to avoid white page at the end of one cycle -->
+
+                <!--
                 <img class="bottom"
                   v-bind:src="$opensilex.getResourceURI('images/lac.jpg')"
                 />
+
 
                 <img class="top"
                   v-bind:src="$opensilex.getResourceURI('images/vitioeno.jpg')"
@@ -27,9 +30,29 @@
                   v-bind:src="$opensilex.getResourceURI('images/phis-login-bg.jpg')"
                 />
 
-                <img class="top"
-                  v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.png')"
+                -->
+                <img class="bottom"
+                     v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.png')"
                 />
+
+
+                <img class="top"
+                  v-bind:src="$opensilex.getResourceURI('images/arenaSetup_LartigueEtAl2021.jpeg')"
+                />
+
+                <img class="top"
+                     v-bind:src="$opensilex.getResourceURI('images/armoiseMultiObjectTrakcingStillFrame.jpeg')"
+                />
+
+                <img class="top"
+                     v-bind:src="$opensilex.getResourceURI('images/ExperimentalSet-up2StudySpatialPpropagation.jpeg')"
+                />
+
+                <img class="top"
+                     v-bind:src="$opensilex.getResourceURI('images/Trichogramma_dendrolimi.jpg')"
+                />
+
+
               </slot>
             </div>
             <!-- low opacity green layout used for phis bg image-->

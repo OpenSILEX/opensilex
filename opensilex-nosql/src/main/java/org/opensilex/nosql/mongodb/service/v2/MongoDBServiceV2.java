@@ -69,7 +69,6 @@ public class MongoDBServiceV2 extends BaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBServiceV2.class);
     public static final String CHECK_MONGO_SERVER_CONNECTION_LOG_MSG = "MONGO_SERVER_CHECK_CONNECTION";
-    public static final String MONGO_SERVER_CONNECTION_FAIL_LOG_MSG = "MONGO_SERVER_CONNECTION_FAIL";
     public static final String MONGO_CREATE_LOG_MSG = "MONGO_CREATE";
     public static final String MONGO_CHECK_URI_LOG_MSG = "MONGO_CHECK_URI";
 
@@ -162,6 +161,13 @@ public class MongoDBServiceV2 extends BaseService {
             return null;
         });
     }
+
+    /**
+     * Execute the given operation with transaction management and return results
+     * @param operationInTrx A Consumer which can execute database query by using a ClientSession
+     * @param <R> : The type of result returned by the operation
+     * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
+     */
     public  <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
 
         ClientSession session = mongoClient.startSession();
@@ -214,7 +220,7 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, String uriGenerationPrefix, ClientSession session) throws URISyntaxException, NoSQLAlreadyExistingUriException {
         if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("MongoDB create, collection: {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
+            LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
         if (instance.getUri() == null) {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collection);
@@ -246,7 +252,7 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
         if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("MongoDB create, collection: {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
+            LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
 
         if (checkUris) {
@@ -403,13 +409,14 @@ public class MongoDBServiceV2 extends BaseService {
 
     public Document buildSort(List<OrderBy> orderByList) {
         Document sort = new Document();
-        if (orderByList != null && !orderByList.isEmpty()) {
-            for (OrderBy orderBy : orderByList) {
-                if (orderBy.getOrder().equals(Order.ASCENDING)) {
-                    sort.put(orderBy.getFieldName(), 1);
-                } else if (orderBy.getOrder().equals(Order.DESCENDING)) {
-                    sort.put(orderBy.getFieldName(), -1);
-                }
+        if(CollectionUtils.isEmpty(orderByList)){
+            return sort;
+        }
+        for (OrderBy orderBy : orderByList) {
+            if (orderBy.getOrder().equals(Order.ASCENDING)) {
+                sort.put(orderBy.getFieldName(), 1);
+            } else if (orderBy.getOrder().equals(Order.DESCENDING)) {
+                sort.put(orderBy.getFieldName(), -1);
             }
         }
         return sort;
@@ -738,21 +745,20 @@ public class MongoDBServiceV2 extends BaseService {
      * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
      *
      * @param <T>               The type of the instance
-     * @param collectionName    The name of the collection to perform aggregation on
+     * @param collection        The collection to perform aggregation on
      * @param aggregationArgs   The list of aggregation arguments
      * @param instanceClass     The class type of the instance
      * @return Set<T>           The set of results after aggregation
      */
     public <T> Set<T> aggregate(
-            String collectionName,
+            MongoCollection<T> collection,
             List<Bson> aggregationArgs,
             Class<T> instanceClass) {
-        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
+        LOGGER.debug("MONGO SEARCH - Collection : {}, Aggregation pipeline: {}", collection.getNamespace().getCollectionName(), aggregationArgs);
+
         Set<T> results = new HashSet<>();
-        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
 
         AggregateIterable<T> aggregate = collection.aggregate(aggregationArgs, instanceClass);
-
         for (T res : aggregate) {
             results.add(res);
         }
@@ -818,7 +824,7 @@ public class MongoDBServiceV2 extends BaseService {
      * @param session      The ClientSession for handling the transaction (can be null)
      * @param uris         The list of URIs used to identify documents for deletion
      * @return DeleteResult The result of the deletion operation
-     * @throws Exception   If an error occurs during the deletion process
+     * @throws MongoException   If an error occurs during the deletion process
      */
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws MongoException {
         LOGGER.debug("MONGO DELETE - Collection : {}, {} uris to delete", collection.getNamespace().getCollectionName(), uris.size());
@@ -893,10 +899,6 @@ public class MongoDBServiceV2 extends BaseService {
             // if old document found, then it's replaced, else a new document is created by setting upsert(true)
             collection.replaceOne(session, idFilter, instance, new ReplaceOptions().upsert(true));
         }
-    }
-
-    public final MongoClient getMongoClient() {
-        return this.mongoClient;
     }
 
     public final MongoClient buildMongoDBClient() throws IOException {
@@ -991,7 +993,6 @@ public class MongoDBServiceV2 extends BaseService {
                 collection.deleteMany(filter)
         );
     }
-
 
     private String logOrderList(List<OrderBy> orders) {
         if (orders == null || orders.isEmpty()) {

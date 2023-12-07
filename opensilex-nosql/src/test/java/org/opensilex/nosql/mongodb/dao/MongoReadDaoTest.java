@@ -8,10 +8,12 @@ import org.opensilex.nosql.MongoDBServiceTest;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.pagination.StreamWithPagination;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.Assert.*;
@@ -19,6 +21,26 @@ import static org.junit.Assert.*;
 public class MongoReadDaoTest extends MongoDBServiceTest {
 
     protected static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> dao;
+    private static final String TEST_DATASET_BASE_TYPE_URI = "opensilex:type_:";
+    private static final List<URI> TYPE_LIST = List.of(
+            URI.create(TEST_DATASET_BASE_TYPE_URI+1),
+            URI.create(TEST_DATASET_BASE_TYPE_URI+2),
+            URI.create(TEST_DATASET_BASE_TYPE_URI+3)
+    );
+
+    private static final String TEST_DATASET_BASE_URI = "opensilex:";
+    private static final URI SINGLETON_URI = URI.create(TEST_DATASET_BASE_URI+1);
+    private static final List<URI> URI_LIST = List.of(
+            SINGLETON_URI,
+            URI.create(TEST_DATASET_BASE_URI+2),
+            URI.create(TEST_DATASET_BASE_URI+3)
+    );
+    private static final int EXPECTED_RESULT_BY_TYPE = 10;
+
+    private static final Bson PROJECTION = Projections.fields(
+            Projections.include(MongoTestModel.URI_FIELD, MongoTestModel.TYPE_FIELD, MongoTestModel.NAME_FIELD, MongoTestModel.ID_FIELD),
+            Projections.exclude(MongoTestModel.TAGS_FIELD, MongoTestModel.VALUES_FIELD)
+    );
 
     @BeforeClass
     public static void setUp() {
@@ -34,8 +56,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void get() throws NoSQLInvalidURIException {
-        URI uri = null;
-        assertNotNull(dao.get(uri));
+        assertNotNull(dao.get(SINGLETON_URI));
         Assert.assertThrows(IllegalArgumentException.class, () -> dao.get(null));
         Assert.assertThrows(NoSQLInvalidURIException.class, () -> dao.get(URI.create(":fake_uri")));
     }
@@ -55,7 +76,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void exists() {
-        assertTrue(dao.exists(URI.create("")));
+        assertTrue(dao.exists(SINGLETON_URI));
         Assert.assertThrows(IllegalArgumentException.class, () -> dao.exists(null));
         assertFalse(dao.exists(URI.create(":fake_uri")));
     }
@@ -76,18 +97,16 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void count() {
 
-        URI uri = null;
-        MongoSearchFilter uriFilter = new MongoSearchFilter().setUri(uri);
-        assertEquals(1, dao.count(uriFilter));
+        MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
+        assertEquals(1, dao.count(filter));
 
-        MongoSearchFilter typeFilter = new MongoSearchFilter();
-        typeFilter.setRdfTypes(Collections.singletonList(URI.create("vocabulary:data")));
-        assertEquals(100, dao.count(typeFilter));
+        filter = new MongoSearchFilter();
+        filter.setRdfTypes(TYPE_LIST);
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, dao.count(filter));
 
-        URI uri2 = null, uri3 = null;
-        MongoSearchFilter urisFilter = new MongoSearchFilter();
-        typeFilter.setIncludedUris(Arrays.asList(uri, uri2, uri3));
-        assertEquals(3, dao.count(urisFilter));
+        filter = new MongoSearchFilter();
+        filter.setIncludedUris(URI_LIST);
+        assertEquals(URI_LIST.size(), dao.count(filter));
     }
 
     @Test
@@ -96,26 +115,23 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void search() {
-        URI uri = null;
-        MongoSearchFilter filter = new MongoSearchFilter().setUri(uri);
+        MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
         ListWithPagination<MongoTestModel> results = dao.search(filter);
         assertNotNull(results.getList());
         assertEquals(1, results.getList().size());
 
         filter = new MongoSearchFilter();
-        filter.setRdfTypes(Collections.singletonList(URI.create("vocabulary:data")));
-
+        filter.setRdfTypes(TYPE_LIST);
         results = dao.search(filter);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getList().size());
 
-        URI uri2 = null, uri3 = null;
-        filter.setIncludedUris(Arrays.asList(uri, uri2, uri3));
-
+        filter = new MongoSearchFilter();
+        filter.setIncludedUris(URI_LIST);
         results = dao.search(filter);
         assertNotNull(results);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(URI_LIST.size(), results.getList().size());
     }
 
     @Test
@@ -128,40 +144,33 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             assertNotNull(modelFromDB.getUri());
             assertNotNull(modelFromDB.getRdfType());
             assertNotNull(modelFromDB.getName());
-            assertNull(modelFromDB.getTimestamp());
-            assertNull(modelFromDB.getId());
+            assertNotNull(modelFromDB.getId());
+            assertNull(modelFromDB.getTags());
+            assertNull(modelFromDB.getValues());
         }
     }
 
     @Test
     public void searchWithProjection() {
 
-        Bson projection = Projections.fields(
-                Projections.include(MongoTestModel.URI_FIELD, MongoTestModel.TYPE_FIELD, MongoTestModel.NAME_FIELD),
-                Projections.exclude(MongoTestModel.TIMESTAMP_FIELD, MongoTestModel.ID_FIELD)
-        );
-
-        URI uri = null;
-        MongoSearchFilter filter = new MongoSearchFilter().setUri(uri);
-        ListWithPagination<MongoTestModel> results = dao.search(null, filter, projection);
+        MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
+        ListWithPagination<MongoTestModel> results = dao.search(null, filter, PROJECTION);
         assertNotNull(results.getList());
         assertEquals(1, results.getList().size());
         testFieldProjection(results);
 
         filter = new MongoSearchFilter();
-        filter.setRdfTypes(Collections.singletonList(URI.create("vocabulary:data")));
-
-        results = dao.search(null, filter, projection);
+        filter.setRdfTypes(TYPE_LIST);
+        results = dao.search(null, filter, PROJECTION);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getList().size());
         testFieldProjection(results);
 
-        URI uri2 = null, uri3 = null;
-        filter.setIncludedUris(Arrays.asList(uri, uri2, uri3));
-
-        results = dao.search(null, filter, projection);
+        filter = new MongoSearchFilter();
+        filter.setIncludedUris(URI_LIST);
+        results = dao.search(null, filter, PROJECTION);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(URI_LIST.size(), results.getList().size());
         testFieldProjection(results);
     }
 
@@ -170,8 +179,9 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             assertNotNull(document.get("rdfType"));
             assertNotNull(document.get("uri"));
             assertNotNull(document.get("name"));
-            assertNull(document.get("timestamp"));
-            assertNull(document.get("id"));
+            assertNotNull(document.get("id"));
+            assertNull(document.get("values"));
+            assertNull(document.get("tags"));
         }
     }
 
@@ -179,47 +189,59 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void searchWithConversion() {
 
-        Bson projection = Projections.fields(
-                Projections.include(MongoTestModel.URI_FIELD, MongoTestModel.TYPE_FIELD, MongoTestModel.NAME_FIELD),
-                Projections.exclude(MongoTestModel.TIMESTAMP_FIELD, MongoTestModel.ID_FIELD)
-        );
-
         Function<MongoTestModel, Document> convertor = (model) -> {
             Document doc = new Document();
             doc.put("rdfType", model.getRdfType());
             doc.put("uri", model.getUri());
             doc.put("name", model.getName());
-            doc.put("timestamp", model.getTimestamp());
             doc.put("id", model.getId());
+            doc.put("values", model.getValues());
+            doc.put("tags", model.getTags());
             return doc;
         };
 
-        URI uri = null;
-        MongoSearchFilter filter = new MongoSearchFilter().setUri(uri);
-        ListWithPagination<Document> results = dao.search(null,filter, projection, convertor);
+        MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
+        ListWithPagination<Document> results = dao.search(null,filter, PROJECTION, convertor);
         assertNotNull(results.getList());
         assertEquals(1, results.getList().size());
         testDocumentProjection(results);
 
         filter = new MongoSearchFilter();
-        filter.setRdfTypes(Collections.singletonList(URI.create("vocabulary:data")));
-
-        results = dao.search(null,filter, projection, convertor);
+        filter.setRdfTypes(TYPE_LIST);
+        results = dao.search(null,filter, PROJECTION, convertor);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getList().size());
         testDocumentProjection(results);
 
-        URI uri2 = null, uri3 = null;
-        filter.setIncludedUris(Arrays.asList(uri, uri2, uri3));
-
-        results = dao.search(null,filter, projection, convertor);
+        filter = new MongoSearchFilter();
+        filter.setIncludedUris(URI_LIST);
+        results = dao.search(null,filter, PROJECTION, convertor);
         assertNotNull(results.getList());
-        assertEquals(100, results.getList().size());
+        assertEquals(URI_LIST.size(), results.getList().size());
         testDocumentProjection(results);
     }
 
     @Test
     public void searchAsStream() {
+        MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
+        StreamWithPagination<MongoTestModel> results = dao.searchAsStream(filter);
+        assertNotNull(results);
+        assertNotNull(results.getStream());
+        assertEquals(1, results.getTotal());
+
+        filter = new MongoSearchFilter();
+        filter.setRdfTypes(TYPE_LIST);
+        results = dao.searchAsStream(filter);
+        assertNotNull(results);
+        assertNotNull(results.getStream());
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getTotal());
+
+        filter = new MongoSearchFilter();
+        filter.setIncludedUris(URI_LIST);
+        results = dao.searchAsStream(filter);
+        assertNotNull(results);
+        assertNotNull(results.getStream());
+        assertEquals(URI_LIST.size(), results.getTotal());
     }
 
     @Test
@@ -230,23 +252,23 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     public void searchAsStreamWithProjection() {
     }
 
-    @Test
-    public void distinctUris() {
-    }
-
-    @Test
-    public void distinctUrisWithSession() {
-    }
-
-    @Test
-    public void distinct() {
-    }
-
-    @Test
-    public void distinctAggregation() {
-    }
-
-    @Test
-    public void lookupAggregation() {
-    }
+//    @Test
+//    public void distinctUris() {
+//    }
+//
+//    @Test
+//    public void distinctUrisWithSession() {
+//    }
+//
+//    @Test
+//    public void distinct() {
+//    }
+//
+//    @Test
+//    public void distinctAggregation() {
+//    }
+//
+//    @Test
+//    public void lookupAggregation() {
+//    }
 }

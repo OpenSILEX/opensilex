@@ -10,21 +10,24 @@ public class MongoTestModel extends MongoModel {
 
     private String name;
     public static final String NAME_FIELD = "name";
+    private List<String> tags;
 
-    private Long id;
+    public static final String TAGS_FIELD = "tags";
+
+
+    private Integer id;
     public static final String ID_FIELD = "id";
 
+    private List<Integer> values;
+    public static final String VALUES_FIELD = "values";
 
-    private MongoNestTestModel target;
-    private URI variable;
-    private Object value;
-    private Instant timestamp;
+    private MongoNestTestModel nested;
+    public static final String NESTED_FIELD = "nested";
 
-    public static final String TIMESTAMP_FIELD = "timestamp";
-    private List<MongoNestTestModel> agents;
-    private List<MongoNestTestModel> activities;
 
-    private URI experiment;
+    private List<MongoNestTestModel> nestedList;
+    public static final String NESTED_LIST_FIELD = "nestedList";
+
 
     public String getName() {
         return name;
@@ -34,67 +37,43 @@ public class MongoTestModel extends MongoModel {
         this.name = name;
     }
 
-    public Long getId() {
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public MongoNestTestModel getTarget() {
-        return target;
+    public List<Integer> getValues() {
+        return values;
     }
 
-    public void setTarget(MongoNestTestModel target) {
-        this.target = target;
+    public void setValues(List<Integer> values) {
+        this.values = values;
     }
 
-    public URI getVariable() {
-        return variable;
+    public MongoNestTestModel getNested() {
+        return nested;
     }
 
-    public void setVariable(URI variable) {
-        this.variable = variable;
+    public void setNested(MongoNestTestModel nested) {
+        this.nested = nested;
     }
 
-    public Object getValue() {
-        return value;
+    public List<MongoNestTestModel> getNestedList() {
+        return nestedList;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public List<MongoNestTestModel> getAgents() {
-        return agents;
-    }
-
-    public void setAgents(List<MongoNestTestModel> agents) {
-        this.agents = agents;
-    }
-
-    public List<MongoNestTestModel> getActivities() {
-        return activities;
-    }
-
-    public void setActivities(List<MongoNestTestModel> activities) {
-        this.activities = activities;
-    }
-
-    public URI getExperiment() {
-        return experiment;
-    }
-
-    public void setExperiment(URI experiment) {
-        this.experiment = experiment;
+    public void setNestedList(List<MongoNestTestModel> nestedList) {
+        this.nestedList = nestedList;
     }
 }

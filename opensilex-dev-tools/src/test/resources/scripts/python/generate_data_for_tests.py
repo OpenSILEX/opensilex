@@ -1,42 +1,84 @@
 import json
 import random
+from typing import List
 
 # High mountains list
-high_mountains = [
-    "Everest", "K2", "Kangchenjunga", "Lhotse",
-    "Makalu", "Cho Oyu", "Dhaulagiri", "Manaslu",
-    "Nanga Parbat", "Annapurna", "Gasherbrum", "Broad Peak",
-    "Shishapangma", "Makalu II"
+plants = [
+    "Apple",
+    "Banana",
+    "Orange",
+    "Strawberry",
+    "Grapes",
+    "Watermelon",
+    "Pineapple",
+    "Avocado",
+    "Tomato",
+    "Carrot",
+    "Broccoli",
+    "Spinach",
+    "Potato",
+    "Onion",
+    "Cucumber",
+    "Corn",
+    "Rice",
+    "Wheat",
+    "Oats",
+    "Barley"
 ]
 
+colors = [
+    "Red",
+    "Blue",
+    "Green",
+    "Yellow",
+    "Purple",
+    "Orange",
+    "Pink",
+    "Brown",
+    "Black",
+    "White",
+    "Gray",
+    "Teal",
+    "Lavender",
+    "Cyan",
+    "Magenta",
+    "Maroon",
+    "Navy",
+    "Olive",
+    "Turquoise",
+    "Gold"
+]
+
+
 # Generate a JSON document following the specified rules
-def generate_document(index):
+def generate_document(index, documents: List[any]):
     type_index = index % 10
+
+    nested = None
+    nested_list = []
+    if documents:
+        nested = random.choice(documents)
+        nested_list = random.sample(documents, 3)
+
     document = {
-        "uri": f"opensilex:uri_{index}",
+        "uri": f"opensilex:{index}",
         "rdfType": f"opensilex:type_{type_index}",
         "publicationDate": "2023-11-30T12:00:00Z",
         "lastUpdateDate": "2023-11-30T12:00:00Z",
-        "string": high_mountains[index % len(high_mountains)],
-        "stringList": random.sample(high_mountains, 3),
-        "integer": random.randint(1, 1000),
-        "integerList": random.sample(range(1, 1001), 3),
-        "nestedMongoTestModel": {
-            "uri": f"opensilex:uri_{index}_1",
-            "rdfType": f"opensilex:type_{type_index}",
-            "publicationDate": "2023-11-30T12:00:00Z",
-            "lastUpdateDate": "2023-11-30T12:00:00Z",
-            "string": high_mountains[(index + 1) % len(high_mountains)],
-            "stringList": random.sample(high_mountains, 3),
-            "integer": random.randint(1, 1000),
-            "integerList": random.sample(range(1, 1001), 3)
-        }
+        "name": random.choice(plants),
+        "tags": random.sample(colors, 3),
+        "id": index,
+        "values": random.sample(range(1, 10000), 5),
+        "nested": nested,
+        "nested_list": nested_list
     }
     return document
 
+
 # Generate JSON documents
 max = 100
-json_documents = [generate_document(i) for i in range(1, max+1)]
+nested_documents = [generate_document(i, []) for i in range(max + 1, (max * 2) + 1)]
+json_documents = [generate_document(i, nested_documents) for i in range(1, max + 1)]
 
 # Save generated JSON documents to a file
 with open("generated_documents.json", "w") as file:

@@ -117,42 +117,64 @@ import {SelectableItem} from "../../../forms/SelectForm.vue";
 
 @Component
 export default class AgroportalExternalReferencesFormPart extends Vue {
+  //region Plugins
+  private readonly $opensilex: OpenSilexVuePlugin;
+  //endregion
 
-  $opensilex: OpenSilexVuePlugin;
-  $store: any;
-  $t: any;
-  $i18n: any;
-
-  agroportalAPIService: AgroportalAPIService;
-
-  @PropSync("form")
-  formDto: BaseExternalReferencesDTO;
-
+  //region Props
   @Prop()
-  props: {
+  private readonly props: {
     ontologiesConfig: string,
     searchPlaceholder: string
   };
 
-  currentRelation: string = "";
-  currentExternalUri: string = "";
-  text: string = "";
-  ontologies: string[] = [];
-  isAllOntologies: boolean = false;
+  @Prop({default: true})
+  private displayInsertButton: boolean;
 
-  @Ref("validatorRef") readonly validatorRef!: any;
+  @PropSync("form")
+  private formDto: BaseExternalReferencesDTO;
+
+  //endregion
+
+  //region Refs
+  @Ref("validatorRef")
+  private readonly validatorRef!: any;
+
   @Ref("agroportalTermSelector")
   private readonly agroportalTermSelector: AgroportalTermSelector;
 
-  @Prop({default: true})
-  displayInsertButton: boolean;
-
-  isAgroportalReachable: boolean = false;
-
   @Ref("tutorial")
   private tutorial: Tour;
+  //endregion
 
-  private tutorialSteps = [
+  //region Data
+  private agroportalAPIService: AgroportalAPIService;
+  private ontologies: string[] = [];
+  private isAgroportalReachable: boolean = false;
+
+  private readonly fields = [
+    {
+      key: "relation",
+      label: "component.skos.relation",
+      sortable: true
+    },
+    {
+      key: "relationURI",
+      label: "component.skos.uri",
+      sortable: false
+    },
+    {
+      key: "actions",
+      label: "component.common.actions"
+    }
+  ];
+
+  //region Tutorial data
+  private savedStateBeforeTutorial: {
+    formDto: BaseExternalReferencesDTO
+  }
+
+  private readonly tutorialSteps = [
     {
       target: ".v-step-agroportal-references .v-step-agroportal-search",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.title")},
@@ -212,51 +234,14 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       params: {placement: "top"}
     },
   ];
+  //endregion
+  //endregion
 
-  private savedStateBeforeTutorial: {
-    currentRelation: string,
-    currentExternalUri: string,
-    searchText: string,
-    formDto: BaseExternalReferencesDTO
-  }
-
-  checkAgroportalReachable() {
-    this.agroportalAPIService.pingAgroportal(1000).then((http) => {
-      if (http && http.response) {
-        let isReachable = http.response.result;
-        this.isAgroportalReachable = isReachable;
-      }
-    });
-  }
-
-  created() {
-    this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
-    this.checkAgroportalReachable();
-    this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
-  }
-
-  resetExternalUriForm() {
-    this.currentExternalUri = "";
-    this.$nextTick(() => this.validatorRef.reset());
-  }
-
-  fields = [
-    {
-      key: "relation",
-      label: "component.skos.relation",
-      sortable: true
-    },
-    {
-      key: "relationURI",
-      label: "component.skos.uri",
-      sortable: false
-    },
-    {
-      key: "actions",
-      label: "component.common.actions"
-    }
-  ];
-
+  //region Computed
+  /**
+   * Computed getter and setter which translates the weird relation maps in the DTO to a list of URI<->Relation pairs
+   * for the table to display.
+   */
   get uriRelations(): Array<UriSkosRelation> {
     const uriRelationList: Array<UriSkosRelation> = [];
     for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
@@ -279,6 +264,30 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       this.formDto[uriRelation.relationDtoKey].push(uriRelation.uri);
     }
   }
+  //endregion
+
+  //region Hooks
+  created() {
+    this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
+    this.checkAgroportalReachable();
+    this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
+  }
+  //endregion
+
+  //region Private methods
+  private checkAgroportalReachable() {
+    this.agroportalAPIService.pingAgroportal(1000).then((http) => {
+      if (http && http.response) {
+        let isReachable = http.response.result;
+        this.isAgroportalReachable = isReachable;
+      }
+    });
+  }
+
+  private resetExternalUriForm() {
+    this.$nextTick(() => this.validatorRef.reset());
+  }
+
 
   private addRelationToTerm(uriRelation: UriSkosRelation) {
     let isIncludedInRelations = this.isIncludedInRelations();
@@ -289,48 +298,26 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   }
 
   private isIncludedInRelations(): boolean {
-    if (
-        this.currentExternalUri == undefined ||
-        this.currentExternalUri == "" ||
-        this.currentExternalUri.length == 0
-    ) {
-      return false;
-    }
-    let includedInRelations = false;
-    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
-      if (this.formDto[skosRelation.dtoKey].includes(this.currentExternalUri)) {
-        includedInRelations = true;
-        break;
-      }
-    }
-    return includedInRelations;
+    //@todo
+    return false;
   }
+  //endregion
 
   //region Event Handlers
-  onImportMapping(entity: AgroportalTermDTO, relation: SelectableItem) {
-    this.currentExternalUri = entity.id;
-    this.currentRelation = relation.id;
-    this.addRelationToTerm({
-      relationDtoKey: relation.id,
-      uri: entity.id
-    });
+  private onImportMapping(uriRelation: UriSkosRelation) {
+    console.debug("Import mapping", uriRelation);
+    this.addRelationToTerm(uriRelation);
   }
   //endregion
 
   //region Tutorial
   private saveStateBeforeTutorial() {
     this.savedStateBeforeTutorial = {
-      currentRelation: this.currentRelation,
-      currentExternalUri: this.currentExternalUri,
-      searchText: this.text,
       formDto: JSON.parse(JSON.stringify(this.formDto))
     };
   }
 
   private clearCurrentState() {
-    this.currentExternalUri = "";
-    this.currentRelation = undefined;
-    this.text = "";
     this.formDto.exact_match = [];
     this.formDto.close_match = [];
     this.formDto.broad_match = [];
@@ -338,11 +325,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   }
 
   private restoreStateAfterTutorial() {
-    this.currentRelation = this.savedStateBeforeTutorial.currentRelation;
-    this.currentExternalUri = this.savedStateBeforeTutorial.currentExternalUri;
-    this.text = this.savedStateBeforeTutorial.searchText;
     this.formDto = JSON.parse(JSON.stringify(this.savedStateBeforeTutorial.formDto));
-    this.agroportalTermSelector.setSearchText(this.text);
   }
 
   private async beforeImportMappingStep() {
@@ -355,7 +338,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   private async beforeManualMappingStep() {
     this.agroportalTermSelector.setSearchText("");
-    this.currentExternalUri = "http://www.w3.org/2002/07/owl#Thing"
   }
 
   private async beforeMappingOverviewAgainStep() {
@@ -365,14 +347,14 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     });
   }
 
-  startTutorial() {
+  public startTutorial() {
     this.saveStateBeforeTutorial();
     this.clearCurrentState();
     this.agroportalTermSelector.setSearchText(this.$t(this.props.searchPlaceholder).toString());
     this.tutorial.start();
   }
 
-  onTutorialFinishOrSkip() {
+  private onTutorialFinishOrSkip() {
     this.restoreStateAfterTutorial();
   }
   //endregion

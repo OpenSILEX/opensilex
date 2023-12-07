@@ -26,8 +26,8 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import AgroportalResults from "./AgroportalResults.vue";
 import {Prop, PropSync, Ref} from "vue-property-decorator";
-import {SelectableItem} from "../../../common/forms/SelectForm.vue";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import {UriSkosRelation} from "../../../../models/SkosRelations";
 
 @Component({})
 export default class AgroportalTermSelector extends Vue {
@@ -59,22 +59,22 @@ export default class AgroportalTermSelector extends Vue {
   //region Events
   private onSearchTextChange(text: string) {
     this.searchText = text;
-    this.results.updateResults(text, this.useAllOntologies);
+    this.results.search(text, this.useAllOntologies, this.selectedOntologies);
   }
 
   private onImport(term: AgroportalTermDTO) {
     this.$emit("import", term);
   }
 
-  private onImportMapping(term: AgroportalTermDTO, relation: SelectableItem) {
-    this.$emit("importMapping", term, relation);
+  private onImportMapping(uriRelation: UriSkosRelation) {
+    this.$emit("importMapping", uriRelation);
   }
   //endregion
 
   //region Public modifier methods (mostly for tutorial purpose)
   public setSearchText(text: string) {
     this.searchText = text;
-    this.results.updateResults(text, this.useAllOntologies);
+    this.results.search(text, this.useAllOntologies, this.selectedOntologies);
   }
 
   public selectFirstItem() {
@@ -82,11 +82,11 @@ export default class AgroportalTermSelector extends Vue {
   }
 
   public selectAndImportFirstItem() {
-    this.results.selectAndImportItem(0);
+    this.results.selectAndImportFirstItem();
   }
 
   public selectAndMapFirstItem() {
-    this.results.selectAndMapItem(0);
+    this.results.selectAndMapFirstItem();
   }
   //endregion
 }

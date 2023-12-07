@@ -1,56 +1,41 @@
 <template>
   <opensilex-Overlay :show="isDataLoading">
-    <div id="agroportal-results" class="container-fluid scrollable" v-if="!isTextEmpty">
+    <div
+        id="agroportal-results"
+        class="container-fluid scrollable"
+        v-show="terms.length > 0 || isNothingFound || isAgroportalDown"
+    >
       <div class="wrapper">
-
-        <div v-if="isNothingFound && !isDataLoading">
-          {{ this.$t("AgroportalResults.nothing-found", [this.text]) }}
-        </div>
-
-        <div v-if="isAgroportalDown && !isDataLoading">
-          {{ this.$t("AgroportalResults.nothing-found", [this.text]) }}
+        <div v-if="(isNothingFound || isAgroportalDown) && !isDataLoading">
+          {{ this.$t("AgroportalResults.nothing-found") }}
         </div>
 
         <!-- List of results -->
-        <opensilex-AgroportalResultItem v-for="(entity, index) in entities" v-bind:key="entity.id"
-          ref="resultItems"
-          :entity="entity"
-          :index="index"
-          @import="$emit('import', entity)"
-          @item-clicked="selectItem"
+        <opensilex-AgroportalResultItem
+            v-for="(term, index) in terms"
+            ref="resultItems"
+            :key="term.id"
+            :entity="term"
+            @item-clicked="selectItem(index)"
         >
-
           <!-- Select button for mapping mode -->
-          <template v-if="isMappingMode" v-slot:btnValidate>
-            <b-dropdown
-                dropdown
-                boundary="window"
-                class="m-md-2 v-step-result-mapping-button"
-                :small="true"
-                text="Map term as">
-
-              <b-dropdown-item v-for="(relation, index) in mappingOptions" v-bind:key="relation.id"
-                 class="btn-dropdown"
-                 @click="$emit('importMapping', entity, relation)"
-              >
-                {{ relation.label }}
-              </b-dropdown-item>
-            </b-dropdown>
+          <template v-if="isMappingMode" v-slot:validationButton>
+            <opensilex-SkosSelector
+                @selected="relation => onRelationSelected(term, relation)"
+            ></opensilex-SkosSelector>
           </template>
 
           <!-- Default select button -->
-          <template v-else v-slot:btnValidate>
+          <template v-else v-slot:validationButton>
             <opensilex-CreateButton
                 class="v-step-result-import-button"
                 :label="$t('AgroportalResults.btn-choose')"
                 :title="$t('AgroportalResults.btn-choose')"
-                @click="$emit('import', entity)"
+                @click="emitImport(term)"
             >
             </opensilex-CreateButton>
           </template>
-
         </opensilex-AgroportalResultItem>
-
       </div>
     </div>
   </opensilex-Overlay>
@@ -66,114 +51,141 @@ import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {SelectableItem} from "../../forms/SelectForm.vue";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-import SUPPORTED_SKOS_RELATIONS from "../../../../models/SkosRelations";
+import {UriSkosRelation} from "../../../../models/SkosRelations";
 
-@Component
+@Component({})
 export default class AgroportalResults extends Vue {
+  //region Plugin
+  private $opensilex: OpenSilexVuePlugin;
+  //endregion
 
-  $opensilex: OpenSilexVuePlugin;
-  service: AgroportalAPIService;
-
-  @Prop({
-    default: ""
-  })
-  text: string;
-
-  @Prop({
-    default: () => []
-  })
-  ontologies: string[];
-
+  //region Props
   @Prop({
     default: false
   })
-  isMappingMode: boolean;
+  private readonly isMappingMode: boolean;
+  //endregion
 
-  entities: Array<any> = [];
+  //region Refs
+  @Ref("resultItems")
+  private readonly resultItems!: Array<AgroportalResultItem>;
+  //endregion
 
-  selectedIndex: number = null;
-  isAgroportalDown: boolean = false;
+  //region Data
+  private service: AgroportalAPIService;
+  private terms: Array<AgroportalTermDTO> = [];
+  private selectedIndex: number = null;
+  private isAgroportalDown: boolean = false;
+  private isDataLoading: boolean = false;
+  private mappingOptions: Array<SelectableItem>;
+  private isNothingFound: boolean = false;
 
-  isDataLoading: boolean = false;
-  mappingOptions: Array<SelectableItem>;
+  //@todo remove this
+  // private selectedRelation: string = null;
+  //endregion
 
-  @Ref("resultItems") readonly resultItems!: Array<AgroportalResultItem>;
-
-  get isNothingFound() : boolean {
-    return (this.entities.length === 0) && !(this.text.trim().length === 0);
+  //region Hooks
+  created() {
+    this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
 
-  get isTextEmpty() : boolean {
-    return (this.text.trim().length === 0);
-  }
+  //endregion
 
-  updateResults(searchedText: string, withAllOntologies: boolean) {
+  //region Public methods
+  public search(searchedText: string, withAllOntologies: boolean, ontologies: Array<string>) {
     if (!searchedText) {
       this.clear();
       return;
     }
 
     this.isDataLoading = true;
-    this.entities = [];
+    this.terms = [];
 
     this.$opensilex.disableLoader();
     this.service.searchThroughAgroportal(
         searchedText,
-        !withAllOntologies? this.ontologies : undefined
+        !withAllOntologies ? ontologies : undefined
     ).then((http) => {
       if (http.response && http.response.result) {
-        let results = http.response.result as Array<AgroportalTermDTO>;
-        this.entities = [...new Map(results.map(item =>
-            [item.id, item])).values()];
+        this.terms = http.response.result as Array<AgroportalTermDTO>;
         this.isDataLoading = false;
+        if (this.terms.length === 0) {
+          this.isNothingFound = true;
+        }
       }
-    })
-    .catch((error) => {
+    }).catch((error) => {
       this.isAgroportalDown = true;
+      this.$opensilex.errorHandler(error)
     });
   }
 
+  /**
+   * For tutorial purpose
+   */
   selectItem(index) {
-    if(this.selectedIndex != null) {
-      this.resultItems[this.selectedIndex].isSelected = false;
+    if (this.selectedIndex != null) {
+      this.resultItems[this.selectedIndex].setSelected(false);
     }
-    this.resultItems[index].isSelected = true;
+    this.resultItems[index].setSelected(true);
     this.selectedIndex = index;
   }
 
-  selectAndImportItem(index: number) {
-    this.selectItem(index);
-    this.$emit('import', this.entities[index]);
+  /**
+   * For tutorial purpose
+   */
+  selectAndImportFirstItem() {
+    this.selectItem(0);
+    this.$emit('import', this.terms[0]);
   }
 
-  selectAndMapItem(index: number) {
-    this.selectItem(index);
-    this.$emit('importMapping', this.entities[index], this.mappingOptions[0]);
+  /**
+   * For tutorial purpose
+   */
+  selectAndMapFirstItem() {
+    this.selectItem(0);
+    this.emitImportMapping({
+      relationDtoKey: this.mappingOptions[0].id,
+      uri: this.terms[0].id
+    });
   }
 
+  //endregion
+
+  //region Private methods
   clear() {
-    this.entities = [];
+    this.terms = [];
     this.selectedIndex = null;
+    this.isNothingFound = false;
   }
 
-  created() {
-    const skosRelationOptions: Array<SelectableItem> = [];
-    for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
-      skosRelationOptions.push({
-        id: skosRelation.dtoKey,
-        label: this.$t(skosRelation.label).toString(),
-        title: this.$t(skosRelation.description).toString()
-      });
-    }
-    this.mappingOptions = skosRelationOptions;
-    this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
+  //endregion
+
+  //region Events
+  private emitImport(term: AgroportalTermDTO) {
+    this.$emit('import', term);
   }
+
+  private emitImportMapping(uriRelation: UriSkosRelation) {
+    console.debug("results import mapping", uriRelation);
+    this.$emit("importMapping", uriRelation);
+  }
+
+  //endregion
+
+  //region Event handlers
+  private onRelationSelected(term: AgroportalTermDTO, selectedRelation: string) {
+    this.emitImportMapping({
+      relationDtoKey: selectedRelation,
+      uri: term.id
+    });
+  }
+
+  //endregion
 }
 </script>
 
 
 <style scoped>
-
 #agroportal-results {
   min-height: 50px;
   background: rgba(0, 0, 0, .05);
@@ -183,34 +195,15 @@ export default class AgroportalResults extends Vue {
   max-height: 500px;
   overflow-y: scroll;
 }
-
-.btn-dropdown {
-  z-index: 10;
-}
-
 </style>
 
-
 <i18n>
-
 en:
   AgroportalResults:
-    exact-match: exact match
-    close-match: close match
-    broad-match: broad match
-    narrow-match: narrow match
-    nothing-found: Nothing found for '{0}'
-    btn-map-term: Map term as
+    nothing-found: Nothing result was found
     btn-choose: Choose
-
 fr:
   AgroportalResults:
-    exact-match: exact match
-    close-match: close match
-    broad-match: broad match
-    narrow-match: narrow match
-    nothing-found: Aucun résultat pour '{0}'
-    btn-map-term: Lier en tant que
+    nothing-found: Aucun résultat n'a été trouvé
     btn-choose: Choisir
-
 </i18n>

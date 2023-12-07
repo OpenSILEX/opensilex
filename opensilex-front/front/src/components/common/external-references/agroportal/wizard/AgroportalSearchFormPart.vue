@@ -178,9 +178,6 @@ export default class AgroportalSearchFormPart extends Vue {
   }
 
   public validate() {
-    //@todo pas sûr que les deux première lignes servent à quelque chose, les virer et voir ce qu'il se passe
-    // this.formDto.uri = this.selectedTerm.id;
-    // this.formDto.name = this.selectedTerm.name;
     return this.validatorRef.validate();
   }
   //endregion

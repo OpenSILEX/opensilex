@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <!-- Search bar -->
     <b-input-group>
       <b-input
@@ -41,9 +40,6 @@
               :itemLoadingMethod="loadOntologies"
               :conversionMethod="ontologyToSelectNode"
               :disabled="isAllOntologiesSelected"
-              @select="select"
-              @deselect="deselect"
-              @keyup.enter.native="onEnter"
           >
           </opensilex-SelectForm>
         </b-col>
@@ -64,38 +60,38 @@
 
 <script lang="ts">
 
-import {Component, Prop, PropSync, Watch} from "vue-property-decorator";
+import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
-import {VariablesService} from "opensilex-core/api/variables.service";
 import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
-import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {SelectableItem} from "../../forms/SelectForm.vue";
 
 @Component
 export default class AgroportalSearch extends Vue {
+  //region Plugin
+  private readonly $opensilex: OpenSilexVuePlugin;
+  //endregion
 
-  $opensilex: OpenSilexVuePlugin;
-
-  @PropSync("selected")
-  ontologiesURIs;
-
-  @PropSync("isAllOntologies", { default: false })
-  isAllOntologiesSelected: boolean;
-
+  //region Props
   @Prop({
     default: "AgroportalSearch.enter-search-text"
   })
-  placeholder: string;
+  private readonly placeholder: string;
 
-  searchBar: string = "";
-  advancedSearchOpen: boolean = false;
+  @PropSync("selected")
+  private ontologiesURIs;
 
-  created() {
-    this.searchBar = "";
-  }
+  @PropSync("isAllOntologies", { default: false })
+  private isAllOntologiesSelected: boolean;
+  //endregion
 
+  //region Data
+  private searchBar: string = "";
+  //endregion
+
+  //region Private methods
   loadOntologies(ontologieAcronyms: Array<string>): Promise<Array<OntologyAgroportalDTO>> {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
@@ -106,7 +102,7 @@ export default class AgroportalSearch extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  searchOntologies(searchQuery, page, pageSize) {
+  searchOntologies(searchQuery, _page, _pageSize) {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
         .getAgroportalOntologies(searchQuery, undefined)
@@ -116,30 +112,13 @@ export default class AgroportalSearch extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  ontologyToSelectNode(dto: OntologyAgroportalDTO) {
+  ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {
     return {
       id: dto.acronym,
       label: `${dto.acronym} (${dto.name})`
     };
   }
-
-  setSearchTerm(searchQuery: string) {
-    this.searchBar = searchQuery;
-    this.$emit("change", searchQuery);
-  }
-
-  select(value) {
-    this.$emit("select", value);
-  }
-
-  deselect(value) {
-    this.$emit("deselect", value);
-  }
-
-  onEnter() {
-    this.$emit("handlingEnterKey");
-  }
-
+  //endregion
 }
 </script>
 

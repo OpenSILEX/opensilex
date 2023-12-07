@@ -1,14 +1,15 @@
 <template>
     <b-container class="result"
-       v-on:click="$emit('item-clicked', index)"
-      :class="(isSelected) ? 'selectedResult' : ''">
-
+       @click="emitClicked"
+      :class="{
+         selectedResult: isSelected
+      }"
+    >
       <!-- Name -->
       <b-row id="result-header" class="mx-0 jqx-max-size">
         <b-col col lg="12">
           <div id="result-name">
-            {{entity.name}} -
-            <span id="result-ontology">{{entity.ontologyName}}</span>
+            {{entity.name}} - <span id="result-ontology">{{entity.ontologyName}}</span>
           </div>
           <div id="result-link">
             <a v-bind:href="entity.id" target="_blank" rel="noopener noreferrer">{{entity.id}}</a>
@@ -26,10 +27,9 @@
       <!-- Select button -->
       <b-row v-if="isSelected" align-h="end">
         <b-col cols="auto">
-          <slot name="btnValidate"></slot>
+          <slot name="validationButton"></slot>
         </b-col>
       </b-row>
-
     </b-container>
 </template>
 
@@ -43,23 +43,30 @@ import {AgroportalTermDTO} from "opensilex-core/index";
 
 @Component
 export default class AgroportalResultItem extends Vue {
-
-  $opensilex: OpenSilexVuePlugin;
-
+  //region Props
   @Prop()
-  entity: AgroportalTermDTO;
+  private readonly entity: AgroportalTermDTO;
+  //endregion
 
-  @Prop()
-  index;
+  //region Data
+  private isSelected: boolean = false;
+  //endregion
 
-  isSelected: boolean = false;
+  //region Public methods
+  public setSelected(selected: boolean) {
+    this.isSelected = selected;
+  }
+  //endregion
 
+  //region Events
+  private emitClicked() {
+    this.$emit('item-clicked');
+  }
+  //endregion
 }
 </script>
 
-
 <style scoped>
-
 #result-name {
   font-weight: bold;
   font-size: large;
@@ -85,14 +92,7 @@ a {
 .result:hover {
   background: rgba(0, 0, 0, .1);
 }
-
-.selectedResult {
-  border: solid 2px #00a38d;
-  border-radius: 3px;
-}
-
 </style>
-
 
 <i18n>
 

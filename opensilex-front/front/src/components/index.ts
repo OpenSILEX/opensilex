@@ -259,12 +259,22 @@ components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
 
+//region External references
 import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
 components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
 import ExternalReferencesForm from './common/external-references/ExternalReferencesForm.vue'
 components["opensilex-ExternalReferencesForm"] = ExternalReferencesForm;
 import ExternalReferencesDetails from './common/external-references/ExternalReferencesDetails.vue'
 components["opensilex-ExternalReferencesDetails"] = ExternalReferencesDetails;
+//region Skos
+import SkosSelector from "./common/external-references/skos/SkosSelector.vue";
+components["opensilex-SkosSelector"] = SkosSelector;
+import SkosRelationInput from "./common/external-references/skos/SkosRelationInput.vue";
+components["opensilex-SkosRelationInput"] = SkosRelationInput;
+import SkosRelationTable from "./common/external-references/skos/SkosRelationTable.vue";
+components["opensilex-SkosRelationTable"] = SkosRelationTable;
+//endregion
+//endregion
 
 import StringFilter from './common/filters/StringFilter.vue'
 components["opensilex-StringFilter"] = StringFilter;
@@ -601,13 +611,13 @@ import AgroportalTermSelector from './common/external-references/agroportal/Agro
 components["opensilex-AgroportalTermSelector"] = AgroportalTermSelector;
 //endregion
 //region Form
-import AgroportalSearchFormPart from './variables/agroportal/wizard/AgroportalSearchFormPart.vue';
+import AgroportalSearchFormPart from './common/external-references/agroportal/wizard/AgroportalSearchFormPart.vue';
 components["opensilex-AgroportalSearchFormPart"] = AgroportalSearchFormPart;
-import AgroportalEnrichFormPart from './variables/agroportal/wizard/AgroportalEnrichFormPart.vue';
+import AgroportalEnrichFormPart from './common/external-references/agroportal/wizard/AgroportalEnrichFormPart.vue';
 components["opensilex-AgroportalEnrichFormPart"] = AgroportalEnrichFormPart;
-import AgroportalExternalReferencesFormPart from './variables/agroportal/wizard/AgroportalExternalReferencesFormPart.vue';
+import AgroportalExternalReferencesFormPart from './common/external-references/agroportal/wizard/AgroportalExternalReferencesFormPart.vue';
 components["opensilex-AgroportalExternalReferencesFormPart"] = AgroportalExternalReferencesFormPart;
-import AgroportalCreateForm from './variables/agroportal/wizard/AgroportalCreateForm.vue';
+import AgroportalCreateForm from './common/external-references/agroportal/wizard/AgroportalCreateForm.vue';
 components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
 //endregion
 //region Variables

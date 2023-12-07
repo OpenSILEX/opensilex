@@ -1,89 +1,104 @@
 <template>
-  <ValidationObserver ref="validatorRef">
-    <opensilex-Tutorial
-        ref="tutorial"
-        :steps="tutorialSteps"
-        @onFinish="onTutorialFinishOrSkip"
-        @onSkip="onTutorialFinishOrSkip"
-    >
-    </opensilex-Tutorial>
-    <div class="row align-items-center">
+  <div class="v-step-agroportal-enrich">
+    <ValidationObserver ref="validatorRef">
+      <opensilex-Tutorial
+          ref="tutorial"
+          :steps="tutorialSteps"
+          @onFinish="onTutorialFinishOrSkip"
+          @onSkip="onTutorialFinishOrSkip"
+      >
+      </opensilex-Tutorial>
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <!-- URI -->
+          <opensilex-UriForm
+              class="v-step-uri"
+              :uri.sync="formDto.uri"
+              label="component.common.uri"
+              :generated.sync="uriGenerated"
+              :required="true"
+              helpMessage="AgroportalEnrichFormPart.uri-help"
+              :editMode="editMode"
+          ></opensilex-UriForm>
 
-      <div class="col-lg-6">
+          <!-- Name -->
+          <opensilex-InputForm
+              class="v-step-name"
+              :value.sync="formDto.name"
+              label="component.common.name"
+              type="text"
+              :required="true"
+              :placeholder="props.namePlaceholder"
+          ></opensilex-InputForm>
 
-        <!-- URI -->
-        <opensilex-UriForm
-            class="v-step-uri"
-            :uri.sync="formDto.uri"
-            label="component.common.uri"
-            :generated.sync="uriGenerated"
-            :required="true"
-            helpMessage="AgroportalEnrichFormPart.uri-help"
-            :editMode="editMode"
-        ></opensilex-UriForm>
-
-        <!-- Name -->
-        <opensilex-InputForm
-            class="v-step-name"
-            :value.sync="formDto.name"
-            label="component.common.name"
-            type="text"
-            :required="true"
-            :placeholder="props.namePlaceholder"
-        ></opensilex-InputForm>
-
-        <!-- Comment -->
-        <opensilex-TextAreaForm
-            class="v-step-description"
-            :value.sync="formDto.description"
-            label="component.common.description">
-        </opensilex-TextAreaForm>
+          <!-- Comment -->
+          <opensilex-TextAreaForm
+              class="v-step-description"
+              :value.sync="formDto.description"
+              label="component.common.description">
+          </opensilex-TextAreaForm>
+        </div>
       </div>
-    </div>
-  </ValidationObserver>
+    </ValidationObserver>
+  </div>
 </template>
 
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {Tour} from "vue-tour";
-import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
+import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
+import {BModal} from "bootstrap-vue";
+import {ValidationObserver} from "vee-validate";
 
 @Component
 export default class AgroportalEnrichFormPart extends Vue {
-  $opensilex: any;
-
-  uriGenerated = true;
+  //region Props
+  @Prop()
+  private readonly editMode;
 
   @Prop()
-  editMode;
-
-  errorMsg: String = "";
-
-  @PropSync("form")
-  formDto: BaseVariableCreationDTO;
-
-  @Prop()
-  props: {
+  private readonly props: {
     namePlaceholder: string,
     descriptionPlaceholder: string
   };
 
-  private tutorialSteps = [
+  @PropSync("form")
+  private formDto: BaseExternalReferencesDTO;
+  //endregion
+
+  //region Refs
+  @Ref("tutorial")
+  private readonly tutorial!: Tour;
+
+  @Ref("modalRef")
+  readonly modalRef!: BModal;
+
+  @Ref("validatorRef")
+  readonly validatorRef!: InstanceType<typeof ValidationObserver>;
+  //endregion
+
+  //region Data
+  private uriGenerated: boolean = true;
+  //endregion
+
+  //region Tutorial data
+  private savedFormBeforeTutorial: BaseExternalReferencesDTO;
+  private readonly tutorialSteps = [
     {
-      target: ".v-step-uri",
+      target: ".v-step-agroportal-enrich .v-step-uri",
       header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-uri.title")},
       content: this.$t("AgroportalEnrichFormPart.tutorial.step-uri.content"),
       params: {placement: "right"}
     },
     {
-      target: ".v-step-name",
+      target: ".v-step-agroportal-enrich .v-step-name",
       header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-name.title")},
       content: this.$t("AgroportalEnrichFormPart.tutorial.step-name.content"),
       params: {placement: "right"}
     },
     {
-      target: ".v-step-description",
+      target: ".v-step-agroportal-enrich .v-step-description",
       header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-description.title")},
       content: this.$t("AgroportalEnrichFormPart.tutorial.step-description.content"),
       params: {placement: "right"}
@@ -95,38 +110,31 @@ export default class AgroportalEnrichFormPart extends Vue {
       params: {placement: "top"}
     },
   ];
+  //endregion
 
-  private savedFormBeforeTutorial: BaseVariableCreationDTO;
-
-  @Ref("tutorial")
-  private readonly tutorial: Tour;
-
-  handleErrorMessage(errorMsg: string) {
-    this.errorMsg = errorMsg;
-  }
-
-  @Ref("modalRef") readonly modalRef!: any;
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  reset() {
+  //region Public methods for WizardForm
+  public reset() {
     this.uriGenerated = true;
     return this.validatorRef.reset();
   }
 
-  validate() {
+  public validate() {
     return this.validatorRef.validate();
   }
+  //endregion
 
-  startTutorial() {
+  //region Tutorial methods
+  public startTutorial() {
     this.savedFormBeforeTutorial = JSON.parse(JSON.stringify(this.formDto));
     this.formDto.name = this.$t(this.props.namePlaceholder).toString();
     this.formDto.description = this.$t(this.props.descriptionPlaceholder).toString();
     this.tutorial.start();
   }
 
-  onTutorialFinishOrSkip() {
+  private onTutorialFinishOrSkip() {
     this.formDto = JSON.parse(JSON.stringify(this.savedFormBeforeTutorial));
   }
+  //endregion
 }
 </script>
 

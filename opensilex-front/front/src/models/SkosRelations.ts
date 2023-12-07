@@ -40,4 +40,9 @@ const SUPPORTED_SKOS_RELATIONS = new Set([
     NARROW_MATCH
 ]);
 
+export interface UriSkosRelation {
+    uri: string,
+    relationDtoKey: string
+}
+
 export default SUPPORTED_SKOS_RELATIONS;

@@ -187,7 +187,7 @@ import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCrea
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
 
-import {BaseVariableCreateForm} from "./form/VariableFormTypes";
+import {BaseExternalReferencesForm} from "../common/external-references/ExternalReferencesTypes";
 
 @Component
 export default class VariablesView extends Vue {
@@ -222,11 +222,11 @@ export default class VariablesView extends Vue {
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
-    @Ref("entityForm") readonly entityForm!: BaseVariableCreateForm;
-    @Ref("interestEntityForm") readonly interestEntityForm!: BaseVariableCreateForm;
-    @Ref("characteristicForm") readonly characteristicForm!: BaseVariableCreateForm;
-    @Ref("methodForm") readonly methodForm!: BaseVariableCreateForm;
-    @Ref("unitForm") readonly unitForm!: BaseVariableCreateForm;
+    @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseExternalReferencesForm;
+    @Ref("methodForm") readonly methodForm!: BaseExternalReferencesForm;
+    @Ref("unitForm") readonly unitForm!: BaseExternalReferencesForm;
 
     /**
      * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call
@@ -358,7 +358,7 @@ export default class VariablesView extends Vue {
         this.variableStructureList.refresh(false, uri);
     }
 
-    private getForm(): BaseVariableCreateForm {
+    private getForm(): BaseExternalReferencesForm {
         switch (this.elementType) {
             case VariablesView.VARIABLE_TYPE : {
                 return this.variableCreate;

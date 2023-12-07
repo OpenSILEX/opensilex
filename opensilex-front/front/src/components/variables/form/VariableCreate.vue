@@ -25,10 +25,10 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import VariableForm from "./VariableForm.vue";
-import {BaseVariableCreateForm} from "./VariableFormTypes";
+import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
 
 @Component
-    export default class VariableCreate extends Vue implements BaseVariableCreateForm{
+    export default class VariableCreate extends Vue implements BaseExternalReferencesForm{
 
         $opensilex: OpenSilexVuePlugin;
         $store: any;

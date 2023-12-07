@@ -18,15 +18,15 @@ import Component from 'vue-class-component';
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {Ref} from "vue-property-decorator";
-import {BaseVariableCreateForm, BaseVariableCreationDTO} from "../form/VariableFormTypes";
+import {BaseExternalReferencesForm, BaseExternalReferencesDTO} from "../../common/external-references/ExternalReferencesTypes";
 
 @Component({})
-export default class AgroportalUnitForm extends Vue implements BaseVariableCreateForm {
+export default class AgroportalUnitForm extends Vue implements BaseExternalReferencesForm {
   $opensilex: OpenSilexVuePlugin
   service: VariablesService;
 
   @Ref("createForm")
-  createForm: BaseVariableCreateForm;
+  createForm: BaseExternalReferencesForm;
 
   created() {
     this.service = this.$opensilex.getService("opensilex-core.VariablesService");
@@ -36,7 +36,7 @@ export default class AgroportalUnitForm extends Vue implements BaseVariableCreat
     this.createForm.showCreateForm();
   }
 
-  showEditForm(dto: BaseVariableCreationDTO) {
+  showEditForm(dto: BaseExternalReferencesDTO) {
     this.createForm.showEditForm(dto);
   }
 }

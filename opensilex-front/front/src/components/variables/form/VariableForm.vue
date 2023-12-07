@@ -278,7 +278,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
-import {BaseVariableCreateForm} from "./VariableFormTypes";
+import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
 
 @Component
 export default class VariableForm extends Vue {
@@ -309,11 +309,11 @@ export default class VariableForm extends Vue {
     @Ref("methodSelectForm") methodSelectForm!: SelectForm;
     @Ref("unitSelectForm") unitSelectForm!: SelectForm;
 
-    @Ref("entityForm") readonly entityForm!: BaseVariableCreateForm;
-    @Ref("interestEntityForm") readonly interestEntityForm!: BaseVariableCreateForm;
-    @Ref("characteristicForm") readonly characteristicForm!: BaseVariableCreateForm;
-    @Ref("methodForm") readonly methodForm!: BaseVariableCreateForm;
-    @Ref("unitForm") readonly unitForm!: BaseVariableCreateForm;
+    @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseExternalReferencesForm;
+    @Ref("methodForm") readonly methodForm!: BaseExternalReferencesForm;
+    @Ref("unitForm") readonly unitForm!: BaseExternalReferencesForm;
 
     @Ref("traitForm") readonly traitForm!: any;
 

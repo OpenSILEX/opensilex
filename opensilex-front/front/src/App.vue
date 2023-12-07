@@ -92,10 +92,6 @@ export default class App extends Vue {
   get menuVisible(): boolean {
     return this.$store.state.menuVisible;
   }
-
-  keydownEnter(event) {
-    console.debug("Keydown enter");
-  }
 }
 </script>
 

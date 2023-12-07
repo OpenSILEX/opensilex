@@ -9,7 +9,6 @@
     </opensilex-Tutorial>
     <b-row>
       <b-col sm="12" lg="8">
-
         <!-- Title -->
         <b-form-group
             label="component.skos.ontologies-references-label"
@@ -24,14 +23,12 @@
           <opensilex-AgroportalTermSelector
               ref="agroportalTermSelector"
               :placeholder="$t(props.searchPlaceholder)"
-              :selectedOntologies="ontologies"
-              @import="selectItem"
+              :ontologies="ontologies"
+              @import="onTermImported"
           ></opensilex-AgroportalTermSelector>
-
       </b-col>
 
-      <b-col lg="4" id="selected-term-panel">
-
+      <b-col lg="4">
         <b-form-group
             label-size="lg"
             label-class="font-weight-bold pt-0"
@@ -42,9 +39,9 @@
               <b-col xs="6">
                 {{ $t("AgroportalSearchFormPart.selected-term") }}
               </b-col>
-              <b-col xs="2" v-if="!!selectedEntity">
+              <b-col xs="2" v-if="!!selectedTerm">
                 <opensilex-Button
-                    @click="clear"
+                    @click="clearSelectedTerm"
                     variant="outline-danger"
                     :small="true"
                     icon="fa#trash-alt"
@@ -57,8 +54,8 @@
         </b-form-group>
 
         <opensilex-AgroportalResultItem
-            v-if="!!selectedEntity"
-            :entity="selectedEntity"
+            v-if="!!selectedTerm"
+            :entity="selectedTerm"
             id="v-step-selected"
         >
         </opensilex-AgroportalResultItem>
@@ -76,37 +73,50 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {Tour} from "vue-tour";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-import AgroportalTermSelector from "../../../common/external-references/agroportal/AgroportalTermSelector.vue";
-import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
+import AgroportalTermSelector from "../AgroportalTermSelector.vue";
+import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
+import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class AgroportalSearchFormPart extends Vue {
-  $opensilex: any;
+  //region Plugins
+  $opensilex: OpenSilexVuePlugin;
+  //endregion
 
-  uriGenerated = true;
-  text = "";
-  ontologies: string[] = [];
-  isAllOntologies: boolean = false;
-
+  //region Props
   @Prop()
   editMode: boolean;
-
-  errorMsg: String = "";
-
-  @PropSync("form")
-  formDto: any;
-
-  selectedEntity: AgroportalTermDTO = null;
-
-  @Ref("tutorial")
-  private tutorial: Tour;
-
   @Prop()
   private props: {
     searchPlaceholder: string,
     ontologiesConfig: string
   };
+  @PropSync("form")
+  formDto: any;
+  //endregion
 
+  //region Ref
+  @Ref("tutorial")
+  private tutorial: Tour;
+  @Ref("validatorRef")
+  readonly validatorRef!: any;
+  @Ref("agroportalTermSelector")
+  private readonly agroportalTermSelector: AgroportalTermSelector;
+  //endregion
+
+  //region Data
+  uriGenerated = true;
+  text = "";
+  ontologies: string[] = [];
+  isAllOntologies: boolean = false;
+  selectedTerm: AgroportalTermDTO = null;
+  //endregion
+
+  //region Tutorial data
+  private savedStateBeforeTutorial?: {
+    searchTerm: string,
+    formDto: BaseExternalReferencesDTO
+  };
   private tutorialSteps = [
     {
       target: ".v-step-agroportal-search",
@@ -139,54 +149,43 @@ export default class AgroportalSearchFormPart extends Vue {
       before: this.beforeNoSearchStep
     }
   ]
+  //endregion
 
-  private savedStateBeforeTutorial?: {
-    searchTerm: string,
-    formDto: BaseVariableCreationDTO
-  };
-
-
-  handleErrorMessage(errorMsg: string) {
-    this.errorMsg = errorMsg;
-  }
-
-  @Ref("validatorRef")
-  readonly validatorRef!: any;
-  @Ref("agroportalTermSelector")
-  private readonly agroportalTermSelector: AgroportalTermSelector;
-
-  created() {
+  //region Hooks
+  private created() {
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
   }
+  //endregion
 
-  importResult(entity: AgroportalTermDTO) {
-    if (!entity) return;
-    this.selectedEntity = entity;
-    this.$emit("fill", this.selectedEntity);
+  //region Private methods
+  private clearSelectedTerm() {
+    this.selectedTerm = null;
   }
+  //endregion
 
-  clear() {
-    this.selectedEntity = null;
-    //this.$emit("clear");
+  //region Events
+  private onTermImported(term: AgroportalTermDTO) {
+    this.selectedTerm = term;
+    this.formDto.uri = term.id;
+    this.formDto.name = term.name;
   }
+  //endregion
 
-  selectItem(entity: AgroportalTermDTO) {
-    this.selectedEntity = entity;
-    this.importResult(this.selectedEntity);
-  }
-
-  reset() {
+  //region Public methods for wizard form
+  public reset() {
     this.uriGenerated = true;
     return this.validatorRef.reset();
   }
 
-  validate() {
-    this.importResult(this.selectedEntity);
+  public validate() {
+    //@todo pas sûr que les deux première lignes servent à quelque chose, les virer et voir ce qu'il se passe
+    // this.formDto.uri = this.selectedTerm.id;
+    // this.formDto.name = this.selectedTerm.name;
     return this.validatorRef.validate();
   }
+  //endregion
 
-  //region Tutorial
-
+  //region Tutorial methods
   public startTutorial() {
     this.saveStateBeforeTutorial();
     this.clearCurrentState();
@@ -203,7 +202,7 @@ export default class AgroportalSearchFormPart extends Vue {
 
   private clearCurrentState() {
     this.agroportalTermSelector.setSearchText("");
-    this.selectedEntity = undefined;
+    this.selectedTerm = undefined;
   }
 
   private restoreStateAfterTutorial() {

@@ -1,4 +1,4 @@
-export interface BaseVariableCreationDTO {
+export interface BaseExternalReferencesDTO {
     uri?: string,
     name?: string,
     description?: string,
@@ -8,7 +8,7 @@ export interface BaseVariableCreationDTO {
     narrow_match?: Array<string>
 }
 
-export interface BaseVariableCreateForm {
+export interface BaseExternalReferencesForm {
     showCreateForm(): void,
-    showEditForm(dto: BaseVariableCreationDTO, linkedDataCount?: number): void
+    showEditForm(dto: BaseExternalReferencesDTO, linkedDataCount?: number): void
 }

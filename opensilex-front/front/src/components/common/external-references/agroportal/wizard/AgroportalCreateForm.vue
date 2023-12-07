@@ -21,18 +21,18 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Prop, Ref} from "vue-property-decorator";
-import WizardForm from "../../../common/forms/WizardForm.vue";
-import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
-import {BaseVariableCreateForm, BaseVariableCreationDTO} from "../../form/VariableFormTypes";
+import WizardForm from "../../../forms/WizardForm.vue";
+import HttpResponse, {OpenSilexResponse} from "../../../../../lib/HttpResponse";
+import {BaseExternalReferencesForm, BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 @Component({})
-export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> extends Vue implements
-    BaseVariableCreateForm {
+export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements
+    BaseExternalReferencesForm {
   $opensilex: OpenSilexVuePlugin;
 
   variablesService: VariablesService;
@@ -125,7 +125,7 @@ export default class AgroportalCreateForm<T extends BaseVariableCreationDTO> ext
     this.wizardRef.showEditForm(form);
   }
 
-  getEmptyForm(): BaseVariableCreationDTO {
+  getEmptyForm(): BaseExternalReferencesDTO {
     return {
       uri: null,
       name: null,

@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver ref="entityValidatorRef">
+  <div class="v-step-agroportal-references">
     <opensilex-Tutorial
         ref="tutorial"
         :steps="tutorialSteps"
@@ -7,220 +7,113 @@
         @onSkip="onTutorialFinishOrSkip"
     >
     </opensilex-Tutorial>
-    <div
-        class="v-step-agroportalExternalReferencesForm"
-    >
-      <ValidationObserver ref="validatorRef">
-        <b-form>
-          <b-row>
-            <b-col md="6">
-              <b-form-group
-                  label-size="lg"
-                  label-class="font-weight-bold pt-0"
-                  class="mb-0"
+    <ValidationObserver ref="validatorRef">
+      <b-form>
+        <b-row>
+          <b-col md="6">
+            <b-form-group
+                label-size="lg"
+                label-class="font-weight-bold pt-0"
+                class="mb-0"
+            >
+              <template v-slot:label>
+                {{ $t('AgroportalExternalReferencesFormPart.search-mapping-title') }}
+              </template>
+
+              <opensilex-AgroportalTermSelector
+                  v-if="isAgroportalReachable"
+                  ref="agroportalTermSelector"
+                  :placeholder="$t(props.searchPlaceholder)"
+                  :ontologies="ontologies"
+                  :isMappingMode="true"
+                  @importMapping="onImportMapping"
+              ></opensilex-AgroportalTermSelector>
+            </b-form-group>
+
+            <b-form-group
+                label-size="lg"
+                label-class="font-weight-bold pt-0"
+                class="mb-0"
+            >
+              <template v-slot:label>
+                <span id="manual-mapping">
+                  {{ $t('AgroportalExternalReferencesFormPart.map-manually-title') }}
+                </span>
+              </template>
+
+              <!-- URI -->
+              <opensilex-FilterField
+                  :fullWidth="true"
               >
-                <template v-slot:label>
-                  <b-row>
-                    {{$t('AgroportalExternalReferencesFormPart.search-mapping-title')}}
-                  </b-row>
-                </template>
+                <b-form-group>
+                  <div class="helperAndBlueStar">
+                    <opensilex-FormInputLabelHelper
+                        label="AgroportalExternalReferencesFormPart.manual-mapping"
+                        helpMessage="AgroportalExternalReferencesFormPart.ontologies-help"
+                    ></opensilex-FormInputLabelHelper>
+                  </div>
+                  <span
+                      class="error-message alert alert-danger"
+                      v-if="isIncludedInRelations()"
+                  >{{ $t('component.skos.external-already-existing') }}</span>
+                  <opensilex-SkosRelationInput
+                      @input="addRelationToTerm"
+                  ></opensilex-SkosRelationInput>
+                </b-form-group>
+              </opensilex-FilterField>
+            </b-form-group>
+          </b-col>
 
-              </b-form-group>
-
-              <div v-if="includeAgroportalSearch && isAgroportalReachable">
-                <opensilex-AgroportalTermSelector
-                    ref="agroportalTermSelector"
-                    :placeholder="$t(props.searchPlaceholder)"
-                    :selectedOntologies="ontologies"
-                    :isMappingMode="true"
-                    @importMapping="onImportMapping"
-                ></opensilex-AgroportalTermSelector>
-              </div>
-
-              <b-form-group
-                  label-size="lg"
-                  label-class="font-weight-bold pt-0"
-                  class="mb-0"
-              >
-                <template v-slot:label>
-                  <b-row
-                      id="manual-mapping"
-                  >
-                    {{$t('AgroportalExternalReferencesFormPart.map-manually-title')}}
-                  </b-row>
-                </template>
-
-              </b-form-group>
-
-              <b-row>
-                <!-- URI -->
-                <opensilex-FilterField
-                    :fullWidth="true"
-                >
-                  <b-form-group>
-                    <div class="helperAndBlueStar">
-                      <opensilex-FormInputLabelHelper
-                          label="AgroportalExternalReferencesFormPart.manual-mapping"
-                          helpMessage="AgroportalExternalReferencesFormPart.ontologies-help"
-                      ></opensilex-FormInputLabelHelper>
-                    </div>
-                    <ValidationProvider
-                        :name="$t('component.skos.uri')"
-                        :rules="{
-                          required: true,
-                          //@todo pourquoi cette regex qui ne correspond pas à la définition d'URI ?
-                          regex: /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
-                        }"
-                        v-slot="{ errors }"
-                    >
-                    <span
-                        class="error-message alert alert-danger"
-                        v-if="isIncludedInRelations()"
-                    >{{$t('component.skos.external-already-existing')}}</span>
-
-                      <b-input-group>
-                      <b-input
-                          id="externalUri"
-                          class="v-step-manual-uri"
-                          v-model.trim="currentExternalUri"
-                          type="text"
-                          required
-                          :placeholder="$t('component.skos.uri-placeholder')"
-                          debounce="300"
-                      >
-                      </b-input>
-                        <template #append>
-                          <b-dropdown
-                              class="v-step-manual-mapping"
-                              dropdown
-                              :small="true"
-                              text="Map term as">
-
-                            <b-dropdown-item v-for="(relation, index) in skosRelationOptions" v-bind:key="relation.id"
-                                             class="btn-dropdown"
-                                             @click="addRelationToTerm(relation.id)"
-                            >
-                              {{ relation.label }}
-                            </b-dropdown-item>
-                          </b-dropdown>
-                        </template>
-                      </b-input-group>
-
-                      <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-
-                    </ValidationProvider>
-                  </b-form-group>
-
-                </opensilex-FilterField>
-              </b-row>
-            </b-col>
-
-            <b-col md="6">
-              <b-form-group
-                  label-size="lg"
-                  label-class="font-weight-bold pt-0"
-                  class="mb-0"
-              >
-                <template v-slot:label>
-                  <b-row>
-                    {{$t("AgroportalSearchFormPart.selected-term")}}
-                  </b-row>
-                </template>
-
-              </b-form-group>
+          <b-col md="6">
+            <b-form-group
+                label-size="lg"
+                label-class="font-weight-bold pt-0"
+                class="mb-0"
+            >
+              <template v-slot:label>
+                {{ $t("AgroportalSearchFormPart.selected-term") }}
+              </template>
 
               <b-container class="result">
                 <b-row class="mx-0 jqx-max-size">
-                  <b-col col lg="12">
-                    <div class="result-name">
+                  <b-col col lg="12" class="result-name">
                       {{ formDto.name }}
-                    </div>
-                    <div>
-                      <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
-                    </div>
                   </b-col>
                 </b-row>
-
+                <b-row>
+                  <b-col col lg="12">
+                    <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
+                  </b-col>
+                </b-row>
                 <b-row class="mx-0 jqx-max-size">
                   <b-col col lg="12">
                     {{ formDto.description }}
                   </b-col>
                 </b-row>
               </b-container>
+            </b-form-group>
 
-              <b-table v-if="relations.length !== 0"
-                       class="v-step-table"
-                       striped
-                       hover
-                       small
-                       responsive
-                       sort-icon-left
-                       bordered
-                       :items="relations"
-                       :fields="fields">
-                <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
-                <template v-slot:cell(relation)="data">
-                  <b-dropdown
-                      dropdown
-                      class="v-step-change-mapping"
-                      boundary="window"
-                      :small="true"
-                      :text="$t(data.value)">
-                      <b-dropdown-item v-for="relation in skosRelationOptions" v-bind:key="relation.id"
-                                       class="btn-dropdown"
-                                       @click="updateRelation(relation.id, data.item.relationURI);"
-                      >
-                        {{ $t(relation.label) }}
-                        <font-awesome-icon
-                            icon="question-circle"
-                            v-b-tooltip.hover.top.html="$t(relation.title)"
-                        />
-                    </b-dropdown-item>
-                  </b-dropdown>
-                </template>
-                <template v-slot:head(relationURI)="data">{{$t(data.label)}}</template>
-                <template v-slot:cell(relationURI)="data">
-                  <a :href="data.value" target="_blank">{{ data.value }}</a>
-                </template>
-                <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
-                <template v-slot:cell(actions)="data">
-                  <div class="text-center">
-                    <b-button-group size="md">
-                      <b-button
-                          size="md"
-                          @click="removeRelationsToSkosReferences(data.item.relationURI)"
-                          variant="danger"
-                      >
-                        <opensilex-Icon icon="fa#trash-alt" />
-                      </b-button>
-                    </b-button-group>
-                  </div>
-                </template>
-              </b-table>
-              <p v-else>
-                <strong>{{$t('component.skos.no-external-links-provided')}}</strong>
-              </p>
-            </b-col>
-          </b-row>
-        </b-form>
-      </ValidationObserver>
-
-    </div>
-
-  </ValidationObserver>
+            <opensilex-SkosRelationTable
+              :uriRelations.sync="uriRelations"
+            ></opensilex-SkosRelationTable>
+          </b-col>
+        </b-row>
+      </b-form>
+    </ValidationObserver>
+  </div>
 </template>
 
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH} from "../../../../models/SkosRelations";
-import {SelectableItem} from "../../../common/forms/SelectForm.vue";
-import {BaseVariableCreationDTO} from "../../form/VariableFormTypes";
+import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH, UriSkosRelation} from "../../../../../models/SkosRelations";
+import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
 import {Tour} from "vue-tour";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-import AgroportalTermSelector from "../../../common/external-references/agroportal/AgroportalTermSelector.vue";
+import AgroportalTermSelector from "../AgroportalTermSelector.vue";
+import {SelectableItem} from "../../../forms/SelectForm.vue";
 
 @Component
 export default class AgroportalExternalReferencesFormPart extends Vue {
@@ -233,7 +126,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   agroportalAPIService: AgroportalAPIService;
 
   @PropSync("form")
-  formDto: BaseVariableCreationDTO;
+  formDto: BaseExternalReferencesDTO;
 
   @Prop()
   props: {
@@ -254,7 +147,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   @Prop({default: true})
   displayInsertButton: boolean;
 
-  includeAgroportalSearch: boolean = true;
   isAgroportalReachable: boolean = false;
 
   @Ref("tutorial")
@@ -262,52 +154,52 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   private tutorialSteps = [
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-search",
+      target: ".v-step-agroportal-references .v-step-agroportal-search",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.content"),
       params: {placement: "left"}
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-results",
+      target: ".v-step-agroportal-references .v-step-agroportal-results",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.content"),
       params: {placement: "left"}
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-agroportal-results .v-step-result-mapping-button",
+      target: ".v-step-agroportal-references .v-step-agroportal-results .v-step-result-mapping-button",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.content"),
       params: {placement: "right", enableScrolling: false},
       before: this.beforeImportMappingStep
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-table",
+      target: ".v-step-agroportal-references .v-step-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewStep
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-change-mapping",
+      target: ".v-step-agroportal-references .v-step-change-mapping",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.content"),
       params: {placement: "left"}
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-manual-uri",
+      target: ".v-step-agroportal-references .v-step-manual-uri",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.content"),
       params: {placement: "top"},
       before: this.beforeManualMappingStep
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-manual-mapping",
+      target: ".v-step-agroportal-references .v-step-manual-mapping",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.content"),
       params: {placement: "top"}
     },
     {
-      target: ".v-step-agroportalExternalReferencesForm .v-step-table",
+      target: ".v-step-agroportal-references .v-step-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.content"),
       params: {placement: "left"},
@@ -321,11 +213,11 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     },
   ];
 
-  private savedStateBeforeTutorial : {
+  private savedStateBeforeTutorial: {
     currentRelation: string,
     currentExternalUri: string,
     searchText: string,
-    formDto: BaseVariableCreationDTO
+    formDto: BaseExternalReferencesDTO
   }
 
   checkAgroportalReachable() {
@@ -337,43 +229,10 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     });
   }
 
-  relationsInternal: any[] = [];
-
-  skosRelationOptions: Array<SelectableItem> = [];
-
-  setOptions() {
-    this.skosRelationOptions = [];
-    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
-      this.$set(this.skosRelationOptions, this.skosRelationOptions.length, {
-        id: skosRelation.dtoKey,
-        label: this.$t(skosRelation.label),
-        title: this.$t(skosRelation.description)
-      });
-    }
-  }
-
   created() {
-    this.setOptions();
     this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
     this.checkAgroportalReachable();
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
-  }
-
-  private langUnwatcher;
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-        () => this.$store.getters.language,
-        () => {this.setOptions();}
-    );
-  }
-
-  beforeDestroy() {
-    this.langUnwatcher();
-  }
-
-  resetForm() {
-    this.currentRelation = "";
-    this.currentExternalUri = "";
   }
 
   resetExternalUriForm() {
@@ -398,64 +257,38 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     }
   ];
 
-  get relations() {
-    this.relationsInternal = [];
-    if (this.formDto !== undefined) {
-      for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
-        this.updateRelations(skosRelation.dtoKey, this.formDto[skosRelation.dtoKey]);
+  get uriRelations(): Array<UriSkosRelation> {
+    const uriRelationList: Array<UriSkosRelation> = [];
+    for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+      for (const relationUri of this.formDto[skosRelation.dtoKey]) {
+        uriRelationList.push({
+          relationDtoKey: skosRelation.dtoKey,
+          uri: relationUri as string
+        });
       }
     }
-    return this.relationsInternal;
+    return uriRelationList;
   }
 
-  updateRelation(relation: string, relationURI: string) {
-    this.removeRelationsToSkosReferences(relationURI);
-    this.addRelationWithURI(relation, relationURI);
-  }
-
-  updateRelations(relation: string, references: string[]) {
-    if(references !== undefined){
-      for (let index = 0; index < references.length; index++) {
-        const element = references[index];
-        this.addRelation(relation, element);
-      }
+  set uriRelations(newUriRelations: Array<UriSkosRelation>) {
+    this.formDto.exact_match = [];
+    this.formDto.close_match = [];
+    this.formDto.broad_match = [];
+    this.formDto.narrow_match = [];
+    for (const uriRelation of newUriRelations) {
+      this.formDto[uriRelation.relationDtoKey].push(uriRelation.uri);
     }
   }
 
-  addRelation(relation: string, externalUri: string) {
-    this.$set(this.relationsInternal, this.relationsInternal.length, {
-      relation: [...SUPPORTED_SKOS_RELATIONS].find(r => r.dtoKey === relation).label,
-      relationURI: externalUri
-    });
-  }
-
-  validateForm() {
-    let validatorRef: any = this.$refs.validatorRef;
-    return validatorRef.validate();
-  }
-
-  validateURIFormat(uri: string): boolean {
-    let regex: RegExp;
-    regex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([-.][a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
-    return (regex.exec(uri) != null);
-  }
-
-  addRelationWithURI(relation: string, relationURI: string) {
-    this.currentExternalUri = relationURI;
-    this.currentRelation = relation;
-    this.addRelationToTerm(relation);
-  }
-
-  addRelationToTerm(relation: string) {
+  private addRelationToTerm(uriRelation: UriSkosRelation) {
     let isIncludedInRelations = this.isIncludedInRelations();
-    let isValidUri = this.validateURIFormat(this.currentExternalUri);
-    if (!isIncludedInRelations && isValidUri) {
-      this.formDto[relation].push(this.currentExternalUri);
+    if (!isIncludedInRelations) {
+      this.formDto[uriRelation.relationDtoKey].push(uriRelation.uri);
       this.resetExternalUriForm();
     }
   }
 
-  isIncludedInRelations(): boolean {
+  private isIncludedInRelations(): boolean {
     if (
         this.currentExternalUri == undefined ||
         this.currentExternalUri == "" ||
@@ -473,47 +306,18 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     return includedInRelations;
   }
 
-  removeRelationsToSkosReferences(relationURI: string) {
-    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
-      this.formDto[skosRelation.dtoKey] = this.formDto[skosRelation.dtoKey].filter(function (
-          value,
-          index,
-          arr
-      ) {
-        return value != relationURI;
-      });
-    }
-    return new Promise((resolve, reject) => {
-      this.$emit("onDelete", this.formDto, result => {
-        if (result instanceof Promise) {
-          result.then(resolve).catch(reject);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
-
-  async update() {
-    return new Promise((resolve, reject) => {
-      this.$emit("onUpdate", this.formDto, result => {
-        if (result instanceof Promise) {
-          result.then(resolve).catch(reject);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
-
-  onImportMapping(entity: AgroportalTermDTO, relation) {
+  //region Event Handlers
+  onImportMapping(entity: AgroportalTermDTO, relation: SelectableItem) {
     this.currentExternalUri = entity.id;
     this.currentRelation = relation.id;
-    this.addRelationToTerm(relation.id);
+    this.addRelationToTerm({
+      relationDtoKey: relation.id,
+      uri: entity.id
+    });
   }
+  //endregion
 
   //region Tutorial
-
   private saveStateBeforeTutorial() {
     this.savedStateBeforeTutorial = {
       currentRelation: this.currentRelation,
@@ -555,7 +359,10 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   }
 
   private async beforeMappingOverviewAgainStep() {
-    this.addRelationToTerm(BROAD_MATCH.dtoKey);
+    this.addRelationToTerm({
+      uri: "http://www.w3.org/2002/07/owl#Thing",
+      relationDtoKey: BROAD_MATCH.dtoKey
+    });
   }
 
   startTutorial() {
@@ -568,7 +375,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   onTutorialFinishOrSkip() {
     this.restoreStateAfterTutorial();
   }
-
   //endregion
 }
 

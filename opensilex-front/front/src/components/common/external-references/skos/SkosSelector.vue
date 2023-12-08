@@ -59,41 +59,20 @@ export default class SkosSelector extends Vue {
     }
     this.skosRelationOptions = skosRelationOptions;
   }
-
-  mounted() {
-    if (this.selected) {
-      this.emitSelected(this.selected);
-    }
-  }
-  //endregion
-
-  //region Events
-  /**
-   *
-   * Not a fan of this because as a PropSync, `selected` already triggers events. If I have time I will remove
-   * this event and fix the components that depend on it.
-   * A problem with that is that you are required to declare a PropSync, even if you only would need to use this
-   * event.
-   * @todo Either remove the PropSync or this ; I think removing the PropSync would be better.
-   *
-   * @private
-   */
-  private emitSelected(selectedRelation: string) {
-    this.$emit("selected", selectedRelation);
-  }
   //endregion
 
   //region Event handlers
   private onClick(relation: SelectableItem) {
     this.selected = relation.id;
-    this.emitSelected(relation.id);
   }
   //endregion
 }
 </script>
+
 <style scoped lang="scss">
 
 </style>
+
 <i18n>
 en:
   SkosSelector:

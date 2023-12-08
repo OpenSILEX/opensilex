@@ -21,7 +21,7 @@
       <template #append>
         <opensilex-SkosSelector
             :selectedRelation.sync="relationDtoKey"
-            @selected="onSelected"
+            @update:selectedRelation="onSelected"
         ></opensilex-SkosSelector>
       </template>
     </b-input-group>

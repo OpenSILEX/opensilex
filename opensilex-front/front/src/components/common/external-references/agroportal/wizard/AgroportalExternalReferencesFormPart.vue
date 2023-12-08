@@ -152,23 +152,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   private ontologies: string[] = [];
   private isAgroportalReachable: boolean = false;
 
-  private readonly fields = [
-    {
-      key: "relation",
-      label: "component.skos.relation",
-      sortable: true
-    },
-    {
-      key: "relationURI",
-      label: "component.skos.uri",
-      sortable: false
-    },
-    {
-      key: "actions",
-      label: "component.common.actions"
-    }
-  ];
-
   //region Tutorial data
   private savedStateBeforeTutorial: {
     formDto: BaseExternalReferencesDTO
@@ -363,7 +346,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 </script>
 
 <style scoped>
-
 a {
   color: #007bff;
 }
@@ -392,7 +374,6 @@ a {
 ul {
   list-style-type: none;
 }
-
 </style>
 
 <i18n>

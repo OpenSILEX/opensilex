@@ -21,7 +21,7 @@
           <!-- Select button for mapping mode -->
           <template v-if="isMappingMode" v-slot:validationButton>
             <opensilex-SkosSelector
-                @selected="relation => onRelationSelected(term, relation)"
+                @update:selectedRelation="relation => onRelationSelected(term, relation)"
             ></opensilex-SkosSelector>
           </template>
 
@@ -107,9 +107,7 @@ export default class AgroportalResults extends Vue {
       if (http.response && http.response.result) {
         this.terms = http.response.result as Array<AgroportalTermDTO>;
         this.isDataLoading = false;
-        if (this.terms.length === 0) {
-          this.isNothingFound = true;
-        }
+        this.isNothingFound = this.terms.length === 0;
       }
     }).catch((error) => {
       this.isAgroportalDown = true;
@@ -177,7 +175,6 @@ export default class AgroportalResults extends Vue {
       uri: term.id
     });
   }
-
   //endregion
 }
 </script>
@@ -198,7 +195,7 @@ export default class AgroportalResults extends Vue {
 <i18n>
 en:
   AgroportalResults:
-    nothing-found: Nothing result was found
+    nothing-found: No result was found
     btn-choose: Choose
 fr:
   AgroportalResults:

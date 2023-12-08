@@ -135,15 +135,11 @@ export default class AgroportalSearch extends Vue {
 }
 </script>
 
-
 <style scoped>
-
 #advanced-options {
   padding: 10px;
 }
-
 </style>
-
 
 <i18n>
 en:

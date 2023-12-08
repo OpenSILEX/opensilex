@@ -19,7 +19,9 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -27,7 +29,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -208,13 +209,15 @@ public class BrAPIv1ObservationDTO {
         if (dataModel.getValue() != null) {
             this.setValue(dataModel.getValue().toString());
         }
-
-        if (SPARQLModule.getOntologyStoreInstance().classExist(dataModel.getTarget(), new URI(Oeso.ScientificObject.getURI()))){
+        List<SPARQLNamedResourceModel> uriLabels = ontologyDAO.getURILabels(List.of(dataModel.getTarget()), currentUser.getLanguage(), expeModel.getUri());
+        if (!uriLabels.isEmpty() && SPARQLModule.getOntologyStoreInstance().classExist(
+                uriLabels.get(0).getType(), new URI(Oeso.ScientificObject.getURI())
+        )){
             ScientificObjectModel objectModel = scientificObjectDAO.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser.getLanguage());
             List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
             if (germplasms.size() >= 1){
                 GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser, false);
-                if (Objects.equals(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
+                if (SPARQLDeserializers.compareURIs(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
                     this.setGermplasmDbId(germplasmModel.getUri().toString());
                     this.setGermplasmName(germplasmModel.getName());
                 }

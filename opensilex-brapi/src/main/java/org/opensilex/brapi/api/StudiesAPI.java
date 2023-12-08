@@ -346,7 +346,8 @@ public class StudiesAPI extends BrapiCall {
                         ontologyDAO,
                         moveEventDAO,
                         geospatialDAO,
-                        germplasmDAO);
+                        germplasmDAO,
+                        sparql);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

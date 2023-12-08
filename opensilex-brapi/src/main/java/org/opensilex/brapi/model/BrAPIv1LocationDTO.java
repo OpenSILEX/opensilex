@@ -8,6 +8,7 @@ package org.opensilex.brapi.model;
 
 
 import com.mongodb.client.model.geojson.Geometry;
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -16,7 +17,9 @@ import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.rest.validation.model.OpenSilexLocale;
 
 import java.util.*;
@@ -176,7 +179,8 @@ class BrAPIv1LocationDTO {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                if (parentModel.getSites().size() == 1) {
+                List<SiteAddressModel> sitesAddresses = parentModel.getSites().stream().map(SiteModel::getAddress).collect(Collectors.toList());
+                if (sitesAddresses.stream().anyMatch(Objects::nonNull) && sitesAddresses.size() == 1) {
                     return parentModel;
                 } else {
                     return null;
@@ -185,7 +189,19 @@ class BrAPIv1LocationDTO {
             if (parentsWithOneAddress.size()==1) { // If exactly one organisation on this level with exactly one site
                 OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
                 SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
-                this.setInstituteAddress(parentAddress.toString());
+                this.setInstituteAddress(
+                        StringUtils.join(
+                                parentAddress.getStreetAddress(),
+                                "\n",
+                                parentAddress.getLocality(),
+                                "\n",
+                                parentAddress.getRegion(),
+                                "\n",
+                                parentAddress.getPostalCode(),
+                                "\n",
+                                parentAddress.getCountryName()
+                        )
+                );
                 this.setInstituteName(institute.getName());
                 String countryName = parentAddress.getCountryName();
                 this.setCountryName(countryName);
@@ -207,7 +223,11 @@ class BrAPIv1LocationDTO {
         if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
             this.setCountryName(countryName);
-            this.setCountryCode(new OpenSilexLocale(countryName).getISO3Country());
+            try {
+                this.setCountryCode(new OpenSilexLocale(countryName).getISO3Country());
+            } catch (BadRequestException e) {
+                this.setCountryCode(null);
+            }
         }
 
         return this;

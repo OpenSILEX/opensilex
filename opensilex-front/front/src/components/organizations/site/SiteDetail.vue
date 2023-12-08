@@ -60,7 +60,7 @@
         >
         </opensilex-UriListView>
 
-        <!-- Organizations -->
+        <!-- Facilities -->
         <opensilex-UriListView
             v-if="hasFacilities"
             :list="facilityUriList"
@@ -164,7 +164,7 @@ export default class SiteDetail extends Vue {
         uri: organization.uri,
         value: organization.name,
         to: {
-          path: "/facility/details/" + encodeURIComponent(organization.uri),
+          path: "/organization/details/" + encodeURIComponent(organization.uri),
         },
       }
     });

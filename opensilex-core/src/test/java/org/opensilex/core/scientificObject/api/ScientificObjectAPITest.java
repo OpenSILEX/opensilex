@@ -31,6 +31,7 @@ import org.opensilex.core.data.api.DataFileCreationDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -780,27 +781,27 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         SingleCriteriaDTO lessThan10SingleCriteria = new SingleCriteriaDTO();
         lessThan10SingleCriteria.setVariableUri(integerVariable);
-        lessThan10SingleCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        lessThan10SingleCriteria.setCriteria(MathematicalOperator.LessThan);
         lessThan10SingleCriteria.setValue("10");
 
         SingleCriteriaDTO wrongDatatypeForIntCriteria = new SingleCriteriaDTO();
         wrongDatatypeForIntCriteria.setVariableUri(integerVariable);
-        wrongDatatypeForIntCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        wrongDatatypeForIntCriteria.setCriteria(MathematicalOperator.LessThan);
         wrongDatatypeForIntCriteria.setValue("this is not an int idiot");
 
         SingleCriteriaDTO inexistingVariableCriteria = new SingleCriteriaDTO();
         inexistingVariableCriteria.setVariableUri(new URI("some_random_fake_uri"));
-        inexistingVariableCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        inexistingVariableCriteria.setCriteria(MathematicalOperator.LessThan);
         inexistingVariableCriteria.setValue("this value shouldn't matter");
 
         SingleCriteriaDTO moreThan10Dot5SingleCriteria = new SingleCriteriaDTO();
         moreThan10Dot5SingleCriteria.setVariableUri(decimalVariable);
-        moreThan10Dot5SingleCriteria.setCriteria(new URI(Oeso.moreThan.getURI()));
+        moreThan10Dot5SingleCriteria.setCriteria(MathematicalOperator.MoreThan);
         moreThan10Dot5SingleCriteria.setValue("10.5");
 
         SingleCriteriaDTO equalToo20201011SingleCriteria = new SingleCriteriaDTO();
         equalToo20201011SingleCriteria.setVariableUri(datetimeVariable);
-        equalToo20201011SingleCriteria.setCriteria(new URI(Oeso.equalToo.getURI()));
+        equalToo20201011SingleCriteria.setCriteria(MathematicalOperator.EqualToo);
         equalToo20201011SingleCriteria.setValue("2020-10-11T10:29:06.402+0200");
 
         //Test a single criteria on int type

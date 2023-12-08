@@ -431,26 +431,9 @@ export default class GermplasmDetails extends Vue {
 
   @Ref("germplasmForm") readonly germplasmForm!: any;
   updateGermplasm() {
-
     let form: GermplasmForm = this.germplasmForm.getFormRef();
     form.readAttributes(this.germplasm.metadata);
-
-    let updateDTO: GermplasmUpdateDTO = {
-      uri: this.germplasm.uri,
-      name: this.germplasm.name,
-      rdf_type: this.germplasm.rdf_type,
-      species: this.germplasm.species,
-      variety: this.germplasm.variety,
-      accession: this.germplasm.accession,
-      institute: this.germplasm.institute,
-      code: this.germplasm.code,
-      production_year: this.germplasm.production_year,
-      description: this.germplasm.description,
-      metadata: this.germplasm.metadata,
-      website: this.germplasm.website,
-      synonyms: this.germplasm.synonyms
-    }
-    //let germplasmDtoCopy = JSON.parse(JSON.stringify(this.germplasm));
+    let updateDTO : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(this.germplasm);
     this.germplasmForm.showEditForm(updateDTO);
   }
 

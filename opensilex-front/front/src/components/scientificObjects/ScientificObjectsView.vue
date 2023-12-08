@@ -244,7 +244,7 @@ export default class ScientificObjectsView extends Vue {
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
-    criteriaDto: undefined
+    criteriaDto: {criteria_list:[]}
   };
 
   data(){
@@ -321,7 +321,7 @@ export default class ScientificObjectsView extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
-      criteriaDto: undefined
+      criteriaDto: {criteria_list:[]}
     };
     this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     this.soList.refresh();

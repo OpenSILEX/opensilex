@@ -5,7 +5,9 @@
       :selected.sync="propertyURI"
       :multiple="false"
       :options="existingRdfAttributes"
+      :itemLoadingMethod="load"
       :clearable="true"
+      :required="required"
       placeholder="GermplasmControlledAttributesSelector.placeholder"
       @clear="$emit('clear')"
       @select="$emit('select')"
@@ -35,6 +37,9 @@ export default class GermplasmControlledAttributesSelector extends Vue {
 
   @Prop()
   existingRdfAttributes: Array<SelectableItem>;
+
+  @Prop()
+  required: boolean;
 
   @PropSync("property")
   propertyURI: string;

@@ -258,6 +258,8 @@ import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
+import ModalListBuilder from './common/views/ModalListBuilder.vue'
+components["opensilex-ModalListBuilder"] = ModalListBuilder;
 
 import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
 components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
@@ -450,13 +452,16 @@ import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmG
 components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
 import GermplasmGroupHelp from './germplasmGroup/GermplasmGroupHelp.vue';
 components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
-
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
 import GermplasmAddColumnModal from './germplasm/addColumnComponents/GermplasmAddColumnModal.vue';
 components["opensilex-GermplasmAddColumnModal"] = GermplasmAddColumnModal;
 import GermplasmControlledAttributesSelector from './germplasm/addColumnComponents/GermplasmControlledAttributesSelector.vue';
 components["opensilex-GermplasmControlledAttributesSelector"] = GermplasmControlledAttributesSelector;
+import GermplasmParentsModalFormField from './germplasm/GermplasmParentsModalFormField.vue';
+components["opensilex-GermplasmParentsModalFormField"] = GermplasmParentsModalFormField;
+import GermplasmParentsModalFormFieldLine from './germplasm/GermplasmParentsModalFormFieldLine.vue';
+components["opensilex-GermplasmParentsModalFormFieldLine"] = GermplasmParentsModalFormFieldLine;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
@@ -529,6 +534,8 @@ import CriteriaSearchModalCreator from './scientificObjects/CriteriaSearchModalC
 components["opensilex-CriteriaSearchModalCreator"] = CriteriaSearchModalCreator;
 import CriteriaOperatorSelector from './scientificObjects/CriteriaOperatorSelector.vue';
 components["opensilex-CriteriaOperatorSelector"] = CriteriaOperatorSelector;
+import CriteriaSearchModalLine from './scientificObjects/CriteriaSearchModalLine.vue';
+components["opensilex-CriteriaSearchModalLine"] = CriteriaSearchModalLine;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

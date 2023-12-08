@@ -1044,60 +1044,6 @@ public class ScientificObjectAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
-    /**
-     * Contains one main map providing an identifier to each criteria triplet that is invalid.
-     * And 3 other maps to identify what type of error each invalid triplet has.
-     * The 3 add error functions will automatically create the identifier if the triplet didn't already have an error.
-     * (Variable uri not found, Criteria uri not found or Invalid datatype for the given variable.
-     */
-    public static class GetScientificObjectsByDataCriteriaRequestErrors{
-        private final Map<Integer, URI> invalidVariables;
-        private final Map<Integer, URI> invalidCriteriaOperators;
-        private final Map<Integer, String> invalidValueDatatypes;
-        private final Map<SingleCriteriaDTO, Integer> invalidCriterias;
-        int currentIdentifier;
-        public GetScientificObjectsByDataCriteriaRequestErrors(){
-            this.invalidVariables = new HashMap<>();
-            this.invalidCriteriaOperators = new HashMap<>();
-            this.invalidValueDatatypes = new HashMap<>();
-            this.invalidCriterias = new HashMap<>();
-            this.currentIdentifier = 0;
-        }
-        public boolean hasErrors(){
-            return !invalidCriterias.isEmpty();
-        }
-        public void addInvalidVariable(SingleCriteriaDTO invalidCriteria, URI invalidVariable){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidVariables.put(id, invalidVariable);
-        }
-        public void addInvalidCriteriaOperator(SingleCriteriaDTO invalidCriteria, URI invalidCriteriaOperator){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidCriteriaOperators.put(id, invalidCriteriaOperator);
-        }
-        public void addInvalidValueDatatypeError(SingleCriteriaDTO invalidCriteria, String invalidValue){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidValueDatatypes.put(id, invalidValue);
-        }
-        public String generateErrorMessage(){
-            StringBuilder result = new StringBuilder("Errors were found in the following criteria : \n");
-            ObjectMapper objectMapper = new ObjectMapper();
-            for (SingleCriteriaDTO singleCriteriaDTO : invalidCriterias.keySet()) {
-                try {
-                    result.append(objectMapper.writeValueAsString(singleCriteriaDTO));
-                } catch (JsonProcessingException e) {
-                    result.append("{singleCriteriaDTO json serialization failed}");
-                }
-                Integer id = invalidCriterias.get(singleCriteriaDTO);
-                result.append((invalidVariables.get(id) == null ? "" : "variable uri not found, "));
-                result.append((invalidCriteriaOperators.get(id) == null ? "" : "criteria operator not found, "));
-                result.append((invalidValueDatatypes.get(id) == null ? "" : "value does not match required data-type of variable. "));
-                result.append("\n");
-            }
-            return result.toString();
-
-        }
-    }
-
     @GET
     @Path("count")
     @ApiOperation("Count scientific objects")

@@ -2,13 +2,12 @@
   <opensilex-SelectForm
       ref="selectForm"
       label="OperatorSelector.label"
-      :selected.sync="operatorURI"
+      :selected.sync="operatorId"
       :multiple="false"
-      :searchMethod="searchOperators"
-      :itemLoadingMethod="load"
-      :conversionMethod="operatorToSelectNode"
+      :options="criteriaOperators"
       :clearable="false"
       :rules=rules
+      :required="required"
       placeholder="OperatorSelector.placeholder"
       @clear="$emit('clear')"
       @select="select"
@@ -20,21 +19,18 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {Prop, PropSync } from 'vue-property-decorator';
-import {OntologyService} from "opensilex-core/api/ontology.service";
-import Oeso from "../../ontologies/Oeso";
-import {RDFTypeDTO} from "opensilex-core/model/rDFTypeDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import { SelectableItem } from '../common/forms/SelectForm.vue';
 
 @Component({})
 export default class CriteriaOperatorSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  service: OntologyService;
+  service: DataService;
 
   @PropSync("operator")
-  operatorURI: string;
+  operatorId: string;
 
   @Prop()
   rules: string;
@@ -45,24 +41,21 @@ export default class CriteriaOperatorSelector extends Vue {
   @Prop({default: false})
   required;
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.OntologyService");
-  }
+  criteriaOperators: Array<SelectableItem> = [];
 
+  async created() {
+    this.service = this.$opensilex.getService("opensilex.DataService");
+    this.criteriaOperators = (await this.searchOperators()).response.result.map(e=> {
+      return {label: this.$t("OperatorSelector."+e) as string, id: e};
+    });
+  }
 
   searchOperators() {
 
-    return this.service.getSubClassesOf(Oeso.MATHMATICAL_OPERATORS_URI, true).then(http => {
+    return this.service.getMathematicalOperators().then(http => {
       return http;
     }).catch(this.$opensilex.errorHandler);
 
-  }
-
-  operatorToSelectNode(dto: RDFTypeDTO) {
-    return {
-      id: dto.uri,
-      label: dto.name
-    };
   }
 
   select(value) {
@@ -73,13 +66,6 @@ export default class CriteriaOperatorSelector extends Vue {
     this.$emit("deselect", value);
   }
 
-  load(operators: Array<string>) {
-
-    return this.service.getURILabelsList(operators).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-      return (http && http.response) ? http.response.result : undefined
-    }).catch(this.$opensilex.errorHandler);
-
-  }
 }
 </script>
 
@@ -93,10 +79,21 @@ en:
   OperatorSelector:
     placeholder: Select an operator
     label: Operator
+    LessThan: '<'
+    LessOrEqualThan: '<='
+    MoreThan: '>'
+    MoreOrEqualThan: '>='
+    EqualToo: =
+    NotMeasured: Is not measured
 
 fr:
   OperatorSelector:
     placeholder: Sélectionner un opérateur
     label: Opérateur
-
+    LessThan: '<'
+    LessOrEqualThan: '<='
+    MoreThan: '>'
+    MoreOrEqualThan: '>='
+    EqualToo: =
+    NotMeasured: N'est pas mesuré
 </i18n>

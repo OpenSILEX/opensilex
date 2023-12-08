@@ -333,6 +333,7 @@ export default class DataView extends Vue {
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
+    criteriaDto: {criteria_list:[]}
   };
 
   data() {

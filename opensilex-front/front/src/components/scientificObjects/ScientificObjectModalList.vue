@@ -172,7 +172,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Ref, PropSync } from "vue-property-decorator";
-import CriteriaSearchModalCreator from "@/components/scientificObjects/CriteriaSearchModalCreator.vue";
+import CriteriaSearchModalCreator from "../scientificObjects/CriteriaSearchModalCreator.vue";
 
 @Component
 export default class ScientificObjectModalList extends Vue {
@@ -187,7 +187,7 @@ export default class ScientificObjectModalList extends Vue {
         types: [],
         existenceDate: undefined,
         creationDate: undefined,
-        criteriaDto: undefined
+        criteriaDto: {criteria_list:[]}
       };
     },
   })
@@ -236,8 +236,9 @@ export default class ScientificObjectModalList extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
-      criteriaDto: undefined
+      criteriaDto: {criteria_list:[]}
     };
+    this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     this.refresh();
   }
 

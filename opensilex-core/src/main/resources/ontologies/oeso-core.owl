@@ -907,67 +907,6 @@ OESO</rdfs:label>
         </rdfs:subClassOf>
     </owl:Class>
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#LogicalOperator -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LogicalOperator">
-            <rdfs:label xml:lang="fr">Logical operator</rdfs:label>
-            <rdfs:label xml:lang="en">Opérateur logique</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#AndOperator -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#AndOperator">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#LogicalOperator"/>
-            <rdfs:label xml:lang="fr">Et</rdfs:label>
-            <rdfs:label xml:lang="en">And</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#OrOperator -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#OrOperator">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#LogicalOperator"/>
-            <rdfs:label xml:lang="fr">Ou</rdfs:label>
-            <rdfs:label xml:lang="en">Or</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator">
-            <rdfs:label xml:lang="fr">Mathematical operator</rdfs:label>
-            <rdfs:label xml:lang="en">Opérateur mathématique</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#LessOrEqualThan -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LessOrEqualThan">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator"/>
-            <rdfs:label xml:lang="fr">&lt;=</rdfs:label>
-            <rdfs:label xml:lang="en">&lt;=</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#MoreThan -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MoreThan">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator"/>
-            <rdfs:label xml:lang="fr">&gt;</rdfs:label>
-            <rdfs:label xml:lang="en">&gt;</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#LessThan -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LessThan">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator"/>
-            <rdfs:label xml:lang="fr">&lt;</rdfs:label>
-            <rdfs:label xml:lang="en">&lt;</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#MoreOrEqualThan -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MoreOrEqualThan">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator"/>
-            <rdfs:label xml:lang="fr">&gt;=</rdfs:label>
-            <rdfs:label xml:lang="en">&gt;=</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#EqualToo -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EqualToo">
-            <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#MathmaticalOperator"/>
-            <rdfs:label xml:lang="fr">=</rdfs:label>
-            <rdfs:label xml:lang="en">=</rdfs:label>
-    </owl:Class>
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>

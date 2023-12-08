@@ -28,6 +28,7 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
@@ -102,7 +103,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
@@ -261,6 +261,18 @@ public class DataAPI {
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
+    }
+
+    @GET
+    @Path("mathematicalOperators")
+    @ApiOperation("Get mathematical operators")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of mathematical operators", response = String.class, responseContainer = "List")})
+    public Response getMathematicalOperators(){
+        return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
     }
 
     @POST

@@ -49,9 +49,8 @@ import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import AgroportalResultItem from "./AgroportalResultItem.vue";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import {SelectableItem} from "../../forms/SelectForm.vue";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
-import {UriSkosRelation} from "../../../../models/SkosRelations";
+import {CLOSE_MATCH, UriSkosRelation} from "../../../../models/SkosRelations";
 
 @Component({})
 export default class AgroportalResults extends Vue {
@@ -77,7 +76,6 @@ export default class AgroportalResults extends Vue {
   private selectedIndex: number = null;
   private isAgroportalDown: boolean = false;
   private isDataLoading: boolean = false;
-  private mappingOptions: Array<SelectableItem>;
   private isNothingFound: boolean = false;
 
   //@todo remove this
@@ -144,7 +142,7 @@ export default class AgroportalResults extends Vue {
   selectAndMapFirstItem() {
     this.selectItem(0);
     this.emitImportMapping({
-      relationDtoKey: this.mappingOptions[0].id,
+      relationDtoKey: CLOSE_MATCH.dtoKey,
       uri: this.terms[0].id
     });
   }

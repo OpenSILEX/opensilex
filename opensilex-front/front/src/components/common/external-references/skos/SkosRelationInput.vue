@@ -7,9 +7,11 @@
       }"
       v-slot="{ errors }"
   >
-    <b-input-group>
+    <b-input-group
+      class="v-step-skos-relation-input"
+    >
       <b-input
-          class="v-step-manual-uri"
+          class="v-step-skos-relation-uri-input"
           v-model.trim="uri"
           type="text"
           required

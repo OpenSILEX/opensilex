@@ -188,40 +188,40 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       params: {placement: "left"}
     },
     {
-      target: ".v-step-agroportal-references .v-step-agroportal-results .v-step-result-mapping-button",
+      target: ".v-step-agroportal-references .v-step-agroportal-results .v-step-skos-selector",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.content"),
       params: {placement: "right", enableScrolling: false},
       before: this.beforeImportMappingStep
     },
     {
-      target: ".v-step-agroportal-references .v-step-table",
+      target: ".v-step-agroportal-references .v-step-skos-relation-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewStep
     },
     {
-      target: ".v-step-agroportal-references .v-step-change-mapping",
+      target: ".v-step-agroportal-references .v-step-skos-relation-table .v-step-skos-selector",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.content"),
       params: {placement: "left"}
     },
     {
-      target: ".v-step-agroportal-references .v-step-manual-uri",
+      target: ".v-step-agroportal-references .v-step-skos-relation-input .v-step-skos-relation-uri-input",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.content"),
       params: {placement: "top"},
       before: this.beforeManualMappingStep
     },
     {
-      target: ".v-step-agroportal-references .v-step-manual-mapping",
+      target: ".v-step-agroportal-references .v-step-skos-relation-input .v-step-skos-selector",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.content"),
       params: {placement: "top"}
     },
     {
-      target: ".v-step-agroportal-references .v-step-table",
+      target: ".v-step-agroportal-references .v-step-skos-relation-table",
       header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.title")},
       content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.content"),
       params: {placement: "left"},

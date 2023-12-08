@@ -2,6 +2,7 @@
   <div>
     <opensilex-AgroportalSearch
         class="v-step-agroportal-search"
+        ref="searchComponent"
         label="component.common.name"
         :placeholder="placeholder"
         :selected.sync="selectedOntologies"
@@ -28,6 +29,7 @@ import AgroportalResults from "./AgroportalResults.vue";
 import {Prop, PropSync, Ref} from "vue-property-decorator";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import {UriSkosRelation} from "../../../../models/SkosRelations";
+import AgroportalSearch from "./AgroportalSearch.vue";
 
 @Component({})
 export default class AgroportalTermSelector extends Vue {
@@ -47,8 +49,11 @@ export default class AgroportalTermSelector extends Vue {
   //endregion
 
   //region Refs
+  @Ref("searchComponent")
+  private readonly searchComponent: AgroportalSearch;
+
   @Ref("searchResults")
-  private readonly results: AgroportalResults;
+  private readonly searchResults: AgroportalResults;
   //endregion
 
   //region Data
@@ -59,7 +64,7 @@ export default class AgroportalTermSelector extends Vue {
   //region Events
   private onSearchTextChange(text: string) {
     this.searchText = text;
-    this.results.search(text, this.useAllOntologies, this.selectedOntologies);
+    this.searchResults.search(text, this.useAllOntologies, this.selectedOntologies);
   }
 
   private onImport(term: AgroportalTermDTO) {
@@ -73,20 +78,19 @@ export default class AgroportalTermSelector extends Vue {
 
   //region Public modifier methods (mostly for tutorial purpose)
   public setSearchText(text: string) {
-    this.searchText = text;
-    this.results.search(text, this.useAllOntologies, this.selectedOntologies);
+    this.searchComponent.setSearchText(text);
   }
 
   public selectFirstItem() {
-    this.results.selectItem(0);
+    this.searchResults.selectItem(0);
   }
 
   public selectAndImportFirstItem() {
-    this.results.selectAndImportFirstItem();
+    this.searchResults.selectAndImportFirstItem();
   }
 
   public selectAndMapFirstItem() {
-    this.results.selectAndMapFirstItem();
+    this.searchResults.selectAndMapFirstItem();
   }
   //endregion
 }

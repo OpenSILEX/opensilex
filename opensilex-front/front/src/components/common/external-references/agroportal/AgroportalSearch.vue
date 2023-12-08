@@ -4,17 +4,17 @@
     <b-input-group>
       <b-input
           type="text"
-          v-model="searchBar"
+          v-model="searchText"
           :placeholder="$t(placeholder)"
-          v-on:change="$emit('change', searchBar)"
-          @keyup.enter.native="$emit('change', searchBar)">
+          @change="emitChange"
+          @keyup.enter.native="emitChange">
       </b-input>
       <template #append>
         <opensilex-Button
             icon="ik#ik-search"
             :small="true"
             variant="outline-secondary"
-            @click="$emit('change', searchBar)"
+            @click="emitChange"
         >
         </opensilex-Button>
         <opensilex-Button
@@ -88,11 +88,11 @@ export default class AgroportalSearch extends Vue {
   //endregion
 
   //region Data
-  private searchBar: string = "";
+  private searchText: string = "";
   //endregion
 
   //region Private methods
-  loadOntologies(ontologieAcronyms: Array<string>): Promise<Array<OntologyAgroportalDTO>> {
+  private loadOntologies(ontologieAcronyms: Array<string>): Promise<Array<OntologyAgroportalDTO>> {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
         .getAgroportalOntologies("", ontologieAcronyms)
@@ -102,7 +102,7 @@ export default class AgroportalSearch extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  searchOntologies(searchQuery, _page, _pageSize) {
+  private searchOntologies(searchQuery, _page, _pageSize) {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
         .getAgroportalOntologies(searchQuery, undefined)
@@ -112,11 +112,24 @@ export default class AgroportalSearch extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {
+  private ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {
     return {
       id: dto.acronym,
       label: `${dto.acronym} (${dto.name})`
     };
+  }
+  //endregion
+
+  //region Public methods
+  public setSearchText(text: string) {
+    this.searchText = text;
+    this.emitChange();
+  }
+  //endregion
+
+  //region Events
+  private emitChange() {
+    this.$emit("change", this.searchText);
   }
   //endregion
 }

@@ -74,7 +74,7 @@ export default class SkosSelector extends Vue {
    * this event and fix the components that depend on it.
    * A problem with that is that you are required to declare a PropSync, even if you only would need to use this
    * event.
-   * Either remove the PropSync or this ; I think removing the PropSync would be better.
+   * @todo Either remove the PropSync or this ; I think removing the PropSync would be better.
    *
    * @private
    */

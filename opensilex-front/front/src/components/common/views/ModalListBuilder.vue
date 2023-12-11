@@ -68,7 +68,6 @@
               <p>{{modalExplanation}}</p>
             </div>
 
-            <ValidationObserver ref="validatorRef">
               <div
                   v-for="(singleLine, index) in lineList"
                   v-bind:key="index"
@@ -92,7 +91,6 @@
                   ></opensilex-Button>
                 </div>
               </div>
-            </ValidationObserver>
 
             <div class="add-criteria-button-container">
               <opensilex-Button
@@ -114,7 +112,6 @@
 
 <script lang="ts">
 import { BModal } from 'bootstrap-vue';
-import { ValidationObserver } from 'vee-validate';
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import { Prop, Ref } from 'vue-property-decorator';
@@ -127,7 +124,6 @@ interface LineData{
 @Component
 export default class ModalListBuilder<T extends LineData, LineOutputClass> extends Vue {
 
-  @Ref("validatorRef") readonly validatorRef!: InstanceType<typeof ValidationObserver>;
   @Ref("modalRef") readonly modalRef!: BModal;
 
   /**
@@ -265,12 +261,11 @@ export default class ModalListBuilder<T extends LineData, LineOutputClass> exten
 
   async hide(validate: boolean) {
     if (validate) {
-      if(await this.validatorRef.validate()){
         this.setOnLastValidateParameters();
         this.setOutputList();
         this.modalRef.hide();
         this.treeselectRefreshKey += 1;
-      }
+
     }else{
       this.idCount = this.idCountOnLastValidate;
       this.lineList = this.lineListOnLastValidate.map(e=>e);

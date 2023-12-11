@@ -4,14 +4,14 @@
         label="CriteriaSearchModalLine.variable"
         :variables.sync="lineData.variable_uri"
         :multiple="false"
-        :required="true"
+        :required="false"
         @select="loadVariableInformation($event)"
         class="col-md-5"
     ></opensilex-VariableSelector>
     <opensilex-CriteriaOperatorSelector
         :operator.sync="lineData.criteria_operator"
         :rules="lineData.criteria_rules"
-        :required="true"
+        :required="false"
         @select="loadCriteriaInformation($event)"
         class="col-md-2"
     ></opensilex-CriteriaOperatorSelector>
@@ -23,7 +23,7 @@
           type="number"
           rules="integer"
           :disabled="criteriaOperatorIsIsNotMeasured()"
-          :required="!criteriaOperatorIsIsNotMeasured()"
+          :required="false"
           placeholder="XSDIntegerInput.placeholder"
       ></opensilex-InputForm>
       <opensilex-InputForm
@@ -33,14 +33,14 @@
           type="number"
           rules="decimal"
           :disabled="criteriaOperatorIsIsNotMeasured()"
-          :required="!criteriaOperatorIsIsNotMeasured()"
+          :required="false"
           placeholder="XSDDecimalInput.placeholder"
       ></opensilex-InputForm>
       <opensilex-DateForm
           v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.DATE)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
-          :required="!criteriaOperatorIsIsNotMeasured()"
+          :required="false"
           :disabled="criteriaOperatorIsIsNotMeasured()"
           class="searchFilter"
       ></opensilex-DateForm>
@@ -49,7 +49,7 @@
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           :disabled="criteriaOperatorIsIsNotMeasured()"
-          :required="!criteriaOperatorIsIsNotMeasured()"
+          :required="false"
       ></opensilex-DateTimeForm>
       <opensilex-SelectForm
           v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.BOOLEAN)"
@@ -58,7 +58,7 @@
           :multiple="false"
           placeholder="CriteriaSearchModalLine.boolean-field-placeholder"
           :showCount="false"
-          :required="!criteriaOperatorIsIsNotMeasured()"
+          :required="false"
           :disabled="criteriaOperatorIsIsNotMeasured()"
           :options="trueFalseList"
       ></opensilex-SelectForm>

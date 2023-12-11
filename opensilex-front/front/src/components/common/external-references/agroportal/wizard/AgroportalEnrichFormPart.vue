@@ -39,7 +39,7 @@
           </opensilex-TextAreaForm>
 
           <!-- Additional fields -->
-          <slot name="additionalFields" :form="formDto"></slot>
+          <slot name="enrichAdditionalFields" :form="formDto"></slot>
         </div>
       </div>
     </ValidationObserver>

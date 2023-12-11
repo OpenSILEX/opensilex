@@ -14,8 +14,8 @@
       :customValidation="validateCustom"
       :isBlockingStep="false"
   >
-    <template v-slot:additionalFields="scope">
-      <slot name="enrichAdditionalFields" :form="scope.form"></slot>
+    <template v-slot:enrichAdditionalFields="scope">
+      <slot name="enrichAdditionalFields" v-bind="scope"></slot>
     </template>
     <template v-slot:icon></template>
   </opensilex-WizardForm>
@@ -28,7 +28,7 @@ import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Prop, Ref} from "vue-property-decorator";
-import WizardForm from "../../../forms/WizardForm.vue";
+import WizardForm, {WizardFormStep} from "../../../forms/WizardForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../../../lib/HttpResponse";
 import {BaseExternalReferencesForm, BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
@@ -93,7 +93,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   private editMode = false;
   //endregion
 
-  get steps() {
+  get steps(): Array<WizardFormStep> {
     return [
       {
         component: "opensilex-AgroportalSearchFormPart",
@@ -112,10 +112,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
           namePlaceholder: this.searchPlaceholder,
           descriptionPlaceholder: this.descriptionPlaceholder
         },
-        slot: {
-          name: "additionalFields",
-          scope: "form"
-        }
+        slots: [ "enrichAdditionalFields" ]
       }, {
         component: "opensilex-AgroportalExternalReferencesFormPart",
         title: "AgroportalSearchFormPart.step3-title",

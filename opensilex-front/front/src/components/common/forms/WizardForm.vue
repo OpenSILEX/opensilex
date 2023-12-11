@@ -48,8 +48,8 @@
             @fill="fillForm"
             @clear="clearForm"
           >
-            <template v-if="step.slot" v-slot:[getSlotName(step)]="scope">
-              <slot :name="getSlotName(step)" v-bind="getSlotScope(step, scope)"></slot>
+            <template v-for="slot of step.slots" v-slot:[slot]="scope">
+              <slot :name="slot" v-bind="scope"></slot>
             </template>
           </component>
         </tab-content>
@@ -101,27 +101,23 @@
 import {Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
+export interface WizardFormStep {
+  component: string,
+  title: string,
+  finish?: string,
+  next?: string,
+  done?: string,
+  previous?: string,
+  props?: {[key: string]: any},
+  slots?: Array<string>
+}
+
 @Component
 export default class WizardForm extends Vue {
   $opensilex: any;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("wizardRef") readonly wizardRef!: any;
-
-  getSlotName(step) {
-    if (step.slot) {
-      console.debug(step.slot.name);
-      return step.slot.name;
-    }
-    // The null value in a dynamic slot name removes the template
-    return null;
-  }
-
-  getSlotScope(step, scope) {
-    let slotScope = {};
-    slotScope[step.slot.scope] = scope[step.slot.scope];
-    return slotScope;
-  }
 
   form = null;
 
@@ -134,7 +130,7 @@ export default class WizardForm extends Vue {
   isBlockingStep;
 
   @Prop()
-  steps;
+  steps: Array<WizardFormStep>;
 
   @Prop()
   editTitle;

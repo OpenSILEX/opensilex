@@ -14,6 +14,9 @@
       :customValidation="validateCustom"
       :isBlockingStep="false"
   >
+    <template v-slot:additionalFields="scope">
+      <slot name="enrichAdditionalFields" :form="scope.form"></slot>
+    </template>
     <template v-slot:icon></template>
   </opensilex-WizardForm>
 </template>
@@ -31,32 +34,33 @@ import {BaseExternalReferencesForm, BaseExternalReferencesDTO} from "../../Exter
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 @Component({})
-export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements
-    BaseExternalReferencesForm {
-  $opensilex: OpenSilexVuePlugin;
+export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements BaseExternalReferencesForm {
+  //region Plugins and services
+  private readonly $opensilex: OpenSilexVuePlugin;
+  private variablesService: VariablesService;
+  private agroportalService: AgroportalAPIService;
+  //endregion
 
-  variablesService: VariablesService;
-  agroportalService: AgroportalAPIService;
+  //region Props
+  @Prop()
+  private readonly ontologiesConfig: string;
 
   @Prop()
-  ontologiesConfig: string;
+  private readonly searchPlaceholder: string;
 
   @Prop()
-  searchPlaceholder: string;
+  private readonly descriptionPlaceholder: string;
 
   @Prop()
-  descriptionPlaceholder: string;
+  private readonly createTitle: string;
 
   @Prop()
-  createTitle: string;
-
-  @Prop()
-  editTitle: string;
+  private readonly editTitle: string;
 
   @Prop({
     default: "fa#vials"
   })
-  icon: string;
+  private readonly icon: string;
 
   @Prop()
   createMethod: (form: T) => Promise<HttpResponse<OpenSilexResponse<string>>>;
@@ -64,9 +68,30 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   @Prop()
   updateMethod: (form: T) => Promise<HttpResponse<OpenSilexResponse<string>>>;
 
-  @Ref("wizardRef") readonly wizardRef!: WizardForm;
+  @Prop({
+    default: () => {
+      return {
+        uri: null,
+        name: null,
+        description: null,
+        exact_match: [],
+        close_match: [],
+        broad_match: [],
+        narrow_match: []
+      };
+    }
+  })
+  private readonly emptyForm: T;
+  //endregion
 
-  editMode = false;
+  //region Refs
+  @Ref("wizardRef")
+  private readonly wizardRef!: WizardForm;
+  //endregion
+
+  //region Data
+  private editMode = false;
+  //endregion
 
   get steps() {
     return [
@@ -86,6 +111,10 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         props: {
           namePlaceholder: this.searchPlaceholder,
           descriptionPlaceholder: this.descriptionPlaceholder
+        },
+        slot: {
+          name: "additionalFields",
+          scope: "form"
         }
       }, {
         component: "opensilex-AgroportalExternalReferencesFormPart",
@@ -98,11 +127,11 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     ];
   }
 
-  created(){
+  created() {
     this.variablesService = this.$opensilex
-            .getService<VariablesService>("opensilex.VariablesService");
+        .getService<VariablesService>("opensilex.VariablesService");
     this.agroportalService = this.$opensilex
-            .getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
+        .getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
 
   checkAgroportalReachable() {
@@ -126,15 +155,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   }
 
   getEmptyForm(): BaseExternalReferencesDTO {
-    return {
-      uri: null,
-      name: null,
-      description: null,
-      exact_match: [],
-      close_match: [],
-      broad_match: [],
-      narrow_match: []
-    };
+    return JSON.parse(JSON.stringify(this.emptyForm));
   }
 
   create(form: T) {
@@ -190,7 +211,6 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   }
 }
 </script>
-
 
 
 <style scoped lang="scss">

@@ -47,7 +47,11 @@
             :form.sync="form"
             @fill="fillForm"
             @clear="clearForm"
-          ></component>
+          >
+            <template v-if="step.slot" v-slot:[getSlotName(step)]="scope">
+              <slot :name="getSlotName(step)" v-bind="getSlotScope(step, scope)"></slot>
+            </template>
+          </component>
         </tab-content>
 
         <template slot="footer" slot-scope="props">
@@ -94,7 +98,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -103,6 +107,21 @@ export default class WizardForm extends Vue {
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("wizardRef") readonly wizardRef!: any;
+
+  getSlotName(step) {
+    if (step.slot) {
+      console.debug(step.slot.name);
+      return step.slot.name;
+    }
+    // The null value in a dynamic slot name removes the template
+    return null;
+  }
+
+  getSlotScope(step, scope) {
+    let slotScope = {};
+    slotScope[step.slot.scope] = scope[step.slot.scope];
+    return slotScope;
+  }
 
   form = null;
 

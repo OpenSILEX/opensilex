@@ -37,6 +37,9 @@
               :value.sync="formDto.description"
               label="component.common.description">
           </opensilex-TextAreaForm>
+
+          <!-- Additional fields -->
+          <slot name="additionalFields" :form="formDto"></slot>
         </div>
       </div>
     </ValidationObserver>

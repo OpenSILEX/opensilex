@@ -11,11 +11,6 @@
       :updateMethod="service.updateUnit.bind(service)"
       :emptyForm="emptyForm"
   >
-<!--    <template v-slot:enrichAdditionalFields="scope">-->
-<!--      <div>-->
-<!--        <button @click="scope.form.name = 'test'">Yoooooo. Name: {{ scope.form.name }}</button>-->
-<!--      </div>-->
-<!--    </template>-->
     <template v-slot:enrichAdditionalFields="scope">
       <!-- Symbol -->
       <opensilex-InputForm
@@ -23,7 +18,7 @@
           label="AgroportalUnitForm.symbol"
           type="text"
           :required="true"
-          placeholder="AgroportalUnitForm.name-placeholder"
+          placeholder="AgroportalUnitForm.symbol-placeholder"
       ></opensilex-InputForm>
 
       <!-- Alternative symbol -->
@@ -31,7 +26,7 @@
           :value.sync="scope.form.alternative_symbol"
           label="AgroportalUnitForm.alternative-symbol"
           type="text"
-          placeholder="AgroportalUnitForm.symbol-placeholder"
+          placeholder="AgroportalUnitForm.alternative-symbol-placeholder"
       ></opensilex-InputForm>
     </template>
   </opensilex-AgroportalCreateForm>

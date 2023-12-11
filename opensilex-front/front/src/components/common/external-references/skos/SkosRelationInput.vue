@@ -43,9 +43,19 @@ export default class SkosRelationInput extends Vue {
   //endregion
 
   //region Const data
-  //@todo revoir cette regex qui me semble trop limitante
-  private readonly uriRegex =
-      /^(http:\/\/|https:\/\/)?[a-z0-9]+([-.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+  /**
+   * Modified URI regex from the RFC 3986. Two elements are changed from the RFC :
+   *
+   * - The scheme is required
+   * - The path must contain at least one character
+   *
+   * The resulting regex is not perfect ; for instance strings like `http://` will match. Maybe find a better one or
+   * use a more advanced rule (match the RFC regex, and check that the scheme and path groups are not empty).
+   *
+   * @see https://datatracker.ietf.org/doc/html/rfc3986#appendix-B
+   * @private
+   */
+  private readonly uriRegex = /^(([^:/?#]+):)(\/\/([^/?#]*))?([^?#]+)(\?([^#]*))?(#(.*))?$/;
   //endregion
 
   //region Events

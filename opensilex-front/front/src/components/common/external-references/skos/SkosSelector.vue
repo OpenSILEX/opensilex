@@ -1,15 +1,19 @@
 <template>
   <b-dropdown
       class="v-step-skos-selector"
-      dropdown
+      :right="right"
       boundary="window"
       :small="true"
       :text="dropdownLabel"
   >
     <b-dropdown-item
         v-for="(relation) in skosRelationOptions"
-        :key="relation.id"
+        :key="'key-dropdown-' + relation.id"
         class="btn-dropdown"
+        v-b-tooltip.hover="{
+          placement: 'right',
+          title: relation.title
+        }"
         @click="onClick(relation)"
     >
       {{ relation.label }}
@@ -29,6 +33,8 @@ export default class SkosSelector extends Vue {
   //region Props
   @Prop({default: false})
   private readonly labelAsCurrentSelectedRelation: boolean;
+  @Prop({default: false})
+  private readonly right: boolean;
   @PropSync("selectedRelation")
   private selected?: string;
   //endregion

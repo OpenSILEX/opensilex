@@ -22,6 +22,7 @@
           <template v-if="isMappingMode" v-slot:validationButton>
             <opensilex-SkosSelector
                 @update:selectedRelation="relation => onRelationSelected(term, relation)"
+                right
             ></opensilex-SkosSelector>
           </template>
 

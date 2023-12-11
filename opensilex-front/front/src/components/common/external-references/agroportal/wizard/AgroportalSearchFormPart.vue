@@ -259,7 +259,7 @@ en:
         content: >
           If you want to import the concept as-is, click the '@:AgroportalSearchFormPart.import-and-save' button. If
           you want to use it as a basis for creating your own concept, click the '@:AgroportalSearchFormPart.enrich'
-          button.
+          button. Please note that for Units, you are required to enrich the concept.
       step-no-concept:
         title: No concept
         content: >
@@ -297,7 +297,8 @@ fr:
         content: >
           Si vous souhaitez réutiliser le concept tel quel, cliquez sur le bouton
           '@:AgroportalSearchFormPart.import-and-save'. Si vous souhaitez l'utiliser comme base pour définir votre
-          propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.enrich'.
+          propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.enrich'. Veuillez noter que vous êtes
+          obligés de d'enrichir le concept dans le cas d'une unité.
       step-no-concept:
         title: Pas de concept
         content: >

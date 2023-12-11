@@ -1,6 +1,7 @@
 <template>
   <opensilex-AgroportalCreateForm
       ref="createForm"
+      :requireEnrich="true"
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
       ontologiesConfig="unitOntologies"
@@ -99,16 +100,16 @@ en:
     edit: Edit unit
     symbol: Symbol
     alternative-symbol: Alternative symbol
-    name-placeholder: Centimeter
-    symbol-placeholder: cm
-    alternative-symbol-placeholder: cm
+    name-placeholder: Meter per second
+    symbol-placeholder: m/s
+    alternative-symbol-placeholder: m.s⁻¹
 fr:
   AgroportalUnitForm:
     add: Ajouter une unité
     edit: Modifier une unité
     symbol: Symbole
     alternative-symbol: Symbole alternatif
-    name-placeholder: Centimètre
-    symbol-placeholder: cm
-    alternative-symbol-placeholder: cm
+    name-placeholder: Mètre par seconde
+    symbol-placeholder: m/s
+    alternative-symbol-placeholder: m.s⁻¹
 </i18n>

@@ -25,25 +25,26 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
-import {VariablesService} from "opensilex-core/api/variables.service";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {Prop, Ref} from "vue-property-decorator";
 import WizardForm, {WizardFormStep} from "../../../forms/WizardForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../../../lib/HttpResponse";
-import {BaseExternalReferencesForm, BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
+import {BaseExternalReferencesDTO, BaseExternalReferencesForm} from "../../ExternalReferencesTypes";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 @Component({})
 export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements BaseExternalReferencesForm {
   //region Plugins and services
   private readonly $opensilex: OpenSilexVuePlugin;
-  private variablesService: VariablesService;
   private agroportalService: AgroportalAPIService;
   //endregion
 
   //region Props
   @Prop()
   private readonly ontologiesConfig: string;
+
+  @Prop({default: false})
+  private readonly requireEnrich: boolean;
 
   @Prop()
   private readonly searchPlaceholder: string;
@@ -93,12 +94,19 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   private editMode = false;
   //endregion
 
-  get steps(): Array<WizardFormStep> {
+  //region Computed
+  /**
+   * Steps of the wizard form. Computed so that it can rely on props such as `ontologiesConfig` and
+   * `searchPlaceholder`.
+   *
+   * @private
+   */
+  private get steps(): Array<WizardFormStep> {
     return [
       {
         component: "opensilex-AgroportalSearchFormPart",
         title: "AgroportalSearchFormPart.step1-title",
-        finish: "AgroportalSearchFormPart.import-and-save",
+        finish: this.requireEnrich ? undefined : "AgroportalSearchFormPart.import-and-save",
         next: "AgroportalSearchFormPart.enrich",
         props: {
           ontologiesConfig: this.ontologiesConfig,
@@ -123,15 +131,28 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
       }
     ];
   }
+  //endregion
 
+  //region Hooks
   created() {
-    this.variablesService = this.$opensilex
-        .getService<VariablesService>("opensilex.VariablesService");
     this.agroportalService = this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
+  //endregion
 
-  checkAgroportalReachable() {
+  //public Methods
+  public showCreateForm() {
+    this.checkAgroportalReachable();
+    this.wizardRef.showCreateForm();
+  }
+
+  public showEditForm(form: T) {
+    this.wizardRef.showEditForm(form);
+  }
+  //endregion
+
+  //region Private methods
+  private checkAgroportalReachable() {
     return this.agroportalService.pingAgroportal(1000).then((http) => {
       if (http && http.response) {
         let isReachable = http.response.result;
@@ -142,20 +163,11 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     });
   }
 
-  showCreateForm() {
-    this.checkAgroportalReachable();
-    this.wizardRef.showCreateForm();
-  }
-
-  showEditForm(form: T) {
-    this.wizardRef.showEditForm(form);
-  }
-
-  getEmptyForm(): BaseExternalReferencesDTO {
+  private getEmptyForm(): BaseExternalReferencesDTO {
     return JSON.parse(JSON.stringify(this.emptyForm));
   }
 
-  create(form: T) {
+  private create(form: T) {
     return this.createMethod(form)
         .then(http => {
           form.uri = http.response.result;
@@ -167,7 +179,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         .catch(this.$opensilex.errorHandler);
   }
 
-  update(form: T) {
+  private update(form: T) {
     return this.updateMethod(form)
         .then(http => {
           form.uri = http.response.result;
@@ -179,7 +191,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         .catch(this.$opensilex.errorHandler);
   }
 
-  convert(form: T, searchDTO: AgroportalTermDTO) {
+  private convert(form: T, searchDTO: AgroportalTermDTO) {
     if (!this.editMode) {
       form.uri = searchDTO.id;
     }
@@ -192,11 +204,11 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     return form;
   }
 
-  validateCustom(form: T) {
+  private validateCustom(form: T) {
     return Boolean(form.name);
   }
 
-  nextStep(stepIndex, form) {
+  private nextStep(stepIndex, form) {
     if (stepIndex == 0 && form.uri) {
       if (this.editMode) {
         return true;
@@ -206,6 +218,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     }
     return true;
   }
+  //endregion
 }
 </script>
 

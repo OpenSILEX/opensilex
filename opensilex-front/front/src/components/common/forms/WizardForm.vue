@@ -68,7 +68,7 @@
                   id="btn-finish"
                   class="greenThemeColor"
                   variant="success"
-                  v-if="!isBlockingStep && !props.isLastStep"
+                  v-if="!isBlockingStep && steps[props.activeTabIndex].finish"
                   @click="validate(props)"
               >{{getStepBtnFinishTitle(props)}}</b-button>
 

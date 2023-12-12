@@ -8,6 +8,7 @@
       modalSize="xl"
       :initForm="getEmptyForm"
       :createAction="create"
+      :updateAction="update"
       :convertAction="convert"
       :static="false"
       :nextStepAction="nextStep"
@@ -147,6 +148,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   }
 
   public showEditForm(form: T) {
+    this.editMode = true;
     this.wizardRef.showEditForm(form);
   }
   //endregion

@@ -250,7 +250,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   //endregion
 
   //region Hooks
-  created() {
+  private created() {
     this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
     this.checkAgroportalReachable();
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
@@ -288,7 +288,6 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   //region Event Handlers
   private onImportMapping(uriRelation: UriSkosRelation) {
-    console.debug("Import mapping", uriRelation);
     this.addRelationToTerm(uriRelation);
   }
   //endregion

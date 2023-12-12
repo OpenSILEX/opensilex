@@ -83,6 +83,7 @@
                   :experiments.sync="filter.experiment"
                   class="searchFilter"
                   @handlingEnterKey="soList.refresh()"
+                  :key="resetExperimentSelectorKey"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
               </div>
@@ -124,6 +125,7 @@
                     :factorLevels.sync="filter.factorLevels"
                     :multiple="true"
                     :required="false"
+                    :key="resetFactorLevelSelectorKey"
                     class="searchFilter"
                   ></opensilex-FactorLevelSelector>
                 </b-form-group>
@@ -247,6 +249,9 @@ export default class ScientificObjectsView extends Vue {
     criteriaDto: {criteria_list:[]}
   };
 
+  resetExperimentSelectorKey = 0;
+  resetFactorLevelSelectorKey = 0;
+
   data(){
     return {
       SearchFiltersToggle : false,
@@ -256,8 +261,6 @@ export default class ScientificObjectsView extends Vue {
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
   }
-
-
 
   redirectToDetail(http) {
     this.$router.push({
@@ -325,6 +328,8 @@ export default class ScientificObjectsView extends Vue {
     };
     this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     this.soList.refresh();
+    this.resetExperimentSelectorKey++;
+    this.resetFactorLevelSelectorKey++;
   }
 }
 </script>

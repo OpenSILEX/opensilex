@@ -61,6 +61,7 @@
                   @select="updateSOFilter"
                   @clear="updateSOFilter"
                   class="searchFilter"
+                  :key="resetExperimentSelectorKey"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
             </div>
@@ -204,6 +205,7 @@ export default class DataFilesView extends Vue {
   visibleDetails: boolean = false;
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
+  resetExperimentSelectorKey = 0;
 
   get user() {
     return this.$store.state.user;
@@ -297,6 +299,7 @@ export default class DataFilesView extends Vue {
     if (this.filter.end_date === ""){
       this.filter.end_date = undefined;
     }
+    this.resetExperimentSelectorKey++;
   }
 
   get getSelectedProv() {

@@ -100,6 +100,7 @@
                                         :experiments.sync="filter.experiment"
                                         class="searchFilter"
                                         @handlingEnterKey="refresh()"
+                                        :key="resetExperimentSelectorKey"
                                     ></opensilex-ExperimentSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -295,6 +296,9 @@ export default class GermplasmList extends Vue {
     @Ref("tableRef") readonly tableRef!: TableAsyncView<GermplasmGetAllDTO>;
     @Ref("attributesValueSelector") attributeValueSelector: GermplasmAttributesValueSelector;
 
+
+    resetExperimentSelectorKey = 0;
+
     @Prop({
         default: false
     })
@@ -361,6 +365,7 @@ export default class GermplasmList extends Vue {
         };
 
         this.refresh();
+        this.resetExperimentSelectorKey++;
     }
 
     onItemUnselected(row) {
@@ -578,11 +583,6 @@ export default class GermplasmList extends Vue {
             [this.filter.metadataKey] : value
         });
     }
-
-    // refreshValueSelector(){
-    //     console.log("refreshValueSelector");
-    //     this.attributeValueSelector.refresh();
-    // }
 
     createDocument() {
         this.documentForm.showCreateForm();

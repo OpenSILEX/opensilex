@@ -85,6 +85,7 @@
                         @select="updateSOFilter"
                         @clear="updateSOFilter"
                         class="searchFilter"
+                        :key="resetExperimentSelectorKey"
                     ></opensilex-ExperimentSelector>
                   </opensilex-FilterField>
                 </div>
@@ -285,6 +286,7 @@ export default class DataView extends Vue {
   selectedProvenance: ProvenanceGetDTO = null;
   filterProvenanceLabel: string = null;
   refreshKey = 0;
+  resetExperimentSelectorKey = 0;
 
   get user() {
     return this.$store.state.user;
@@ -385,6 +387,7 @@ export default class DataView extends Vue {
   reset() {
     this.resetFilter();
     this.refresh();
+    this.resetExperimentSelectorKey+=1;
   }
 
   created() {

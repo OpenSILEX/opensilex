@@ -24,14 +24,16 @@ import java.net.Socket;
  *
  * @author vincent
  */
-public class MongoDBServiceTest extends AbstractUnitTest {
+public abstract class MongoDBServiceTest extends AbstractUnitTest {
 
     protected static EmbedMongoClient embedMongoClient;
+    protected static MongoDBServiceV2 mongoDBServiceV2;
 
     @BeforeClass
     public static void setUp(){
         try{
             embedMongoClient = EmbedMongoClient.getInstance();
+            mongoDBServiceV2 = getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
         }catch (IOException | InterruptedException e){
             throw new RuntimeException(e);
         }
@@ -51,12 +53,6 @@ public class MongoDBServiceTest extends AbstractUnitTest {
 
     @Test
     public void testGetService(){
-        MongoDBServiceV2 service = getNewMongoDBService();
-        assertNotNull(service);
+        assertNotNull(mongoDBServiceV2);
     }
-
-    protected static MongoDBServiceV2 getNewMongoDBService(){
-        return getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
-    }
-
 }

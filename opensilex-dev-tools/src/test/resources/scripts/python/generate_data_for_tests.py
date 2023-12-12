@@ -70,7 +70,7 @@ def generate_document(index, documents: List[any]):
         "id": index,
         "values": random.sample(range(1, 10000), 5),
         "nested": nested,
-        "nested_list": nested_list
+        "nestedList": nested_list
     }
     return document
 

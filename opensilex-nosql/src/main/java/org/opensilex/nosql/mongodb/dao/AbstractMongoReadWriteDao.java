@@ -71,11 +71,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public boolean exists(ClientSession session, @NotNull URI uri) throws MongoException {
+        Objects.requireNonNull(uri);
         return mongodb.uriExists(session, collection, uri);
     }
 
     @Override
-    public InsertOneResult create(T instance, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
+    public InsertOneResult create(@NotNull T instance, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
+        Objects.requireNonNull(instance);
         return mongodb.create(instance, collection, createPrefix, session);
     }
 
@@ -91,6 +93,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public InsertManyResult create(List<T> instances, ClientSession session) throws MongoException, NoSQLAlreadyExistingUriException, URISyntaxException {
+        Objects.requireNonNull(instances);
         return mongodb.createAll(instances, collection, session, createPrefix, true, true);
     }
 
@@ -101,6 +104,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public void update(T instance, ClientSession session) throws MongoException, NoSQLInvalidURIException {
+        Objects.requireNonNull(instance);
         mongodb.update(instance, collection, getUpdateFilter(instance), session);
     }
 
@@ -111,11 +115,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public DeleteResult delete(URI uri, ClientSession session) throws MongoException {
+        Objects.requireNonNull(uri);
         return mongodb.delete(collection, session, getIdFilter(uri));
     }
 
     @Override
     public DeleteResult delete(List<URI> uris, ClientSession session) throws MongoException {
+        Objects.requireNonNull(uris);
         return mongodb.deleteOnCriteria(collection, session, Filters.in(idField(), uris));
     }
 
@@ -139,8 +145,9 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
 
     @Override
-    public DeleteResult delete(F deleteFilter) throws MongoException {
-        return delete(deleteFilter, null);
+    public DeleteResult delete(F filter) throws MongoException {
+        Objects.requireNonNull(filter);
+        return delete(filter, null);
     }
 
     @Override
@@ -150,6 +157,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public long count(ClientSession session, @NotNull F filter) throws MongoException {
+        Objects.requireNonNull(filter);
         return mongodb.count(session, collection, filterToBson(filter));
     }
 
@@ -161,6 +169,8 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     @NotNull
     @Override
     public ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
+        Objects.requireNonNull(filter);
+
         return mongodb.searchWithPagination(
                 collection,
                 filterToBson(filter),
@@ -176,6 +186,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     @Override
     public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_CONVERTED> convertFunction) throws MongoException {
 
+        Objects.requireNonNull(filter);
         Objects.requireNonNull(convertFunction);
 
         Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(
@@ -215,6 +226,9 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     @NotNull
     @Override
     public StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
+
+        Objects.requireNonNull(filter);
+
         Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(
                 collection,
                 filterToBson(filter),

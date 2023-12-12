@@ -605,7 +605,7 @@ public class MongoDBServiceV2 extends BaseService {
 
     /**
      * @param collection        mongo collection
-     * @param field             Name of the field for which we want to retrieve distinct value (can be an embedded field)
+     * @param distinctField     Name of the field for which we want to retrieve distinct value (can be an embedded field)
      * @param documentExtractor a function which return the value to extract from any {@link Document} which are returned
      *                          by the aggregation
      * @param filter            an optional pre-filter on documents
@@ -619,7 +619,7 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T> Set<T> distinctWithPagination(
             MongoCollection<?> collection,
-            String field,
+            String distinctField,
             Function<Document, T> documentExtractor,
             Bson filter,
             List<OrderBy> orderByList,
@@ -640,7 +640,7 @@ public class MongoDBServiceV2 extends BaseService {
         }
 
         // distinct field with match
-        aggregatePipeline.add(Aggregates.group("$" + field));
+        aggregatePipeline.add(Aggregates.group("$" + distinctField));
 
         // sort
         Document order = buildSort(orderByList);
@@ -664,6 +664,7 @@ public class MongoDBServiceV2 extends BaseService {
                 collection.aggregate(aggregatePipeline, Document.class) :
                 collection.aggregate(session, aggregatePipeline, Document.class);
 
+        // Transform document on the fly and add inside set
         aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
 
         return distinct;

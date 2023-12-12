@@ -21,11 +21,11 @@ public class MongoTestModel extends MongoModel {
     private List<Integer> values;
     public static final String VALUES_FIELD = "values";
 
-    private MongoNestTestModel nested;
+    private MongoTestModel nested;
     public static final String NESTED_FIELD = "nested";
 
 
-    private List<MongoNestTestModel> nestedList;
+    private List<MongoTestModel> nestedList;
     public static final String NESTED_LIST_FIELD = "nestedList";
 
 
@@ -61,19 +61,19 @@ public class MongoTestModel extends MongoModel {
         this.values = values;
     }
 
-    public MongoNestTestModel getNested() {
+    public MongoTestModel getNested() {
         return nested;
     }
 
-    public void setNested(MongoNestTestModel nested) {
+    public void setNested(MongoTestModel nested) {
         this.nested = nested;
     }
 
-    public List<MongoNestTestModel> getNestedList() {
+    public List<MongoTestModel> getNestedList() {
         return nestedList;
     }
 
-    public void setNestedList(List<MongoNestTestModel> nestedList) {
+    public void setNestedList(List<MongoTestModel> nestedList) {
         this.nestedList = nestedList;
     }
 }

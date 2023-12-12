@@ -61,7 +61,11 @@ core:
             metricsTimeUnit: MINUTES
 
 front:
-    #dashboard:
+    theme: opensilex-insect#insect
+    loginComponent: opensilex-insect-InsectLoginComponent
+    headerComponent: opensilex-insect-InsectHeaderComponent
+
+          #dashboard:
         #graph1:
             #variable: http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius
     menuExclusions:

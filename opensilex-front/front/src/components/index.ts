@@ -299,6 +299,9 @@ components["opensilex-FavoriteButton"] = FavoriteButton;
 import Dropdown from './common/dropdown/Dropdown.vue'
 components["opensilex-Dropdown"] = Dropdown;
 
+import ItemsPropertiesSelector from './common/filters/ItemsPropertiesSelector.vue';
+components["opensilex-ItemsPropertiesSelector"] = ItemsPropertiesSelector;
+
 // Vocabulary/Ontology
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
@@ -528,8 +531,6 @@ import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue
 components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
-import ScientificObjectPropertiesSelector from './scientificObjects/ScientificObjectPropertiesSelector.vue';
-components["opensilex-ScientificObjectPropertiesSelector"] = ScientificObjectPropertiesSelector;
 import CriteriaSearchModalCreator from './scientificObjects/CriteriaSearchModalCreator.vue';
 components["opensilex-CriteriaSearchModalCreator"] = CriteriaSearchModalCreator;
 import CriteriaOperatorSelector from './scientificObjects/CriteriaOperatorSelector.vue';

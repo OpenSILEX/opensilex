@@ -1,8 +1,10 @@
 package org.opensilex.core.geospatial.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.jena.vocabulary.RDFS;
 import org.geojson.GeoJsonObject;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -22,71 +24,99 @@ import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class ShapeFileExporter{
+public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
+
+    private enum GeospatialFormat{
+        SHP("shp"),
+        GEOJSON("geojson");
+
+        public final String label;
+
+        GeospatialFormat(String label) {this.label = label;}
+
+        public String getLabel() {return this.label;}
+    }
 
     public static final Class<Polygon> POLY = Polygon.class;
     public static final Class<LineString> LINE = LineString.class;
     public static final Class<Point> POINT = Point.class;
-    public static final String WKT = "WKT";
-    public static final String GEOJSON = "GEOJSON";
-    static URI HAS_GEOMETRY;
 
-    static {
-        try {
-            HAS_GEOMETRY = new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    public static final URI COMMENT= URI.create(SPARQLDeserializers.getShortURI(RDFS.comment.getURI()));
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeospatialExporter.class);
+
+    protected GeospatialExporter() {
     }
 
-    static URI HAS_FACTORLEVEL;
+    /**
+     * @return file(s) and its title
+     * @param selectedProps short URI for object type properties
+     * @param objDetailList list of objects with details of their properties
+     * @param selectedObjectsMap long URI list of objects with geometry from map
+     * @param format authorized format - shp/geojson
+     * @throws IOException if shapefile creation fails
+     */
+    public Map<String, byte[]> exportFormat(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap, String format) throws IOException {
+        byte[] fileByte;
+        String fileName;
+        Map<String, byte[]> result = new HashMap<>();
 
-    static {
-        try {
-            HAS_FACTORLEVEL = new URI("vocabulary:hasFactorLevel");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        if(Objects.equals(format, GeospatialFormat.SHP.getLabel())){
+            //Convert to shapefiles and create a zip file to export
+            fileByte = shpExport(selectedProps, objDetailList, selectedObjectsMap);
+            fileName = "exportShpZip_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
+        } else if (Objects.equals(format, GeospatialFormat.GEOJSON.getLabel())){
+            //Convert to geojson
+            fileByte = gjsonExport(selectedProps, objDetailList, selectedObjectsMap);
+            fileName = "exportGeoJSon_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".geojson" ;
+        } else {
+            throw new NotFoundException("Unknown format");
         }
+
+        result.put(fileName,fileByte);
+        return result;
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShapeFileExporter.class);
+    //FORMAT SHAPEFILE
 
-    public ShapeFileExporter(){}
+    /**
+     * @return zipped shapefiles
+     * @param selectedProps short URI for object type properties
+     * @param objDetailList list of objects with details of their properties
+     * @param selectedObjectsMap long URI list of objects with geometry from map
+     * @throws IOException if shapefile creation fails
+     */
+    private byte[] shpExport(List<URI> selectedProps,List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap) throws IOException{
 
-    public byte[] shpExport(List<URI> selectedProps,List<ScientificObjectModel> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap) throws IOException{
+        //Get title
+        String title = objDetailList.get(0).getClass().getSimpleName();
 
         // Create feature type - Define features type (shapefile columns) according to the selected props- and collection matching to listed geometry
         List<Class<? extends Geometry>> typeList = Arrays.asList(POLY,LINE,POINT);
         Map<SimpleFeatureType, DefaultFeatureCollection> typeCollectionMap = new HashMap<>();
 
-        typeList.forEach(type -> typeCollectionMap.put(createType(type, selectedProps),new DefaultFeatureCollection()));
+        typeList.forEach(type -> typeCollectionMap.put(createType(type,selectedProps,title),new DefaultFeatureCollection()));
 
         //Writing collections with the corresponding TYPE
         createCollection(typeCollectionMap,objDetailList,selectedObjectsMap, selectedProps);
 
         //Get an output file name
-        File directory = new File("OS_shp");
-        directory.mkdirs();
+        File directory = new File(title + "_shp");
+        Files.createDirectory(directory.toPath());
 
         //Create a new shapefile for each TYPE/collection
         typeCollectionMap.forEach((k,v) -> {
@@ -106,14 +136,14 @@ public class ShapeFileExporter{
         assert entries != null;
         for(String s: entries){
             File currentFile = new File(directory.getPath(),s);
-            currentFile.delete();
+            Files.delete(currentFile.toPath());
         }
         Files.deleteIfExists(directory.toPath());
 
         return zippedFile;
     }
 
-    private SimpleFeatureType createType(Class<? extends Geometry> geomType, List<URI> selectProps) {
+    private SimpleFeatureType createType(Class<? extends Geometry> geomType, List<URI> selectProps, String title) {
 
         SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
         typeBuilder.setCRS(DefaultGeographicCRS.WGS84);
@@ -121,7 +151,7 @@ public class ShapeFileExporter{
         String geomKey = "the_geom";
 
         //Basic props
-        typeBuilder.setName("OS_" + geomType.getSimpleName() + "_" + now);
+        typeBuilder.setName(title + "_" + geomType.getSimpleName() + "_" + now);
         typeBuilder.add(geomKey,geomType);
         typeBuilder.add("Name", String.class);
         typeBuilder.add("URI", String.class);
@@ -131,34 +161,32 @@ public class ShapeFileExporter{
         //Custom props
         if(!selectProps.isEmpty()){
             selectProps.forEach( prop ->{
-                if(prop.equals(HAS_GEOMETRY)){
-                    typeBuilder.add(GEOJSON, String.class);
-                    typeBuilder.add(WKT, String.class);
-                }
-                else{
-                    // Column labels formatting: max 10 charact
-                    String propString = propFormatting(prop);
+                // Column labels formatting: max 10 charact
+                String propString = propFormatting(prop);
 
-                    typeBuilder.add(propString, String.class);
-                }
+                typeBuilder.add(propString, String.class);
             });
         }
 
         return typeBuilder.buildFeatureType();
     }
-    private String propFormatting(URI prop){
+    protected String propFormatting(URI prop){
         int min = prop.toString().contains(":has") ? prop.toString().lastIndexOf(":") +4 : prop.toString().lastIndexOf(":") +1 ;
         int max = prop.toString().substring(min).length() >= 10 ?  min +10 : prop.toString().length() ;
 
         return prop.toString().substring(min, max);
     }
 
-    private void createCollection(Map<SimpleFeatureType, DefaultFeatureCollection> typeCollectionMap, List<ScientificObjectModel> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap, List<URI> selectProps){
+    /**
+     * @param selectProps short URI for object type properties
+     * @param objDetailList list of objects with details of their properties
+     * @param selectedObjectsMap long URI list of objects with geometry from map
+     * @param typeCollectionMap template based on selectedProps and corresponding collection by geometry type
+     */
+    private void createCollection(Map<SimpleFeatureType, DefaultFeatureCollection> typeCollectionMap, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap, List<URI> selectProps){
         //create Map Type - geometry
         Map<String, SimpleFeatureType> geomTypeMap = new HashMap<>();
-        typeCollectionMap.forEach((k,v) -> {
-            geomTypeMap.put(k.getGeometryDescriptor().getType().getBinding().getSimpleName(), k);
-        });
+        typeCollectionMap.forEach((k,v) -> geomTypeMap.put(k.getGeometryDescriptor().getType().getBinding().getSimpleName(), k));
 
         //Create features
         objDetailList.forEach(el -> {
@@ -190,50 +218,30 @@ public class ShapeFileExporter{
                 featureBuilder.add(el.getUri());
                 featureBuilder.add(el.getTypeLabel());
                 featureBuilder.add(el.getType());
+
                 //Custom props
                 if(!selectProps.isEmpty()){
-                    selectProps.forEach( prop -> {
-                        if(prop.equals(HAS_GEOMETRY)){
-                            int indexGeoJson = indexAttributes.getKey(GEOJSON);
-                            int indexWKT = indexAttributes.getKey(WKT);
-
-                            featureBuilder.set(indexGeoJson, geoJson.toString());
-                            featureBuilder.set(indexWKT, geometry);
-                        }
-                        else if (prop.equals(HAS_FACTORLEVEL) && el.getFactorLevels() != null) {
-                            int index = indexAttributes.getKey(propFormatting(prop));
-
-                            featureBuilder.set(index, el.getFactorLevels().parallelStream().map(FactorLevelModel::getUri).collect(Collectors.toList()).toString());
-                        } else{
-                            if(!el.getRelations().isEmpty()){
-                                //Get the value of the corresponding property
-                                SPARQLModelRelation relation= el.getRelation(Ontology.property(prop));
-
-                                int index=indexAttributes.getKey(propFormatting(prop));
-
-                                if(relation != null){
-                                    featureBuilder.set(index, relation.getValue());
-                                }
-                                else{
-                                    featureBuilder.set(index, null);
-                                }
-                            }
-                        }
-                    });
+                    selectProps.forEach(prop -> buildShpCustomProps(prop, el, indexAttributes, featureBuilder));
                 }
 
                 SimpleFeature simpleFeature = featureBuilder.buildFeature(null);
 
                 //Add a feature matching the right TYPE in the collection
                 DefaultFeatureCollection collection = typeCollectionMap.get(geomTypeMap.get(geomStg));
-
                 collection.add(simpleFeature);
-
             } catch (JsonProcessingException | ParseException e) {
                 throw new RuntimeException(e);
             }
         });
     }
+
+    /**
+     * @param prop short URI property
+     * @param indexAttributes properties index
+     * @param featureBuilder builder for features
+     * @param el element uses to build feature
+     */
+    protected abstract void buildShpCustomProps(URI prop, T el, BidiMap<Integer, String> indexAttributes, SimpleFeatureBuilder featureBuilder);
 
     private void createShapefile(SimpleFeatureType type, DefaultFeatureCollection collection, File directory) throws IOException {
         File shapeFile = new File(directory.getPath(), type.getTypeName() + ".shp");
@@ -263,15 +271,15 @@ public class ShapeFileExporter{
                 featureStore.addFeatures(collection);
                 transaction.commit();
 
-            } catch (Exception problem) {
-                problem.printStackTrace();
+            } catch (Exception e) {
+                LOGGER.error("Error writing collection to shapefile", e);
                 transaction.rollback();
 
             } finally {
                 transaction.close();
             }
         } else {
-            LOGGER.debug(typeName +" does not support read/write access");
+            LOGGER.debug("{} does not support read/write access", typeName);
         }
     }
 
@@ -288,18 +296,85 @@ public class ShapeFileExporter{
         for (File source : sources) {
             if(source.isFile()){
                 String file = source.getPath();
-                FileInputStream inFile = new FileInputStream(file);
-                // Add a new file to zip
-                outZip.putNextEntry(new ZipEntry(file));
-                // Write the content of the added file
-                byte[] buf = new byte[file.length()];
-                int len = 0;
-                while ((len = inFile.read(buf)) > 0) {
-                    outZip.write(buf, 0, len);
+                try (FileInputStream inFile = new FileInputStream(file)) {
+                    // Add a new file to zip
+                    outZip.putNextEntry(new ZipEntry(file));
+                    // Write the content of the added file
+                    byte[] buf = new byte[file.length()];
+                    int len = 0;
+                    while ((len = inFile.read(buf)) > 0) {
+                        outZip.write(buf, 0, len);
+                    }
                 }
+
             }
         }
         outZip.close();
         return outByte.toByteArray();
     }
+
+    // FORMAT GEOJSON
+
+    /**
+     * @return geojson file
+     * @param selectedProps short URI for object type properties
+     * @param objDetailList list of objects with details of their properties
+     * @param selectedObjectsMap long URI list of objects with geometry from map
+     */
+    private byte[] gjsonExport(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap){
+        ObjectMapper mapper = new ObjectMapper();
+        byte[] featureCollectionByte = new byte[0];
+
+        //Build features : ["type": "Feature", "properties": {}, "geometry" : { "type" : "", "coordinates" : []}]
+        List<Map<String, Object>> features = buildFeatures(selectedProps, objDetailList, selectedObjectsMap);
+
+        //Build featureCollection : {"type": "FeatureCollection", "features": []}
+        Map<String, Object> featureCollection = new HashMap<>();
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.put("features", features);
+
+        try {
+            featureCollectionByte = mapper.writeValueAsBytes(featureCollection);
+        } catch (JsonProcessingException ex) {
+            LOGGER.error("Error writing collection to file", ex);
+        }
+        return featureCollectionByte;
+    }
+
+    private List<Map<String, Object>> buildFeatures(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap){
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String, Object>> features = new ArrayList<>();
+
+        objDetailList.forEach(el -> {
+            // Basic props
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("Name", el.getName());
+            properties.put("URI", el.getUri());
+            properties.put("type_name", el.getTypeLabel().getDefaultValue());
+            properties.put("type_URI", el.getType());
+            //Custom props
+            if (!selectedProps.isEmpty()) {
+                selectedProps.forEach(prop -> buildGeoJSONCustomProps(prop, el, properties));
+            }
+
+            // Geometry
+            Map<String, Object> geometry = mapper.convertValue(selectedObjectsMap.get(el.getUri()),Map.class);
+
+            //Build feature : { "type": "Feature","properties": {},"geometry": {}}}
+            Map<String, Object> feature = new HashMap<>();
+            feature.put("type", "Feature");
+            feature.put("properties",properties);
+            feature.put("geometry",geometry);
+
+            features.add(feature);
+        });
+        return features;
+    }
+
+    /**
+     * @param prop short URI property
+     * @param el element uses to build feature
+     * @param properties geoJSON properties
+     */
+    protected abstract void buildGeoJSONCustomProps(URI prop, T el, Map<String, Object> properties);
 }

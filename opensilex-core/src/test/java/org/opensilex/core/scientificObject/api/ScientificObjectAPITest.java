@@ -91,7 +91,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
     public static final String searchGeomPath = path + "/geometry";
-    public static final String exportShpPath = path + "/export_shp";
+    public static final String exportGeospatialPath = path + "/export_geospatial";
 
     public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
     public static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
@@ -943,7 +943,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testExportOSasShp() throws Exception {
+    public void testExportOSasShpandGeoJson() throws Exception {
 
         //Create one OS Model
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
@@ -980,7 +980,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         list.add(new Position(3.97167246, 43.61328981));
         Geometry geometry = new Polygon(list);
 
-        //build post request
         GeometryDTO objToExport=new GeometryDTO();
         objToExport.setGeometry(geometryToGeoJson(geometry));
         objToExport.setUri(osModel.getUri());
@@ -995,16 +994,25 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         propsList.add(new URI("vocabulary:hasGermplasm"));
         propsList.add(new URI("vocabulary:hasReplication"));
 
-        Map<String, Object> params = new HashMap<String, Object>() {{
+        Map<String, Object> paramsShp = new HashMap<>() {{
             put(EXPERIMENT_QUERY_PARAM, experiment);
+            put("format", "shp");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        Map<String, Object> paramsGJson = new HashMap<>() {{
+            put(EXPERIMENT_QUERY_PARAM, experiment);
+            put("format", "geojson");
             put("selected_props",propsList);
             put("pageSize",10000);
         }};
 
         // assert service
-        final Response result =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportShpPath),params),objectsList);
-        assertEquals(Status.OK.getStatusCode(), result.getStatus());
+        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
+        assertEquals(Status.OK.getStatusCode(), resultShp.getStatus());
+        // assert service
+        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
+        assertEquals(Status.OK.getStatusCode(), resultGJson.getStatus());
     }
-
-
 }

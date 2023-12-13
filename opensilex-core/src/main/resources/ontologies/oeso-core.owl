@@ -946,6 +946,13 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
 Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="xsd:string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
 
 

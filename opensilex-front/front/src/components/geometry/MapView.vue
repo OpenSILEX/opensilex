@@ -2,27 +2,14 @@
   <div id="map">
 
 <!--------------------------- MODALS ------------------------------->
-    <!-- save map modal -->
-    <b-modal id="modal-save-map">
+    <!-- print map modal -->
+    <b-modal id="modal-print-map">
       <template #default>
-          <!-- help button -->
-          <opensilex-HelpButton
-                  class="helpButton"
-                  label="component.common.help-button"
-                  @click="showInstructionShp=true"
-          ></opensilex-HelpButton>
-        <div>
-            <br>
-            <b-alert v-model="showInstructionShp" dismissible>
-                <p v-html="$t('instruction')"></p>
-            </b-alert>
-        </div>
         <p>{{ $t("MapView.save-confirmation") }}</p>
       </template>
       <template #modal-footer>
         <b-button variant="danger" @click="savePDF(titleFile)">PDF</b-button>
         <b-button variant="info" @click="savePNG(titleFile)">PNG</b-button>
-        <b-button variant="success" @click="saveShapefile()">Shapefile</b-button>
       </template>
     </b-modal>
     <!--editing area modal -->
@@ -67,10 +54,10 @@
         @onCreate="showFiltersDetails"
         successMessage="Filter.created"
     ></opensilex-ModalForm>
-    <!-- export shape modal-->
+    <!-- export modal-->
     <opensilex-ExportShapeModalList
         ref="exportShapeModalList"
-        @onValidate="downloadOSFeatures"
+        @onValidate="downloadFeatures"
     ></opensilex-ExportShapeModalList>
     <!-- chart modal -->
     <b-modal id="modal-chart" size="xl" hide-footer>
@@ -110,11 +97,17 @@
           label="MapView.center"
           @click="defineCenter"
         ></opensilex-Button>
-        <!-- save map button -->
+        <!-- print map button -->
         <opensilex-Button
-          icon="fa#save"
-          label="MapView.save"
-          @click="saveMap"
+          icon="fa#print"
+          label="MapView.print"
+          @click="printMap"
+        ></opensilex-Button>
+        <!-- export button -->
+        <opensilex-Button
+            icon="fa#download"
+            label="MapView.export"
+            @click="exportMap"
         ></opensilex-Button>
         <!-- events panel button (toggle side bar) -->
         <b-button
@@ -707,18 +700,11 @@ import {
   Text,
 } from "ol/style";
 import { DragBox } from "ol/interaction";
-import { GeoJSON } from "ol/format";
-import { Vector } from "ol/source";
-import Feature from "ol/Feature";
 import * as olExtent from "ol/extent";
-import Polygon from "ol/geom/Polygon";
 import Point from "ol/geom/Point";
-import LineString from "ol/geom/LineString";
-import Geometry from "ol/geom/Geometry";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 import GeoJSONFeature from "vuelayers/src/ol-ext/format";
-let shpwrite = require("shp-write");
 import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService, DataService, TargetPositionCreationDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
@@ -731,7 +717,6 @@ import { saveAs } from "file-saver";
 import { Store } from 'vuex';
 import VueI18n from "vue-i18n";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {stringify} from "wkt";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
 @Component({
@@ -847,7 +832,6 @@ export default class MapView extends Vue {
 
   ///////////// TOOLS BUTTONS ////////////
   showInstructionMap: boolean = false;
-  showInstructionShp: boolean = false;
 
   ///////////// EVENT PANEL ////////////
   timelineSidebarVisibility: boolean = false;
@@ -865,8 +849,9 @@ export default class MapView extends Vue {
   ///////////// MODAL ////////////
   private showArea: boolean = false;
   private errorGeometry: boolean = false;
-  exportedFeatures = [];
   exportedOS = [];
+  exportedDevices = [];
+  exportedAreas = [];
   mapMode: boolean = true;
   soWithLabels: any[] = [];
 
@@ -1866,19 +1851,19 @@ export default class MapView extends Vue {
   get titleFile(): String {
     return this.getType(this.$attrs.uri) + "-map";
   }
-  //On click, open modal "Save map"
-  saveMap() {
-    this.$bvModal.show("modal-save-map");
+  //On click, open modal "print map"
+  printMap() {
+    this.$bvModal.show("modal-print-map");
   }
-  //save and export the map in PNG format
+  //save and ddl the map in PNG format
   savePNG(titleFile: String) {
     let canvas = document.getElementsByTagName("canvas")[0];
     canvas.toBlob((blob) => {
       saveAs(blob, titleFile + ".png");
     });
-    this.$bvModal.hide("modal-save-map");
+    this.$bvModal.hide("modal-print-map");
   }
-  //save and export the map in PDF format
+  //save and ddl the map in PDF format
   savePDF(titleFile: String) {
     let map = this.map.$map;
     let size = map.getSize();
@@ -1897,160 +1882,105 @@ export default class MapView extends Vue {
       });
       pdf.addImage(data, "JPEG", 0, 0, dim[0], dim[1]);
       pdf.save(titleFile + ".pdf");
-      this.$bvModal.hide("modal-save-map");
+      this.$bvModal.hide("modal-print-map");
       map.setSize(size);
       map.getView().fit(extent, {size: size});
     });
     let printSize = [width, height];
     map.setSize(printSize);
   }
-  //save and export the map in shape format
-  saveShapefile() {
+  //save and ddl the map in shape format
+  exportMap() {
+    // 1 - Defines features to export
+    let exportedFeat = [];
 
-      // 1 - Defines features to export
-      this.exportedFeatures = [];
-
-      //if there is a selection, save it
-      if (this.selectedFeatures.length > 0) {
-        this.exportedFeatures = this.selectedFeatures;
-      }
-      //without selection, save all visible objects
-      else {
-          this.map.$map.getLayers().forEach((layer) => {
-              if (layer.getVisible() && layer.type === 'VECTOR') {
-                  const source = layer.getSource();
-                  source.forEachFeature(
-                      (feature: any) => {
-                        feature = olExt.writeGeoJsonFeature(feature);
-                        this.exportedFeatures.push(feature);
-                      }
-                  )
+    //if there is a selection, save it
+    if (this.selectedFeatures.length > 0) {
+      exportedFeat = this.selectedFeatures;
+    }
+    //without selection, save all visible objects
+    else {
+      this.map.$map.getLayers().forEach((layer) => {
+        if (layer.getVisible() && layer.type === 'VECTOR') {
+          const source = layer.getSource();
+          source.forEachFeature(
+              (feature: any) => {
+                feature = olExt.writeGeoJsonFeature(feature);
+                exportedFeat.push(feature);
               }
-          });
-      }
-      // 2 - For exported OS, selected properties to export
-      // TODO:  adding selected variable data - standby
+          )
+        }
+      });
+    }
+    //Format exported features
+    let exportedFeatures = exportedFeat.map(feat => feat = {
+      name : feat.properties.name,
+      uri : feat.properties.uri,
+      rdf_type: feat.properties.type,
+      geometry: feat.geometry,
+      nature: feat.properties.nature
+    });
 
-      let featuresFiltered = this.exportedFeatures.filter(feature => feature.properties.nature === 'ScientificObjects');
+    // 2 - Selected properties to export
+    // TODO:  adding selected variable data - standby
+    // Filter exportedFeatures by type
+    this.exportedOS = exportedFeatures.filter(feature => feature.nature === 'ScientificObjects');
+    this.exportedDevices = exportedFeatures.filter(feature => feature.nature === 'Device');
+    this.exportedAreas = exportedFeatures.filter(feature => feature.nature === 'Area');
 
-      if(featuresFiltered.length >10000){
-          this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-error").toString());
-      }
-      //if features contains OS --> open modal
-      else{
-          if(featuresFiltered.length > 0 ){
-              this.exportedOS = featuresFiltered.map(feat => feat = {
-                  name : feat.properties.name,
-                  uri : feat.properties.uri,
-                  rdf_type: feat.properties.type,
-                  geometry: feat.geometry
-              });
-              this.exportShapeModalList.show();
-          }
-          // 3 - For each item type (Device/Area) -> create a separate vector and download it
-          this.downloadFeatures();
-      }
+    if(this.exportedOS.length >10000 || this.exportedDevices.length >10000 || this.exportedAreas.length >10000){
+      this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-error").toString());
+    }
+    else{
+      let disabled = {SO:false, devices: false, areas: false};
+
+      if(this.exportedOS.length === 0){ disabled.SO = true;}
+      if(this.exportedDevices.length === 0){ disabled.devices = true;}
+      if(this.exportedAreas.length === 0){ disabled.areas = true;}
+
+      this.exportShapeModalList.show(disabled);
+    }
   }
 
-  downloadOSFeatures(values){
+  downloadFeatures(values) {
+    
       this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
-      //Get service OS export shape
-      let path = "/core/scientific_objects/export_shp";
+
+      if(this.exportedOS.length> 0){
+        this.buildRequest("/core/scientific_objects/export_geospatial", "export_scientific_objects", {selected_props : values.SO.props, experiment : this.experiment, format: values.format}, this.exportedOS);
+      }
+      if(this.exportedDevices.length> 0){
+        this.buildRequest("/core/devices/export_geospatial", "export_devices", {selected_props : values.devices.props, format: values.format }, this.exportedDevices);
+      }
+      if(this.exportedAreas.length> 0){
+        this.buildRequest("/core/area/export_geospatial", "export_areas", {selected_props : values.areas.props, format: values.format }, this.exportedAreas);
+      }
+      if(this.exportedAreas.length === 0 && this.exportedOS.length === 0 && this.exportedDevices.length === 0) {
+        this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-no-found").toString());
+      }
+  }
+  buildRequest(path :string, title :string, queryParams :any, body :any){
+      //Get service to export
       let today = new Date();
       let filename =
-          "export_scientific_objects_" +
-          today.getFullYear() + ""
+          title + "_"
+          + today.getFullYear() + ""
           + (today.getMonth()) + ""
           + today.getDate() + "_"
           +  today.getHours() + ""
           + today.getMinutes()
           + "" + today.getSeconds();
 
-      //let props = values.props;
-      let queryParams = {
-          selected_props : values.props,
-          experiment : this.experiment
-      }
-
-      let body = this.exportedOS
-
       setTimeout(()=> {
           this.$opensilex.downloadFilefromPostOrGetService(
               path,
               filename,
-              "zip",
+              queryParams.format === "shp"? "zip": queryParams.format,
               "POST",
               queryParams,
               body
           );
       }, 1000)
-
-  }
-
-  downloadFeatures() {
-      let vectorDevice = new Vector();
-      let vectorArea = new Vector();
-      let featureDevice: Feature;
-      let featureArea: Feature;
-      let geometry: Geometry;
-      let writer = new GeoJSON();
-      let options = {folder: "", types: ""};
-
-      this.$opensilex.showLoader();
-
-      for (let obj of this.exportedFeatures) {
-          geometry = null;
-
-          switch (obj.geometry.type) {
-              case 'Polygon':
-                  geometry = new Polygon(obj.geometry.coordinates);
-                  break;
-              case 'LineString':
-                  geometry = new LineString(obj.geometry.coordinates);
-                  break;
-              default:
-                  geometry = new Point(obj.geometry.coordinates);
-          }
-
-          switch (obj.properties.nature) {
-              case 'Device':
-                  featureDevice = new Feature({
-                      geometry,
-                      name: obj.properties.name,
-                      URI: obj.properties.uri,
-                      type_name: this.nameType(obj.properties.type),
-                      type_URI: obj.properties.type,
-                  });
-                  vectorDevice.addFeature(featureDevice);
-                  break;
-              case 'Area':
-                  featureArea = new Feature({
-                      geometry,
-                      name: obj.properties.name,
-                      URI: obj.properties.uri,
-                      type_name: this.nameType(obj.properties.type),
-                      type_URI: obj.properties.type,
-                  });
-                  vectorArea.addFeature(featureArea);
-                  break;
-          }
-      }
-
-      if (!vectorDevice.isEmpty()) {
-          let geojsonStr = writer.writeFeatures(vectorDevice.getFeatures());
-          let geoJson = JSON.parse(geojsonStr);
-          options.folder = "Devices";
-          shpwrite.download(geoJson, options);
-      }
-      if (!vectorArea.isEmpty()) {
-          let geojsonStr = writer.writeFeatures(vectorArea.getFeatures());
-          let geoJson = JSON.parse(geojsonStr);
-          options.folder = "Areas";
-          shpwrite.download(geoJson, options);
-      }
-
-      this.$opensilex.hideLoader();
-      this.$bvModal.hide("modal-save-map");
   }
 
   ///////////// TABLE METHODS ////////////
@@ -2263,9 +2193,9 @@ export default class MapView extends Vue {
                 option.condition =  array[0].values_.nature == "Area" &&
                     (node.title == "Areas" || // If 'Areas' node is clicked
                     (node.title == "StructuralArea" &&
-                    this.getType(array[0].values_.type) !== "TemporalArea") || // If 'StructuralArea' node is clicked and element is not temporal area type
+                    this.getType(array[0].values_.baseType) === "vocabulary:Area") || // If 'StructuralArea' node is clicked and element is not temporal area type
                     (node.title == "TemporalArea" &&
-                    this.getType(array[0].values_.type) === "TemporalArea"));
+                    this.getType(array[0].values_.baseType) === "vocabulary:TemporalArea"));
                 option.display = this.displayAreas;
                 break;
               case 'Device':
@@ -2788,17 +2718,19 @@ en:
     mapPanelDevices : Devices
     create-filter: Create filter
     center: Refocus the map
-    save: Save the map
+    print: Print the map
     chart: Display graph - from 1 to 15 scientific objects
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
-    save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
+    save-confirmation: Do you want to export the map as PNG image or PDF ?
     noTemporalAreas: No temporal areas are displayed on the map.
     marketFrom: From
     marketTo: To
     dateRange: Handle scientific objects with date range
     export-error: The number of exported objects exceeds the limit of 10,000 objects.
     export-info: The export can take some time (about 1min for 7000 objects).
+    export-no-found: No items to export.
+    export: Export items
   Area:
     title: Area
     add: Description of the area
@@ -2817,7 +2749,6 @@ en:
     update: Update device
     en:
   help: Instructions
-  instruction: The button "Shapefile" exports the selected items. Without selection, visible items in the "Map Panel" are exported. The export is limited to 10000 objects.
 
 fr:
   MapView:
@@ -2855,17 +2786,19 @@ fr:
     mapPanelDevices : Appareils
     create-filter: Créer un filtre
     center: Recentrer la carte
-    save: Enregistrer la carte
+    print: Imprimer la carte
     chart: Afficher le graphique - de 1 à 15 objets scientifiques
     time: Visualiser les zones temporaires
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
-    save-confirmation: Voulez-vous exporter la carte au format PNG, PDF ou shapefile ?
+    save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
     noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
     marketFrom: Du
     marketTo: Jusqu'au
     dateRange: Manipuler des objets scientifiques avec une plage de dates
     export-error: Le nombre d'objets exportés est supérieur à la limite de 10 000 objets.
     export-info: L'export peut prendre un certain temps (environ 1min pour 7000 objets).
+    export-no-found: Aucun élément à exporter.
+    export: Exporter les éléments
   Area:
     title: Zone
     add: Description de la zone
@@ -2883,5 +2816,4 @@ fr:
     title: Dispositif
     update: Mise à jour du dispositif
   help: Instructions
-  instruction: Le bouton "Shapefile" exporte les éléments sélectionnés. Sans sélection, les éléments visibles dans le menu "Données" sont exportés. L'export est limité à 10000 objets.
 </i18n>

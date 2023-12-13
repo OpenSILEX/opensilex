@@ -42,7 +42,7 @@ export default class GermplasmAttributesValueSelector extends Vue {
 
     service: GermplasmService;
 
-    @Ref("selectForm") readonly selectForm!: SelectForm;
+    @Ref("selectForm") readonly selectForm!: SelectForm<unknown>; // Unknown because no load/search method
 
     created() {
         this.service = this.$opensilex.getService("opensilex.GermplasmService");

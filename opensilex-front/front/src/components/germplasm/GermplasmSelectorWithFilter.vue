@@ -28,7 +28,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 export default class GermplasmSelectorWithFilter extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  @Ref("germplasmSelector") readonly germplasmSelector!: SelectForm;
+  @Ref("germplasmSelector") readonly germplasmSelector!: SelectForm<unknown>; // Unknown because no load/search method
 
   @Prop()
   editMode: boolean;

@@ -39,7 +39,7 @@ export default class ProvenanceSelector extends Vue {
   $i18n: any;
   pageSize = 10;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<ProvenanceGetDTO>;
 
   @Prop()
   actionHandler: Function;

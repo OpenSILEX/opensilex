@@ -56,7 +56,7 @@ export default class GermplasmAttributesSelector extends Vue {
         return this.$store.getters.language;
     }
 
-    @Ref("selectForm") readonly selectForm!: SelectForm;
+    @Ref("selectForm") readonly selectForm!: SelectForm<unknown>; // Unknown because no load/search method
 
     loadOptions(query, page, pageSize) {
         return this.service

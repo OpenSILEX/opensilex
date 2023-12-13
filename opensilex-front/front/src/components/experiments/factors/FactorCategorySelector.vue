@@ -19,14 +19,14 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import TypeForm from "../../common/forms/TypeForm.vue";
 
 @Component
 export default class FactorCategorySelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: TypeForm;
 
   @PropSync("category")
   categoryString;

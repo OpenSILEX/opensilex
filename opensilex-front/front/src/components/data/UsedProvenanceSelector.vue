@@ -35,7 +35,7 @@ export default class UsedProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<ProvenanceGetDTO>;
 
   @Prop()
   actionHandler: Function;

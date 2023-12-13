@@ -73,7 +73,7 @@ export default class PersonSelector extends Vue {
   @Prop({default: false})
   allowAddPerson: boolean;
 
-  @Ref("selectForm") selectForm!: SelectForm;
+  @Ref("selectForm") selectForm!: SelectForm<PersonDTO>;
   @Ref("PersonForm") readonly personForm!: ModalForm<PersonForm, PersonDTO, PersonDTO>;
 
   get user() {

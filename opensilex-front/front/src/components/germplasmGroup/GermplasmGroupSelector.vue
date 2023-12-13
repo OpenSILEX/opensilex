@@ -43,7 +43,7 @@ export default class GermplasmGroupSelector extends Vue {
   @Prop()
   clearable: string;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<GermplasmGroupGetDTO>;
 
   get placeholder() {
     return this.multiple

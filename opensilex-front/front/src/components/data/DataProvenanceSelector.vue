@@ -29,6 +29,7 @@
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import SelectForm from "../common/forms/SelectForm.vue";
+import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
 
 
 @Component
@@ -36,7 +37,7 @@ export default class DataProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<ProvenanceGetDTO>;
 
   @Prop()
   actionHandler: Function;

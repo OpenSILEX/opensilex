@@ -38,7 +38,7 @@ export default class VariableDevicesSelector extends Vue {
   $i18n: any;
   $service: DevicesService;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<unknown>; // Unknown because no load/search method
 
   @Prop()
   actionHandler: Function;

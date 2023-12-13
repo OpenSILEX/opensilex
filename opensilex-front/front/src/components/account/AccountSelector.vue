@@ -42,7 +42,7 @@ export default class AccountSelector extends Vue {
   @Prop()
   helpMessage: string;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<AccountGetDTO>;
   
   loadAccounts(accountsURIs) {
     return this.$opensilex

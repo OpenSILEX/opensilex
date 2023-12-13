@@ -47,7 +47,7 @@ export default class CharacteristicSelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<CharacteristicGetDTO>;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

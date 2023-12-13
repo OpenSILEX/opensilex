@@ -20,9 +20,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
 import SelectForm from "../common/forms/SelectForm.vue";
 
@@ -48,7 +46,7 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   required;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<ExperimentGetListDTO>;
 
   get placeholder() {
     return this.multiple

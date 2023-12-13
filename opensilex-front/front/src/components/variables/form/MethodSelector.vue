@@ -46,7 +46,7 @@ export default class MethodSelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<MethodGetDTO>;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

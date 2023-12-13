@@ -37,8 +37,8 @@ import {Prop, PropSync, Ref} from "vue-property-decorator";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import {UriSkosRelation} from "../../../../models/SkosRelations";
 import AgroportalSearch from "./AgroportalSearch.vue";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {AgroportalAPIService} from "opensilex-core/lib";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 
 @Component({})
 export default class AgroportalTermSelector extends Vue {

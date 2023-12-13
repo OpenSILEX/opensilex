@@ -78,7 +78,7 @@ export default class UsedScientificObjectSelector extends Vue {
     return {variables: this.variables, devices: this.devices}
   }
 
-  @Ref("soSelector") readonly soSelector!: SelectForm;
+  @Ref("soSelector") readonly soSelector!: SelectForm<unknown>; // Unknown because no load/search method
 
   refreshKey = 0;
 

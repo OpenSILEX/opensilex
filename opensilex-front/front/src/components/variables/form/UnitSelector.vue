@@ -46,7 +46,7 @@ export default class UnitSelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<UnitGetDTO>;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

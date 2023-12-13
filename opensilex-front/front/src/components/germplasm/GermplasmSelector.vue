@@ -63,7 +63,7 @@ export default class GermplasmSelector extends Vue {
     return this.$store.getters.language;
   }
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<GermplasmGetAllDTO>;
 
   search(query, page, pageSize) {
     return this.$service

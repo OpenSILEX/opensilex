@@ -47,7 +47,7 @@ export default class GroupVariablesSelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<VariablesGroupGetDTO>;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

@@ -46,7 +46,7 @@ export default class InterestEntitySelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("selectForm") readonly selectForm!: SelectForm<InterestEntityGetDTO>;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

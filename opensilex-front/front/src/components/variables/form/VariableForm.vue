@@ -279,6 +279,11 @@ import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
+import {EntityGetDTO} from "opensilex-core/model/entityGetDTO";
+import {InterestEntityGetDTO} from "opensilex-core/model/interestEntityGetDTO";
+import {CharacteristicGetDTO} from "opensilex-core/model/characteristicGetDTO";
+import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
+import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
 
 @Component
 export default class VariableForm extends Vue {
@@ -303,11 +308,11 @@ export default class VariableForm extends Vue {
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelectForm") entitySelectForm!: SelectForm;
-    @Ref("interestEntitySelectForm") interestEntitySelectForm!: SelectForm;
-    @Ref("characteristicSelectForm") characteristicSelectForm!: SelectForm;
-    @Ref("methodSelectForm") methodSelectForm!: SelectForm;
-    @Ref("unitSelectForm") unitSelectForm!: SelectForm;
+    @Ref("entitySelectForm") entitySelectForm!: SelectForm<EntityGetDTO>;
+    @Ref("interestEntitySelectForm") interestEntitySelectForm!: SelectForm<InterestEntityGetDTO>;
+    @Ref("characteristicSelectForm") characteristicSelectForm!: SelectForm<CharacteristicGetDTO>;
+    @Ref("methodSelectForm") methodSelectForm!: SelectForm<MethodGetDTO>;
+    @Ref("unitSelectForm") unitSelectForm!: SelectForm<UnitGetDTO>;
 
     @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
     @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;

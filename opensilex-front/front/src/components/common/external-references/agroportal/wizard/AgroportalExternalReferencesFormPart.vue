@@ -80,10 +80,10 @@
               </template>
 
               <b-container class="result">
-                <p>
+                <p v-if="formDto.uri">
                   <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
                 </p>
-                <p>
+                <p v-if="formDto.description">
                   {{ formDto.description }}
                 </p>
               </b-container>

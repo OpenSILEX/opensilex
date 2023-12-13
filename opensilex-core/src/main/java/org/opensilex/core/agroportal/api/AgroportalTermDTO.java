@@ -28,9 +28,8 @@ public class AgroportalTermDTO {
     @NotNull
     @JsonProperty("id")
     private String id;
-    @NotNull
     @JsonProperty("name")
-    private String name;
+    private String[] name;
     @JsonProperty("synonym")
     private List<String> synonym;
     @JsonProperty("definitions")
@@ -54,11 +53,11 @@ public class AgroportalTermDTO {
         this.id = id;
     }
 
-    public String getName() {
+    public String[] getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String[] name) {
         this.name = name;
     }
 

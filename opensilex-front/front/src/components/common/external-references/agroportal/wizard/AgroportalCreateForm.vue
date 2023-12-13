@@ -205,7 +205,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     if (!this.editMode) {
       form.uri = searchDTO.id;
     }
-    form.name = searchDTO.name;
+    form.name = searchDTO.name[0];
     form.description = searchDTO.definitions[0];
     form.exact_match = [];
     form.narrow_match = [];

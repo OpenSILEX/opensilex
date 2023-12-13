@@ -77,11 +77,6 @@ system:
 
 front:
     agroportal:
-        ontologyPortals:
-            - name: AgroPortal
-              url: "https://agroportal.lirmm.fr/"
-            - name: BioPortal
-              url: "http://bioportal.bioontology.org/"
         entity:
             - AGROVOC
             - PO

@@ -9,7 +9,7 @@
       <b-row id="result-header" class="mx-0 jqx-max-size">
         <b-col col lg="12">
           <div id="result-name">
-            {{entity.name}} - <span id="result-ontology">{{entity.ontologyName}}</span>
+            {{ entity.name[0] }} - <span id="result-ontology">{{entity.ontologyName}}</span>
           </div>
           <div id="result-link">
             <a v-bind:href="entity.id" target="_blank" rel="noopener noreferrer">{{entity.id}}</a>

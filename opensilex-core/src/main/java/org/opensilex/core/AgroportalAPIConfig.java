@@ -30,7 +30,7 @@ public interface AgroportalAPIConfig extends ServiceConfig {
 
     @ConfigDescription(
             value = "Agroportal API key",
-            defaultString = "bcfa713e-007c-418b-b7b3-57ce40fd7721"
+            defaultString = ""
     )
     String externalAPIKey();
 }

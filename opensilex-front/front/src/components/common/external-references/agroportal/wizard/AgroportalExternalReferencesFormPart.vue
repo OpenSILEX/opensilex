@@ -12,6 +12,7 @@
         <b-row>
           <b-col md="6">
             <b-form-group
+                v-if="isAgroportalReachable"
                 label-size="lg"
                 label-class="font-weight-bold pt-0"
                 class="mb-0"
@@ -21,7 +22,6 @@
               </template>
 
               <opensilex-AgroportalTermSelector
-                  v-if="isAgroportalReachable"
                   ref="agroportalTermSelector"
                   :placeholder="$t(props.searchPlaceholder)"
                   :ontologies="ontologies"
@@ -29,6 +29,11 @@
                   @importMapping="onImportMapping"
               ></opensilex-AgroportalTermSelector>
             </b-form-group>
+            <div v-else>
+              <b-alert show dismissible variant="info">
+                <span v-html="$t('AgroportalExternalReferencesFormPart.agroportal-not-reachable')"></span>
+              </b-alert>
+            </div>
 
             <b-form-group
                 label-size="lg"
@@ -71,25 +76,16 @@
                 class="mb-0"
             >
               <template v-slot:label>
-                {{ $t("AgroportalSearchFormPart.selected-term") }}
+                {{ formDto.name }}
               </template>
 
               <b-container class="result">
-                <b-row class="mx-0 jqx-max-size">
-                  <b-col col lg="12" class="result-name">
-                      {{ formDto.name }}
-                  </b-col>
-                </b-row>
-                <b-row>
-                  <b-col col lg="12">
-                    <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
-                  </b-col>
-                </b-row>
-                <b-row class="mx-0 jqx-max-size">
-                  <b-col col lg="12">
-                    {{ formDto.description }}
-                  </b-col>
-                </b-row>
+                <p>
+                  <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
+                </p>
+                <p>
+                  {{ formDto.description }}
+                </p>
               </b-container>
             </b-form-group>
 
@@ -111,9 +107,8 @@ import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import SUPPORTED_SKOS_RELATIONS, {BROAD_MATCH, UriSkosRelation} from "../../../../../models/SkosRelations";
 import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
 import {Tour} from "vue-tour";
-import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import AgroportalTermSelector from "../AgroportalTermSelector.vue";
-import {SelectableItem} from "../../../forms/SelectForm.vue";
+import HttpResponse from "../../../../../lib/HttpResponse";
 
 @Component
 export default class AgroportalExternalReferencesFormPart extends Vue {
@@ -259,11 +254,16 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   //region Private methods
   private checkAgroportalReachable() {
-    this.agroportalAPIService.pingAgroportal(1000).then((http) => {
+    this.agroportalAPIService.pingAgroportal().then((http) => {
       if (http && http.response) {
-        let isReachable = http.response.result;
-        this.isAgroportalReachable = isReachable;
+        this.isAgroportalReachable = http.response.result;
       }
+    }).catch((error: HttpResponse) => {
+      if (error.status === 503) {
+        this.isAgroportalReachable = false;
+        return;
+      }
+      this.$opensilex.errorHandler(error);
     });
   }
 
@@ -384,9 +384,12 @@ en:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
-    search-mapping-title: Search for mapping...
-    map-manually-title: ...Or map manually
+    search-mapping-title: Search for a term
+    map-manually-title: Map a term by URI
     manual-mapping: "URI"
+    agroportal-not-reachable: >
+      AgroPortal is not reachable by OpenSILEX, however you can look for terms by yourself by going to
+      <a href="https://agroportal.lirmm.fr/">https://agroportal.lirmm.fr/</a>.
     tutorial:
       step-search:
         title: Search
@@ -436,9 +439,12 @@ fr:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
-    search-mapping-title: Rechercher des mapping...
-    map-manually-title: ...Ou mapper manuellement
+    search-mapping-title: Rechercher un terme
+    map-manually-title: Associer un terme par URI
     manual-mapping: "URI"
+    agroportal-not-reachable: >
+      OpenSILEX ne peut pas accéder à AgroPortal, cependant vous pouvez cherchez des termes par vous-même en allant sur
+      <a href="https://agroportal.lirmm.fr/">https://agroportal.lirmm.fr/</a>.
     tutorial:
       step-search:
         title: Recherche de terme

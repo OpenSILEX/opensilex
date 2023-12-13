@@ -64,7 +64,7 @@ import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {SelectableItem} from "../../forms/SelectForm.vue";
 
@@ -89,6 +89,7 @@ export default class AgroportalSearch extends Vue {
 
   //region Data
   private searchText: string = "";
+  private isAgroportalReachable: boolean = true;
   //endregion
 
   //region Private methods
@@ -99,17 +100,17 @@ export default class AgroportalSearch extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http.response.result;
         })
-        .catch(this.$opensilex.errorHandler);
+        .catch(this.agroportalErrorHandler);
   }
 
-  private searchOntologies(searchQuery, _page, _pageSize) {
+  private searchOntologies(searchQuery, _page, _pageSize):
+      Promise<HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>> {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
         .getAgroportalOntologies(searchQuery, undefined)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http;
-        })
-        .catch(this.$opensilex.errorHandler);
+        }); //Let SelectForm handle the error
   }
 
   private ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {
@@ -117,6 +118,13 @@ export default class AgroportalSearch extends Vue {
       id: dto.acronym,
       label: `${dto.acronym} (${dto.name})`
     };
+  }
+
+  private agroportalErrorHandler(error: HttpResponse): Array<OntologyAgroportalDTO> {
+    if (error.status === 503) {
+      return [];
+    }
+    return this.$opensilex.errorHandler(error);
   }
   //endregion
 

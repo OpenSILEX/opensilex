@@ -147,6 +147,7 @@ import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 
 export interface SelectableItem {
   id: string,
@@ -156,7 +157,7 @@ export interface SelectableItem {
 }
 
 @Component
-export default class SelectForm extends Vue {
+export default class SelectForm<T extends NamedResourceDTO> extends Vue {
   $opensilex: any;
   currentValue;
   loading = false;
@@ -188,7 +189,8 @@ export default class SelectForm extends Vue {
   options;
 
   @Prop()
-  searchMethod;
+  searchMethod: (query: string, page: number, pageSize: number) =>
+      Promise<HttpResponse<OpenSilexResponse<Array<T>>>>;
 
   @Prop({
     default: false,
@@ -221,19 +223,19 @@ export default class SelectForm extends Vue {
 
   @Prop({
     type: Function,
-    default: function (e) {
+    default: function (e: T) {
         if (e && e.name) {
         return {
             id: e.uri,
             label: e.name,
-            isDisabled: e.isDisabled ?? false
+            isDisabled: e['isDisabled'] ?? false
           };
       } else {
         return e;
       }
     }
   })
-  conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
+  conversionMethod: (dto: T) => SelectableItem;
 
   @Prop()
   label: string;
@@ -667,14 +669,10 @@ export default class SelectForm extends Vue {
           // after, onSearchChange() replace lastSearchQuery by the value entered by user
           if(self.lastSearchQuery === query){
             self.totalCount = http.response.metadata.pagination.totalCount;
-            if (http.response.size && http.response.size != list.length) {
-              self.resultCount = http.response.size;
-            } else {
-              self.resultCount = list.length;
-            }
+            self.resultCount = list.length;
           }
+
           self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
-          
           let nodeList = [];
           list.forEach((item) => {
             nodeList.push(self.conversionMethod(item));

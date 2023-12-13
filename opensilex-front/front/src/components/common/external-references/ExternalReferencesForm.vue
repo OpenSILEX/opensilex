@@ -167,6 +167,7 @@ import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import HttpResponse from "../../../lib/HttpResponse";
 
 @Component
     export default class ExternalReferencesForm extends Vue {
@@ -212,6 +213,12 @@ import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
             if (http && http.response) {
               this.isAgroportalReachable = http.response.result;
             }
+          }).catch((error: HttpResponse) => {
+            if (error.status === 503) {
+              this.isAgroportalReachable = false;
+              return;
+            }
+            this.$opensilex.errorHandler(error);
           });
         }
 

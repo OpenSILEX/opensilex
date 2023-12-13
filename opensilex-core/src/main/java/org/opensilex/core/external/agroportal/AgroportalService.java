@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.opensilex.core.CoreConfig;
 import org.opensilex.server.exceptions.displayable.DisplayableServiceUnavailableException;
@@ -26,7 +27,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -61,19 +61,18 @@ public class AgroportalService {
         this.basePath = config.agroportal().basePath();
         this.baseApiPath = config.agroportal().baseAPIPath();
 
-        if (this.apiKey == null || this.basePath == null || this.baseApiPath == null) {
-            throw new DisplayableServiceUnavailableException("Agroportal is not configured for this instance",
-                    AGROPORTAL_NOT_CONFIGURED_ERROR_TRANSLATION_KEY,
-                    null);
-        }
-
         this.httpClient = ClientBuilder.newClient();
         this.mapper = ObjectMapperContextResolver.getObjectMapper();
     }
 
     //region Public methods
 
-    public boolean ping(Long optionalTimeoutMs) {
+    public boolean isEnable() {
+        return StringUtils.isNoneEmpty(this.apiKey, this.basePath, this.baseApiPath);
+    }
+
+    public boolean ping(Long optionalTimeoutMs) throws DisplayableServiceUnavailableException {
+        throwIfNotEnable();
         long nonNullTimeoutMs = Optional.ofNullable(optionalTimeoutMs)
                 .orElse(DEFAULT_CONNECTION_TIMEOUT_MS);
         var clientWithCustomTimeout = ClientBuilder.newBuilder()
@@ -88,7 +87,8 @@ public class AgroportalService {
         }
     }
 
-    public List<OntologyAgroportalModel> getOntologies() {
+    public List<OntologyAgroportalModel> getOntologies() throws DisplayableServiceUnavailableException {
+        throwIfNotEnable();
         var target = httpClient.target(baseApiPath)
                 .path(ONTOLOGIES_ENDPOINT);
         return get(target,
@@ -96,7 +96,8 @@ public class AgroportalService {
                 mapper.getTypeFactory().constructParametricType(List.class, OntologyAgroportalModel.class));
     }
 
-    public AgroportalSearchResultModel search(String query, List<String> ontologies) {
+    public AgroportalSearchResultModel search(String query, List<String> ontologies) throws DisplayableServiceUnavailableException {
+        throwIfNotEnable();
         var target = httpClient.target(baseApiPath)
                 .path(SEARCH_ENDPOINT);
         var params = new HashMap<String, List<String>>();
@@ -151,6 +152,14 @@ public class AgroportalService {
         return ontologies.stream()
                 .reduce((result, element) -> result + "," + element)
                 .orElse("");
+    }
+
+    private void throwIfNotEnable() throws DisplayableServiceUnavailableException {
+        if (!this.isEnable()) {
+            throw new DisplayableServiceUnavailableException("Agroportal is not configured for this instance",
+                    AGROPORTAL_NOT_CONFIGURED_ERROR_TRANSLATION_KEY,
+                    null);
+        }
     }
 
     //endregion

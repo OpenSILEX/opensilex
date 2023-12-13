@@ -155,14 +155,22 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
 
   //region Private methods
   private checkAgroportalReachable() {
-    return this.agroportalService.pingAgroportal(1000).then((http) => {
+    return this.agroportalService.pingAgroportal().then((http) => {
       if (http && http.response) {
         let isReachable = http.response.result;
         if (!isReachable) {
           this.wizardRef.skipStep();
         }
       }
-    });
+    }).catch(this.agroportalErrorHandler);
+  }
+
+  private agroportalErrorHandler(error: HttpResponse) {
+    if (error.status === 503) {
+      this.wizardRef.skipStep();
+      return;
+    }
+    this.$opensilex.errorHandler(error);
   }
 
   private getEmptyForm(): BaseExternalReferencesDTO {

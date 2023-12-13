@@ -1,24 +1,31 @@
 <template>
   <div>
-    <opensilex-AgroportalSearch
-        class="v-step-agroportal-search"
-        ref="searchComponent"
-        label="component.common.name"
-        :placeholder="placeholder"
-        :selected.sync="selectedOntologies"
-        :isAllOntologies.sync="useAllOntologies"
-        @change="onSearchTextChange"
-    ></opensilex-AgroportalSearch>
+    <div v-if="isAgroportalReachable">
+      <opensilex-AgroportalSearch
+          class="v-step-agroportal-search"
+          ref="searchComponent"
+          label="component.common.name"
+          :placeholder="placeholder"
+          :selected.sync="selectedOntologies"
+          :isAllOntologies.sync="useAllOntologies"
+          @change="onSearchTextChange"
+      ></opensilex-AgroportalSearch>
 
-    <opensilex-AgroportalResults
-        class="v-step-agroportal-results"
-        ref="searchResults"
-        :text="searchText"
-        :ontologies="selectedOntologies"
-        :isMappingMode="isMappingMode"
-        @import="onImport"
-        @importMapping="onImportMapping">
-    </opensilex-AgroportalResults>
+      <opensilex-AgroportalResults
+          class="v-step-agroportal-results"
+          ref="searchResults"
+          :text="searchText"
+          :ontologies="selectedOntologies"
+          :isMappingMode="isMappingMode"
+          @import="onImport"
+          @importMapping="onImportMapping">
+      </opensilex-AgroportalResults>
+    </div>
+    <div v-else>
+      <b-alert show variant="warning">
+        <span v-html="$t('AgroportalTermSelector.agroportal-not-reachable')"></span>
+      </b-alert>
+    </div>
   </div>
 </template>
 
@@ -30,9 +37,16 @@ import {Prop, PropSync, Ref} from "vue-property-decorator";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import {UriSkosRelation} from "../../../../models/SkosRelations";
 import AgroportalSearch from "./AgroportalSearch.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {AgroportalAPIService} from "opensilex-core/lib";
 
 @Component({})
 export default class AgroportalTermSelector extends Vue {
+  //region Plugins and services
+  private readonly $opensilex: OpenSilexVuePlugin;
+  private service: AgroportalAPIService;
+  //endregion
+
   //region Props
   @Prop({
     default: undefined
@@ -59,20 +73,44 @@ export default class AgroportalTermSelector extends Vue {
   //region Data
   private searchText: string = "";
   private useAllOntologies: boolean = false;
+  private isAgroportalReachable: boolean = false;
+  //endregion
+
+  //region Hooks
+  private created() {
+    this.service = this.$opensilex.getService("opensilex.AgroportalAPIService");
+    this.service.pingAgroportal().then(http => {
+      if (http.response.result) {
+        this.isAgroportalReachable = true;
+      }
+    }).catch(() => {
+      return;
+    })
+  }
   //endregion
 
   //region Events
+  private emitImport(term: AgroportalTermDTO) {
+    this.$emit("import", term);
+  }
+
+  private emitImportMapping(uriRelation: UriSkosRelation) {
+    this.$emit("importMapping", uriRelation);
+  }
+  //endregion
+
+  //region Event handlers
   private onSearchTextChange(text: string) {
     this.searchText = text;
     this.searchResults.search(text, this.useAllOntologies, this.selectedOntologies);
   }
 
   private onImport(term: AgroportalTermDTO) {
-    this.$emit("import", term);
+    this.emitImport(term);
   }
 
   private onImportMapping(uriRelation: UriSkosRelation) {
-    this.$emit("importMapping", uriRelation);
+    this.emitImportMapping(uriRelation);
   }
   //endregion
 
@@ -99,3 +137,15 @@ export default class AgroportalTermSelector extends Vue {
 <style scoped lang="scss">
 
 </style>
+
+<i18n>
+en:
+  AgroportalTermSelector:
+    agroportal-not-reachable: >
+      AgroPortal is not reachable for the moment, please try again later.
+fr:
+  AgroportalTermSelector:
+    agroportal-not-reachable: >
+      AgroPortal n'est pas accessible pour le moment, veuillez réessayer plus tard.
+
+</i18n>

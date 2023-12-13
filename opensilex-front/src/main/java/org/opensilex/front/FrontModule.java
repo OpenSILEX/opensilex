@@ -129,7 +129,6 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setDashboard(dashboard);
 
             AgroportalOntologiesConfigDTO agroportal = new AgroportalOntologiesConfigDTO();
-            agroportal.setOntologyPortals(frontConfig.agroportal().ontologyPortals());
             agroportal.setEntityOntologies(frontConfig.agroportal().entity());
             agroportal.setTraitOntologies(frontConfig.agroportal().trait());
             agroportal.setMethodOntologies(frontConfig.agroportal().method());

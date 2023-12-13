@@ -79,11 +79,11 @@ import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class AgroportalSearchFormPart extends Vue {
-  //region Plugins
+  //#region Plugins
   $opensilex: OpenSilexVuePlugin;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop()
   editMode: boolean;
   @Prop()
@@ -93,26 +93,26 @@ export default class AgroportalSearchFormPart extends Vue {
   };
   @PropSync("form")
   formDto: any;
-  //endregion
+  //#endregion
 
-  //region Ref
+  //#region Ref
   @Ref("tutorial")
   private tutorial: Tour;
   @Ref("validatorRef")
   readonly validatorRef!: any;
   @Ref("agroportalTermSelector")
   private readonly agroportalTermSelector: AgroportalTermSelector;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   uriGenerated = true;
   text = "";
   ontologies: string[] = [];
   isAllOntologies: boolean = false;
   selectedTerm: AgroportalTermDTO = null;
-  //endregion
+  //#endregion
 
-  //region Tutorial data
+  //#region Tutorial data
   private savedStateBeforeTutorial?: {
     searchTerm: string,
     formDto: BaseExternalReferencesDTO
@@ -149,29 +149,29 @@ export default class AgroportalSearchFormPart extends Vue {
       before: this.beforeNoSearchStep
     }
   ]
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   private created() {
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
   }
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   private clearSelectedTerm() {
     this.selectedTerm = null;
   }
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private onTermImported(term: AgroportalTermDTO) {
     this.selectedTerm = term;
     this.formDto.uri = term.id;
     this.formDto.name = term.name;
   }
-  //endregion
+  //#endregion
 
-  //region Public methods for wizard form
+  //#region Public methods for wizard form
   public reset() {
     this.uriGenerated = true;
     return this.validatorRef.reset();
@@ -180,9 +180,9 @@ export default class AgroportalSearchFormPart extends Vue {
   public validate() {
     return this.validatorRef.validate();
   }
-  //endregion
+  //#endregion
 
-  //region Tutorial methods
+  //#region Tutorial methods
   public startTutorial() {
     this.saveStateBeforeTutorial();
     this.clearCurrentState();
@@ -218,7 +218,7 @@ export default class AgroportalSearchFormPart extends Vue {
   private onTutorialFinishOrSkip() {
     this.restoreStateAfterTutorial();
   }
-  //endregion
+  //#endregion
 }
 </script>
 

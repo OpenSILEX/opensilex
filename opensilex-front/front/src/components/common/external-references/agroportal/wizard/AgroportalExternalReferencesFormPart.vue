@@ -112,11 +112,11 @@ import HttpResponse from "../../../../../lib/HttpResponse";
 
 @Component
 export default class AgroportalExternalReferencesFormPart extends Vue {
-  //region Plugins
+  //#region Plugins
   private readonly $opensilex: OpenSilexVuePlugin;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop()
   private readonly props: {
     ontologiesConfig: string,
@@ -129,9 +129,9 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   @PropSync("form")
   private formDto: BaseExternalReferencesDTO;
 
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("validatorRef")
   private readonly validatorRef!: any;
 
@@ -140,14 +140,14 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
 
   @Ref("tutorial")
   private tutorial: Tour;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private agroportalAPIService: AgroportalAPIService;
   private ontologies: string[] = [];
   private isAgroportalReachable: boolean = false;
 
-  //region Tutorial data
+  //#region Tutorial data
   private savedStateBeforeTutorial: {
     formDto: BaseExternalReferencesDTO
   }
@@ -212,10 +212,10 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       params: {placement: "top"}
     },
   ];
-  //endregion
-  //endregion
+  //#endregion
+  //#endregion
 
-  //region Computed
+  //#region Computed
   /**
    * Computed getter and setter which translates the weird relation maps in the DTO to a list of URI<->Relation pairs
    * for the table to display.
@@ -242,17 +242,17 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
       this.formDto[uriRelation.relationDtoKey].push(uriRelation.uri);
     }
   }
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   private created() {
     this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
     this.checkAgroportalReachable();
     this.ontologies = this.$opensilex.getConfig().agroportal[this.props.ontologiesConfig];
   }
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   private checkAgroportalReachable() {
     this.agroportalAPIService.pingAgroportal().then((http) => {
       if (http && http.response) {
@@ -284,15 +284,15 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
     //@todo
     return false;
   }
-  //endregion
+  //#endregion
 
-  //region Event Handlers
+  //#region Event Handlers
   private onImportMapping(uriRelation: UriSkosRelation) {
     this.addRelationToTerm(uriRelation);
   }
-  //endregion
+  //#endregion
 
-  //region Tutorial
+  //#region Tutorial
   private saveStateBeforeTutorial() {
     this.savedStateBeforeTutorial = {
       formDto: JSON.parse(JSON.stringify(this.formDto))
@@ -339,7 +339,7 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   private onTutorialFinishOrSkip() {
     this.restoreStateAfterTutorial();
   }
-  //endregion
+  //#endregion
 }
 
 </script>

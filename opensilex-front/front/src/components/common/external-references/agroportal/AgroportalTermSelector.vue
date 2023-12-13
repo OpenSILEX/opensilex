@@ -42,12 +42,12 @@ import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
 
 @Component({})
 export default class AgroportalTermSelector extends Vue {
-  //region Plugins and services
+  //#region Plugins and services
   private readonly $opensilex: OpenSilexVuePlugin;
   private service: AgroportalAPIService;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop({
     default: undefined
   })
@@ -60,23 +60,23 @@ export default class AgroportalTermSelector extends Vue {
 
   @PropSync("ontologies")
   private selectedOntologies: string[];
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("searchComponent")
   private readonly searchComponent: AgroportalSearch;
 
   @Ref("searchResults")
   private readonly searchResults: AgroportalResults;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private searchText: string = "";
   private useAllOntologies: boolean = false;
   private isAgroportalReachable: boolean = false;
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   private created() {
     this.service = this.$opensilex.getService("opensilex.AgroportalAPIService");
     this.service.pingAgroportal().then(http => {
@@ -87,9 +87,9 @@ export default class AgroportalTermSelector extends Vue {
       return;
     })
   }
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private emitImport(term: AgroportalTermDTO) {
     this.$emit("import", term);
   }
@@ -97,9 +97,9 @@ export default class AgroportalTermSelector extends Vue {
   private emitImportMapping(uriRelation: UriSkosRelation) {
     this.$emit("importMapping", uriRelation);
   }
-  //endregion
+  //#endregion
 
-  //region Event handlers
+  //#region Event handlers
   private onSearchTextChange(text: string) {
     this.searchText = text;
     this.searchResults.search(text, this.useAllOntologies, this.selectedOntologies);
@@ -112,9 +112,9 @@ export default class AgroportalTermSelector extends Vue {
   private onImportMapping(uriRelation: UriSkosRelation) {
     this.emitImportMapping(uriRelation);
   }
-  //endregion
+  //#endregion
 
-  //region Public modifier methods (mostly for tutorial purpose)
+  //#region Public modifier methods (mostly for tutorial purpose)
   public setSearchText(text: string) {
     this.searchComponent.setSearchText(text);
   }
@@ -130,7 +130,7 @@ export default class AgroportalTermSelector extends Vue {
   public selectAndMapFirstItem() {
     this.searchResults.selectAndMapFirstItem();
   }
-  //endregion
+  //#endregion
 }
 </script>
 

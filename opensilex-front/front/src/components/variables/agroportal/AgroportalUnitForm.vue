@@ -47,17 +47,17 @@ import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
 
 @Component({})
 export default class AgroportalUnitForm extends Vue implements BaseExternalReferencesForm {
-  //region Plugins and services
+  //#region Plugins and services
   private readonly $opensilex: OpenSilexVuePlugin
   private service: VariablesService;
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("createForm")
   private readonly createForm: BaseExternalReferencesForm;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private readonly emptyForm: UnitCreationDTO = {
     uri: null,
     name: null,
@@ -69,15 +69,15 @@ export default class AgroportalUnitForm extends Vue implements BaseExternalRefer
     broad_match: [],
     narrow_match: []
   };
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   private created() {
     this.service = this.$opensilex.getService("opensilex-core.VariablesService");
   }
-  //endregion
+  //#endregion
 
-  //region Public methods
+  //#region Public methods
   public showCreateForm() {
     this.createForm.showCreateForm();
   }
@@ -85,7 +85,7 @@ export default class AgroportalUnitForm extends Vue implements BaseExternalRefer
   public showEditForm(dto: BaseExternalReferencesDTO) {
     this.createForm.showEditForm(dto);
   }
-  //endregion
+  //#endregion
 }
 </script>
 

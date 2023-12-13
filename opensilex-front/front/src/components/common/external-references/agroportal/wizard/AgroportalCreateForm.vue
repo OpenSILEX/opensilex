@@ -35,12 +35,12 @@ import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 
 @Component({})
 export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements BaseExternalReferencesForm {
-  //region Plugins and services
+  //#region Plugins and services
   private readonly $opensilex: OpenSilexVuePlugin;
   private agroportalService: AgroportalAPIService;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop()
   private readonly ontologiesConfig: string;
 
@@ -84,18 +84,18 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     }
   })
   private readonly emptyForm: T;
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("wizardRef")
   private readonly wizardRef!: WizardForm;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private editMode = false;
-  //endregion
+  //#endregion
 
-  //region Computed
+  //#region Computed
   /**
    * Steps of the wizard form. Computed so that it can rely on props such as `ontologiesConfig` and
    * `searchPlaceholder`.
@@ -132,14 +132,14 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
       }
     ];
   }
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   created() {
     this.agroportalService = this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
-  //endregion
+  //#endregion
 
   //public Methods
   public showCreateForm() {
@@ -151,9 +151,9 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     this.editMode = true;
     this.wizardRef.showEditForm(form);
   }
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   private checkAgroportalReachable() {
     return this.agroportalService.pingAgroportal().then((http) => {
       if (http && http.response) {
@@ -228,7 +228,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
     }
     return true;
   }
-  //endregion
+  //#endregion
 }
 </script>
 

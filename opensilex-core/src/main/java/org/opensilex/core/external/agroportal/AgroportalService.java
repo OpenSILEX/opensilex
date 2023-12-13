@@ -65,7 +65,7 @@ public class AgroportalService {
         this.mapper = ObjectMapperContextResolver.getObjectMapper();
     }
 
-    //region Public methods
+    //#region Public methods
 
     public boolean isEnable() {
         return StringUtils.isNoneEmpty(this.apiKey, this.basePath, this.baseApiPath);
@@ -110,9 +110,9 @@ public class AgroportalService {
         return get(target, params, mapper.getTypeFactory().constructType(AgroportalSearchResultModel.class));
     }
 
-    //endregion
+    //#endregion
 
-    //region Private methods
+    //#region Private methods
 
     private <T> T get(WebTarget target, Map<String, List<String>> queryParameters, JavaType responseType) {
         if (queryParameters != null) {
@@ -162,5 +162,5 @@ public class AgroportalService {
         }
     }
 
-    //endregion
+    //#endregion
 }

@@ -55,23 +55,23 @@ import {CLOSE_MATCH, UriSkosRelation} from "../../../../models/SkosRelations";
 
 @Component({})
 export default class AgroportalResults extends Vue {
-  //region Plugin
+  //#region Plugin
   private $opensilex: OpenSilexVuePlugin;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop({
     default: false
   })
   private readonly isMappingMode: boolean;
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("resultItems")
   private readonly resultItems!: Array<AgroportalResultItem>;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private service: AgroportalAPIService;
   private terms: Array<AgroportalTermDTO> = [];
   private selectedIndex: number = null;
@@ -81,16 +81,16 @@ export default class AgroportalResults extends Vue {
 
   //@todo remove this
   // private selectedRelation: string = null;
-  //endregion
+  //#endregion
 
-  //region Hooks
+  //#region Hooks
   created() {
     this.service = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
   }
 
-  //endregion
+  //#endregion
 
-  //region Public methods
+  //#region Public methods
   public search(searchedText: string, withAllOntologies: boolean, ontologies: Array<string>) {
     if (!searchedText) {
       this.clear();
@@ -146,18 +146,18 @@ export default class AgroportalResults extends Vue {
     });
   }
 
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   clear() {
     this.terms = [];
     this.selectedIndex = null;
     this.isNothingFound = false;
   }
 
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private emitImport(term: AgroportalTermDTO) {
     this.$emit('import', term);
   }
@@ -167,16 +167,16 @@ export default class AgroportalResults extends Vue {
     this.$emit("importMapping", uriRelation);
   }
 
-  //endregion
+  //#endregion
 
-  //region Event handlers
+  //#region Event handlers
   private onRelationSelected(term: AgroportalTermDTO, selectedRelation: string) {
     this.emitImportMapping({
       relationDtoKey: selectedRelation,
       uri: term.id
     });
   }
-  //endregion
+  //#endregion
 }
 </script>
 

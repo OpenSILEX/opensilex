@@ -43,26 +43,26 @@ import {AgroportalTermDTO} from "opensilex-core/index";
 
 @Component
 export default class AgroportalResultItem extends Vue {
-  //region Props
+  //#region Props
   @Prop()
   private readonly entity: AgroportalTermDTO;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private isSelected: boolean = false;
-  //endregion
+  //#endregion
 
-  //region Public methods
+  //#region Public methods
   public setSelected(selected: boolean) {
     this.isSelected = selected;
   }
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private emitClicked() {
     this.$emit('item-clicked');
   }
-  //endregion
+  //#endregion
 }
 </script>
 

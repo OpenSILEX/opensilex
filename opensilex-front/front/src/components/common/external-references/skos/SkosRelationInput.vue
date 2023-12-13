@@ -37,12 +37,12 @@ import {UriSkosRelation} from "../../../../models/SkosRelations";
 
 @Component({})
 export default class SkosRelationInput extends Vue {
-  //region Data
+  //#region Data
   private uri: string = "";
   private relationDtoKey: string = null;
-  //endregion
+  //#endregion
 
-  //region Const data
+  //#region Const data
   /**
    * Modified URI regex from the RFC 3986. Two elements are changed from the RFC :
    *
@@ -56,22 +56,22 @@ export default class SkosRelationInput extends Vue {
    * @private
    */
   private readonly uriRegex = /^(([^:/?#]+):)(\/\/([^/?#]*))?([^?#]+)(\?([^#]*))?(#(.*))?$/;
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private emitInput() {
     this.$emit("input", {
       uri: this.uri,
       relationDtoKey: this.relationDtoKey
     } as UriSkosRelation);
   }
-  //endregion
+  //#endregion
 
-  //region Event handlers
+  //#region Event handlers
   private onSelected() {
     this.emitInput();
   }
-  //endregion
+  //#endregion
 }
 </script>
 

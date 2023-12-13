@@ -70,11 +70,11 @@ import {SelectableItem} from "../../forms/SelectForm.vue";
 
 @Component
 export default class AgroportalSearch extends Vue {
-  //region Plugin
+  //#region Plugin
   private readonly $opensilex: OpenSilexVuePlugin;
-  //endregion
+  //#endregion
 
-  //region Props
+  //#region Props
   @Prop({
     default: "AgroportalSearch.enter-search-text"
   })
@@ -85,14 +85,14 @@ export default class AgroportalSearch extends Vue {
 
   @PropSync("isAllOntologies", { default: false })
   private isAllOntologiesSelected: boolean;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private searchText: string = "";
   private isAgroportalReachable: boolean = true;
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   private loadOntologies(ontologieAcronyms: Array<string>): Promise<Array<OntologyAgroportalDTO>> {
     return this.$opensilex
         .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
@@ -126,20 +126,20 @@ export default class AgroportalSearch extends Vue {
     }
     return this.$opensilex.errorHandler(error);
   }
-  //endregion
+  //#endregion
 
-  //region Public methods
+  //#region Public methods
   public setSearchText(text: string) {
     this.searchText = text;
     this.emitChange();
   }
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   private emitChange() {
     this.$emit("change", this.searchText);
   }
-  //endregion
+  //#endregion
 }
 </script>
 

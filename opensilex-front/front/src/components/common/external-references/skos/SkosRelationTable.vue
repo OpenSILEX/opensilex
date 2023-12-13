@@ -48,12 +48,12 @@ import {UriSkosRelation} from "../../../../models/SkosRelations";
 
 @Component({})
 export default class SkosRelationTable extends Vue {
-  //region Props
+  //#region Props
   @PropSync("uriRelations")
   private uriRelationList: Array<UriSkosRelation>;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private readonly fields: BvTableFieldArray = [
     {
       key: "relation",
@@ -70,9 +70,9 @@ export default class SkosRelationTable extends Vue {
       label: "component.common.actions"
     }
   ];
-  //endregion
+  //#endregion
 
-  //region Private methods
+  //#region Private methods
   private findRelationUriIndex(dtoKey: string, relationUri: string): number {
     return this.uriRelationList.findIndex(uriRelation => uriRelation.relationDtoKey === dtoKey
       && uriRelation.uri === relationUri);
@@ -86,9 +86,9 @@ export default class SkosRelationTable extends Vue {
       this.emitUpdateUriRelations();
     }
   }
-  //endregion
+  //#endregion
 
-  //region Events
+  //#region Events
   /**
    * Not exactly sure why, maybe because it's a PropSync that is also an array, but updates don't trigger
    * when using `splice` or when setting a property of an object inside `uriRelationList`. So this method exist
@@ -99,13 +99,13 @@ export default class SkosRelationTable extends Vue {
   private emitUpdateUriRelations() {
     this.$emit("update:uriRelations", this.uriRelationList);
   }
-  //endregion
+  //#endregion
 
-  //region Event handlers
+  //#region Event handlers
   private onSelected() {
     this.emitUpdateUriRelations();
   }
-  //endregion
+  //#endregion
 }
 </script>
 

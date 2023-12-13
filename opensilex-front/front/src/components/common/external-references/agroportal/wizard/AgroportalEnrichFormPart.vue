@@ -56,7 +56,7 @@ import {ValidationObserver} from "vee-validate";
 
 @Component
 export default class AgroportalEnrichFormPart extends Vue {
-  //region Props
+  //#region Props
   @Prop()
   private readonly editMode;
 
@@ -68,9 +68,9 @@ export default class AgroportalEnrichFormPart extends Vue {
 
   @PropSync("form")
   private formDto: BaseExternalReferencesDTO;
-  //endregion
+  //#endregion
 
-  //region Refs
+  //#region Refs
   @Ref("tutorial")
   private readonly tutorial!: Tour;
 
@@ -79,13 +79,13 @@ export default class AgroportalEnrichFormPart extends Vue {
 
   @Ref("validatorRef")
   readonly validatorRef!: InstanceType<typeof ValidationObserver>;
-  //endregion
+  //#endregion
 
-  //region Data
+  //#region Data
   private uriGenerated: boolean = true;
-  //endregion
+  //#endregion
 
-  //region Tutorial data
+  //#region Tutorial data
   private savedFormBeforeTutorial: BaseExternalReferencesDTO;
   private readonly tutorialSteps = [
     {
@@ -113,9 +113,9 @@ export default class AgroportalEnrichFormPart extends Vue {
       params: {placement: "top"}
     },
   ];
-  //endregion
+  //#endregion
 
-  //region Public methods for WizardForm
+  //#region Public methods for WizardForm
   public reset() {
     this.uriGenerated = true;
     return this.validatorRef.reset();
@@ -124,9 +124,9 @@ export default class AgroportalEnrichFormPart extends Vue {
   public validate() {
     return this.validatorRef.validate();
   }
-  //endregion
+  //#endregion
 
-  //region Tutorial methods
+  //#region Tutorial methods
   public startTutorial() {
     this.savedFormBeforeTutorial = JSON.parse(JSON.stringify(this.formDto));
     this.formDto.name = this.$t(this.props.namePlaceholder).toString();
@@ -137,7 +137,7 @@ export default class AgroportalEnrichFormPart extends Vue {
   private onTutorialFinishOrSkip() {
     this.formDto = JSON.parse(JSON.stringify(this.savedFormBeforeTutorial));
   }
-  //endregion
+  //#endregion
 }
 </script>
 

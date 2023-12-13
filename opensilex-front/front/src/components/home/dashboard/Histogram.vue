@@ -4,7 +4,9 @@
       class="histogramCard"> 
 
       <template v-slot:header>
-        <span class="graphicTitle">{{selectedVariableName }}</span>
+        <span class="graphicTitle">
+          {{dataLocationInformations ? dataLocationInformations : $t("Histogram.graphicInformations") }}
+        </span>
       </template>
       
       <template v-slot:rightHeader>
@@ -97,6 +99,8 @@ export default class Histogram extends Vue {
   variablesService: VariablesService;
   selectedVariable;
   selectedVariableName: string = "";
+  dataLocationInformations : string = "";
+
   deviceColorMap = [];
   devices : Array<{label: string; id: string}> = [] ;
 
@@ -170,6 +174,7 @@ export default class Histogram extends Vue {
       .then((http: HttpResponse<OpenSilexResponse>) => {
         this.selectedVariable = http.response.result;
         this.selectedVariableName = this.selectedVariable.name;
+        this.dataLocationInformations = this.$opensilex.getConfig().dashboard.graph1.dataLocationInformations;
         const datatype = this.selectedVariable.datatype;
         if (this.$opensilex.checkURIs(datatype, Xsd.DECIMAL) || this.$opensilex.checkURIs(datatype, Xsd.INTEGER)){
           this.buildColorsDevicesMap();
@@ -434,6 +439,7 @@ en:
     limitSizeMessageA : "There are "
     limitSizeMessageB : "data for "
     limitSizeMessageC : " .Only the 50 000 first data are displayed."
+    graphicInformations: "Add informations concerning your data, location for example"
 
 fr:
   Histogram:
@@ -458,5 +464,6 @@ fr:
     limitSizeMessageA : "Il y a "
     limitSizeMessageB : "données pour "
     limitSizeMessageC : ".Seules les 50 000 premières valeurs sont affichées. "
+    graphicInformations: "Ajoutez des informations concernant vos données, leur localisation par exemple"
 
 </i18n>

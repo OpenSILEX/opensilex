@@ -1,9 +1,31 @@
 <template>
   <opensilex-DefaultLoginComponent>
     <template v-slot:loginMedia>
-        <img
+        <!-- <img
             v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.jpg')"
-        />
+        /> -->
+      <img class="bottom"
+           v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.png')"
+      />
+
+
+      <img class="top"
+           v-bind:src="$opensilex.getResourceURI('images/arenaSetup_LartigueEtAl2021.jpeg')"
+      />
+
+      <img class="top"
+           v-bind:src="$opensilex.getResourceURI('images/armoiseMultiObjectTrakcingStillFrame.jpeg')"
+      />
+
+      <img class="top"
+           v-bind:src="$opensilex.getResourceURI('images/ExperimentalSet-up2StudySpatialPpropagation.jpeg')"
+      />
+
+      <img class="top"
+           v-bind:src="$opensilex.getResourceURI('images/Trichogramma_dendrolimi.jpg')"
+      />
+
+
     </template>
 
     <template v-slot:loginLogo>
@@ -15,25 +37,19 @@
         />
     </template>
 
-    <template v-slot:loginFooter>   
-        <p>
-          {{ $t("LoginComponent.copyright.1" ) }}
-          <br />
-          {{ $t("LoginComponent.copyright.2", {
-          version: getInsectModuleVersion()
-          }) }}
-          <br />
-          {{ $t("LoginComponent.copyright.3", {
-          version: versionInfo.version
-          }) }}
-          <br />
-          {{
-          $t("LoginComponent.copyright.4", {
-          version: versionInfo.version
+    <slot name="loginFooter">
+      <p>
+        {{ $t("LoginComponent.copyright.3", {
+        version: this.versionInfo.version
+      }) }}
+        <br />
+        {{
+          $t("component.login.copyright.4", {
+            version: this.versionInfo.version
           })
-          }}
-        </p>
-    </template>
+        }}
+      </p>
+    </slot>
   </opensilex-DefaultLoginComponent>
   
 </template>
@@ -69,6 +85,29 @@ export default class InsectLoginComponent extends Vue {
 </script>
 
 <style scoped lang="scss">
+#imagesCarrousel img {
+
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-background-size: cover;
+  background-size: cover;
+
+  background-repeat: no-repeat;
+  left:0;
+  -webkit-transition: opacity 2s ease-in-out;
+  -moz-transition: opacity 2s ease-in-out;
+  -o-transition: opacity 2s ease-in-out;
+  transition: opacity 2s ease-in-out;
+}
+
+#imagesCarrousel img.top {
+  animation-name: LoginImageAnimation;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: 17s;
+  animation-direction: normal;
+}
 </style>
 
 <i18n>

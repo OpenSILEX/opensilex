@@ -17,13 +17,17 @@ import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -40,6 +44,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     protected final String createPath = path;
     protected final String updatePath = path;
     protected final String deletePath = path + "/{uri}";
+    protected final String exportGeospatialPath = path + "/export_geospatial";
     private int soCount = 1;
 
     protected AreaCreationDTO getCreationDTO(boolean geometryError) throws Exception {
@@ -184,5 +189,63 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         });
         AreaGetDTO soGetDetailDTO = getResponse.getResult();
         assertNotNull(soGetDetailDTO);
+    }
+
+    @Test
+    public void testExportAreasAsShpandGeoJson() throws Exception {
+
+        //Create one Device Model
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
+        URI uri = extractUriFromResponse(postResult);
+
+        AreaModel areaModel = new AreaModel();
+
+        areaModel.setName("AreaExported");
+        areaModel.setUri(uri);
+        areaModel.setType(new URI("http://www.opensilex.org/vocabulary/oeso#Area"));
+        areaModel.setTypeLabel(new SPARQLLabel("Area","en"));
+
+        areaModel.setDescription("Non de Zeus !");
+
+        //build geometry
+        List<Position> list = new LinkedList<>();
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97171243, 43.61332417));
+        list.add(new Position(3.9717427, 43.61330558));
+        list.add(new Position(3.97170272, 43.61327122));
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97167246, 43.61328981));
+        Geometry geometry = new Polygon(list);
+
+        GeometryDTO objToExport=new GeometryDTO();
+        objToExport.setGeometry(geometryToGeoJson(geometry));
+        objToExport.setUri(areaModel.getUri());
+
+        ArrayList<GeometryDTO> objectsList= new ArrayList<>();
+        objectsList.add(objToExport);
+
+        //build params
+        ArrayList<URI> propsList= new ArrayList<>();
+        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        propsList.add(new URI("rdfs:comment"));
+
+        Map<String, Object> paramsShp = new HashMap<>() {{
+            put("format", "shp");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        Map<String, Object> paramsGJson = new HashMap<>() {{
+            put("format", "geojson");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        // assert service
+        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultShp.getStatus());
+        // assert service
+        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultGJson.getStatus());
     }
 }

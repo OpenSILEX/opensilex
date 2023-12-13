@@ -88,6 +88,7 @@ export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
   reset?: () => void;
   tutorial?: () => void;
   setSelectorsToFirstTimeOpenAndSetLabels?: (objectsWithLabels : Array<any>) => void;
+  onShowEditForm?: () => void;
 }
 
 /**
@@ -103,6 +104,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("validatorRef") readonly validatorRef!: any;
+  @Ref("componentRef") readonly componentRef!: any;
 
   editMode = false;
 
@@ -288,6 +290,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
       this.validatorRef.reset();
       if (this.getFormRef().reset) {
         this.getFormRef().reset();
+      }
+      if(this.getFormRef().onShowEditForm){
+        this.getFormRef().onShowEditForm();
       }
     });
   }

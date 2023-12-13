@@ -195,6 +195,20 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param entity the data to POST on the given target
+     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getOctetPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
+        return appendAdminToken(target)
+                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                .post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
      * Get {@link Response} from an {@link ApiProtected} POST service call. If you wish to perform the action using
      * the admin account, user the {@link #getJsonPostResponseAsAdmin(WebTarget, Object)} method.
      *

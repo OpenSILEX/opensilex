@@ -82,3 +82,17 @@ Definition of the chosen logo in `Dashboard.vue` component:
   />
 ```
 
+# Configuration of additional information for the data visualization
+
+Graphic configuration for dataLocationInformations key :
+
+```yaml
+# ------------------------------------------------------------------------------
+# Configuration for module: CoreModule (CoreConfig)
+front:
+  dashboard:
+    graph1:
+      dataLocationInformations: "Data from greenhouse 08 in Lezignan"
+```
+
+A box located above the graphic allows you to add informations for other users, concerning the data displayed. For example the location of the greenhouse from which the data are monitored.

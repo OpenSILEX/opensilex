@@ -3,6 +3,7 @@
   * [[1.1.2] Next Release](#112-next-release)
     * [Versions changes](#versions-changes)
     * [Updated Dependencies](#updated-dependencies)
+    * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
     * [Fixed or optimized](#fixed-or-optimized-1)
@@ -87,7 +88,7 @@ if your need more information or contact our team for support.
   version [6.0.4](https://hub.docker.com/layers/library/mongo/6.0.4/images/sha256-3c8dd1b08f8a2ec0338902affd432b40130e5acf49d6e3a1ca05ff5168100059?context=explore)
   of mongodb
 - See the
-  dockerfile :  [mongo-with-transactions.docker](opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fdocker%2Fmongo-with-transactions.docker)
+  dockerfile :  [mongo-with-transactions.docker](opensilex-dev-tools/src/main/resources/docker/mongo-with-transactions.docker)
 
 ### Updated Dependencies
 
@@ -135,17 +136,24 @@ if your need more information or contact our team for support.
 |----------------------------------------------------------------------------------------------------------------|------|
 | [medeia-validator-jackson](https://mvnrepository.com/artifact/com.worldturner.medeia/medeia-validator-jackson) |      |
 
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.2.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.1.2.md).
+
+### Changes and new features
+
+- [**GDPR**] New page to show a pdf about GDPR and/or privacy policy. To set up PDFs files, follow instructions in  [rgpd_config.md](opensilex-doc/src/main/resources/installation/configuration/GDPR_config.md) -> cc2a416b6
+- [**Credentials**] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface) -> 0865dd7ca
+
 ### Fixed or optimized
 
 - [**Scientific Object search**] Small Criteria search changes -> e0534d35b
-- Displaying RGPD as a pdf file -> cc2a416b6
 - [**UI**] Possibility of displaying all results on selectors locked to 10 elements -> 3ccabae51
 - [**Devices Visualisation**] Ajout filtre d'OS / modification service searchScientificObjects -> 22462defa
 - Define graphic dates filters to defined period or manip start and end dates -> 89c027650
 - [**Fix**] pagination in tabs remains page 1 -> be399edc9
 - [**BrAPI**] V1.3 fix -> 3721ad9f2
 - [**Dataverse**] Changes to dataverse docs -> 9a4e44235
-- [**credentials**] adding account credentials -> 0865dd7ca
 - [**Front**] Possibility to choose number of results displayed -> 26158449d
 - [**GraphQL**] added service for generating a Staple API config file -> 73b2d8adf
 - [**TabularData, Germplasms**] Possibility to search data by germplasms -> 500c2f9ec
@@ -177,7 +185,7 @@ if your need more information or contact our team for support.
 > see
 >
 the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
-> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0.md)
+> Also available [here](opensilex-doc/src/main/resources/release/1.0.0.md)
 
 ### New features
 
@@ -241,7 +249,7 @@ the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensi
 > see
 >
 the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
-> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0-rc%2B7.md)
+> Also available [here](opensilex-doc/src/main/resources/release/1.0.0-rc%2B7.md)
 
 ### New features
 

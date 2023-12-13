@@ -339,6 +339,7 @@ import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 import {User} from "../../../models/User";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
+import CriteriaSearchModalCreator from "../../scientificObjects/CriteriaSearchModalCreator.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -364,6 +365,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
+  @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
 
   get customColumns() {
     return [
@@ -403,7 +405,7 @@ export default class ExperimentScientificObjects extends Vue {
     parent: undefined,
     germplasm: undefined,
     factorLevels: [],
-    criteriaDto: undefined
+    criteriaDto: {criteria_list:[]}
   };
 
   public selected = null;
@@ -463,9 +465,9 @@ export default class ExperimentScientificObjects extends Vue {
       parent: undefined,
       germplasm: undefined,
       factorLevels: [],
-      criteriaDto: undefined
-
+      criteriaDto: {criteria_list:[]}
     };
+    this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     // Only if search and reset button are use in list
   }
 

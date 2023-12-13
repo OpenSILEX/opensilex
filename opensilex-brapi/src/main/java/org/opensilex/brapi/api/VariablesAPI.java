@@ -10,6 +10,8 @@ import io.swagger.annotations.*;
 import org.opensilex.brapi.responses.BrAPIv1ObservationVariableListResponse;
 import org.opensilex.brapi.responses.BrAPIv1SingleObservationVariableResponse;
 import org.opensilex.brapi.model.BrAPIv1ObservationVariableDTO;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -77,7 +79,17 @@ public class VariablesAPI extends BrapiCall {
             variables = varDAO.search(null, null, page, pageSize,currentUser.getLanguage());
         }
 
-        ListWithPagination<BrAPIv1ObservationVariableDTO> resultDTOList = variables.convert(BrAPIv1ObservationVariableDTO.class, BrAPIv1ObservationVariableDTO::fromModel);
+        BaseVariableDAO<MethodModel> baseVariableDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
+        ListWithPagination<BrAPIv1ObservationVariableDTO> resultDTOList = variables.convert(
+                BrAPIv1ObservationVariableDTO.class,
+                variableModel -> {
+                    try {
+                        return BrAPIv1ObservationVariableDTO.fromModel(variableModel, baseVariableDAO);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
         return new BrAPIv1ObservationVariableListResponse(resultDTOList).getResponse();
     }
     
@@ -98,7 +110,10 @@ public class VariablesAPI extends BrapiCall {
 
         VariableModel variable = variableDAO.get(observationVariableDbId);
         if (variable != null) {
-            return new BrAPIv1SingleObservationVariableResponse(BrAPIv1ObservationVariableDTO.fromModel(variable)).getResponse();
+            BaseVariableDAO<MethodModel> baseVariableDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
+            return new BrAPIv1SingleObservationVariableResponse(
+                    BrAPIv1ObservationVariableDTO.fromModel(variable, baseVariableDAO)
+            ).getResponse();
         } else {
             throw new NotFoundURIException(observationVariableDbId);
         }        

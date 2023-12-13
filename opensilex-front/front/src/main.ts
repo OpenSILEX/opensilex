@@ -11,7 +11,8 @@ import "reflect-metadata"
 declare var document: any;
 
 // Import Vue as a global window variable
-import Vue from 'vue'
+import Vue from 'vue';
+import VueMatomo from 'vue-matomo';
 declare var window: any;
 window.Vue = Vue;
 
@@ -335,6 +336,18 @@ extend("nameFiltered", ( value) => {
   return valid;
 });
 
+//Has the same functionality as the existing vee-validate excluded rule. But ignores case and white spaces
+extend("existingProperty", {
+  validate: (value: string, args: string[])=>{
+    //Remove white spaces and turn all capital letters into normal letters
+    let flattenedValue = value.toLowerCase().replaceAll(" ", "");
+    let flattenedArgs: string[] = [];
+    args.forEach(arg=>flattenedArgs.push(arg.toLowerCase().replaceAll(" ", "")))
+    return !flattenedArgs.includes(flattenedValue);
+}
+});
+
+
 //To refuse some operators
 extend('refuseOperators', {
   ...excluded,
@@ -551,6 +564,7 @@ $opensilex.loadModules([
       console.debug("Initialize global user");
       store.commit("login", user);
 
+
       // Load user-specific configuration
       console.debug("Start loading user-specific configuration...");
       vueJsService.getUserConfig()
@@ -652,6 +666,33 @@ $opensilex.loadModules([
                     ),
                     i18n
                   };
+
+                  // Load matomo
+                  if (config.matomo.serverUrl) {
+                    console.debug(`Configuring Matomo with server URL ${config.matomo.serverUrl}`);
+                    // See https://github.com/AmazingDreams/vue-matomo for configuration
+                    Vue.use(VueMatomo, {
+                      host: config.matomo.serverUrl,
+                      siteId: config.matomo.siteId,
+                      trackerFileName: 'matomo',
+                      router,
+                      enableLinkTracking: true,
+                      requireConsent: false,
+                      trackInitialView: true,
+                      disableCookies: false,
+                      requireCookieConsent: false,
+                      enableHeartBeatTimer: false,
+                      heartBeatTimerInterval: 15,
+                      debug: false,
+                      userId: undefined,
+                      cookieDomain: undefined,
+                      domains: undefined,
+                      preInitActions: [],
+                      trackSiteSearch: false,
+                      crossOrigin: undefined
+                    });
+                  }
+
                   new Vue(vueOptions).$mount('#app').$nextTick(() => {
                     // Hide loader
                     console.debug("Hide application init loader");

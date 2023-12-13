@@ -36,6 +36,7 @@
                         @select="updateEntity"
                         :actionHandler="editMode ? undefined : showEntityCreateForm"
                         :disabled="false"
+                        @loadMoreItems="loadMoreItems(entitySelectForm)"
                     ></opensilex-SelectForm>
                     <opensilex-AgroportalEntityForm
                         ref="entityForm"
@@ -59,6 +60,7 @@
                         helpMessage="VariableForm.interestEntity-help"
                         :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
                         :disabled="false"
+                        @loadMoreItems="loadMoreItems(interestEntitySelectForm)"
                     ></opensilex-SelectForm>
                     <opensilex-AgroportalEntityOfInterestForm
                         ref="interestEntityForm"
@@ -83,6 +85,7 @@
                         @select="updateCharacteristic"
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
                         :disabled="false"
+                        @loadMoreItems="loadMoreItems(characteristicSelectForm)"
                     ></opensilex-SelectForm>
                     <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
@@ -118,6 +121,7 @@
                         :actionHandler="editMode ? undefined : showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
                         :disabled="false"
+                        @loadMoreItems="loadMoreItems(methodSelectForm)"
                     ></opensilex-SelectForm>
                     <opensilex-AgroportalMethodForm
                         ref="methodForm"
@@ -167,6 +171,7 @@
                         :actionHandler="editMode ? undefined : showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
                         :disabled="false"
+                        @loadMoreItems="loadMoreItems(unitSelectForm)"
                     ></opensilex-SelectForm>
                     <opensilex-AgroportalUnitForm
                         ref="unitForm"
@@ -289,6 +294,7 @@ import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
 export default class VariableForm extends Vue {
     $opensilex: any;
     $store: any;
+    pageSize = 10;
 
     @Prop()
     editMode: boolean;
@@ -508,7 +514,7 @@ export default class VariableForm extends Vue {
     }
 
     searchEntities(name: string, page, pageSize){
-        return this.service.searchEntities(name, ["name=asc"], page, pageSize)
+        return this.service.searchEntities(name, ["name=asc"], page, this.pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -535,7 +541,7 @@ export default class VariableForm extends Vue {
     }
 
     searchInterestEntities(name: string, page, pageSize){
-        return this.service.searchInterestEntity(name, ["name=asc"], page, pageSize)
+        return this.service.searchInterestEntity(name, ["name=asc"], page, this.pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -563,7 +569,7 @@ export default class VariableForm extends Vue {
     
     searchCharacteristics(name: string, page, pageSize){
         return this.service
-            .searchCharacteristics(name, ["name=asc"], page, pageSize)
+            .searchCharacteristics(name, ["name=asc"], page, this.pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -590,7 +596,7 @@ export default class VariableForm extends Vue {
 
     searchMethods(name: string, page, pageSize){
         return this.service
-            .searchMethods(name, ["name=asc"], page, pageSize)
+            .searchMethods(name, ["name=asc"], page, this.pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -617,7 +623,7 @@ export default class VariableForm extends Vue {
 
     searchUnits(name: string ,page, pageSize){
         return this.service
-            .searchUnits(name, ["name=asc"], page,pageSize)
+            .searchUnits(name, ["name=asc"], page,this.pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -850,6 +856,14 @@ export default class VariableForm extends Vue {
             },
         ];
     }
+
+  loadMoreItems(ref){
+    this.pageSize = 0;
+    ref.refresh();
+    this.$nextTick(() => {
+      ref.openTreeselect();
+    })
+  }
 
 }
 </script>

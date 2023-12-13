@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -2613,5 +2614,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         });
 
         return graphModelMap;
+    }
+
+    /**
+     * @throws ConflictException if the instanceURI is linked with other ressources in the RDF database
+     * Using the following sparkl ASK request :
+     * <pre>
+     * ASK
+     * WHERE
+     *   {
+     *      ?s  ?p  <{instanceURI}>
+     *   }
+     * </pre>
+     *
+     * </br>
+     * Exemple of request with the predicate "foaf:account" excluded
+     * <pre>
+     * ASK
+     * WHERE
+     *   { ?s  ?p  <{instanceURI}>
+     *     FILTER ( ?p != <http://xmlns.com/foaf/0.1/account> )
+     *   }
+     * </pre>
+     */
+    public void requireUriIsNotLinkedWithOtherRessourcesInRDF(URI instanceURI, List<String> predicateUrisToExclude) throws ConflictException, SPARQLException {
+        Node uriNode = SPARQLDeserializers.nodeURI(instanceURI);
+        String pVar = "?p";
+
+        AskBuilder isLinked = new AskBuilder()
+                .addWhere(SPARQLQueryHelper.makeVar("?s"), SPARQLQueryHelper.makeVar(pVar), uriNode);
+
+        if (Objects.nonNull(predicateUrisToExclude)) {
+            predicateUrisToExclude.forEach(uri -> {
+                Node predicateUri = SPARQLDeserializers.nodeURI(uri);
+                isLinked.addFilter(new ExprFactory().ne(pVar, predicateUri));
+            });
+        }
+
+        if ( executeAskQuery(isLinked) ){
+            throw new ConflictException("URI <"+instanceURI+"> is linked with other ressources");
+        }
     }
 }

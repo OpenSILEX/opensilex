@@ -109,12 +109,12 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
     public void deleteBothdefaultAccounts() throws Exception {
         AccountModel accountModel = accountDAO.getByEmail(new InternetAddress(getAccount1CreationDTO().getEmail()));
         if (Objects.nonNull(accountModel)) {
-            accountDAO.delete(accountModel.getUri());
+            accountDAO.delete(accountModel.getUri(), getOpensilex());
         }
 
         accountModel = accountDAO.getByEmail(new InternetAddress(getAccount2CreationDTO().getEmail()));
         if (Objects.nonNull(accountModel)) {
-            accountDAO.delete(accountModel.getUri());
+            accountDAO.delete(accountModel.getUri(), getOpensilex());
         }
     }
 

@@ -31,7 +31,8 @@ import static org.junit.Assert.*;
 public class MongoReadDaoTest extends MongoDBServiceTest {
 
     protected static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> dao;
-    private static final String TEST_DATASET_BASE_TYPE_URI = "opensilex:type_:";
+
+    private static final String TEST_DATASET_BASE_TYPE_URI = "opensilex:type_";
     private static final List<URI> TYPE_LIST = List.of(
             URI.create(TEST_DATASET_BASE_TYPE_URI + 1),
             URI.create(TEST_DATASET_BASE_TYPE_URI + 2),
@@ -45,15 +46,13 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             URI.create(TEST_DATASET_BASE_URI + 2),
             URI.create(TEST_DATASET_BASE_URI + 3)
     );
+    private static final int EXPECTED_RESULT = 100;
     private static final int EXPECTED_RESULT_BY_TYPE = 10;
+    private static final Bson PROJECTION = Projections.fields(
+            Projections.include(MongoTestModel.URI_FIELD, MongoTestModel.TYPE_FIELD, MongoTestModel.NAME_FIELD, MongoTestModel.ID_FIELD)
+    );
 
     private static final Path JSON_FILE_PATH = Paths.get("src", "test", "resources", "generated_documents.zip");
-
-
-    private static final Bson PROJECTION = Projections.fields(
-            Projections.include(MongoTestModel.URI_FIELD, MongoTestModel.TYPE_FIELD, MongoTestModel.NAME_FIELD, MongoTestModel.ID_FIELD),
-            Projections.exclude(MongoTestModel.TAGS_FIELD, MongoTestModel.VALUES_FIELD)
-    );
 
     @BeforeClass
     public static void setUp() {
@@ -137,6 +136,8 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         assertEquals(1, dao.count(filter));
 
         filter = new MongoSearchFilter();
+        assertEquals(EXPECTED_RESULT, dao.count(filter));
+
         filter.setRdfTypes(TYPE_LIST);
         assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, dao.count(filter));
 
@@ -156,7 +157,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         assertNotNull(results.getList());
         assertEquals(1, results.getList().size());
 
+
         filter = new MongoSearchFilter();
+        results = dao.search(filter);
+        assertEquals(EXPECTED_RESULT, results.getList().size());
+
         filter.setRdfTypes(TYPE_LIST);
         results = dao.search(filter);
         assertNotNull(results.getList());

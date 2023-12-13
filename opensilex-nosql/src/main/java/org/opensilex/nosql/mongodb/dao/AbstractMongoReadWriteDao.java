@@ -294,16 +294,16 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return filters;
     }
 
-    protected Bson filterToBson(F searchFilter) {
+    protected @NotNull Bson filterToBson(F searchFilter) {
 
         if(searchFilter == null){
-            return null;
+            return Filters.empty();
         }
 
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
 
         if (bsonFilters.isEmpty()) {
-            return null;
+            return Filters.empty();
         } else if (bsonFilters.size() == 1) {
             return bsonFilters.get(0);
         }

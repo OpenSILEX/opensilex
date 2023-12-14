@@ -12,7 +12,7 @@
       :convertAction="convert"
       :static="false"
       :nextStepAction="nextStep"
-      :customValidation="validateCustom"
+      :validateAction="validateCustom"
       :isBlockingStep="false"
   >
     <template v-slot:enrichAdditionalFields="scope">

@@ -161,8 +161,12 @@ export default class WizardForm extends Vue {
   @Prop()
   nextStepAction: Function;
 
+  /**
+   * Add a custom validation function to the form. This function will be called during the final validation, before
+   * `update or `create` are called.
+   */
   @Prop()
-  customValidation: Function;
+  validateAction: (form: unknown) => boolean;
 
   getStepBtnFinishTitle(props) {
     return (this.steps[props.activeTabIndex].finish)
@@ -292,8 +296,8 @@ export default class WizardForm extends Vue {
     this.validateStep(props).then(isValid => {
       if (isValid) {
 
-        if (this.customValidation) {
-          if (!this.customValidation(this.form)) {
+        if (this.validateAction) {
+          if (!this.validateAction(this.form)) {
             return false;
           }
         }

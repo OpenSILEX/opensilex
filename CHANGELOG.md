@@ -1,10 +1,12 @@
 <!-- TOC -->
 * [Changelog](#changelog)
   * [[1.2.0] Next Release](#120-next-release)
+    * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
     * [Versions changes](#versions-changes)
-    * [Updated Dependencies](#updated-dependencies)
+    * [Technical changes](#technical-changes)
+      * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
     * [Changes and new features](#changes-and-new-features-1)
     * [Fixed or optimized](#fixed-or-optimized-1)
@@ -75,29 +77,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] Next Release
 
+### Highlight
+
+- [General] Every resource now has associated metadata linking to its creator (account), its date of creation and its 
+  last update date. This metadata is usually displayed in the detailed view of a resource. -> bf721199
+- [Scientific Object] You can now search scientific objects by applying mathematical filters on their associated 
+  data. For example, you can search "all scientific objects with recorded data for the variable 'air_temperature' where
+  the value is between 10°C and 20°C". -> b4d06f44
+- [Person] You can now create a person based on an existing ORCID account. All relevant data will be automatically 
+  fetched to fill the person's info. -> 3361a1c8
+- [RGPD] You can now display your RGPD file as a PDF in the web interface. -> cc2a416b
+
 ### Changes and new features
 
-- [**GDPR**] New page to show a pdf about GDPR and/or privacy policy. To set up PDFs files, follow instructions in [rgpd_config.md](opensilex-doc/src/main/resources/installation/configuration/GDPR_config.md) -> cc2a416b6
-- [**Credentials**] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface) -> 0865dd7ca
+- [Person] Enhanced the ergonomy of the "phone number" field for the person form. -> c9238820
+- [Data] You can now search data by the germplasm group of their target. -> 500c2f9e
+- [Ergonomy] You can now choose the number of results displayed in search result tables. -> 26158449
+- [Ergonomy] In selectors, you can now expand the displayed results that were previously capped at 10 items. -> 3ccabae5
+- [Security] There are now credentials to manage accounts. -> 0865dd7c
+- [Device] You can now filter the data in the device graphs by target. -> 22462def
+- [Graphs] The default visualization date for data has been adjusted. -> 89c02765
+  - For devices, variables or scientific objects graphs, the default beginning date is now 15 days before the current 
+    date.
+  - In the case of a finished experiment, the default dates are those of the experiment.
+- [Analytics] You can now configure an OpenSILEX instance to send analytics data to a Matomo server. -> 90177a11
+- [Germplasm] The germplasm model now supports 3 additional properties, `has_parent`, `has_parent_m` and 
+  `has_parent_f`. You can also search germplasms using these properties as filters. -> 1f107ee0
+- [Dashboard] You can now configure your dashboard to display a custom title to your graph. -> a1e37f00
+- [Map] You can now export elements from the map in the GeoJSON format. -> da13f442
 
 ### Fixed or optimized
 
-- [**Scientific Object search**] Small Criteria search changes -> e0534d35b
-- [**UI**] Possibility of displaying all results on selectors locked to 10 elements -> 3ccabae51
-- [**Devices Visualisation**] Ajout filtre d'OS / modification service searchScientificObjects -> 22462defa
-- Define graphic dates filters to defined period or manip start and end dates -> 89c027650
-- [**Fix**] pagination in tabs remains page 1 -> be399edc9
-- [**BrAPI**] V1.3 fix -> 3721ad9f2
-- [**Dataverse**] Changes to dataverse docs -> 9a4e44235
-- [**Front**] Possibility to choose number of results displayed -> 26158449d
-- [**GraphQL**] added service for generating a Staple API config file -> 73b2d8adf
-- [**TabularData, Germplasms**] Possibility to search data by germplasms -> 500c2f9ec
-- [**Person**] new component for phone number -> c9238820d
-- [**BugFix**] Variable group selector -> 40dfd0fcb
-- [**Metrics**] Fix variable name in metrics -> 4ab1fa1a2
-- [**ORCID**] pré-remplissage du formulaire des personnes via ORCID -> 3361a1c8f
-- [**Map**] Fix filterMap -> 8f5facd17
-- [**Metadata**] Add metadata on all opensilex model -> bf7211997
+- [Ergonomy] When going back to a previously visited list, the pagination is kept. -> 62a6fb26
+- [Metrics] The metrics service now returns correctly the variable names. -> 4ab1fa1a
+- [Variable group] The "variable group" selector now works correctly for multiple selection. -> 40dfd0fc
+- [BrAPI] Missing mappings for BrAPI 1.3 were added, and other mappings that returned an incorrect format were fixed.
+  -> 3721ad9f
+- [Table list] In table lists where items can be selected, the selection count is now correct even when a selected 
+  item is deleted. -> a45111a7
+- [Germplasm] You can now correctly import multiple germplasms with the same name using a CSV file. -> 16228e14
+- [Data] Importing data when the target column is the last column now works correctly. -> fded1f4d
+- [Site] The link to a hosted organization from a site now redirects correctly. -> b2c8ef07
+- [Account] You can no longer delete an account while it is associated to other data. -> 3abe2506
 
 ### Versions changes
 
@@ -117,7 +138,11 @@ if your need more information or contact our team for support.
 - See the
   dockerfile :  [mongo-with-transactions.docker](opensilex-dev-tools/src/main/resources/docker/mongo-with-transactions.docker)
 
-### Updated Dependencies
+### Technical changes
+
+- [GraphQL] A service wa added to generate a Staple API configuration file. -> 73b2d8ad
+
+#### Updated Dependencies
 
 > Maven plugins
 

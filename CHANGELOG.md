@@ -1,6 +1,6 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.2.0] Next Release](#120-next-release)
+  * [[1.2.0] - Next Release](#120---next-release)
     * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
@@ -75,7 +75,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] Next Release
+## [1.2.0] - Next Release
+
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.2.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.1.2.md).
 
 ### Highlight
 
@@ -187,10 +191,6 @@ if your need more information or contact our team for support.
 | Name                                                                                                           | Note |
 |----------------------------------------------------------------------------------------------------------------|------|
 | [medeia-validator-jackson](https://mvnrepository.com/artifact/com.worldturner.medeia/medeia-validator-jackson) |      |
-
-> WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.2.md).
-> Also available [locally](opensilex-doc/src/main/resources/release/1.1.2.md).
 
 ## [1.1.0] - Blazing Basalt
 

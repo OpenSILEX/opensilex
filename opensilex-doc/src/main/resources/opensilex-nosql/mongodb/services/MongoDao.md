@@ -1,34 +1,35 @@
-# Specifications : [#mongodb] MongoDB DAOs and Service
+---
+title: MongoDB DAOs and Service
+date: 15/12/2023
+tags:
+  - MongoDB
+---
+
+# Specifications : MongoDB DAOs and Service
 
 **Document history (please add a line when you edit the document)**
 
 | Date       | Editor(s)    | OpenSILEX version | Comment           |
 |------------|--------------|-------------------|-------------------|
-| 29/01/2023 | Renaud COLIN |                   | Document creation |
+| 15/12/2023 | Renaud COLIN |                   | Document creation |
 
-> ⚠️ _WARNING_ : This document is incomplete ! You can help by expanding it. ⚠️
->
-> Currently covered topics :
->
-> - {topic 1}
->
-> Missing topics :
->
-> - {topic 2}
 
 # Table of contents
 
 <!-- TOC -->
-* [Specifications : [#mongodb] MongoDB DAOs and Service](#specifications--mongodb-mongodb-daos-and-service)
+* [Specifications : MongoDB DAOs and Service](#specifications--mongodb-daos-and-service)
 * [Table of contents](#table-of-contents)
 * [Definitions](#definitions)
 * [Analysis](#analysis)
   * [Non-functional requirements](#non-functional-requirements)
+    * [Performance](#performance)
+    * [Reliability](#reliability)
 * [Solution](#solution)
   * [Business logic](#business-logic)
-* [Technical specifications](#technical-specifications)
+  * [Technical specifications](#technical-specifications)
   * [Technical definitions](#technical-definitions)
   * [Detailed explanations](#detailed-explanations)
+    * [DAOs and Services](#daos-and-services)
   * [Tests](#tests)
     * [Ensure that the MongoDBService is stateless](#ensure-that-the-mongodbservice-is-stateless)
     * [Test concurrents calls to MongoDBService](#test-concurrents-calls-to-mongodbservice-)
@@ -48,6 +49,17 @@
 
 # Analysis
 
+OpenSILEX rely on [MongoDB](https://www.mongodb.com/fr-fr) for the storage and the interrogation of several's kind
+of data models.
+The use of MongoDB is guided by the following reasons : 
+- A **semi-structured** data-model which provides flexibility for developers for updating data-models and allow
+to store several data-models inside the same database
+- A **good performance** for OLTP and OLAP workload
+- MongoDB provide **horizontal scalability** with **sharding** and **replication**
+- MongoDB offers all the common functionality of a DBMS (**authentification**, **transaction**, **performance-tuning**, **database management**)
+- A strong **community** and a **stable team**
+
+
 {Briefly describe the user needs}
 
 - Use case #{number}: As a {user category}, I want to {action}.
@@ -57,13 +69,9 @@
 {Describe all non-functional requirements in this section, and give precise metrics if possible.
 Below are some common examples.}
 
-- **{Performance}** : {limit of the acceptable performances (latency, execution time, etc.) for the feature}
-- **{Security}** : {access restriction (which user should have access to the feature, are there potential
-  vulnerabilities, etc.)}
-- **{Ergonomy}** : {how accessible the feature should be (visual or textual representations, number of
-  clicks needed to perform an action)}
-- **{Reliability}** : {how resilient the feature should be (what happens if the user enters an invalid input,
-  or if a service is unavailable)}
+### Performance
+
+### Reliability
 
 # Solution
 
@@ -75,7 +83,7 @@ other solutions were considered and why they were not kept.}
 {If some specific business rules are applicable in the solution, describe them extensively in this
 section. Business logic also includes authorization rules.}
 
-# Technical specifications
+## Technical specifications
 
 ## Technical definitions
 
@@ -83,9 +91,7 @@ section. Business logic also includes authorization rules.}
 
 ## Detailed explanations
 
-{Describe the files, classes, methods, algorithms and architectural choices that are essential to the
-solution. You can divide this section in subsections to keep it organized. For example, you can have
-an API and Front-end subsections, but that is not mandatory.}
+### DAOs and Services
 
 
 ## Tests

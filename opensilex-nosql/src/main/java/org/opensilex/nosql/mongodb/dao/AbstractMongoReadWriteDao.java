@@ -10,17 +10,19 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.server.rest.validation.Required;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -35,7 +37,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     protected final String createPrefix;
     protected final Logger logger;
 
-    protected AbstractMongoReadWriteDao(MongoDBServiceV2 mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
+    protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
         collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
@@ -53,13 +55,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public T get(@NotNull URI uri) throws NoSQLInvalidURIException {
+    public @NotNull T get(@NotNull URI uri) throws NoSQLInvalidURIException {
         Objects.requireNonNull(uri);
         return mongodb.findByURI(collection, uri, idField());
     }
 
     @Override
-    public T get(@Nullable ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException {
+    public @NotNull T get(ClientSession session, @Valid @Required @NotNull URI uri) throws NoSQLInvalidURIException {
         Objects.requireNonNull(uri);
         return mongodb.findByURI(session, collection, uri, idField());
     }
@@ -82,7 +84,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public InsertOneResult create(T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
+    public @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
         return create(instance, null);
     }
 
@@ -92,8 +94,10 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public InsertManyResult create(List<T> instances, ClientSession session) throws MongoException, NoSQLAlreadyExistingUriException, URISyntaxException {
-        Objects.requireNonNull(instances);
+    public InsertManyResult create(@NotNull @NotEmpty List<T> instances, ClientSession session) throws MongoException, NoSQLAlreadyExistingUriException, URISyntaxException {
+        if (CollectionUtils.isEmpty(instances)) {
+            throw new IllegalArgumentException("instances list must not be empty");
+        }
         return mongodb.createAll(instances, collection, session, createPrefix, true, true);
     }
 
@@ -103,7 +107,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public void update(T instance, ClientSession session) throws MongoException, NoSQLInvalidURIException {
+    public void update(@NotNull T instance, ClientSession session) throws MongoException, NoSQLInvalidURIException {
         Objects.requireNonNull(instance);
         mongodb.update(instance, collection, getUpdateFilter(instance), session);
     }
@@ -114,39 +118,41 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public DeleteResult delete(URI uri, ClientSession session) throws MongoException {
+    public @NotNull DeleteResult delete(@NotNull URI uri, ClientSession session) throws MongoException {
         Objects.requireNonNull(uri);
         return mongodb.delete(collection, session, getIdFilter(uri));
     }
 
     @Override
-    public DeleteResult delete(List<URI> uris, ClientSession session) throws MongoException {
-        Objects.requireNonNull(uris);
+    public @NotNull DeleteResult delete(@NotNull @NotEmpty List<URI> uris, ClientSession session) throws MongoException {
+        if (CollectionUtils.isEmpty(uris)) {
+            throw new IllegalArgumentException("uris list must not be empty");
+        }
         return mongodb.deleteOnCriteria(collection, session, Filters.in(idField(), uris));
     }
 
     public Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
         Bson filter = filterToBson(deleteFilter);
-        if (filter == null) {
+        if (filter.toBsonDocument().isEmpty()) {
             throw new IllegalArgumentException("[" + collection.getNamespace().getCollectionName() + "] Empty delete filter : provide at least a filter");
         }
         return filter;
     }
 
     @Override
-    public DeleteResult delete(F deleteFilter, ClientSession session) throws MongoException {
+    public @NotNull DeleteResult delete(@NotNull F deleteFilter, ClientSession session) throws MongoException {
+        Objects.requireNonNull(deleteFilter);
         return mongodb.deleteOnCriteria(collection, session, deleteFilterToDocument(deleteFilter));
     }
 
     @Override
-    public DeleteResult delete(URI uri) throws MongoException {
+    public @NotNull DeleteResult delete(@NotNull URI uri) throws MongoException {
         return delete(uri, null);
     }
 
 
     @Override
-    public DeleteResult delete(F filter) throws MongoException {
-        Objects.requireNonNull(filter);
+    public @NotNull DeleteResult delete(@NotNull F filter) throws MongoException {
         return delete(filter, null);
     }
 
@@ -161,12 +167,11 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return mongodb.count(session, collection, filterToBson(filter));
     }
 
-    @NotNull
+    @Override
     public final ListWithPagination<T> search(@NotNull F filter) throws MongoException {
         return search(null, filter, null);
     }
 
-    @NotNull
     @Override
     public ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         Objects.requireNonNull(filter);
@@ -182,7 +187,6 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         );
     }
 
-    @NotNull
     @Override
     public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_CONVERTED> convertFunction) throws MongoException {
 
@@ -212,20 +216,18 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
     }
 
-    @NotNull
+    @Override
     public final <T_CONVERTED> ListWithPagination<T_CONVERTED> search(@NotNull F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
         return search(null, filter, null, convertFunction);
     }
 
-    @NotNull
     @Override
     public StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException {
         return searchAsStream(null, filter, null);
     }
 
-    @NotNull
     @Override
-    public StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
+    public @NotNull StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
 
         Objects.requireNonNull(filter);
 
@@ -252,6 +254,8 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     @Override
     public Set<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException {
+        Objects.requireNonNull(filter);
+
         return mongodb.distinctWithPagination(
                 collection,
                 MongoModel.URI_FIELD,
@@ -294,11 +298,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return filters;
     }
 
-    protected @NotNull Bson filterToBson(F searchFilter) {
-
-        if(searchFilter == null){
-            return Filters.empty();
-        }
+    protected @NotNull Bson filterToBson(@NotNull F searchFilter) {
 
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
 
@@ -317,13 +317,12 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public <T_RESULT> Set<T_RESULT> distinct(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, @Nullable ClientSession session) {
-        Objects.requireNonNull(field);
+    public <T_RESULT> Set<T_RESULT> distinct(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, ClientSession session) {
         return mongodb.distinct(field, resultClass, collection, filterToBson(filter), session);
     }
 
     @Override
-    public <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, @Nullable ClientSession session) {
+    public <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, F filter, ClientSession session) {
         return mongodb.distinctWithPagination(
                 collection,
                 field,
@@ -337,12 +336,12 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(@Nullable F filter,
+    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(F filter,
                                                                  @NotNull String lookupField,
                                                                  @NotNull String lookupCollectionName,
                                                                  @NotNull Class<T_JOINED> lookupClass,
                                                                  @NotNull Function<T_JOINED, T_RESULT> convertFunction,
-                                                                 @Nullable ClientSession session) {
+                                                                 ClientSession session) {
         return mongodb.lookupAggregation(
                 collection,
                 lookupCollectionName,

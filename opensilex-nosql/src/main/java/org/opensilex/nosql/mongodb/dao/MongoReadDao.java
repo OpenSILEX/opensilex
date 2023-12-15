@@ -3,13 +3,12 @@ package org.opensilex.nosql.mongodb.dao;
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import org.bson.conversions.Bson;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +19,7 @@ import java.util.function.Function;
  *
  * @param <T> The type of the MongoDB model.
  * @param <F> The kind of filter specific to this DAO.
+ * @author rcolin
  */
 public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter> {
 
@@ -28,19 +28,19 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *
      * @param uri The URI of the model to retrieve.
      * @return The model corresponding to the given URI.
-     * @throws NoSQLInvalidURIException If the provided URI is invalid.
+     * @throws NoSQLInvalidURIException If no Model with the given URI is found from database
      */
-    T get(@NotNull URI uri) throws NoSQLInvalidURIException;
+    @NotNull T get(@NotNull URI uri) throws NoSQLInvalidURIException;
 
     /**
      * Get a model by its URI within a client session.
      *
      * @param session The MongoDB client session.
-     * @param uri The URI of the model to retrieve.
+     * @param uri     The URI of the model to retrieve.
      * @return The model corresponding to the given URI.
-     * @throws NoSQLInvalidURIException If the provided URI is invalid.
+     * @throws NoSQLInvalidURIException If no Model with the given URI is found from database
      */
-    T get(@Nullable ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException;
+    @NotNull T get(ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException;
 
     /**
      * Check if a model with the given URI exists.
@@ -55,11 +55,11 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * Check if a model with the given URI exists within a client session.
      *
      * @param session The MongoDB client session.
-     * @param uri The URI of the model to check.
+     * @param uri     The URI of the model to check.
      * @return True if the model exists, false otherwise.
      * @throws MongoException If a MongoDB error occurs.
      */
-    boolean exists(@Nullable ClientSession session, @NotNull URI uri) throws MongoException;
+    boolean exists(ClientSession session, @NotNull URI uri) throws MongoException;
 
     /**
      * Count models based on the provided filter.
@@ -74,11 +74,11 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * Count models based on the provided filter within a client session.
      *
      * @param session The MongoDB client session.
-     * @param filter The filter to apply.
+     * @param filter  The filter to apply.
      * @return The number of models matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
-    long count(@Nullable ClientSession session, @NotNull F filter) throws MongoException;
+    long count(ClientSession session, @NotNull F filter) throws MongoException;
 
     /**
      * Search for models based on the provided filter.
@@ -92,47 +92,44 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     /**
      * Search for models based on the provided filter within a client session.
      *
-     * @param session The MongoDB client session.
-     * @param filter The filter to apply.
+     * @param session    The MongoDB client session.
+     * @param filter     The filter to apply.
      * @param projection The projection to apply on search results.
      * @return List of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull ListWithPagination<T> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
+    @NotNull ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
 
     /**
      * Search for models based on the provided filter and apply a conversion function.
      *
-     * @param filter The filter to apply.
+     * @param filter          The filter to apply.
      * @param convertFunction The function to convert models to another type.
-     * @param <T_RESULT> The result type after conversion.
+     * @param <T_RESULT>      The result type after conversion.
      * @return List of converted models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
-     *
      */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@NotNull F filter, @Nullable Function<T, T_RESULT> convertFunction) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@NotNull F filter, Function<T, T_RESULT> convertFunction) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session and apply a conversion function.
      *
-     * @param session The MongoDB client session.
-     * @param filter The filter to apply.
-     * @param projection The projection to apply on search results.
+     * @param session         The MongoDB client session.
+     * @param filter          The filter to apply.
+     * @param projection      The projection to apply on search results.
      * @param convertFunction The function to convert models to another type.
-     * @param <T_RESULT> The result type after conversion.
+     * @param <T_RESULT>      The result type after conversion.
      * @return List of converted models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
-     *
-     * @apiNote
-     * <ul>
-     *     <li>
-     *         For performance and memory usage optimization,
-     *         it's strongly advised to avoid the materialization of the full list of T result and then to create a new List of T_RESULT.
-     *         Instead it's preferable to iterate over database results and perform T -> T_RESULT convert on-the-fly.
-     *     </li>
+     * @apiNote <ul>
+     * <li>
+     * For performance and memory usage optimization,
+     * it's strongly advised to avoid the materialization of the full list of T result and then to create a new List of T_RESULT.
+     * Instead it's preferable to iterate over database results and perform T -> T_RESULT convert on-the-fly.
+     * </li>
      * </ul>
      */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection, @NotNull Function<T, T_RESULT> convertFunction) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_RESULT> convertFunction) throws MongoException;
 
     /**
      * Search for models based on the provided filter.
@@ -146,23 +143,23 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     /**
      * Search for models based on the provided filter within a client session.
      *
-     * @param session The MongoDB client session.
-     * @param filter The filter to apply.
+     * @param session    The MongoDB client session.
+     * @param filter     The filter to apply.
      * @param projection The projection to apply on search results.
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull StreamWithPagination<T> searchAsStream(@Nullable ClientSession session, @NotNull F filter, @Nullable Bson projection) throws MongoException;
+    @NotNull StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter within a client session.
      *
      * @param session The MongoDB client session.
-     * @param filter The filter to apply.
+     * @param filter  The filter to apply.
      * @return Set of distinct URIs matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
-    Set<URI> distinctUris(@Nullable ClientSession session, @NotNull F filter) throws MongoException;
+    Set<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter
@@ -176,47 +173,47 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     /**
      * Get distinct values for a specific field based on the provided filter within a client session.
      *
-     * @param field The field for which to get distinct values.
+     * @param field       The field for which to get distinct values.
      * @param resultClass The class of the result type.
-     * @param filter The filter to apply.
-     * @param session The MongoDB client session.
-     * @param <T_RESULT> The result type after conversion.
+     * @param filter      The filter to apply.
+     * @param session     The MongoDB client session.
+     * @param <T_RESULT>  The result type after conversion.
      * @return Set of distinct values for the specified field.
      */
-    <T_RESULT> Set<T_RESULT> distinct(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, @Nullable ClientSession session);
+    <T_RESULT> Set<T_RESULT> distinct(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, ClientSession session);
 
     /**
      * Get distinct values for a specific field based on the provided filter using aggregation within a client session.
      *
-     * @param field The field for which to get distinct values.
+     * @param field       The field for which to get distinct values.
      * @param resultClass The class of the result type.
-     * @param filter The filter to apply.
-     * @param session The MongoDB client session.
-     * @param <T_RESULT> The result type after conversion.
+     * @param filter      The filter to apply.
+     * @param session     The MongoDB client session.
+     * @param <T_RESULT>  The result type after conversion.
      * @return Set of distinct values for the specified field using aggregation.
      */
-    <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, @Nullable F filter, @Nullable ClientSession session);
+    <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, F filter, ClientSession session);
 
     /**
      * Perform a lookup aggregation to join collections and apply a conversion function.
      *
-     * @param filter The filter to apply on the main collection.
+     * @param filter               The filter to apply on the main collection.
      * @param lookupCollectionName The name of the collection to join with.
-     * @param lookupField The field to match in the lookup collection.
-     * @param lookupClass The class of the lookup collection.
-     * @param convertFunction The function to convert joined models to another type.
-     * @param session The MongoDB client session.
-     * @param <T_RESULT> The result type after conversion.
-     * @param <T_JOINED> The type of models in the lookup collection.
+     * @param lookupField          The field to match in the lookup collection.
+     * @param lookupClass          The class of the lookup collection.
+     * @param convertFunction      The function to convert joined models to another type.
+     * @param session              The MongoDB client session.
+     * @param <T_RESULT>           The result type after conversion.
+     * @param <T_JOINED>           The type of models in the lookup collection.
      * @return List of converted models after performing the lookup aggregation.
      */
     <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(
-            @Nullable F filter,
+            F filter,
             @NotNull String lookupCollectionName,
             @NotNull String lookupField,
             @NotNull Class<T_JOINED> lookupClass,
             @NotNull Function<T_JOINED, T_RESULT> convertFunction,
-            @Nullable ClientSession session
+            ClientSession session
     );
 
 }

@@ -798,7 +798,7 @@ export default class GermplasmTable extends Vue {
         form.code == null &&
         form.synonyms.length == 0 &&
         form.metadata == null &&
-        form.relations == null &&
+        (form.relations == null || form.relations.length === 0) &&
         form.website == null
       ) {
         this.emptyLines = this.emptyLines + 1;

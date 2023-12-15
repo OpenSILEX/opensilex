@@ -90,6 +90,14 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 console.debug("Bootstrap plugin initialized !");
 
+// Initialize Vuetify
+import Vuetify from 'vuetify'
+//import "vuetify/dist/vuetify.min.css";
+import 'roboto-fontface/css/roboto/roboto-fontface.css';
+import '@mdi/font/css/materialdesignicons.css';
+//import vuetify from './plugins/vuetify'
+Vue.use(Vuetify);
+
 // Initialise font awesome
 console.debug("Initialize FontAwesomeIcon plugin...");
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -651,6 +659,8 @@ $opensilex.loadModules([
                 ]).then(() => {
                   // Initialize main application rendering
                   console.debug("Initialize main application rendering");
+
+                  const opts = {icons: {iconfont : "mdi" }};
                   let vueOptions: any = {
                     router,
                     store,
@@ -664,7 +674,9 @@ $opensilex.loadModules([
                       }
                     },
                     ),
-                    i18n
+                    i18n,
+                    //vuetify
+                    vuetify : new Vuetify({}),
                   };
 
                   // Load matomo

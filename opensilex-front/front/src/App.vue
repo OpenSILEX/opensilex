@@ -1,4 +1,5 @@
 <template>
+<v-app id="app">
   <div>
     <global-events @keydown.enter.exact="keydownEnter"></global-events>
     <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000" :fullscreen="true">
@@ -53,6 +54,8 @@
       </div>
     </opensilex-Overlay>
   </div>
+
+  </v-app>
 </template>
 
 <script lang="ts">

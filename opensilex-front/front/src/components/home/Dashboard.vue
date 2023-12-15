@@ -46,6 +46,28 @@
           <opensilex-Twitter></opensilex-Twitter>
         </div> -->
     </div>
+
+<!-- treeview simple-->
+<template>
+  <v-treeview :items="itemsSimple" selectable></v-treeview>
+</template>
+
+<v-container>
+    <v-select v-model="selectionType" :items="['leaf', 'independent']" label="Selection type"></v-select>
+    <v-row>
+      <v-col>
+        <v-treeview
+          v-model="selection"
+          :items="items"
+          :selection-type="selectionType"
+          selectable
+          return-object
+          open-all
+        ></v-treeview>
+      </v-col>
+      <v-divider vertical></v-divider>
+    </v-row>
+  </v-container>
   </div>
 
 </template>
@@ -54,6 +76,7 @@
 import { Component } from 'vue-property-decorator';
 import Vue from 'vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+//import { VTreeview } from "vuetify/lib";
 
 @Component
 export default class Dashboard extends Vue {
@@ -93,6 +116,102 @@ export default class Dashboard extends Vue {
       this.$store.commit("showMenu");
     }
   }
+selectionType= "leaf";
+    selection= [];
+    items= [
+      {
+        id: 1,
+        name: "Root",
+        children: [
+          { id: 2, name: "Child 1" },
+          { id: 3, name: "Child 2" },
+          {
+            id: 4,
+            name: "Child 3",
+            children: [
+              { id: 5, name: "Grandchild 1" },
+              { id: 6, name: "Grandchild 2" },
+            ],
+          },
+        ],
+      },
+    ];
+
+
+
+itemsSimple= [
+        {
+          id: 1,
+          name: 'Applications :',
+          children: [
+            { id: 2, name: 'Calendar : app' },
+            { id: 3, name: 'Chrome : app' },
+            { id: 4, name: 'Webstorm : app' },
+          ],
+        },
+        {
+          id: 5,
+          name: 'Documents :',
+          children: [
+            {
+              id: 6,
+              name: 'vuetify :',
+              children: [
+                {
+                  id: 7,
+                  name: 'src :',
+                  children: [
+                    { id: 8, name: 'index : ts' },
+                    { id: 9, name: 'bootstrap : ts' },
+                  ],
+                },
+              ],
+            },
+            {
+              id: 10,
+              name: 'material2 :',
+              children: [
+                {
+                  id: 11,
+                  name: 'src :',
+                  children: [
+                    { id: 12, name: 'v-btn : ts' },
+                    { id: 13, name: 'v-card : ts' },
+                    { id: 14, name: 'v-window : ts' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 15,
+          name: 'Downloads :',
+          children: [
+            { id: 16, name: 'October : pdf' },
+            { id: 17, name: 'November : pdf' },
+            { id: 18, name: 'Tutorial : html' },
+          ],
+        },
+        {
+          id: 19,
+          name: 'Videos :',
+          children: [
+            {
+              id: 20,
+              name: 'Tutorials :',
+              children: [
+                { id: 21, name: 'Basic layouts : mp4' },
+                { id: 22, name: 'Advanced techniques : mp4' },
+                { id: 23, name: 'All about app : dir' },
+              ],
+            },
+            { id: 24, name: 'Intro : mov' },
+            { id: 25, name: 'Conference introduction : avi' },
+          ],
+        },
+      ];
+
 }
 </script>
 

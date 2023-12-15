@@ -87,6 +87,7 @@
         <vue-tel-input
             v-model="phone_number"
             defaultCountry="FR"
+            :onlyCountries="['FR']"
             validCharactersOnly
             @validate="validatePhone"
             @input="updatePhoneNumber"

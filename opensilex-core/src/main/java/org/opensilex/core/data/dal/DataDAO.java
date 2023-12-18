@@ -329,25 +329,59 @@ public class DataDAO {
         return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
+    public static class ScientificObjectsThatMatchDataCriteriaReturnObject{
+        public boolean excludeResults;
+        public List<URI> result;
+
+        ScientificObjectsThatMatchDataCriteriaReturnObject(boolean excludeResults, List<URI> result){
+            this.result = result;
+            this.excludeResults = excludeResults;
+        }
+    }
+
     /**
      *
      * @param criteriaDTO
      * @param variableDAO so we know how to fetch datatype of each variable
-     * @return Null if criteria dto had no valid criteria, empty list if valid criteria but no results,
-     * and a list of object uris if criteria were valid and results were found
+     * @return Null if criteria dto had no valid criteria, Object containing empty list if valid criteria but no results,
+     * or a list of object uris if criteria were valid and results were found
+     * The return object also contains a boolean to say if we need to keep only elements in the the list, or exclude them
      */
-    public List<URI> getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user ,VariableDAO variableDAO) throws Exception {
-        List<Bson> aggregationDocs= this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+    public ScientificObjectsThatMatchDataCriteriaReturnObject getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user ,VariableDAO variableDAO) throws Exception {
+        List<Bson> aggregationDocs;
+
+        //Verify if that there is at least one complete line and if every line is a "NotMeasured"
+        boolean atLeastOneCompleteSingle = false;
+        boolean everyLineIsNotMeausured = true;
+        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()) {
+            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
+            MathematicalOperator criteriaType = singleCriteriaDTO.getCriteria();
+            String valueString = singleCriteriaDTO.getValue();
+            //If line is complete
+            if (currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())) {
+                atLeastOneCompleteSingle = true;
+                if(criteriaType != MathematicalOperator.NotMeasured){
+                    everyLineIsNotMeausured = false;
+                }
+            }
+        }
+        if(!atLeastOneCompleteSingle){
+            return null;
+        }
+
+        //If every line is "NotMeausured" then we perform a different operation
+        //We simply get all the objects that are measured and return that we need to exclude them
+        if(everyLineIsNotMeausured){
+            aggregationDocs = this.createCriteriaSearchAggregationJustVarIsPresent(criteriaDTO, experiment,user, variableDAO);
+        }else{
+            //If every line wasn't "NotMeasured" :
+            aggregationDocs= this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+        }
         Set<DataTargetAggregateModel> criteriaSearchedResult;
 
         //If aggregationDocs is null then it means there was a contradiction
         if(aggregationDocs == null){
-            return Collections.emptyList();
-        }
-
-        //If all lines were not completed then we treat it as if there was no filter on the data.
-        if(aggregationDocs.isEmpty()){
-            return null;
+            return new ScientificObjectsThatMatchDataCriteriaReturnObject(false, Collections.emptyList());
         }
 
         criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
@@ -355,15 +389,17 @@ public class DataDAO {
         // mongo request always returns a single Document with a list of targets validating the criteria
 
         if(criteriaSearchedResult.isEmpty()){
-            return Collections.emptyList();
+            return new ScientificObjectsThatMatchDataCriteriaReturnObject(everyLineIsNotMeausured, Collections.emptyList());
         } else if (criteriaSearchedResult.size() > 1) {
             throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
         }
 
         // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
-        return criteriaSearchedResult.stream().findAny()
+        return new ScientificObjectsThatMatchDataCriteriaReturnObject(
+                everyLineIsNotMeausured,
+                criteriaSearchedResult.stream().findAny()
                 .get()
-                .getTargets();
+                .getTargets());
     }
 
     /**
@@ -371,7 +407,7 @@ public class DataDAO {
      * Translates the dto into a search filter permitting the acquisition of data needed to get the right objects.
      * Or creates error lists if there are errors in the request.
      *
-     * @return List of Bson for the aggregation, empty list if all lines were invalid, or null if a contradiction was identified
+     * @return List of Bson for the aggregation, or null if a contradiction was identified
      * </p>
      *
      * <p>
@@ -438,13 +474,7 @@ public class DataDAO {
     private List<Bson> createCriteriaSearchAggregation(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
         final List<Bson> aggregationDocuments = new ArrayList<>();
         GetScientificObjectsByDataCriteriaRequestErrors errors = new GetScientificObjectsByDataCriteriaRequestErrors();
-        //A boolean to not run pointless code if all single criteria were incomplete (A couple of incomplete criteria shouldn't throw an error)
-        boolean atLeastOneCompleteSingle = false;
-        //Some strings used to create the request :
-        final String variables = "variables";
 
-        //Data search filter
-        Document dataSearchFilter = new Document();
         List<Document> criteriaDocuments = new ArrayList<>();
         Map<String, List<Document>> criteriaDocumentPerVariable = new HashMap<>();
         //List to remember which vars we are testing to be not measured so that we can identify impossible request if we try to compare this var with a value
@@ -457,7 +487,6 @@ public class DataDAO {
             String valueString = singleCriteriaDTO.getValue();
             //If line is complete
             if(currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())){
-                atLeastOneCompleteSingle = true;
                 URI varDataTypeUri = null;
                 //Create variable filter and a new list of filters if this is the first time we've crossed this variable, add to existing list otherwise
                 String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
@@ -526,9 +555,7 @@ public class DataDAO {
                 }
             }
         }//End of criteria list for loop
-        if(!atLeastOneCompleteSingle){
-            return Collections.emptyList();
-        }else if (errors.hasErrors()){
+        if (errors.hasErrors()){
             throw new IllegalArgumentException(errors.generateErrorMessage());
         }
 
@@ -539,6 +566,63 @@ public class DataDAO {
                 criteriaDocuments.add(new Document("$and", varDocs));
             }
         }
+        return createEndOfEitherCriteriaAggregation(
+                false,
+                criteriaDocuments,
+                experiment,
+                user,
+                varsWhereWeWantNoData,
+                criteriaDocumentPerVariable.size()
+        );
+
+    }
+
+    private List<Bson> createCriteriaSearchAggregationJustVarIsPresent(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
+        List<Document> varDocuments = new ArrayList<>();
+        final List<Bson> aggregationDocuments = new ArrayList<>();
+        Document dataSearchFilter = new Document();
+        GetScientificObjectsByDataCriteriaRequestErrors errors = new GetScientificObjectsByDataCriteriaRequestErrors();
+        List<String> visitedVars = new ArrayList<>();
+        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()){
+            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
+            String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
+            if(visitedVars.contains(currentVariableStringUri)){
+                break;
+            }
+            visitedVars.add(currentVariableStringUri);
+            try {
+                VariableModel currentVariable = variableDAO.get(currentVariableUri);
+            }catch(Exception e){
+                errors.addInvalidVariable(singleCriteriaDTO, currentVariableUri);
+            }
+            varDocuments.add(new Document(DataModel.VARIABLE_FIELD, currentVariableStringUri));
+        }
+        //End of criteria list for loop
+        if (errors.hasErrors()){
+            throw new IllegalArgumentException(errors.generateErrorMessage());
+        }
+
+        return createEndOfEitherCriteriaAggregation(
+            true,
+                varDocuments,
+            experiment, user,
+            null,
+            null
+        );
+    }
+
+    private List<Bson> createEndOfEitherCriteriaAggregation(
+            boolean allWereNotMeasureds,
+            List<Document> criteriaDocuments,
+            URI experiment,
+            AccountModel user,
+            Set<String> varsWhereWeWantNoData,
+            Integer criteriaDocumentPerVariableSize) throws Exception {
+        final List<Bson> aggregationDocuments = new ArrayList<>();
+        //Data search filter
+        Document dataSearchFilter = new Document();
+        //Some strings used to create the request :
+        final String variables = "variables";
         dataSearchFilter.put("$or", criteriaDocuments);
         if(experiment == null){
             aggregationDocuments.add(new Document("$match", dataSearchFilter));
@@ -557,19 +641,23 @@ public class DataDAO {
         Document groupByIdDoc = new Document();
         groupByIdDoc.put(DataModel.TARGET_FIELD, "$" + DataModel.TARGET_FIELD);
         groupByTargetDoc.put("_id", groupByIdDoc);
-        Document groupByVarListDoc = new Document();
-        groupByVarListDoc.put("$addToSet", "$" + DataModel.VARIABLE_FIELD);
-        groupByTargetDoc.put(variables, groupByVarListDoc);
+        if(!allWereNotMeasureds){
+            Document groupByVarListDoc = new Document();
+            groupByVarListDoc.put("$addToSet", "$" + DataModel.VARIABLE_FIELD);
+            groupByTargetDoc.put(variables, groupByVarListDoc);
+        }
         aggregationDocuments.add(new Document("$group", groupByTargetDoc));
 
-        //Keep only the ones that have every tested variable present but not the ones that need to not be measured
-        Document sizeExpr = new Document("$size", "$" + variables);
-        Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariable.size() - varsWhereWeWantNoData.size()));
-        List<Document> inNotMeasuredVarsListDocs = varsWhereWeWantNoData.stream().map(
-                notMeasuredVar -> new Document("$in", Arrays.asList(notMeasuredVar, "$" + variables))).collect(Collectors.toList());
-        Document notInNotMeasuredVarsListDoc = new Document("$not", Collections.singletonList(new Document("$or", inNotMeasuredVarsListDocs)));
-        Document correctSizeAndNoNotMeasuredVars = new Document("$and", Arrays.asList(sizeCondition, notInNotMeasuredVarsListDoc));
-        aggregationDocuments.add(new Document("$match", new Document("$expr", correctSizeAndNoNotMeasuredVars)));
+        if(!allWereNotMeasureds){
+            //Keep only the ones that have every tested variable present but not the ones that need to not be measured
+            Document sizeExpr = new Document("$size", "$" + variables);
+            Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariableSize - varsWhereWeWantNoData.size()));
+            List<Document> inNotMeasuredVarsListDocs = varsWhereWeWantNoData.stream().map(
+                    notMeasuredVar -> new Document("$in", Arrays.asList(notMeasuredVar, "$" + variables))).collect(Collectors.toList());
+            Document notInNotMeasuredVarsListDoc = new Document("$not", Collections.singletonList(new Document("$or", inNotMeasuredVarsListDocs)));
+            Document correctSizeAndNoNotMeasuredVars = new Document("$and", Arrays.asList(sizeCondition, notInNotMeasuredVarsListDoc));
+            aggregationDocuments.add(new Document("$match", new Document("$expr", correctSizeAndNoNotMeasuredVars)));
+        }
 
         //group by nothing and create a list of targets that validate the criteria
         Document targetListCreator = new Document();
@@ -578,7 +666,6 @@ public class DataDAO {
         aggregationDocuments.add(new Document("$group", targetListCreator));
 
         return aggregationDocuments;
-
     }
 
     /**

@@ -4,14 +4,14 @@
         label="GermplasmParentsModalFormFieldLine.parent-fieldLabel"
         :multiple="false"
         :germplasm.sync="lineData.germplasm_uri"
-        :required="true"
+        :required="false"
         @select="loadGermplasmInformation($event)"
         class="col-md-7"
     ></opensilex-GermplasmSelector>
     <opensilex-GermplasmControlledAttributesSelector
         :property.sync="lineData.parent_type_uri"
         :existingRdfAttributes="extraProps.existingRdfParentProperties"
-        :required="true"
+        :required="false"
         @select="updateParentType"
         class="col-md-4"
     ></opensilex-GermplasmControlledAttributesSelector>

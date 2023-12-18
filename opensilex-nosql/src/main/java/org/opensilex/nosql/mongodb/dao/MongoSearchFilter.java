@@ -1,7 +1,7 @@
 package org.opensilex.nosql.mongodb.dao;
 
 
-import org.opensilex.query.SearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 

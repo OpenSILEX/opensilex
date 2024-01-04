@@ -1,20 +1,20 @@
 package org.opensilex.core.variable.api.intervals;
 
 public class VariableTimeIntervalDTO {
-     private String code;
+     private String id;
      private String label;
 
     public VariableTimeIntervalDTO(String code, String label) {
-        this.code = code;
+        this.id = code;
         this.label = label;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getLabel() {

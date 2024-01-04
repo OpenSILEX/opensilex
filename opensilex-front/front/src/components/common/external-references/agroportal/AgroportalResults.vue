@@ -78,9 +78,6 @@ export default class AgroportalResults extends Vue {
   private isAgroportalDown: boolean = false;
   private isDataLoading: boolean = false;
   private isNothingFound: boolean = false;
-
-  //@todo remove this
-  // private selectedRelation: string = null;
   //#endregion
 
   //#region Hooks

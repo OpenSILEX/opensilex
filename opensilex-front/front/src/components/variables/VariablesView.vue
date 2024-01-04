@@ -172,9 +172,6 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VariableStructureList from "./views/VariableStructureList.vue";
-import EntityCreate from "./form/EntityCreate.vue";
-import InterestEntityCreate from "./form/InterestEntityCreate.vue";
-import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";

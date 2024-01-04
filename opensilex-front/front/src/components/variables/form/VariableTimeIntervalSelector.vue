@@ -5,7 +5,7 @@
         :options="periodList"
         placeholder="VariableForm.time-interval-placeholder"
         helpMessage="VariableForm.time-interval-help"
-        @keyup.enter.native="onEnter"
+        @keyup.enter.native="emitHandlingEnterKey"
     ></opensilex-SelectForm>
 </template>
 
@@ -19,23 +19,34 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class VariableTimeIntervalSelector extends Vue {
+  //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin
     private readonly $store: OpenSilexStore
     private service: VariablesService
+  //#endregion
 
+  //#region Props
     @PropSync("timeinterval")
     private selectedTimeIntervalId
+  //#endregion
 
-    private get periodList(): Array<VariableTimeIntervalDTO> {
+  //#region Computed
+  private get periodList(): Array<VariableTimeIntervalDTO> {
       return this.$store.state.time_interval_list
     }
+  //#endregion
 
-    created() {
+  //#region Events
+  private emitHandlingEnterKey() {
+    this.$emit("handlingEnterKey")
+  }
+  //#endregion
+
+  //#region Hooks
+  created() {
       this.service = this.$opensilex.getService("opensilex.VariablesService");
     }
+  //#endregion
 
-    private onEnter() {
-        this.$emit("handlingEnterKey")
-    }
 }
 </script>

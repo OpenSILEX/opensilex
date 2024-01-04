@@ -150,7 +150,9 @@ a {
 <i18n>
 en:
   AgroportalEnrichFormPart:
-    uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
+    uri-help: >
+      Uncheck this checkbox if you want to insert a concept from an existing ontology or if you want to set a
+      particular URI. Leave it checked if you want to create a new entity with an auto-generated URI.
     tutorial:
       step-uri:
         title: URI
@@ -172,7 +174,9 @@ en:
           external references to your concept. Click on the 'AgroportalSearchFormPart.save' button to save your concept.
 fr:
   AgroportalEnrichFormPart:
-    uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
+    uri-help: >
+      Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez
+      spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée.
     tutorial:
       step-uri:
         title: URI

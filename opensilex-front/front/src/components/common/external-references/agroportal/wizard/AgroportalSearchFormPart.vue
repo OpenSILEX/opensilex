@@ -297,8 +297,8 @@ fr:
         content: >
           Si vous souhaitez réutiliser le concept tel quel, cliquez sur le bouton
           '@:AgroportalSearchFormPart.import-and-save'. Si vous souhaitez l'utiliser comme base pour définir votre
-          propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.enrich'. Veuillez noter que vous êtes
-          obligés de d'enrichir le concept dans le cas d'une unité.
+          propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.enrich'. Veuillez noter que vous
+          devez impérativement enrichir le concept dans le cas d'une unité.
       step-no-concept:
         title: Pas de concept
         content: >

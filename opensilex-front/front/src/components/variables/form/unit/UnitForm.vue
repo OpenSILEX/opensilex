@@ -10,7 +10,7 @@
                     :editMode="editMode"
                     :generated.sync="uriGenerated"
                     :required="true"
-                    helpMessage="CharacteristicForm.uri-help"
+                    helpMessage="UnitForm.uri-help"
                 ></opensilex-UriForm>
             </div>
         </div>
@@ -25,7 +25,24 @@
                         label="component.common.name"
                         type="text"
                         :required="true"
-                        placeholder="CharacteristicForm.name-placeholder"
+                        placeholder="UnitForm.name-placeholder"
+                ></opensilex-InputForm>
+
+                <!-- symbol -->
+                <opensilex-InputForm
+                        :value.sync="form.symbol"
+                        label="UnitForm.symbol"
+                        type="text"
+                        placeholder="UnitForm.symbol-placeholder"
+                ></opensilex-InputForm>
+
+                <!-- alternative symbol -->
+                <opensilex-InputForm
+                        :value.sync="form.alternative_symbol"
+                        label="UnitForm.alternative-symbol"
+                        placeholder="UnitForm.alternative-symbol-placeholder"
+                        type="text"
+                        :required="false"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -65,56 +82,59 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <p> {{$t("CharacteristicForm.ontologies-help")}}</p>
+                        <p> {{$t("UnitForm.ontologies-help")}}</p>
                     </div>
                 </div>
             </div>
 
         </div>
 
+
     </ValidationObserver>
 </template>
 
+
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import CharacteristicModalForm from "./CharacteristicModalForm.vue";
-    import { CharacteristicCreationDTO } from 'opensilex-core/index';
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import UnitCreate from "./UnitCreate.vue";
+import {ExternalOntologies} from "../../../../models/ExternalOntologies";
+// @ts-ignore
+import { UnitCreationDTO } from "opensilex-core/index";
 
-    @Component
-    export default class CharacteristicForm extends Vue {
-        $opensilex: any;
+@Component
+export default class UnitForm extends Vue {
+    $opensilex: any;
 
-        title = "";
-        uriGenerated = true;
+    title = "";
+    uriGenerated = true;
 
-        @Prop()
-        editMode;
+    @Prop()
+    editMode;
 
-        errorMsg: String = "";
+    errorMsg: String = "";
 
-        @PropSync("form")
-        dto: CharacteristicCreationDTO;
+    @PropSync("form")
+    unitDto: UnitCreationDTO;
 
-        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(CharacteristicModalForm.selectedOntologies);
+    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(UnitCreate.selectedOntologies);
 
-        handleErrorMessage(errorMsg: string) {
-            this.errorMsg = errorMsg;
-        }
-
-        @Ref("modalRef") readonly modalRef!: any;
-        @Ref("validatorRef") readonly validatorRef!: any;
-
-        reset() {
-            this.uriGenerated = true;
-            return this.validatorRef.reset();
-        }
-
-        validate() {
-            return this.validatorRef.validate();
-        }
+    handleErrorMessage(errorMsg: string) {
+        this.errorMsg = errorMsg;
     }
+
+    @Ref("modalRef") readonly modalRef!: any;
+    @Ref("validatorRef") readonly validatorRef!: any;
+
+    reset() {
+        this.uriGenerated = true;
+        return this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
+    }
+}
 </script>
 
 <style scoped lang="scss">

@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="InterestEntityForm.add"
-            editTitle="InterestEntityForm.edit"
+            createTitle="EntityForm.add"
+            editTitle="EntityForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -19,17 +19,17 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ExternalOntologies} from "../../../models/ExternalOntologies";
-import {InterestEntityCreationDTO, InterestEntityGetDTO, VariablesService} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdateDTO";
+import {ExternalOntologies} from "../../../../models/ExternalOntologies";
+import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
+import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 
 @Component
-    export default class InterestEntityCreate extends Vue {
+    export default class EntityCreate extends Vue {
 
         steps = [
-            {component: "opensilex-InterestEntityForm"}
-            ,{component : "opensilex-InterestEntityExternalReferencesForm"}
+            {component: "opensilex-EntityForm"}
+            ,{component : "opensilex-EntityExternalReferencesForm"}
         ];
 
         static selectedOntologies: string[] = [
@@ -61,7 +61,7 @@ import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdate
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm(form : InterestEntityGetDTO) {
+        showEditForm(form : EntityGetDTO) {
             this.wizardRef.showEditForm(form);
         }
 
@@ -70,7 +70,7 @@ import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdate
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm(): InterestEntityCreationDTO {
+        getEmptyForm(): EntityCreationDTO {
             return {
                 uri: null,
                 name: null,
@@ -82,12 +82,12 @@ import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdate
             };
         }
 
-        create(form: InterestEntityCreationDTO){
+        create(form: EntityCreationDTO){
             return this.service
-                .createInterestEntity(form)
+                .createEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("InterestEntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
@@ -100,12 +100,12 @@ import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdate
                 });
         }
 
-        update(form: InterestEntityUpdateDTO){
+        update(form: EntityUpdateDTO){
             return this.service
-                .updateInterestEntity(form)
+                .updateEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("InterestEntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onUpdate", form);
                 })
@@ -129,19 +129,19 @@ import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdate
 
 <i18n>
 en:
-    InterestEntityForm:
-        uri-help: "Uncheck this checkbox if you want to insert an entity of interest from an existing ontology or if you want to set a particular URI. Let it checked if you want to create a new entity of interest with an auto-generated URI"
-        ontologies-help: "Click on one of these reference ontologies. If an entity of interest matches with the desired one, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The observation level
-        add: Add an observation level
-        edit: Edit an observation level
-        name-placeholder: Plot
+    EntityForm:
+        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
+        ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
+        name: The entity
+        add: Add entity
+        edit: Edit entity
+        name-placeholder: Plant
 fr:
-    InterestEntityForm:
+    EntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
-        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité d'intérêt correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité d'intérêt dans le champ 'Nom'."
-        name: Le niveau d'observation
-        add: Ajouter un niveau d'observation
-        edit: Éditer un niveau d'observation
-        name-placeholder: Parcelle
+        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
+        name: L'entité
+        add: Ajouter une entité
+        edit: Éditer une entité
+        name-placeholder: Plante
 </i18n>

@@ -9,7 +9,7 @@
                         label="component.common.uri"
                         :generated.sync="uriGenerated"
                         :required="true"
-                        helpMessage="EntityForm.uri-help"
+                        helpMessage="InterestEntityForm.uri-help"
                         :editMode="editMode"
                 ></opensilex-UriForm>
             </div>
@@ -25,7 +25,7 @@
                         label="component.common.name"
                         type="text"
                         :required="true"
-                        placeholder="EntityForm.name-placeholder"
+                        placeholder="InterestEntityForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <p> {{$t("EntityForm.ontologies-help")}}</p>
+                        <p> {{$t("InterestEntityForm.ontologies-help")}}</p>
                     </div>
                 </div>
             </div>
@@ -77,13 +77,13 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ExternalOntologies} from "../../../models/ExternalOntologies";
-import EntityCreate from "./EntityCreate.vue";
+import {ExternalOntologies} from "../../../../models/ExternalOntologies";
+import InterestEntityCreate from "./InterestEntityCreate.vue";
 // @ts-ignore
-import { EntityCreationDTO } from "opensilex-core/index";
+import { InterestEntityCreationDTO } from "opensilex-core/index";
 
 @Component
-export default class EntityForm extends Vue {
+export default class InterestEntityForm extends Vue {
     $opensilex: any;
 
     title = "";
@@ -95,9 +95,9 @@ export default class EntityForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityCreationDTO;
+    interestEntityDto: InterestEntityCreationDTO;
 
-    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
+    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(InterestEntityCreate.selectedOntologies);
 
     handleErrorMessage(errorMsg: string) {
         this.errorMsg = errorMsg;

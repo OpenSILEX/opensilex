@@ -22,9 +22,9 @@ import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {UnitGetDTO} from "opensilex-core/index";
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import SelectForm from "../../../common/forms/SelectForm.vue";
 
 @Component
 export default class UnitSelector extends Vue {

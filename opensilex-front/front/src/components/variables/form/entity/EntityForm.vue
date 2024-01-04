@@ -5,12 +5,12 @@
 
             <div class="col">
                 <opensilex-UriForm
-                    :uri.sync="form.uri"
-                    label="component.common.uri"
-                    :editMode="editMode"
-                    :generated.sync="uriGenerated"
-                    :required="true"
-                    helpMessage="UnitForm.uri-help"
+                        :uri.sync="form.uri"
+                        label="component.common.uri"
+                        :generated.sync="uriGenerated"
+                        :required="true"
+                        helpMessage="EntityForm.uri-help"
+                        :editMode="editMode"
                 ></opensilex-UriForm>
             </div>
         </div>
@@ -25,24 +25,7 @@
                         label="component.common.name"
                         type="text"
                         :required="true"
-                        placeholder="UnitForm.name-placeholder"
-                ></opensilex-InputForm>
-
-                <!-- symbol -->
-                <opensilex-InputForm
-                        :value.sync="form.symbol"
-                        label="UnitForm.symbol"
-                        type="text"
-                        placeholder="UnitForm.symbol-placeholder"
-                ></opensilex-InputForm>
-
-                <!-- alternative symbol -->
-                <opensilex-InputForm
-                        :value.sync="form.alternative_symbol"
-                        label="UnitForm.alternative-symbol"
-                        placeholder="UnitForm.alternative-symbol-placeholder"
-                        type="text"
-                        :required="false"
+                        placeholder="EntityForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -82,28 +65,25 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <p> {{$t("UnitForm.ontologies-help")}}</p>
+                        <p> {{$t("EntityForm.ontologies-help")}}</p>
                     </div>
                 </div>
             </div>
 
         </div>
-
-
     </ValidationObserver>
 </template>
 
-
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import UnitCreate from "./UnitCreate.vue";
-import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {ExternalOntologies} from "../../../../models/ExternalOntologies";
+import EntityCreate from "./EntityCreate.vue";
 // @ts-ignore
-import { UnitCreationDTO } from "opensilex-core/index";
+import { EntityCreationDTO } from "opensilex-core/index";
 
 @Component
-export default class UnitForm extends Vue {
+export default class EntityForm extends Vue {
     $opensilex: any;
 
     title = "";
@@ -115,9 +95,9 @@ export default class UnitForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    unitDto: UnitCreationDTO;
+    entityDto: EntityCreationDTO;
 
-    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(UnitCreate.selectedOntologies);
+    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 
     handleErrorMessage(errorMsg: string) {
         this.errorMsg = errorMsg;

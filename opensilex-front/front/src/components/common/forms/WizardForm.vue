@@ -420,6 +420,18 @@ export default class WizardForm extends Vue {
   justify-content: right;
 }
 
+.helpButton {
+  margin-left: 25px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
+
 .close {
   margin-left: 1rem;
 }

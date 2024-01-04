@@ -2,7 +2,7 @@
     <opensilex-SelectForm
         label="VariableForm.time-interval"
         :selected.sync="selectedTimeIntervalId"
-        :options=""
+        :options="periodList"
         placeholder="VariableForm.time-interval-placeholder"
         helpMessage="VariableForm.time-interval-help"
         @keyup.enter.native="onEnter"
@@ -26,23 +26,12 @@ export default class VariableTimeIntervalSelector extends Vue {
     @PropSync("timeinterval")
     private selectedTimeIntervalId
 
-    private periodList: Array<VariableTimeIntervalDTO> = []
-
-    mounted() {
-        this.$store.watch(
-            () => this.$store.getters.language,
-            () => this.loadTimeInterval()
-        );
+    private get periodList(): Array<VariableTimeIntervalDTO> {
+      return this.$store.state.timeIntervalList
     }
 
     created() {
       this.service = this.$opensilex.getService("opensilex.VariablesService");
-      this.loadTimeInterval();
-    }
-
-    private async loadTimeInterval() {
-        const response = await this.service.getTimeIntervals(this.$opensilex.getLang())
-        this.periodList = response.response.result
     }
 
     private onEnter() {

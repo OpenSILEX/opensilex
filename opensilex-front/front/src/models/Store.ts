@@ -7,6 +7,7 @@ import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
+import VariableTimeIntervalSelector from "../components/variables/form/VariableTimeIntervalSelector.vue";
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -100,6 +101,12 @@ export class SearchStore {
 
 }
 
+async function loadTimeIntervalsLabels(){
+  const service = getOpenSilexPlugin().getService("opensilex.VariablesService")
+  const response = await service.getTimeIntervals(store.state.lang)
+  store.state.timeIntervalList = response.response.result
+}
+
 let store = new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
@@ -156,11 +163,15 @@ let store = new Vuex.Store({
       CREDENTIAL_ANNOTATION_DELETE_ID: "annotation-delete",
       CREDENTIAL_PROVENANCE_MODIFICATION_ID: "provenance-modification",
       CREDENTIAL_PROVENANCE_DELETE_ID: "provenance-delete"
-    }
+    },
+    timeIntervalList: []
   },
   getters: {
     language: (state) => {
       return state.lang;
+    },
+    timeIntervalList: (state) => {
+      return state.timeIntervalList
     }
   },
   mutations: {
@@ -310,6 +321,7 @@ let store = new Vuex.Store({
       console.debug("Define user language", lang);
       state.user.setLocale(lang);
       state.lang = lang;
+      loadTimeIntervalsLabels()
     },
     storeCandidatePage(state, router) {
       state.previousPageCandidate = computePage(router);

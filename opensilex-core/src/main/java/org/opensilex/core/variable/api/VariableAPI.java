@@ -25,6 +25,8 @@ import org.opensilex.core.variable.api.entity.EntityAPI;
 import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityAPI;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityDetailsDTO;
+import org.opensilex.core.variable.api.intervals.TimeInterval;
+import org.opensilex.core.variable.api.intervals.VariableTimeIntervalDTO;
 import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
 import org.opensilex.core.variable.api.unit.UnitAPI;
@@ -65,10 +67,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -393,6 +395,26 @@ public class VariableAPI {
         );
 
         return new PaginatedListResponse<>(variablesXsdTypes).getResponse();
+    }
+
+    @GET
+    @Path("time_intervals")
+    @ApiOperation(value = "Get variables time intervals")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return time intervals", response = VariableTimeIntervalDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTimeIntervals(
+            @ApiParam(value = "Language", example = "fr") @QueryParam("lang") @DefaultValue("en") String lang
+    ) throws URISyntaxException {
+        TimeInterval[] intervals = TimeInterval.values();
+        Locale locale = new Locale(lang);
+        List<VariableTimeIntervalDTO> timeIntervals = Stream.of(intervals).map(
+                interval -> new VariableTimeIntervalDTO(interval.name(), interval.getLabel(locale))
+        ).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(timeIntervals).getResponse();
     }
 
     /**

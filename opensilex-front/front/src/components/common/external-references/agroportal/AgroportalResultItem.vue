@@ -6,7 +6,7 @@
       }"
     >
       <!-- Name -->
-      <b-row id="result-header" class="mx-0 jqx-max-size">
+      <b-row id="result-header" class="mx-0">
         <b-col col lg="12">
           <div id="result-name">
             {{ entity.name[0] }} - <span id="result-ontology">{{entity.ontologyName}}</span>
@@ -18,7 +18,7 @@
       </b-row>
 
       <!-- Definition -->
-      <b-row id="result-body" class="mx-0 jqx-max-size">
+      <b-row id="result-body" class="mx-0">
         <b-col col lg="12" id="result-definition">
           {{entity.definitions[0]}}
         </b-col>

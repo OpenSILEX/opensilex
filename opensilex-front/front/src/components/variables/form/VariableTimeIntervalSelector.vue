@@ -27,7 +27,7 @@ export default class VariableTimeIntervalSelector extends Vue {
     private selectedTimeIntervalId
 
     private get periodList(): Array<VariableTimeIntervalDTO> {
-      return this.$store.state.timeIntervalList
+      return this.$store.state.time_interval_list
     }
 
     created() {

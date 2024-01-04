@@ -120,7 +120,7 @@
             <opensilex-StringView label="OntologyPropertyForm.data-type"
                                   :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.time-interval"
-                                  :value="variable.time_interval"></opensilex-StringView>
+                                  :value="time_interval"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.sampling-interval"
                                   :value="variable.sampling_interval"></opensilex-StringView>
 
@@ -149,17 +149,20 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import DTOConverter from "../../models/DTOConverter";
 import {VariableUpdateDTO} from "opensilex-core/index";
-import VueRouter from "vue-router";
+import VueRouter, {Route} from "vue-router";
+import {OpenSilexStore} from "../../models/Store";
+import VueI18n from "vue-i18n";
+import {VariableTimeIntervalDTO} from "opensilex-core/model/variableTimeIntervalDTO";
 
 @Component
 export default class VariableDetails extends Vue {
   $opensilex: OpenSilexVuePlugin;
-  $store: any;
-  $route: any;
+  $store: OpenSilexStore;
+  $route: Route;
   routeArr : string = this.$route.path.split('/');
   $router: VueRouter;
-  $t: any;
-  $i18n: any;
+  $t: typeof VueI18n.prototype.t;
+  $i18n: VueI18n;
   service: VariablesService;
   dataService: DataService;
 
@@ -199,6 +202,12 @@ export default class VariableDetails extends Vue {
 
   get isGermplasmMenuExcluded() {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  }
+
+  private get time_interval(): string {
+    const interval = this.$store.state.time_interval_list.filter(interval => interval.id === this.variable.time_interval).pop()
+    if ( ! interval) { return null }
+    return interval.label
   }
 
   created() {

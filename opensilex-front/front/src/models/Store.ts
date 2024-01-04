@@ -104,7 +104,7 @@ export class SearchStore {
 async function loadTimeIntervalsLabels(){
   const service = getOpenSilexPlugin().getService("opensilex.VariablesService")
   const response = await service.getTimeIntervals(store.state.lang)
-  store.state.timeIntervalList = response.response.result
+  store.state.time_interval_list = response.response.result
 }
 
 let store = new Vuex.Store({
@@ -164,14 +164,14 @@ let store = new Vuex.Store({
       CREDENTIAL_PROVENANCE_MODIFICATION_ID: "provenance-modification",
       CREDENTIAL_PROVENANCE_DELETE_ID: "provenance-delete"
     },
-    timeIntervalList: []
+    time_interval_list: []
   },
   getters: {
     language: (state) => {
       return state.lang;
     },
     timeIntervalList: (state) => {
-      return state.timeIntervalList
+      return state.time_interval_list
     }
   },
   mutations: {

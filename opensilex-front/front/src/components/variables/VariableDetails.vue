@@ -206,7 +206,7 @@ export default class VariableDetails extends Vue {
 
   private get time_interval(): string {
     const interval = this.$store.state.time_interval_list.filter(interval => interval.id === this.variable.time_interval).pop()
-    if ( ! interval) { return null }
+    if ( ! interval) { return this.variable.time_interval } //if the "interval" is not a key but a free text as it was before (2024-01-04)
     return interval.label
   }
 

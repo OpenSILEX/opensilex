@@ -218,14 +218,9 @@
 
                 <!-- time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                    <opensilex-SelectForm
-                        label="VariableForm.time-interval"
-                        :selected.sync="form.time_interval"
-                        :multiple="false"
-                        :options="periodList"
-                        placeholder="VariableForm.time-interval-placeholder"
-                        helpMessage="VariableForm.time-interval-help"
-                    ></opensilex-SelectForm>
+                  <opensilex-VariableTimeIntervalSelector
+                      :timeinterval.sync="form.time_interval"
+                  ></opensilex-VariableTimeIntervalSelector>
                 </div>
 
                 <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
@@ -333,7 +328,6 @@ export default class VariableForm extends Vue {
 
     datatypes: Array<VariableDatatypeDTO> = [];
     datatypesNodes: Array<any> = [];
-    periodList: Array<any> = [];
     sampleList: Array<any> = [];
 
     @Ref("validatorRef") readonly validatorRef!: any;
@@ -341,13 +335,6 @@ export default class VariableForm extends Vue {
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
         this.dataService = this.$opensilex.getService("opensilex-core.DataService");
-
-        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
-            this.periodList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +period),
-                label: this.$i18n.t("VariableForm.dimension-values." + period)
-            })
-        }
 
         for(let sample of ["mm","cm","m","km","field","region"]){
             this.sampleList.push({

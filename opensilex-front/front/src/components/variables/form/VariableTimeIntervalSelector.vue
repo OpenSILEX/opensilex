@@ -1,7 +1,7 @@
 <template>
     <opensilex-SelectForm
         :label="label"
-        :selected.sync="timeIntervalURI"
+        :selected.sync="selectedTimeIntervalId"
         :options="periodList"
         placeholder="VariableForm.time-interval-placeholder"
         @keyup.enter.native="onEnter"
@@ -11,19 +11,25 @@
 <script lang="ts">
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {OpenSilexStore} from "../../../models/Store";
+import {VariableTimeIntervalDTO} from "opensilex-core/model/variableTimeIntervalDTO";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class VariableTimeIntervalSelector extends Vue {
-    $opensilex: any;
-    $store: any;
+    private readonly $opensilex: OpenSilexVuePlugin
+    private readonly $store: OpenSilexStore
+    private service: VariablesService
 
     @PropSync("timeinterval")
-    timeIntervalURI;
+    private selectedTimeIntervalId
 
     @Prop()
-    label;
+    private readonly label
 
-    periodList: Array<any> = [];
+    private periodList: Array<VariableTimeIntervalDTO> = []
+
 
     mounted() {
         this.$store.watch(
@@ -33,21 +39,16 @@ export default class VariableTimeIntervalSelector extends Vue {
     }
 
     created() {
-        this.loadTimeInterval();
+      this.service = this.$opensilex.getService("opensilex.VariablesService");
+      this.loadTimeInterval();
     }
 
-    loadTimeInterval() {
-        let period = ["millisecond","second","minute","hour","day","week","month","unique"];
-        this.periodList = [];
-        for(let value of period){
-            this.periodList.push({
-                id: value.charAt(0).toUpperCase() + value.slice(1),
-                label: this.$i18n.t("VariableForm.dimension-values." + value)
-            })
-        }
+    private async loadTimeInterval() {
+        const response = await this.service.getTimeIntervals(this.$opensilex.getLang())
+        this.periodList = response.response.result
     }
 
-    onEnter() {
+    private onEnter() {
         this.$emit("handlingEnterKey")
     }
 }

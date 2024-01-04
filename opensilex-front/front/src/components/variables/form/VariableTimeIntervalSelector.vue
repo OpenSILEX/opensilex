@@ -1,9 +1,10 @@
 <template>
     <opensilex-SelectForm
-        :label="label"
+        label="VariableForm.time-interval"
         :selected.sync="selectedTimeIntervalId"
-        :options="periodList"
+        :options=""
         placeholder="VariableForm.time-interval-placeholder"
+        helpMessage="VariableForm.time-interval-help"
         @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
 </template>
@@ -25,11 +26,7 @@ export default class VariableTimeIntervalSelector extends Vue {
     @PropSync("timeinterval")
     private selectedTimeIntervalId
 
-    @Prop()
-    private readonly label
-
     private periodList: Array<VariableTimeIntervalDTO> = []
-
 
     mounted() {
         this.$store.watch(

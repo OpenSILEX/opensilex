@@ -159,7 +159,6 @@
                       <div>
                         <opensilex-FilterField>
                             <opensilex-VariableTimeIntervalSelector v-if="loadAdvancedSearchFilters"
-                                label="VariableForm.time-interval"
                                 :timeinterval.sync="filter.timeInterval"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"

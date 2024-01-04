@@ -14,6 +14,7 @@
             icon="ik#ik-search"
             :small="true"
             variant="outline-secondary"
+            class="agroportalSearchBarBtn"
             @click="emitChange"
         >
         </opensilex-Button>
@@ -22,6 +23,7 @@
             icon="ik#ik-filter"
             :small="true"
             variant="outline-secondary"
+            class="agroportalSearchBarBtn"
         >
         </opensilex-Button>
       </template>
@@ -147,6 +149,17 @@ export default class AgroportalSearch extends Vue {
 #advanced-options {
   padding: 10px;
 }
+
+.agroportalSearchBarBtn {
+  color: #00A38D;
+  border-color: #00A38D;
+}
+
+.agroportalSearchBarBtn:hover {
+  background: #00A38D;
+  color: white;
+}
+
 </style>
 
 <i18n>

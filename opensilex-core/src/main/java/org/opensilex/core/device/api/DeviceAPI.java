@@ -549,6 +549,10 @@ public class DeviceAPI {
                 JsonNode relations = objectNode.get("relations");
                 objectNode.remove("metadata");
                 objectNode.remove("relations");
+                //Remove publication metadata : publisher, publication_date, last_updated_date
+                objectNode.remove("publisher");
+                objectNode.remove("publication_date");
+                objectNode.remove("last_updated_date");
                 JsonNode value = null;
                 for (Object key:metadataKeys) {
                     try {

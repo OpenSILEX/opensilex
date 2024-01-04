@@ -54,7 +54,7 @@
         <!--<module>inrae-sixtine</module>-->
 
         <!-- Dataverse module -->
-        <!--<module>opensilex-dataverse</module>-->
+        <module>opensilex-dataverse</module>
 
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
@@ -157,11 +157,11 @@
         </dependency> -->
 
         <!-- Dataverse dependency -->
-<!--        <dependency>-->
-<!--            <groupId>org.opensilex</groupId>-->
-<!--            <artifactId>opensilex-dataverse</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-dataverse</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
       
     <build>

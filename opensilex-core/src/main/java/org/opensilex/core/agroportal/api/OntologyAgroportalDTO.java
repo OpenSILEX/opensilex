@@ -15,18 +15,12 @@ import javax.validation.constraints.NotNull;
  * Represents an ontology from AgroPortal
  * @author brice
  */
-@JsonPropertyOrder({
-    "id", "name", "acronym"
-})
 public class OntologyAgroportalDTO {
 
     @NotNull
-    @JsonProperty("id")
     private String id;
-    @JsonProperty("name")
     private String name;
     @NotNull
-    @JsonProperty("acronym")
     private String acronym;
 
 

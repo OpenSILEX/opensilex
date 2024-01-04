@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OntologyAgroportalModel {
 
-    @JsonProperty("name")
     private String name;
-    @JsonProperty("acronym")
     private String acronym;
     @JsonProperty("@id")
     private String id;

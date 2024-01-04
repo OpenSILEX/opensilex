@@ -20,28 +20,17 @@ import java.util.List;
  *
  * @author brice
  */
-@JsonPropertyOrder({
-    "id", "name", "definitions", "type", "ontologyType"
-})
 public class AgroportalTermDTO {
 
     @NotNull
-    @JsonProperty("id")
     private String id;
-    @JsonProperty("name")
     private String[] name;
-    @JsonProperty("synonym")
     private List<String> synonym;
-    @JsonProperty("definitions")
     private List<String> definitions;
     @NotNull
-    @JsonProperty("ontologyName")
     private String ontologyName;
-    @JsonProperty("obsolete")
     private boolean obsolete;
-    @JsonProperty("type")
     private String type;
-    @JsonProperty("links")
     private AgroportalLinksModel links;
 
 

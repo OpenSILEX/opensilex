@@ -6,19 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AgroportalTermModel {
 
-    @JsonProperty("prefLabel")
     private String[] prefLabel;
-    @JsonProperty("synonym")
     private String[] synonym;
-    @JsonProperty("definition")
     private String[] definitions;
-    @JsonProperty("obsolete")
     private boolean obsolete;
     @JsonProperty("@id")
     private String id;
     @JsonProperty("@type")
     private String type;
-    @JsonProperty("links")
     private AgroportalLinksModel links;
 
     public String[] getPrefLabel() {

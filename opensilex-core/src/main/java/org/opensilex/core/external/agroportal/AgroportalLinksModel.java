@@ -5,32 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({
-        "self", "ontology", "children", "parents", "ontology",
-        "children", "parents", "descendants", "ancestors",
-        "instances", "tree", "notes", "ui"
-})
 public class AgroportalLinksModel {
 
-    @JsonProperty("self")
     private String self;
-    @JsonProperty("ontology")
     private String ontology;
-    @JsonProperty("children")
     private String children;
-    @JsonProperty("parents")
     private String parents;
-    @JsonProperty("descendants")
     private String descendants;
-    @JsonProperty("ancestors")
     private String ancestors;
-    @JsonProperty("instances")
     private String instances;
-    @JsonProperty("tree")
     private String tree;
-    @JsonProperty("notes")
     private String notes;
-    @JsonProperty("ui")
     private String ui;
 
 

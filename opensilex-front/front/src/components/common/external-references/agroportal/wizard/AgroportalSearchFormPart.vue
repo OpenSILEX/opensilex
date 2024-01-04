@@ -76,6 +76,7 @@ import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import AgroportalTermSelector from "../AgroportalTermSelector.vue";
 import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
 import OpenSilexVuePlugin from "../../../../../models/OpenSilexVuePlugin";
+import {ValidationObserver} from "vee-validate";
 
 @Component
 export default class AgroportalSearchFormPart extends Vue {
@@ -92,14 +93,14 @@ export default class AgroportalSearchFormPart extends Vue {
     ontologiesConfig: string
   };
   @PropSync("form")
-  formDto: any;
+  formDto: BaseExternalReferencesDTO;
   //#endregion
 
   //#region Ref
   @Ref("tutorial")
   private tutorial: Tour;
   @Ref("validatorRef")
-  readonly validatorRef!: any;
+  readonly validatorRef!: InstanceType<typeof ValidationObserver>;
   @Ref("agroportalTermSelector")
   private readonly agroportalTermSelector: AgroportalTermSelector;
   //#endregion
@@ -167,7 +168,7 @@ export default class AgroportalSearchFormPart extends Vue {
   private onTermImported(term: AgroportalTermDTO) {
     this.selectedTerm = term;
     this.formDto.uri = term.id;
-    this.formDto.name = term.name;
+    this.formDto.name = term.name[0];
   }
   //#endregion
 

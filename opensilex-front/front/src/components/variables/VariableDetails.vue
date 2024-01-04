@@ -15,19 +15,19 @@
 
             <opensilex-VariableCreate
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                ref="variableForm"
+                ref="variableCreate"
                 @onUpdate="$emit('onUpdate', $event)"
             ></opensilex-VariableCreate>
 
             <opensilex-InteroperabilityButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
                 label="VariableDetails.edit-references"
-                @click="skosReferences.show()"
+                @click="externalReferencesModalForm.show()"
             ></opensilex-InteroperabilityButton>
 
             <opensilex-ExternalReferencesModalForm
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                ref="skosReferences"
+                ref="externalReferencesModalForm"
                 :references.sync="variable"
                 @onUpdate="update"
             ></opensilex-ExternalReferencesModalForm>
@@ -142,49 +142,54 @@ import Vue from "vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import VariablesView from "./VariablesView.vue";
 import VariableCreate from "./form/VariableCreate.vue";
-import {VariablesService, VariableDetailsDTO} from "opensilex-core/index";
+import {VariableDetailsDTO, VariablesService, VariableUpdateDTO} from "opensilex-core/index";
 import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import DTOConverter from "../../models/DTOConverter";
-import {VariableUpdateDTO} from "opensilex-core/index";
 import VueRouter, {Route} from "vue-router";
 import {OpenSilexStore} from "../../models/Store";
 import VueI18n from "vue-i18n";
-import {VariableTimeIntervalDTO} from "opensilex-core/model/variableTimeIntervalDTO";
 
 @Component
 export default class VariableDetails extends Vue {
-  $opensilex: OpenSilexVuePlugin;
-  $store: OpenSilexStore;
-  $route: Route;
-  routeArr : string = this.$route.path.split('/');
-  $router: VueRouter;
-  $t: typeof VueI18n.prototype.t;
-  $i18n: VueI18n;
-  service: VariablesService;
-  dataService: DataService;
+  //#region Plugins and services
+  private $opensilex: OpenSilexVuePlugin
+  private $store: OpenSilexStore
+  private $route: Route
+  private routeArr : string = this.$route.path.split('/')
+  private $router: VueRouter
+  private $t: typeof VueI18n.prototype.t
+  private $i18n: VueI18n
+  private variable_service: VariablesService
+  private data_service: DataService
+  //#endregion
 
-  get user() {
+  //#region Props
+  @Prop({ default: () => VariableForm.getEmptyForm() })
+  private readonly variable: VariableDetailsDTO;
+  @Prop()
+  private readonly displayLocalActions: boolean
+  //#endregion
+
+  //#region Refs
+  @Ref("variableCreate")
+  private readonly variableCreate!: VariableCreate
+  @Ref("externalReferencesModalForm")
+  private readonly externalReferencesModalForm!: ExternalReferencesModalForm
+  //#endregion
+
+  //#region Computed
+  private get user() {
     return this.$store.state.user;
   }
 
-  get credentials() {
+  private get credentials() {
     return this.$store.state.credentials;
   }
 
-  @Prop({
-    default: () => VariableForm.getEmptyForm()
-  }) variable: VariableDetailsDTO;
-
-  @Prop() displayLocalActions: boolean;
-
-  @Ref("variableForm") readonly variableForm!: VariableCreate;
-
-  @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
-
-  get speciesList() {
+  private get speciesList() {
     if (!this.variable.species) {
       return [];
     }
@@ -200,7 +205,7 @@ export default class VariableDetails extends Vue {
     });
   }
 
-  get isGermplasmMenuExcluded() {
+  private get isGermplasmMenuExcluded() {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
@@ -209,16 +214,21 @@ export default class VariableDetails extends Vue {
     if ( ! interval) { return this.variable.time_interval } //if the "interval" is not a key but a free text as it was before (2024-01-04)
     return interval.label
   }
+  //#endregion
 
+
+
+  //#region Hooks
   created() {
-    this.service = this.$opensilex.getService("opensilex.VariablesService");
-    this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+    this.variable_service = this.$opensilex.getService("opensilex.VariablesService");
+    this.data_service = this.$opensilex.getService("opensilex-core.DataService");
     localStorage.setItem("tabPath", this.routeArr[2]);
     localStorage.setItem("tabPage", "1");
   }
+  //#endregion
 
-  showEditForm() {
-
+  //#region Private methods
+  private showEditForm() {
     this.getCountDataPromise(this.variable.uri).then(countResult => {
       if (countResult && countResult.response) {
 
@@ -226,31 +236,29 @@ export default class VariableDetails extends Vue {
         // In case a field has been updated into the form without confirmation (by sending update to the server)
 
         let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
-        this.variableForm.showEditForm(variableDtoCopy, countResult.response.result);
+        this.variableCreate.showEditForm(variableDtoCopy, countResult.response.result);
       }
     })
-
   }
 
-  update(variable) {
+  private update(variable) {
     let formattedVariable:VariableUpdateDTO =  DTOConverter.extractURIFromResourceProperties(variable);
 
-    this.service.updateVariable(formattedVariable).then(() => {
+    this.variable_service.updateVariable(formattedVariable).then(() => {
       let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");
       this.$opensilex.showSuccessToast(message);
       this.$emit("onUpdate", variable);
     }).catch(this.$opensilex.errorHandler);
   }
 
-  deleteVariable() {
-
+  private deleteVariable() {
     this.getCountDataPromise(this.variable.uri)
         .then((http: HttpResponse<OpenSilexResponse<number>>) => {
           let count = http.response.result;
           if (count > 0) {
             this.$opensilex.showErrorToast(count + " " + this.$i18n.t("VariableView.associated-data-error"));
           } else {
-            this.service.deleteVariable(this.variable.uri).then(() => {
+            this.variable_service.deleteVariable(this.variable.uri).then(() => {
               let message = this.$i18n.t("VariableView.name") + " " + this.variable.name + " " + this.$i18n.t("component.common.success.delete-success-message");
               this.$opensilex.showSuccessToast(message);
               this.$router.push({path: "/variables"});
@@ -259,8 +267,8 @@ export default class VariableDetails extends Vue {
         });
   }
 
-  getCountDataPromise(uri) {
-    return this.dataService.countData(
+  private getCountDataPromise(uri) {
+    return this.data_service.countData(
         undefined,
         undefined,
         undefined,
@@ -273,7 +281,7 @@ export default class VariableDetails extends Vue {
         undefined);
   }
 
-  getPath(elementType: string, uri: string) {
+  private getPath(elementType: string, uri: string) {
     if (this.$route.query.sharedResourceInstance) {
       return undefined;
     }
@@ -282,25 +290,26 @@ export default class VariableDetails extends Vue {
     };
   }
 
-  getEntityPath() {
+  private getEntityPath() {
     return this.getPath(VariablesView.ENTITY_TYPE, this.variable.entity.uri);
   }
 
-  getInterestEntityPath() {
+  private getInterestEntityPath() {
     return this.getPath(VariablesView.INTEREST_ENTITY_TYPE, this.variable.entity_of_interest.uri);
   }
 
-  getCharacteristicPath() {
+  private getCharacteristicPath() {
     return this.getPath(VariablesView.CHARACTERISTIC_TYPE, this.variable.characteristic.uri);
   }
 
-  getMethodPath() {
+  private getMethodPath() {
     return this.getPath(VariablesView.METHOD_TYPE, this.variable.method.uri);
   }
 
-  getUnitPath() {
+  private getUnitPath() {
     return this.getPath(VariablesView.UNIT_TYPE, this.variable.unit.uri);
   }
+  //#endregion
 
 }
 </script>

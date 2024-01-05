@@ -1,25 +1,33 @@
 <template>
     <ValidationObserver ref="validatorRef">
 
-        <p><b> {{ $t("Move.location") }}</b></p>
+        <p>
+            <b> {{ $t("Move.location") }}</b>
+        </p>
         <hr/>
 
         <div class="row">
             <div class="col-lg-5">
                 <opensilex-FacilitySelector
+                        ref="moveFromSelector"
                         label="Position.from"
                         :facilities.sync="form.from"
                         :multiple="false"
-                        :required="false"
+                        :required="fromRequired"
+                        @select="updateRequiredProps('moveFromSelector')"
+                        @clear="updateRequiredProps('moveFromSelector')"
                         helpMessage="Position.from-help"
                 ></opensilex-FacilitySelector>
             </div>
             <div class="col-lg-5">
                 <opensilex-FacilitySelector
+                        ref="moveToSelector"
                         label="Position.to"
                         :facilities.sync="form.to"
                         :multiple="false"
-                        :required="false"
+                        :required="toRequired"
+                        @select="updateRequiredProps('moveToSelector')"
+                        @clear="updateRequiredProps('moveToSelector')"
                         helpMessage="Position.to-help"
                 ></opensilex-FacilitySelector>
             </div>
@@ -48,6 +56,8 @@
         @Ref("validatorRef") readonly validatorRef!: any;
 
         editMode = false;
+        fromRequired: boolean = true;
+        toRequired: boolean = true;
 
         @Prop({default: () => MoveForm.getEmptyForm()})
         form: MoveCreationDTO;
@@ -96,6 +106,29 @@
             return this.validatorRef.validate();
         }
 
+        /**
+         * We want at least one of the two fields "To" and "From" not to be empty then they are defined as required. 
+         * From the moment one is completed, the other is no longer indicated as required
+         */
+        updateRequiredProps(ref) {
+            if(this.form.from == undefined && this.form.to == undefined) {
+                this.fromRequired = true;
+                this.toRequired = true; 
+            } else {
+                if (this.form.from !== undefined && this.form.to == undefined) {
+                    this.fromRequired = true;
+                    this.toRequired = false;
+                } else {
+                    if (this.form.to !== undefined && this.form.from == undefined) {
+                        this.toRequired = true;
+                        this.fromRequired = false;
+                    } else {
+                        this.fromRequired = true;
+                        this.toRequired = true;
+                    }
+                }
+            }
+        }
     }
 </script>
 

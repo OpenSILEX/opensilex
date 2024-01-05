@@ -33,6 +33,7 @@
 
         <div class="row">
             <div class="col" v-if="!linkedToAreaForm">
+                <!-- Target -->
                 <opensilex-TagInputForm
                     :value.sync="form.targets"
                     :baseType="this.$opensilex.Oeev.CONCERNS"
@@ -46,7 +47,7 @@
 
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
-          <!-- Comment -->
+          <!-- Description -->
           <opensilex-TextAreaForm
               :value.sync="form.description"
               label="component.common.description"
@@ -60,6 +61,7 @@
 
         <div class="row">
             <div class="col">
+                <!--Is instant-->
                 <opensilex-FormField
                     :required="true"
                     label="Event.is-instant"

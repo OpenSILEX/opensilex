@@ -900,14 +900,6 @@ en:
         datatype-help: Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).
         datatype-placeholder: Select a datatype
         dimension-values:
-            unique: Unique measurement
-            millisecond : Millisecond
-            second: Second
-            minute: Minutes
-            hour: Hour
-            day: Day
-            week: Week
-            month: Month
             mm: Millimeter
             cm: Centimeter
             m: Meter
@@ -990,14 +982,6 @@ fr:
         datatype-help: Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable).
         datatype-placeholder: Sélectionner un type de donnée
         dimension-values:
-            unique: Enregistrement unique
-            millisecond : Milliseconde
-            second: Seconde
-            minute: Minute
-            hour: Heure
-            day: Jour
-            week: Semaine
-            month: Mois
             mm: Millimètre
             cm: Centimètre
             m: Mètre

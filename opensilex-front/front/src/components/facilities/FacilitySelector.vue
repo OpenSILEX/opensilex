@@ -91,7 +91,6 @@
         }
 
         select(value) {
-            console.log("select");
             this.$emit("select", value);
         }
 

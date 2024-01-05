@@ -25,7 +25,7 @@ import org.opensilex.core.variable.api.entity.EntityAPI;
 import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityAPI;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityDetailsDTO;
-import org.opensilex.core.variable.api.intervals.TimeInterval;
+import org.opensilex.core.variable.api.intervals.TimeIntervalEnum;
 import org.opensilex.core.variable.api.intervals.VariableTimeIntervalDTO;
 import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
@@ -408,7 +408,7 @@ public class VariableAPI {
     public Response getTimeIntervals(
             @ApiParam(value = "Language", example = "fr") @QueryParam("lang") @DefaultValue("en") String lang
     ) throws URISyntaxException {
-        TimeInterval[] intervals = TimeInterval.values();
+        TimeIntervalEnum[] intervals = TimeIntervalEnum.values();
         Locale locale = new Locale(lang);
         List<VariableTimeIntervalDTO> timeIntervals = Stream.of(intervals).map(
                 interval -> new VariableTimeIntervalDTO(interval.name(), interval.getLabel(locale))

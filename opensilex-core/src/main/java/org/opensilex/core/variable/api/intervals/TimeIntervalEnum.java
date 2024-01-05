@@ -3,7 +3,7 @@ package org.opensilex.core.variable.api.intervals;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public enum TimeInterval {
+public enum TimeIntervalEnum {
 
     MILISECOND("milisecond"),
     SECOND("second"),
@@ -16,7 +16,7 @@ public enum TimeInterval {
 
     private final String labelKey;
 
-    private TimeInterval(String labelKey) {
+    private TimeIntervalEnum(String labelKey) {
         this.labelKey = labelKey;
     }
 

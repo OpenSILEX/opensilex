@@ -1,6 +1,7 @@
 <template>
     <div>
         <opensilex-SelectForm
+            ref="selectForm"
             :label="property.name"
             :selected.sync="internalValue"
             :multiple="property.is_list"
@@ -8,6 +9,7 @@
             :searchMethod="searchParents"
             :itemLoadingMethod="getParentsByURI"
             placeholder="ScientificObjectParentPropertySelector.parent-placeholder"
+            @loadMoreItems="loadMoreItems(selectForm)"
         ></opensilex-SelectForm>
     </div>
 </template>
@@ -17,14 +19,17 @@ import {
     Component,
     Prop,
     PropSync,
+    Ref
 } from "vue-property-decorator";
 import Vue from "vue";
 import Oeso from "../../ontologies/Oeso";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class ScientificObjectParentPropertySelector extends Vue {
     $opensilex: any;
+    pageSize = 10;
 
     @Prop()
     property;
@@ -39,6 +44,8 @@ export default class ScientificObjectParentPropertySelector extends Vue {
     excluded: Set<string>
 
     service: ScientificObjectsService;
+
+    @Ref("selectForm") readonly selectForm!: SelectForm;
 
     created(){
         this.service = this.$opensilex.getService("opensilex.ScientificObjectsService");
@@ -79,7 +86,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
                 undefined,
                 [],
                 page,
-                pageSize
+                this.pageSize
             )
             .then((http) => {
                 let nodeList = [];
@@ -118,6 +125,14 @@ export default class ScientificObjectParentPropertySelector extends Vue {
                 return nodeList;
             });
     }
+
+  loadMoreItems(ref){
+    this.pageSize = 0;
+    ref.refresh();
+    this.$nextTick(() => {
+      ref.openTreeselect();
+    })
+  }
 }
 </script>
 

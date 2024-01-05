@@ -84,6 +84,7 @@
                 <b-form-group>
                   <label for="parentFilter">{{ $t("ExperimentScientificObjects.parent-label") }}</label>
                   <opensilex-SelectForm
+                    ref="parentSelectForm"
                     id="parentFilter"
                     :selected.sync="filters.parent"
                     :multiple="false"
@@ -92,6 +93,7 @@
                     :placeholder="$t('ExperimentScientificObjects.parent-placeholder')"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
+                    @loadMoreItems="loadMoreItems(parentSelectForm)"
                   ></opensilex-SelectForm>
                 </b-form-group>
               </opensilex-FilterField>
@@ -350,6 +352,7 @@ export default class ExperimentScientificObjects extends Vue {
   uri: string;
   numberOfSelectedRows = 0;
   SearchFiltersToggle : boolean = false;
+  pageSize = 10;
 
   refreshKey = 0;
 
@@ -366,6 +369,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
   @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
+  @Ref("parentSelectForm") parentSelectForm!: any;
 
   get customColumns() {
     return [
@@ -523,7 +527,7 @@ export default class ExperimentScientificObjects extends Vue {
            JSON.stringify(this.filters.criteriaDto),
         orderBy,
          page,
-         pageSize );
+         this.pageSize );
 
     } else {
 
@@ -557,7 +561,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         [],
           page,
-          pageSize
+          this.pageSize
       )
       .then(http => {
         let nodeList = [];
@@ -721,6 +725,14 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
+  }
+
+  loadMoreItems(ref){
+    this.pageSize = 0;
+    ref.refresh();
+    this.$nextTick(() => {
+      ref.openTreeselect();
+    })
   }
 }
 </script>

@@ -707,7 +707,7 @@ export default class VariableList extends Vue {
     updateVariableGroup(form) {
         this.$service
             .updateVariablesGroup(form)
-            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            .then((http: HttpResponse<OpenSilexResponse>) => {
                 let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
                 let uri = http.response.result;

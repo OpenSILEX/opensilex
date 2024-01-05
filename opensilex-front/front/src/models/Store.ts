@@ -7,7 +7,6 @@ import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
-import VariableTimeIntervalSelector from "../components/variables/form/VariableTimeIntervalSelector.vue";
 
 Vue.use(Vuex)
 Vue.use(VueRouter)

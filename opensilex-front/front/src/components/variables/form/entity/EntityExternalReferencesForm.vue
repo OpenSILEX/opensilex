@@ -10,7 +10,7 @@
 
 <script lang="ts">
 
-    import {Component, PropSync, Ref} from "vue-property-decorator";
+    import {Component, PropSync} from "vue-property-decorator";
     import Vue from "vue";
     // @ts-ignore
     import {EntityCreationDTO} from "opensilex-core/index";

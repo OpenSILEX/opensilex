@@ -263,7 +263,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
 import {
   CharacteristicCreationDTO,

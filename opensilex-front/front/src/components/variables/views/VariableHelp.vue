@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Ref } from "vue-property-decorator";
+    import { Component } from "vue-property-decorator";
     import Vue from "vue";
     import VariableHelpFR from "./../doc/VariableHelpFR.md";
     import VariableHelpEN from "./../doc/VariableHelpEN.md";

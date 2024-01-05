@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import {Component, PropSync, Ref} from "vue-property-decorator";
+import {Component, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import VariablesView from "../VariablesView.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";

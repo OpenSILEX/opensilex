@@ -37,6 +37,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -1399,6 +1400,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         // load object by uri in order to directly check if the object exist or not
         T instance = loadByURI(graph, objectClass, uri, getDefaultLang());
+        if ( Objects.isNull( instance ) ){
+            throw new NotFoundURIException(uri);
+        }
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {

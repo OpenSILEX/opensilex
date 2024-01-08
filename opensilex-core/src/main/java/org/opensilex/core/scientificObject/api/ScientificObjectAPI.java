@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
@@ -22,7 +20,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -64,6 +61,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -351,7 +349,7 @@ public class ScientificObjectAPI {
         if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
             VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            DataDAO.ScientificObjectsThatMatchDataCriteriaReturnObject criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
             if(criteriaFilteredObjects != null){
                 if(criteriaFilteredObjects.excludeResults){
                     searchFilter.setExcludedUris(criteriaFilteredObjects.result);

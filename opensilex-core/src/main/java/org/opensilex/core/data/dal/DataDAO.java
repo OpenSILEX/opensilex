@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
@@ -23,7 +24,6 @@ import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -48,6 +48,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -329,15 +330,6 @@ public class DataDAO {
         return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
-    public static class ScientificObjectsThatMatchDataCriteriaReturnObject{
-        public boolean excludeResults;
-        public List<URI> result;
-
-        ScientificObjectsThatMatchDataCriteriaReturnObject(boolean excludeResults, List<URI> result){
-            this.result = result;
-            this.excludeResults = excludeResults;
-        }
-    }
 
     /**
      *
@@ -347,24 +339,14 @@ public class DataDAO {
      * or a list of object uris if criteria were valid and results were found
      * The return object also contains a boolean to say if we need to keep only elements in the the list, or exclude them
      */
-    public ScientificObjectsThatMatchDataCriteriaReturnObject getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user ,VariableDAO variableDAO) throws Exception {
-        List<Bson> aggregationDocs;
+    public ExcludableUriList getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user , VariableDAO variableDAO) throws Exception {
 
         //Verify if that there is at least one complete line and if every line is a "NotMeasured"
-        boolean atLeastOneCompleteSingle = false;
-        boolean everyLineIsNotMeausured = true;
-        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()) {
-            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
-            MathematicalOperator criteriaType = singleCriteriaDTO.getCriteria();
-            String valueString = singleCriteriaDTO.getValue();
-            //If line is complete
-            if (currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())) {
-                atLeastOneCompleteSingle = true;
-                if(criteriaType != MathematicalOperator.NotMeasured){
-                    everyLineIsNotMeausured = false;
-                }
-            }
-        }
+        boolean atLeastOneCompleteSingle = criteriaDTO.getCriteriaList().stream().anyMatch(dto ->
+                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || StringUtils.isNotBlank(dto.getValue())));
+        boolean everyLineIsNotMeausured =
+                criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
+
         if(!atLeastOneCompleteSingle){
             return null;
         }
@@ -372,7 +354,7 @@ public class DataDAO {
         //If every line is "NotMeausured" then we perform a different operation
         //We simply get all the objects that are measured and return that we need to exclude them
         if(everyLineIsNotMeausured){
-            return new ScientificObjectsThatMatchDataCriteriaReturnObject(
+            return new ExcludableUriList(
                     true,
                     getUsedTargets(
                             user,
@@ -381,29 +363,27 @@ public class DataDAO {
                             Collections.singletonList(experiment)
                     )
             );
-        }else{
-            //If every line wasn't "NotMeasured" :
-            aggregationDocs= this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
         }
-        Set<DataTargetAggregateModel> criteriaSearchedResult;
+        //If every line wasn't "NotMeasured" :
+        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
 
         //If aggregationDocs is null then it means there was a contradiction
         if(aggregationDocs == null){
-            return new ScientificObjectsThatMatchDataCriteriaReturnObject(false, Collections.emptyList());
+            return new ExcludableUriList(false, Collections.emptyList());
         }
 
-        criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
+        Set<DataTargetAggregateModel> criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
         //If result is empty return an empty list otherwise take first and only element's targets value because of the
         // mongo request always returns a single Document with a list of targets validating the criteria
 
         if(criteriaSearchedResult.isEmpty()){
-            return new ScientificObjectsThatMatchDataCriteriaReturnObject(false, Collections.emptyList());
+            return new ExcludableUriList(false, Collections.emptyList());
         } else if (criteriaSearchedResult.size() > 1) {
             throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
         }
 
         // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
-        return new ScientificObjectsThatMatchDataCriteriaReturnObject(
+        return new ExcludableUriList(
                 false,
                 criteriaSearchedResult.stream().findAny()
                 .get()

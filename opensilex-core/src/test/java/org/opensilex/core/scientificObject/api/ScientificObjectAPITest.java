@@ -724,11 +724,164 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     /**
+     * Test to check criteria search when there are only "IsNotMeasured" operators
+     */
+    @Test
+    public void testCriteriaSearchOnlyIsNotMeasureds() throws Exception {
+        //create objects
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToReturn = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToKickOff = extractUriFromResponse(postResult);
+
+        //create variable
+        URI integerVariable = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+
+        //Create data
+        //Provenance for data :
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("criteriaSearchTestProv");
+        Response postProvenanceResponse = getJsonPostResponseAsAdmin(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        dataProvenance.setExperiments(Collections.emptyList());
+
+        DataCreationDTO falseIntData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", integerVariable, osToKickOff, 20, dataProvenance);
+        DataCreationDTO falseIntData2 = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", integerVariable, osToKickOff, 30, dataProvenance);
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(falseIntData);
+        dtoList.add(falseIntData2);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        LOGGER.info(postResultData.toString());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        //Search test
+        SingleCriteriaDTO someCriteria = new SingleCriteriaDTO();
+        someCriteria.setVariableUri(integerVariable);
+        someCriteria.setCriteria(MathematicalOperator.NotMeasured);
+
+        CriteriaDTO criteriaForCurrentTest = new CriteriaDTO();
+        criteriaForCurrentTest.setCriteriaList(Collections.singletonList(someCriteria));
+
+        Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        List<ScientificObjectNodeDTO> searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osToReturn, searchResult.get(0).getUri()));
+    }
+
+    /**
+     * Test to check criteria search when there is a "Not measured" as well as some data
+     */
+    @Test
+    public void testCriteriaSearchWithDataAndANotMeasured() throws Exception {
+        //create objects
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToReturn = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //The next os will validate data criteria but will also have a value where we want it to be not measured
+        URI osThatsAlmostGood= extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //The next os will have only one data that does not validate the criteria
+        URI osThatDoesNotVal= extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //This os can do nothing right, it's a stupid os
+        URI stupidOs= extractUriFromResponse(postResult);
+
+        //create variables
+        URI integerVariableToBeNotMeasured = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+        URI integerVariable = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+
+        //Create data
+        //Provenance for data :
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("criteriaSearchTestProv");
+        Response postProvenanceResponse = getJsonPostResponseAsAdmin(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        dataProvenance.setExperiments(Collections.emptyList());
+
+        DataCreationDTO osThatsAlmostGoodData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", integerVariableToBeNotMeasured, osThatsAlmostGood, 20, dataProvenance);
+        DataCreationDTO osThatsAlmostGoodData2 = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", integerVariable, osThatsAlmostGood, 5, dataProvenance);
+        DataCreationDTO osToReturnData = dataApi.getCreationDataDTO("2020-10-13T10:29:06.402+0200", integerVariable, osToReturn, 5, dataProvenance);
+        DataCreationDTO otherOsThatsAlmostGoodData = dataApi.getCreationDataDTO("2020-10-14T10:29:06.402+0200", integerVariable, osThatDoesNotVal, 20, dataProvenance);
+        DataCreationDTO stupidOsData = dataApi.getCreationDataDTO("2020-10-15T10:29:06.402+0200", integerVariableToBeNotMeasured, stupidOs, 20, dataProvenance);
+        DataCreationDTO stupidOsData2 = dataApi.getCreationDataDTO("2020-10-16T10:29:06.402+0200", integerVariable, osThatDoesNotVal, 20, dataProvenance);
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(osThatsAlmostGoodData);
+        dtoList.add(osThatsAlmostGoodData2);
+        dtoList.add(osToReturnData);
+        dtoList.add(otherOsThatsAlmostGoodData);
+        dtoList.add(stupidOsData);
+        dtoList.add(stupidOsData2);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        LOGGER.info(postResultData.toString());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        //Search test
+        SingleCriteriaDTO notMeasuredCriteria = new SingleCriteriaDTO();
+        notMeasuredCriteria.setVariableUri(integerVariableToBeNotMeasured);
+        notMeasuredCriteria.setCriteria(MathematicalOperator.NotMeasured);
+
+        SingleCriteriaDTO dataCriteria = new SingleCriteriaDTO();
+        dataCriteria.setVariableUri(integerVariable);
+        dataCriteria.setCriteria(MathematicalOperator.LessThan);
+        dataCriteria.setValue("10");
+
+        List<SingleCriteriaDTO> criteriaDTOList = new ArrayList<>();
+        criteriaDTOList.add(notMeasuredCriteria);
+        criteriaDTOList.add(dataCriteria);
+
+        CriteriaDTO criteriaForCurrentTest = new CriteriaDTO();
+        criteriaForCurrentTest.setCriteriaList(criteriaDTOList);
+
+        Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        List<ScientificObjectNodeDTO> searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osToReturn, searchResult.get(0).getUri()));
+    }
+
+    /**
      * Test to check criteria searches on int types, a decimal types and datetime types.
      * Also verifies that excluded objects from result are correct
      */
     @Test
-    public void testCriteriaSearch() throws Exception {
+    public void testCriteriaSearchWithNoIsNotMeasureds() throws Exception {
         //Create objects, for each ensure that the result is a well-formed URI, else throw exception
         //Separate objects for int tests and 2 other objects for other tests to make sure correct objects get excluded
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));

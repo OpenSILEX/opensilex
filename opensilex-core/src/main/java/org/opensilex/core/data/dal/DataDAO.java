@@ -360,7 +360,7 @@ public class DataDAO {
                             user,
                             null,
                             criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
-                            Collections.singletonList(experiment)
+                            (experiment == null ? null : Collections.singletonList(experiment))
                     )
             );
         }

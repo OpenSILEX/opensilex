@@ -1,6 +1,7 @@
 <template>
   <div>
     <opensilex-SelectForm
+      ref="selectForm"
       :label="label"
       :selected.sync="projectsURI"
       :multiple="multiple"
@@ -11,21 +12,24 @@
       noResultsText="component.project.selector-search-no-result"
       @select="select"
       @deselect="deselect"
+      @loadMoreItems="loadMoreItems(selectForm)"
     ></opensilex-SelectForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { ProjectGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class ProjectSelector extends Vue {
   $opensilex: any;
+  pageSize = 10;
 
   @PropSync("projects")
   projectsURI;
@@ -35,6 +39,8 @@ export default class ProjectSelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   searchProjects(searchQuery, page, pageSize) {
     return this.$opensilex
@@ -46,7 +52,7 @@ export default class ProjectSelector extends Vue {
         undefined,
         undefined,
         page,
-        pageSize
+        this.pageSize
       )
   }
 
@@ -73,6 +79,14 @@ export default class ProjectSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  loadMoreItems(ref){
+    this.pageSize = 0;
+    ref.refresh();
+    this.$nextTick(() => {
+      ref.openTreeselect();
+    })
   }
 }
 </script>

@@ -90,6 +90,8 @@ export default class OntologyCsvTemplateGenerator extends Vue {
     typeExample: string;
 
     requiredField: boolean = false;
+    routeArr = this.$route.path.split('/');
+    desiredHeaderOrder = [];
     separator = ",";
     types: any[] = [];
     dataTypesToExampleTranslateKey: Map<string, string>
@@ -230,6 +232,78 @@ export default class OntologyCsvTemplateGenerator extends Vue {
 
         let visitedProperties = new Set<string>();
 
+        if(this.routeArr[1] === "scientific-objects") {
+            this.desiredHeaderOrder = [
+                "uri",
+                "type",
+                "rdfs:label",
+                "rdfs:comment",
+                "vocabulary:hasCreationDate",
+                "vocabulary:hasDestructionDate",
+                "vocabulary:hasFacility",
+                "vocabulary:isPartOf",
+                "vocabulary:hasGeometry"
+            ]
+        }
+
+        if(this.routeArr[1] === "devices") {
+            this.desiredHeaderOrder = [
+                "uri",
+                "type",
+                "rdfs:label",
+                "rdfs:comment",
+                "vocabulary:hasModel",
+                "vocabulary:removal",
+                "vocabulary:hasSerialNumber",
+                "vocabulary:hasBrand",
+                "vocabulary:startUp",
+                "vocabulary:personInCharge"
+            ]
+        }
+
+        this.desiredHeaderOrder.forEach(propURI => {
+            if(visitedProperties.has(propURI)) {
+                return;
+            }
+
+        const dataProperty = typeModels.reduce(
+            (found, typeResult) => found || typeResult.dataProperties.get(propURI),
+            null
+        );
+
+        const objectProperty = !dataProperty
+            ? typeModels.reduce(
+                (found, typeResult) => found || typeResult.objectProperties.get(propURI),
+                null
+            )
+            : null;
+
+
+        const isDataProperty = !!dataProperty;
+
+        if (dataProperty || objectProperty) {
+            const property = dataProperty || objectProperty;
+            visitedProperties.add(propURI);
+            headers.push(propURI);
+            headersDescription.push(this.getCustomPropertyDescription(property, isDataProperty));
+        }
+    });
+        let dynamicColumnsSet = new Set<string>();
+
+    // specific properties not defined here come at the end of columns
+    const objectProperties = this.getObjectPropertiesNotInOrder(typeModels, visitedProperties);
+    objectProperties.forEach(({ propURI, property, isDataProperty }) => {
+        visitedProperties.add(propURI);
+        if (!this.desiredHeaderOrder.includes(propURI) && !dynamicColumnsSet.has(propURI)) {
+        headers.push(propURI);
+        headersDescription.push(this.getCustomPropertyDescription(property, isDataProperty));
+
+        // Ajoutez la colonne dynamique à l'ensemble pour éviter les duplications
+        dynamicColumnsSet.add(propURI);
+    }
+    });
+
+
         // for each type, add all non visited property header column and description
         for (let typeResult of typeModels) {
 
@@ -237,8 +311,11 @@ export default class OntologyCsvTemplateGenerator extends Vue {
                 if (!visitedProperties.has(propURI)) {
                     visitedProperties.add(propURI);
 
-                    headers.push(propURI);
-                    headersDescription.push(this.getCustomPropertyDescription(property, isDataProperty));
+                    if (this.desiredHeaderOrder.includes(propURI)) {
+
+                        headers.push(propURI);
+                        headersDescription.push(this.getCustomPropertyDescription(property, isDataProperty));
+                    }
                 }
             }
 
@@ -270,6 +347,21 @@ export default class OntologyCsvTemplateGenerator extends Vue {
         return data;
     }
 
+//     // Fonction auxiliaire pour récupérer les propriétés spécifiques aux types d'objets non incluses dans l'ordre souhaité
+getObjectPropertiesNotInOrder(typeModels, visitedProperties) {
+    const objectProperties = [];
+
+    typeModels.forEach(typeResult => {
+        typeResult.objectProperties.forEach((property, propURI) => {
+            if (!visitedProperties.has(propURI)) {
+                objectProperties.push({ propURI, property, isDataProperty: false });
+            }
+        });
+    });
+
+    return objectProperties;
+}
+
     csvExport() {
         this.validateTemplate().then((isValid) => {
             // fill in large
@@ -278,6 +370,7 @@ export default class OntologyCsvTemplateGenerator extends Vue {
 
                 Promise.all(typePromises).then((results => {
                     let data = this.generateCSV(results)
+                    console.log("data : ", data)
                     let templateName = this.templatePrefix + "_csv_template_" + new Date().getTime();
                     this.$papa.download(
                         this.$papa.unparse(data, {delimiter: this.separator}), templateName

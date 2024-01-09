@@ -13,11 +13,11 @@
             <b-th>URI<span class="required"> *</span></b-th>
             <b-th>type<span class="required"> *</span></b-th>
             <b-th>rdfs:label<span class="required"> *</span></b-th>
+            <b-th class="uri-field">rdfs:comment</b-th>
             <b-th class="uri-field">vocabulary:hasCreationDate</b-th>
             <b-th class="uri-field">vocabulary:hasDestructionDate</b-th>
             <b-th class="uri-field">vocabulary:hasFacility</b-th>
             <b-th class="uri-field">vocabulary:isPartOf</b-th>
-            <b-th class="uri-field">rdfs:comment</b-th>
             <b-th class="uri-field">vocabulary:hasGeometry</b-th>
             <b-th class="uri-field">uri:property...</b-th>
           </b-tr>
@@ -28,11 +28,11 @@
             <b-td>{{ $t("ScientificObjectImportHelp.uri-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.type-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.name-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.comment-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.hasCreationDate-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.hasDestructionDate-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.hasFacility-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.isPartOf-help") }}</b-td>
-            <b-td>{{ $t("ScientificObjectImportHelp.comment-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.geometry-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.properties-help") }}</b-td>
           </b-tr>

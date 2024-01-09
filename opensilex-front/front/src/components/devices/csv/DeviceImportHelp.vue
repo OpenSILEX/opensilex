@@ -20,16 +20,16 @@
             <b-th>type<span class="required">*</span></b-th>
             <b-th class="uri-field">rdfs:label </b-th>
             <b-th class="uri-field">rdfs:comment</b-th>
-
-            <b-th class="uri-field">vocabulary:hasBrand</b-th>
             <b-th class="uri-field">vocabulary:hasModel</b-th>
-            <b-th class="uri-field">vocabulary:hasSerialNumber</b-th>
-
-            <b-th class="uri-field">vocabulary:startUp</b-th>
             <b-th class="uri-field">vocabulary:removal</b-th>
+            <b-th class="uri-field">vocabulary:hasSerialNumber</b-th>
+            <b-th class="uri-field">vocabulary:hasBrand</b-th>
+            <b-th class="uri-field">vocabulary:startUp</b-th>
+            <!-- vocabulary:isPartOf / vocabulary:hasDevices ect se mettent ici  -->
+            <!-- <b-h class="uri-field">vocabulary:isPartOf</b-h> -->
             <b-th class="uri-field">vocabulary:personInCharge</b-th>
-
             <b-th class="uri-field">uri:property...</b-th>
+
           </b-tr>
         </b-thead>
         <b-tbody>
@@ -39,15 +39,13 @@
             <b-td>{{ $t("DeviceImportHelp.type-help") }}</b-td>
             <b-td>{{ $t("DeviceImportHelp.name-help") }}</b-td>
             <b-td>{{ $t("DeviceImportHelp.comment-help") }}</b-td>
-
-            <b-td>{{ $t("DeviceForm.brand-help") }}</b-td>
             <b-td>{{ $t("DeviceForm.constructor_model-help") }}</b-td>
-            <b-td>{{ $t("DeviceForm.serial_number-help") }}</b-td>
-
-            <b-td>{{ $t("DeviceForm.start_up-help") }}</b-td>
             <b-td>{{ $t("DeviceForm.removal-help") }}</b-td>
+            <b-td>{{ $t("DeviceForm.serial_number-help") }}</b-td>
+            <b-td>{{ $t("DeviceForm.brand-help") }}</b-td>
+            <b-td>{{ $t("DeviceForm.start_up-help") }}</b-td>
+            <!-- <b-td>{{ $t("DeviceForm.is_part_of_help")}}</b-td> -->
             <b-td>{{ $t("DeviceForm.person_in_charge-help") }}</b-td>
-
             <b-td>{{ $t("DeviceImportHelp.properties-help") }}</b-td>
           </b-tr>
           <b-tr class="alert alert-info">

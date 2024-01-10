@@ -156,12 +156,12 @@ import VueI18n from "vue-i18n";
 export default class VariableDetails extends Vue {
   //#region Plugins and services
   private $opensilex: OpenSilexVuePlugin
-  private $store: OpenSilexStore
-  private $route: Route
-  private routeArr : string = this.$route.path.split('/')
-  private $router: VueRouter
-  private $t: typeof VueI18n.prototype.t
-  private $i18n: VueI18n
+  public $store: OpenSilexStore
+  public $route: Route
+  private routeArr : string[] = this.$route.path.split('/')
+  public $router: VueRouter
+  public $t: typeof VueI18n.prototype.t
+  public $i18n: VueI18n
   private variable_service: VariablesService
   private data_service: DataService
   //#endregion

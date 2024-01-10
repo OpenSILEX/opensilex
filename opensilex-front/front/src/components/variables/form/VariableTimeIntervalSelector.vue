@@ -21,7 +21,7 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 export default class VariableTimeIntervalSelector extends Vue {
   //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin
-    private readonly $store: OpenSilexStore
+    public readonly $store: OpenSilexStore
     private service: VariablesService
   //#endregion
 

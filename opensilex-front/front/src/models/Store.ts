@@ -7,6 +7,7 @@ import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -101,7 +102,7 @@ export class SearchStore {
 }
 
 async function loadTimeIntervalsLabels(){
-  const service = getOpenSilexPlugin().getService("opensilex.VariablesService")
+  const service: VariablesService = getOpenSilexPlugin().getService("opensilex.VariablesService")
   const response = await service.getTimeIntervals(store.state.lang)
   store.state.time_interval_list = response.response.result
 }

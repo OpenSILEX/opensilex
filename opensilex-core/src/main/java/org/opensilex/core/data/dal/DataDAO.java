@@ -361,7 +361,7 @@ public class DataDAO {
                             null,
                             criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
                             (experiment == null ? null : Collections.singletonList(experiment))
-                    )
+                    ).stream().filter(Objects::nonNull).collect(Collectors.toList())
             );
         }
         //If every line wasn't "NotMeasured" :
@@ -387,7 +387,10 @@ public class DataDAO {
                 false,
                 criteriaSearchedResult.stream().findAny()
                 .get()
-                .getTargets());
+                .getTargets()
+                .stream().filter(Objects::nonNull)
+                .collect(Collectors.toList())
+        );
     }
 
     /**

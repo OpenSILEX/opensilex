@@ -194,8 +194,12 @@ export default class DataImportForm extends Vue {
     this.$opensilex.getService<DataService>("opensilex.DataService")
     .searchProvenance("standard_provenance")
     .then((http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
+      if(http.response.result[0] === undefined) {
+        this.standardProvURI = undefined;
+      } else {
           this.standardProvURI = http.response.result[0].uri;
-        });
+      }
+    });
   }
 
   getEmptyForm() {
@@ -354,6 +358,14 @@ export default class DataImportForm extends Vue {
               }
             }
           }).catch((e) => {
+            if(this.standardProvURI === undefined) {  
+              let message =
+                this.$t("DataImportForm.errorStandardProvenance") +
+                " : '" +
+                this.standardProvURI +
+                "' ."
+                this.$opensilex.showErrorToast(message);
+            }
             console.error(e);
             this.$opensilex.errorHandler(e);
         });
@@ -503,6 +515,7 @@ en:
     data-duplicated: Duplicated data
     data-not-imported: Data has not been imported. An error has occured during the importation process
     error: Erreur 
+    errorStandardProvenance: The selected provenance is
     message: Message
     reset-file: Reset file
     import-file : Import data CSV
@@ -531,6 +544,7 @@ fr:
     data-duplicated: Données dupliquées
     data-not-imported: Données non importées. Une erreur s'est produite durant le processus d'importation
     error: Error
+    errorStandardProvenance: La provenance selectionnée est
     message: Message
     reset-file: Reinitialiser fichier
     import-file : Importez des données

@@ -164,7 +164,6 @@ générique.
         - `r_data_moment_in` : "Je veux trouver des observations dont le moment de la mesure est compris dans une
           certaine période"
     - `r_data_provenance` : "Je veux trouver des observations par leur provenance"
-        - `r_data_provenance_experiment` : "Je veux trouver des observations par l'expérimentation liée"
         - `r_data_provenance_agent` : "Je veux trouver des observations par l'agent ayant effectué la mesure"
             - `r_data_provenance_operator` : "Je veux trouver des observations par l'opérateur ayant effectué la mesure"
             - `r_data_provenance_device` : "Je veux trouver des observations par le capteur ayant effectué la mesure"
@@ -174,6 +173,7 @@ générique.
               certain agent"
             - `r_data_provenance_agent_in` : "Je veux trouver des observations dont la mesure a été effectuée par un agent
               compris dans un certain ensemble"
+        - `r_data_provenance_experiment` : "Je veux trouver des observations par l'expérimentation liée"
     - `r_data_metadata` : "Je veux trouver des observations par leurs métadonnées"
         - `r_data_metadata_publisher` : "Je veux trouver des observations par l'utilisateur les ayant déclarées"
         - `r_data_metadata_publication_date` : "Je veux trouver des observations par la date de leur déclaration"

@@ -1896,13 +1896,13 @@ export default class MapView extends Vue {
       this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
 
       if(this.exportedOS.length> 0){
-        this.buildRequest("/core/scientific_objects/export_geospatial", "export_scientific_objects", {selected_props : values.SO.props, experiment : this.experiment, format: values.format}, this.exportedOS);
+        this.buildRequest("/core/scientific_objects/export_geospatial", "export_scientific_objects" + "_" + values.format, {selected_props : values.SO.props, experiment : this.experiment, format: values.format}, this.exportedOS);
       }
       if(this.exportedDevices.length> 0){
-        this.buildRequest("/core/devices/export_geospatial", "export_devices", {selected_props : values.devices.props, format: values.format }, this.exportedDevices);
+        this.buildRequest("/core/devices/export_geospatial", "export_devices" + "_" + values.format, {selected_props : values.devices.props, format: values.format }, this.exportedDevices);
       }
       if(this.exportedAreas.length> 0){
-        this.buildRequest("/core/area/export_geospatial", "export_areas", {selected_props : values.areas.props, format: values.format }, this.exportedAreas);
+        this.buildRequest("/core/area/export_geospatial", "export_areas" + "_" + values.format, {selected_props : values.areas.props, format: values.format }, this.exportedAreas);
       }
       if(this.exportedAreas.length === 0 && this.exportedOS.length === 0 && this.exportedDevices.length === 0) {
         this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-no-found").toString());
@@ -1911,20 +1911,13 @@ export default class MapView extends Vue {
   buildRequest(path :string, title :string, queryParams :any, body :any){
       //Get service to export
       let today = new Date();
-      let filename =
-          title + "_"
-          + today.getFullYear() + ""
-          + (today.getMonth()) + ""
-          + today.getDate() + "_"
-          +  today.getHours() + ""
-          + today.getMinutes()
-          + "" + today.getSeconds();
+      let filename = title + "_" + this.$opensilex.$dateTimeFormatter.formatISODate(today) + "_" + today.getHours() + "H" + today.getHours() ;
 
       setTimeout(()=> {
           this.$opensilex.downloadFilefromPostOrGetService(
               path,
               filename,
-              queryParams.format === "shp"? "zip": queryParams.format,
+              "zip",
               "POST",
               queryParams,
               body

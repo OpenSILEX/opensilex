@@ -17,6 +17,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.*;
@@ -51,6 +52,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -1132,9 +1134,11 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         list.add(new Position(3.97167246, 43.61328981));
         list.add(new Position(3.97167246, 43.61328981));
         Geometry geometry = new Polygon(list);
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
 
         GeometryDTO objToExport=new GeometryDTO();
-        objToExport.setGeometry(geometryToGeoJson(geometry));
+        objToExport.setGeometry(geoJsonGeometry);
         objToExport.setUri(osModel.getUri());
 
         ArrayList<GeometryDTO> objectsList= new ArrayList<>();

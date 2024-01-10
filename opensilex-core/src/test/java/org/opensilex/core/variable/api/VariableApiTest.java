@@ -14,7 +14,10 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
+import org.opensilex.core.variable.api.intervals.TimeIntervalEnum;
+import org.opensilex.core.variable.api.intervals.VariableTimeIntervalDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -22,10 +25,12 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -36,13 +41,13 @@ import static org.junit.Assert.assertNotNull;
  */
 public class VariableApiTest extends AbstractMongoIntegrationTest {
 
-    public String path = VariableAPI.PATH;
-
-    public String getByUriPath = path + "/{uri}";
-    public String searchPath = path;
-    public String createPath = path ;
-    public String updatePath = path ;
-    public String deletePath = path + "/{uri}";
+    private static final String path = VariableAPI.PATH;
+    private static final String getByUriPath = path + "/{uri}";
+    private static final String searchPath = path;
+    public static final String createPath = path ;
+    private static final String updatePath = path ;
+    private static final String deletePath = path + "/{uri}";
+    private static final String GET_TIME_INTERVAL_PATH =  path+"/time_intervals";
 
     private GermplasmCreationDTO germplasm;
     private EntityCreationDTO entity;
@@ -407,6 +412,26 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),deleteUnit.getStatus());
         errorResponse = mapper.convertValue(deleteUnit.readEntity(JsonNode.class), new TypeReference<ErrorResponse>() {});
         Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
+    }
+
+    @Test
+    public void testGetTimeintervalFR() throws Exception {
+        String lang = "fr";
+
+        WebTarget target = target(GET_TIME_INTERVAL_PATH).queryParam("lang", lang);
+        Response response = getJsonGetResponseAsAdmin(target);
+
+        JsonNode node = response.readEntity(JsonNode.class);
+        PaginatedListResponse<VariableTimeIntervalDTO> listResponse = mapper.convertValue(node, new TypeReference<>() {
+        });
+        List<VariableTimeIntervalDTO> timeIntervals = listResponse.getResult();
+
+        TimeIntervalEnum[] intervals = TimeIntervalEnum.values();
+        Locale locale = new Locale(lang);
+        List<VariableTimeIntervalDTO> expectedList = Stream.of(intervals).map(
+                interval -> new VariableTimeIntervalDTO(interval.name(), interval.getLabel(locale))
+        ).collect(Collectors.toList());
+        assertEquals(expectedList, timeIntervals);
     }
 
     @Override

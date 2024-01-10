@@ -363,7 +363,8 @@ export default class DataImportForm extends Vue {
                 this.$t("DataImportForm.errorStandardProvenance") +
                 " : '" +
                 this.standardProvURI +
-                "' ."
+                "' . " +
+                this.$t("DataImportForm.errorStandardProvenanceTwo")
                 this.$opensilex.showErrorToast(message);
             }
             console.error(e);
@@ -516,6 +517,7 @@ en:
     data-not-imported: Data has not been imported. An error has occured during the importation process
     error: Erreur 
     errorStandardProvenance: The selected provenance is
+    errorStandardProvenanceTwo: To use the standard provenance, define it beforehand.
     message: Message
     reset-file: Reset file
     import-file : Import data CSV
@@ -545,6 +547,7 @@ fr:
     data-not-imported: Données non importées. Une erreur s'est produite durant le processus d'importation
     error: Error
     errorStandardProvenance: La provenance selectionnée est
+    errorStandardProvenanceTwo: Pour utiliser la provenance standard, définissez-la au préalable.
     message: Message
     reset-file: Reinitialiser fichier
     import-file : Importez des données

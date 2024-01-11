@@ -66,9 +66,18 @@ $ sudo sysctl -p
 
 ## Failure on Tests
 
-Mongo 5.0.0, used for tests, is not compatible with Ubuntu 22.04.2 LTS.
-You need to change the Mongo version to 4_0_12 in the file : `AbstractMongoIntegrationTest.java`(line 64).
+Mongo 6.0.2, used for tests, is not natively compatible with Ubuntu 22.04.2 LTS.
 
-```sh
-$ mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
+To fix that you just have to install the ssl1.1 library with the following commands.
+```shell
+echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+
+sudo apt-get update
+sudo apt-get install libssl1.1
 ```
+
+```shell
+sudo rm /etc/apt/sources.list.d/focal-security.list
+```
+
+solution from [askubuntu website](https://askubuntu.com/questions/1403619/mongodb-install-fails-on-ubuntu-22-04-depends-on-libssl1-1-but-it-is-not-insta/1403683#1403683)

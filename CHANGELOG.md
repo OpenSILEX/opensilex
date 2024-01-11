@@ -109,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `has_parent_f`. You can also search germplasms using these properties as filters. -> 1f107ee0
 - [Dashboard] You can now configure your dashboard to display a custom title to your graph. -> a1e37f00
 - [Map] You can now export elements from the map in the GeoJSON format. -> da13f442
+- [Documentation] The installation documentation was updated. -> 9368839e
 
 ### Fixed or optimized
 

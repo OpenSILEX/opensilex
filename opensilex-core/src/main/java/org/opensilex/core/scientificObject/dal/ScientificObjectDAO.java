@@ -475,7 +475,7 @@ public class ScientificObjectDAO {
         // add NOT IN filter with excluded uris
         if(!CollectionUtils.isEmpty(searchFilter.getExcludedUris())){
             Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getExcludedUris());
-            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(SPARQLResourceModel.URI_FIELD,uriNodes);
+            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(uriVar, uriNodes);
             graphHandler.addFilter(notInFilter);
         }
 

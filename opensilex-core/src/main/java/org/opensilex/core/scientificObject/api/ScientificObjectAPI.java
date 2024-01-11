@@ -63,6 +63,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -350,10 +351,14 @@ public class ScientificObjectAPI {
         if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
             VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            List<URI> criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
             if(criteriaFilteredObjects != null){
-                searchFilter.setUris(criteriaFilteredObjects);
-                applyNonCriteriaFilters = !criteriaFilteredObjects.isEmpty();
+                if(criteriaFilteredObjects.excludeResults){
+                    searchFilter.setExcludedUris(criteriaFilteredObjects.result);
+                }else{
+                    searchFilter.setUris(criteriaFilteredObjects.result);
+                    applyNonCriteriaFilters = !criteriaFilteredObjects.result.isEmpty();
+                }
             }
         }
 
@@ -372,9 +377,10 @@ public class ScientificObjectAPI {
                     .setExistenceDate(existenceDate)
                     .setCreationDate(creationDate);
 
+            //TODO this crushes the result of criteria search, how should this be handled?
         if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables));
+            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
         }
 
             searchFilter.setPage(page)

@@ -255,7 +255,7 @@
             <vl-layer-vector :visible="checkZoom" render-mode="image" :z-index="1">
                 <vl-source-cluster :distance="25" >
                     <vl-source-vector
-                        ref="clusterSource" @mounted="getFeatures"
+                        ref="clusterSource"
                     ></vl-source-vector>
                     <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
                 </vl-source-cluster>
@@ -264,6 +264,7 @@
                     <vl-source-vector
                             ref="vectorSource"
                             :features="layerSO"
+                            @mounted="defineCenter"
                     ></vl-source-vector>
                 </vl-layer-vector>
           <!-- Devices features -->
@@ -1076,54 +1077,19 @@ export default class MapView extends Vue {
     this.multiSelect(map);
   }
 
-  private waitFor(conditionFunction) {
-    const poll = (resolve) => {
-      if (conditionFunction()) resolve();
-      else
-        setTimeout((_) => {
-          this.$opensilex.showLoader();
-          poll(resolve);
-        }, 200);
-    };
+  //Focus on map vectors
+  defineCenter() {
+    if(this.featuresOS.length>0 && this.vectorSource[0].$source) {
+        let OSextent = [];
 
-    return new Promise(poll);
-  }
-  //On click, focus on map vectors
-  defineCenter(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (this.featuresOS.length > 0) {
-        try {
-          const isVectorSourceMounted = (vector) =>
-            vector &&
-            vector.$source &&
-            vector.$source.getExtent() &&
-            vector.$source.getExtent()[0] &&
-            vector.$source.getExtent()[0] != Infinity; // Condition to be sure sources has been mounted
-          this.waitFor(
-              (_) =>
-                  this.vectorSource.length === this.featuresOS.length &&
-                  this.vectorSource.every(isVectorSourceMounted)
-          ) // Wait all vectors charged
-              .then(() => {
-                let extent = olExtent.createEmpty();
-                for (let vector of this.vectorSource) {
-                  if (vector && vector.$source) {
-                    let extentTemporary = vector.$source.getExtent();
-                    olExtent.extend(extent, extentTemporary);
-                  }
-                }
-                this.mapView.$view.fit(extent);
-                this.$opensilex.hideLoader();
-                resolve(true);
-              });
-        } catch (e) {
-          this.$opensilex.hideLoader();
-          reject(false);
-        }
-      } else {
-        resolve(false);
-      }
-    });
+        setTimeout(()=>{
+          this.vectorSource.forEach((v) => {
+              OSextent.push(v.$source.getExtent())});
+          this.mapView.fit(olExtent.boundingExtent(OSextent));
+          // create cluster after
+          this.getClusterFeatures();
+        },200)
+    }
   }
 
   select(value) {
@@ -1264,36 +1230,29 @@ export default class MapView extends Vue {
     this.mapSidebar.hide();
   }
 
-    //get visible OS features
-  getFeatures(){
+    //get visible OS features to build the cluster
+  getClusterFeatures(){
     if(this.vectorSource === undefined){
       return ;
     } else {
-      let clusterSource = this.clusterSource;
-      clusterSource.$source.clear();
-
+      this.clusterSource.$source.clear();
       this.$opensilex.showLoader();
 
-      let features =[];
+      let features = [];
+      const isVectorSourceMounted = (vector) =>
+          vector &&
+          vector.getFeatures() &&
+          vector.getFeatures().length > 0;
 
-      this.vectorSource.forEach((vector) => {
-        const isVectorSourceMounted = (vector) =>
-            vector &&
-            vector.getFeatures() &&
-            vector.getFeatures() &&
-            vector.getFeatures().length > 0;
-
-        this.waitFor((_)=>
-            this.vectorSource.length === this.featuresOS.length &&
-            this.vectorSource.every(isVectorSourceMounted)
-        ).then(() => {
+      if (this.vectorSource.length === this.featuresOS.length && this.vectorSource.every(isVectorSourceMounted)){
+        this.vectorSource.forEach((vector) => {
           if(vector.$parent.$layer.getVisible()){
             features.push(vector.getFeatures());
           }
-          this.$opensilex.hideLoader();
-          clusterSource.$source.addFeatures(features.flat());
         })
-      })
+        this.$opensilex.hideLoader();
+        this.clusterSource.$source.addFeatures(features.flat());
+      }
     }
   }
 
@@ -1304,7 +1263,7 @@ export default class MapView extends Vue {
           (feature) => {
               //transform all geometries into points and build the new extent
               if(feature.get('features')) {
-                  let points: any[] = [];
+                  let points = [];
                   let features = feature.get('features');
 
                   features.forEach((feat) => {
@@ -1516,16 +1475,6 @@ export default class MapView extends Vue {
           this.$opensilex.hideLoader();
         })
         .finally(() => {
-          this.defineCenter()
-              .catch(() => {
-                // In case of OpenLayer error, recall function in 300ms
-                setTimeout(() => {
-                  this.defineCenter();
-                }, 300);
-              })
-              .finally(() => {
-                this.$opensilex.hideLoader();
-              });
           this.initScientificObjects();
         });
   }
@@ -1947,13 +1896,13 @@ export default class MapView extends Vue {
       this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
 
       if(this.exportedOS.length> 0){
-        this.buildRequest("/core/scientific_objects/export_geospatial", "export_scientific_objects", {selected_props : values.SO.props, experiment : this.experiment, format: values.format}, this.exportedOS);
+        this.buildRequest("/core/scientific_objects/export_geospatial", "export_scientific_objects" + "_" + values.format, {selected_props : values.SO.props, experiment : this.experiment, format: values.format}, this.exportedOS);
       }
       if(this.exportedDevices.length> 0){
-        this.buildRequest("/core/devices/export_geospatial", "export_devices", {selected_props : values.devices.props, format: values.format }, this.exportedDevices);
+        this.buildRequest("/core/devices/export_geospatial", "export_devices" + "_" + values.format, {selected_props : values.devices.props, format: values.format }, this.exportedDevices);
       }
       if(this.exportedAreas.length> 0){
-        this.buildRequest("/core/area/export_geospatial", "export_areas", {selected_props : values.areas.props, format: values.format }, this.exportedAreas);
+        this.buildRequest("/core/area/export_geospatial", "export_areas" + "_" + values.format, {selected_props : values.areas.props, format: values.format }, this.exportedAreas);
       }
       if(this.exportedAreas.length === 0 && this.exportedOS.length === 0 && this.exportedDevices.length === 0) {
         this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-no-found").toString());
@@ -1962,20 +1911,13 @@ export default class MapView extends Vue {
   buildRequest(path :string, title :string, queryParams :any, body :any){
       //Get service to export
       let today = new Date();
-      let filename =
-          title + "_"
-          + today.getFullYear() + ""
-          + (today.getMonth()) + ""
-          + today.getDate() + "_"
-          +  today.getHours() + ""
-          + today.getMinutes()
-          + "" + today.getSeconds();
+      let filename = title + "_" + this.$opensilex.$dateTimeFormatter.formatISODate(today) + "_" + today.getHours() + "H" + today.getHours() ;
 
       setTimeout(()=> {
           this.$opensilex.downloadFilefromPostOrGetService(
               path,
               filename,
-              queryParams.format === "shp"? "zip": queryParams.format,
+              "zip",
               "POST",
               queryParams,
               body
@@ -2234,7 +2176,7 @@ export default class MapView extends Vue {
     })
     //update the OS cluster visibility
     if(this.checkZoom){
-        this.getFeatures();
+        this.getClusterFeatures();
     }
   }
 

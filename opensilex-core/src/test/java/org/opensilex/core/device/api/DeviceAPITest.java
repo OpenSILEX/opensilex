@@ -14,6 +14,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.GeoJsonObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -26,6 +27,7 @@ import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -44,6 +46,7 @@ import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -453,9 +456,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         //build geometry
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
 
-        GeometryDTO objToExport=new GeometryDTO();
-        objToExport.setGeometry(geometryToGeoJson(geometry));
+        GeometryDTO objToExport = new GeometryDTO();
+        objToExport.setGeometry(geoJsonGeometry);
         objToExport.setUri(deviceModel.getUri());
 
         ArrayList<GeometryDTO> objectsList= new ArrayList<>();

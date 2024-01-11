@@ -506,6 +506,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchMethod(nodeURI, page, pageSize) {
 
+    console.debug("searchoing....", JSON.stringify(this.filters));
     let orderBy = ["name=asc"];
     if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm || this.filters.criteriaDto) {
        return this.soService.searchScientificObjects(
@@ -513,7 +514,7 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.types, 
         this.filters.name, 
         this.filters.parent ? this.filters.parent : nodeURI, 
-        this.filters.germplasm, // Germplasm
+        this.filters.germplasm ? [this.filters.germplasm] : [], // Germplasm
         this.filters.factorLevels, 
         undefined, // facility?: string,
         undefined,
@@ -547,7 +548,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // rdfTypes?: Array<string>,
         query, // pattern?: string,
         undefined, // parentURI?: string,
-        undefined, // Germplasm
+        [], // Germplasm
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
         undefined,
@@ -686,7 +687,7 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.types,
         this.filters.name,
         this.filters.parent,
-        undefined, 
+        [],
         this.filters.factorLevels,
         undefined,
         undefined,

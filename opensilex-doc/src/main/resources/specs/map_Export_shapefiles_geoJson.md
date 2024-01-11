@@ -81,21 +81,18 @@ Opens a modal offering to export scientific objects, devices and areas in shapef
 
 By default, 4 basic properties are exported - label, uri, rdf type and rdf type label - and 3 geometry types can be to exported : polygon, line and point. The selection of map items is exported. Without any selection, all items visible in the "panel menu" are exported.
 
-For the shapefile format, a zip file is created. A shapefile is created for each type of geometry because some GIS software cannot import shapefiles with multiple geometries. 
-
-For the GeoJSON format, a single file is created. 
+A zip file is created. A file is created for each type of geometry because some GIS software cannot import shapefiles/geojson files with multiple geometries.  
 
 Items are exported in the "World Geodetic System 1984" CRS (WGS 84 - EPSG:4326).
 
 ## Technical specifications
 
 ### Front-end
-
 From the "Export items" modal, property selectors are available for each item type. By default, all properties are already selected. If one or more item type - scientific objects, devices or areas - aren't visible (and selected), its selector is disabled.
 For improved performance, conversion to shapefiles or GeoJSON is managed in the back-end.
 
 - clicking on the "shapefile" button, a zip file is downloaded in-browser, containing an "XModel_shp" file. It contains the shapefiles (composed of 4 files: .shp, .shx, .dbf and .prj) for each type of geometry of the items recorded.
-- clicking on the "GeoJSON" button, a simple GeoJSON file is download in-browser.
+- clicking on the "GeoJSON" button, a zip file is downloaded in-browser, containing simple GeoJSON files for each type of geometry.
 ### API
 
 For each item type exported, an `exportGeospatial` service is called from their respective APIs (`ScientifObjectAPI`, `DeviceAPI` and `AreaAPI`).
@@ -117,9 +114,9 @@ In this abstract class, the `exportFormat` method dispatch between two different
 
 1- Build features : Writing features according to the selected properties. The abstract method `buildGeoJSONCustomProps` implemented in classes `ScientificObjectGeospatialExporter`, `DeviceGeospatialExporter`, `AreaGeospatialExporter` is used to build collections with specific properties of each type of items.
 
-2- Writing feature collection.
+2- Writing feature collection for each feature type of geometry.
 
-3- Return in the file.
+3- Return a zipped file.
 
 ![geospatialExporter_class diagram](GeospatialExporter_class_diagram.png)
 

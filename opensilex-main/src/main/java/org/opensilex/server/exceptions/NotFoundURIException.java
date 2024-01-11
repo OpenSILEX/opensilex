@@ -3,22 +3,25 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.security.authentication;
+package org.opensilex.server.exceptions;
 
 import java.net.URI;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 
 /**
  *
  * @author vince
  */
-public class NotFoundURIException extends SPARQLInvalidURIException {
+public class NotFoundURIException extends NotFoundException {
 
     public NotFoundURIException(URI uri) {
-        super("URI not found : ",  uri);
+        this("URI not found : ", uri);
     }
     
     public NotFoundURIException(String message, URI uri) {
-        super(message, uri);
+        this(message, "URI not found", uri);
+    }
+
+    public NotFoundURIException(String message, String title, URI uri) {
+        super(message+' '+uri, title);
     }
 }

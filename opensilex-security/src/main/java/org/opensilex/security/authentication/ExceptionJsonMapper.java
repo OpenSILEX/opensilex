@@ -52,11 +52,6 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
                     Response.Status.FORBIDDEN, "URI access forbidden",
                     exception.getMessage()
             ).getResponse();
-        } else if (exception instanceof NotFoundURIException) { //@todo get rid of this
-            response = new ErrorResponse(
-                    Response.Status.NOT_FOUND, "URI not found",
-                    exception.getMessage()
-            ).getResponse();
         } else if(exception instanceof SPARQLInvalidUriListException){ //@todo get rid of this
             response = new ErrorResponse(
                     Response.Status.NOT_FOUND, "URIs not found",

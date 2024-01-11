@@ -28,10 +28,14 @@ public class NotFoundException extends WebApplicationException {
      * @param message exception detail
      */
     public NotFoundException(String message) {
+       this(message, "Resource not found");
+    }
+
+    public NotFoundException(String message, String title) {
         super(Response.status(Response.Status.NOT_FOUND)
                 .entity(new ErrorResponse(
                         Response.Status.NOT_FOUND,
-                        "Resource not found",
+                        title,
                         message))
                 .type(MediaType.APPLICATION_JSON)
                 .build()

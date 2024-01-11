@@ -20,6 +20,7 @@ import org.opensilex.security.email.EmailService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.ServerModule;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;

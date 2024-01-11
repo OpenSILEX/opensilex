@@ -25,16 +25,15 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.fs.FileStorageConfig;
 import org.opensilex.fs.FileStorageModule;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.utils.ListWithPagination;

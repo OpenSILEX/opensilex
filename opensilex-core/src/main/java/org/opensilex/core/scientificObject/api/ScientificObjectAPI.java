@@ -43,9 +43,11 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -643,7 +645,7 @@ public class ScientificObjectAPI {
             }
             throw mongoException;
         }catch (DuplicateNameException e){
-            throw new IllegalArgumentException(e.getMessage());
+            throw new BadRequestException(e.getMessage());
         }
         catch (Exception ex) {
             sparql.rollbackTransaction();

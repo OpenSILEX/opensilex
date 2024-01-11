@@ -12,7 +12,6 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
-import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
@@ -29,6 +28,7 @@ import java.util.*;
 
 /**
  * AccountDAO is used to manipulate AccountModel and CRUD foaf:OnlineAccount data in the rdf database.
+ *
  * @author vincent
  */
 public final class AccountDAO {
@@ -53,7 +53,8 @@ public final class AccountDAO {
 
     /**
      * save a new Account in the rdf Database
-     * @param uri URI of the Account
+     *
+     * @param uri   URI of the Account
      * @param email unique ID
      * @return the AccountModel corresponding to the Account created in the dataBase
      */
@@ -75,7 +76,8 @@ public final class AccountDAO {
 
     /**
      * save a new Account in the rdf Database
-     * @param uri URI of the Account
+     *
+     * @param uri   URI of the Account
      * @param email unique ID
      * @return the AccountModel corresponding to the Account created in the dataBase
      */
@@ -128,6 +130,7 @@ public final class AccountDAO {
     /**
      * Delete an account only if it is not linked to any other ressources in different databases.
      * Only one exception is made for the FOAF:account link between a Person and an Account.
+     *
      * @param instanceURI uri of the Account to delete
      */
     public void delete(URI instanceURI, OpenSilex openSilex) throws Exception {
@@ -137,24 +140,20 @@ public final class AccountDAO {
         sparql.requireUriIsNotLinkedWithOtherRessourcesInRDF(instanceURI, predicateUrisToExclude);
         requireAccountUriIsNotLinkedWithOtherRessourcesInNosql(instanceURI, openSilex);
 
-        try {
-            sparql.delete(AccountModel.class, instanceURI);
-        } catch (NullPointerException e){
-            // TODO: 30/01/2023 if the deletion is not done because any model match this URI, the SparqlService.delete may throws an exception
-            throw new NotFoundURIException(instanceURI);
-        }
+        sparql.delete(AccountModel.class, instanceURI);
     }
 
     /**
      * Itterate over all module that implement ModuleWithNosqlEntityLinkedToAccount interface and ask them if there are linked or not to accountUri.
+     *
      * @throws ConflictException if at least one of those module is linked with accountUri.
      */
     private void requireAccountUriIsNotLinkedWithOtherRessourcesInNosql(URI accountUri, OpenSilex openSilex) throws ConflictException {
         boolean accountIsUsedInNosqlDatabase = openSilex.getModulesImplementingInterface(ModuleWithNosqlEntityLinkedToAccount.class)
                 .stream()
                 .anyMatch(
-                module -> module.accountIsLinkedWithANosqlEntity(accountUri)
-        );
+                        module -> module.accountIsLinkedWithANosqlEntity(accountUri)
+                );
         if (accountIsUsedInNosqlDatabase) {
             throw new ConflictException("URI <" + accountUri + "> is linked with other ressources");
         }
@@ -162,8 +161,8 @@ public final class AccountDAO {
 
     /**
      * update the Account with the given information
-     * @return the updated Account
      *
+     * @return the updated Account
      */
     public AccountModel update(
             URI uri,
@@ -237,6 +236,7 @@ public final class AccountDAO {
 
     /**
      * convenient method to get an AccountModel or create a new one if it doesn't exist yet
+     *
      * @param accountModel the accountModel we want to get
      * @return the desired AccountModel after created it if necessary
      */

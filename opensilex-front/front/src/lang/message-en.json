@@ -145,7 +145,8 @@
                     "delete": "Delete"
                 },
                 "pagination" : {
-                    "nbEntries" : "Showing {limit} to {offset} of",
+                    "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
+                    "nbEntriesNoTotal" : "Showing {limit} to {offset}",
                     "totalEntries" : "{totalRow} entries",
                     "showTotalCount" : "Show total count",
                     "noEntries" : "No entries found",

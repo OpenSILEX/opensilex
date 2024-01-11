@@ -144,7 +144,8 @@
                     "delete": "Supprimer"
                 },
                 "pagination" : {
-                    "nbEntries" : " Affiche {limit} à {offset} des",
+                    "nbEntries" : " Affiche {limit} à {offset} des {totalRow} éléments",
+                    "nbEntriesNoTotal" : " Affiche {limit} à {offset}",
                     "totalEntries" : "{totalRow} éléments",
                     "showTotalCount" : "Afficher le total des élements",
                     "noEntries" : "Aucun élément trouvé",

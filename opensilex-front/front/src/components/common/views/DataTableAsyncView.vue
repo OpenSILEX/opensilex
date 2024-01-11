@@ -51,7 +51,7 @@
       <!-- afficher 0 à 10 de ... -->
       <span>
        <strong>
-            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : (getCurrentItemLimit()) ,offset : getCurrentItemOffset()})}}
+            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntriesNoTotal', { limit : (getCurrentItemLimit()) ,offset : getCurrentItemOffset()})}}
               <!-- <span class="ml-1">  {{$t('component.common.list.pagination.nbEntries', { limit : formattedLimit(), offset : getCurrentItemOffset()})}} -->
               </span>
         </strong>

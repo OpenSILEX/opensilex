@@ -18,7 +18,7 @@
       icon="fa#seedling"
       modalSize="lg"
       @onCreate="provList.refresh()"
-      @onUpdate="provList.refresh()"
+      @onUpdate="provList.updateSelectedProvenance()"
       :successMessage="successMessage"
       :key="lang"
     ></opensilex-ModalForm>
@@ -97,7 +97,10 @@ export default class ProvenanceView extends Vue {
       activity_end_date: null,
       activity_uri: null,
       agents: [],
-      items: [0]
+      items: [0],
+      publisher: dto.publisher,
+      publication_date: dto.issued,
+      last_updated_date: dto.modified
     }
 
     if (dto.prov_activity != null && dto.prov_activity.length>0) {
@@ -130,9 +133,8 @@ export default class ProvenanceView extends Vue {
     return form;
   }
 
-  deleteProvenance(uri: string) {
-    console.log("deleteProvenance " + uri);
 
+  deleteProvenance(uri: string) {
     this.service
       .deleteProvenance(uri)
       .then(() => {

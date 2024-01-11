@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -1026,7 +1027,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                           boolean blankNode,
                                                           BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
 
-        if (instance.getPublicationDate() == null && setPublicationDate) {
+        if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
             instance.setPublicationDate(OffsetDateTime.now());
         }
 
@@ -1084,7 +1085,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
 
             for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, false, blankNode, null);
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
             }
         }
     }
@@ -1102,7 +1103,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true);
+        create(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1114,7 +1115,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param checkUriExist       indicate if the service must check if instances already exist
      * @param <T>                 the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
 
@@ -1139,6 +1140,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 startTransaction();
 
                 for (T instance : instances) {
+                    if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                        instance.setPublicationDate(OffsetDateTime.now());
+                    }
+
                     SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
                     prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
                     mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
@@ -1280,7 +1285,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
-        SPARQLClassAnalyzer analyzer = mapper.getClassAnalizer();
+        SPARQLClassAnalyzer analyzer = mapper.getClassAnalyzer();
 
         // dont handle model with no custom properties or model with default type
         if (!analyzer.isHandleCustomProperties() || instance.getType() == null) {
@@ -1300,7 +1305,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return;
         }
 
-        Set<String> managedPropUris = mapper.getClassAnalizer().getManagedPropertiesUris();
+        Set<String> managedPropUris = mapper.getClassAnalyzer().getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
         Set<URI> customProperties = classModel.getRestrictionsByProperties()
@@ -2248,6 +2253,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
+    public List<URI> getRdfTypes(URI uri, Node graph) throws SPARQLException {
+
+        Var typeVar = makeVar("type");
+        SelectBuilder select = new SelectBuilder().addVar(typeVar).setDistinct(true);
+        Node subject = SPARQLDeserializers.nodeURI(uri);
+
+        if(graph != null){
+            select.addGraph(graph,subject, RDF.type, typeVar);
+        }else{
+            select.addWhere(subject, RDF.type, typeVar);
+        }
+
+        return connection.executeSelectQueryAsStream(select)
+                .map(result -> URIDeserializer.formatURI(result.getStringValue(typeVar.getVarName())))
+                .collect(Collectors.toList());
+    }
+
     /**
      *
      * @param graph the SPARQL graph (optional)
@@ -2592,5 +2614,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         });
 
         return graphModelMap;
+    }
+
+    /**
+     * @throws ConflictException if the instanceURI is linked with other ressources in the RDF database
+     * Using the following sparkl ASK request :
+     * <pre>
+     * ASK
+     * WHERE
+     *   {
+     *      ?s  ?p  <{instanceURI}>
+     *   }
+     * </pre>
+     *
+     * </br>
+     * Exemple of request with the predicate "foaf:account" excluded
+     * <pre>
+     * ASK
+     * WHERE
+     *   { ?s  ?p  <{instanceURI}>
+     *     FILTER ( ?p != <http://xmlns.com/foaf/0.1/account> )
+     *   }
+     * </pre>
+     */
+    public void requireUriIsNotLinkedWithOtherRessourcesInRDF(URI instanceURI, List<String> predicateUrisToExclude) throws ConflictException, SPARQLException {
+        Node uriNode = SPARQLDeserializers.nodeURI(instanceURI);
+        String pVar = "?p";
+
+        AskBuilder isLinked = new AskBuilder()
+                .addWhere(SPARQLQueryHelper.makeVar("?s"), SPARQLQueryHelper.makeVar(pVar), uriNode);
+
+        if (Objects.nonNull(predicateUrisToExclude)) {
+            predicateUrisToExclude.forEach(uri -> {
+                Node predicateUri = SPARQLDeserializers.nodeURI(uri);
+                isLinked.addFilter(new ExprFactory().ne(pVar, predicateUri));
+            });
+        }
+
+        if ( executeAskQuery(isLinked) ){
+            throw new ConflictException("URI <"+instanceURI+"> is linked with other ressources");
+        }
     }
 }

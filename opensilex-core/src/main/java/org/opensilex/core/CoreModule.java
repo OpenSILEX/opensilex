@@ -9,10 +9,18 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
+import org.bson.Document;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.logs.dal.LogsDAO;
+import org.opensilex.core.metrics.dal.MetricDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
@@ -24,6 +32,8 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
@@ -40,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -47,7 +58,7 @@ import java.util.stream.Collectors;
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension {
+public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension, ModuleWithNosqlEntityLinkedToAccount {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
@@ -155,13 +166,17 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 "http://www.opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY + "/oeso-core.owl",
                 Lang.RDFXML,
-                "vocabulary"
+                "vocabulary",
+                null,
+                true
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeev#",
                 ONTOLOGIES_DIRECTORY + "/oeev.owl",
                 Lang.RDFXML,
-                "oeev"
+                "oeev",
+                null,
+                true
         ));
         list.add(new OntologyFileDefinition(
                 OWL.NAMESPACE,
@@ -311,5 +326,34 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         } catch (Exception e) {
             throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public boolean accountIsLinkedWithANosqlEntity(URI accountURI) {
+        MongoDBService mongo = getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        Document filter = MongoModel.getPublisherFilter(accountURI);
+
+        for (String collection : getCollectionsWithAccountMetaData() ) {
+            if ( mongo.count(MongoModel.class, collection, filter) > 0 ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getCollectionsWithAccountMetaData(){
+        List<String> results = new ArrayList<>();
+        results.add(DataDAO.DATA_COLLECTION_NAME);
+        results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
+        results.add(DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
+        results.add(DataDAO.FILE_COLLECTION_NAME);
+        results.add(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+        results.add(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
+        results.add(LogsDAO.LOGS_COLLECTION_NAME);
+        results.add(MetricDAO.METRICS_COLLECTION);
+        results.add(MoveEventDAO.MOVE_COLLECTION_NAME);
+        results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
+
+        return results;
     }
 }

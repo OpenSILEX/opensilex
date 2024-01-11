@@ -150,6 +150,13 @@ public class Oeso {
     public static final Property hasReplication = Ontology.property(NS, "hasReplication");
     public static final Property hasId = Ontology.property(NS, "hasId");
 
+    public static final String PARENTM_PROPERTY_NAME = "hasParentGermplasmM";
+    public static final String PARENTF_PROPERTY_NAME = "hasParentGermplasmF";
+    public static final String PARENT_PROPERTY_NAME = "hasParentGermplasm";
+    public static final Property hasParentGermplasm = Ontology.property(NS, PARENT_PROPERTY_NAME);
+    public static final Property hasParentGermplasmM = Ontology.property(NS, PARENTM_PROPERTY_NAME);
+    public static final Property hasParentGermplasmF = Ontology.property(NS, PARENTF_PROPERTY_NAME);
+
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
@@ -178,4 +185,5 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
+
 }

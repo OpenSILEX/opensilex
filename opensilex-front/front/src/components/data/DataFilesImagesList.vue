@@ -186,8 +186,9 @@ export default class DataFilesImagesList extends Vue {
           target: dto.target,
           date: dto.date,
           provenance: dto.provenance,
-          filename: dto.filename
-
+          filename: dto.filename,
+          publisher: dto.publisher,
+          issued: dto.issued
         };
         this.images.push(image);
         i++;

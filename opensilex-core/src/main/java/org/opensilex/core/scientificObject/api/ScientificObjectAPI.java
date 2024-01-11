@@ -19,6 +19,7 @@ import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
+import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -29,19 +30,22 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.geospatial.dal.ShapeFileExporter;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.*;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -57,6 +61,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -76,7 +81,6 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,6 +122,9 @@ public class ScientificObjectAPI {
 
     @Inject
     private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @POST
     @Path("by_uris")
@@ -312,11 +319,14 @@ public class ScientificObjectAPI {
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
             @ApiParam(value = "Parent URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") @ValidURI URI parentURI,
-            @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
+            @ApiParam(value = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasms") @ValidURI List<URI> germplasms,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "Variables URI") @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Devices URI") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
+            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_on_data") @Valid CriteriaDTO criteriaDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -331,25 +341,55 @@ public class ScientificObjectAPI {
             }
         }
 
-        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
-                .setExperiment(contextURI)
-                .setPattern(pattern)
-                .setRdfTypes(rdfTypes)
-                .setParentURI(parentURI)
-                .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
-                .setFactorLevels(factorLevels)
-                .setFacility(facility)
-                .setExistenceDate(existenceDate)
-                .setCreationDate(creationDate);
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter();
 
-        searchFilter.setPage(page)
-                .setPageSize(pageSize)
-                .setOrderByList(orderByList)
-                .setLang(currentUser.getLanguage());
+        //Get all object uris that has at least one data validating each all the criteria
+        //This is a boolean to not bother applying other filters if criteria search returned 0 results
+        boolean applyNonCriteriaFilters = true;
+        if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
+            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+            VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+            if(criteriaFilteredObjects != null){
+                if(criteriaFilteredObjects.excludeResults){
+                    searchFilter.setExcludedUris(criteriaFilteredObjects.result);
+                }else{
+                    searchFilter.setUris(criteriaFilteredObjects.result);
+                    applyNonCriteriaFilters = !criteriaFilteredObjects.result.isEmpty();
+                }
+            }
+        }
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(searchFilter);
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        if(!applyNonCriteriaFilters){
+            ListWithPagination<ScientificObjectNodeDTO> emptyResult = new ListWithPagination<>(Collections.emptyList(), page, pageSize, 0);
+            return new PaginatedListResponse<>(emptyResult).getResponse();
+        }else{
+            searchFilter
+                    .setExperiment(contextURI)
+                    .setPattern(pattern)
+                    .setRdfTypes(rdfTypes)
+                    .setParentURI(parentURI)
+                    .setGermplasm(germplasms)
+                    .setFactorLevels(factorLevels)
+                    .setFacility(facility)
+                    .setExistenceDate(existenceDate)
+                    .setCreationDate(creationDate);
+
+            //TODO this crushes the result of criteria search, how should this be handled?
+        if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
+        }
+
+            searchFilter.setPage(page)
+                    .setPageSize(pageSize)
+                    .setOrderByList(orderByList)
+                    .setLang(currentUser.getLanguage());
+
+            ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+            ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(searchFilter);
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        }
     }
 
     @GET
@@ -386,7 +426,11 @@ public class ScientificObjectAPI {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove)).getResponse();
+        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove);
+        if (Objects.nonNull(model.getPublisher())) {
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     @GET
@@ -430,6 +474,9 @@ public class ScientificObjectAPI {
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
                 ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
+                if (Objects.nonNull(model.getPublisher())){
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                }
                 dtoList.add(dto);
             }
         }
@@ -565,7 +612,7 @@ public class ScientificObjectAPI {
         sparql.startTransaction();
         try {
 
-            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), descriptionDto.getPublisher(), descriptionDto.getPublicationDate(), currentUser);
 
             if (hasExperiment) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
@@ -755,18 +802,19 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("export_shp")
-    @ApiOperation("Export a given list of scientific object URIs to shapefile")
+    @Path("export_geospatial")
+    @ApiOperation("Export a given list of scientific object URIs to shapefile or geojson")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data shapefile exported")
+            @ApiResponse(code = 200, message = "Data exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response exportShp(
+    public Response exportGeospatial(
             @ApiParam(value = "Scientific objects") List<GeometryDTO> selectedObjects,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
             @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
             @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
@@ -776,7 +824,7 @@ public class ScientificObjectAPI {
 
         //Get OS exported URI
         selectedObjects.forEach(o ->{
-            selectedObjectsMap.put(o.getUri(), o.getGeometry());
+            selectedObjectsMap.put(URI.create(SPARQLDeserializers.getExpandedURI(o.getUri())), o.getGeometry());
         });
 
         // Search exported OS detail according the XP and selected uris, fetch os factors
@@ -790,14 +838,12 @@ public class ScientificObjectAPI {
 
         List<ScientificObjectModel> objDetailList = soDao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)).getList();
 
-        //Convert to shapefiles and create a zip file to export
-        ShapeFileExporter shpExport = new ShapeFileExporter();
-        byte[] zippedFile =shpExport.shpExport(selectedProps, objDetailList, selectedObjectsMap);
+        //Convert
+        ScientificObjectGeospatialExporter shpExport = new ScientificObjectGeospatialExporter();
+        Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
 
-        String zipName = "shpZip_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
-
-        return Response.ok(zippedFile, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + zipName + "\"")
+        return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
                 .build();
     }
 

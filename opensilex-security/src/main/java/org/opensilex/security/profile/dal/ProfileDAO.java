@@ -7,6 +7,8 @@ package org.opensilex.security.profile.dal;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Var;
@@ -36,12 +38,16 @@ public final class ProfileDAO {
     public ProfileModel create(
             URI uri,
             String name,
-            List<String> credentials
+            List<String> credentials,
+            URI publisher
     ) throws Exception {
         ProfileModel profile = new ProfileModel();
         profile.setUri(uri);
         profile.setName(name);
         profile.setCredentials(credentials);
+        if (Objects.nonNull(publisher)) {
+            profile.setPublisher(publisher);
+        }
 
         sparql.create(profile);
 

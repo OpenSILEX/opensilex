@@ -100,9 +100,23 @@
                                         :experiments.sync="filter.experiment"
                                         class="searchFilter"
                                         @handlingEnterKey="refresh()"
+                                        :key="resetExperimentSelectorKey"
                                     ></opensilex-ExperimentSelector>
                                 </opensilex-FilterField>
                             </div>
+
+                          <!-- Germplasm Parents filter -->
+                          <div>
+                            <opensilex-FilterField>
+                              <opensilex-GermplasmSelector
+                                  label="GermplasmList.filter.parents"
+                                  :multiple="true"
+                                  :germplasm.sync="filter.parent_germplasms"
+                                  class="searchFilter"
+                                  @handlingEnterKey="refresh()"
+                              ></opensilex-GermplasmSelector>
+                            </opensilex-FilterField>
+                          </div>
 
                           <!-- Germplasm Group -->
                           <div>
@@ -282,6 +296,9 @@ export default class GermplasmList extends Vue {
     @Ref("tableRef") readonly tableRef!: TableAsyncView<GermplasmGetAllDTO>;
     @Ref("attributesValueSelector") attributeValueSelector: GermplasmAttributesValueSelector;
 
+
+    resetExperimentSelectorKey = 0;
+
     @Prop({
         default: false
     })
@@ -321,6 +338,9 @@ export default class GermplasmList extends Vue {
     production_year: undefined,
     institute: undefined,
     experiment: undefined,
+    parent_germplasms: [],
+    parent_germplasms_m: [],
+    parent_germplasms_f: [],
     germplasm_group: undefined,
     uri: undefined,
     metadataKey: undefined,
@@ -335,6 +355,9 @@ export default class GermplasmList extends Vue {
           production_year: undefined,
           institute: undefined,
           experiment: undefined,
+          parent_germplasms: [],
+          parent_germplasms_m: [],
+          parent_germplasms_f: [],
           germplasm_group: undefined,
           uri: undefined,
           metadataKey: undefined,
@@ -342,6 +365,7 @@ export default class GermplasmList extends Vue {
         };
 
         this.refresh();
+        this.resetExperimentSelectorKey++;
     }
 
     onItemUnselected(row) {
@@ -419,13 +443,15 @@ export default class GermplasmList extends Vue {
 
   refresh() {
     this.tableRef.selectAll = false;
-    this.$opensilex.updateURLParameters(this.filter);
+    this.updateSelectedGermplasm()
+    this.tableRef.changeCurrentPage(1);     
+    }
 
+    updateSelectedGermplasm(){
+        this.tableRef.selectAll = false;
+        this.$opensilex.updateURLParameters(this.filter);
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.refresh();
-        } else {
-            this.tableRef.refresh();
         }
     }
 
@@ -443,6 +469,9 @@ export default class GermplasmList extends Vue {
       this.filter.germplasm_group,
       this.filter.institute,
       this.filter.experiment,
+      this.filter.parent_germplasms,
+      this.filter.parent_germplasms_m,
+      this.filter.parent_germplasms_f,
       this.addMetadataFilter(),
       options.orderBy,
       options.currentPage,
@@ -555,11 +584,6 @@ export default class GermplasmList extends Vue {
         });
     }
 
-    // refreshValueSelector(){
-    //     console.log("refreshValueSelector");
-    //     this.attributeValueSelector.refresh();
-    // }
-
     createDocument() {
         this.documentForm.showCreateForm();
     }
@@ -648,6 +672,7 @@ en:
           metadataKey: Attribute name
           metadataValue: Attribute value
           germplasm-group: Germplasm Group
+          parents: Parents
 
 fr:
     GermplasmList:
@@ -685,5 +710,6 @@ fr:
           metadataKey: Nom de l'attribut
           metadataValue: Valeur de l'attribut
           germplasm-group: Groupe de ressources génétiques
+          parents: Parents
 
 </i18n>

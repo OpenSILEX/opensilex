@@ -250,13 +250,13 @@ menu:
   - id: configuration
     label: component.menu.configuration
     children:
-      - id: users
+      - id: Accounts
         label: component.menu.security.accounts
         route:
           path: /accounts
           component: opensilex-AccountView
           credentials:
-            - user-access
+            - account-access
           icon: ik#ik-user
           title: AccountView.title
           description: AccountView.description
@@ -277,12 +277,14 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - profile-access
-            - is-admin
           icon: ik#ik-settings
           title: component.menu.security.profiles
           description: component.profile.description
+  - id: about
+    label: component.menu.about.label
+    children:
       - id: system
-        label: component.menu.tools.system
+        label: component.menu.about.system
         route:
           path: /system
           component: opensilex-SystemView
@@ -291,6 +293,14 @@ menu:
           icon: ik#ik-layers
           title: SystemView.title
           description: SystemView.title-description
+      - id: gdpr
+        label: GDPR.title
+        route:
+          path: /gdpr
+          component: opensilex-GDPR
+          icon: ik#ik-user
+          title: GDPR.title
+          description: GDPR.title-description
   - id: tools
     label: component.menu.tools.label
     children:

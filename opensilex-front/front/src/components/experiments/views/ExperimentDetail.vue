@@ -98,6 +98,12 @@
               label="component.experiment.comment"
               :value="experiment.description"
             ></opensilex-TextView>
+            <opensilex-MetadataView
+              v-if="experiment.publisher && experiment.publisher.uri"
+              :publisher="experiment.publisher"
+              :publicationDate="experiment.publication_date"
+              :lastUpdatedDate="experiment.last_updated_date" 
+            ></opensilex-MetadataView>
           </template>
         </opensilex-Card>
       </div>
@@ -206,10 +212,13 @@ export default class ExperimentDetail extends Vue {
   installationsList = [];
   organizationsList = [];
   recordAuthor :AccountGetDTO = null;
+  routeArr : string = this.$route.path.split('/');
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    localStorage.setItem("tabPath", this.routeArr[2]);
+    localStorage.setItem("tabPage", "1");
     this.loadExperiment();
   }
 

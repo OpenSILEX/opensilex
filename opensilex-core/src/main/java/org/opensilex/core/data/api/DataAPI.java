@@ -14,6 +14,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -27,6 +28,7 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
@@ -101,7 +103,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
@@ -186,6 +187,7 @@ public class DataAPI {
 
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
+                model.setPublisher(user.getUri());
                 dataList.add(model);
             }
             
@@ -261,6 +263,18 @@ public class DataAPI {
         }
     }
 
+    @GET
+    @Path("mathematicalOperators")
+    @ApiOperation("Get mathematical operators")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of mathematical operators", response = String.class, responseContainer = "List")})
+    public Response getMathematicalOperators(){
+        return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
+    }
+
     @POST
     @Path("by_targets")
     @ApiOperation("Search data for a large list of targets")
@@ -283,6 +297,7 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
@@ -292,14 +307,14 @@ public class DataAPI {
             targets = new ArrayList<>();
         }
         //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        if(germplasmGroup!=null){
-
+        //Or/And scientific objects associated with passed germplasms
+        if(germplasmGroup!=null || !CollectionUtils.isEmpty(germplasmUris)){
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
             Set<URI> finalTargetsFilter = new HashSet<>(targets);
             //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
             ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
             List<URI> includedExperimentsForTargetsSearch = experiments;
-            if(experiments == null || experiments.isEmpty()){
+            if(CollectionUtils.isEmpty(experiments)){
                 ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
                 experimentSearchFilter.setUser(user);
                 int xpQuantity = experimentDAO.count();
@@ -309,7 +324,7 @@ public class DataAPI {
             }
 
             List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
-                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, user.getLanguage());
+                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, germplasmUris);
             finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
             targets = new ArrayList<>(finalTargetsFilter);
             //if targets is still empty when a group was passed then we don't want any data to be returned
@@ -1243,6 +1258,7 @@ public class DataAPI {
                 //Transactions so that we don't create any Data or Annotations if either fail
                 nosql.startTransaction();
                 sparql.startTransaction();
+                data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
                 dao.createAll(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
@@ -1557,7 +1573,7 @@ public class DataAPI {
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
-        
+
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
@@ -1573,6 +1589,9 @@ public class DataAPI {
         if( experiment != null) {
             experiments.add(experiment);
         }
+
+        //Set to remember which columns to do at end of row iteration (in case required columns like target are at the end).
+        Set<Integer> colsToDoAtEnd = new HashSet<>();
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
@@ -1755,7 +1774,7 @@ public class DataAPI {
                 if(!StringUtils.isEmpty(annotation)){
                     annotationFromAnnotationColumn = new AnnotationModel();
                     annotationFromAnnotationColumn.setDescription(annotation.trim());
-                    annotationFromAnnotationColumn.setCreator(user.getUri());
+                    annotationFromAnnotationColumn.setPublisher(user.getUri());
                     MotivationModel motivationModel = new MotivationModel();
                     motivationModel.setUri(URI.create(OA.commenting.getURI()));
                     annotationFromAnnotationColumn.setMotivation(motivationModel);
@@ -1764,162 +1783,166 @@ public class DataAPI {
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
-                        if (validRow) {
-                            String variable = headerByIndex.get(colIndex);
-                            URI varURI = URI.create(variable);
-                            if (deviceFromDeviceColumn == null && target == null && object == null) {
-                                missingTargetOrDevice = true;
-                                validRow = false;
-                                break;
-                            }
-                            if (deviceFromDeviceColumn != null) {
-                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
-                                if (!variableIsChecked) {
-                                    if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
-                                        csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        colsToDoAtEnd.add(colIndex);
+                    }
+                }
+            }
+        }
+        //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
+        for(Integer colIndex : colsToDoAtEnd){
+            if (validRow) {
+                String variable = headerByIndex.get(colIndex);
+                URI varURI = URI.create(variable);
+                if (deviceFromDeviceColumn == null && target == null && object == null) {
+                    missingTargetOrDevice = true;
+                    validRow = false;
+                    break;
+                }
+                if (deviceFromDeviceColumn != null) {
+                    boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
+                    if (!variableIsChecked) {
+                        if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
+                            csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        }
+                        variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                    }
+
+                } else if (sensingDeviceFoundFromProvenance) {
+                    if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
+                        List<DeviceModel> devices = new ArrayList<>();
+                        List<DeviceModel> linkedDevice = new ArrayList<>();
+                        DeviceModel dev = null;
+                        for (AgentModel agent : provenance.getAgents()) {
+                            if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                if (dev != null) {
+
+                                    if (variableIsAssociatedToDevice(dev, varURI)) {
+                                        linkedDevice.add(dev);
                                     }
-                                    variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                                    devices.add(dev);
                                 }
-
-                            } else if (sensingDeviceFoundFromProvenance) {
-                                if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
-                                    List<DeviceModel> devices = new ArrayList<>();
-                                    List<DeviceModel> linkedDevice = new ArrayList<>();
-                                    DeviceModel dev = null;
-                                    for (AgentModel agent : provenance.getAgents()) {
-                                        if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
-                                            dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                            if (dev != null) {
-
-                                                if (variableIsAssociatedToDevice(dev, varURI)) {
-                                                    linkedDevice.add(dev);
-                                                }
-                                                devices.add(dev);
-                                            }
-                                        }
-                                    }
-                                    switch (linkedDevice.size()) {
-                                        case 0:
-                                            if (devices.size() > 1) {
-                                                //wich device to choose ?
-                                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                                csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                                validRow = false;
-                                                break;
-                                            } else {
-                                                if (!devices.isEmpty()) {
-                                                    csvValidation.addVariableToDevice(devices.get(0), varURI);
-                                                    variableCheckedProvDevice.put(variable, devices.get(0));
-                                                } else {
-                                                    if (target == null) {
-                                                        missingTargetOrDevice = true;
-                                                        validRow = false;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            break;
-                                        case 1:
-
-                                            variableCheckedProvDevice.put(variable, linkedDevice.get(0));
-                                            break;
-
-                                        default:
-                                            //witch device to choose ?
-                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
-                                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            }
+                        }
+                        switch (linkedDevice.size()) {
+                            case 0:
+                                if (devices.size() > 1) {
+                                    //which device to choose ?
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                    csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                    validRow = false;
+                                    break;
+                                } else {
+                                    if (!devices.isEmpty()) {
+                                        csvValidation.addVariableToDevice(devices.get(0), varURI);
+                                        variableCheckedProvDevice.put(variable, devices.get(0));
+                                    } else {
+                                        if (target == null) {
+                                            missingTargetOrDevice = true;
                                             validRow = false;
                                             break;
-                                    }
-                                    checkedVariables.add(variable);
-                                } else {
-                                    if (!variableCheckedProvDevice.containsKey(variable)) {
-                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                        csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                        break;
+                                        }
                                     }
                                 }
-                            }
-                            if(validRow) {
-                                DataModel dataModel = new DataModel();
-                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                                provenanceModel.setUri(provenance.getUri());
+                                break;
+                            case 1:
 
-                                if (!experiments.isEmpty()) {
-                                    provenanceModel.setExperiments(experiments);
-                                }
+                                variableCheckedProvDevice.put(variable, linkedDevice.get(0));
+                                break;
 
-                                if (deviceFromDeviceColumn != null) {
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(deviceFromDeviceColumn.getUri());
-                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
-
-                                } else if (sensingDeviceFoundFromProvenance) {
-
-                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(checkedDevice.getUri());
-                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
-
-                                }
-
-                                dataModel.setDate(parsedDateTimeMongo.getInstant());
-                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                                if (object != null) {
-                                    dataModel.setTarget(object.getUri());
-                                }
-                                if (target != null) {
-                                    dataModel.setTarget(target.getUri());
-                                }
-                                dataModel.setProvenance(provenanceModel);
-                                dataModel.setVariable(varURI);
-                                DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
-
-                                if (colIndex + 1 < values.length) {
-                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
-                                        dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
-                                    }
-                                }
-
-                                // check for duplicate data
-                                URI targetUri = null;
-                                URI deviceUri = null;
-                                if (target != null) {
-                                    targetUri = target.getUri();
-                                }
-                                if (object != null) {
-                                    targetUri = object.getUri();
-                                }
-                                if(deviceFromDeviceColumn != null) {
-                                    deviceUri = deviceFromDeviceColumn.getUri();
-                                }
-                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
-                                if (!duplicateDataByIndex.contains(importDataIndex)) {
-                                    duplicateDataByIndex.add(importDataIndex);
-                                } else {
-                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                    csvValidation.addDuplicatedDataError(duplicateCell);
-                                }
-                                csvValidation.addData(dataModel, rowIndex);
-
-                            }
-
+                            default:
+                                //which device to choose ?
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
+                                csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                validRow = false;
+                                break;
+                        }
+                        checkedVariables.add(variable);
+                    } else {
+                        if (!variableCheckedProvDevice.containsKey(variable)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            break;
                         }
                     }
                 }
+                if(validRow) {
+                    DataModel dataModel = new DataModel();
+                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                    provenanceModel.setUri(provenance.getUri());
+
+                    if (!experiments.isEmpty()) {
+                        provenanceModel.setExperiments(experiments);
+                    }
+
+                    if (deviceFromDeviceColumn != null) {
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
+                        agent.setType(rootType);
+                        agent.setUri(deviceFromDeviceColumn.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    } else if (sensingDeviceFoundFromProvenance) {
+
+                        DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                        agent.setType(rootType);
+                        agent.setUri(checkedDevice.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    }
+
+                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+
+                    if (object != null) {
+                        dataModel.setTarget(object.getUri());
+                    }
+                    if (target != null) {
+                        dataModel.setTarget(target.getUri());
+                    }
+                    dataModel.setProvenance(provenanceModel);
+                    dataModel.setVariable(varURI);
+                    DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
+
+                    if (colIndex + 1 < values.length) {
+                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                        }
+                    }
+
+                    // check for duplicate data
+                    URI targetUri = null;
+                    URI deviceUri = null;
+                    if (target != null) {
+                        targetUri = target.getUri();
+                    }
+                    if (object != null) {
+                        targetUri = object.getUri();
+                    }
+                    if(deviceFromDeviceColumn != null) {
+                        deviceUri = deviceFromDeviceColumn.getUri();
+                    }
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                    if (!duplicateDataByIndex.contains(importDataIndex)) {
+                        duplicateDataByIndex.add(importDataIndex);
+                    } else {
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
+                    }
+                    csvValidation.addData(dataModel, rowIndex);
+
+                }
+
             }
         }
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
@@ -1931,13 +1954,6 @@ public class DataAPI {
             }else{
                 if(validRow){
                     annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
-                    Instant usedInstant = parsedDateTimeMongo.getInstant();
-                    if(!parsedDateTimeMongo.getIsDateTime()){
-                        String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
-                        String setToMidday = onlyDateString + "12:00:00Z";
-                        usedInstant = Instant.parse( setToMidday );
-                    }
-                    annotationFromAnnotationColumn.setCreated(usedInstant.atOffset(ZoneOffset.ofTotalSeconds(0)));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }

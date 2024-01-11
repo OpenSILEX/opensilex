@@ -55,6 +55,9 @@ let ontologies = {
     PERSON_IN_CHARGE: OESO_URI+"#personInCharge",
     START_UP: OESO_URI+"#startUp",
     REMOVAL: OESO_URI+"#removal",
+    HAS_PARENT_GERMPLASM: OESO_URI+"#hasParentGermplasm",
+    HAS_PARENT_GERMPLASM_M: OESO_URI+"#hasParentGermplasmM",
+    HAS_PARENT_GERMPLASM_F: OESO_URI+"#hasParentGermplasmF",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs

@@ -16,20 +16,24 @@ import io.swagger.annotations.*;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
+import org.opensilex.core.area.dal.AreaGeospatialExporter;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -40,14 +44,13 @@ import org.opensilex.utils.ListWithPagination;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
@@ -135,7 +138,9 @@ public class AreaAPI {
                 else{
                     //Create an event with the rdfType from event
                     areaDTO.event.setTargets(Arrays.asList(areaURI));
-                    eventDAO.create(areaDTO.event.toModel());
+                    EventModel eventModel = areaDTO.event.toModel();
+                    eventModel.setPublisher(currentUser.getUri());
+                    eventDAO.create(eventModel);
                 }
             }
             else{
@@ -207,9 +212,20 @@ public class AreaAPI {
             switch (eventList.getList().size()) {
                 case 1:
                     EventModel eventByURI = eventDAO.get(eventList.getList().get(0).getUri(), currentUser);
-                    return new SingleObjectResponse<>(AreaGetDTO.fromModel(model, geometryByURI, eventByURI)).getResponse();
+                    AreaGetDTO dto = AreaGetDTO.fromModel(model, geometryByURI, eventByURI);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                    }
+                    if (Objects.nonNull(eventByURI.getPublisher())) {
+                        dto.getEvent().setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(eventByURI.getPublisher())));
+                    }
+                    return new SingleObjectResponse<>(dto).getResponse();
                 case 0:
-                    return new SingleObjectResponse<>(AreaGetDTO.fromModel(model, geometryByURI)).getResponse();
+                    dto = AreaGetDTO.fromModel(model, geometryByURI);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                    }
+                    return new SingleObjectResponse<>(dto).getResponse();
                 default:
                     return new ErrorResponse(
                             Response.Status.UNAUTHORIZED,
@@ -512,5 +528,44 @@ public class AreaAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @POST
+    @Path("export_geospatial")
+    @ApiOperation("Export a given list of areas URIs to shapefile")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data shapefile exported")
+    })
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportGeospatial(
+            @ApiParam(value = "Areas") List<GeometryDTO> selectedObjects,
+            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
+            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+
+    ) throws Exception {
+
+        AreaDAO dao = new AreaDAO(sparql);
+        Map<URI, GeoJsonObject> selectedObjectsMap = new HashMap<>();
+        byte[] fileByte;
+        String fileName;
+
+        //Get area exported URI
+        selectedObjects.forEach(o ->{
+            selectedObjectsMap.put(URI.create(SPARQLDeserializers.getExpandedURI(o.getUri())), o.getGeometry());
+        });
+
+        // Search exported area detail according the selected uris
+        List<AreaModel> objDetailList = dao.searchByURIs(new ArrayList<>(selectedObjectsMap.keySet()),currentUser);
+
+        //Convert
+        AreaGeospatialExporter shpExport = new AreaGeospatialExporter();
+        Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
+
+        return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
+                .build();
     }
 }

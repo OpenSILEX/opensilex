@@ -6,6 +6,9 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.apicatalog.jsonld.StringUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
@@ -15,8 +18,13 @@ import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.core.data.api.DataComputedGetDTO;
+import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.SingleCriteriaDTO;
+import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
+import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
@@ -30,7 +38,9 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -38,6 +48,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -48,12 +59,9 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -78,7 +86,7 @@ public class DataDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
         
-    public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
+    public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) {
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
@@ -87,21 +95,21 @@ public class DataDAO {
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection dataCollection = nosql.getDatabase()
+        MongoCollection<DataModel> dataCollection = nosql.getDatabase()
                 .getCollection(DATA_COLLECTION_NAME, DataModel.class);
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "target", "date"));
-        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending("variable"),Indexes.descending("date"))));
+        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, "provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
+        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, "date"));
+        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending("date"))));
         dataCollection.createIndex(Indexes.ascending("date"));
         dataCollection.createIndex(Indexes.descending("date"));
 
-        MongoCollection fileCollection = nosql.getDatabase()
-                .getCollection(FILE_COLLECTION_NAME, DataModel.class);
+        MongoCollection<DataFileModel> fileCollection = nosql.getDatabase()
+                .getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("target", "date"));
+        fileCollection.createIndex(Indexes.ascending("provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
+        fileCollection.createIndex(Indexes.ascending(DataModel.TARGET_FIELD, "date"));
         fileCollection.createIndex(Indexes.descending("date"));
         fileCollection.createIndex(Indexes.ascending("date"));
     }
@@ -322,6 +330,335 @@ public class DataDAO {
         return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
+
+    /**
+     *
+     * @param criteriaDTO
+     * @param variableDAO so we know how to fetch datatype of each variable
+     * @return Null if criteria dto had no valid criteria, Object containing empty list if valid criteria but no results,
+     * or a list of object uris if criteria were valid and results were found
+     * The return object also contains a boolean to say if we need to keep only elements in the the list, or exclude them
+     */
+    public ExcludableUriList getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user , VariableDAO variableDAO) throws Exception {
+
+        //Verify if that there is at least one complete line and if every line is a "NotMeasured"
+        boolean atLeastOneCompleteSingle = criteriaDTO.getCriteriaList().stream().anyMatch(dto ->
+                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || StringUtils.isNotBlank(dto.getValue())));
+        boolean everyLineIsNotMeausured =
+                criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
+
+        if(!atLeastOneCompleteSingle){
+            return null;
+        }
+
+        //If every line is "NotMeausured" then we perform a different operation
+        //We simply get all the objects that are measured and return that we need to exclude them
+        if(everyLineIsNotMeausured){
+            return new ExcludableUriList(
+                    true,
+                    getUsedTargets(
+                            user,
+                            null,
+                            criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
+                            (experiment == null ? null : Collections.singletonList(experiment))
+                    ).stream().filter(Objects::nonNull).collect(Collectors.toList())
+            );
+        }
+        //If every line wasn't "NotMeasured" :
+        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+
+        //If aggregationDocs is null then it means there was a contradiction
+        if(aggregationDocs == null){
+            return new ExcludableUriList(false, Collections.emptyList());
+        }
+
+        Set<DataTargetAggregateModel> criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
+        //If result is empty return an empty list otherwise take first and only element's targets value because of the
+        // mongo request always returns a single Document with a list of targets validating the criteria
+
+        if(criteriaSearchedResult.isEmpty()){
+            return new ExcludableUriList(false, Collections.emptyList());
+        } else if (criteriaSearchedResult.size() > 1) {
+            throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
+        }
+
+        // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
+        return new ExcludableUriList(
+                false,
+                criteriaSearchedResult.stream().findAny()
+                .get()
+                .getTargets()
+                .stream().filter(Objects::nonNull)
+                .collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * <p>
+     * Translates the dto into a search filter permitting the acquisition of data needed to get the right objects.
+     * Or creates error lists if there are errors in the request.
+     *
+     * @return List of Bson for the aggregation, or null if a contradiction was identified
+     * </p>
+     *
+     * <p>
+     * Example of a request : If we want all objects who have a Variable A > 10 and a Variable B < 5.
+     * Then we need to fetch all data concerning A where value > 10 as well as all data concerning B where value < 5.
+     * Even though in the end we will only retain objects if they have data that validates both.
+     * Precondition : criteriaDTO is of type And for first version
+     * </p>
+     *
+     * @apiNote
+     * <ul>
+     * <li> In the "group" pipeline stage, the name of the field which contains target is "targets" </li>
+     * <li> This is the mongo request that is created for an example with two criteria </li>
+     * </ul>
+     *
+     * <pre>
+     * {@code
+     *       db.getCollection('data').aggregate(
+     *    [
+     *        {$match : { $or:
+     *     [
+     *         { $and: [
+     *            {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/lot_weight_balance_kilogramm"} ,
+     *            {"value":{ $lt: 1000 }}
+     *             ] },
+     *        { $and: [
+     *                {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_density_hydromtre_kilogramm_per_litre"} ,
+     *                {"value":{ $lt: 1000 }}
+     *                     ] },
+     *         {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_istall_standard_method_trueorfalse"},
+     *         {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_readytodrink_datenotime"}
+     *     ] }},
+     *    {
+     *         $group : {_id : {target : "$target"},
+     *             variables: {$addToSet: "$variable"}}
+     *         },
+     *         {
+     *            $match: {
+     *               $expr:
+     *               { $and: [
+     *                   {$eq: [{ $size: "$variables" }, 2]},
+     *                   { $not:
+     *                       [
+     *                         { $or: [
+     *                                 { $in: ["http://vegetalunit.inrae.fr/vigne/id/variable/must_istall_standard_method_trueorfalse","$variables" ] },
+     *                                 { $in: ["http://vegetalunit.inrae.fr/vigne/id/variable/must_readytodrink_datenotime", "$variables" ] }
+     *                             ] }
+     *                       ] }
+     *                   ] }
+     *             }
+     *        },
+     *        {
+     *    $group: {
+     *       _id: null,
+     *       targets: { $addToSet: "$_id.target" }
+     *     }
+     *   }
+     *  ]
+     * ).pretty();
+     * }
+     * </pre>
+     *
+     */
+    private List<Bson> createCriteriaSearchAggregation(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
+        GetScientificObjectsByDataCriteriaRequestErrors errors = new GetScientificObjectsByDataCriteriaRequestErrors();
+
+        List<Document> criteriaDocuments = new ArrayList<>();
+        Map<String, List<Document>> criteriaDocumentPerVariable = new HashMap<>();
+        //List to remember which vars we are testing to be not measured so that we can identify impossible request if we try to compare this var with a value
+        Set<String> varsWhereWeWantNoData = new HashSet<>();
+
+        //Make the aggregation docs
+        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()){
+            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
+            MathematicalOperator criteriaType = singleCriteriaDTO.getCriteria();
+            String valueString = singleCriteriaDTO.getValue();
+            //If line is complete
+            if(currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())){
+                URI varDataTypeUri = null;
+                //Create variable filter and a new list of filters if this is the first time we've crossed this variable, add to existing list otherwise
+                String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
+                try{
+                    varDataTypeUri = variableDAO.get(currentVariableUri).getDataType();
+                }catch (Exception e){
+                    errors.addInvalidVariable(singleCriteriaDTO, currentVariableUri);
+                }
+
+                if(!criteriaDocumentPerVariable.containsKey(currentVariableStringUri)){
+                    Document currentCriteriaDocument = new Document();
+                    currentCriteriaDocument.put(DataModel.VARIABLE_FIELD, currentVariableStringUri);
+                    List<Document> variableDocuments = new ArrayList<>();
+                    variableDocuments.add(currentCriteriaDocument);
+                    criteriaDocumentPerVariable.put(currentVariableStringUri, variableDocuments);
+
+                }
+
+                List<Document> currentCriteriaDocuments = criteriaDocumentPerVariable.get(currentVariableStringUri);
+
+                if(criteriaType == MathematicalOperator.NotMeasured ){
+                    //If size of currentCriteriaDocuments is bigger than one it means we already compared this var to a value so contradiction, so return null
+                    if(currentCriteriaDocuments.size() > 1){
+                        return null;
+                    }
+                    varsWhereWeWantNoData.add(currentVariableStringUri);
+                }else{
+                    //If we previously said this var needs to not be measured then contradiction so return null
+                    if(varsWhereWeWantNoData.contains(currentVariableStringUri)){
+                        return null;
+                    }
+                    Object parsedValue = null;
+                    //Add to invalid value datatype errors if parse fails
+                    try{
+                        parsedValue = DataValidateUtils.convertData(varDataTypeUri, valueString);
+                    } catch(Exception e){
+                        errors.addInvalidValueDatatypeError(singleCriteriaDTO, valueString);
+                    }
+
+                    if(criteriaType == MathematicalOperator.EqualToo ){
+                        if(currentCriteriaDocuments != null && parsedValue != null){
+                            currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, parsedValue));
+                        }
+                    }else{
+                        //If filterType stays null then it means the criteriaUri wasn't recognized, so add to invalid criteria uris
+                        String filterType = null;
+                        if(criteriaType == MathematicalOperator.MoreOrEqualThan ){
+                            filterType = "$gte";
+                        }else if(criteriaType == MathematicalOperator.MoreThan ){
+                            filterType = "$gt";
+                        }else if(criteriaType == MathematicalOperator.LessThan ){
+                            filterType = "$lt";
+                        }else if(criteriaType == MathematicalOperator.LessOrEqualThan){
+                            filterType = "$lte";
+                        }
+                        if(filterType == null){
+                            errors.addInvalidCriteriaOperator(singleCriteriaDTO, criteriaType.toString());
+                        } else{
+                            if(currentCriteriaDocuments != null && parsedValue != null){
+                                Document valueConstraintFilter = new Document();
+                                valueConstraintFilter.put(filterType, parsedValue);
+                                currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, valueConstraintFilter));
+                            }
+                        }
+                    }
+                }
+            }
+        }//End of criteria list for loop
+        if (errors.hasErrors()){
+            throw new IllegalArgumentException(errors.generateErrorMessage());
+        }
+
+        for(List<Document> varDocs : criteriaDocumentPerVariable.values()){
+            if(varDocs.size()==1){
+                criteriaDocuments.add(varDocs.get(0));
+            }else{
+                criteriaDocuments.add(new Document("$and", varDocs));
+            }
+        }
+        final List<Bson> aggregationDocuments = new ArrayList<>();
+        //Data search filter
+        Document dataSearchFilter = new Document();
+        //Some strings used to create the request :
+        final String variables = "variables";
+        dataSearchFilter.put("$or", criteriaDocuments);
+        if(experiment == null){
+            aggregationDocuments.add(new Document("$match", dataSearchFilter));
+        }else{
+            Document experimentFilter = new Document();
+            appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment));
+            List<Document> andList = new ArrayList<>();
+            andList.add(dataSearchFilter);
+            andList.add(experimentFilter);
+            Document dataSearchFilterWithExperiment = new Document("$and", andList);
+            aggregationDocuments.add(new Document("$match", dataSearchFilterWithExperiment));
+        }
+
+        //Group by target and create list of variables that have returned data for each target
+        Document groupByTargetDoc = new Document();
+        Document groupByIdDoc = new Document();
+        groupByIdDoc.put(DataModel.TARGET_FIELD, "$" + DataModel.TARGET_FIELD);
+        groupByTargetDoc.put("_id", groupByIdDoc);
+        Document groupByVarListDoc = new Document();
+        groupByVarListDoc.put("$addToSet", "$" + DataModel.VARIABLE_FIELD);
+        groupByTargetDoc.put(variables, groupByVarListDoc);
+        aggregationDocuments.add(new Document("$group", groupByTargetDoc));
+
+
+        //Keep only the ones that have every tested variable present but not the ones that need to not be measured
+        Document sizeExpr = new Document("$size", "$" + variables);
+        Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariable.size() - varsWhereWeWantNoData.size()));
+        List<Document> inNotMeasuredVarsListDocs = varsWhereWeWantNoData.stream().map(
+                notMeasuredVar -> new Document("$in", Arrays.asList(notMeasuredVar, "$" + variables))).collect(Collectors.toList());
+        Document notInNotMeasuredVarsListDoc = new Document("$not", Collections.singletonList(new Document("$or", inNotMeasuredVarsListDocs)));
+        Document correctSizeAndNoNotMeasuredVars = new Document("$and", Arrays.asList(sizeCondition, notInNotMeasuredVarsListDoc));
+        aggregationDocuments.add(new Document("$match", new Document("$expr", correctSizeAndNoNotMeasuredVars)));
+
+
+        //group by nothing and create a list of targets that validate the criteria
+        Document targetListCreator = new Document();
+        targetListCreator.put("_id", null);
+        targetListCreator.put(DataModel.TARGET_FIELD + "s", new Document("$addToSet", "$_id." + DataModel.TARGET_FIELD));
+        aggregationDocuments.add(new Document("$group", targetListCreator));
+
+        return aggregationDocuments;
+
+    }
+
+    /**
+     * Contains one main map providing an identifier to each criteria triplet that is invalid.
+     * And 3 other maps to identify what type of error each invalid triplet has.
+     * The 3 add error functions will automatically create the identifier if the triplet didn't already have an error.
+     * (Variable uri not found, Criteria uri not found or Invalid datatype for the given variable.
+     */
+    private static class GetScientificObjectsByDataCriteriaRequestErrors{
+        private final Map<Integer, URI> invalidVariables;
+        private final Map<Integer, String> invalidCriteriaOperators;
+        private final Map<Integer, String> invalidValueDatatypes;
+        private final Map<SingleCriteriaDTO, Integer> invalidCriterias;
+        int currentIdentifier;
+        public GetScientificObjectsByDataCriteriaRequestErrors(){
+            this.invalidVariables = new HashMap<>();
+            this.invalidCriteriaOperators = new HashMap<>();
+            this.invalidValueDatatypes = new HashMap<>();
+            this.invalidCriterias = new HashMap<>();
+            this.currentIdentifier = 0;
+        }
+        public boolean hasErrors(){
+            return !invalidCriterias.isEmpty();
+        }
+        public void addInvalidVariable(SingleCriteriaDTO invalidCriteria, URI invalidVariable){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidVariables.put(id, invalidVariable);
+        }
+        public void addInvalidCriteriaOperator(SingleCriteriaDTO invalidCriteria, String invalidCriteriaOperator){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidCriteriaOperators.put(id, invalidCriteriaOperator);
+        }
+        public void addInvalidValueDatatypeError(SingleCriteriaDTO invalidCriteria, String invalidValue){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidValueDatatypes.put(id, invalidValue);
+        }
+        public String generateErrorMessage(){
+            StringBuilder result = new StringBuilder("Errors were found in the following criteria : \n");
+            ObjectMapper objectMapper = new ObjectMapper();
+            for (SingleCriteriaDTO singleCriteriaDTO : invalidCriterias.keySet()) {
+                try {
+                    result.append(objectMapper.writeValueAsString(singleCriteriaDTO));
+                } catch (JsonProcessingException e) {
+                    result.append("{singleCriteriaDTO json serialization failed}");
+                }
+                Integer id = invalidCriterias.get(singleCriteriaDTO);
+                result.append((invalidVariables.get(id) == null ? "" : "variable uri not found, "));
+                result.append((invalidCriteriaOperators.get(id) == null ? "" : "criteria operator not found, "));
+                result.append((invalidValueDatatypes.get(id) == null ? "" : "value does not match required data-type of variable. "));
+                result.append("\n");
+            }
+            return result.toString();
+
+        }
+    }
+
     public Document searchFilter(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata, List<URI> operators) throws Exception {
 
         Document filter = new Document();
@@ -334,7 +671,7 @@ public class DataDAO {
         if (targets != null && !targets.isEmpty()) {
             Document inFilter = new Document();
             inFilter.put("$in", targets);
-            filter.put("target", inFilter);
+            filter.put(DataModel.TARGET_FIELD, inFilter);
         }
 
         if (variables != null && !variables.isEmpty()) {
@@ -467,7 +804,7 @@ public class DataDAO {
         List<URI> experiments = new ArrayList();
         experiments.add(xpUri);                
         Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
         
         if (variableURIs.isEmpty()) {
             return new ListWithPagination(new ArrayList(), page, pageSize, 0);
@@ -619,7 +956,7 @@ public class DataDAO {
 
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
         String userLanguage = null;
         if(user != null){
             userLanguage = user.getLanguage();
@@ -628,9 +965,16 @@ public class DataDAO {
         return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
+
+    public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
+        Document filter = searchFilter(user, experiments, null, variables, null, devices, null, null, null, null, null, null);
+        Set<URI> targetURIs = nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter);
+        return new ArrayList<>(targetURIs);
+    }
+
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
         return variableURIs;
     }
     
@@ -1191,9 +1535,18 @@ public class DataDAO {
      */
     public ListWithPagination<DataGetDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
-        List<DataGetDTO> dtoList = modelList.getList().stream()
-                .map(dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables))
-                .collect(Collectors.toList());
+        List<DataGetDTO> dtoList = new ArrayList<>();
+        modelList.getList().forEach(dataModel -> {
+            DataGetDTO dto = DataGetDTO.getDtoFromModel(dataModel, dateVariables);
+            if (Objects.nonNull(dataModel.getPublisher())) {
+                try {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataModel.getPublisher())));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            dtoList.add(dto);
+        });
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
     }
 
@@ -1229,8 +1582,8 @@ public class DataDAO {
         //	}
         //}
         Document filter = new Document();
-        filter.put("variable", URIDeserializer.getExpandedURI(variable));
-        filter.put("target", URIDeserializer.getExpandedURI(target));
+        filter.put(DataModel.VARIABLE_FIELD, URIDeserializer.getExpandedURI(variable));
+        filter.put(DataModel.TARGET_FIELD, URIDeserializer.getExpandedURI(target));
         if (startDate != null || endDate != null) {
             Document dateFilter = new Document();
             if (startDate != null) {
@@ -1401,8 +1754,8 @@ public class DataDAO {
         //	}
         //}
         Document filter = new Document();
-        filter.put("variable", URIDeserializer.getExpandedURI(variable));
-        filter.put("target", URIDeserializer.getExpandedURI(target));
+        filter.put(DataModel.VARIABLE_FIELD, URIDeserializer.getExpandedURI(variable));
+        filter.put(DataModel.TARGET_FIELD, URIDeserializer.getExpandedURI(target));
         if (startDate != null || endDate != null) {
             Document dateFilter = new Document();
             if (startDate != null) {

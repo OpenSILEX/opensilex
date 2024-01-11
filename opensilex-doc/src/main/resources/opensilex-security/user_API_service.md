@@ -18,6 +18,12 @@ After a rework, this concept were split between [account](./account_API_service.
 
 ## technical specifications
 
+### credentials
+
+> Warning : credentials for user API should not be used in the Vue client
+
+Credentials for Users API are still available, but every use of these credentials in the Vue client has been removed.
+
 ### migration of model during the rework
 see [account](./account_API_service.md) and [person](./person_API_service.md) documentation for further information.
 ![transition from user's model to account/person's model](img/migration_user_model.png)

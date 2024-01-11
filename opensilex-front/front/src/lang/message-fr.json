@@ -144,7 +144,12 @@
                 },
                 "pagination" : {
                     "nbEntries" : " Affiche {limit} à {offset} des {totalRow} éléments",
-                    "noEntries" : "Aucun élément trouvé"
+                    "noEntries" : "Aucun élément trouvé",
+                    "numberOfElementsPerPageSelector": "Sélectionner le nombre d'éléments à afficher",
+                    "tenElements": "10 éléments",
+                    "twentyElements": "20 éléments",
+                    "fiftyElements": "50 éléments",
+                    "hundredElements": "100 éléments"
                 }
             },
             "addDocument": "Ajouter un document",
@@ -229,9 +234,12 @@
             "devices": "Appareils",
             "events" : "Évènements",
             "vocabulary" : "Vocabulaire",
+            "about" : {
+                "label": "A propos",
+                "system": "System"
+            },
             "tools" : {
                 "label": "Outils",
-                "system": "Système",
                 "packages": "Librairies"
             },
             "web-api" : "API web"
@@ -311,7 +319,6 @@
             "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
             "form-email-placeholder": "Saisir l'adresse email",
             "form-affiliation-placeholder" : "Saisir un organisme d'affiliation",
-            "form-phone-placeholder" : "Saisir un numéro de téléphone (+33-6-58-44-...)",
             "filter-search-no-result": "Désolé, aucune personne ne correspond à votre recherche.",
             "filter-placeholder": "Rechercher des personnes...",
             "orcid-help-message": "Si rempli, l'ORCID sera utilisé comme uri lors de la création. Champ non modifiable",
@@ -330,6 +337,16 @@
             "successDelete" : "Personne supprimée",
             "errors": {
                 "person-already-exists": "Une personne existe déjà avec cette URI."
+            },
+            "load-orcid-infos" : "charger",
+            "orcid-suggestion": {
+                "title": "valider les informations à garder",
+                "selector-help-message": "choisissez une option ou laissez vide",
+                "checkbox-help-message": "cocher la case pour pour valider la proposition",
+                "last-name-pickup": "garder le nom",
+                "first-name-pickup": "garder le prénom",
+                "last-name-placeholder": "aucun nom trouvé dans vos données ORCID",
+                "first-name-placeholder": "aucun prénom trouvé dans vos données ORCID"
             }
         },
         "variable" : {
@@ -812,7 +829,9 @@
         "decimal": "Le champ {_field_} doit contenir une valeur décimale",
         "wkt": "Le champ {_field_} doit être au format WKT",
         "dateDiff" : "La date du champ {_field_} ne doit pas être antérieur à la date de début",
-        "nameFiltered" : "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&"
+        "nameFiltered" : "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&",
+        "existingProperty" : "Cette {_field_} est déjà existante",
+        "refuseOperators": "Pas applicable"
     },
     "searchfilter": {
         "label": "Filtres de recherche"

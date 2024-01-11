@@ -18,6 +18,7 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -40,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -128,17 +130,23 @@ public class UserAPI {
             PersonDAO personDAO = new PersonDAO(sparql);
             PersonDTO personDTO = userDTO.createCorrespondingPersonDTO();
             personDTO.setUri(null);
-            PersonModel person = personDAO.create(personDTO );
+            PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+            person.setPublisher(currentUser.getUri());
+            personDAO.create(person, new ORCIDClient());
 
-            AccountModel user = accountDAO.create(
+            AccountModel user = AccountModel.buildAccountModel(
                     userDTO.getUri(),
                     new InternetAddress(userDTO.getEmail()),
                     userDTO.isAdmin(),
                     authentication.getPasswordHash(userDTO.getPassword()),
                     userDTO.getLanguage(),
                     userDTO.isEnable(),
-                    person
+                    person,
+                    Collections.emptyList()
             );
+            user.setPublisher(currentUser.getUri());
+            accountDAO.create(user);
+
             sparql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
@@ -339,7 +347,7 @@ public class UserAPI {
                     holderToUpdate.setOrcid(holderOfTheAccount.getOrcid());
                     holderToUpdate.setAffiliation(holderOfTheAccount.getAffiliation());
 
-                    personDAO.update(holderToUpdate);
+                    personDAO.update(holderToUpdate, new ORCIDClient());
                 }
 
                 sparql.commitTransaction();

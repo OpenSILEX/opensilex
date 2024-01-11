@@ -1,57 +1,59 @@
-OpenSILEX Developper's installation
+<!-- TOC -->
+* [OpenSILEX Developer's installation](#opensilex-developers-installation)
+* [Required software](#required-software)
+* [Check your installed software](#check-your-installed-software)
+* [Download sources](#download-sources)
+* [Build project](#build-project)
+* [Create opensilex command alias](#create-opensilex-command-alias)
+  * [Linux](#linux)
+  * [Windows](#windows)
+* [Setup configuration](#setup-configuration)
+* [Setup Databases with docker](#setup-databases-with-docker)
+* [Initialize system data](#initialize-system-data)
+  * [With Netbeans](#with-netbeans)
+  * [With command line](#with-command-line)
+* [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
+* [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
+* [Access to OpenSilex & tools](#access-to-opensilex--tools)
+  * [OpenSilex Application](#opensilex-application)
+  * [RDF4J workbench](#rdf4j-workbench)
+  * [MongoDB](#mongodb)
+* [Generate documentation](#generate-documentation)
+* [Other maven build profiles and options](#other-maven-build-profiles-and-options)
+  * [Generate release](#generate-release)
+  * [Skip unit and integration tests](#skip-unit-and-integration-tests)
+  * [Skip Vue js build parts](#skip-vue-js-build-parts)
+  * [Generate documentation](#generate-documentation-1)
+  * [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
+  * [Check javascript security issues](#check-javascript-security-issues)
+  * [Special profile for eclipse](#special-profile-for-eclipse)
+  * [Default configuration example](#default-configuration-example)
+<!-- TOC -->
+
+OpenSILEX Developer's installation
 =============================================
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
 NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md)
 
-- [OpenSILEX Developper's installation](#opensilex-developpers-installation)
-- [Pre-requesite softwares](#pre-requesite-softwares)
-- [Check your installated softwares](#check-your-installated-softwares)
-- [Download sources](#download-sources)
-- [Build project](#build-project)
-- [Create opensilex command alias](#create-opensilex-command-alias)
-  - [Linux](#linux)
-  - [Windows](#windows)
-- [Setup configuration](#setup-configuration)
-- [Setup Databases with docker](#setup-databases-with-docker)
-- [Initialize system data](#initialize-system-data)
-  - [With Netbeans](#with-netbeans)
-  - [With command line](#with-command-line)
-- [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
-- [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
-- [Access to OpenSilex \& tools](#access-to-opensilex--tools)
-  - [OpenSilex Appllication](#opensilex-appllication)
-  - [RDF4J workbench](#rdf4j-workbench)
-  - [MongoDB](#mongodb)
-- [Generate documentation](#generate-documentation)
-- [Other maven build profiles and options](#other-maven-build-profiles-and-options)
-  - [Generate release](#generate-release)
-  - [Skip unit and integration tests](#skip-unit-and-integration-tests)
-  - [Skip Vue js build parts](#skip-vue-js-build-parts)
-  - [Generate documentation](#generate-documentation-1)
-  - [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
-  - [Check javascript security issues](#check-javascript-security-issues)
-  - [Special profile for eclipse](#special-profile-for-eclipse)
-  - [Defaut configuration example](#defaut-configuration-example)
+# Required software
 
-# Pre-requesite softwares
+First you need to have this software installed :
 
-First you need to have these software installed :
-
-- [Java JDK 9+](https://jdk.java.net/) (Our project is tested with JDK versions 8, 9, 11, 13 and 14)
-- [Maven 3.5+](https://maven.apache.org/install.html)
+- [Java JDK 11+](https://jdk.java.net/) (Our project is tested with JDK versions 11, 13 and 14)
+- [Maven 3.6+](https://maven.apache.org/install.html)
 - [Git 2.17.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [docker 19.03.1+](https://docs.docker.com/install/)
 - [docker-compose 1.24.1+](https://docs.docker.com/compose/install/)
 
-Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation whee your user must have read and write permissions.
+Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation where your specific user must have read and write permissions.
 
-# Check your installated softwares
+# Check your installed software
 
 Following commands should work from everywhere in your system without errors:
 
@@ -84,9 +86,9 @@ mvn install
 
 ## Linux
 
-Create file `.bash_aliases` in your home folder if it doesn't exists.
+Create the file `.bash_aliases` in your home directory if it doesn't exist.
 
-Add this line in it replacing <BASE_DIR> variable:
+Add this line to the file replacing the variable <BASE_DIR>:
 
 ```
 alias opensilex=<BASE_DIR>/opensilex/opensilex-release/target/opensilex/opensilex.sh
@@ -102,7 +104,7 @@ opensilex help
 
 ## Windows
 
-Add the following directory to your PATH environment variable replacing <BASE_DIR> variable:
+Add the following directory to your PATH environment variable replacing the variable <BASE_DIR>:
 
 ```
 path %PATH%;<BASE_DIR>\opensilex\opensilex-release\target\opensilex\
@@ -113,17 +115,17 @@ opensilex help
 
 Edit `<BASE_DIR>/opensilex/opensilex-dev-tools/src/main/resources/config/opensilex.yml`
 
-Be careful if you change host and port of databases as you will have to update docker-compose configuration file accordingly.
+Be careful if you change the host and/or the port of databases as you will have to update the docker-compose configuration file accordingly.
 
-Be sure to configure properly read and write rights for your user on configured folders.
+Be sure to configure properly the read and write rights for your specific user on configured folders.
 
-The only mandatory options to setup are:
+The only mandatory options to set up are:
 
 - file-system.storageBasePath: Base directory for file storage
 
 # Setup Databases with docker
 
-On linux, you should add your current user `<USER>` to docker group to avoid using sudo:
+On Linux OS, you should add your current user `<USER>` to the docker group in order to avoid using sudo:
 
 ```
 sudo usermod -aG docker <USER>
@@ -137,20 +139,20 @@ cd opensilex/opensilex-dev-tools/src/main/resources/docker
 docker-compose up -d
 ```
 
-Docker containers will be automatically started on your machine startup.
+Docker containers will be automatically started on your machine at startup.
 
-You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior
-but you will have to run the preious command after each restart manually.
+You can change the "restart" parameter in "docker-compose.yml" file if you don't want this behavior,
+but you will have to run the previous command after each restart manually.
 
 # Initialize system data
 
 ## With Netbeans
 
-Right-click on opensilex project and select "Open Required Projects" --> "Open All Projects"
+Right-click on OpenSILEX project and select "Open Required Projects" --> "Open All Projects"
 
-Then right-click on `org.opensilex.dev.Install` class in opensilex-dev-tools projet and select "run" or "debug"
+Then right-click on the class `org.opensilex.dev.Install` within the opensilex-dev-tools projet and select "run" or "debug".
 
-If you want to reset all your database, you can do the same with class `org.opensilex.dev.InstallReset`
+If you want to reset all your databases, you can do the same with the class `org.opensilex.dev.InstallReset`.
 
 ## With command line
 
@@ -158,21 +160,21 @@ If you want to reset all your database, you can do the same with class `org.open
 opensilex dev install
 ```
 
-If you want to reset all your database use `-r` flag with the previous command
+If you want to reset all your database use `-r` flag with the previous command.
 
 # Start OpenSILEX development server with Netbeans
 
 ## For web services only (with compiled Vue.js code)
 
-Right-click on `org.opensilex.dev.StartServer` class in opensilex-dev-tools projet and select "run" or "debug"
+Right-click on the class `org.opensilex.dev.StartServer` within the opensilex-dev-tools projet and select "run" or "debug".
 
 ## For webservices and Vue.js hot reload server
 
-Right-click on `org.opensilex.dev.StartServerWithFront` class in opensilex-dev-tools projet and select "run" or "debug"
+Right-click on the class `org.opensilex.dev.StartServerWithFront`  within the opensilex-dev-tools projet and select "run" or "debug".
 
 # Start OpenSILEX development server with command line
 
-With command line you need to recompile all modules to have your change in Java source code taking into account (but not for Vue-JS code if using hot relaod).
+When using the command line you need to recompile all modules in order to have taken into account the changes in the Java source code (but not for Vue-JS code if using hot reload).
 
 ## For web services only (with compiled Vue.js code)
 
@@ -188,15 +190,15 @@ opensilex dev start
 
 # Access to OpenSilex & tools
 
-## OpenSilex Appllication
+## OpenSilex Application
 
 - OpenSilex Vue App is accessible at: [http://localhost:8666/](http://localhost:8666/)
 
 - OpenSILEX API is accessible at: [http://localhost:8666/api-docs](http://localhost:8666/api-docs)
 
-If you start server with Vue.js, the hot reload server tell you on which port it's accessible (probably 8080 depending of which is available).
+If you start the server with Vue.js, the hot reload server will tell you on which port it is accessible (probably 8080 depending of which is available).
 
-Default Super Admin user which will give you access to all web services is created with:
+Set the Default Super Admin user which will give you access to all web services is created with:
 
 - login: admin@opensilex.org
 - password: admin
@@ -205,7 +207,7 @@ Default Super Admin user which will give you access to all web services is creat
 
 RDF4J workbench is accessible by default at: [http://localhost:8667/rdf4j-workbench](http://localhost:8667/rdf4j-workbench)
 
-At first connection, you must configure RDF4J server URL with this value: `http://opensilex-rdf4j:8080/rdf4j-server`
+Upon first connection, you must configure RDF4J server URL with this value: `http://opensilex-rdf4j:8080/rdf4j-server`
 
 ## MongoDB
 
@@ -220,7 +222,7 @@ cd <BASE_DIR>
 mvn site -Pwith-test-report
 ```
 
-All documentation will be available in <BASE_DIR>/opensilex-doc/src/main/doc folder.
+All documentation will be available in <BASE_DIR>/opensilex-doc/src/main/doc directory.
 
 # Other maven build profiles and options
 
@@ -230,13 +232,13 @@ All documentation will be available in <BASE_DIR>/opensilex-doc/src/main/doc fol
 mvn install -Drevision=X.Y.Z
 ```
 
-Zip for revision will be available in <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z.zip
+A Zip file for revision will be available at <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z.zip
 
-Uncompressed version is available in <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z/
+An uncompressed version is available in <BASE_DIR>/opensilex-release/target/opensilex-release-X.Y.Z/
 
 ## Skip unit and integration tests
 
-Avoid to do it, but it could be usefull if you need to rebuild very often at some point.
+It is not recommended, but it can be useful if you need to rebuild very often at some point in order to save time.
 
 ```
 mvn install -DskipTests=true
@@ -244,7 +246,7 @@ mvn install -DskipTests=true
 
 ## Skip Vue js build parts
 
-This could be usefull if you work only on web services to speed up build.
+This command can be useful if you work only on web services to speed up build.
 
 ```
 mvn install -DskipFrontBuild
@@ -261,9 +263,9 @@ mvn site -Pwith-test-report -DskipFrontBuild
 
 ## Generate documentation with security report audit
 
-This buid may be very very very long because it as to download a lot of stuff from internet (OWASP report).
+This build may be very very very long because it as to download a lot of stuff from internet (OWASP report).
 
-You should better configure it periodicaly on a automated platform.
+It would be better to configure it periodically on an automated platform.
 
 ```
 mvn site -Pwith-test-report -Pwith-security-check -DskipFrontBuild
@@ -275,15 +277,15 @@ mvn site -Pwith-test-report -Pwith-security-check -DskipFrontBuild
 mvn verify -DskipFrontAudit=false
 ```
 
-## Special profile for eclipse
+## Special profile for Eclipse
 
-If you are using eclipse you may need to enable this profile to avoid build errors
+If you are using Eclipse you may need to enable this profile to avoid build errors
 
 ```
 mvn install -Pfor-eclipse
 ```
 
-## Defaut configuration example
+## Default configuration example
 
 ```yml
 

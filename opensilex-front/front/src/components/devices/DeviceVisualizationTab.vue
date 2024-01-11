@@ -87,6 +87,7 @@ export default class DeviceVisualizationTab extends Vue {
   devicesService: DevicesService;
   eventsService: EventsService;
   searchFiltersToggle: boolean = true;
+
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
@@ -324,7 +325,7 @@ export default class DeviceVisualizationTab extends Vue {
                 : undefined, // end_date
             undefined, // timezone,
             undefined, // experiments
-            undefined, // scientific_object
+            this.form.scientificObject, // scientific_object
             [this.form.variable], // variables,
             [this.device], // devices
             undefined, // min_confidence

@@ -1,6 +1,7 @@
 package org.opensilex.security.account.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -50,8 +51,7 @@ public class AccountAPI {
     public static final String CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_ACCOUNT_DELETE_ID = "account-modification";
-    public static final String CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY = "credential.default.modification";
-
+    public static final String CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
     AccountModel currentUser;
@@ -59,6 +59,8 @@ public class AccountAPI {
     private SPARQLService sparql;
     @Inject
     private AuthenticationService authentication;
+    @Inject
+    OpenSilex openSilex;
 
     @POST
     @ApiOperation("Add an account")
@@ -161,8 +163,8 @@ public class AccountAPI {
     @ApiOperation("Update an account")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -319,6 +321,28 @@ public class AccountAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    @DELETE
+    @Path("{accountURI}")
+    @ApiOperation("Delete an account")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Account deleted successfully", response = URI.class),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Account not found", response = ErrorDTO.class)
+    })
+    public Response deleteAccount(@ApiParam(value = "Account URI", required = true) @PathParam("accountURI") @NotNull @ValidURI URI accountURI) throws Exception {
+        AccountDAO dao = new AccountDAO(sparql);
+        dao.delete(accountURI, openSilex);
+        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
+    }
+
+
     @GET
     @Path("favorites")
     @ApiOperation("Get list of favorites for a user")
@@ -384,8 +408,8 @@ public class AccountAPI {
     @ApiOperation("Delete a favorite")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_ACCOUNT_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ACCOUNT_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

@@ -113,7 +113,7 @@ import {EventsService, EventGetDTO, ProvenanceGetDTO} from "opensilex-core/index
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 
-let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
+let lastFifteenDays = new Date(new Date((new Date).setDate(new Date().getDate() - 15)).setHours(0,0,0,0))
 
 @Component
 export default class ScientificObjectVisualizationForm extends Vue {
@@ -127,7 +127,7 @@ export default class ScientificObjectVisualizationForm extends Vue {
 
   filter = {
     variable: [],
-    startDate: lastWeekDate.toISOString(),
+    startDate: lastFifteenDays.toISOString(),
     endDate: undefined,
     provenance: undefined,
     showEvents: false

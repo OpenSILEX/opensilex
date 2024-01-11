@@ -53,7 +53,7 @@ public class AreaModel extends SPARQLNamedResourceModel<AreaModel> implements Cl
         this.setName(name);
         this.setType(type);
         this.setDescription(description);
-        setCreator(author);
+        setPublisher(author);
 
         if (uri != null) {
             uri = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));

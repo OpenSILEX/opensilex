@@ -275,7 +275,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getTo(), dtoFromDb.getTo().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getFrom(), dtoFromDb.getFrom().getUri()));
 
-        assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
+        assertFalse(StringUtils.isEmpty(dtoFromDb.getPublisher().toString()));
 
         Collections.sort(creationDTO.getTargets());
         Collections.sort(dtoFromDb.getTargets());
@@ -312,7 +312,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getTo(), dtoFromDb.getTo().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getFrom(), dtoFromDb.getFrom().getUri()));
 
-        assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
+        assertFalse(StringUtils.isEmpty(dtoFromDb.getPublisher().toString()));
 
         Collections.sort(creationDTO.getTargets());
         Collections.sort(dtoFromDb.getTargets());

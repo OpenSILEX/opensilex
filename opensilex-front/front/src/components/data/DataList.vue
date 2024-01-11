@@ -157,12 +157,10 @@ export default class DataList extends Vue {
         return this.variableNames[this.$opensilex.getLongUri(variableUri)];
     }
 
-    refresh() {
-        this.tableRef.refresh();
-        this.$nextTick(() => {
-            this.$opensilex.updateURLParameters(this.filter);
-        });
-    }
+  refresh() {
+    this.$opensilex.updateURLParameters(this.filter);
+    this.tableRef.changeCurrentPage(1);
+  }
 
     created() {
         this.dataService = this.$opensilex.getService("opensilex.DataService");
@@ -256,10 +254,11 @@ export default class DataList extends Vue {
                 undefined, // metadata
                 this.filter.germplasm_group, //Group of germs
                 this.$opensilex.prepareGetParameter(this.filter.operators),
+                this.filter.germplasm,
                 options.orderBy, // order_by
                 options.currentPage,
                 options.pageSize,
-                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets), // targets & os & facilities
+                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
             )
                 .then((http) => {
                     let promiseArray = [];

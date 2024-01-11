@@ -10,9 +10,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,12 +23,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Fernandez Emilie 
  */
 
-@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keywords", "deprecated", "source" })
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keywords", "deprecated", "source" })
 public abstract class DocumentDTO {
 
     protected URI uri;
 
     protected String identifier;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("rdf_type")
     protected URI type;
@@ -63,6 +74,30 @@ public abstract class DocumentDTO {
     public DocumentDTO setUri(URI uri) {
         this.uri = uri;
         return this;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     @ApiModelProperty(example = "doi:10.1340/309registries")

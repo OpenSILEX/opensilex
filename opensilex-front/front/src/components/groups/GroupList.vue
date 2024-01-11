@@ -115,7 +115,12 @@ export default class GroupList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   refresh() {
-    this.tableRef.refresh();
+    this.$opensilex.updateURLParameters(this.filter);
+    this.tableRef.changeCurrentPage(1);
+  }
+
+  updateSelectedGroup(){
+    this.$opensilex.updateURLParameters(this.filter);
   }
 
   searchGroups(options) {

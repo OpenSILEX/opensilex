@@ -62,6 +62,8 @@ import static org.opensilex.core.germplasmGroup.api.GermplasmGroupApi.PATH;
 public class GermplasmGroupApi {
     public static final String PATH = "/core/germplasm_group";
 
+    public static final String GROUP_EXAMPLE_URI = "opensilex-sandbox:id/germplasmGroup/test";
+
     @CurrentUser
     AccountModel currentUser;
 
@@ -88,7 +90,6 @@ public class GermplasmGroupApi {
         try {
             GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
             GermplasmGroupModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
             model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
@@ -227,7 +228,7 @@ public class GermplasmGroupApi {
                 .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.search(
-                filter,false
+                filter,false, false
         );
 
         // Convert paginated list to DTO

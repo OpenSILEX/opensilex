@@ -13,9 +13,12 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
@@ -30,6 +33,7 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -37,6 +41,7 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -351,6 +356,14 @@ public class ScientificObjectDAO {
         return new ListWithPagination<>(results,searchFilter.getPage(),searchFilter.getPageSize(),total);
     }
 
+    private ThrowingFunction<SPARQLResult,URI,Exception> uriListFromResult() throws Exception{
+
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        return (result) -> uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+
+    }
+
     private ThrowingFunction<SPARQLResult,ScientificObjectModel,Exception> fromResult(String lang) throws Exception{
 
         SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
@@ -462,7 +475,7 @@ public class ScientificObjectDAO {
         // add NOT IN filter with excluded uris
         if(!CollectionUtils.isEmpty(searchFilter.getExcludedUris())){
             Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getExcludedUris());
-            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(SPARQLResourceModel.URI_FIELD,uriNodes);
+            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(uriVar, uriNodes);
             graphHandler.addFilter(notInFilter);
         }
 
@@ -518,17 +531,8 @@ public class ScientificObjectDAO {
             if (searchFilter.getExperiment() != null) {
                 builder.addGraph(contextNode, uriVar, Oeso.hasGermplasm, germplasmVar);
             } else {
-                // in case of no XP : check germplasm inside (species, variety and accession) set union
-                builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar)
-                        .addUnion(new WhereBuilder()
-                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g1"))
-                                .addWhere(makeVar("_g1"), Oeso.fromSpecies, germplasmVar))
-                        .addUnion(new WhereBuilder()
-                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g2"))
-                                .addWhere(makeVar("_g2"), Oeso.fromVariety, germplasmVar))
-                        .addUnion(new WhereBuilder()
-                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g3"))
-                                .addWhere(makeVar("_g3"), Oeso.fromAccession, germplasmVar));
+                // in case of no XP
+                builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar);
             }
             builder.addFilter(SPARQLQueryHelper.inURIFilter(germplasmVar, germplasmMulti));
 
@@ -585,38 +589,67 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<URI> getScientificObjectUrisAssociatedWithGermplasmGroup(List<URI> experiments, URI germplasmGroupUri, String lang) throws Exception {
+    public List<URI> getScientificObjectUrisAssociatedWithGermplasmGroup(
+            List<URI> experiments,
+            URI germplasmGroupUri,
+            List<URI> passedGermplasms
+    ) throws Exception {
 
-        final Node germplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
         final Node germplasmGroupGraph = sparql.getDefaultGraph(GermplasmGroupModel.class);
 
         Var germplasm = makeVar("germplasm");
-        Var germplasmType = makeVar("germplasm_type");
-        Var targetGermplasm = makeVar("target_germplasm");
         Var permittedExperimentsNodeVar = makeVar("experiment_contexts");
         Var target = makeVar(SPARQLResourceModel.URI_FIELD);
         Var targetType = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var passedGermplasmsVar = makeVar("passed_germplasms");
 
-        Path accessionSpeciesVarietyLink = new P_ZeroOrMore1(new P_Alt( new P_Alt( new P_Link(Oeso.fromAccession.asNode()), new P_Link(Oeso.fromSpecies.asNode()) ), new P_Link(Oeso.fromVariety.asNode()) ));
+        WhereBuilder groupPart = null;
+        if(germplasmGroupUri!=null){
+            groupPart = new WhereBuilder().addWhere(target, Oeso.hasGermplasm, germplasm);
+        }
+        WhereBuilder passedGermsPart = null;
+        if(!CollectionUtils.isEmpty(passedGermplasms)){
+            passedGermsPart = new WhereBuilder().addWhere(target, Oeso.hasGermplasm, passedGermplasmsVar);
+        }
+        WhereBuilder hasGermplasmWhereBuilder = null;
+        if(groupPart != null && passedGermsPart!=null){
+            hasGermplasmWhereBuilder = new WhereBuilder().addWhere(groupPart).addUnion(passedGermsPart);
+        }else{
+            if(groupPart != null){
+                hasGermplasmWhereBuilder = groupPart;
+            }else{
+                hasGermplasmWhereBuilder = passedGermsPart;
+            }
+        }
+
         SelectBuilder query = new SelectBuilder()
-                .addGraph(permittedExperimentsNodeVar , target, RDF.type, targetType)
-                .addGraph(permittedExperimentsNodeVar , target, Oeso.hasGermplasm, targetGermplasm)
-                .addWhere(targetType, Ontology.subClassAny, Oeso.ScientificObject)
-                .addGraph(germplasmGraph, germplasm, RDF.type, germplasmType)
-                .addGraph(germplasmGraph, targetGermplasm, accessionSpeciesVarietyLink, germplasm)
-                .addWhere(germplasmType, Ontology.subClassAny, Oeso.Germplasm)
-                .addGraph(germplasmGroupGraph, SPARQLDeserializers.nodeURI(germplasmGroupUri), RDF.type, Oeso.GermplasmGroup)
-                .addGraph(germplasmGroupGraph, SPARQLDeserializers.nodeURI(germplasmGroupUri), RDFS.member, germplasm);
+                .setDistinct(true)
+                .addVar(target)
+                .addGraph(permittedExperimentsNodeVar, new WhereBuilder()
+                        .addWhere(target, RDF.type, targetType)
+                        .addWhere(hasGermplasmWhereBuilder)
+                )
+                .addWhere(targetType, Ontology.subClassAny, Oeso.ScientificObject);
 
-        SPARQLQueryHelper.addWhereUriValues(query, permittedExperimentsNodeVar.getVarName(), experiments.stream(), experiments.size());
+        if(germplasmGroupUri != null){
+            query.addGraph(germplasmGroupGraph, new WhereBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(germplasmGroupUri), RDF.type, Oeso.GermplasmGroup)
+                    .addWhere(SPARQLDeserializers.nodeURI(germplasmGroupUri), RDFS.member, germplasm)
+            );
+        }
+        if(!CollectionUtils.isEmpty(passedGermplasms)){
+            SPARQLQueryHelper.addWhereUriValues(query, passedGermplasmsVar.getVarName(), passedGermplasms.stream(), passedGermplasms.size());
+        }
+        query.addFilter(SPARQLQueryHelper.inURIFilter("experiment_contexts", experiments));
+
 
         Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(query);
         if(resultStream == null){
             return new ArrayList<>();
         }
 
-        List<ScientificObjectModel> results = streamToList(resultStream,fromResult(lang));
-        return results.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+        List<URI> results = streamToList(resultStream,uriListFromResult());
+        return results;
 
     }
 
@@ -791,7 +824,7 @@ public class ScientificObjectDAO {
         boolean useDefaultGraph = SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI);
         Node graphNode = useDefaultGraph ? defaultGraphNode : SPARQLDeserializers.nodeURI(contextURI);
 
-        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false);
+        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false, true);
     }
 
     /**
@@ -814,7 +847,7 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
-
+        object.setPublisher(currentUser.getUri());
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -855,8 +888,6 @@ public class ScientificObjectDAO {
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
         facilityMoveEvent.setTargets(targets);
-
-        facilityMoveEvent.setCreator(object.getCreator());
 
         facilityMoveEvent.setIsInstant(true);
 
@@ -901,13 +932,19 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
         SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
-
+        if (Objects.nonNull(publisher) && Objects.nonNull(publisher.getUri())) {
+            object.setPublisher(publisher.getUri());
+        }
+        if (Objects.nonNull(publicationDate)) {
+            object.setPublicationDate(publicationDate);
+        }
+        object.setLastUpdateDate(OffsetDateTime.now());
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         List<URI> childrenURIs = sparql.searchURIs(
@@ -1002,13 +1039,16 @@ public class ScientificObjectDAO {
         object.setType(soType);
         object.setName(name);
 
-        if (relations != null) {
+        /*if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
                 if (!ontologyDAO.validateObjectValue(contextURI, model, propertyShortURI, relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
+        }*/
+        if(relations != null){
+            RDFObjectDTO.validatePropertiesAndAddToObject(contextURI, model, object, relations, ontologyDAO);
         }
 
         return object;
@@ -1299,6 +1339,16 @@ public class ScientificObjectDAO {
                 // write type and name triple
                 update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
                       .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+
+                if (Objects.nonNull(object.getPublisher())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
+                }
+                if (Objects.nonNull(object.getPublicationDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
+                }
+                if (Objects.nonNull(object.getLastUpdateDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
+                }
             }
 
             sparql.executeUpdateQuery(update);

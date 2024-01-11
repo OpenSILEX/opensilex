@@ -163,10 +163,8 @@ export default class DataFilesList extends Vue {
   }
 
   refresh() {
-    this.tableRef.refresh();
-    this.$nextTick(() => {
       this.$opensilex.updateURLParameters(this.filter);
-    });
+      this.tableRef.changeCurrentPage(1);
   }
 
   created() {

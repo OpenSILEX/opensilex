@@ -11,6 +11,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -18,15 +19,18 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
@@ -34,6 +38,7 @@ import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -48,7 +53,8 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
@@ -140,9 +146,16 @@ public class GermplasmDAO {
 
     }
 
-    public GermplasmModel get(URI uri, AccountModel user) throws Exception {
+    public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
         GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, user.getLanguage());
         if (germplasm != null) {
+            //Load basic data about nested objects (parent germplasms, etc...)
+            if(withNested){
+                List<GermplasmModel> singletonList = Collections.singletonList(germplasm);
+                fetchGermplasmsOfRelation(singletonList, user.getLanguage(), Oeso.hasParentGermplasmM, (model) -> model.setParentMGermplasms(new LinkedList<>()));
+                fetchGermplasmsOfRelation(singletonList, user.getLanguage(), Oeso.hasParentGermplasmF, (model) -> model.setParentFGermplasms(new LinkedList<>()));
+                fetchGermplasmsOfRelation(singletonList, user.getLanguage(), Oeso.hasParentGermplasm, (model) -> model.setParentGermplasms(new LinkedList<>()));
+            }
             MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
             if (storedAttributes != null) {
                 germplasm.setMetadata(storedAttributes);
@@ -158,7 +171,7 @@ public class GermplasmDAO {
      */
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
-            boolean fetchMetadata) throws Exception {
+            boolean fetchMetadata, boolean fetchNestedObjects) throws Exception {
 
         final Set<URI> filteredUris;
         if (searchFilter.getMetadata() != null) {
@@ -211,7 +224,9 @@ public class GermplasmDAO {
                     appendProductionYearFilter(select, searchFilter.getProductionYear());
                     appendURIsFilter(select, filteredUris);
                     appendGroupFilter(select, searchFilter.getGroup());
-
+                    appendParentFilter(select, searchFilter.getParentGermplasms());
+                    appendParentMFilter(select, searchFilter.getParentMGermplasms());
+                    appendParentFFilter(select, searchFilter.getParentFGermplasms());
                     appendExperimentFilter(select, finalExperiment);
 
                     initialSelect.set(select);
@@ -222,6 +237,13 @@ public class GermplasmDAO {
                 searchFilter.getPage(),
                 searchFilter.getPageSize()
         );
+
+        //Load nested objets (parent germplasms, etc...)
+        if(fetchNestedObjects){
+            fetchGermplasmsOfRelation(models.getList(), searchFilter.getLang(), Oeso.hasParentGermplasmM, (model) -> model.setParentMGermplasms(new LinkedList<>()));
+            fetchGermplasmsOfRelation(models.getList(), searchFilter.getLang(), Oeso.hasParentGermplasmF, (model) -> model.setParentFGermplasms(new LinkedList<>()));
+            fetchGermplasmsOfRelation(models.getList(), searchFilter.getLang(), Oeso.hasParentGermplasm, (model) -> model.setParentGermplasms(new LinkedList<>()));
+        }
 
         // manually fetch synonyms with ListFetcher in optimized way
         SPARQLListFetcher<GermplasmModel> listFetcher = new SPARQLListFetcher<>(
@@ -257,6 +279,49 @@ public class GermplasmDAO {
         );
     }
 
+    private static void addToANestedPropertyList(GermplasmModel containerGermplasm, GermplasmModel nestedModel, Property predicate){
+        if(predicate.getURI().equals(Oeso.hasParentGermplasm.getURI())){
+            containerGermplasm.getParentGermplasms().add(nestedModel);
+        }else if(predicate.getURI().equals(Oeso.hasParentGermplasmM.getURI())){
+            containerGermplasm.getParentMGermplasms().add(nestedModel);
+        }else{
+            containerGermplasm.getParentFGermplasms().add(nestedModel);
+        }
+    }
+
+
+    private void fetchGermplasmsOfRelation(List<GermplasmModel> models, String lang, Property predicate, Consumer<GermplasmModel> setEmptyList) throws SPARQLException, ParseException {
+
+        if(models.isEmpty()){
+            return;
+        }
+        Map<String, Integer> modelsIndexes = new PatriciaTrie<>();
+        for (int i = 0; i < models.size(); i++) {
+            GermplasmModel model = models.get(i);
+            modelsIndexes.put(URIDeserializer.formatURIAsStr(model.getUri().toString()), i);
+            setEmptyList.accept(model);
+        }
+
+        Stream<URI> uris = models.stream().map(SPARQLResourceModel::getUri);
+
+        GermplasmGroupDAO.createManyToManySPARQLRequest(
+                defaultGraph,
+                defaultGraph,
+                uris,
+                (GermplasmGroupDAO.ManyToManyNestedUpdateData manyToManyNestedUpdateData) -> {
+                    Integer groupIdx = modelsIndexes.get(manyToManyNestedUpdateData.subjectUri);
+                    GermplasmModel group = models.get(groupIdx);
+                    GermplasmModel nestedModelAsGermplasm = GermplasmModel.fromSPARQLNamedResourceModel(manyToManyNestedUpdateData.nestedModel);
+                    addToANestedPropertyList(group, nestedModelAsGermplasm, predicate);
+                },
+                predicate,
+                Oeso.Germplasm,
+                models.size(),
+                sparql,
+                lang
+        );
+    }
+
     private void appendRegexUriFilter(SelectBuilder select, String uri) {
         if (!StringUtils.isEmpty(uri)) {
             try {
@@ -271,6 +336,32 @@ public class GermplasmDAO {
     private void appendGroupFilter(SelectBuilder select, URI group){
         if (group != null) {
             select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+    }
+
+    private void appendParentFilter(SelectBuilder select, List<URI> parentUris){
+        if (!CollectionUtils.isEmpty(parentUris)) {
+            Var predicateVar = makeVar("hasParent");
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), predicateVar, makeVar(GermplasmModel.PARENT_VAR));
+            select.addUnion(new WhereBuilder()
+                    .addWhere(predicateVar, RDFS.subPropertyOf, Oeso.hasParentGermplasm)
+                    .addWhere(predicateVar, RDF.type, Oeso.hasParentGermplasm)
+            );
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_VAR, parentUris));
+        }
+    }
+
+    private void appendParentMFilter(SelectBuilder select, List<URI> parentMUris){
+        if (!CollectionUtils.isEmpty(parentMUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmM, makeVar(GermplasmModel.PARENT_M_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_M_VAR, parentMUris));
+        }
+    }
+
+    private void appendParentFFilter(SelectBuilder select, List<URI> parentFUris){
+        if (!CollectionUtils.isEmpty(parentFUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmF, makeVar(GermplasmModel.PARENT_F_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_F_VAR, parentFUris));
         }
     }
 
@@ -498,5 +589,6 @@ public class GermplasmDAO {
                 page,
                 pageSize);
     }
+
 
 }

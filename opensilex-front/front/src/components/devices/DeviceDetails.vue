@@ -180,6 +180,7 @@
         datafilesCountIsLoading: boolean = true;
 
         uri = null;
+        routeArr : string = this.$route.path.split('/');
         name: string = "";
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -218,6 +219,8 @@
           this.$PositionsService = this.$opensilex.getService<PositionsService>("opensilex.PositionsService");
           this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
           this.uri = decodeURIComponent(this.$route.params.uri);
+          localStorage.setItem("tabPath", this.routeArr[2]);
+          localStorage.setItem("tabPage", "1");
           this.loadDevice(this.uri);
           this.searchEvents();
           this.searchAnnotations();

@@ -68,13 +68,6 @@ public class SPARQLResourceModel implements SPARQLModel {
     protected OffsetDateTime lastUpdateDate;
     public static final String LAST_UPDATE_DATE_FIELD = "lastUpdateDate";
 
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "creator"
-    )
-    protected URI creator;
-    public static final String CREATOR_FIELD = "creator";
-
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
 
     public URI getUri() {
@@ -136,14 +129,6 @@ public class SPARQLResourceModel implements SPARQLModel {
 
     public void setRelations(List<SPARQLModelRelation> relations) {
         this.relations = relations;
-    }
-
-    public URI getCreator() {
-        return creator;
-    }
-
-    public void setCreator(URI creator) {
-        this.creator = creator;
     }
 
     @Override

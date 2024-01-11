@@ -246,7 +246,9 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
                 OesoSecurity.NS,
                 "ontologies/os-sec.owl",
                 Lang.RDFXML,
-                OesoSecurity.PREFIX
+                OesoSecurity.PREFIX,
+                null,
+                true
         ));
 
         list.add(new OntologyFileDefinition(

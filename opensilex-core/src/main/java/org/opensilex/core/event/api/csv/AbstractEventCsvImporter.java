@@ -77,7 +77,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         validation = new CSVValidationModel();
 
         managedProperties = sparql.getMapperIndex().getForClass(EventModel.class)
-                .getClassAnalizer()
+                .getClassAnalyzer()
                 .getManagedProperties().stream().map(property -> URIDeserializer.formatURIAsStr(property.getURI()))
                 .collect(Collectors.toSet());
     }
@@ -450,7 +450,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
         String description = row[colIndex.getAndIncrement()];
         model.setDescription(description);
-        model.setCreator(user.getUri());
 
     }
 }

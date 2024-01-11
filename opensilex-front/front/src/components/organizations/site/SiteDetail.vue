@@ -60,7 +60,7 @@
         >
         </opensilex-UriListView>
 
-        <!-- Organizations -->
+        <!-- Facilities -->
         <opensilex-UriListView
             v-if="hasFacilities"
             :list="facilityUriList"
@@ -86,6 +86,14 @@
             noGeometryLabel="SiteDetail.noGeometryWarning"
         >
         </opensilex-AddressView>
+
+        <!-- Metadata -->
+        <opensilex-MetadataView
+          v-if="selected.publisher && selected.publisher.uri"
+          :publisher="selected.publisher"
+          :publicationDate="selected.publication_date"
+          :lastUpdatedDate="selected.last_updated_date" 
+        ></opensilex-MetadataView>
       </div>
     </b-card>
     <opensilex-ModalForm
@@ -156,7 +164,7 @@ export default class SiteDetail extends Vue {
         uri: organization.uri,
         value: organization.name,
         to: {
-          path: "/facility/details/" + encodeURIComponent(organization.uri),
+          path: "/organization/details/" + encodeURIComponent(organization.uri),
         },
       }
     });

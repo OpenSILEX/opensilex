@@ -193,7 +193,7 @@
       icon="ik#ik-file-text"
       modalSize="lg"
       @onCreate="refreshOrRedirectAfterCreation"
-      @onUpdate="refresh()"
+      @onUpdate="updateSelectedDocument()"
     >
     </opensilex-ModalForm>
         </opensilex-PageContent>
@@ -224,7 +224,7 @@ export default class DocumentList extends Vue {
 
   refresh() {
     this.$opensilex.updateURLParameters(this.filter);
-    this.tableRef.refresh();
+    this.tableRef.changeCurrentPage(1);
   }
 
   refreshOrRedirectAfterCreation(document) {
@@ -235,6 +235,10 @@ export default class DocumentList extends Vue {
     } else {
       this.refresh();
     }
+  }
+
+  updateSelectedDocument(){
+    this.$opensilex.updateURLParameters(this.filter);
   }
   
   get user() {

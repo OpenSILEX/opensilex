@@ -53,6 +53,9 @@ import PersonContact from "./persons/PersonContact.vue";
 components["opensilex-PersonContact"] = PersonContact;
 import ContactsList from "./persons/ContactsList.vue";
 components["opensilex-ContactsList"] = ContactsList;
+import OrcidSuggestionModal from "./persons/OrcidSuggestionModal.vue";
+components["opensilex-OrcidSuggestionModal"] = OrcidSuggestionModal;
+
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';
@@ -141,8 +144,6 @@ import FactorDetails from './experiments/factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
 import FactorLevelTable from './experiments/factors/FactorLevelTable.vue';
 components["opensilex-FactorLevelTable"] = FactorLevelTable;
-import FactorSelector from './experiments/factors/FactorSelector.vue';
-components["opensilex-FactorSelector"] = FactorSelector;
 import FactorCategorySelector from './experiments/factors/FactorCategorySelector.vue';
 components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
 import FactorsHelp from './experiments/factors/FactorsHelp.vue';
@@ -257,6 +258,8 @@ import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
+import ModalListBuilder from './common/views/ModalListBuilder.vue'
+components["opensilex-ModalListBuilder"] = ModalListBuilder;
 
 import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
 components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
@@ -295,6 +298,9 @@ components["opensilex-FavoriteButton"] = FavoriteButton;
 
 import Dropdown from './common/dropdown/Dropdown.vue'
 components["opensilex-Dropdown"] = Dropdown;
+
+import ItemsPropertiesSelector from './common/filters/ItemsPropertiesSelector.vue';
+components["opensilex-ItemsPropertiesSelector"] = ItemsPropertiesSelector;
 
 // Vocabulary/Ontology
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
@@ -449,9 +455,16 @@ import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmG
 components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
 import GermplasmGroupHelp from './germplasmGroup/GermplasmGroupHelp.vue';
 components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
-
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
+import GermplasmAddColumnModal from './germplasm/addColumnComponents/GermplasmAddColumnModal.vue';
+components["opensilex-GermplasmAddColumnModal"] = GermplasmAddColumnModal;
+import GermplasmControlledAttributesSelector from './germplasm/addColumnComponents/GermplasmControlledAttributesSelector.vue';
+components["opensilex-GermplasmControlledAttributesSelector"] = GermplasmControlledAttributesSelector;
+import GermplasmParentsModalFormField from './germplasm/GermplasmParentsModalFormField.vue';
+components["opensilex-GermplasmParentsModalFormField"] = GermplasmParentsModalFormField;
+import GermplasmParentsModalFormFieldLine from './germplasm/GermplasmParentsModalFormFieldLine.vue';
+components["opensilex-GermplasmParentsModalFormFieldLine"] = GermplasmParentsModalFormFieldLine;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
@@ -518,8 +531,12 @@ import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue
 components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
-import ScientificObjectPropertiesSelector from './scientificObjects/ScientificObjectPropertiesSelector.vue';
-components["opensilex-ScientificObjectPropertiesSelector"] = ScientificObjectPropertiesSelector;
+import CriteriaSearchModalCreator from './scientificObjects/CriteriaSearchModalCreator.vue';
+components["opensilex-CriteriaSearchModalCreator"] = CriteriaSearchModalCreator;
+import CriteriaOperatorSelector from './scientificObjects/CriteriaOperatorSelector.vue';
+components["opensilex-CriteriaOperatorSelector"] = CriteriaOperatorSelector;
+import CriteriaSearchModalLine from './scientificObjects/CriteriaSearchModalLine.vue';
+components["opensilex-CriteriaSearchModalLine"] = CriteriaSearchModalLine;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -840,7 +857,9 @@ components["opensilex-AssociatedPositionList"] = AssociatedPosition;
 import PackagesView from './tools/PackagesView.vue';
 components["opensilex-PackagesView"] = PackagesView;
 import SystemView from './tools/SystemView.vue';
-components["opensilex-SystemView"] = SystemView; 
- 
- 
+components["opensilex-SystemView"] = SystemView;
+import GDPR from './tools/GDPR.vue'
+components["opensilex-GDPR"] = GDPR;
+
+
 export default components;

@@ -84,7 +84,7 @@ public class AuthenticationAPI {
      * Inject Email service
      */
     @Inject
-    private EmailService email;
+    private EmailService emailService;
 
     /**
      * Inject SPARQL service
@@ -187,7 +187,7 @@ public class AuthenticationAPI {
     @Path("forgot-password")
     @ApiOperation("Send an e-mail confirmation")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Email sucessfully sent"),
+        @ApiResponse(code = 200, message = "Email successfully sent"),
         @ApiResponse(code = 400, message = "Email not send")
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -195,8 +195,8 @@ public class AuthenticationAPI {
     public Response forgotPassword(
             @ApiParam(value = "User e-mail or uri", required = true) @QueryParam("identifier")  @NotNull String identifier
     ) throws Exception {
-        if(!EmailService.ENABLE){
-            return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionnality not available", "Email service must be started").getResponse();
+        if(emailService.isEnable()){
+            return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionality not available", "Email service must be started").getResponse();
         }
         
         // Create user DAO
@@ -212,7 +212,7 @@ public class AuthenticationAPI {
                 URI uri = new URI(identifier);
                 user = accountDAO.get(uri);
             } catch (URISyntaxException ex1) {
-                throw new Exception("Submitted user identifier is neither a valid email or URI");
+                throw new IllegalArgumentException("Submitted user identifier is neither a valid email or URI");
             }
         }
 
@@ -242,10 +242,11 @@ public class AuthenticationAPI {
      * @throws AddressException
      * @throws IOException 
      */
-    private void sendForgotPasswordRedirectEmail(AccountModel user, URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException, AddressException, IOException{
+    private void sendForgotPasswordRedirectEmail(AccountModel user, URI userForgottenToken) throws OpenSilexModuleNotFoundException, IOException, AddressException {
         Map<String,Object> infos = new HashMap<>();
-        ArrayList<InternetAddress> arrayList = new ArrayList<>();
-        arrayList.add(user.getEmail());
+        List<InternetAddress> receivers = new LinkedList<>();
+        receivers.add(new InternetAddress(user.getEmail().getAddress()));
+
         // get address
         String username = null;
         if ( Objects.nonNull(user.getLinkedPerson())) {
@@ -255,14 +256,14 @@ public class AuthenticationAPI {
         // get getForgotPasswordRedirectUrl address
         String redirectUrl = getForgotPasswordRedirectUrl(userForgottenToken); 
         infos.put(EMAIL_TEMPLATE_REDIRECTURL_KEY, redirectUrl); 
-        email.sendAnEmail(arrayList, new InternetAddress(EmailService.SENDER), "[OpenSILEX] Reset your password", "forgot-password.mustache",infos,true); 
+        emailService.sendAnEmail(receivers, "[OpenSILEX] Reset your password", "forgot-password.mustache",infos,true);
     }
     
-    private String getForgotPasswordRedirectUrl(URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException{
+    private String getForgotPasswordRedirectUrl(URI userForgottenToken) throws OpenSilexModuleNotFoundException {
         // get address
-        String redirectUrl = email.getOpenSilex().getModuleByClass(ServerModule.class).getBaseURL();
+        String redirectUrl = emailService.getOpenSilex().getModuleByClass(ServerModule.class).getBaseURL();
         
-        redirectUrl = redirectUrl + "app/" + EMAIL_RESET_PASSWORD_APP_PATH + "/" + URLEncoder.encode(userForgottenToken.toString(), StandardCharsets.UTF_8.name());
+        redirectUrl = redirectUrl + "app/" + EMAIL_RESET_PASSWORD_APP_PATH + "/" + URLEncoder.encode(userForgottenToken.toString(), StandardCharsets.UTF_8);
         return redirectUrl;
     }
     
@@ -291,7 +292,7 @@ public class AuthenticationAPI {
             @ApiParam(value = "Check only renew token", example = "false") @DefaultValue("false") @QueryParam("check_only") Boolean checkOnly,
             @ApiParam(value = "User password") @QueryParam("password") String password
     ) throws Exception {
-        if(!EmailService.ENABLE){
+        if(!emailService.isEnable()){
             return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionnality not available", "Email service must be started").getResponse();
         }
         URI userUri =  authentication.getForgottenPasswordUserURIFromRenewToken(renewToken);

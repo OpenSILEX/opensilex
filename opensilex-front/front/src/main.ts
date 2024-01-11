@@ -193,6 +193,11 @@ import VueEasyLightbox from "vue-easy-lightbox";
 // Method 1. via Vue.use
 Vue.use(VueEasyLightbox)
 
+//component used for the personForm : 09-21-2023
+import VueTelInput from 'vue-tel-input'
+import 'vue-tel-input/dist/vue-tel-input.css'
+Vue.use(VueTelInput)
+
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';
@@ -260,7 +265,7 @@ import { configure, extend } from 'vee-validate';
 import validationMessagesEN from 'vee-validate/dist/locale/en.json';
 import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
 import * as rules from 'vee-validate/dist/rules';
-import { email } from 'vee-validate/dist/rules';
+import {email, excluded} from 'vee-validate/dist/rules';
 
 for (let [rule, validation] of Object.entries(rules)) {
   let anyVal: any = validation;
@@ -331,11 +336,35 @@ extend("nameFiltered", ( value) => {
   return valid;
 });
 
+//Has the same functionality as the existing vee-validate excluded rule. But ignores case and white spaces
+extend("existingProperty", {
+  validate: (value: string, args: string[])=>{
+    //Remove white spaces and turn all capital letters into normal letters
+    let flattenedValue = value.toLowerCase().replaceAll(" ", "");
+    let flattenedArgs: string[] = [];
+    args.forEach(arg=>flattenedArgs.push(arg.toLowerCase().replaceAll(" ", "")))
+    return !flattenedArgs.includes(flattenedValue);
+}
+});
+
+
+//To refuse some operators
+extend('refuseOperators', {
+  ...excluded,
+});
+
 import { parse } from "wkt";
 extend("wkt", {
   validate: (value) => {
     return parse(value) != null;
   }
+});
+
+// created on 09-26-2023 for the vue-tel-input component in the personForm.
+// used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)
+extend('falsy', {
+    validate: value => { return false; },
+    message: 'incorrect value'
 });
 
 

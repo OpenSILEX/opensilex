@@ -2,20 +2,21 @@ package org.opensilex.security.authentication.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
-import javax.ws.rs.core.Response;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.security.account.api.AccountAPI;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.group.api.GroupAPI;
+import org.opensilex.server.response.PaginatedListResponse;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.group.api.GroupAPI;
-import org.opensilex.security.user.api.UserAPI;
-import org.opensilex.server.response.PaginatedListResponse;
 
 public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
 
@@ -77,11 +78,10 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         PaginatedListResponse<CredentialsGroupDTO> getResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<CredentialsGroupDTO>>() {
         });
 
-        List<String> userCredentialsMap = new ArrayList<String>() {
+        List<String> accountCredentialsMap = new ArrayList<String>() {
             {
-                add(UserAPI.CREDENTIAL_USER_DELETE_ID);
-                add(UserAPI.CREDENTIAL_USER_MODIFICATION_ID);
-                add("user-access");
+                add(AccountAPI.CREDENTIAL_ACCOUNT_MODIFICATION_ID);
+                add("account-access");
             }
         };
 
@@ -94,9 +94,9 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         };
 
         getResponse.getResult().forEach((credentialGroup) -> {
-            if (credentialGroup.getGroupId().equals(UserAPI.CREDENTIAL_GROUP_USER_ID)) {
+            if (credentialGroup.getGroupId().equals(AccountAPI.CREDENTIAL_GROUP_ACCOUNT_ID)) {
                 credentialGroup.getCredentials().forEach((credential) -> {
-                    assertTrue(userCredentialsMap.contains(credential.getId()));
+                    assertTrue(accountCredentialsMap.contains(credential.getId()));
                 });
             } else if (credentialGroup.getGroupId().equals(GroupAPI.CREDENTIAL_GROUP_GROUP_ID)) {
                 credentialGroup.getCredentials().forEach((credential) -> {

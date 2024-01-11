@@ -36,7 +36,7 @@
             "keyword": "Keyword",
             "keywords": "Keywords",
             "description": "Description",
-            "informations": "General informations",
+            "informations": "General information",
             "contacts": "Contacts",
             "objective":"Objective",
             "startDate": "Start date",
@@ -145,7 +145,12 @@
                 },
                 "pagination" : {
                     "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
-                    "noEntries" : "No entries found"
+                    "noEntries" : "No entries found",
+                    "numberOfElementsPerPageSelector": "Select number of entries to display",
+                    "tenElements": "10 entries",
+                    "twentyElements": "20 entries",
+                    "fiftyElements": "50 entries",
+                    "hundredElements": "100 entries"
                 }
             },
             "addDocument": "Add document",
@@ -229,6 +234,10 @@
             "devices": "Devices",
             "events" : "Events",
             "vocabulary" : "Vocabulary",
+            "about" : {
+                "label": "About",
+                "system": "System"
+            },
             "tools" : {
                 "label": "Tools",
                 "system": "System",
@@ -311,7 +320,6 @@
             "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
             "form-email-placeholder": "Enter person email address",
             "form-affiliation-placeholder" : "Enter your affiliation",
-            "form-phone-placeholder" : "Enter a phone number (+33-65...)",
             "filter-placeholder": "Search persons...",
             "filter-search-no-result": "Sorry, no one is matching your research.",
             "orcid-help-message": "if filled, ORCID will be used as URI during creation. This field can't be updated",
@@ -330,6 +338,16 @@
             "successDelete" : "Person removed",
             "errors": {
                 "person-already-exists": "Person already exists with this URI."
+            },
+            "load-orcid-infos" : "load infos",
+            "orcid-suggestion": {
+                "title": "choose infos to pick-up",
+                "selector-help-message": "choose an option or leave empty",
+                "checkbox-help-message": "check the box to validate the proposition",
+                "last-name-pickup": "pick-up last name",
+                "first-name-pickup": "pick-up first name",
+                "last-name-placeholder": "no name found in your ORCID data",
+                "first-name-placeholder": "no first name found in your ORCID data"
             }
         },
         "variable" : {
@@ -551,7 +569,7 @@
             },
             "form-wizard": {
                 "label": "Experiment creation wizard",
-                "general-informations": "General informations",
+                "general-informations": "General information",
                 "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
@@ -759,12 +777,18 @@
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
         "dateDiff" : "The {_field_} must not be before the start date",
-        "nameFiltered" : "The {_field_} must not contains -,+,=,<,>,=,?,/,*,&"
+        "nameFiltered" : "The {_field_} must not contain -,+,=,<,>,=,?,/,*,&",
+        "existingProperty" : "This {_field_} already exists",
+        "refuseOperators": "This operator can't be applied"
     },
     "icon": {
         "component": {
             "menu": {
                 "default": "ik-folder",
+                "about": {
+                    "label": "ik-info",
+                    "gdpr": "ik-user"
+                },
                 "dashboard": "ik-grid",
                 "data": {
                     "label": "ik-bar-chart-line"

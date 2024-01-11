@@ -19,9 +19,11 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.*;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -49,6 +51,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -108,10 +111,11 @@ public class FactorAPI {
         FactorDAO dao = new FactorDAO(sparql);
         try {
             FactorModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
             List<FactorLevelModel> factorLevelsModels = new ArrayList<>();
             for (FactorLevelCreationDTO factorCreationDTO : dto.getFactorLevels()) {
                 FactorLevelModel newModel = factorCreationDTO.newModel();
+                newModel.setPublisher(currentUser.getUri());
                 newModel.setFactor(model);
                 factorLevelsModels.add(newModel);
             }
@@ -155,8 +159,11 @@ public class FactorAPI {
         if (model != null) {
             ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
             experimentDAO.validateExperimentAccess(model.getExperiment().getUri(), currentUser);
-
-            return new SingleObjectResponse<>(FactorDetailsGetDTO.fromModel(model)).getResponse();
+            FactorDetailsGetDTO dto = FactorDetailsGetDTO.fromModel(model);
+            if (Objects.nonNull(model.getPublisher())){
+                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+            }
+            return new SingleObjectResponse<>(dto).getResponse();
         } else {
             throw new NotFoundURIException("Factor URI not found: ", uri);
         }

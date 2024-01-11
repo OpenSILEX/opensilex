@@ -22,8 +22,8 @@ import java.util.function.Supplier;
  */
 public class DefaultCsvImporter<T  extends SPARQLResourceModel & ClassURIGenerator> extends AbstractCsvImporter<T>{
 
-    public DefaultCsvImporter(SPARQLService sparql, Class<T> objectClass, Supplier<T> objectConstructor) throws SPARQLException {
-        super(sparql, objectClass, sparql.getDefaultGraphURI(objectClass), objectConstructor);
+    public DefaultCsvImporter(SPARQLService sparql, Class<T> objectClass, Supplier<T> objectConstructor, URI publisher) throws SPARQLException {
+        super(sparql, objectClass, sparql.getDefaultGraphURI(objectClass), objectConstructor, publisher);
     }
 
 

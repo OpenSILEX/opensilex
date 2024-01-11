@@ -63,18 +63,6 @@
             >
               <template v-slot:filters>
 
-                <!-- Germplasm Group -->
-                <div>
-                  <opensilex-FilterField>
-                    <opensilex-GermplasmGroupSelector
-                        label="GermplasmList.filter.germplasm-group"
-                        :multiple="false"
-                        :germplasmGroup.sync="filter.germplasm_group"
-                        class="searchFilter"
-                        @handlingEnterKey="refresh()"
-                    ></opensilex-GermplasmGroupSelector>
-                  </opensilex-FilterField>
-                </div>
                 <!-- Variables -->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
@@ -97,6 +85,7 @@
                         @select="updateSOFilter"
                         @clear="updateSOFilter"
                         class="searchFilter"
+                        :key="resetExperimentSelectorKey"
                     ></opensilex-ExperimentSelector>
                   </opensilex-FilterField>
                 </div>
@@ -121,6 +110,28 @@
                         @select="refreshComponent"
                         :limit="1"
                     ></opensilex-SelectForm>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- Germplasm Group -->
+                <div>
+                  <opensilex-FilterField>
+                    <opensilex-GermplasmGroupSelector
+                        label="GermplasmList.filter.germplasm-group"
+                        :multiple="false"
+                        :germplasmGroup.sync="filter.germplasm_group"
+                        class="searchFilter"
+                        @handlingEnterKey="refresh()"
+                    ></opensilex-GermplasmGroupSelector>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- germplasm -->
+                <div>
+                  <opensilex-FilterField quarterWidth="false">
+                    <opensilex-GermplasmSelectorWithFilter
+                        :germplasmsUris.sync="filter.germplasm"
+                    ></opensilex-GermplasmSelectorWithFilter>
                   </opensilex-FilterField>
                 </div>
 
@@ -275,6 +286,7 @@ export default class DataView extends Vue {
   selectedProvenance: ProvenanceGetDTO = null;
   filterProvenanceLabel: string = null;
   refreshKey = 0;
+  resetExperimentSelectorKey = 0;
 
   get user() {
     return this.$store.state.user;
@@ -311,7 +323,8 @@ export default class DataView extends Vue {
     targets: [],
     devices: [],
     facilities: [],
-    operators: []
+    operators: [],
+    germplasm: []
   };
 
   soFilter = {
@@ -322,6 +335,7 @@ export default class DataView extends Vue {
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
+    criteriaDto: {criteria_list:[]}
   };
 
   data() {
@@ -352,7 +366,8 @@ export default class DataView extends Vue {
       targets: [],
       devices: [],
       facilities: [],
-      operators: []
+      operators: [],
+      germplasm: []
     };
 
     this.soSelector.refreshModalSearch();
@@ -372,6 +387,7 @@ export default class DataView extends Vue {
   reset() {
     this.resetFilter();
     this.refresh();
+    this.resetExperimentSelectorKey+=1;
   }
 
   created() {

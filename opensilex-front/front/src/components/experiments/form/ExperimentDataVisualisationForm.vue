@@ -144,19 +144,25 @@ import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { ScientificObjectsService } from "opensilex-core/index";
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
-import UsedScientificObjectSelector from '../../scientificObjects/views/UsedScientificObjectSelector.vue';
+import UsedScientificObjectSelector from "../../scientificObjects/views/UsedScientificObjectSelector.vue";
+import {ExperimentsService, ExperimentGetDTO} from "opensilex-core/index";
 
-let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
+let lastFifteenDays = new Date(new Date((new Date).setDate(new Date().getDate() - 15)).setHours(0,0,0,0))
+
 
 @Component
 export default class ExperimentDataVisualisationForm extends Vue {
   $opensilex: any;
   soService: ScientificObjectsService;
+  expService: ExperimentsService;
   showSearchComponent: boolean = false;
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
   countIsLoading : boolean = false;
+  experimentEndDate = "";
+  experimentStartDate = "";
+
   @Prop()
   mapMode;
   @Prop()
@@ -167,10 +173,11 @@ export default class ExperimentDataVisualisationForm extends Vue {
   @Ref("variableRef") readonly variableRef!: any;
   @Ref("soSelector") readonly soSelector!: UsedScientificObjectSelector;
 
+
   filter = {
     scientificObject: [],
     variable: [],
-    startDate: lastWeekDate.toISOString(),
+    startDate: undefined,
     endDate: undefined,
     provenance: undefined,
     showEvents: false
@@ -219,6 +226,29 @@ export default class ExperimentDataVisualisationForm extends Vue {
 
   eventsCount = "";
 
+  created() {
+    this.expService = this.$opensilex.getService("opensilex.ExperimentsService");
+
+    if (this.selectedExperiment) {
+      this.expService
+        .getExperiment(this.selectedExperiment)
+        .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+          if (http.response.result.end_date && new Date(http.response.result.end_date).getTime() < new Date().getTime() ) {
+            // if end_date is anterior to the current day : we use her for the end_date filter
+            // start_date is requiered and always define, so we use her for the start_date filter
+            this.filter.endDate = http.response.result.end_date ?? undefined;
+            this.filter.startDate = http.response.result.start_date;
+          } else {
+            // if the expe end_date is on the futur or is not define we get only data from last 15 days
+            this.filter.startDate = lastFifteenDays;
+          }
+        })
+        .catch((error) => {
+          this.$opensilex.errorHandler(error);
+        });
+    }
+  }
+
 
 
   onUpdate() {
@@ -229,7 +259,6 @@ export default class ExperimentDataVisualisationForm extends Vue {
   onSearch() {
     this.getTotalEventsCount();
     this.$emit("search", this.filter);
-
   }
 
     //  search events on EventsService format

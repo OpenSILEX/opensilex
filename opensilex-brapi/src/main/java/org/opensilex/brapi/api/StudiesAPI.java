@@ -8,27 +8,35 @@ package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.brapi.BrapiPaginatedListResponse;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.opensilex.brapi.model.*;
+import org.opensilex.brapi.responses.*;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
-import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -40,21 +48,19 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation 1.3</a>
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.2">BrAPI documentation 1.2</a>
  * @author Alice Boizet
  */
 @Api("BRAPI")
-@Path("/brapi/v1")
-public class StudiesAPI implements BrapiCall {
+@Path("/brapi/")
+public class StudiesAPI extends BrapiCall {
 
     @Inject
     private SPARQLService sparql;
@@ -68,83 +74,24 @@ public class StudiesAPI implements BrapiCall {
     @CurrentUser
     AccountModel currentUser;
 
-    /**
-     * Overriding BrapiCall method
-     *
-     * @return Calls call information
-     * @date 27 Aug 2018
-     */
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> callMethods = new ArrayList<>();
-        callMethods.add("GET");
-        ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.3");
-        Call call1 = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        Call call2 = new Call("studies/{studyDbId}/observations", calldatatypes, callMethods, callVersions);
-        Call call3 = new Call("studies/{studyDbId}/observationvariables", calldatatypes, callMethods, callVersions);
-        Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);
-        Call call5 = new Call("studies", calldatatypes, callMethods, callVersions);
+    protected Response standardGetStudies(URI studyDbId, String active, String sortBy, String sortOrder, int page, int pageSize) throws Exception {
 
-        calls.add(call1);
-        calls.add(call2);
-        calls.add(call3);
-        calls.add(call4);
-        calls.add(call5);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
-        return calls;
-    }
-
-    /**
-     * Retrieve studies information
-     *
-     * @param studyDbId
-     * @param seasonDbId
-     * @param active
-     * @param sortBy
-     * @param sortOrder
-     * @param pageSize
-     * @param page
-     * @return the study information
-     * @throws java.sql.SQLException
-     */
-    @GET
-    @Path("studies")
-    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
-    @ApiProtected
-    @Produces(MediaType.APPLICATION_JSON)
-
-    public Response getStudies(
-            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
-            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
-            @ApiParam(value = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
-            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
-    ) throws SQLException, Exception {
-
-        ArrayList<OrderBy> orderByList = new ArrayList();
+        ArrayList<OrderBy> orderByList = new ArrayList<>();
 
         if (!StringUtils.isEmpty(sortBy)) {
-            if (null == sortBy) {
-                sortBy = "";
-            } else {
-                switch (sortBy) {
-                    case "studyDbId":
-                        sortBy = "uri";
-                        break;
-                    case "seasonDbId":
-                        sortBy = "campaign";
-                        break;
-                    default:
-                        sortBy = "";
-                        break;
-                }
+            switch (sortBy) {
+                case "studyDbId":
+                    sortBy = "uri";
+                    break;
+                case "seasonDbId":
+                    sortBy = "campaign";
+                    break;
+                default:
+                    sortBy = "";
+                    break;
             }
             String orderByStr;
             if (!StringUtils.isEmpty(sortOrder)) {
@@ -158,11 +105,12 @@ public class StudiesAPI implements BrapiCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ListWithPagination<ExperimentModel> resultList;
+
         if (studyDbId != null) {
-            ExperimentModel model = xpDao.get(studyDbId, currentUser);
-            if (model != null) {
-                return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+            ExperimentModel expeModel = xpDao.get(studyDbId, currentUser);
+            if (Objects.nonNull(expeModel)){
+                resultList = new ListWithPagination<>(Collections.singletonList(expeModel));
             } else {
                 throw new NotFoundURIException(studyDbId);
             }
@@ -174,30 +122,98 @@ public class StudiesAPI implements BrapiCall {
                     .setPage(page)
                     .setPageSize(pageSize);
 
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
-            ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
-            return new BrapiPaginatedListResponse(resultDTOList).getResponse();
+            resultList = xpDao.search(filter);
         }
-
+        ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, experimentModel -> {
+            try {
+                return BrAPIv1StudyDTO.fromModel(experimentModel, germplasmDAO, currentUser);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        BrAPIv1StudyListResponse responseClass = new BrAPIv1StudyListResponse(resultDTOList);
+        BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
+        return responseClass.getResponse();
     }
 
+
     @GET
-    @Path("studies/{studyDbId}")
-    @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
+    @Path("v1/studies")
+    @BrapiVersion("1.3")
+    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
+    public Response getStudies(
+            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
+            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
+            @ApiParam(value = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
+            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        return this.standardGetStudies(studyDbId, active, sortBy, sortOrder, page, pageSize);
+    }
+
+    @GET
+    @Path("v1/studies-search")
+    @BrapiVersion("1.2")
+    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyListResponse.class)})
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public Response getStudiesSearch(
+            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
+            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
+            @ApiParam(value = "Name of the field to sort by: studyDbId or seasonDbId") @QueryParam("sortBy") String sortBy,
+            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
+            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+    ) throws Exception {
+        return this.standardGetStudies(studyDbId, active, sortBy, sortOrder, page, pageSize);
+    }
+
+    private void validateExperimentRightsAndURI(URI expeURI, ExperimentDAO xpDao) throws ForbiddenURIAccessException {
+        try {
+            xpDao.validateExperimentAccess(expeURI, currentUser);
+        } catch (MalformedQueryException e) {
+            throw new BadRequestException(expeURI.toString() + " is not a valid experiment URI");
+        } catch (ForbiddenURIAccessException e) {
+            throw new ForbiddenURIAccessException(expeURI, "You don't have the rights to access this experiment : " + expeURI.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GET
+    @Path("v1/studies/{studyDbId}")
+    @BrapiVersion("1.3")
+    @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve study details", response = BrAPIv1SingleStudyResponse.class)})  // TODO : wrong return type
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getStudyDetails(
             @ApiParam(value = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
     ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
-        ExperimentModel model = dao.get(studyDbId, currentUser);
+        OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
+        ExperimentModel model = xpDao.get(studyDbId, currentUser);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         if (model != null) {
-            return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+            BrAPIv1SingleStudyResponse responseClass = new BrAPIv1SingleStudyResponse(
+                    BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser, germplasmDAO)
+            );
+            BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
+            return responseClass.getResponse();
         } else {
             throw new NotFoundURIException(studyDbId);
         }
@@ -205,10 +221,11 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}/observations")
+    @Path("v1/studies/{studyDbId}/observations")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
@@ -216,25 +233,38 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
-    ) throws SQLException, URISyntaxException, Exception {
+    ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-        xpDAO.validateExperimentAccess(studyDbId, currentUser);
+        ExperimentModel experimentModel = xpDao.get(studyDbId, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(studyDbId);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
-        ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
-        return new BrapiPaginatedListResponse<>(observations).getResponse();
+        ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, data -> {
+            try {
+                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, germplasmDAO);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        BrAPIv1ObservationListResponse responseClass = new BrAPIv1ObservationListResponse(observations);
+        BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
+        return responseClass.getResponse();
 
     }
 
     @GET
-    @Path("studies/{studyDbId}/observationvariables")
+    @Path("v1/studies/{studyDbId}/observationvariables")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationVariableListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
@@ -242,19 +272,33 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, studyDbId, page, pageSize);
+        List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, Collections.singletonList(studyDbId), null, null, null);
 
-        ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
-        return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
+        BaseVariableDAO<MethodModel> baseVariableDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
+        ListWithPagination<VariableModel> variablesPaginated = new ListWithPagination<>(variables, page, pageSize, variables.size());
+        ListWithPagination<BrAPIv1ObservationVariableDTO> resultDTOList = variablesPaginated.convert(
+                BrAPIv1ObservationVariableDTO.class,
+                variableModel -> {
+                    try {
+                        return BrAPIv1ObservationVariableDTO.fromModel(variableModel, baseVariableDAO);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+        return new BrAPIv1ObservationVariableListResponse(resultDTOList).getResponse();
     }
 
     @GET
-    @Path("studies/{studyDbId}/observationunits")
+    @Path("v1/studies/{studyDbId}/observationunits")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationUnitListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationUnits(
@@ -263,6 +307,8 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
         List<URI> rdfTypes = new ArrayList<>();
         if (observationLevel != null) {
@@ -271,6 +317,13 @@ public class StudiesAPI implements BrapiCall {
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        MoveEventDAO moveEventDAO = new MoveEventDAO(sparql, nosql);
+        GeospatialDAO geospatialDAO = new GeospatialDAO(nosql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
                 .setExperiment(studyDbId)
@@ -280,16 +333,27 @@ public class StudiesAPI implements BrapiCall {
                 .setPageSize(limit)
                 .setLang(currentUser.getLanguage());
 
-        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.searchAsDto(searchFilter);
-
-        Collection<URI> nodeUris = scientificObjects.getList().stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList());
-        Map<String, List<FactorLevelModel>> soUriFactorLevelMap = soDAO.getScientificObjectsFactors(studyDbId, nodeUris, currentUser.getLanguage());
+        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
         
-        ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, (item) -> {
-            String expandedUri = SPARQLDeserializers.getExpandedURI(item.getUri());
-            List<FactorLevelModel> factors = soUriFactorLevelMap.get(expandedUri);
-            return ObservationUnitDTO.fromModel(item, factors);
+        ListWithPagination<BrAPIv1ObservationUnitDTO> observations = scientificObjects.convert(BrAPIv1ObservationUnitDTO.class, (scientificObjectModel) -> {
+            try {
+                return BrAPIv1ObservationUnitDTO.fromModel(
+                        scientificObjectModel,
+                        facilityDAO,
+                        currentUser,
+                        dataDAO,
+                        xpDao.get(studyDbId, currentUser),
+                        ontologyDAO,
+                        moveEventDAO,
+                        geospatialDAO,
+                        germplasmDAO,
+                        sparql);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
-        return new BrapiPaginatedListResponse<>(observations).getResponse();
+        BrAPIv1ObservationUnitListResponse responseClass = new BrAPIv1ObservationUnitListResponse(observations);
+        BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
+        return responseClass.getResponse();
     }
 }

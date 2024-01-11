@@ -12,12 +12,13 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -42,16 +43,15 @@ public class PersonDAO {
     }
 
     /**
-     * create a Person in dataBase with the given PersonDTO information.
+     * create a Person in dataBase with the given PersonModel information.
      * if orcid is given, it will be the uri of the person.
      *
      * @return the personModel of the created Person.
      */
-    public PersonModel create(PersonDTO personDTO) throws Exception {
-        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+    public PersonModel create(PersonModel person, ORCIDClient orcidClient) throws Exception {
 
         if (orcidIsNonNullAndWellFormed(person.getOrcid())) {
-            requireOrcidIsUnique(person.getOrcid());
+            requireOrcidIsUniqueAndExistsInOrcidAPI(person.getOrcid(), orcidClient);
             if ( ! sparql.uriExists((Node) null, person.getOrcid())) {
                 person.setUri(person.getOrcid());
             }
@@ -85,29 +85,40 @@ public class PersonDAO {
     }
 
     /**
+     * @param orcidID to check for, without the URI prefix https://orcid.org/
+     * @throws BadRequestException if orcidID is not a well-formed orcidID
+     */
+    public void requireOrcidIDIsWellFormed(String orcidID){
+        //commence par 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+        //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X
+        if ( ! orcidID.matches("^(?:[\\d]{4}-){3}[\\d]{3}[\\dX]$")) {
+            throw new BadRequestException("orcidID is not valid : "+ orcidID);
+        }
+    }
+
+    /**
      * @param orcid to check for
      * @throws ConflictException If Orcid is already taken
+     * @throws NotFoundException If Orcid doesn't exist according to the ORCID API
      */
-    private void requireOrcidIsUnique(URI orcid) throws Exception, ConflictException{
+    private void requireOrcidIsUniqueAndExistsInOrcidAPI(URI orcid, ORCIDClient orcidClient) throws Exception, ConflictException{
         boolean orcidisAlreadytaken;
 
         orcidisAlreadytaken = sparql.existsByUniquePropertyValue(PersonModel.class, SecurityOntology.hasOrcid, orcid);
 
         if (orcidisAlreadytaken) {
-            throw new ConflictException("Duplicated ORCID: " + orcid);
+            throw new ConflictException("Duplicated ORCID : " + orcid);
+        }
+
+        orcidClient.assertOrcidConnexionIsOk();
+        if ( ! orcidClient.orcidExists(getIdPartOfAnOrcidUri(orcid)) ){
+            throw new NotFoundException("orcid not found by the ORCID API : " + orcid);
         }
     }
 
-    /**
-     * @return the Person linked to an account if this person exists, null otherwise.
-     */
-    public PersonModel getPersonFromAccount(URI accountURI) throws Exception {
-        AccountDAO accountDAO = new AccountDAO(sparql);
-        AccountModel accountModel = accountDAO.get(accountURI);
-        if (accountModel == null) {
-            return null;
-        }
-        return accountModel.getLinkedPerson();
+    public String getIdPartOfAnOrcidUri(URI orcid){
+        String[] orcidParts = orcid.toString().split("/");
+        return orcidParts[orcidParts.length - 1];
     }
 
     /**
@@ -116,13 +127,13 @@ public class PersonDAO {
      *
      * @return the updated PersonModel
      */
-    public PersonModel update(PersonDTO personDTO) throws Exception {
+    public PersonModel update(PersonDTO personDTO, ORCIDClient orcidClient) throws Exception {
         if (Objects.nonNull(personDTO.getOrcid())) {
 
             PersonModel originalPerson = get(personDTO.getUri());
             if (Objects.isNull(originalPerson.getOrcid())) {
                 orcidIsNonNullAndWellFormed(personDTO.getOrcid());
-                requireOrcidIsUnique(personDTO.getOrcid());
+                requireOrcidIsUniqueAndExistsInOrcidAPI(personDTO.getOrcid(), orcidClient);
             } else {
                 boolean dtoOrcidIsTheSameAsOriginalOrcid = SPARQLDeserializers.compareURIs(originalPerson.getOrcid(), personDTO.getOrcid());
                 if ( ! dtoOrcidIsTheSameAsOriginalOrcid) {

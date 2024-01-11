@@ -482,7 +482,7 @@ update:nightly:builds:branch:
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
     - apt-get update && apt-get install -y git
   stage: build
-  image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION-slim
   script:
     - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -631,7 +631,7 @@ test:yvan:deploy:
   <<: *deploy_opensilex_template
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/yvan"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    INSTANCE_CONFIGURATION_FILE_NAME: "opensilex.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4083
     OPENSILEX_JAR_PORT: 8083
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"

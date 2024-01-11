@@ -89,6 +89,7 @@
                     :multiple="false"
                     :required="false"
                     :searchMethod="searchParents"
+                    :placeholder="$t('ExperimentScientificObjects.parent-placeholder')"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
@@ -126,6 +127,18 @@
                     @handlingEnterKey="refresh()"
                   ></opensilex-FactorLevelSelector>
                 </b-form-group>
+              </opensilex-FilterField>
+            </div>
+            <!-- Criteria search -->
+            <div>
+              <opensilex-FilterField quarterWidth="false">
+                <opensilex-CriteriaSearchModalCreator
+                    class="searchFilter"
+                    ref="criteriaSearchCreateModal"
+                    :criteria_dto.sync="filters.criteriaDto"
+                    :required="false"
+                    :requiredBlue="false"
+                ></opensilex-CriteriaSearchModalCreator>
               </opensilex-FilterField>
             </div>
           </template>
@@ -326,6 +339,7 @@ import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 import {User} from "../../../models/User";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
+import CriteriaSearchModalCreator from "../../scientificObjects/CriteriaSearchModalCreator.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -351,6 +365,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
+  @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
 
   get customColumns() {
     return [
@@ -389,7 +404,8 @@ export default class ExperimentScientificObjects extends Vue {
     types: [],
     parent: undefined,
     germplasm: undefined,
-    factorLevels: []
+    factorLevels: [],
+    criteriaDto: {criteria_list:[]}
   };
 
   public selected = null;
@@ -448,8 +464,10 @@ export default class ExperimentScientificObjects extends Vue {
       types: [],
       parent: undefined,
       germplasm: undefined,
-      factorLevels: []
+      factorLevels: [],
+      criteriaDto: {criteria_list:[]}
     };
+    this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     // Only if search and reset button are use in list
   }
 
@@ -488,21 +506,25 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchMethod(nodeURI, page, pageSize) {
 
+    console.debug("searchoing....", JSON.stringify(this.filters));
     let orderBy = ["name=asc"];
-    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm) {
+    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm || this.filters.criteriaDto) {
        return this.soService.searchScientificObjects(
         this.uri, // experiment uri?: string,
         this.filters.types, 
         this.filters.name, 
         this.filters.parent ? this.filters.parent : nodeURI, 
-        this.filters.germplasm, // Germplasm
+        this.filters.germplasm ? [this.filters.germplasm] : [], // Germplasm
         this.filters.factorLevels, 
         undefined, // facility?: string,
         undefined,
         undefined,
+        undefined,
+        undefined,
+           JSON.stringify(this.filters.criteriaDto),
         orderBy,
-        page,
-        pageSize );
+         page,
+         pageSize );
 
     } else {
 
@@ -526,14 +548,17 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // rdfTypes?: Array<string>,
         query, // pattern?: string,
         undefined, // parentURI?: string,
-        undefined, // Germplasm
+        [], // Germplasm
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
         undefined,
         undefined,
-        [], // orderBy?: ,
-        page, // page?: number,
-        pageSize // pageSize?: number
+        undefined,
+        undefined,
+        undefined,
+        [],
+          page,
+          pageSize
       )
       .then(http => {
         let nodeList = [];
@@ -662,12 +687,15 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.types,
         this.filters.name,
         this.filters.parent,
-        undefined, 
+        [],
         this.filters.factorLevels,
+        undefined,
+        undefined,
         undefined, 
         undefined, 
         undefined, 
-        [], 
+        JSON.stringify(this.filters.criteriaDto),
+        undefined,
         0,
         this.selectAllLimit)
       .then((http) => {
@@ -760,6 +788,7 @@ en:
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
     parent-label: Parent
+    parent-placeholder: Select a parent
     export-csv: Export CSV
     geometry-label: Geometry
     geometry-comment: Geospatial coordinates
@@ -777,6 +806,7 @@ fr:
     delete-scientific-object: Supprimer l'objet scientifique
     add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
+    parent-placeholder: Sélectionner un parent
     export-csv: Exporter en CSV
     geometry-label: Géometrie
     geometry-comment: Coordonnées géospatialisées

@@ -9,8 +9,8 @@ This document describes how to execute migration commands into OpenSILEX, the li
 <!-- TOC -->
 * [Opensilex Migration Commands](#opensilex-migration-commands)
 * [Introduction](#introduction)
-  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file--useradmin-oriented-)
-  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module--for-developers-)
+  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file-useradmin-oriented)
+  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module-for-developers)
 * [List](#list)
 * [Descriptions](#descriptions)
   * [org.opensilex.migration.GraphAndCollectionMigration](#orgopensilexmigrationgraphandcollectionmigration)
@@ -23,9 +23,11 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Notes](#notes)
   * [org.opensilex.migration.AgentsMigrateToAccountAndPersons](#orgopensilexmigrationagentsmigratetoaccountandpersons)
     * [Description](#description-3)
-  * [org.opensilex.migration.ObjectMigrationFromAccountToPerson][##org.opensilex.migration.ObjectMigrationFromAccountToPerson]
+  * [org.opensilex.migration.ObjectMigrationFromAccountToPerson](#orgopensilexmigrationobjectmigrationfromaccounttoperson)
     * [Description](#description-4)
-* [Create an update command (For developers)](#create-an-update-command--for-developers-)
+  * [org.opensilex.migration.AddAccountCredentialsToProfilWithUserCredential](#orgopensilexmigrationaddaccountcredentialstoprofilwithusercredential)
+    * [Description](#description-5)
+* [Create an update command (For developers)](#create-an-update-command-for-developers)
       * [Example](#example)
 <!-- TOC -->
 
@@ -153,6 +155,14 @@ following predicates are concerned :
 - experiment : Oeso:hasScientificSupervisor, Oeso:hasTechnicalSupervisor
 - device : Oeso:personInCharge
 - Provenance : operator (this is not a predicate since it's store in the NoSQl database, but it also has to be migrated)
+
+## org.opensilex.migration.AddAccountCredentialsToProfilWithUserCredential
+
+### Description
+
+This migration make a list of all profiles that has a credential on user. Then, it adds the same credential (show, add/update or delete) but for the accounts.
+This migration was done because Users credentials was replaced by account credentials in the web Interface, so it is necessary to migrate credentials, otherwise some people may have the suprise to not be able to reach the "account menu' anymore after the last deployment of OpenSilex 1.2.
+
 
 # Create an update command (For developers)
 

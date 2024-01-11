@@ -165,7 +165,9 @@ import {DataService} from "opensilex-core/api/data.service";
 export default class ScientificObjectDetail extends Vue {
     $opensilex: OpenSilexVuePlugin;
     service: ScientificObjectsService;
+    $route : any;
     uri: string = null;
+    routeArr : string = this.$route.path.split('/');
 
     $EventsService: EventsService
     $AnnotationsService: AnnotationsService
@@ -322,6 +324,8 @@ export default class ScientificObjectDetail extends Vue {
         this.$PositionsService = this.$opensilex.getService("opensilex.PositionsService");
         this.$DataService = this.$opensilex.getService("opensilex.DataService");
         this.uri = decodeURIComponent(this.$route.params.uri);
+        localStorage.setItem("tabPath", this.routeArr[2]);
+        localStorage.setItem("tabPage", "1");
         this.searchEvents();
         this.searchAnnotations();
         this.searchDocuments();

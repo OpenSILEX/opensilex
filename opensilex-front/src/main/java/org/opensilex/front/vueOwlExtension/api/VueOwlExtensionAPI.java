@@ -11,9 +11,11 @@ import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -38,6 +40,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -96,6 +99,7 @@ public class VueOwlExtensionAPI {
             VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
             ClassModel classModel = dto.toModel(currentUser.getLanguage());
+            classModel.setPublisher(currentUser.getUri());
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
             dao.createExtendedClass(classModel, classExtModel);
             SPARQLModule.getOntologyStoreInstance().reload();
@@ -188,6 +192,9 @@ public class VueOwlExtensionAPI {
         VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, classModel.getUri(), currentUser.getLanguage());
 
         VueRDFTypeDTO vueRDFTypeDTO = new VueRDFTypeDTO(classModel, modelExt);
+        if (Objects.nonNull(classModel.getPublisher())) {
+            vueRDFTypeDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(classModel.getPublisher())));
+        }
         vueRDFTypeDTO.setPropertiesOrder(daoExt.getPropertiesOrder(rdfType, currentUser.getLanguage()));
 
         for(URI propertyURI : classModel.getRestrictionsByProperties().keySet()) {

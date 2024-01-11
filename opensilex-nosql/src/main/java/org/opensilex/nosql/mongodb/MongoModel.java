@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
+import org.bson.Document;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
@@ -62,6 +63,10 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static Document getPublisherFilter(URI publisherUri){
+        return new Document("publisher", publisherUri);
     }
 
 }

@@ -10,10 +10,13 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.OpenSilex;
+import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -86,11 +89,16 @@ public final class AccountDAO {
             PersonModel holderOfTheAccount
     ) throws Exception {
 
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, Collections.emptyList());
+        AccountModel accountModel = AccountModel.buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, Collections.emptyList());
 
         sparql.create(accountModel);
 
         return accountModel;
+    }
+
+    public AccountModel create(AccountModel account) throws Exception {
+        sparql.create(account);
+        return account;
     }
 
     /**
@@ -118,15 +126,37 @@ public final class AccountDAO {
     }
 
     /**
+     * Delete an account only if it is not linked to any other ressources in different databases.
+     * Only one exception is made for the FOAF:account link between a Person and an Account.
      * @param instanceURI uri of the Account to delete
      */
-    public void delete(URI instanceURI) throws Exception {
+    public void delete(URI instanceURI, OpenSilex openSilex) throws Exception {
         Objects.requireNonNull(instanceURI);
+        List<String> predicateUrisToExclude = new ArrayList<>();
+        predicateUrisToExclude.add(FOAF.account.getURI());
+        sparql.requireUriIsNotLinkedWithOtherRessourcesInRDF(instanceURI, predicateUrisToExclude);
+        requireAccountUriIsNotLinkedWithOtherRessourcesInNosql(instanceURI, openSilex);
+
         try {
             sparql.delete(AccountModel.class, instanceURI);
         } catch (NullPointerException e){
             // TODO: 30/01/2023 if the deletion is not done because any model match this URI, the SparqlService.delete may throws an exception
             throw new NotFoundURIException(instanceURI);
+        }
+    }
+
+    /**
+     * Itterate over all module that implement ModuleWithNosqlEntityLinkedToAccount interface and ask them if there are linked or not to accountUri.
+     * @throws ConflictException if at least one of those module is linked with accountUri.
+     */
+    private void requireAccountUriIsNotLinkedWithOtherRessourcesInNosql(URI accountUri, OpenSilex openSilex) throws ConflictException {
+        boolean accountIsUsedInNosqlDatabase = openSilex.getModulesImplementingInterface(ModuleWithNosqlEntityLinkedToAccount.class)
+                .stream()
+                .anyMatch(
+                module -> module.accountIsLinkedWithANosqlEntity(accountUri)
+        );
+        if (accountIsUsedInNosqlDatabase) {
+            throw new ConflictException("URI <" + accountUri + "> is linked with other ressources");
         }
     }
 
@@ -145,7 +175,7 @@ public final class AccountDAO {
             PersonModel holderOfTheAccount,
             List<URI> favorites
     ) throws Exception {
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, favorites);
+        AccountModel accountModel = AccountModel.buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, favorites);
         sparql.update(accountModel);
 
         return accountModel;
@@ -218,37 +248,6 @@ public final class AccountDAO {
         }
 
         return loadedAccount;
-    }
-
-    /**
-     * convenient method used to get an AccountModel from non-complete information
-     * @return the AccountModel instanced with given information
-     */
-    private AccountModel buildAccountModel(URI uri,
-                                           InternetAddress email,
-                                           boolean admin,
-                                           String passwordHash,
-                                           String lang,
-                                           Boolean enable,
-                                           PersonModel holderOfTheAccount,
-                                           List<URI> favorites) {
-
-        AccountModel accountModel = new AccountModel();
-        accountModel.setUri(uri);
-        accountModel.setEmail(email);
-        accountModel.setAdmin(admin);
-        accountModel.setLocale(new Locale(lang));
-        accountModel.setLinkedPerson(holderOfTheAccount);
-        accountModel.setFavorites(favorites);
-        accountModel.setIsEnabled(enable);
-        if (passwordHash != null) {
-            accountModel.setPasswordHash(passwordHash);
-        }
-        if (enable != null) {
-            accountModel.setIsEnabled(enable);
-        }
-
-        return accountModel;
     }
 
     public boolean accountExists(URI accountURI) throws SPARQLException {

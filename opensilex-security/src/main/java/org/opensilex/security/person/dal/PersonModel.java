@@ -10,6 +10,7 @@ import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -18,6 +19,7 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 
 /**
@@ -94,8 +96,13 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
         person.setAffiliation(personDTO.getAffiliation());
         person.setOrcid(personDTO.getOrcid());
         if ( Objects.nonNull(personDTO.getPhoneNumber()) ){
-            URI phone = new URI( "tel:" + personDTO.getPhoneNumber());
-            person.setPhoneNumber(phone);
+            try {
+                URI phone = new URI( "tel:" + personDTO.getPhoneNumber());
+                person.setPhoneNumber(phone);
+            } catch (URISyntaxException e){
+                throw new BadRequestException("incorrect phone number (spaces not allowed): "+personDTO.getPhoneNumber());
+            }
+
         }
         if (personDTO.getEmail() != null) {
             person.setEmail(new InternetAddress(personDTO.getEmail()));

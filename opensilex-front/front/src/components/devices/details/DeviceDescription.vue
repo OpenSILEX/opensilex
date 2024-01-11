@@ -109,6 +109,13 @@
                 ></opensilex-UriView>
               </div>
 
+              <!-- Metadata -->
+              <opensilex-MetadataView
+                v-if="device.publisher && device.publisher.uri"
+                :publisher="device.publisher"
+                :publicationDate="device.publication_date"
+                :lastUpdatedDate="device.last_updated_date" 
+              ></opensilex-MetadataView>
             </template>
           </opensilex-Card>
         </b-col>

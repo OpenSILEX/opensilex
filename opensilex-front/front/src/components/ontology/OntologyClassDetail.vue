@@ -23,6 +23,13 @@
                 label="OntologyClassForm.icon"
                 :value="selected.icon"
             ></opensilex-IconView>
+            <opensilex-MetadataView
+                v-if="selected.publisher && selected.publisher.uri"
+                :publisher="selected.publisher"
+                :publicationDate="selected.publicationDate"
+                :lastUpdatedDate="selected.lastUpdatedDate" 
+            >
+            </opensilex-MetadataView>
         </div>
         <hr>
         <div>

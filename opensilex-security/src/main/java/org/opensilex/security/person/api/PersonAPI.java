@@ -6,15 +6,21 @@
 package org.opensilex.security.person.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.ServiceUnavailableException;
 import org.opensilex.server.response.*;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -27,10 +33,9 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * <pre>
@@ -59,6 +64,9 @@ public class PersonAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    AccountModel currentUser;
+
     /**
      * Create a person and return its URI
      *
@@ -84,8 +92,9 @@ public class PersonAPI {
             @ApiParam("Person description") @Valid PersonDTO personDTO
     ) throws Exception {
         PersonDAO personDAO = new PersonDAO(sparql);
-
-        PersonModel person = personDAO.create(personDTO);
+        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+        person.setPublisher(currentUser.getUri());
+        personDAO.create(person, new ORCIDClient());
 
         return new CreatedUriResponse(person.getUri()).getResponse();
     }
@@ -184,7 +193,7 @@ public class PersonAPI {
                 ).getResponse();
             }
 
-            PersonModel personModel = personDAO.update(personDTO);
+            PersonModel personModel = personDAO.update(personDTO, new ORCIDClient());
 
             return new ObjectUriResponse(Response.Status.OK, personModel.getUri()).getResponse();
         } else {
@@ -293,7 +302,7 @@ public class PersonAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return persons", response = PersonDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getPersonsByURI(
             @ApiParam(value = "Persons URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -314,6 +323,90 @@ public class PersonAPI {
                     "Unknown person URIs"
             ).getResponse();
         }
+    }
+
+    /**
+     * *
+     * Return a record corresponding to the data found on the Orcid API
+     *
+     * @param orcid you want data from, with or without https://orcid.org/ prefix
+     * @return Corresponding data from the orcid API
+     */
+    @GET
+    @Path("orcid_record")
+    @ApiOperation("Get infos from an ORCID")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return orcid record", response = OrcidRecordDTO.class),
+            @ApiResponse(code = 404, message = "orcid is not found by ORCID API ", response = ErrorDTO.class)
+    })
+    public Response getOrcidRecord(
+            @ApiParam(value = "orcid", required = true) @QueryParam("orcid") @NotNull URI orcid
+    ) {
+        PersonDAO personDAO = new PersonDAO(sparql);
+
+        String orcidId = personDAO.getIdPartOfAnOrcidUri(orcid);
+
+        personDAO.requireOrcidIDIsWellFormed(orcidId);
+
+        ORCIDClient orcidClient = new ORCIDClient();
+        orcidClient.assertOrcidConnexionIsOk();
+
+        return new SingleObjectResponse<>(
+                orcidClient.getRecord(orcidId)
+        ).getResponse();
+    }
+
+    /**
+     * This method gets the file to the path found in the security config and send it in a response.
+     * If the file is not available in the requested language, or if language was not specified, it will send the version in the language of the current user.
+     * If the user is not connected or if the file is not available in its language, it will send the file in the default language of the OpenSilex instance.
+     * If this file doesn't exist, it sends the file in the first language of the config.
+     * Return ErrorResponses if there is no config set or if the file of the config doesn't exist.
+     */
+    @GET
+    @Path("GDPR")
+    @ApiOperation("Get RGPD PDF")
+    @Produces("application/pdf")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieve file"),
+            @ApiResponse(code = 404, message = "File does not exists at the location precised in the configuration file", response = ErrorDTO.class),
+            @ApiResponse(code = 503, message = "Location of file was not provided in the OpenSilex configuration", response = ErrorDTO.class)
+    })
+    public Response getGdprFile(
+            @ApiParam(value = "preferred language of the file", example = "fr") @QueryParam("language") String askedLanguage
+    ) throws OpenSilexModuleNotFoundException {
+
+        SecurityConfig config = sparql.getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class);
+        Map<String, String> filePaths = config.gdprPdfPathsByLanguages();
+
+        if (filePaths.isEmpty()) {
+            throw new ServiceUnavailableException("Location of file was not provided in the OpenSilex configuration");
+        }
+
+        String filePath = filePaths.values().iterator().next();
+
+        if (filePaths.containsKey(OpenSilex.DEFAULT_LANGUAGE)) {
+            filePath = filePaths.get(OpenSilex.DEFAULT_LANGUAGE);
+        }
+
+        if (Objects.nonNull(currentUser)){
+            filePath = filePaths.get(currentUser.getLanguage());
+        }
+
+        if (Objects.nonNull(askedLanguage) && filePaths.containsKey(askedLanguage)){
+            filePath = filePaths.get(askedLanguage);
+        }
+
+        File file = new File(filePath);
+        if ( ! file.exists() ){
+            throw new NotFoundException("File does not exists at the location precised in the configuration file");
+        }
+
+        Response.ResponseBuilder response = Response.ok(file);
+        response.header("Content-Disposition", "attachment; filename=\"GDPR.pdf\"");
+        return response.build();
     }
 
 }

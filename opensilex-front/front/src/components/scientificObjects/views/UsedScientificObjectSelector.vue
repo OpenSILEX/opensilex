@@ -8,6 +8,8 @@
       :selectedInJsonFormat= "this.mapMode ? scObj : null"
       :filter.sync="soFilter"
       :multiple="true"
+      :devices="devices"
+      :modalComponentProps="modalComponentProps"
       :maximumSelectedItems="maximumSelectedRows"
       :clearable="true"
       :required="required"
@@ -23,7 +25,7 @@
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {ScientificObjectsService} from "opensilex-core/index";
-import SelectForm, { SelectableItem } from '../../common/forms/SelectForm.vue';
+import SelectForm, { SelectableItem } from "../../common/forms/SelectForm.vue";
 
 /**
 * Selector of Scientific Objects present in an experiment.
@@ -66,6 +68,14 @@ export default class UsedScientificObjectSelector extends Vue {
   soFilter;
   @Prop()
   maximumSelectedRows: number;
+  @Prop()
+  variables;
+  @Prop()
+  devices;
+
+  get modalComponentProps(){
+    return {variables: this.variables, devices: this.devices}
+  }
 
   @Ref("soSelector") readonly soSelector!: SelectForm;
 

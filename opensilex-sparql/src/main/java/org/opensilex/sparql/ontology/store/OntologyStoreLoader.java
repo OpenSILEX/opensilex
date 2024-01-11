@@ -15,6 +15,7 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -28,9 +29,12 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -65,6 +69,9 @@ class OntologyStoreLoader {
     protected static final Var DOMAIN_VAR = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
     protected static final Var RANGE_VAR = makeVar(AbstractPropertyModel.RANGE_FIELD);
     protected static final Var ROOT_PROPERTY_TYPE_VAR = makeVar("propertyType");
+    protected static final Var PUBLISHER_VAR = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
+    protected static final Var PUBLICATION_DATE_VAR = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+    protected static final Var LAST_UPDATE_DATE_VAR = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
 
 
     protected final List<String> languages;
@@ -104,6 +111,26 @@ class OntologyStoreLoader {
     private void fromResult(SPARQLResult result, TranslatedModel model) {
         model.setLabel(getLabel(result, nameVars));
         model.setComment(getLabel(result, commentVars));
+        String publisher = result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD);
+        String publicationDate = result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+        String lastUpdateDate = result.getStringValue(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
+        if (Objects.nonNull(publisher)) {
+            model.setPublisher(URI.create(publisher));
+        }
+        if (Objects.nonNull(publicationDate)) {
+            try {
+                model.setPublicationDate(OffsetDateTime.parse(publicationDate));
+            } catch (DateTimeParseException e) {
+                model.setPublicationDate(null);
+            }
+        }
+        if (Objects.nonNull(lastUpdateDate)) {
+            try {
+                model.setLastUpdateDate(OffsetDateTime.parse(lastUpdateDate));
+            } catch (DateTimeParseException e) {
+                model.setLastUpdateDate(null);
+            }
+        }
     }
 
     private void fromResult(SPARQLResult result, AbstractPropertyModel<?> model) {
@@ -221,7 +248,6 @@ class OntologyStoreLoader {
                 updateModelFunction.accept(result, model);
             }
         });
-
         return models;
 
     }
@@ -309,6 +335,15 @@ class OntologyStoreLoader {
         }
     }
 
+    private void appendMetadata(SelectBuilder select) {
+        select.addVar(PUBLISHER_VAR);
+        select.addVar(PUBLICATION_DATE_VAR);
+        select.addVar(LAST_UPDATE_DATE_VAR);
+        select.addOptional(new WhereBuilder().addWhere(URI_VAR, DCTerms.publisher, PUBLISHER_VAR));
+        select.addOptional(new WhereBuilder().addWhere(URI_VAR, DCTerms.issued, PUBLICATION_DATE_VAR));
+        select.addOptional(new WhereBuilder().addWhere(URI_VAR, DCTerms.modified, LAST_UPDATE_DATE_VAR));
+    }
+
     protected SPARQLLabel getLabel(SPARQLResult result, List<Var> translatedVars) {
 
         SPARQLLabel label = new SPARQLLabel();
@@ -343,6 +378,7 @@ class OntologyStoreLoader {
                 ).addOrderBy(URI_VAR);
 
         appendNamesAndComments(select);
+        appendMetadata(select);
 
         return select;
     }
@@ -374,6 +410,7 @@ class OntologyStoreLoader {
                 .addOrderBy(URI_VAR);
 
         appendNamesAndComments(select);
+        appendMetadata(select);
         select.addWhereValueVar(
                 ROOT_PROPERTY_TYPE_VAR,
                 NodeFactory.createURI(OWL2.ObjectProperty.getURI()),

@@ -84,6 +84,15 @@
       >
       </opensilex-UriListView>
 
+      <!-- VariableGroups -->
+      <opensilex-UriListView
+          v-if="hasVariableGroups"
+          label="FacilityDescription.variable-groups"
+          :list="variableGroupUriList"
+          :inline="true"
+      >
+      </opensilex-UriListView>
+
       <!-- Devices -->
       <opensilex-UriListView
           v-if="hasDevices"
@@ -112,6 +121,14 @@
         :relations="selected.relations"
       >
       </opensilex-OntologyObjectProperties>
+
+      <!-- Metadata -->
+      <opensilex-MetadataView
+        v-if="selected.publisher && selected.publisher.uri"
+        :publisher="selected.publisher"
+        :publicationDate="selected.publication_date"
+        :lastUpdatedDate="selected.last_updated_date" 
+      ></opensilex-MetadataView>
     </template>
   </opensilex-Card>
 </template>
@@ -125,7 +142,6 @@ import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {VueJsOntologyExtensionService} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
@@ -176,6 +192,10 @@ export default class FacilityDescription extends Vue {
 
   get hasExperiments() {
     return !!this.experiments && this.experiments.length > 0;
+  }
+
+  get hasVariableGroups() {
+    return !!this.selected && this.selected.variableGroups.length > 0;
   }
 
   get hasDevices() {
@@ -249,6 +269,21 @@ export default class FacilityDescription extends Vue {
     });
   }
 
+  get variableGroupUriList() {
+    if (!this.selected) {
+      return [];
+    }
+    return this.selected.variableGroups.map(varGroup => {
+      return {
+        uri: varGroup.uri,
+        value: varGroup.name,
+        to: {
+          path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(varGroup.uri),
+        },
+      };
+    });
+  }
+
   editOrganizationFacility() {
     this.organizationFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
   }
@@ -281,13 +316,16 @@ en:
   FacilityDescription:
     organizations: Organizations
     expsInProgress: Experiments in progress
+    variable-groups: Groups of variables
     devices: Devices
     site: "Site"
     address: "Address"
+
 fr:
   FacilityDescription:
     organizations: Organisations
     expsInProgress: Experiences en cours
+    variable-groups: Groupes de variables
     devices: Appareils
     site: "Site"
     address: "Adresse"

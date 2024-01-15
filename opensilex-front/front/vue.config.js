@@ -20,7 +20,7 @@ module.exports = {
         resolve: {
             extensions: ['.md'],
             alias: {
-                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                'vue$': path.resolve('../../node_modules/@vue/compat/dist/vue.runtime.esm-bundler.js'),
                 "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
                 "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),
                 "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src")
@@ -62,7 +62,17 @@ module.exports = {
             .options({
                 raw: true
             })
-
+        config.module.rule('vue')
+            .test(/\.vue$/)
+            .use('vue-loader')
+            .loader('vue-loader') 
+            .options({
+                compilerOptions: {
+                    compatConfig: {
+                      MODE: 2
+                    }
+                  }
+            })
         if (process.env.NODE_ENV === 'production') {
             config.module.rule('vue').uses.delete('cache-loader');
             config.module.rule('js').uses.delete('cache-loader');

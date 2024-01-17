@@ -94,7 +94,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().getName());
-                put("rdf_type", getCreationSpeciesDTO().getRdfType());                
+                put("rdf_type", getCreationSpeciesDTO().getType());
             }
         };
 

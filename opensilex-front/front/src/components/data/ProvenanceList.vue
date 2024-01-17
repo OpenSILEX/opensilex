@@ -100,6 +100,7 @@
       ref="tableRef"
       :searchMethod="searchProvenance"
       :fields="fields"
+      :fieldKeyToSortableModelLabelMap="fieldKeyToModelFieldMap"
       :isSelectable="true"
       @refreshed="onRefreshed"
       defaultSortBy="name"
@@ -214,12 +215,18 @@ export default class ProvenanceList extends Vue {
     default: false
   })
   noActions;
-
+  
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
   agentTypes: any[] = [];
   SearchFiltersToggle: boolean = false;
+
+  fieldKeyToModelFieldMap = {
+    'activity_type' : "activity.rdfType",
+    'activity_start_date' : "activity.startDate",
+    'activity_end_date' : "activity.endDate",
+  };
 
   get user() {
     return this.$store.state.user;

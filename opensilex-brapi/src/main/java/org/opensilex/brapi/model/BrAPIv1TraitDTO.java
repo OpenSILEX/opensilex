@@ -21,7 +21,6 @@ public class BrAPIv1TraitDTO {
     private String description;
     private String entity;
     private String mainAbbreviation;
-    private String name;
     private BrAPIv1OntologyReferenceDTO ontologyReference;
     private String status;
     private List<String> synonyms;
@@ -75,14 +74,6 @@ public class BrAPIv1TraitDTO {
 
     public void setMainAbbreviation(String mainAbbreviation) {
         this.mainAbbreviation = mainAbbreviation;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public BrAPIv1OntologyReferenceDTO getOntologyReference() {

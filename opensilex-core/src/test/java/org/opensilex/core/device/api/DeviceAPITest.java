@@ -10,7 +10,11 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.client.model.geojson.Geometry;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.GeoJsonObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -22,6 +26,8 @@ import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -40,8 +46,10 @@ import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -58,6 +66,7 @@ import java.util.function.BiPredicate;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author rcolin
@@ -70,6 +79,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
     public String facilityPath = path + "/{uri}/facility";
+    public String exportGeospatialPath = path + "/export_geospatial";
 
     public String provenancePath = ProvenanceAPI.PATH;
     public String dataPath = DataAPI.PATH;
@@ -424,6 +434,63 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
                 DataDAO.DATA_COLLECTION_NAME,
                 DataDAO.FILE_COLLECTION_NAME
         );
+    }
+
+    @Test
+    public void testExportDevicesAsShpandGeoJson() throws Exception {
+
+        //Create one Device Model
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDto());
+        URI uri = extractUriFromResponse(postResult);
+
+        DeviceModel deviceModel = new DeviceModel();
+
+        deviceModel.setName("DeviceExported");
+        deviceModel.setUri(uri);
+        deviceModel.setType(sensingDeviceType);
+        deviceModel.setTypeLabel(new SPARQLLabel("Device","en"));
+
+        deviceModel.setBrand("Roald_Dalh");
+        deviceModel.setModel("Willy_Wonka");
+        deviceModel.setStartUp(LocalDate.now());
+
+        //build geometry
+        Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
+
+        GeometryDTO objToExport = new GeometryDTO();
+        objToExport.setGeometry(geoJsonGeometry);
+        objToExport.setUri(deviceModel.getUri());
+
+        ArrayList<GeometryDTO> objectsList= new ArrayList<>();
+        objectsList.add(objToExport);
+
+        //build params
+        ArrayList<URI> propsList= new ArrayList<>();
+        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        propsList.add(new URI("vocabulary:hasModel"));
+        propsList.add(new URI("vocabulary:startUp"));
+        propsList.add(new URI("vocabulary:hasBrand"));
+
+        Map<String, Object> paramsShp = new HashMap<>() {{
+            put("format", "shp");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        Map<String, Object> paramsGJson = new HashMap<>() {{
+            put("format", "geojson");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        // assert service
+        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultShp.getStatus());
+        // assert service
+        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultGJson.getStatus());
     }
 
 }

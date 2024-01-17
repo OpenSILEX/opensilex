@@ -47,15 +47,15 @@ public class GermplasmGroupDAOTest extends AbstractMongoIntegrationTest {
         germplasmDAO = new GermplasmDAO(sparqlService, mongoDBService);
         GermplasmCreationDTO pre1spe1DTO = GermplasmGroupApiTest.getCreationSpeciesDTO("pre1spe1");
         GermplasmCreationDTO pre1spe2DTO = GermplasmGroupApiTest.getCreationSpeciesDTO("pre1spe2");
-        GermplasmModel pre1spe1Model = pre1spe1DTO.newModel();
+        GermplasmModel pre1spe1Model = pre1spe1DTO.newModel(null, null);
         preSpecies1 = germplasmDAO.create(pre1spe1Model);
-        GermplasmModel pre1spe2Model = pre1spe2DTO.newModel();
+        GermplasmModel pre1spe2Model = pre1spe2DTO.newModel(null, null);
         preSpecies2 = germplasmDAO.create(pre1spe2Model);
         GermplasmCreationDTO pre2spe1DTO = GermplasmGroupApiTest.getCreationSpeciesDTO("pre2spe1");
         GermplasmCreationDTO pre2spe2DTO = GermplasmGroupApiTest.getCreationSpeciesDTO("pre2spe2");
-        GermplasmModel pre2spe1Model = pre2spe1DTO.newModel();
+        GermplasmModel pre2spe1Model = pre2spe1DTO.newModel(null, null);
         pre2Species1 = germplasmDAO.create(pre2spe1Model);
-        GermplasmModel pre2spe2Model = pre2spe2DTO.newModel();
+        GermplasmModel pre2spe2Model = pre2spe2DTO.newModel(null, null);
         pre2Species2 = germplasmDAO.create(pre2spe2Model);
 
         //2 pre created groups to test stuff on

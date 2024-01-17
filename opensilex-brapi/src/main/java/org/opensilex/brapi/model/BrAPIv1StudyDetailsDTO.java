@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  * @author Alice Boizet
  */
 public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
-    private final String SCIENTIFIC_SUPERVISOR = "ScientificSupervisor";
-    private final String TECHNICAL_SUPERVISOR = "TechnicalSupervisor";
+    private final String SCIENTIFIC_SUPERVISOR = "Scientific Supervisor";
+    private final String TECHNICAL_SUPERVISOR = "Technical Supervisor";
 
     private List<BrAPIv1ContactDTO> contacts;
     private List<BrAPIv1DataLinkDTO> dataLinks;

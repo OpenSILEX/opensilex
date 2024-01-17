@@ -123,6 +123,15 @@
       helpMessage="GermplasmForm.comment-help"
     ></opensilex-InputForm>
 
+    <!-- parents -->
+    <opensilex-GermplasmParentsModalFormField
+        ref="parentsFieldRef"
+        :relation_dtos.sync="form.relations"
+        :existingParentUrisToLabelsMap="existingParentUrisToLabelsMap"
+        :required="false"
+        :requiredBlue="false"
+    ></opensilex-GermplasmParentsModalFormField>
+
     <opensilex-AttributesTable
       ref="germplasmAttributesTable"
       :editMode="editMode"
@@ -135,16 +144,22 @@
 <script lang="ts">
 import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { GermplasmService } from "opensilex-core/index"; 
+import {GermplasmGetAllDTO, GermplasmService, GermplasmUpdateDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AttributesTable from "../common/forms/AttributesTable.vue";
+import GermplasmParentsModalFormField from './GermplasmParentsModalFormField.vue';
+import Oeso from "../../ontologies/Oeso";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GermplasmForm extends Vue {
-  $opensilex: any;
+  @Ref("parentsFieldRef") readonly parentsFieldRef!: GermplasmParentsModalFormField;
+  @Ref("germplasmAttributesTable") readonly table!: any;
+
+  $opensilex;
   $store: any;
   service: GermplasmService;
+  existingParentUrisToLabelsMap : Map<string, string> = new Map<string, string>();
 
 
   get user() {
@@ -167,7 +182,7 @@ export default class GermplasmForm extends Vue {
   attributesArray = [];
 
   @Prop()
-  editMode;
+  editMode: boolean;
 
   @Prop({
     default: () => {
@@ -183,6 +198,7 @@ export default class GermplasmForm extends Vue {
         production_year: null,
         description: null,
         synonyms:[],
+        relations:[],
         metadata: null
       };
     }
@@ -206,10 +222,49 @@ export default class GermplasmForm extends Vue {
       production_year: null,
       description: null,
       synonyms:[],
+      relations:[],
       metadata: null
     };
   }
-  @Ref("germplasmAttributesTable") readonly table!: any;
+
+  /**
+   * Translates the duplicatable relations from individual attributes to a single "relations" attribute
+   */
+  static readDuplicatableRelations(form: any) : GermplasmUpdateDTO{
+    let relations = [];
+    if(Array.isArray(form.has_parent_germplasm) && form.has_parent_germplasm.length !== 0){
+      this._pushRelationsForProperty(relations, Oeso.HAS_PARENT_GERMPLASM, form.has_parent_germplasm);
+    }
+    if(Array.isArray(form.has_parent_germplasm_m) && form.has_parent_germplasm_m.length !== 0){
+      this._pushRelationsForProperty(relations, Oeso.HAS_PARENT_GERMPLASM_M, form.has_parent_germplasm_m);
+    }
+    if(Array.isArray(form.has_parent_germplasm_f) && form.has_parent_germplasm_f.length !== 0){
+      this._pushRelationsForProperty(relations, Oeso.HAS_PARENT_GERMPLASM_F, form.has_parent_germplasm_f);
+    }
+    let newForm = JSON.parse(JSON.stringify(form));
+    newForm.relations = relations;
+    return newForm;
+  }
+
+  /**
+   * Sets relations in advance so that the starting form is correct, and sets the lines of GermplasmParentsModalFormField
+   */
+  private static _pushRelationsForProperty(relations: Array<any>, propertyUri : string, subjects : Array<GermplasmGetAllDTO>){
+    for(let germ of subjects){
+      relations.push(
+          {
+            inverse: false,
+            value: germ.uri,
+            property: propertyUri,
+          }
+      );
+    }
+  }
+
+  //Ide said this isn't used, it is, by ModalForm in showEditForm()
+  onShowEditForm(){
+    this.$nextTick(() => this.parentsFieldRef.resetLineListWithInitialLabels()) ;
+  }
 
   update(form) {
     form.metadata = this.table.pushAttributes();

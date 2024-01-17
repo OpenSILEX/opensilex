@@ -42,7 +42,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -61,12 +60,13 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     static Var unitLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.UNIT_FIELD_NAME));
 
     /**
-        * Contains the pre-computed list of SPARQL variables which could be used in order to filter or
-        * entity, entity of interest, characteristic, method or unit name.
-        * <p>
-        * This {@link Map} is indexed by the variables names
-    */
+     * Contains the pre-computed list of SPARQL variables which could be used in order to filter or
+     * entity, entity of interest, characteristic, method or unit name.
+     * <p>
+     * This {@link Map} is indexed by the variables names
+     */
     static Map<String, Var> varsByVarName;
+
     static {
         varsByVarName = new HashMap<>();
         varsByVarName.put(entityLabelVar.getVarName(), entityLabelVar);
@@ -78,7 +78,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     protected final DataDAO dataDAO;
 
-    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) throws URISyntaxException {
+    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         super(VariableModel.class, sparql);
         this.dataDAO = new DataDAO(nosql, sparql, fs);
     }
@@ -129,19 +129,19 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     /*
-        * Read each orderBy of orderByList and then :
-        * <pre>
-        *     - Append an ORDER BY {@link Expr} into the orderByExprList if the given orderBy field name
-        *     is one of {@link #varsByVarName}
-        *     - Else append the given orderBy into the unmatchingOrderByList
-        * </pre>
-        *
-        * @param orderByList           the initial {@link OrderBy} list to read
-        * @param orderByExprMap        the new list of ORDER BY {@link Expr}.
-        *                              An {@link Expr} is created for each {@link OrderBy} which have a field name present in {@link #varsByVarName}
-        * @param unmatchingOrderByList the new  list of {@link OrderBy} which doesn't have a field name present in {@link #varsByVarName}
-        * @see OrderBy#getFieldName()
-    */
+     * Read each orderBy of orderByList and then :
+     * <pre>
+     *     - Append an ORDER BY {@link Expr} into the orderByExprList if the given orderBy field name
+     *     is one of {@link #varsByVarName}
+     *     - Else append the given orderBy into the unmatchingOrderByList
+     * </pre>
+     *
+     * @param orderByList           the initial {@link OrderBy} list to read
+     * @param orderByExprMap        the new list of ORDER BY {@link Expr}.
+     *                              An {@link Expr} is created for each {@link OrderBy} which have a field name present in {@link #varsByVarName}
+     * @param unmatchingOrderByList the new  list of {@link OrderBy} which doesn't have a field name present in {@link #varsByVarName}
+     * @see OrderBy#getFieldName()
+     */
     private void appendSpecificOrderBy(List<OrderBy> orderByList, Map<Expr, Order> orderByExprMap, List<OrderBy> unmatchingOrderByList) {
 
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
@@ -164,36 +164,36 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
 
     /**
-        * Search all variables with a name, a long name, an entity name,
-        * an entity of interest name, a characteristic name, a method name, an unit name
-        * corresponding with the given stringPattern.
-        *
-        * <br></br>
-        * <br> The following SPARQL variables are used  : </br>
-        * <pre>
-        *     _entity_name : the name of the variable entity
-        *     _entity_of_interest_name : the name of the variable entity of interest
-        *     _characteristic_name : the name of the variable characteristic
-        *     _method_name : the name of the variable method
-        *     _unit_name : the name of the variable unit
-        * </pre>
-        * <p>
-        * You can use them into the orderByList
-        *
-        * @return the list of {@link VariableModel} founds
-        * @see VariableModel#getName()
-        * @see VariableModel#getAlternativeName()
-        * @see EntityModel#getName()
-        * @see InterestEntityModel#getName()
-        * @see CharacteristicModel#getName()
-        * @see MethodModel#getName()
-        * @see UnitModel#getName
-    */
+     * Search all variables with a name, a long name, an entity name,
+     * an entity of interest name, a characteristic name, a method name, an unit name
+     * corresponding with the given stringPattern.
+     *
+     * <br></br>
+     * <br> The following SPARQL variables are used  : </br>
+     * <pre>
+     *     _entity_name : the name of the variable entity
+     *     _entity_of_interest_name : the name of the variable entity of interest
+     *     _characteristic_name : the name of the variable characteristic
+     *     _method_name : the name of the variable method
+     *     _unit_name : the name of the variable unit
+     * </pre>
+     * <p>
+     * You can use them into the orderByList
+     *
+     * @return the list of {@link VariableModel} founds
+     * @see VariableModel#getName()
+     * @see VariableModel#getAlternativeName()
+     * @see EntityModel#getName()
+     * @see InterestEntityModel#getName()
+     * @see CharacteristicModel#getName()
+     * @see MethodModel#getName()
+     * @see UnitModel#getName
+     */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
         Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
-        if(variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
+        if (variableUriList != null && variableUriList.isEmpty()) {
+            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null, filter.getDevices()));
         }
         filter.setIncludedUris(variableUriList);
 
@@ -201,12 +201,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         List<OrderBy> newOrderByList = new LinkedList<>();
         appendSpecificOrderBy(filter.getOrderByList(), orderByExprMap, newOrderByList);
 
-        ListWithPagination<VariableModel> listWithPagination =  sparql.searchWithPagination(
+        ListWithPagination<VariableModel> listWithPagination = sparql.searchWithPagination(
                 defaultGraph,
                 VariableModel.class,
                 filter.getLang(),
 
-                (SelectBuilder select) -> addFilter(select,filter,orderByExprMap),
+                (SelectBuilder select) -> addFilter(select, filter, orderByExprMap),
                 Collections.emptyMap(),
                 result -> fetcher.getInstance(result, filter.getUserModel().getLanguage()),
                 filter.getOrderByList(),
@@ -214,7 +214,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 filter.getPageSize()
         );
 
-        if(! CollectionUtils.isEmpty(listWithPagination.getList()) && filter.isFetchSpecies()){
+        if (!CollectionUtils.isEmpty(listWithPagination.getList()) && filter.isFetchSpecies()) {
             fetchSpecies(listWithPagination.getList(), filter.getLang());
         }
 
@@ -223,23 +223,21 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     @Override
     public List<VariableModel> getList(List<URI> uris, String lang) throws Exception {
-        List<VariableModel> models =  super.getList(uris, lang);
-        if(CollectionUtils.isEmpty(models)){
+        List<VariableModel> models = super.getList(uris, lang);
+        if (CollectionUtils.isEmpty(models)) {
             return models;
         }
 
-        fetchSpecies(models,lang);
+        fetchSpecies(models, lang);
         return models;
     }
 
     /**
-     *
      * Fetch variables species with one SPARQL query
+     *
      * @param models variables
-     * @param lang Language code, used to determine associated the translated label of the associated species
-     *
+     * @param lang   Language code, used to determine associated the translated label of the associated species
      * @throws SPARQLException if SPARQL query evaluation fail
-     *
      * @apiNote Example of generated SPARQL query
      *
      * <pre>
@@ -248,7 +246,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      *
      *      GRAPH test:variables{
      *          ?variable a vocabulary:Variable .
-    *           ?variable vocabulary:hasSpecies ?species
+     *           ?variable vocabulary:hasSpecies ?species
      *      }
      *      GRAPH test:germplasm {
      *          ?species rdfs:label ?species_name .
@@ -257,12 +255,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      *      VALUES ?variable_group {  test:variable1 test:variable2  }
      * }  GROUP BY ?species ?species_name
      * </pre>
-     *
+     * <p>
      * #TODO : extract this method by developping a many-to-many relationship fetcher
      */
     public void fetchSpecies(List<VariableModel> models, String lang) throws SPARQLException, ParseException {
 
-        if(models.isEmpty()){
+        if (models.isEmpty()) {
             return;
         }
 
@@ -285,10 +283,10 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 .addVar(speciesNameVar)
                 .addGraph(defaultGraph, new WhereBuilder()
                         .addWhere(variableVar, RDF.type, Oeso.Variable)
-                        .addWhere(variableVar,Oeso.hasSpecies, speciesVar))
+                        .addWhere(variableVar, Oeso.hasSpecies, speciesVar))
                 .addGraph(speciesGraph, new WhereBuilder()
                         .addWhere(speciesVar, RDFS.label, speciesNameVar)
-                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang == null ? OpenSilex.DEFAULT_LANGUAGE : lang))
+                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar, lang == null ? OpenSilex.DEFAULT_LANGUAGE : lang))
                 )
                 .addGroupBy(speciesVar)
                 .addGroupBy(speciesNameVar);
@@ -328,8 +326,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     /**
      * Update the given SPARQL query by applying filter
-     * @param select SPARQL query builder
-     * @param filter Filter object
+     *
+     * @param select         SPARQL query builder
+     * @param filter         Filter object
      * @param orderByExprMap map which contains custom order for entity, entity of interest, characteristic, method and unit
      */
     private void addFilter(SelectBuilder select, VariableSearchFilter filter, Map<Expr, Order> orderByExprMap) throws Exception {
@@ -400,12 +399,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, filter.getIncludedUris());
         }
 
-        if(!CollectionUtils.isEmpty(filter.getSpecies())){
+        if (!CollectionUtils.isEmpty(filter.getSpecies())) {
             //  add ?uri vocabulary:hasSpecies ?species
-            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
+            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.hasSpecies, makeVar(VariableModel.SPECIES_FIELD_NAME));
 
             // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
-            select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,filter.getSpecies()));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME, filter.getSpecies()));
 
         }
 

@@ -10,7 +10,6 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
@@ -23,10 +22,9 @@ import org.opensilex.core.organisation.api.facility.FacilityAPI;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.api.site.SiteCreationDTO;
-import org.opensilex.core.organisation.api.site.SiteGetDTO;
 import org.opensilex.core.organisation.api.site.SiteGetListDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.group.api.GroupAPITest;
@@ -65,8 +63,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     public static final String URI_PATH = PATH + "/{uri}";
     public static final String SEARCH_PATH = PATH;
     public static final String CREATE_PATH = PATH;
-    public static final String UPDATE_PATH = PATH;
-    public static final String DELETE_PATH = PATH + "/{uri}";
 
     // Site API
     public static final String SITE_PATH = "/core/sites";
@@ -91,7 +87,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private URI orgPrivate;
     private URI orgPublic;
     private URI orgPrivateFinal;
-    
+
     private URI facOfOrgCreatedByUser;
     private URI facOfOrgParent;
     private URI facOfOrgChild;
@@ -182,13 +178,13 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         WebTarget createTarget = target(FacilityApiTest.CREATE_PATH);
         FacilityCreationDTO facilityCreationDTO = getFacilityCreationDTO(name, orgURI);
         Response postFacilityResponse;
-        
+
         if (createdByUser) {
             postFacilityResponse = getJsonPostResponse(createTarget, facilityCreationDTO, USER_MAIL);
         } else {
             postFacilityResponse = getJsonPostResponseAsAdmin(createTarget, facilityCreationDTO);
         }
-        
+
         return extractUriFromResponse(postFacilityResponse);
     }
 
@@ -296,7 +292,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         orgPublic = createOrganization("Public organization", null, null, false);
         orgPrivateFinal = createOrganization("Private final organization", null, groupWithoutUser, false);
     }
-    
+
     private void createFacilities() throws Exception {
         // Facilities hosting one organization
         facOfOrgCreatedByUser = createFacility("Facility, hosting organization created by user", orgCreatedByUser, false);
@@ -612,9 +608,10 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         assertEquals(0, availableFacilityURIList.size());
     }
 
-    @After
-    public void afterTests() throws Exception {
-        accountDAO.delete(user);
+    @Override
+    public void afterEach() throws Exception {
+        super.afterEach();
+        accountDAO.delete(user, getOpensilex());
     }
 
     @Override

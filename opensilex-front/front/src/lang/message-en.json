@@ -36,7 +36,7 @@
             "keyword": "Keyword",
             "keywords": "Keywords",
             "description": "Description",
-            "informations": "General informations",
+            "informations": "General information",
             "contacts": "Contacts",
             "objective":"Objective",
             "startDate": "Start date",
@@ -569,7 +569,7 @@
             },
             "form-wizard": {
                 "label": "Experiment creation wizard",
-                "general-informations": "General informations",
+                "general-informations": "General information",
                 "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
@@ -778,6 +778,7 @@
         "wkt": "The {_field_} field must be a valid WKT geometry",
         "dateDiff" : "The {_field_} must not be before the start date",
         "nameFiltered" : "The {_field_} must not contain -,+,=,<,>,=,?,/,*,&",
+        "existingProperty" : "This {_field_} already exists",
         "refuseOperators": "This operator can't be applied"
     },
     "icon": {

@@ -74,7 +74,7 @@ public class GermplasmAPI extends FaidareCall {
         if(uri != null) {
             return new SingleObjectResponse<>(
                     germplasmDTOBuilder.fromModel(
-                            germplasmDAO.get(uri, currentUser),
+                            germplasmDAO.get(uri, currentUser, false),
                             currentUser
                     )
             ).getResponse();

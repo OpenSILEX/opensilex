@@ -963,7 +963,12 @@ export default class GermplasmTable extends Vue {
                 errorMessage =
                   error.response.metadata.status[0].exception.details;
               } catch (e2) {
-                errorMessage = this.$t("component.common.errors.unexpected-error");
+                if(error.response[0].message.includes("is not a valid URI")){
+                  errorMessage= this.$t("component.common.errors.not-a-valid-uri");
+                } else {
+                  errorMessage = this.$t("component.common.errors.unexpected-error");
+                }
+
               }
             }
 

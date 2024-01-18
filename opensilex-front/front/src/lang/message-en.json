@@ -83,6 +83,7 @@
                 "unauthorized-error": "Your session expired, please login again.",
                 "form-step-errors": "Some field are required in order to go to the next step",
                 "uri-already-exists": "This URI already exists.",
+                "not-a-valid-uri": "This URI format is not valid.",
                 "regex": {
                     "invalid-regex" : "Invalid regex : {__regex__}. The following characters are forbidden : {__forbidden_characters__}"
                 }

@@ -134,6 +134,29 @@ export default class OpenSilexVuePlugin {
         return path;
     }
 
+    /**
+     * Gets the in-app navigation path of the uri in question from a pre-calculated uri-path map
+     *
+     * @param uri , uri of the target (any type) that we want to navigate to
+     * @param context , uri of the containg experiment, null if no experiment
+     * @param objectsPath , the pre-calculated uri to path map to search in
+     */
+    getTargetPath(uri: string, context: string, objectsPath: {[keys: string] : string}) : string {
+        let defaultOsPath: string = objectsPath[uri];
+        if(! defaultOsPath){
+            return "";
+        }
+
+        let osPath = defaultOsPath.replace(':uri', encodeURIComponent(uri))
+
+        // pass encoded experiment inside OS path URL
+        if(context && context.length > 0){
+            return osPath.replace(':experiment', encodeURIComponent(context));
+        }else{ // no experiment passed
+            return osPath.replace(':experiment', "");
+        }
+    }
+
     // get front ressources depending to a specific module theme
     getModuleFrontResourceURI(moduleName: string, themeName: string, path: string): string {
         if (moduleName && themeName) {

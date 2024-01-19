@@ -81,7 +81,8 @@
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
                 "unauthorized-error": "Votre session a expiré, merci de vous connecter à nouveau.",
                 "form-step-errors": "Certains champs sont requis avant de passer à l'étape suivante",
-                "uri-already-exists": "Cet URI existe déjà.",
+                "uri-already-exists": "Cette URI existe déjà.",
+                "not-a-valid-uri": "Le format de l'URI n'est pas valide.",
                 "regex": {
                     "invalid-regex" : "Expression régulière invalide : {__regex__}. Les caractères suivants sont interdits : {__forbidden_characters__}"
                 }

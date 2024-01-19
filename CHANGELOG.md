@@ -78,8 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - Caramelized Crystal
 
 > WARNING : upgrading to this new version requires manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.2.md).
-> Also available [locally](opensilex-doc/src/main/resources/release/1.1.2.md).
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.2.0.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.2.0.md).
 
 ### Highlight
 

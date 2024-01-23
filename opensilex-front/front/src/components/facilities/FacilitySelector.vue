@@ -13,7 +13,7 @@
                 @select="select"
                 @deselect="deselect"
                 @clear="clear"
-                :required="isRequired"
+                :required="required"
         ></opensilex-SelectForm>
     </div>
 
@@ -48,8 +48,8 @@
         @Prop({default: "FacilitySelector.placeholder"})
         placeholder;
 
-        @PropSync("required", { default: true })
-          isRequired: boolean;
+        @Prop({ default: true })
+          required: boolean;      
 
         created() {
             this.$service = this.$opensilex.getService("opensilex.OrganizationsService");

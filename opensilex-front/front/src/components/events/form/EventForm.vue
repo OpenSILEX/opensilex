@@ -113,7 +113,7 @@
         ></opensilex-OntologyRelationsForm>
 
         <div>
-            <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
+            <opensilex-MoveForm v-if="isMove()" :form.sync="form" ref="moveForm"></opensilex-MoveForm>
         </div>
 
     </ValidationObserver>
@@ -134,6 +134,7 @@ import TypeForm from "../../common/forms/TypeForm.vue";
 export default class EventForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("moveForm") readonly moveForm!: MoveForm;
 
     $opensilex: OpenSilexVuePlugin;
     ontologyService: OntologyService;
@@ -265,6 +266,10 @@ export default class EventForm extends Vue {
         // add the propriety disabled to "move"
         move.isDisabled = true;
       }
+    }
+
+    handleSubmitError(){
+        this.moveForm.handleSubmitError()
     }
 }
 </script>

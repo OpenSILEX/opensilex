@@ -116,7 +116,10 @@
          * The "From" field is optional, and becomes required from the moment the "To" field is completed.
          */
         updateRequiredProps() {
-            if(this.form.from == undefined && this.form.to == undefined && this.form.targets_positions !== undefined && this.form.targets_positions !== "") {
+            if(this.form.from == undefined 
+            && this.form.to == undefined 
+            && this.form.targets_positions[0].position !== undefined 
+            && this.form.targets_positions[0].position !== "") {
                 this.fromRequired = false;
                 this.toRequired = false; 
             } else {

@@ -2,6 +2,7 @@
 title: MongoDB DAO usage documentation
 tags:
     - MongoDB
+    - Transaction management
 author: Renaud COLIN
 date: 30/01/2024
 ---
@@ -312,7 +313,7 @@ MongoDBServiceV2 mongoDBServiceV2;
 /*  Insert the two list inside the same transaction. The session is auto-created and closed */
 mongoDBServiceV2.runTransaction(session -> {
   InsertManyResult insertResults = dao.create(models, session);
-  InsertManyResult insertResults2 = dao.create(models, session);
+  InsertManyResult insertResults2 = dao.create(models2, session);
 });
 ```
 
@@ -332,7 +333,7 @@ MongoDBServiceV2 mongoDBServiceV2;
 /*  Insert the two list inside the same transaction. The session is auto-created and closed */
 List<InsertManyResult> results = mongoDBServiceV2.computeTransaction(session -> {
   InsertManyResult insertResults = dao.create(models, session);
-  InsertManyResult insertResults2 = dao.create(models, session);
+  InsertManyResult insertResults2 = dao.create(models2, session);
   return List.of(insertResults, insertResults2);
 });
 ```

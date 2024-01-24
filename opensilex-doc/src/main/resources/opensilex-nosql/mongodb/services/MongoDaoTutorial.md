@@ -34,6 +34,9 @@ date: 30/01/2024
   * [Count](#count)
 * [Write](#write)
   * [Create](#create)
+    * [Insert models (without explicit session management)](#insert-models-without-explicit-session-management)
+    * [Insert models (with explicit session management)](#insert-models-with-explicit-session-management)
+    * [Insert models and get results (with explicit session management)](#insert-models-and-get-results-with-explicit-session-management)
   * [Update](#update)
   * [Upsert](#upsert)
   * [Delete](#delete)
@@ -278,6 +281,61 @@ List<URI> resultUris = results.getSource().map(DataModel::getUri).collect(Collec
 # Write
 
 ## Create
+
+### Insert models (without explicit session management)
+
+- When using `MongoReadWriteDao`, this dao rely on `MongoDBServiceV2#createAll()` method
+- This method guarantee that the insertion of List of models is done with transaction management
+- So the operation is atomic, all models are inserted or no models are inserted
+
+```java
+/* Assume models and dao are well initialized */
+MongoReadWriteDao<DataModel,DataSearchFilter> dao;
+List<DataModel> models;
+
+/* Insert model and get insert results */
+InsertManyResult insertResults = dao.create(models);
+```
+
+### Insert models (with explicit session management)
+
+- If you want to use a particular transaction context you can pass the `ClientSession` to the `dao.create()` method
+- This is useful if you wan't to group several operations in the same transaction
+- This relies on `MongoDBServiceV2#runTransaction()` methods which handle transaction management for any write operation
+
+```java
+/* Assume objects are well initialized */
+MongoReadWriteDao<DataModel, DataSearchFilter> dao;
+List<DataModel> models, models2;
+MongoDBServiceV2 mongoDBServiceV2;
+
+/*  Insert the two list inside the same transaction. The session is auto-created and closed */
+mongoDBServiceV2.runTransaction(session -> {
+  InsertManyResult insertResults = dao.create(models, session);
+  InsertManyResult insertResults2 = dao.create(models, session);
+});
+```
+
+### Insert models and get results (with explicit session management)
+
+- If you want to use a particular transaction context you can pass the `ClientSession` to the `dao.create()` method
+- This is usefull if you wan't to group several operations in the same transaction
+- You can also get a result after the operations are done (here the List of results from MongoDB)
+- This relies on `MongoDBServiceV2#computeTransaction()` method which handle transaction management for any write operation
+
+```java
+/* Assume objects are well initialized */
+MongoReadWriteDao<DataModel, DataSearchFilter> dao;
+List<DataModel> models, models2;
+MongoDBServiceV2 mongoDBServiceV2;
+
+/*  Insert the two list inside the same transaction. The session is auto-created and closed */
+List<InsertManyResult> results = mongoDBServiceV2.computeTransaction(session -> {
+  InsertManyResult insertResults = dao.create(models, session);
+  InsertManyResult insertResults2 = dao.create(models, session);
+  return List.of(insertResults, insertResults2);
+});
+```
 
 ## Update
 

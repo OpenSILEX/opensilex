@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Generic search filter for database request
  * @author rcolin
  */
 public abstract class SearchFilter {

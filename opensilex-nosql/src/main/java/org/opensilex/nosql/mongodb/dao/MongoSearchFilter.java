@@ -22,6 +22,7 @@ public class MongoSearchFilter extends SearchFilter {
         return logicalAnd;
     }
 
+
     public MongoSearchFilter setLogicalAnd(boolean logicalAnd) {
         this.logicalAnd = logicalAnd;
         return this;

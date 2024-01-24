@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Operation which requires transaction management of RDF TripleStore AND of MongoDB
@@ -36,13 +37,13 @@ public class SparqlMongoTransaction {
      * of the exception, after database rollback.
      *
      * @param inputExceptionClass A specific Exception class, which when is thrown, requires a specific action
-     * @param customExceptionLogic The action to apply when exception is catch
+     * @param customExceptionLogic The custom exception to throw when the targeted exception is caught
      *
      * @return this {@link SparqlMongoTransaction}
      * @apiNote This method must be called BEFORE the call to {@link #execute(ThrowingBiFunction)} or {@link #execute(SPARQLService, ClientSession, ThrowingBiFunction)} methods.
      * Else, there are no way to handle the custom exception class, since this one has not been registered
      */
-    public SparqlMongoTransaction customException(Class<? extends Exception> inputExceptionClass, Function<Exception, Exception> customExceptionLogic) {
+    public SparqlMongoTransaction customException(Class<? extends Exception> inputExceptionClass, UnaryOperator<Exception> customExceptionLogic) {
         Objects.requireNonNull(inputExceptionClass);
         Objects.requireNonNull(customExceptionLogic);
 

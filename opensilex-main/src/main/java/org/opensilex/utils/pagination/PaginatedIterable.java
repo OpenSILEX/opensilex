@@ -2,8 +2,15 @@ package org.opensilex.utils.pagination;
 
 import java.util.function.Consumer;
 
+/**
+ * Class which define any Object which can be Iterable and provides pagination mechanism after a Database Search request
+ * @param <T> The type of elements which are iterable
+ */
 public abstract class PaginatedIterable<T>{
 
+    /**
+     * Total number of element
+     */
     protected final int total;
 
     /**
@@ -20,8 +27,18 @@ public abstract class PaginatedIterable<T>{
      * @param page current page
      * @param pageSize page size
      * @param total total elements count
+     * @throws IllegalArgumentException if page, total or pageSize is < 0
      */
-    protected PaginatedIterable(int total, int page, int pageSize) {
+    protected PaginatedIterable(int total, int page, int pageSize) throws IllegalArgumentException {
+        if(total < 0){
+            throw new IllegalArgumentException("total must be >= 0");
+        }
+        if(page < 0){
+            throw new IllegalArgumentException("page must be >= 0");
+        }
+        if(pageSize < 0){
+            throw new IllegalArgumentException("pageSize must be >= 0");
+        }
         this.total = total;
         this.page = page;
         this.pageSize = pageSize;

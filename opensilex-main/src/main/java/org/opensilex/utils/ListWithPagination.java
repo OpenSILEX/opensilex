@@ -31,7 +31,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T> {
     }
 
     public ListWithPagination(List<T> list, int page, int pageSize, int total) {
-        super(total, Math.max(0, page), pageSize);
+        super(total, page, pageSize);
         Objects.requireNonNull(list);
         this.list = list;
     }

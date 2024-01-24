@@ -174,7 +174,7 @@
                                     :uri="uri"
                                     :value="objectsLabels[uri]"
                                     :to="{
-                                            path: $opensilex.getTargetPath(uri, context, objectsPath)
+                                            path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
                                           }"
                                 ></opensilex-UriLink>
                             <span v-if="data.item.targets.length > 1 && index < 2"> </span>
@@ -447,8 +447,8 @@ export default class EventList extends Vue {
 
         this.cleanFilter();
 
-        return new Promise((resolve, reject) => {
-          this.$service
+        /*return new Promise((resolve, reject) => {*/
+          return this.$service
               .searchEvents(
                   this.filter.type,
                   this.filter.start,
@@ -464,24 +464,16 @@ export default class EventList extends Vue {
                 this.ontologyService
                     .getURITypes(targetUris)
                     .then((httpObj) => {
-                      for (let j in httpObj.response.result) {
-                        let obj = httpObj.response.result[j];
+                      for (let obj of httpObj.response.result) {
                         this.objectsPath[obj.uri] =
                             this.$opensilex.getPathFromUriTypes(obj.rdf_types);
                       }
                     });
                 //Set the target labels
-                this.ontologyService
-                    .getURILabelsList(targetUris, this.context, true)
-                    .then((httpObj) => {
-                      for (let j in httpObj.response.result) {
-                        let obj = httpObj.response.result[j];
-                        this.$set(this.objectsLabels, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
-                      }
-                    });
-                resolve(http);
-              }).catch(reject);
-        } );
+                this.$opensilex.loadOntologyLabelsWithType(targetUris, this.context, this.objectsLabels, this.ontologyService);
+                return http;
+              })
+        /*} );*/
     }
 
     get fields() {

@@ -12,7 +12,7 @@
                     :uri="data.item.target"
                     :value="objects[data.item.target]"
                     :to="{
-            path: $opensilex.getTargetPath(data.item.target, contextUri, objectsPath)
+            path: $opensilex.getTargetPath(data.item.target, contextUri, objectsPath[data.item.target])
           }"
                 ></opensilex-UriLink>
             </template>
@@ -270,17 +270,7 @@ export default class DataList extends Vue {
                         }
 
                         if (objectsToLoad.length > 0) {
-                            let promiseObject = this.ontologyService
-                                .getURILabelsList(objectsToLoad, this.contextUri, true)
-                                .then((httpObj) => {
-                                    for (let j in httpObj.response.result) {
-                                        let obj = httpObj.response.result[j];
-                                        this.objects[obj.uri] =
-                                            obj.name + " (" + obj.rdf_type_name + ")";
-                                    }
-                                })
-                                .catch(reject);
-                            promiseArray.push(promiseObject);
+                            promiseArray.push(this.$opensilex.loadOntologyLabelsWithType(objectsToLoad, this.contextUri, this.objects, this.ontologyService));
                         }
 
                         let promiseFacility = this.dataService

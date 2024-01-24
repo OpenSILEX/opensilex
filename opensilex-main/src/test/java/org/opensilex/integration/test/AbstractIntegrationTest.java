@@ -30,22 +30,24 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Renaud COLIN
@@ -94,6 +96,23 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     private static TestContainerFactory testContainerFactory;
     private static TestContainer globalTestContainer = null;
     private static Client globalClient = null;
+
+    public Response searchPublicResource(Map<String, Object> params, Method searchMethod, String searchPath) {
+
+        checkSearchParamsExist(params, searchMethod);
+
+        // Execute search and return response
+        WebTarget searchTarget = appendQueryParams(target(searchPath), params);
+        return getJsonGetPublicResponse(searchTarget);
+    }
+
+    public void checkSearchParamsExist(Map<String, Object> params, Method searchMethod) {
+
+        List<String> availableParams = Arrays.stream(searchMethod.getParameters())
+                .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
+                .collect(Collectors.toList());
+        assertTrue(availableParams.containsAll(params.keySet()));
+    }
     
     @AfterClass
     public static void stopOpenSilex() throws Exception {
@@ -249,36 +268,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * @see #appendSearchParams(WebTarget, Integer, Integer, List,Map)
-     */
-    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, Map<String, Object> params) {
-        return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);
-    }
-
-    /**
-     * Append pagination, ordering and a set of query params to a given {@link WebTarget}
-     *
-     * @param target the {@link WebTarget} on which append params
-     * @param page the current page index
-     * @param pageSize the page size
-     * @param orderByList a list of {@link OrderBy} condition
-     * @param params the map between param name and param value
-     *
-     * @return the updated {@link WebTarget}
-     *
-     * @see WebTarget#queryParam(String, Object...)
-     * @see #appendQueryParams(WebTarget, Map)
-     */
-    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
-
-        target.queryParam("page", page)
-                .queryParam("pageSize", pageSize)
-                .queryParam("orderBy", orderByList);
-
-        return appendQueryParams(target, params);
-    }
-
-    /**
      * Append a set of query params to a given {@link WebTarget}
      *
      * @param target the {@link WebTarget} on which append params
@@ -350,5 +339,13 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     protected void printJsonNode(JsonNode node) throws JsonProcessingException {
         String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
         System.out.println(json);
+    }
+
+    protected <T> List<T> getParsedSearchResults(String searchPath, Map<String, Object> searchCriteria, Method searchMethod, TypeReference<PaginatedListResponse<T>> typeReference) {
+
+        Response getResult = searchPublicResource(searchCriteria, searchMethod, searchPath);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        return readResponse(getResult, typeReference).getResult();
     }
 }

@@ -33,6 +33,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +56,21 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractSecurityIntegrationTest.class);
 
     protected static SecurityModule securityModule;
+
+    public Response searchUserResource(Map<String, Object> params, Method searchMethod, String searchPath, String userMail) throws Exception {
+
+        checkSearchParamsExist(params, searchMethod);
+
+        // Execute search and return response
+        WebTarget searchTarget = appendQueryParams(target(searchPath), params);
+        appendToken(searchTarget, userMail);
+        return appendAdminToken(searchTarget).get();
+    }
+
+    public Response searchAdminResource(Map<String, Object> params, Method searchMethod, String searchPath) throws Exception {
+        registerAdminTokenIfNecessary();
+        return searchUserResource(params, searchMethod, searchPath, ADMIN_MAIL);
+    }
 
     @BeforeClass
     public static void createAdmin() throws Exception {
@@ -439,28 +455,16 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
 
-    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        registerAdminTokenIfNecessary();
-        return getSearchResults(searchPath, page, pageSize, searchCriteria, typeReference, ADMIN_MAIL);
+    protected <T> List<T> getParsedAdminSearchResults(String searchPath, Map<String, Object> searchCriteria, Method searchMethod, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        return getParsedUserSearchResults(searchPath, searchCriteria, searchMethod, typeReference, ADMIN_MAIL);
     }
 
-    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
-        if (searchCriteria == null) {
-            searchCriteria = new HashMap<>();
-        }
-        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriteria);
-        final Response getResult = appendToken(searchTarget, userMail).get();
+    protected <T> List<T> getParsedUserSearchResults(String searchPath, Map<String, Object> searchCriteria, Method searchMethod, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+
+        Response getResult = searchUserResource(searchCriteria, searchMethod, searchPath, userMail);
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         return readResponse(getResult, typeReference).getResult();
-    }
-
-    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        return this.getSearchResultsAsAdmin(searchPath, 0, 20, searchCriteria, typeReference);
-    }
-
-    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
-        return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
     }
 
     protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {

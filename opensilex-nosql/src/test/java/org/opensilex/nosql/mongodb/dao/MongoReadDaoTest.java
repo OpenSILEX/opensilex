@@ -176,13 +176,13 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             boolean useProjection,
             boolean useConversion,
             boolean useSession,
-            Consumer<PaginatedIterable<MongoTestModel>> resultsAssertion,
+            Consumer<PaginatedIterable<MongoTestModel, ?>> resultsAssertion,
             Consumer<MongoTestModel> modelAssertion
     ) {
 
         Bson projection = useProjection ? DEFAULT_PROJECTION : null;
         try (ClientSession session = useSession ? mongoDBServiceV2.newSession() : null) {
-            PaginatedIterable<MongoTestModel> results;
+            PaginatedIterable<MongoTestModel, ?> results;
 
             // Run search query with/without projection/conversion
             if (useConversion) {
@@ -214,9 +214,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
         // test filtering with a single URI
         MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
-        Consumer<PaginatedIterable<MongoTestModel>> resultsAssertion = (results) -> {
-            assertEquals(1, results.getTotal());
-        };
+        Consumer<PaginatedIterable<MongoTestModel,?>> resultsAssertion = (results) -> assertEquals(1, results.getTotal());
         testSearch(filter,useStream, useProjection,useConversion,useSession, resultsAssertion, modelAssertion);
 
         // test filtering with a type list

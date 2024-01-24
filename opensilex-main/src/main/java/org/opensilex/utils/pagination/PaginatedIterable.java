@@ -6,7 +6,7 @@ import java.util.function.Consumer;
  * Class which define any Object which can be Iterable and provides pagination mechanism after a Database Search request
  * @param <T> The type of elements which are iterable
  */
-public abstract class PaginatedIterable<T>{
+public abstract class PaginatedIterable<T, S>{
 
     /**
      * Total number of element
@@ -58,4 +58,5 @@ public abstract class PaginatedIterable<T>{
 
     public abstract void forEach(Consumer<T> action);
 
+    public abstract S getSource();
 }

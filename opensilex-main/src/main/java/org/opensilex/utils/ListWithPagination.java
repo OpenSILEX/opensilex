@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Vincent Migot
  * @param <T> Generic list parameter
  */
-public class ListWithPagination<T> extends PaginatedIterable<T> {
+public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
 
     /**
      * List content for current page.
@@ -65,5 +65,10 @@ public class ListWithPagination<T> extends PaginatedIterable<T> {
     @Override
     public void forEach(Consumer<T> action) {
         list.forEach(action);
+    }
+
+    @Override
+    public List<T> getSource() {
+        return list;
     }
 }

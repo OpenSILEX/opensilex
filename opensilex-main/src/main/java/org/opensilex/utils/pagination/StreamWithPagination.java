@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * @param <T> Generic Stream parameter
  * @author rcolin
  */
-public class StreamWithPagination<T> extends PaginatedIterable<T> {
+public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
 
     private final Stream<T> stream;
 
@@ -35,6 +35,11 @@ public class StreamWithPagination<T> extends PaginatedIterable<T> {
     @Override
     public void forEach(Consumer<T> action) {
         stream.forEach(action);
+    }
+
+    @Override
+    public Stream<T> getSource() {
+        return stream;
     }
 
 }

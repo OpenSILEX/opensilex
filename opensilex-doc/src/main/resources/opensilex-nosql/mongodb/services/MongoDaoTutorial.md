@@ -1,5 +1,5 @@
 ---
-title: MongoDB DAO usage documentation
+title: MongoDB DAO and service usage documentation
 tags:
     - MongoDB
     - Transaction management
@@ -9,9 +9,12 @@ date: 30/01/2024
 
 <!-- TOC -->
 * [Description](#description)
-  * [Read and write operations](#read-and-write-operations)
-  * [Session management use cases](#session-management-use-cases)
-  * [Specialization and reimplementation](#specialization-and-reimplementation)
+  * [Read/Write operations and Session management](#readwrite-operations-and-session-management)
+    * [Transaction management : MongoDBServiceV2](#transaction-management--mongodbservicev2)
+      * [Single document write](#single-document-write)
+      * [Multiple document operation](#multiple-document-operation)
+      * [Distributed transaction](#distributed-transaction)
+    * [Transaction management : MongoWriteDao](#transaction-management--mongowritedao)
 * [Dao lifecycle](#dao-lifecycle)
   * [Creation](#creation)
 * [Read](#read)
@@ -43,7 +46,7 @@ date: 30/01/2024
   * [Delete](#delete)
   * [Delete many](#delete-many)
 * [Transaction management](#transaction-management)
-  * [Distributed transaction](#distributed-transaction)
+  * [Distributed transaction](#distributed-transaction-1)
 * [Parallelism](#parallelism)
   * [Read](#read-1)
   * [Write](#write-1)
@@ -51,11 +54,55 @@ date: 30/01/2024
 
 # Description
 
-## Read and write operations
+## Read/Write operations and Session management
 
-## Session management use cases
+- MongoDB allow the use of transaction in order to guarantee
+the atomicity of write operations (Either the operation success of fail)
+- With the MongoDB JAVA API, the use of transaction is performed
+with the use of [ClientSession]().
+- Several way for transaction handling are provided 
 
-## Specialization and reimplementation
+### Transaction management : MongoDBServiceV2
+
+#### Single document write
+
+> **Single document operation**
+
+- When creating, updating of deleting a single document, then
+transaction managed is not mandatory since the operation is atomic
+
+> **Multiple write operation**
+
+- If you want to group several single write operations inside an atomic operation,
+use a `ClientSession` and handle transaction. In this case, there are two-way :
+
+- **(1)** Use `MongoDBServiceV2.runTransaction` and `MongoDBServiceV2.computeTransaction` methods 
+  - This is the **recommended** way, since you don't have to handle start, committing, rollback of transaction and session start and close
+  - You just have to define which operations perform by using the provided `ClientSession`
+- **(2)** Explicit creation of the `ClientSession` with `MongoDBServiceV2.newSession()`
+  - This is **not recommended** since you have to manually handle transaction and session lifecycle. Only use it for specific usage
+
+#### Multiple document operation
+
+- For operation which can results to multiple document write, the transaction handling 
+is mandatory to ensure atomicity. In this case, there are two-way :
+  - If you don't provide a `ClientSession`, then the write operation automatically create one, and use-it
+to ensure transaction management
+  - You create the `ClientSession` with `MongoDBServiceV2.runTransaction`/`MongoDBServiceV2.computeTransaction` and 
+you provide the created session to the write operation(s)
+
+#### Distributed transaction
+
+Use `SparqlMongoTransaction` when you need to perform operation on RDF and on MongoDB
+
+### Transaction management : MongoWriteDao
+
+- MongoDB based Dao allow to easily perform Read (Get, Search) and Write (Create, Update, Delete)
+operations for a specific model inside a given collection.
+- The standard implementation `MongoReadWriteDao` rely on `MongoDBServiceV2` for
+read/write and transaction management and use Java Generic in order to specify the `MongoModel` and `MongoSearchFilter` to use
+- The recommended way is to specialize this class or to simply use it for each domain/concept 
+related to a given API
 
 # Dao lifecycle
 

@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.integration.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,22 +29,25 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Renaud COLIN
@@ -132,7 +134,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return testContainerFactory;
     }
 
-    private class CustomTestContainerFactory extends GrizzlyTestContainerFactory {
+    private static class CustomTestContainerFactory extends GrizzlyTestContainerFactory {
 
         @Override
         public TestContainer create(URI baseUri, DeploymentContext context) {
@@ -145,7 +147,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // DISABLE PARENT BEHAVIOR TO PREVENT SERVER STOP - IMPORTANT - DO NOT REMOVE
     }
 
@@ -182,100 +184,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     *
-     * Get {@link Response} from a open POST service call.
-     *
-     * @param target the {@link WebTarget} on which POST the given entity
-     * @param entity the data to POST on the given target
-     * @return target invocation response.
-     */
-    protected Response getJsonPostPublicResponse(WebTarget target, Object entity) {
-        return target.request(MediaType.APPLICATION_JSON).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     *
-     * Get {@link Response} from a open PUT service call.
-     *
-     * @param target the {@link WebTarget} on which PUT the given entity
-     * @param entity the data to PUT on the given target
-     * @return target invocation response.
-     */
-    protected Response getJsonPutPublicResponse(WebTarget target, Object entity) {
-        return target.request(MediaType.APPLICATION_JSON).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     *
-     * Get {@link Response} from an open GET{uri} service call.
-     *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri the URI of the resource to fetch from the given target.
-     * @return target invocation response.
-     *
-     * @see WebTarget#resolveTemplate(String, Object)
-     */
-    protected Response getJsonGetByUriPublicResponse(WebTarget target, String uri) {
-        return target.resolveTemplate("uri", uri).request(MediaType.APPLICATION_JSON).get();
-    }
-
-    /**
-     *
-     * Get {@link Response} from a public GET service call.
-     *
-     * @param target the {@link WebTarget} on which GET some content
-     * @return target invocation response.
-     */
-    protected Response getJsonGetPublicResponse(WebTarget target) {
-        return target.request(MediaType.APPLICATION_JSON).get();
-    }
-
-    /**
-     *
-     * Get {@link Response} from a public DELETE{uri} service call.
-     *
-     * @param target the {@link WebTarget} on which DELETE the given uri
-     * @param uri the URI of the resource to DELETE
-     *
-     * @return target invocation response.
-     *
-     * @see WebTarget#resolveTemplate(String, Object)
-     */
-    protected Response getDeleteByUriPublicResponse(WebTarget target, String uri) {
-        return target.resolveTemplate("uri", uri).request(MediaType.APPLICATION_JSON).delete();
-    }
-
-    /**
-     * @see #appendSearchParams(WebTarget, Integer, Integer, List,Map)
-     */
-    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, Map<String, Object> params) {
-        return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);
-    }
-
-    /**
-     * Append pagination, ordering and a set of query params to a given {@link WebTarget}
-     *
-     * @param target the {@link WebTarget} on which append params
-     * @param page the current page index
-     * @param pageSize the page size
-     * @param orderByList a list of {@link OrderBy} condition
-     * @param params the map between param name and param value
-     *
-     * @return the updated {@link WebTarget}
-     *
-     * @see WebTarget#queryParam(String, Object...)
-     * @see #appendQueryParams(WebTarget, Map)
-     */
-    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
-
-        target.queryParam("page", page)
-                .queryParam("pageSize", pageSize)
-                .queryParam("orderBy", orderByList);
-
-        return appendQueryParams(target, params);
-    }
-
-    /**
      * Append a set of query params to a given {@link WebTarget}
      *
      * @param target the {@link WebTarget} on which append params
@@ -300,12 +208,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
+     * This method try to extract a URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
      *
      * @param response the Response on which we want to extract URI
      * @return the URI extracted from the given Response
      *
-     * @throws URISyntaxException if the extracted URI as String could not be parse as an {@link URI}
+     * @throws URISyntaxException if the extracted URI as String could not be parsed as an {@link URI}
      */
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
@@ -317,22 +225,17 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
     
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
+     * This method try to extract a URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
      *
-     * @param response the Response on which we want to extract an URI List
+     * @param response the Response on which we want to extract a URI List
      * @return the List of URI extracted from the given Response
      *
      */
     protected List<URI> extractUriListFromPaginatedListResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
+        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         return listResponse.getResult();
-    }
-
-    protected <T> T readResponse(Response response, TypeReference<T> type) {
-        JsonNode node = response.readEntity(JsonNode.class);
-        return mapper.convertValue(node, type);
     }
 
     protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {
@@ -344,8 +247,137 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
     }
 
-    protected void printJsonNode(JsonNode node) throws JsonProcessingException {
-        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
-        System.out.println(json);
+    // TODO : restart from here
+    public class PublicCall {
+        private Map<String, Object> params = new HashMap<>();
+        private Object body = null;
+        private Map<String, Object> pathTemplateParams = new HashMap<>(); // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
+        private Method serviceMethod;
+        private String pathTemplate;
+
+        private String httpMethod;
+
+        public PublicCall(Method serviceMethod, String pathTemplate, String httpMethod) {
+            this.serviceMethod = serviceMethod;
+            this.pathTemplate = pathTemplate;
+            this.httpMethod = httpMethod;
+        }
+
+        public PublicCall setParams(Map<String, Object> params) {
+            this.params = params;
+            return this;
+        }
+
+        public PublicCall setParam(String key, Object value) {
+            this.params.put(key, value);
+            return this;
+        }
+
+        public PublicCall setBody(Object body) {
+            this.body = body;
+            return this;
+        }
+
+        public PublicCall setPathTemplateParam(String key, Object value) {
+            this.pathTemplateParams.put(key, value);
+            return this;
+        }
+
+        public Response executeCall(){
+            httpMethod = findHttpMethod(serviceMethod);
+            WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
+            return makeCorrectCall(target, httpMethod, body);
+        }
+        protected <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) {
+
+            Response response = executeCall();
+
+            assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+
+            return new Result<>(readResponse(response, typeReference, serviceMethod), response);
+        }
+
+        public class Result <T> {
+            private T deserializedResponse;
+            private Response response;
+
+            private Result(T deserializedResponse, Response response) {
+                this.deserializedResponse = deserializedResponse;
+                this.response = response;
+            }
+
+            public T getDeserializedResponse() {
+                return deserializedResponse;
+            }
+
+            public Response getResponse() {
+                return response;
+            }
+        }
+    }
+
+    protected String findHttpMethod(Method serviceMethod) {
+        if (serviceMethod.isAnnotationPresent(GET.class)) {
+            return HttpMethod.GET;
+        } else if (serviceMethod.isAnnotationPresent(POST.class)) {
+            return HttpMethod.POST;
+        } else if (serviceMethod.isAnnotationPresent(PUT.class)) {
+            return HttpMethod.PUT;
+        } else if (serviceMethod.isAnnotationPresent(DELETE.class)) {
+            return HttpMethod.DELETE;
+        } else {
+            throw new UnsupportedOperationException("HTTP method not supported");
+        }
+    }
+
+    protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body) {
+        Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
+        if(Objects.equals(httpMethod, HttpMethod.GET)) {
+            return requestBuilder.get();
+        } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
+            return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+        } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
+            return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+        } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
+            return requestBuilder.delete();
+        } else {
+            throw new UnsupportedOperationException("HTTP method not supported");
+        }
+    }
+
+    protected WebTarget createTarget(Map<String, Object> params, Map<String, Object> pathTemplateParams, Method serviceMethod, String searchPath) {
+        WebTarget target = target(searchPath);
+        if (!params.isEmpty()){
+            checkParamsExist(params, serviceMethod);
+            appendQueryParams(target, params);
+        }
+        if (!pathTemplateParams.isEmpty()) {
+            target = target.resolveTemplates(pathTemplateParams);
+        }
+        return target;
+    }
+
+    protected void checkParamsExist(Map<String, Object> params, Method serviceMethod) {
+        List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
+                .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
+                .collect(Collectors.toList());
+        assertTrue(availableParams.containsAll(params.keySet()));
+    }
+
+
+    protected <T> T readResponse(Response response, TypeReference<T> type, Method method) {
+        JsonNode node = response.readEntity(JsonNode.class);
+
+        // Verify compatibility between TypeReference and method's return type
+        Type expectedType = method.getGenericReturnType();
+        TypeReference<?> expectedTypeReference = new TypeReference<>() {
+            @Override
+            public Type getType() {
+                return expectedType;
+            }
+        };
+        Assert.assertEquals(type.getType(), expectedTypeReference.getType());
+
+        return mapper.convertValue(node, type);
     }
 }

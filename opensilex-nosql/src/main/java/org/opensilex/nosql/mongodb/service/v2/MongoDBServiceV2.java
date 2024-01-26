@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb.service.v2;
 
+import ch.qos.logback.core.net.server.Client;
 import com.mongodb.*;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ClientSession;
@@ -150,6 +151,12 @@ public class MongoDBServiceV2 extends BaseService {
         return mongoClient.startSession();
     }
 
+    public void readOperationWithSession(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws Exception {
+        try(ClientSession session = newSession()){
+            operationInTrx.accept(session);
+        }
+    }
+
     /**
      * Execute the given operation with transaction management
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
@@ -170,7 +177,7 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public  <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
 
-        ClientSession session = mongoClient.startSession();
+        ClientSession session = newSession();
         session.startTransaction();
         try {
             R result = operationInTrx.apply(session);

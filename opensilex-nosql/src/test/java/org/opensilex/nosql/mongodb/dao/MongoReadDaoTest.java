@@ -21,10 +21,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -49,7 +54,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             URI.create(TEST_DATASET_BASE_URI + 2),
             URI.create(TEST_DATASET_BASE_URI + 3)
     );
-    private static final int EXPECTED_RESULT = 100;
+    private static final int ROOT_DOCUMENT_COUNT = 100;
     private static final int EXPECTED_RESULT_BY_TYPE = 10;
 
     private static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> dao;
@@ -160,7 +165,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         assertEquals(1, dao.count(filter));
 
         filter = new MongoSearchFilter();
-        assertEquals(EXPECTED_RESULT, dao.count(filter));
+        assertEquals(ROOT_DOCUMENT_COUNT, dao.count(filter));
 
         filter.setRdfTypes(TYPE_LIST);
         assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, dao.count(filter));
@@ -320,4 +325,47 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 //    @Test
 //    public void lookupAggregation() {
 //    }
+
+
+
+
+    private void parallelSearch(ClientSession session) throws InterruptedException {
+
+        MongoTestModel[] collectedModels = new MongoTestModel[ROOT_DOCUMENT_COUNT];
+        int nbThread = 4;
+        int pageSize = ROOT_DOCUMENT_COUNT/nbThread;
+
+        // Prepare task, run 4 tasks which fetch a page from DB and insert inside array
+        List<Callable<Integer>> tasks = IntStream.range(0, nbThread).mapToObj(page -> {
+            MongoSearchFilter filter = new MongoSearchFilter();
+            filter.setPage(page).setPageSize(pageSize);
+            return new PaginatedSearchTask<>(dao, collectedModels, filter, session);
+        }).collect(Collectors.toList());
+
+        // execute all tasks in parallel , wait for task completion or timeout
+        ExecutorService executor = Executors.newFixedThreadPool(nbThread);
+        executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
+
+        for (MongoTestModel collectedModel : collectedModels) {
+            Assert.assertNotNull(collectedModel);
+        }
+        Set<URI> collectedURIs = Arrays.stream(collectedModels)
+                .map(MongoTestModel::getUri)
+                .collect(Collectors.toSet());
+
+        Assert.assertEquals(ROOT_DOCUMENT_COUNT, collectedURIs.size());
+    }
+
+
+    @Test
+    public void parallelSearchTest() throws Exception {
+        parallelSearch(null);
+        mongoDBServiceV2.readOperationWithSession(this::parallelSearch);
+    }
+
+    @Test
+    public void parallelInsertTest(){
+
+    }
+
 }

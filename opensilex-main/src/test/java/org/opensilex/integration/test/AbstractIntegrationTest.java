@@ -207,37 +207,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target;
     }
 
-    /**
-     * This method try to extract a URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
-     *
-     * @param response the Response on which we want to extract URI
-     * @return the URI extracted from the given Response
-     *
-     * @throws URISyntaxException if the extracted URI as String could not be parsed as an {@link URI}
-     */
-    protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
-        JsonNode node = response.readEntity(JsonNode.class);
-        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
-        String uri = postResponse.getResult();
-        uri = uri.replace("[", "");
-        uri = uri.replace("]", "");
-        return new URI(uri);
-    }
-    
-    /**
-     * This method try to extract a URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
-     *
-     * @param response the Response on which we want to extract a URI List
-     * @return the List of URI extracted from the given Response
-     *
-     */
-    protected List<URI> extractUriListFromPaginatedListResponse(final Response response) {
-        JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {
-        });
-        return listResponse.getResult();
-    }
-
     protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {
         if (first.size() != second.size()) {
             return false;
@@ -247,7 +216,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 .allMatch(e -> e.getValue().equals(second.get(e.getKey())));
     }
 
-    // TODO : restart from here
+    /**
+     * This class represents a public call and can be used to perform HTTP requests.
+     */
     public class PublicCall {
         private Map<String, Object> params = new HashMap<>();
         private Object body = null;
@@ -257,10 +228,18 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         private String httpMethod;
 
-        public PublicCall(Method serviceMethod, String pathTemplate, String httpMethod) {
+        /**
+         * Constructs a new PublicCall with the specified service method, path template and HTTP method.
+         *
+         * @param serviceMethod the method of the webservice (e.g. ExperimentAPI.searchExperiments for the experiment
+         *                      webservice. -> use ExperimentAPI.class.getMethod())
+         * @param pathTemplate the path template for the webservice. Can be a regular path or a template that contains
+         *                     parts to replace (e.g. /core/experiments/{uri}. {uri} is a placeholder to be replaced by
+         *                     the actual resource's URI)
+         */
+        public PublicCall(Method serviceMethod, String pathTemplate) {
             this.serviceMethod = serviceMethod;
             this.pathTemplate = pathTemplate;
-            this.httpMethod = httpMethod;
         }
 
         public PublicCall setParams(Map<String, Object> params) {
@@ -283,11 +262,23 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return this;
         }
 
+        /**
+         * Executes the call and returns the raw response.
+         *
+         * @return the response of the call.
+         */
         public Response executeCall(){
             httpMethod = findHttpMethod(serviceMethod);
             WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
             return makeCorrectCall(target, httpMethod, body);
         }
+
+        /**
+         * Executes the call, deserializes the response and returns the result.
+         *
+         * @param typeReference the type reference for deserialization.
+         * @return the result of the call.
+         */
         protected <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) {
 
             Response response = executeCall();
@@ -297,6 +288,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return new Result<>(readResponse(response, typeReference, serviceMethod), response);
         }
 
+        /**
+         * This class represents the result of a call in two parts : the raw response and the deserialized one.
+         */
         public class Result <T> {
             private T deserializedResponse;
             private Response response;
@@ -316,6 +310,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
     }
 
+    /**
+     * Finds the HTTP method for the specified service method.
+     *
+     * @param serviceMethod the service method to find the HTTP method for.
+     * @return the HTTP method of the service method.
+     */
     protected String findHttpMethod(Method serviceMethod) {
         if (serviceMethod.isAnnotationPresent(GET.class)) {
             return HttpMethod.GET;
@@ -330,6 +330,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
     }
 
+    /**
+     * Makes the correct call based on the specified target, HTTP method and body.
+     *
+     * @param target the target of the call.
+     * @param httpMethod the HTTP method of the call.
+     * @param body the body of the call.
+     * @return the response of the call.
+     */
     protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body) {
         Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
         if(Objects.equals(httpMethod, HttpMethod.GET)) {
@@ -345,8 +353,18 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
     }
 
-    protected WebTarget createTarget(Map<String, Object> params, Map<String, Object> pathTemplateParams, Method serviceMethod, String searchPath) {
-        WebTarget target = target(searchPath);
+    /**
+     * Creates the target for the call based on the specified parameters, path template parameters, service method and
+     * path template.
+     *
+     * @param params the parameters of the call.
+     * @param pathTemplateParams the path template parameters of the call.
+     * @param serviceMethod the service method of the call.
+     * @param pathTemplate the path template of the call.
+     * @return the target of the call.
+     */
+    protected WebTarget createTarget(Map<String, Object> params, Map<String, Object> pathTemplateParams, Method serviceMethod, String pathTemplate) {
+        WebTarget target = target(pathTemplate);
         if (!params.isEmpty()){
             checkParamsExist(params, serviceMethod);
             appendQueryParams(target, params);
@@ -357,6 +375,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return target;
     }
 
+    /**
+     * Checks if the specified parameters exist in the service method.
+     *
+     * @param params the parameters to check.
+     * @param serviceMethod the service method to check in.
+     */
     protected void checkParamsExist(Map<String, Object> params, Method serviceMethod) {
         List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
                 .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
@@ -364,7 +388,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         assertTrue(availableParams.containsAll(params.keySet()));
     }
 
-
+    /**
+     * Reads the response, verifies the compatibility between the TypeReference and method's return type, and returns the deserialized response.
+     *
+     * @param response the response to read.
+     * @param type the type reference for deserialization.
+     * @param method the method to check compatibility with.
+     * @return the deserialized response.
+     */
     protected <T> T readResponse(Response response, TypeReference<T> type, Method method) {
         JsonNode node = response.readEntity(JsonNode.class);
 

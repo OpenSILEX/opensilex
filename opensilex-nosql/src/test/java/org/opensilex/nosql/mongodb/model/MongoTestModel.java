@@ -76,4 +76,11 @@ public class MongoTestModel extends MongoModel {
     public void setNestedList(List<MongoTestModel> nestedList) {
         this.nestedList = nestedList;
     }
+
+    @Override
+    public String[] getInstancePathSegments(MongoModel instance) {
+        return new String[]{
+               this.getName()
+        };
+    }
 }

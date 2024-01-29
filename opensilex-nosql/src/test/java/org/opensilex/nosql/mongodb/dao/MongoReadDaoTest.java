@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.result.InsertManyResult;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.conversions.Bson;
 import org.junit.*;
 import org.opensilex.nosql.MongoDBServiceTest;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
+import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.PaginatedIterable;
 
 import java.io.IOException;
@@ -22,10 +24,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -209,18 +208,18 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     private void testSearch(boolean useStream, boolean useProjection, boolean useConversion, boolean useSession) {
 
         Consumer<MongoTestModel> modelAssertion = (model) -> {
-            if(useProjection){
+            if (useProjection) {
                 testFieldProjection(model);
             }
-            if(useConversion){
+            if (useConversion) {
                 testConversion(model);
             }
         };
 
         // test filtering with a single URI
         MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
-        Consumer<PaginatedIterable<MongoTestModel,?>> resultsAssertion = (results) -> assertEquals(1, results.getTotal());
-        testSearch(filter,useStream, useProjection,useConversion,useSession, resultsAssertion, modelAssertion);
+        Consumer<PaginatedIterable<MongoTestModel, ?>> resultsAssertion = (results) -> assertEquals(1, results.getTotal());
+        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
 
         // test filtering with a type list
         filter = new MongoSearchFilter();
@@ -230,7 +229,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getTotal());
             assertEquals(0, results.getPage());
         };
-        testSearch(filter,useStream, useProjection,useConversion,useSession, resultsAssertion, modelAssertion);
+        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
 
         // test filtering with a URI list
         filter = new MongoSearchFilter();
@@ -240,7 +239,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             assertEquals(URI_LIST.size(), results.getTotal());
             assertEquals(0, results.getPage());
         };
-        testSearch(filter,useStream, useProjection,useConversion,useSession, resultsAssertion, modelAssertion);
+        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
     }
 
     protected void testFieldProjection(MongoTestModel model) {
@@ -267,6 +266,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         testSearch(false, false, false, false);
         testSearch(false, false, false, true);
     }
+
     @Test
     public void searchNoProjectionConversion() {
         testSearch(false, false, true, false);
@@ -326,14 +326,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 //    public void lookupAggregation() {
 //    }
 
-
-
-
     private void parallelSearch(ClientSession session) throws InterruptedException {
 
         MongoTestModel[] collectedModels = new MongoTestModel[ROOT_DOCUMENT_COUNT];
         int nbThread = 4;
-        int pageSize = ROOT_DOCUMENT_COUNT/nbThread;
+        int pageSize = ROOT_DOCUMENT_COUNT / nbThread;
 
         // Prepare task, run 4 tasks which fetch a page from DB and insert inside array
         List<Callable<Integer>> tasks = IntStream.range(0, nbThread).mapToObj(page -> {
@@ -364,8 +361,46 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     }
 
     @Test
-    public void parallelInsertTest(){
+    public void parallelInsertTest() throws InterruptedException, ExecutionException {
 
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
+        int nbThread = 4;
+        int nbModelPerThread = 100;
+
+        // Prepare tasks
+        List<Callable<InsertManyResult>> tasks = IntStream.range(0, nbThread).mapToObj(threadIdx -> {
+
+            // Task : Create models to insert
+            List<MongoTestModel> models = IntStream.range(0, nbModelPerThread).mapToObj(modelIdx -> {
+                MongoTestModel model = new MongoTestModel();
+                model.setName(threadIdx + "_" + threadIdx);
+                return model;
+            }).collect(Collectors.toList());
+
+            return new MongoInsertTask<>(innerDao, models);
+
+        }).collect(Collectors.toList());
+
+        // execute all tasks in parallel , wait for task completion or timeout
+        ExecutorService executor = Executors.newFixedThreadPool(nbThread);
+        var insertResults = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
+
+        for (Future<InsertManyResult> taskResult : insertResults) {
+            InsertManyResult insertResult = taskResult.get();
+            Assert.assertEquals(nbModelPerThread, insertResult.getInsertedIds().size());
+        }
+
+        // Run search and ensure results are OK
+        MongoSearchFilter searchFilter = new MongoSearchFilter();
+        searchFilter.setPage(nbModelPerThread * nbThread);
+
+        ListWithPagination<MongoTestModel> searchResults = innerDao.search(searchFilter);
+        Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getTotal());
+        searchResults.forEach(model -> {
+            Assert.assertNotNull(model.getUri());
+            Assert.assertNotNull(model.getName());
+        });
     }
+
 
 }

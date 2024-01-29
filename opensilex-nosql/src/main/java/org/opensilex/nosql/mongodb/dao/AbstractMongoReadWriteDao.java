@@ -132,11 +132,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     public Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
-        Bson filter = filterToBson(deleteFilter);
-        if (filter.toBsonDocument().isEmpty()) {
-            throw new IllegalArgumentException("[" + collection.getNamespace().getCollectionName() + "] Empty delete filter : provide at least a filter");
-        }
-        return filter;
+        return filterToBson(deleteFilter);
     }
 
     @Override

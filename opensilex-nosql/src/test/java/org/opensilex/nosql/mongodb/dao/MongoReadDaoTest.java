@@ -360,8 +360,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         mongoDBServiceV2.readOperationWithSession(this::parallelSearch);
     }
 
-    @Test
-    public void parallelInsertTest() throws InterruptedException, ExecutionException {
+    public void parallelInsertTest(boolean generateSession) throws InterruptedException, ExecutionException {
 
         var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
         int nbThread = 4;
@@ -377,7 +376,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                 return model;
             }).collect(Collectors.toList());
 
-            return new MongoInsertTask<>(innerDao, models);
+            return new MongoInsertTask<>(mongoDBServiceV2, innerDao, models, generateSession);
 
         }).collect(Collectors.toList());
 
@@ -400,7 +399,15 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             Assert.assertNotNull(model.getUri());
             Assert.assertNotNull(model.getName());
         });
+
+        // Delete objects
+        innerDao.delete(new MongoSearchFilter());
     }
 
+    @Test
+    public void parallelInsertTest() throws InterruptedException, ExecutionException {
+        parallelInsertTest(false);
+        parallelInsertTest(true);
+    }
 
 }

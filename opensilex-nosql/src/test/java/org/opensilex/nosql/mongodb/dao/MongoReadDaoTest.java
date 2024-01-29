@@ -8,9 +8,11 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.junit.*;
 import org.opensilex.nosql.MongoDBServiceTest;
+import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.utils.ListWithPagination;
@@ -19,6 +21,7 @@ import org.opensilex.utils.pagination.PaginatedIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -309,22 +312,48 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         testSearch(true, true, true, true);
     }
 
-//
-//    @Test
-//    public void distinctUrisWithSession() {
-//    }
-//
-//    @Test
-//    public void distinct() {
-//    }
-//
-//    @Test
-//    public void distinctAggregation() {
-//    }
-//
-//    @Test
-//    public void lookupAggregation() {
-//    }
+
+    @Test
+    public void testDistinctUris() {
+        Set<URI> uris = dao.distinctUris(new MongoSearchFilter());
+        Assert.assertEquals(ROOT_DOCUMENT_COUNT, uris.size());
+        uris.forEach(Assert::assertNotNull);
+
+        MongoSearchFilter noResultFilter = new MongoSearchFilter();
+        noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
+        Set<URI> noUris = dao.distinctUris(noResultFilter);
+        Assert.assertTrue(noUris.isEmpty());
+    }
+
+    @Test
+    public void testDistinct() {
+        // extract distinct types (no pagination here)
+        Set<String> names = dao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
+        Assert.assertEquals(ROOT_DOCUMENT_COUNT, names.size());
+        names.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
+
+        // no results -> ensure non nullity of Set
+        MongoSearchFilter noResultFilter = new MongoSearchFilter();
+        noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
+        Set<String> noNames = dao.distinct(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
+        Assert.assertTrue(noNames.isEmpty());
+    }
+
+    @Test
+    public void testDistinctAggregation() {
+
+        // extract distinct types (pagination enabled : use aggregation pipeline)
+        Set<String> names = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
+        Assert.assertEquals(DEFAULT_PAGE_SIZE, names.size());
+        names.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
+
+        // no results -> ensure non nullity of Set
+        MongoSearchFilter noResultFilter = new MongoSearchFilter();
+        noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
+        Set<String> noNames = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
+        Assert.assertTrue(noNames.isEmpty());
+    }
+
 
     private void parallelSearch(ClientSession session) throws InterruptedException {
 
@@ -408,6 +437,44 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     public void parallelInsertTest() throws InterruptedException, ExecutionException {
         parallelInsertTest(false);
         parallelInsertTest(true);
+    }
+
+    @Test
+    public void updateTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
+
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-update-test", "test");
+        MongoTestModel model = new MongoTestModel();
+        model.setName("update_1");
+        innerDao.create(model);
+
+        model.setName("update_2");
+        model.setRdfType(URI.create("test:updated_type"));
+        innerDao.update(model);
+
+        MongoTestModel modelFromDB = innerDao.get(model.getUri());
+        Assert.assertEquals(modelFromDB.getName(), model.getName());
+        Assert.assertEquals(modelFromDB.getRdfType(), model.getRdfType());
+
+        MongoTestModel unknown = new MongoTestModel();
+        unknown.setUri(URI.create("test:fake_uri"));
+        assertThrows(NoSQLInvalidURIException.class, () -> innerDao.update(unknown));
+
+        innerDao.delete(new MongoSearchFilter());
+    }
+
+    @Test
+    public void deleteTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
+
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-update-test", "test");
+        MongoTestModel model = new MongoTestModel();
+        model.setName("update_1");
+        innerDao.create(model);
+
+        Assert.assertNotNull(innerDao.get(model.getUri()));
+        innerDao.delete(model.getUri());
+        assertThrows(NoSQLInvalidURIException.class, () -> innerDao.get(model.getUri()));
+
+        innerDao.delete(new MongoSearchFilter());
     }
 
 }

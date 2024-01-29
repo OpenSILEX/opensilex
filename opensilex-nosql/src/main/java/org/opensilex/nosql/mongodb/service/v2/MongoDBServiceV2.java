@@ -53,7 +53,9 @@ import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.utils.*;
+
 import static org.opensilex.utils.LogFilter.LOG_TYPE;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,9 +75,7 @@ public class MongoDBServiceV2 extends BaseService {
     public static final String MONGO_CREATE_LOG_MSG = "MONGO_CREATE";
     public static final String MONGO_CHECK_URI_LOG_MSG = "MONGO_CHECK_URI";
 
-    private static final Bson EMPTY_PROJECTION = Projections.fields(
-            Projections.include(MongoModel.MONGO_ID_FIELD)
-    );
+    private static final Bson EMPTY_PROJECTION = Projections.fields(Projections.include(MongoModel.MONGO_ID_FIELD));
 
 
     private final String dbName;
@@ -152,13 +152,14 @@ public class MongoDBServiceV2 extends BaseService {
     }
 
     public void readOperationWithSession(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws Exception {
-        try(ClientSession session = newSession()){
+        try (ClientSession session = newSession()) {
             operationInTrx.accept(session);
         }
     }
 
     /**
      * Execute the given operation with transaction management
+     *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
      * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
      */
@@ -171,11 +172,12 @@ public class MongoDBServiceV2 extends BaseService {
 
     /**
      * Execute the given operation with transaction management and return results
+     *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
-     * @param <R> : The type of result returned by the operation
+     * @param <R>            : The type of result returned by the operation
      * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
      */
-    public  <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
+    public <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
 
         ClientSession session = newSession();
         session.startTransaction();
@@ -194,7 +196,6 @@ public class MongoDBServiceV2 extends BaseService {
             session.close();
         }
     }
-
 
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
@@ -222,11 +223,11 @@ public class MongoDBServiceV2 extends BaseService {
      * @param uriGenerationPrefix The prefix for generating a unique URI
      * @param session             The ClientSession for handling the transaction (can be null)
      * @return InsertOneResult    The result of the insertion operation
-     * @throws URISyntaxException          If there's an issue with URI syntax
+     * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
     public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, String uriGenerationPrefix, ClientSession session) throws URISyntaxException, NoSQLAlreadyExistingUriException {
-        if(LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
         if (instance.getUri() == null) {
@@ -245,20 +246,20 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Creates and inserts multiple documents into the specified MongoCollection.
      *
-     * @param <T>             The type extending MongoModel
-     * @param instances       The list of instances to be inserted
-     * @param collection      The MongoCollection where the documents will be inserted
-     * @param session         The ClientSession for handling the transaction (can be null)
-     * @param prefix          The prefix for generating a unique URI
-     * @param checkUris       Boolean indicating whether to check URIs before insertion
-     * @param checkUriExist   Boolean indicating whether to check the existence of URIs before insertion
+     * @param <T>           The type extending MongoModel
+     * @param instances     The list of instances to be inserted
+     * @param collection    The MongoCollection where the documents will be inserted
+     * @param session       The ClientSession for handling the transaction (can be null)
+     * @param prefix        The prefix for generating a unique URI
+     * @param checkUris     Boolean indicating whether to check URIs before insertion
+     * @param checkUriExist Boolean indicating whether to check the existence of URIs before insertion
      * @return InsertManyResult The result of the insertion operation
-     * @throws MongoException               If a MongoDB-related error occurs
-     * @throws URISyntaxException          If there's an issue with URI syntax
+     * @throws MongoException                   If a MongoDB-related error occurs
+     * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
     public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
-        if(LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
 
@@ -276,22 +277,20 @@ public class MongoDBServiceV2 extends BaseService {
         }
 
         // Transaction handling for data integrity since insertMany() can update several documents
-        return computeTransaction(
-                createSession -> collection.insertMany(createSession, instances)
-        );
+        return computeTransaction(createSession -> collection.insertMany(createSession, instances));
     }
 
     /**
      * Overloaded method for creating and inserting multiple documents into the specified MongoCollection.
      * This method omits URI checking.
      *
-     * @param <T>             The type extending MongoModel
-     * @param instances       The list of instances to be inserted
-     * @param collection      The MongoCollection where the documents will be inserted
-     * @param session         The ClientSession for handling the transaction (can be null)
+     * @param <T>        The type extending MongoModel
+     * @param instances  The list of instances to be inserted
+     * @param collection The MongoCollection where the documents will be inserted
+     * @param session    The ClientSession for handling the transaction (can be null)
      * @return InsertManyResult The result of the insertion operation
-     * @throws MongoException               If a MongoDB-related error occurs
-     * @throws URISyntaxException          If there's an issue with URI syntax
+     * @throws MongoException                   If a MongoDB-related error occurs
+     * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
     public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
@@ -301,9 +300,9 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Finds a document in the specified MongoCollection based on the given URI field.
      *
-     * @param <T>          The type of the document
-     * @param collection   The MongoCollection to search in
-     * @param uri          The URI used to find the document
+     * @param <T>        The type of the document
+     * @param collection The MongoCollection to search in
+     * @param uri        The URI used to find the document
      * @return T           The document found (if exists)
      * @throws NoSQLInvalidURIException If the provided URI is invalid
      */
@@ -326,19 +325,17 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Finds a document in the specified MongoCollection based on the provided URI field.
      *
-     * @param <T>         The type of the document
-     * @param session     The ClientSession for handling the transaction (can be null)
-     * @param collection  The MongoCollection to search in
-     * @param uri         The URI used to find the document
-     * @param uriField    The field in the document containing the URI
+     * @param <T>        The type of the document
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param collection The MongoCollection to search in
+     * @param uri        The URI used to find the document
+     * @param uriField   The field in the document containing the URI
      * @return T          The document found (if exists)
      * @throws NoSQLInvalidURIException If the provided URI is invalid
      */
     public <T> T findByURI(ClientSession session, MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
 
-        T instance = session == null ?
-                collection.find(eq(uriField, uri)).first() :
-                collection.find(session, eq(uriField, uri)).first();
+        T instance = session == null ? collection.find(eq(uriField, uri)).first() : collection.find(session, eq(uriField, uri)).first();
 
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
@@ -349,9 +346,9 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Finds multiple documents in the specified MongoCollection based on a collection of URIs.
      *
-     * @param <T>          The type extending MongoModel
-     * @param collection   The MongoCollection to search in
-     * @param uris         The collection of URIs to search for documents
+     * @param <T>        The type extending MongoModel
+     * @param collection The MongoCollection to search in
+     * @param uris       The collection of URIs to search for documents
      * @return List<T>     The list of documents found (if any)
      */
     public <T extends MongoModel> List<T> findByURIs(MongoCollection<T> collection, Collection<URI> uris) {
@@ -383,16 +380,10 @@ public class MongoDBServiceV2 extends BaseService {
      * @return if an instance with the given uri exists
      */
     public <T> boolean uriExists(ClientSession session, MongoCollection<T> collection, URI uri) {
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("MongoDB uriExists {} {} {}",
-                    kv(LOG_TYPE, MONGO_CHECK_URI_LOG_MSG),
-                    kv("collection", collection.getNamespace().getCollectionName()),
-                    kv("uri",uri)
-            );
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("MongoDB uriExists {} {} {}", kv(LOG_TYPE, MONGO_CHECK_URI_LOG_MSG), kv("collection", collection.getNamespace().getCollectionName()), kv("uri", uri));
         }
-        FindIterable<T> findIt = session == null ?
-                collection.find(eq(MongoModel.URI_FIELD, uri)) :
-                collection.find(session, eq(MongoModel.URI_FIELD, uri));
+        FindIterable<T> findIt = session == null ? collection.find(eq(MongoModel.URI_FIELD, uri)) : collection.find(session, eq(MongoModel.URI_FIELD, uri));
 
         // Use a minimal projection in order to avoid the fetching of fields which are useless here
         return findIt.projection(EMPTY_PROJECTION).first() != null;
@@ -416,7 +407,7 @@ public class MongoDBServiceV2 extends BaseService {
 
     public Document buildSort(List<OrderBy> orderByList) {
         Document sort = new Document();
-        if(CollectionUtils.isEmpty(orderByList)){
+        if (CollectionUtils.isEmpty(orderByList)) {
             return sort;
         }
         for (OrderBy orderBy : orderByList) {
@@ -432,23 +423,17 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Finds documents in the specified MongoCollection with pagination support.
      *
-     * @param <T>           The type extending MongoModel
-     * @param collection    The MongoCollection to search in
-     * @param filter        The filter to apply during the search
-     * @param projection    The projection to apply (can be null)
-     * @param orderByList   The list of fields to order by
-     * @param page          The page number for pagination
-     * @param pageSize      The size of each page for pagination
-     * @param session       The ClientSession for handling the transaction (can be null)
-     * @return Map.Entry<FindIterable<T>, Long>    The query results and the total count of results
+     * @param <T>         The type extending MongoModel
+     * @param collection  The MongoCollection to search in
+     * @param filter      The filter to apply during the search
+     * @param projection  The projection to apply (can be null)
+     * @param orderByList The list of fields to order by
+     * @param page        The page number for pagination
+     * @param pageSize    The size of each page for pagination
+     * @param session     The ClientSession for handling the transaction (can be null)
+     * @return Map.Entry<FindIterable < T>, Long>    The query results and the total count of results
      */
-    public <T extends MongoModel> Map.Entry<FindIterable<T>, Long> findWithPagination(MongoCollection<T> collection,
-                                                                                      Bson filter,
-                                                                                      Bson projection,
-                                                                                      List<OrderBy> orderByList,
-                                                                                      int page,
-                                                                                      int pageSize,
-                                                                                      ClientSession session) {
+    public <T extends MongoModel> Map.Entry<FindIterable<T>, Long> findWithPagination(MongoCollection<T> collection, Bson filter, Bson projection, List<OrderBy> orderByList, int page, int pageSize, ClientSession session) {
 
         long resultsNumber = collection.countDocuments(filter);
 
@@ -468,7 +453,7 @@ public class MongoDBServiceV2 extends BaseService {
                 .skip(page * pageSize)
                 .limit(pageSize);
 
-        if(projection != null){
+        if (projection != null) {
             queryResult.projection(projection);
         }
 
@@ -478,24 +463,17 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Searches documents in the specified MongoCollection with pagination support.
      *
-     * @param <T>            The type extending MongoModel
-     * @param collection     The MongoCollection to search in
-     * @param filter         The filter to apply during the search
-     * @param projection     The projection to apply (can be null)
-     * @param orderByList    The list of fields to order by
-     * @param page           The page number for pagination
-     * @param pageSize       The size of each page for pagination
-     * @param session        The ClientSession for handling the transaction (can be null)
+     * @param <T>         The type extending MongoModel
+     * @param collection  The MongoCollection to search in
+     * @param filter      The filter to apply during the search
+     * @param projection  The projection to apply (can be null)
+     * @param orderByList The list of fields to order by
+     * @param page        The page number for pagination
+     * @param pageSize    The size of each page for pagination
+     * @param session     The ClientSession for handling the transaction (can be null)
      * @return ListWithPagination<T>    The paginated list of search results
      */
-    public <T extends MongoModel> @NotNull ListWithPagination<T> searchWithPagination(
-            MongoCollection<T> collection,
-            Bson filter,
-            Bson projection,
-            List<OrderBy> orderByList,
-            int page,
-            int pageSize,
-            ClientSession session) {
+    public <T extends MongoModel> @NotNull ListWithPagination<T> searchWithPagination(MongoCollection<T> collection, Bson filter, Bson projection, List<OrderBy> orderByList, int page, int pageSize, ClientSession session) {
 
         Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(collection, filter, projection, orderByList, page, pageSize, session);
         if (resultAndCount == null) {
@@ -512,35 +490,28 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Counts the number of documents in the specified MongoCollection based on the provided filter.
      *
-     * @param <T>          The type of the document
-     * @param session      The ClientSession for handling the transaction (can be null)
-     * @param collection   The MongoCollection to count documents in
-     * @param filter       The filter to apply during counting
+     * @param <T>        The type of the document
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param collection The MongoCollection to count documents in
+     * @param filter     The filter to apply during counting
      * @return long        The count of documents based on the filter
      */
-    public <T> long count(ClientSession session,
-                          MongoCollection<T> collection,
-                          Bson filter) {
+    public <T> long count(ClientSession session, MongoCollection<T> collection, Bson filter) {
 
         LOGGER.debug("[MONGO_COUNT] : { collection: {},filter: {}}", collection.getNamespace().getCollectionName(), filter);
-        return session == null ?
-                collection.countDocuments(filter) :
-                collection.countDocuments(session, filter);
+        return session == null ? collection.countDocuments(filter) : collection.countDocuments(session, filter);
     }
 
     /**
      * Searches documents in the specified MongoCollection based on the provided filter and ordering.
      *
-     * @param <T>            The type of the document
-     * @param collection     The MongoCollection to search in
-     * @param filter         The filter to apply during the search
-     * @param orderByList    The list of fields to order by
+     * @param <T>         The type of the document
+     * @param collection  The MongoCollection to search in
+     * @param filter      The filter to apply during the search
+     * @param orderByList The list of fields to order by
      * @return List<T>       The list of documents found
      */
-    public <T> List<T> search(
-            MongoCollection<T> collection,
-            Document filter,
-            List<OrderBy> orderByList) {
+    public <T> List<T> search(MongoCollection<T> collection, Document filter, List<OrderBy> orderByList) {
 
         Document sort = buildSort(orderByList);
         FindIterable<T> queryResult = collection.find(filter).sort(sort);
@@ -558,18 +529,14 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Retrieves distinct values for a specific field from documents in the specified MongoCollection.
      *
-     * @param <T>              The type of the distinct field
-     * @param field            The field for which distinct values are sought
-     * @param resultClass      The class type of the resulting distinct values
-     * @param collectionName   The name of the collection
-     * @param filter           The filter to apply during the distinct operation
+     * @param <T>            The type of the distinct field
+     * @param field          The field for which distinct values are sought
+     * @param resultClass    The class type of the resulting distinct values
+     * @param collectionName The name of the collection
+     * @param filter         The filter to apply during the distinct operation
      * @return Set<T>          The set of distinct values for the specified field
      */
-    public <T> Set<T> distinct(
-            String field,
-            Class<T> resultClass,
-            String collectionName,
-            Bson filter) {
+    public <T> Set<T> distinct(String field, Class<T> resultClass, String collectionName, Bson filter) {
 
         MongoCollection<?> collection = db.getCollection(collectionName);
         return distinct(field, resultClass, collection, filter, null);
@@ -578,21 +545,15 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Retrieves distinct values for a specific field from documents in the specified MongoCollection with session support.
      *
-     * @param <T>              The type of the distinct field
-     * @param field            The field for which distinct values are sought
-     * @param resultClass      The class type of the resulting distinct values
-     * @param collection       The MongoCollection to perform the distinct operation
-     * @param filter           The filter to apply during the distinct operation
-     * @param session          The ClientSession for handling the transaction (can be null)
+     * @param <T>         The type of the distinct field
+     * @param field       The field for which distinct values are sought
+     * @param resultClass The class type of the resulting distinct values
+     * @param collection  The MongoCollection to perform the distinct operation
+     * @param filter      The filter to apply during the distinct operation
+     * @param session     The ClientSession for handling the transaction (can be null)
      * @return Set<T>          The set of distinct values for the specified field
      */
-    public <T> Set<T> distinct(
-            String field,
-            Class<T> resultClass,
-            MongoCollection<?> collection,
-            Bson filter,
-            ClientSession session
-    ) {
+    public <T> Set<T> distinct(String field, Class<T> resultClass, MongoCollection<?> collection, Bson filter, ClientSession session) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[MONGO_DISTINCT] : { collection: {}, filter: {}, field: {}, resultClass: {} }", collection.getNamespace().getCollectionName(), filter, field, resultClass.getSimpleName());
@@ -624,18 +585,9 @@ public class MongoDBServiceV2 extends BaseService {
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#std-label-aggregation-group-distinct-values">
      * Distinct with aggregation pipeline
      */
-    public <T> Set<T> distinctWithPagination(
-            MongoCollection<?> collection,
-            String distinctField,
-            Function<Document, T> documentExtractor,
-            Bson filter,
-            List<OrderBy> orderByList,
-            int page,
-            int pageSize,
-            ClientSession session
-    ) {
+    public <T> Set<T> distinctWithPagination(MongoCollection<?> collection, String distinctField, Function<Document, T> documentExtractor, Bson filter, List<OrderBy> orderByList, int page, int pageSize, ClientSession session) {
 
-        if(LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(), logOrderList(orderByList), filter);
         }
 
@@ -667,9 +619,7 @@ public class MongoDBServiceV2 extends BaseService {
         Set<T> distinct = new LinkedHashSet<>();
 
         // map aggregation results a Document, since the aggregation will produce a different document schema
-        AggregateIterable<Document> aggregateIt = session == null ?
-                collection.aggregate(aggregatePipeline, Document.class) :
-                collection.aggregate(session, aggregatePipeline, Document.class);
+        AggregateIterable<Document> aggregateIt = session == null ? collection.aggregate(aggregatePipeline, Document.class) : collection.aggregate(session, aggregatePipeline, Document.class);
 
         // Transform document on the fly and add inside set
         aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
@@ -680,27 +630,19 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Performs a lookup aggregation operation on the source collection, joining with a destination collection.
      *
-     * @param <T_RESULT>       The type of the result after conversion
-     * @param <T_JOINED>       The type of the joined collection
-     * @param srcCollection    The source MongoCollection to perform aggregation on
+     * @param <T_RESULT>        The type of the result after conversion
+     * @param <T_JOINED>        The type of the joined collection
+     * @param srcCollection     The source MongoCollection to perform aggregation on
      * @param dstCollectionName The name of the destination collection to join with
-     * @param lookupField      The field used for lookup operation
-     * @param filter           The filter to apply during the aggregation
-     * @param orderByList      The list of fields to order by
-     * @param lookupClass      The class type of the joined collection
-     * @param convertFunction  The function to convert the joined collection to the result
-     * @param session          The ClientSession for handling the transaction (can be null)
+     * @param lookupField       The field used for lookup operation
+     * @param filter            The filter to apply during the aggregation
+     * @param orderByList       The list of fields to order by
+     * @param lookupClass       The class type of the joined collection
+     * @param convertFunction   The function to convert the joined collection to the result
+     * @param session           The ClientSession for handling the transaction (can be null)
      * @return List<T_RESULT>  The list of results after the lookup aggregation
      */
-    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(
-            MongoCollection<?> srcCollection,
-            String dstCollectionName,
-            String lookupField,
-            Bson filter,
-            List<OrderBy> orderByList,
-            Class<T_JOINED> lookupClass,
-            Function<T_JOINED, T_RESULT> convertFunction,
-            ClientSession session) {
+    public <T_RESULT, T_JOINED> List<T_RESULT> lookupAggregation(MongoCollection<?> srcCollection, String dstCollectionName, String lookupField, Bson filter, List<OrderBy> orderByList, Class<T_JOINED> lookupClass, Function<T_JOINED, T_RESULT> convertFunction, ClientSession session) {
 
         List<Bson> pipeline = new ArrayList<>();
 
@@ -713,37 +655,32 @@ public class MongoDBServiceV2 extends BaseService {
         pipeline.add(Aggregates.project(Projections.include(lookupField)));
 
         // group by foreign key
-        String outputFieldName = lookupField+"_join";
+        String outputFieldName = lookupField + "_join";
         String outputFieldJoinKey = lookupField + "." + MongoModel.URI_FIELD;
         String groupKey = "group";
 
-        pipeline.add(Aggregates.group(
-                "$" + outputFieldJoinKey,
-                Accumulators.first(groupKey, "$$ROOT")
-        ));
+        pipeline.add(Aggregates.group("$" + outputFieldJoinKey, Accumulators.first(groupKey, "$$ROOT")));
 
         // replace root
-        pipeline.add(Aggregates.replaceRoot("$"+groupKey+"."+lookupField));
+        pipeline.add(Aggregates.replaceRoot("$" + groupKey + "." + lookupField));
 
         // lookup with destination collection
         pipeline.add(Aggregates.lookup(dstCollectionName, MongoModel.URI_FIELD, MongoModel.URI_FIELD, outputFieldName));
 
         // unwind
-        pipeline.add(Aggregates.unwind("$"+outputFieldName));
+        pipeline.add(Aggregates.unwind("$" + outputFieldName));
 
         // replace root
-        pipeline.add(Aggregates.replaceRoot("$"+lookupField));
+        pipeline.add(Aggregates.replaceRoot("$" + lookupField));
 
         // sort
-        if(! CollectionUtils.isEmpty(orderByList)){
+        if (!CollectionUtils.isEmpty(orderByList)) {
             Document order = buildSort(orderByList);
             pipeline.add(Aggregates.sort(order.toBsonDocument()));
         }
 
         List<T_RESULT> results = new ArrayList<>();
-        AggregateIterable<T_JOINED> aggregateIt = session == null ?
-                srcCollection.aggregate(pipeline, lookupClass) :
-                srcCollection.aggregate(session, pipeline, lookupClass);
+        AggregateIterable<T_JOINED> aggregateIt = session == null ? srcCollection.aggregate(pipeline, lookupClass) : srcCollection.aggregate(session, pipeline, lookupClass);
 
         aggregateIt.map(convertFunction::apply).forEach(results::add);
         return results;
@@ -752,16 +689,13 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
      *
-     * @param <T>               The type of the instance
-     * @param collection        The collection to perform aggregation on
-     * @param aggregationArgs   The list of aggregation arguments
-     * @param instanceClass     The class type of the instance
+     * @param <T>             The type of the instance
+     * @param collection      The collection to perform aggregation on
+     * @param aggregationArgs The list of aggregation arguments
+     * @param instanceClass   The class type of the instance
      * @return Set<T>           The set of results after aggregation
      */
-    public <T> Set<T> aggregate(
-            MongoCollection<T> collection,
-            List<Bson> aggregationArgs,
-            Class<T> instanceClass) {
+    public <T> Set<T> aggregate(MongoCollection<T> collection, List<Bson> aggregationArgs, Class<T> instanceClass) {
         LOGGER.debug("MONGO SEARCH - Collection : {}, Aggregation pipeline: {}", collection.getNamespace().getCollectionName(), aggregationArgs);
 
         Set<T> results = new HashSet<>();
@@ -777,10 +711,10 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Deletes a document in the specified collection based on the provided URI.
      *
-     * @param <T>          The type extending MongoModel
-     * @param collection   The MongoCollection to delete from
-     * @param session      The ClientSession for handling the transaction (can be null)
-     * @param uri          The URI used to identify the document for deletion
+     * @param <T>        The type extending MongoModel
+     * @param collection The MongoCollection to delete from
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param uri        The URI used to identify the document for deletion
      * @return DeleteResult The result of the deletion operation
      * @throws NoSQLInvalidURIException If the provided URI is invalid
      */
@@ -800,39 +734,40 @@ public class MongoDBServiceV2 extends BaseService {
      * @throws NoSQLInvalidURIException if no instance is found
      */
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, URI uri, String uriField) throws NoSQLInvalidURIException {
-        T instance = findByURI(collection, uri, uriField);
-        if (instance == null) {
+        DeleteResult deleteResult =  delete(collection, session, eq(uriField, uri));
+
+        if(deleteResult.getDeletedCount() == 0) {
             throw new NoSQLInvalidURIException(uri);
         }
-        return delete(collection, session, eq(uriField, uri));
+        return deleteResult;
     }
 
     /**
      * Deletes documents in the specified collection based on the provided filter.
      *
-     * @param <T>          The type extending MongoModel
-     * @param collection   The MongoCollection to delete from
-     * @param session      The ClientSession for handling the transaction (can be null)
-     * @param filter       The filter to apply during deletion
+     * @param <T>        The type extending MongoModel
+     * @param collection The MongoCollection to delete from
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param filter     The filter to apply during deletion
      * @return DeleteResult The result of the deletion operation
      */
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, Bson filter) {
-        if (session != null) {
-            return collection.deleteOne(session, filter);
-        }
-        return collection.deleteOne(filter);
+
+        return session == null ?
+                collection.deleteOne(filter) :
+                collection.deleteOne(session, filter);
     }
 
 
     /**
      * Deletes documents in the specified collection based on a list of URIs.
      *
-     * @param <T>          The type extending MongoModel
-     * @param collection   The MongoCollection to delete from
-     * @param session      The ClientSession for handling the transaction (can be null)
-     * @param uris         The list of URIs used to identify documents for deletion
+     * @param <T>        The type extending MongoModel
+     * @param collection The MongoCollection to delete from
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param uris       The list of URIs used to identify documents for deletion
      * @return DeleteResult The result of the deletion operation
-     * @throws MongoException   If an error occurs during the deletion process
+     * @throws MongoException If an error occurs during the deletion process
      */
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws MongoException {
         LOGGER.debug("MONGO DELETE - Collection : {}, {} uris to delete", collection.getNamespace().getCollectionName(), uris.size());
@@ -845,10 +780,6 @@ public class MongoDBServiceV2 extends BaseService {
      * @see #update(MongoModel, MongoCollection, Bson, ClientSession)
      */
     public <T extends MongoModel> void update(T newModel, MongoCollection<T> collection, String uriField, ClientSession session) throws NoSQLInvalidURIException {
-        T instance = findByURI(collection, newModel.getUri(), uriField);
-        if (instance == null) {
-            throw new NoSQLInvalidURIException(newModel.getUri());
-        }
         update(newModel, collection, Filters.eq(uriField, newModel.getUri()), session);
     }
 
@@ -871,6 +802,8 @@ public class MongoDBServiceV2 extends BaseService {
                 collection.findOneAndReplace(filter, newModel, options) :
                 collection.findOneAndReplace(session, filter, newModel, options);
 
+        // Directly check the results of the findOneAndReplace() instead of performing a find() query before
+        // If the returned model is null, it implies that the previous model was not found.
         if (updatedModel == null) {
             throw new NoSQLInvalidURIException(newModel.getUri());
         }
@@ -880,21 +813,19 @@ public class MongoDBServiceV2 extends BaseService {
      * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/write-operations/upsert/">Insert or Update in a Single Operation</a>
      */
     public <T extends MongoModel> UpdateResult upsert(MongoCollection<T> collection, ClientSession session, T newInstance, Bson idFilter) {
-        return session == null ?
-                collection.replaceOne(idFilter, newInstance, new ReplaceOptions().upsert(true)) :
-                collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
+        return session == null ? collection.replaceOne(idFilter, newInstance, new ReplaceOptions().upsert(true)) : collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
 
     }
 
     /**
      * Updates or deletes a document in the specified collection based on the ID field and URI.
      *
-     * @param <T>          The type extending MongoModel
-     * @param idField      The field used as an ID in the collection
-     * @param uri          The URI used to identify the document
-     * @param instance     The instance of type T to update or delete
-     * @param collection   The MongoCollection to perform the update or delete operation
-     * @param session      The ClientSession for handling the transaction (can be null)
+     * @param <T>        The type extending MongoModel
+     * @param idField    The field used as an ID in the collection
+     * @param uri        The URI used to identify the document
+     * @param instance   The instance of type T to update or delete
+     * @param collection The MongoCollection to perform the update or delete operation
+     * @param session    The ClientSession for handling the transaction (can be null)
      */
     public <T extends MongoModel> void updateOrDelete(String idField, URI uri, T instance, MongoCollection<T> collection, ClientSession session) {
         Bson idFilter = eq(idField, uri);
@@ -919,25 +850,15 @@ public class MongoDBServiceV2 extends BaseService {
     public static MongoClient buildMongoDBClient(MongoDBConfig config) throws IOException {
 
         // Define custom codec registry for URI, Object and GeoJson
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()),
-                CodecRegistries.fromProviders(
-                        new GeoJsonCodecProvider(),
-                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
-                )
-        );
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()), CodecRegistries.fromProviders(new GeoJsonCodecProvider(), PojoCodecProvider.builder().register(URI.class).automatic(true).build()));
 
         // Build client : set server, codec and socket settings
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
-                .applyToClusterSettings(builder -> builder
-                        .hosts(Collections.singletonList(new ServerAddress(config.host(), config.port())))
-                        .serverSelectionTimeout(config.serverSelectionTimeout(), TimeUnit.MILLISECONDS)
-                ).codecRegistry(codecRegistry)
-                .applyToSocketSettings(builder -> builder
-                        .connectTimeout(config.connectTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .readTimeout(config.readTimeoutMs(), TimeUnit.MILLISECONDS)
-                );
+                .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(config.host(), config.port())))
+                        .serverSelectionTimeout(config.serverSelectionTimeout(), TimeUnit.MILLISECONDS))
+                .codecRegistry(codecRegistry)
+                .applyToSocketSettings(builder -> builder.connectTimeout(config.connectTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .readTimeout(config.readTimeoutMs(), TimeUnit.MILLISECONDS));
 
         // Handle authentication
         MongoAuthenticationService auth = config.authentication();
@@ -953,13 +874,13 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Generates a unique URI if null or validates the current URI's existence in the collection.
      *
-     * @param <T>                  The type extending MongoModel
-     * @param instance             The instance of type T
-     * @param checkUriExist        Boolean indicating whether to check URI existence
-     * @param instanceClassPrefix  The prefix for instance class
-     * @param collection           The MongoCollection to check URI existence in
+     * @param <T>                 The type extending MongoModel
+     * @param instance            The instance of type T
+     * @param checkUriExist       Boolean indicating whether to check URI existence
+     * @param instanceClassPrefix The prefix for instance class
+     * @param collection          The MongoCollection to check URI existence in
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
-     * @throws URISyntaxException             If there's an issue with URI syntax
+     * @throws URISyntaxException               If there's an issue with URI syntax
      */
     public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist, String instanceClassPrefix, MongoCollection<T> collection) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         URI uri = instance.getUri();
@@ -982,10 +903,10 @@ public class MongoDBServiceV2 extends BaseService {
     /**
      * Deletes documents in the specified collection based on a filter with transaction support.
      *
-     * @param <T>          The type extending MongoModel
-     * @param collection   The MongoCollection to delete from
-     * @param session      The ClientSession for handling the transaction (can be null)
-     * @param filter       The filter to apply during deletion
+     * @param <T>        The type extending MongoModel
+     * @param collection The MongoCollection to delete from
+     * @param session    The ClientSession for handling the transaction (can be null)
+     * @param filter     The filter to apply during deletion
      * @return DeleteResult The result of the deletion operation
      * @throws MongoException If an exception related to MongoDB occurs
      */
@@ -997,9 +918,7 @@ public class MongoDBServiceV2 extends BaseService {
 
         // if a session is provided use it, else generate a new one for transaction handling,
         // since deleteMany() can update several document inside a collection, transaction handling is always needed
-        return computeTransaction(deleteSession ->
-                collection.deleteMany(filter)
-        );
+        return computeTransaction(deleteSession -> collection.deleteMany(filter));
     }
 
     private String logOrderList(List<OrderBy> orders) {

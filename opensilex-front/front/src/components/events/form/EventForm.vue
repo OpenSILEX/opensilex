@@ -66,7 +66,7 @@
                     helpMessage="Event.is-instant-help"
                 >
                     <template v-slot:field="field">
-                        <b-form-checkbox v-model="form.is_instant" switch @change="$emit('change',$event)">
+                        <b-form-checkbox v-model="form.is_instant" switch @change="updateIsInstantFilter">
                         </b-form-checkbox>
                     </template>
                 </opensilex-FormField>
@@ -76,22 +76,26 @@
         <div class="row">
             <div class="col" v-if="!form.is_instant">
                 <opensilex-DateTimeForm
+                    ref="startDateSelector"
                     :value.sync="form.start"
                     label="Event.start"
                     :maxDate="form.end"
-                    :required="startRequired"
-                    @update:value="updateRequiredProps"
+                    :required="startRequired"        
                     helpMessage="Event.start-help"
+                    @input="updateRequiredProps('startDateSelector')"
+                    @clear="updateRequiredProps('startDateSelector')"
                 ></opensilex-DateTimeForm>
             </div>
 
             <div class="col">
                 <opensilex-DateTimeForm
+                    ref="endDateSelector"
                     :value.sync="form.end"
                     label="Event.end"
-                    :required="endRequired"
-                    @update:value="updateRequiredProps"
+                    :required="endRequired"               
                     helpMessage="Event.end-help"
+                    @input="updateRequiredProps('endDateSelector')"
+                    @clear="updateRequiredProps('endDateSelector')"
                 ></opensilex-DateTimeForm>
             </div>
 
@@ -206,18 +210,29 @@ export default class EventForm extends Vue {
     setContext(context) {
         this.context = context;
     }
+ 
+    updateIsInstantFilter(ref){
+        this.$emit('change');
+        this.updateRequiredProps(ref)
+    } 
 
-    updateRequiredProps() {
+    updateRequiredProps(ref){
+        if (this.form.end === "") {
+            this.form.end = undefined
+        }
+        if (this.form.start === ""){
+            this.form.start = undefined
+        }
 
         if (this.form.is_instant) {
             this.endRequired = true;
-        } else {
-            if (this.form.start) {
+        } else {           
+            if(this.form.start == undefined && this.form.end == undefined) {
                 this.startRequired = true;
-                this.endRequired = false;
+                this.endRequired = true; 
             } else {
-                this.startRequired = true;
-                this.endRequired = true;
+                this.startRequired = !!this.form.start;
+                this.endRequired = !!this.form.end;
             }
         }
     }

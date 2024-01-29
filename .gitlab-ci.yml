@@ -223,26 +223,84 @@ opensilex-release:build:
 ### MERGE REQUESTS CHECK AND BUILD
 ##################################
 
-# Checks that the merge request is valid (target branch must not be master, except if the
-# source is a hotfix branch)
-# The merge request is considered from a hotfix branch if at least one of these conditions is valid :
-# - The branch name starts with "hotfix/"
-# - The merge request has the label "hotfix"
-# Merge requests marked with the Draft: keyword are also blocked
+# Checks that the merge request is valid. This job fails if one of these conditions is not met :
+# - The MR attempts to merge a non-hotfix branch to master
+# - The MR attempts to merge a non-feature branch to develop
+# - The MR attempts to merge a non-feature branch to release
+# - The MR title does not respect the Conventional Commit naming convention
+# - The MR has no changelog entry and does not explicitly declare to ignore it
+# - The MR has a changelog entry, but at the same time declares to ignore it
+# Merge requests marked with the Draft: keyword are checked but subsequent jobs (like merge-request:build) will not
+# be triggered.
 # No pipeline is triggered for MR from the release branch, because the last release pipeline can be used instead.
+#
+# The base regex used for checking the Conventional Commit convention was published by @marcojahn on Github :
+# https://gist.github.com/marcojahn/482410b728c31b221b70ea6d2c433f0c
+# The (Draft: )? part was added at the beginning to allow draft MR to be checked.
+#
+# The job makes use of curl and yq (https://github.com/mikefarah/yq) to read the YAML changelog entry.
 merge-request:check:
   stage: check
+  image: alpine
   script:
+    # yq and curl are needed for changelog retrieval
+    - apk update
+    - apk add yq curl
+    # check that only "hotfix/*" branches can be merged to master
     - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" &&
-      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* &&
-      ! $CI_MERGE_REQUEST_LABELS =~ ^(.+,)*hotfix(,.+)*$ ]]; then
+      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* ]]; then
     -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to master is forbidden"
-    -   echo "Only a hotfix can be merged into master"
-    -   echo "To mark this merge request as a hotfix, please add the 'hotfix' label, or rename the branch as hotfix/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+    -   echo "Only a hotfix branch can be merged into master"
+    -   echo "To mark this merge request as a hotfix, please make the branch name begin with 'hotfix/'."
+    -   exit 1
+    - fi
+    # check that only "feature/*" or the release branches can be merged to develop
+    - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" &&
+      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^feature\/.* ]]; then
+    -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to develop is forbidden"
+    -   echo "Only a feature branch can be merged into develop"
+    -   echo "To mark this merge request as a feature, please make the branch name start with 'feature/'."
+    -   exit 1
+    - fi
+    # check that only "feature/*" branches can be merged to release
+    - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "release" &&
+      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^feature\/.* ]]; then
+    -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to release is forbidden"
+    -   echo "Only a feature branch can be merged into release"
+    -   echo "To mark this merge request as a feature, please make the branch name start with 'feature/'."
+    -   exit 1
+    - fi
+    # check the MR title. Base regex by @marcojahn : https://gist.github.com/marcojahn/482410b728c31b221b70ea6d2c433f0c
+    - >-
+      CC_REGEX="^(Draft: )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([[:alnum:]._-]+\))?(!)?: ([[:alnum:]])+([[:space:][:print:]]*)"
+    - if [[ ! "$CI_MERGE_REQUEST_TITLE" =~ "$CC_REGEX" ]]; then
+    -   echo 'The merge request title must respect the Conventional Commit naming convention. Please see 
+        https://www.conventionalcommits.org/en/v1.0.0/ for more information.'
+    -   exit 1
+    - fi
+    # query the merge request description to extract changelog and ignore-changelog fields
+    - export API_MR_URL="$CI_API_V4_URL/projects/$CI_MERGE_REQUEST_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID"
+    - FRONT_MATTER=$(curl -s -X GET -F "private_token=$JOB_API_TOKEN" $API_MR_URL
+      | yq '.description'
+      | yq -f extract -o json '.')
+    - CHANGELOG=$(echo $FRONT_MATTER | yq '.changelog // ""')
+    - IGNORE_CHANGELOG=$(echo $FRONT_MATTER | yq '.ignore-changelog // ""')
+    - echo $CHANGELOG
+    - echo $IGNORE_CHANGELOG
+    # check that the changelog entry is empty when ignore-changelog is set to true
+    - if [[ ${#CHANGELOG} -gt 0 && "$IGNORE_CHANGELOG" == "true" ]]; then
+    -   echo 'Changelog description is not empty while "ignore-changelog" is set to "true". This is an
+        undefined behaviour ;  either remove the changelog description or set "ignore-changelog" to "false" to resolve
+        it, then retry this job.'
+    -   exit 1
+    # check that the changelog entry is not empty when ignore-changelog is not set to true
+    - elif [[ ${#CHANGELOG} -eq 0 && "$IGNORE_CHANGELOG" != "true" ]]; then
+    -   echo 'Changelog description is empty while "ignore-changelog" is set to "false". Please fill the
+        changelog description or set "ignore-changelog" to "true", then retry this job.'
     -   exit 1
     - fi
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
 
 # Builds the merge request
 merge-request:build:
@@ -559,12 +617,12 @@ demo:build:
 ##  MAX-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-maximilian:build:
+test:maximilian:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "maximilian2"
+    - if: $CI_COMMIT_BRANCH == "test/maximilian2"
 
 test:maximilian:deploy:
   <<: *deploy_opensilex_before_script
@@ -579,21 +637,21 @@ test:maximilian:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/maximilian"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "maximilian2"
+    - if: $CI_COMMIT_BRANCH == "test/maximilian2"
       when: on_success
   needs:
-    - maximilian:build
+    - test:maximilian:build
 
 ###################################
 ##  ARNAUD-TEST-BUILD-DEPLOYMENT
 ###################################
 
-arnaud:build:
+test:arnaud:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "arnaud"
+    - if: $CI_COMMIT_BRANCH == "test/arnaud"
 
 test:arnaud:deploy:
   <<: *deploy_opensilex_before_script
@@ -608,21 +666,21 @@ test:arnaud:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "arnaud"
+    - if: $CI_COMMIT_BRANCH == "test/arnaud"
       when: on_success
   needs:
-    - arnaud:build
+    - test:arnaud:build
 
 ###################################
 ##  YVAN-TEST-BUILD-DEPLOYMENT
 ###################################
 
-yvan:build:
+test:yvan:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "yvan"
+    - if: $CI_COMMIT_BRANCH == "test/yvan"
   tags:
     - stable
 
@@ -639,18 +697,18 @@ test:yvan:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/yvan"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "yvan"
+    - if: $CI_COMMIT_BRANCH == "test/yvan"
       when: on_success
   tags:
     - stable
   needs:
-    - yvan:build
+    - test:yvan:build
 
 ###################################
 ##  VALENTIN-TEST-BUILD-DEPLOYMENT
 ###################################
 
-valentin:build:
+test:valentin:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
@@ -673,18 +731,18 @@ test:valentin:deploy:
     - if: $CI_COMMIT_BRANCH == "test/valentin"
       when: on_success
   needs:
-    - valentin:build
+    - test:valentin:build
 
 ###################################
 ##  BERNHARD-TEST-BUILD-DEPLOYMENT
 ###################################
 
-bernhard:build:
+test:bernhard:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/bernhard"
 
 test:bernhard:deploy:
   <<: *deploy_opensilex_before_script
@@ -699,21 +757,21 @@ test:bernhard:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/bernhard"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/bernhard"
       when: on_success
   needs:
-    - bernhard:build
+    - test:bernhard:build
 
 ###################################
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-gabriel:build:
+test:gabriel:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+    - if: $CI_COMMIT_BRANCH == "test/gabriel"
 
 test:gabriel:deploy:
   <<: *deploy_opensilex_before_script
@@ -728,23 +786,21 @@ test:gabriel:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+    - if: $CI_COMMIT_BRANCH == "test/gabriel"
       when: on_success
   needs:
-    - gabriel:build
-
-
+    - test:gabriel:build
 
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT
 ######################################
 
-optimization:build:
+test:optimization:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "optimization"
+    - if: $CI_COMMIT_BRANCH == "test/optimization"
 
 test:optimization:deploy:
   <<: *deploy_opensilex_before_script
@@ -759,21 +815,21 @@ test:optimization:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/optimization"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "optimization"
+    - if: $CI_COMMIT_BRANCH == "test/optimization"
       when: on_success
   needs:
-    - optimization:build
+    - test:optimization:build
 
-  ###################################
-  ##  SEBASTIEN-TEST-BUILD-DEPLOYMENT
-  ###################################
+###################################
+##  SEBASTIEN-TEST-BUILD-DEPLOYMENT
+###################################
 
-sebastien:build:
+test:sebastien:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "sebastien"
+    - if: $CI_COMMIT_BRANCH == "test/sebastien"
 
 test:sebastien:deploy:
   <<: *deploy_opensilex_before_script
@@ -788,23 +844,23 @@ test:sebastien:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/sebastien"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "sebastien"
+    - if: $CI_COMMIT_BRANCH == "test/sebastien"
       when: on_success
   needs:
-    - sebastien:build
+    - test:sebastien:build
 
 ###################################
-##  BENDY-TEST-BUILD-DEPLOYMENT
+##  TEMP2-TEST-BUILD-DEPLOYMENT
 ###################################
 
-bendy:build:
+test:temporary2:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "bendy"
+    - if: $CI_COMMIT_BRANCH == "test/temporary2"
 
-test:bendy:deploy:
+test:temporary2:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -817,21 +873,21 @@ test:bendy:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/bendy"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "bendy"
+    - if: $CI_COMMIT_BRANCH == "test/temporary2"
       when: on_success
   needs:
-    - bendy:build
+    - test:temporary2:build
 
 ###################################
 ##  alexiaChiavarino-TEST-BUILD-DEPLOYMENT
 ###################################
 
-alexiaChiavarino:build:
+test:alexiaChiavarino:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "alexiaChiavarino"
+    - if: $CI_COMMIT_BRANCH == "test/alexiaChiavarino"
   tags:
     - stable
 
@@ -848,23 +904,23 @@ test:alexiaChiavarino:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/alexiaChiavarino"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "alexiaChiavarino"
+    - if: $CI_COMMIT_BRANCH == "test/alexiaChiavarino"
       when: on_success
   tags:
     - stable
   needs:
-    - alexiaChiavarino:build
+    - test:alexiaChiavarino:build
 
 ###################################
 ##  RENAUD-TEST-BUILD-DEPLOYMENT
 ###################################
 
-renaud:build:
+test:renaud:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "renaud"
+    - if: $CI_COMMIT_BRANCH == "test/renaud"
 
 test:renaud:deploy:
   <<: *deploy_opensilex_before_script
@@ -879,21 +935,21 @@ test:renaud:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/renaud"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "renaud"
+    - if: $CI_COMMIT_BRANCH == "test/renaud"
       when: on_success
   needs:
-    - renaud:build
+    - test:renaud:build
 
 ###################################
 ## TEMPORARY-TEST-BUILD-DEPLOYMENT
 ###################################
 
-temporary1:build:
+test:temporary1:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "temporary1"
+    - if: $CI_COMMIT_BRANCH == "test/temporary1"
 
 test:temporary1:deploy:
   <<: *deploy_opensilex_before_script
@@ -908,21 +964,21 @@ test:temporary1:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "temporary1"
+    - if: $CI_COMMIT_BRANCH == "test/temporary1"
       when: on_success
   needs:
-    - temporary1:build
+    - test:temporary1:build
 
 ###################################
 ##  EMILIE-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-emilie:build:
+test:emilie:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "emilie"
+    - if: $CI_COMMIT_BRANCH == "test/emilie"
 
 test:emilie:deploy:
   <<: *deploy_opensilex_before_script
@@ -937,10 +993,10 @@ test:emilie:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/emilie"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "emilie"
+    - if: $CI_COMMIT_BRANCH == "test/emilie"
       when: on_success
   needs:
-    - emilie:build
+    - test:emilie:build
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR PARTNERS TEAMS
@@ -950,14 +1006,14 @@ test:emilie:deploy:
 ##  BRICE-TEST-BUILD-DEPLOYMENT
 ###################################
 
-brice:build:
+test:temporary3:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "brice"
+    - if: $CI_COMMIT_BRANCH == "test/temporary3"
 
-test:brice:deploy:
+test:temporary3:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -970,23 +1026,23 @@ test:brice:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/brice"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "brice"
+    - if: $CI_COMMIT_BRANCH == "test/temporary3"
       when: on_success
   needs:
-    - brice:build
+    - test:temporary3:build
 
 ###################################
 ##  MARIEM-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-mariem:build:
+test:temporary4:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "mariem"
+    - if: $CI_COMMIT_BRANCH == "test/temporary4"
 
-test:mariem:deploy:
+test:temporary4:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -999,10 +1055,10 @@ test:mariem:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/mariem"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "mariem"
+    - if: $CI_COMMIT_BRANCH == "test/temporary4"
       when: on_success
   needs:
-    - mariem:build
+    - test:temporary4:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

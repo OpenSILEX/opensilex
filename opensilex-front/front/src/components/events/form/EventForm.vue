@@ -231,18 +231,8 @@ export default class EventForm extends Vue {
                 this.startRequired = true;
                 this.endRequired = true; 
             } else {
-                if (this.form.start !== undefined && this.form.end == undefined) {
-                    this.startRequired = true;
-                    this.endRequired = false;
-                } else {
-                    if (this.form.end !== undefined && this.form.start == undefined) {
-                        this.endRequired = true;
-                        this.startRequired = false;
-                    } else {
-                        this.startRequired = true;
-                        this.endRequired = true;
-                    }
-                }
+                this.startRequired = !!this.form.start;
+                this.endRequired = !!this.form.end;
             }
         }
     }

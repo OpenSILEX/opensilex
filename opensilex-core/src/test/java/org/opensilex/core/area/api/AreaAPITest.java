@@ -10,7 +10,6 @@
 package org.opensilex.core.area.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
@@ -21,12 +20,12 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
@@ -41,13 +40,30 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     protected final String path = "/core/area";
-
-    protected final String uriPath = path + "/{uri}";
-    protected final String createPath = path;
-    protected final String updatePath = path;
-    protected final String deletePath = path + "/{uri}";
-    protected final String exportGeospatialPath = path + "/export_geospatial";
+    protected final ServiceDescription getByUri = new ServiceDescription(
+            AreaAPI.class.getMethod("getByURI", URI.class),
+            path + "/{uri}"
+    );
+    protected final ServiceDescription create = new ServiceDescription(
+            AreaAPI.class.getMethod("createArea", AreaCreationDTO.class),
+            path
+    );
+    protected final ServiceDescription update = new ServiceDescription(
+            AreaAPI.class.getMethod("getByURI", URI.class),
+            path
+    );
+    protected final ServiceDescription delete = new ServiceDescription(
+            AreaAPI.class.getMethod("getByURI", URI.class),
+            path + "/{uri}"
+    );
+    protected final ServiceDescription exportGeospatial = new ServiceDescription(
+            AreaAPI.class.getMethod("getByURI", URI.class),
+            path + "/export_geospatial"
+    );
     private int soCount = 1;
+
+    public AreaAPITest() throws NoSuchMethodException {
+    }
 
     protected AreaCreationDTO getCreationDTO(boolean geometryError) throws Exception {
         AreaCreationDTO dto = new AreaCreationDTO();
@@ -77,40 +93,40 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
+    protected URI createDefaultArea(boolean geometryError) throws Exception {
+        UserCall createArea = new UserCallBuilder(create).setBody(getCreationDTO(geometryError)).buildAdmin();
+        return createArea.executeCallAndReturnURI();
+    }
+
     @Test
     public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        // ensure that the result is a well formed URI, else throw exception
-        URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+        // ensure that the result is a well-formed URI, else throw exception
+        URI createdUri = createDefaultArea(false);
+        new UserCallBuilder(getByUri).setUriInPath(createdUri.toString()).buildAdmin().executeCallAndReturnURI();
     }
 
     @Test
     public void testUpdate() throws Exception {
         // create the area
-        AreaCreationDTO areaDTO = getCreationDTO(false);
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), areaDTO);
+        URI createdUri = createDefaultArea(false);
 
         // update the area
-        areaDTO.setUri(extractUriFromResponse(postResult));
+        AreaCreationDTO areaDTO = getCreationDTO(false);
+        areaDTO.setUri(createdUri);
         areaDTO.setName("new name");
         areaDTO.setRdfType(new URI("vocabulary:FloodableArea"));
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         areaDTO.setGeometry(geometryToGeoJson(geometry));
 
-        final Response updateResult = getJsonPutResponse(target(updatePath), areaDTO);
-        assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
+        new UserCallBuilder(update).buildAdmin().executeCallAndReturnURI();
 
         // retrieve the new area and compare it to the expected area
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), areaDTO.getUri().toString());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaCreationDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaCreationDTO>>() {
-        });
+        SingleObjectResponse<AreaCreationDTO> getResponse = new UserCallBuilder(getByUri)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaCreationDTO>>() {
+                })
+                .getDeserializedResponse();
         AreaCreationDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
@@ -122,84 +138,68 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testDelete() throws Exception {
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        String uri = extractUriFromResponse(postResponse).toString();
+        URI uri = createDefaultArea(false);
 
         // delete object and check if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+        UserCall deleteCall = new UserCallBuilder(delete).setUriInPath(uri.toString()).buildAdmin();
+        deleteCall.executeCall();
 
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
+        UserCall getCall = new UserCallBuilder(getByUri).setUriInPath(uri.toString()).buildAdmin();
+        Response getResult = getCall.executeCall();
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByURI() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        URI uri = extractUriFromResponse(postResult);
+        URI uri = createDefaultArea(false);
 
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
+        UserCall getArea = new UserCallBuilder(getByUri)
+                .setUriInPath(uri.toString())
+                .buildAdmin();
+        Result<SingleObjectResponse<AreaGetDTO>> getResponse = getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         });
-        AreaGetDTO soGetDetailDTO = getResponse.getResult();
-        assertNotNull(soGetDetailDTO);
+        assertNotNull(getResponse.getDeserializedResponse().getResult());
     }
 
     @Test
     public void testGetByUriBadUri() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        JsonNode node = postResult.readEntity(JsonNode.class);
-        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
-        String uri = postResponse.getResult();
+        URI uri = createDefaultArea(false);
 
-        // call the service with a non existing pseudo random URI
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
+        // call the service with a non-existing pseudo random URI
+        UserCall getArea = new UserCallBuilder(getByUri)
+                .setUriInPath(uri.toString() + "7FG4FG89FG4GH4GH57")
+                .buildAdmin();
+        final Response getResult = getArea.executeCall();
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testSearchIntersectsArea() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        URI uri = extractUriFromResponse(postResult);
+        URI uri = createDefaultArea(false);
 
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
-        });
-        AreaGetDTO soGetDetailDTO = getResponse.getResult();
-        assertNotNull(soGetDetailDTO);
+        UserCall getArea = new UserCallBuilder(getByUri)
+                .setUriInPath(uri.toString())
+                .buildAdmin();
+        assertNotNull(getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
+        }));
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = Exception.class) // TODO : WHY?
     public void testSearchIntersectsAreaErrorGeometry() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(true));
-        URI uri = extractUriFromResponse(postResult);
+        URI uri = createDefaultArea(true); // TODO : WHY?
 
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
+        UserCall getArea = new UserCallBuilder(getByUri).setUriInPath(uri.toString()).buildAdmin();
+        Result<SingleObjectResponse<AreaGetDTO>> getResult = getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         });
-        AreaGetDTO soGetDetailDTO = getResponse.getResult();
-        assertNotNull(soGetDetailDTO);
+        assertNotNull(getResult.getDeserializedResponse().getResult());
     }
 
     @Test
     public void testExportAreasAsShpandGeoJson() throws Exception {
-
-        //Create one Device Model
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
-        URI uri = extractUriFromResponse(postResult);
-
+        // This test is kind of weird. Ask Alexia what it does
+        //Create one Area
+        URI uri = createDefaultArea(false);
+        // Especially here. Why add params to a model of an Area whose URI already exists?
         AreaModel areaModel = new AreaModel();
 
         areaModel.setName("AreaExported");
@@ -245,11 +245,16 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
             put("pageSize",10000);
         }};
 
-        // assert service
-        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
-        assertEquals(Response.Status.OK.getStatusCode(), resultShp.getStatus());
-        // assert service
-        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
-        assertEquals(Response.Status.OK.getStatusCode(), resultGJson.getStatus());
+        UserCallBuilder exportCallBuilder = new UserCallBuilder(exportGeospatial)
+                .setParams(paramsShp)
+                .setBody(objectsList)
+                .addResponseMediaType(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+
+        UserCall exportCall = exportCallBuilder.buildAdmin();
+        exportCall.executeCall();
+
+        exportCallBuilder.setParams(paramsGJson);
+        exportCall = exportCallBuilder.buildAdmin();
+        exportCall.executeCall();
     }
 }

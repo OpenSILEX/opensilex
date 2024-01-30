@@ -25,8 +25,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.opensilex.OpenSilex;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.slf4j.Logger;
@@ -43,10 +41,10 @@ import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -183,30 +181,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         return resourceConfig;
     }
 
-    /**
-     * Append a set of query params to a given {@link WebTarget}
-     *
-     * @param target the {@link WebTarget} on which append params
-     * @param params the map between param name and param value
-     *
-     * @return the updated {@link WebTarget}
-     */
-    protected WebTarget appendQueryParams(WebTarget target, Map<String, Object> params) {
-
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            Object value = entry.getValue();
-            if (List.class
-                    .isAssignableFrom(value.getClass())) {
-                for (Object v : ((List<?>) value)) {
-                    target = target.queryParam(entry.getKey(), v);
-                }
-            } else {
-                target = target.queryParam(entry.getKey(), entry.getValue());
-            }
-        }
-        return target;
-    }
-
     protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {
         if (first.size() != second.size()) {
             return false;
@@ -220,46 +194,25 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * This class represents a public call and can be used to perform HTTP requests.
      */
     public class PublicCall {
-        private Map<String, Object> params = new HashMap<>();
-        private Object body = null;
-        private Map<String, Object> pathTemplateParams = new HashMap<>(); // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
-        private Method serviceMethod;
-        private String pathTemplate;
+        protected final Map<String, Object> params;
+        protected final Object body;
+        protected final Map<String, Object> pathTemplateParams; // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
+        protected final Method serviceMethod;
+        protected final String pathTemplate;
 
-        private String httpMethod;
+        protected String httpMethod;
 
-        /**
-         * Constructs a new PublicCall with the specified service method, path template and HTTP method.
-         *
-         * @param serviceMethod the method of the webservice (e.g. ExperimentAPI.searchExperiments for the experiment
-         *                      webservice. -> use ExperimentAPI.class.getMethod())
-         * @param pathTemplate the path template for the webservice. Can be a regular path or a template that contains
-         *                     parts to replace (e.g. /core/experiments/{uri}. {uri} is a placeholder to be replaced by
-         *                     the actual resource's URI)
-         */
-        public PublicCall(Method serviceMethod, String pathTemplate) {
+        protected final MediaType callMediaType;
+        protected final List<MediaType> responseMediaTypes;
+
+        public PublicCall(Map<String, Object> params, Object body, Map<String, Object> pathTemplateParams, Method serviceMethod, String pathTemplate, MediaType callMediaType, List<MediaType> responseMediaTypes) {
+            this.params = params;
+            this.body = body;
+            this.pathTemplateParams = pathTemplateParams;
             this.serviceMethod = serviceMethod;
             this.pathTemplate = pathTemplate;
-        }
-
-        public PublicCall setParams(Map<String, Object> params) {
-            this.params = params;
-            return this;
-        }
-
-        public PublicCall setParam(String key, Object value) {
-            this.params.put(key, value);
-            return this;
-        }
-
-        public PublicCall setBody(Object body) {
-            this.body = body;
-            return this;
-        }
-
-        public PublicCall setPathTemplateParam(String key, Object value) {
-            this.pathTemplateParams.put(key, value);
-            return this;
+            this.callMediaType = callMediaType;
+            this.responseMediaTypes = responseMediaTypes;
         }
 
         /**
@@ -267,10 +220,10 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          *
          * @return the response of the call.
          */
-        public Response executeCall(){
+        public Response executeCall() throws Exception {
             httpMethod = findHttpMethod(serviceMethod);
             WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
-            return makeCorrectCall(target, httpMethod, body);
+            return makeCorrectCall(target, httpMethod, body, callMediaType, responseMediaTypes);
         }
 
         /**
@@ -279,7 +232,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @param typeReference the type reference for deserialization.
          * @return the result of the call.
          */
-        protected <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) {
+        public <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
 
             Response response = executeCall();
 
@@ -289,126 +242,258 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
 
         /**
-         * This class represents the result of a call in two parts : the raw response and the deserialized one.
+         * Finds the HTTP method for the specified service method.
+         *
+         * @param serviceMethod the service method to find the HTTP method for.
+         * @return the HTTP method of the service method.
          */
-        public class Result <T> {
-            private T deserializedResponse;
-            private Response response;
-
-            private Result(T deserializedResponse, Response response) {
-                this.deserializedResponse = deserializedResponse;
-                this.response = response;
-            }
-
-            public T getDeserializedResponse() {
-                return deserializedResponse;
-            }
-
-            public Response getResponse() {
-                return response;
+        protected String findHttpMethod(Method serviceMethod) {
+            if (serviceMethod.isAnnotationPresent(GET.class)) {
+                return HttpMethod.GET;
+            } else if (serviceMethod.isAnnotationPresent(POST.class)) {
+                return HttpMethod.POST;
+            } else if (serviceMethod.isAnnotationPresent(PUT.class)) {
+                return HttpMethod.PUT;
+            } else if (serviceMethod.isAnnotationPresent(DELETE.class)) {
+                return HttpMethod.DELETE;
+            } else {
+                throw new UnsupportedOperationException("HTTP method not supported");
             }
         }
-    }
 
-    /**
-     * Finds the HTTP method for the specified service method.
-     *
-     * @param serviceMethod the service method to find the HTTP method for.
-     * @return the HTTP method of the service method.
-     */
-    protected String findHttpMethod(Method serviceMethod) {
-        if (serviceMethod.isAnnotationPresent(GET.class)) {
-            return HttpMethod.GET;
-        } else if (serviceMethod.isAnnotationPresent(POST.class)) {
-            return HttpMethod.POST;
-        } else if (serviceMethod.isAnnotationPresent(PUT.class)) {
-            return HttpMethod.PUT;
-        } else if (serviceMethod.isAnnotationPresent(DELETE.class)) {
-            return HttpMethod.DELETE;
-        } else {
-            throw new UnsupportedOperationException("HTTP method not supported");
-        }
-    }
+        /**
+         * Makes the correct call based on the specified target, HTTP method and body.
+         *
+         * @param target the target of the call.
+         * @param httpMethod the HTTP method of the call.
+         * @param body the body of the call.
+         * @return the response of the call.
+         */
+        protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body, MediaType callMediaType, List<MediaType> responseMediaTypes) {
 
-    /**
-     * Makes the correct call based on the specified target, HTTP method and body.
-     *
-     * @param target the target of the call.
-     * @param httpMethod the HTTP method of the call.
-     * @param body the body of the call.
-     * @return the response of the call.
-     */
-    protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body) {
-        Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
-        if(Objects.equals(httpMethod, HttpMethod.GET)) {
-            return requestBuilder.get();
-        } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
-            return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
-        } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
-            return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
-        } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
-            return requestBuilder.delete();
-        } else {
-            throw new UnsupportedOperationException("HTTP method not supported");
-        }
-    }
-
-    /**
-     * Creates the target for the call based on the specified parameters, path template parameters, service method and
-     * path template.
-     *
-     * @param params the parameters of the call.
-     * @param pathTemplateParams the path template parameters of the call.
-     * @param serviceMethod the service method of the call.
-     * @param pathTemplate the path template of the call.
-     * @return the target of the call.
-     */
-    protected WebTarget createTarget(Map<String, Object> params, Map<String, Object> pathTemplateParams, Method serviceMethod, String pathTemplate) {
-        WebTarget target = target(pathTemplate);
-        if (!params.isEmpty()){
-            checkParamsExist(params, serviceMethod);
-            appendQueryParams(target, params);
-        }
-        if (!pathTemplateParams.isEmpty()) {
-            target = target.resolveTemplates(pathTemplateParams);
-        }
-        return target;
-    }
-
-    /**
-     * Checks if the specified parameters exist in the service method.
-     *
-     * @param params the parameters to check.
-     * @param serviceMethod the service method to check in.
-     */
-    protected void checkParamsExist(Map<String, Object> params, Method serviceMethod) {
-        List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
-                .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
-                .collect(Collectors.toList());
-        assertTrue(availableParams.containsAll(params.keySet()));
-    }
-
-    /**
-     * Reads the response, verifies the compatibility between the TypeReference and method's return type, and returns the deserialized response.
-     *
-     * @param response the response to read.
-     * @param type the type reference for deserialization.
-     * @param method the method to check compatibility with.
-     * @return the deserialized response.
-     */
-    protected <T> T readResponse(Response response, TypeReference<T> type, Method method) {
-        JsonNode node = response.readEntity(JsonNode.class);
-
-        // Verify compatibility between TypeReference and method's return type
-        Type expectedType = method.getGenericReturnType();
-        TypeReference<?> expectedTypeReference = new TypeReference<>() {
-            @Override
-            public Type getType() {
-                return expectedType;
+            Invocation.Builder requestBuilder;
+            if (Objects.isNull(callMediaType)) {
+                requestBuilder = target.request(MediaType.APPLICATION_JSON);
+            } else {
+                requestBuilder = target.request(callMediaType);
             }
-        };
-        Assert.assertEquals(type.getType(), expectedTypeReference.getType());
 
-        return mapper.convertValue(node, type);
+            if (!responseMediaTypes.isEmpty()) {
+                for (MediaType mediaType : responseMediaTypes) {
+                    requestBuilder.accept(mediaType);
+                }
+            }
+
+            if(Objects.equals(httpMethod, HttpMethod.GET)) {
+                return requestBuilder.get();
+            } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
+                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
+                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
+                return requestBuilder.delete();
+            } else {
+                throw new UnsupportedOperationException("HTTP method not supported");
+            }
+        }
+
+        /**
+         * Creates the target for the call based on the specified parameters, path template parameters, service method and
+         * path template.
+         *
+         * @param params the parameters of the call.
+         * @param pathTemplateParams the path template parameters of the call.
+         * @param serviceMethod the service method of the call.
+         * @param pathTemplate the path template of the call.
+         * @return the target of the call.
+         */
+        protected WebTarget createTarget(Map<String, Object> params, Map<String, Object> pathTemplateParams, Method serviceMethod, String pathTemplate) {
+            WebTarget target = target(pathTemplate);
+            if (!params.isEmpty()){
+                checkParamsExist(params, serviceMethod);
+                appendQueryParams(target, params);
+            }
+            if (!pathTemplateParams.isEmpty()) {
+                target = target.resolveTemplates(pathTemplateParams);
+            }
+            return target;
+        }
+
+        /**
+         * Append a set of query params to a given {@link WebTarget}
+         *
+         * @param target the {@link WebTarget} on which append params
+         * @param params the map between param name and param value
+         *
+         * @return the updated {@link WebTarget}
+         */
+        protected WebTarget appendQueryParams(WebTarget target, Map<String, Object> params) {
+
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                Object value = entry.getValue();
+                if (List.class
+                        .isAssignableFrom(value.getClass())) {
+                    for (Object v : ((List<?>) value)) {
+                        target = target.queryParam(entry.getKey(), v);
+                    }
+                } else {
+                    target = target.queryParam(entry.getKey(), entry.getValue());
+                }
+            }
+            return target;
+        }
+
+        /**
+         * Checks if the specified parameters exist in the service method.
+         *
+         * @param params the parameters to check.
+         * @param serviceMethod the service method to check in.
+         */
+        protected void checkParamsExist(Map<String, Object> params, Method serviceMethod) {
+            List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
+                    .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
+                    .collect(Collectors.toList());
+            assertTrue(availableParams.containsAll(params.keySet()));
+        }
+
+        /**
+         * Reads the response, verifies the compatibility between the TypeReference and method's return type, and returns the deserialized response.
+         *
+         * @param response the response to read.
+         * @param type the type reference for deserialization.
+         * @param method the method to check compatibility with.
+         * @return the deserialized response.
+         */
+        protected <T> T readResponse(Response response, TypeReference<T> type, Method method) {
+            JsonNode node = response.readEntity(JsonNode.class);
+
+            // Verify compatibility between TypeReference and method's return type
+            Type expectedType = method.getGenericReturnType();
+            TypeReference<?> expectedTypeReference = new TypeReference<>() {
+                @Override
+                public Type getType() {
+                    return expectedType;
+                }
+            };
+            Assert.assertEquals(type.getType(), expectedTypeReference.getType());
+
+            return mapper.convertValue(node, type);
+        }
+    }
+
+    protected class PublicCallBuilder<T extends PublicCallBuilder<T>> {
+
+        protected Map<String, Object> params = new HashMap<>();
+        protected Object body = null;
+        protected Map<String, Object> pathTemplateParams = new HashMap<>(); // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
+        protected Method serviceMethod;
+        protected String pathTemplate;
+
+        protected MediaType callMediaType = null;
+        protected List<MediaType> responseMediaTypes = null;
+
+        public PublicCallBuilder(ServiceDescription serviceDescription) {
+            this.serviceMethod = serviceDescription.getServiceMethod();
+            this.pathTemplate = serviceDescription.getPathTemplate();
+        }
+
+        public T setParams(Map<String, Object> params) {
+            this.params = params;
+            return self();
+        }
+
+        public T addParam(String key, Object value) {
+            this.params.put(key, value);
+            return self();
+        }
+
+        public T setBody(Object body) {
+            this.body = body;
+            return self();
+        }
+
+        public T setPathTemplateParams(Map<String, Object> pathTemplateParams) {
+            this.pathTemplateParams = pathTemplateParams;
+            return self();
+        }
+
+        public T addPathTemplateParam(String key, Object value) {
+            this.pathTemplateParams.put(key, value);
+            return self();
+        }
+
+        public T setUriInPath(String uri) {
+            this.pathTemplateParams.put("{uri}", uri);
+            return self();
+        }
+
+        public T setPathTemplate(String pathTemplate) {
+            this.pathTemplate = pathTemplate;
+            return self();
+        }
+
+        public T setCallMediaType(MediaType callMediaType) {
+            this.callMediaType = callMediaType;
+            return self();
+        }
+
+        public T setResponseMediaTypes(List<MediaType> responseMediaTypes) {
+            this.responseMediaTypes = responseMediaTypes;
+            return self();
+        }
+
+        public T addResponseMediaType(MediaType responseMediaType) {
+            this.responseMediaTypes.add(responseMediaType);
+            return self();
+        }
+
+        @SuppressWarnings("unchecked")
+        protected T self() {
+            return (T) this;
+        }
+
+        public PublicCall build() {
+            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
+        }
+    }
+
+    /**
+     * This class represents the result of a call in two parts : the raw response and the deserialized one.
+     */
+    public class Result <T> {
+        private T deserializedResponse;
+        private Response response;
+
+        public Result(T deserializedResponse, Response response) {
+            this.deserializedResponse = deserializedResponse;
+            this.response = response;
+        }
+
+        public T getDeserializedResponse() {
+            return deserializedResponse;
+        }
+
+        public Response getResponse() {
+            return response;
+        }
+    }
+
+    public static class ServiceDescription {
+
+        private final Method serviceMethod;
+        private final String pathTemplate;
+
+        public ServiceDescription(Method serviceMethod, String pathTemplate) {
+            this.serviceMethod = serviceMethod;
+            this.pathTemplate = pathTemplate;
+        }
+
+        public Method getServiceMethod() {
+            return serviceMethod;
+        }
+
+        public String getPathTemplate() {
+            return pathTemplate;
+        }
     }
 }

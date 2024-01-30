@@ -7,40 +7,37 @@
 package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.authentication.api.AuthenticationAPI;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.response.ResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.client.Entity;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-
+import static org.junit.Assert.assertTrue;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
 
 /**
  * @author Vincent MIGOT
@@ -52,6 +49,19 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractSecurityIntegrationTest.class);
 
     protected static SecurityModule securityModule;
+
+    protected static final ServiceDescription authenticate;
+
+    static {
+        try {
+            authenticate = new ServiceDescription(
+                    AuthenticationAPI.class.getMethod("authenticate", AuthenticationDTO.class),
+                    AuthenticationAPI.PATH + "/" + AuthenticationAPI.AUTHENTICATE_PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeClass
     public static void createAdmin() throws Exception {
@@ -118,356 +128,194 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return new ArrayList<>();
     }
-
-    /**
-     * Call the security service and return a new Token
-     *
-     * @param userMail The user identifier
-     * @param userPassword The user password
-     * @return a new Token
-     * @throws Exception in case of error during token retrieval
-     */
-    protected TokenGetDTO queryToken(String userMail, String userPassword) throws Exception {
-
-        AuthenticationDTO authDto = new AuthenticationDTO();
-        authDto.setIdentifier(userMail);
-        authDto.setPassword(userPassword);
-
-        final Response callResult = target("/security/authenticate")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(authDto, MediaType.APPLICATION_JSON_TYPE));
-
-        JsonNode node = callResult.readEntity(JsonNode.class);
-
-        // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
-        Object json = mapper.readValue(node.toString(), Object.class);
-        if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
-            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
-            });
-            return res.getResult();
-        }
-
-        throw new Exception("Error while getting token: " + json);
-    }
-
-    /**
-     * Calls the security service and return a new token for the admin
-     *
-     * @return a new token for the admin
-     * @throws Exception
-     */
-    protected TokenGetDTO queryAdminToken() throws Exception {
-        return queryToken(ADMIN_MAIL, ADMIN_PASSWORD);
-    }
-
-    /**
-     * Register the admin token in the token map for usage in tests.
-     *
-     * @throws Exception
-     */
-    protected void registerAdminTokenIfNecessary() throws Exception {
-        if (!tokenMap.containsKey(ADMIN_MAIL)) {
-            tokenMap.put(ADMIN_MAIL, queryAdminToken());
-        }
-    }
-
-    /**
-     * Register a token in the token map for usage in tests. Necessary to use before calling {@link #appendToken(WebTarget, String)}.
-     *
-     * @param userMail The user identifier
-     * @param userPassword The user password
-     * @throws Exception
-     */
-    protected void registerToken(String userMail, String userPassword) throws Exception {
-        tokenMap.put(userMail, queryToken(userMail, userPassword));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
-     *
-     * @param target the {@link WebTarget} on which POST the given entity
-     * @param entity the data to POST on the given target
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
-        return appendAdminToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
-     *
-     * @param target the {@link WebTarget} on which POST the given entity
-     * @param entity the data to POST on the given target
-     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getOctetPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
-        return appendAdminToken(target)
-                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
-                .post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call. If you wish to perform the action using
-     * the admin account, user the {@link #getJsonPostResponseAsAdmin(WebTarget, Object)} method.
-     *
-     * @param target the {@link WebTarget} on which POST the given entity
-     * @param entity the data to POST on the given target
-     * @param userMail the user identifier to perform the query
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonPostResponse(WebTarget target, Object entity, String userMail) throws Exception {
-        return appendToken(target, userMail).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call.
-     *
-     * @param target    the {@link WebTarget} on which POST the given entity
-     * @param multipart the data to POST on the given target
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonPostResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
-        return appendAdminToken(target.register(MultiPartFeature.class)).post(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
-     *
-     * @param target the {@link WebTarget} on which GET the given entity
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonGetResponseAsAdmin(WebTarget target) throws Exception {
-        return appendAdminToken(target).get();
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} POST service call.
-     *
-     * @param target the {@link WebTarget} on which GET the given entity
-     * @param userMail the user identifier to perform the query
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonGetResponse(WebTarget target, String userMail) throws Exception {
-        return appendToken(target, userMail).get();
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} PUT service call.
-     *
-     * @param target    the {@link WebTarget} on which PUT the given entity
-     * @param multipart the data to PUT on the given target
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonPutResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
-        return appendAdminToken(target.register(MultiPartFeature.class)).put(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
-    }
-
-    /**
-     * Get {@link Response} from an {@link ApiProtected} PUT service call.
-     *
-     * @param target the {@link WebTarget} on which PUT the given entity
-     * @param entity the data to PUT on the given target
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonPutResponse(WebTarget target, Object entity) throws Exception {
-        return appendAdminToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
-    }
-
-    /**
-     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call as admin.
-     *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri    the URI of the resource to fetch from the given target.
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonGetByUriResponseAsAdmin(WebTarget target, String uri) throws Exception {
-        return appendAdminToken(target.resolveTemplate("uri", uri)).get();
-    }
-
-    /**
-     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
-     *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri    the URI of the resource to fetch from the given target.
-     * @param userMail the user identifier to perform the query.
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getJsonGetByUriResponse(WebTarget target, String uri, String userMail) throws Exception {
-        return appendToken(target.resolveTemplate("uri", uri), userMail).get();
-    }
-
-    /**
-     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
-     *
-     * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri    the URI of the resource to fetch from the given target.
-     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception {
-        return appendAdminToken(target.resolveTemplate("uri", uri))
-                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
-                .get();
-    }
-
-    /**
-     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service call.
-     *
-     * @param target the {@link WebTarget} on which DELETE the given uri
-     * @param uri    the URI of the resource to DELETE
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getDeleteByUriResponse(WebTarget target, String uri) throws Exception {
-        return appendAdminToken(target.resolveTemplate("uri", uri)).delete();
-    }
-
-    /**
-     * Get {@link Response} from a public DELETE service call.
-     *
-     * @param target the {@link WebTarget} on which DELETE some content
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
-        return appendAdminToken(target).delete();
-    }
-
-    private static final String ADMIN_MAIL = "admin@opensilex.org";
-    private static final String ADMIN_PASSWORD = "admin";
     private final HashMap<String, TokenGetDTO> tokenMap = new HashMap<>();
 
-    /**
-     * Append a token header for the admin user to the given {@link WebTarget}
-     *
-     * @param target the {@link WebTarget} on which append params
-     * @return the updated {@link WebTarget}
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Invocation.Builder appendAdminToken(WebTarget target) throws Exception {
-        registerAdminTokenIfNecessary();
+    protected void testBasicCRUDAsAdmin(
+            ServiceDescription createServiceDescription,
+            ServiceDescription readServiceDescription,
+            ServiceDescription updateServiceDescription,
+            ServiceDescription deleteServiceDescription,
+            Object entityToPost, Object entityToPut
+    ) throws Exception {
+        // CREATE
+        UserCall createCall = new UserCallBuilder(createServiceDescription)
+                .setBody(entityToPost)
+                .buildAdmin();
+        URI createdUri = createCall.executeCallAndReturnURI();
 
-        return appendToken(target, ADMIN_MAIL);
+        // READ
+        UserCall readCall = new UserCallBuilder(readServiceDescription)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin();
+        URI readUri = readCall.executeCallAndReturnURI();
+        assertEquals(createdUri, readUri);
+
+        // UPDATE
+        UserCall updateCall = new UserCallBuilder(updateServiceDescription)
+                .setBody(entityToPut)
+                .buildAdmin();
+        URI updatedUri = updateCall.executeCallAndReturnURI();
+        assertEquals(createdUri, updatedUri);
+
+        // DELETE
+        UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin();
+        Result<ResourceDTO<?>> deleteResponse = deleteCall.executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
+        });
+        Response result = readCall.executeCall();
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), result.getStatus());
     }
 
-    /**
-     * Append a token header to the give {@link WebTarget}. The token must first be registered using the method {@link #registerToken(String, String)}
-     * before your test.
-     *
-     * @param target the {@link WebTarget} on which append params
-     * @param userMail the use identifier to perform the query
-     * @return the updated {@link WebTarget}
-     * @throws IllegalArgumentException if a token has not been registered for this user yet
-     */
-    protected Invocation.Builder appendToken(WebTarget target, String userMail) throws IllegalArgumentException {
-        if (!tokenMap.containsKey(userMail)) {
-            throw new IllegalArgumentException("Cannot find a token for user " + userMail + ". Please generate a token using `registerToken` before your test.");
+    protected void testBasicCRUDListAsAdmin(
+            ServiceDescription createServiceDescription,
+            ServiceDescription readServiceDescription,
+            ServiceDescription updateServiceDescription,
+            ServiceDescription deleteServiceDescription,
+            List<Object> entitiesToPost, List<Object> entitiesToPut
+    ) throws Exception {
+        if (entitiesToPost.size() != entitiesToPut.size()) {
+            for (int i = 0; i < entitiesToPost.size(); i++) {
+                testBasicCRUDAsAdmin(
+                        createServiceDescription,
+                        readServiceDescription,
+                        updateServiceDescription,
+                        deleteServiceDescription,
+                        entitiesToPost.get(i), entitiesToPut.get(i)
+                );
+            }
+        }
+    }
+
+    public class UserCall extends PublicCall {
+
+        private final String userEmail;
+        private final String userPassword;
+
+        /**
+         * Constructs a new UserCall with the specified service method, path template and HTTP method.
+         *
+         * @param serviceMethod the method of the webservice (e.g. ExperimentAPI.searchExperiments for the experiment
+         *                      webservice. -> use ExperimentAPI.class.getMethod())
+         * @param pathTemplate  the path template for the webservice. Can be a regular path or a template that contains
+         *                      parts to replace (e.g. /core/experiments/{uri}. {uri} is a placeholder to be replaced by
+         *                      the actual resource's URI)
+         */
+        public UserCall(Map<String, Object> params, Object body, Map<String, Object> pathTemplateParams,
+                        Method serviceMethod, String pathTemplate, String userEmail, MediaType callMediaType,
+                        List<MediaType> responseMediaTypes, String userPassword) {
+            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
+            this.userEmail = userEmail;
+            this.userPassword = userPassword;
         }
 
-        return target.request(MediaType.APPLICATION_JSON_TYPE)
-                .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userMail).getToken());
-    }
-
-    /**
-     * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
-     *
-     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
-     * @param createPath   the path to the service which allow to create an entity
-     * @param deletePath   the path to the service which allow to delete an entity
-     * @param entity       the entity on which apply create, read and delete
-     */
-    protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
-
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entity);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        // ensure that the result is a well formed URI, else throw exception
-        String uri = extractUriFromResponse(postResult).toString();
-
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        // delete object and check if URI no longer exists
-        final Response delResult = getDeleteByUriResponse(target(deletePath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
-        getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri);
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-    }
-
-    /**
-     * Call the createPath with the given entity list
-     * then for each entity : check if entity has been created, delete it and then check that the resource has been deleted
-     *
-     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
-     * @param createPath   the path to the service which allow to create an entity
-     * @param deletePath   the path to the service which allow to delete an entity
-     * @param entities     the List of entity on which apply create, read and delete
-     */
-    protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
-
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entities);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        List<URI> uris = extractUriListFromPaginatedListResponse(postResult);
-
-        for (URI uri : uris) {
-            Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
-            assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-            // delete object and check if URI no longer exists
-            final Response delResult = getDeleteByUriResponse(target(deletePath), uri.toString());
-            assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
-            getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
-            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        @Override
+        public Response executeCall() throws Exception {
+            httpMethod = findHttpMethod(serviceMethod);
+            WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
+            authenticateAndRegisterIfNecessary(userEmail, userPassword);
+            appendToken(target, userEmail);
+            return makeCorrectCall(target, httpMethod, body, callMediaType, responseMediaTypes);
         }
 
-    }
-
-
-    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        registerAdminTokenIfNecessary();
-        return getSearchResults(searchPath, page, pageSize, searchCriteria, typeReference, ADMIN_MAIL);
-    }
-
-    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
-        if (searchCriteria == null) {
-            searchCriteria = new HashMap<>();
+        @Override
+        public <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
+            Response response = executeCall();
+            assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+            return new Result<>(readResponse(response, typeReference, serviceMethod), response);
         }
-        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriteria);
-        final Response getResult = appendToken(searchTarget, userMail).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        return readResponse(getResult, typeReference).getResult();
-    }
-
-    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        return this.getSearchResultsAsAdmin(searchPath, 0, 20, searchCriteria, typeReference);
-    }
-
-    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
-        return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
-    }
-
-    protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {
-        if (searchCriteria == null) {
-            searchCriteria = new HashMap<>();
+        public URI executeCallAndReturnURI() throws Exception {
+            if (Objects.equals(httpMethod, HttpMethod.PUT) || Objects.equals(httpMethod, HttpMethod.POST)) {
+                Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {
+                });
+                return URI.create(response.getDeserializedResponse().getResult());
+            } else {
+                Result<ResourceDTO<?>> readResponse = executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
+                });
+                return readResponse.getDeserializedResponse().getUri();
+            }
         }
-        WebTarget searchTarget = appendQueryParams(target(searchPath), searchCriteria);
-        final Response getResult = appendAdminToken(searchTarget).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
+        protected Invocation.Builder appendToken(WebTarget target, String userEmail) throws IllegalArgumentException {
+            if (!tokenMap.containsKey(userEmail)) {
+                throw new IllegalArgumentException("Cannot find a token for user " + userEmail + ". Please generate a token using `registerToken` before your test.");
+            }
+
+            return target.request(MediaType.APPLICATION_JSON_TYPE)
+                    .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userEmail).getToken());
+        }
+
+        protected void authenticateAndRegisterIfNecessary(String userEmail, String userPassword) throws Exception {
+
+            if (!tokenMap.containsKey(userEmail)){
+                AuthenticationDTO authDto = new AuthenticationDTO();
+                authDto.setIdentifier(userEmail);
+                authDto.setPassword(userPassword);
+
+                PublicCall tokenCall = new UserCallBuilder(authenticate).setBody(authDto).build();
+
+                Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
+                        new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+                        }
+                );
+                TokenGetDTO userToken = postResult.getDeserializedResponse().getResult();
+                tokenMap.put(userEmail, userToken);
+            }
+        }
+    }
+
+    public class UserCallBuilder extends PublicCallBuilder<UserCallBuilder> {
+
+        private String userEmail;
+        private String userPassword;
+
+        public UserCallBuilder setUserEmail(String userEmail) {
+            this.userEmail = userEmail;
+            return self();
+        }
+
+        public UserCallBuilder setUserPassword(String userPassword) {
+            this.userPassword = userPassword;
+            return self();
+        }
+
+        public UserCallBuilder(ServiceDescription serviceDescription) {
+            super(serviceDescription);
+        }
+
+        @Override
+        protected UserCallBuilder self() {
+            return this;
+        }
+
+        @Override
+        public UserCall build() {
+            return new UserCall(
+                    params,
+                    body,
+                    pathTemplateParams,
+                    serviceMethod,
+                    pathTemplate,
+                    userEmail,
+                    callMediaType,
+                    responseMediaTypes,
+                    userPassword
+            );
+        }
+
+        public UserCall buildAdmin() {
+            return new UserCall(
+                    params,
+                    body,
+                    pathTemplateParams,
+                    serviceMethod,
+                    pathTemplate,
+                    DEFAULT_SUPER_ADMIN_EMAIL,
+                    callMediaType,
+                    responseMediaTypes,
+                    DEFAULT_SUPER_ADMIN_PASSWORD
+            );
+        }
     }
 }

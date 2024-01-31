@@ -3,18 +3,21 @@ title: MongoDB DAO and service usage documentation
 tags:
     - MongoDB
     - Transaction management
+description: This document explain how to use MongoDB based DAOs and describe transaction management for write operations
 author: Renaud COLIN
 date: 30/01/2024
 ---
 
 <!-- TOC -->
 * [Description](#description)
+  * [Using Mongo based DAO](#using-mongo-based-dao)
   * [Read/Write operations and Session management](#readwrite-operations-and-session-management)
-    * [Transaction management : MongoDBServiceV2](#transaction-management--mongodbservicev2)
-      * [Single document write](#single-document-write)
-      * [Multiple document operation](#multiple-document-operation)
-      * [Distributed transaction](#distributed-transaction)
-    * [Transaction management : MongoWriteDao](#transaction-management--mongowritedao)
+* [Transaction management : MongoDBServiceV2](#transaction-management--mongodbservicev2)
+  * [Single document write](#single-document-write)
+    * [Single document operation](#single-document-operation)
+    * [Multiple write operation](#multiple-write-operation)
+  * [Multiple document operation](#multiple-document-operation)
+  * [Distributed transaction](#distributed-transaction)
 * [Dao lifecycle](#dao-lifecycle)
   * [Creation](#creation)
 * [Read](#read)
@@ -42,11 +45,15 @@ date: 30/01/2024
     * [Insert models (with explicit session management)](#insert-models-with-explicit-session-management)
     * [Insert models and get results (with explicit session management)](#insert-models-and-get-results-with-explicit-session-management)
   * [Update](#update)
+    * [Update a model](#update-a-model-)
+    * [Update a model (with explicit session management)](#update-a-model-with-explicit-session-management)
   * [Upsert](#upsert)
   * [Delete](#delete)
+    * [Delete a model by URI](#delete-a-model-by-uri)
+    * [Delete a model (with explicit session management)](#delete-a-model-with-explicit-session-management)
   * [Delete many](#delete-many)
-* [Transaction management](#transaction-management)
-  * [Distributed transaction](#distributed-transaction-1)
+    * [Delete many models](#delete-many-models)
+    * [Delete many models (with explicit session management)](#delete-many-models-with-explicit-session-management)
 * [Parallelism](#parallelism)
   * [Read](#read-1)
   * [Write](#write-1)
@@ -54,26 +61,35 @@ date: 30/01/2024
 
 # Description
 
+## Using Mongo based DAO
+
+- MongoDB based Dao allow to easily perform Read (Get, Search) and Write (Create, Update, Delete)
+  operations for a specific model inside a given collection.
+- The standard implementation `MongoReadWriteDao` rely on `MongoDBServiceV2` for
+  read/write and transaction management and use Java Generic in order to specify the `MongoModel` and `MongoSearchFilter` to use
+- The recommended way is to specialize this class or to simply use it for each domain/concept
+  related to a given API
+
 ## Read/Write operations and Session management
 
 - MongoDB allow the use of transaction in order to guarantee
 the atomicity of write operations (Either the operation success of fail)
 - With the MongoDB JAVA API, the use of transaction is performed
-with the use of [ClientSession]().
-- Several way for transaction handling are provided 
+with the use of [ClientSession](https://mongodb.github.io/mongo-java-driver/3.6/javadoc/index.html?com/mongodb/session/ClientSession.html).
+- Several way for transaction handling are described in the next session
 
-### Transaction management : MongoDBServiceV2
+# Transaction management : MongoDBServiceV2
 
-#### Single document write
+## Single document write
 
-> **Single document operation**
+### Single document operation
 
 - When creating, updating of deleting a single document, then
 transaction managed is not mandatory since the operation is atomic
 
-> **Multiple write operation**
+### Multiple write operation
 
-- If you want to group several single write operations inside an atomic operation,
+- If you want to group several single write operations inside an atomic operation (ex: doing write on several collections),
 use a `ClientSession` and handle transaction. In this case, there are two-way :
 
 - **(1)** Use `MongoDBServiceV2.runTransaction` and `MongoDBServiceV2.computeTransaction` methods 
@@ -82,27 +98,18 @@ use a `ClientSession` and handle transaction. In this case, there are two-way :
 - **(2)** Explicit creation of the `ClientSession` with `MongoDBServiceV2.newSession()`
   - This is **not recommended** since you have to manually handle transaction and session lifecycle. Only use it for specific usage
 
-#### Multiple document operation
+## Multiple document operation
 
 - For operation which can results to multiple document write, the transaction handling 
 is mandatory to ensure atomicity. In this case, there are two-way :
-  - If you don't provide a `ClientSession`, then the write operation automatically create one, and use-it
+  - If you don't provide a `ClientSession`, then the write operations (`create`, `deleteOnCriteria`) which deals with multiple document, automatically create one (if not provided), and use-it
 to ensure transaction management
   - You create the `ClientSession` with `MongoDBServiceV2.runTransaction`/`MongoDBServiceV2.computeTransaction` and 
 you provide the created session to the write operation(s)
 
-#### Distributed transaction
+## Distributed transaction
 
 Use `SparqlMongoTransaction` when you need to perform operation on RDF and on MongoDB
-
-### Transaction management : MongoWriteDao
-
-- MongoDB based Dao allow to easily perform Read (Get, Search) and Write (Create, Update, Delete)
-operations for a specific model inside a given collection.
-- The standard implementation `MongoReadWriteDao` rely on `MongoDBServiceV2` for
-read/write and transaction management and use Java Generic in order to specify the `MongoModel` and `MongoSearchFilter` to use
-- The recommended way is to specialize this class or to simply use it for each domain/concept 
-related to a given API
 
 # Dao lifecycle
 
@@ -348,7 +355,7 @@ InsertManyResult insertResults = dao.create(models);
 ### Insert models (with explicit session management)
 
 - If you want to use a particular transaction context you can pass the `ClientSession` to the `dao.create()` method
-- This is useful if you wan't to group several operations in the same transaction
+- This is useful if you want to group several operations in the same transaction
 - This relies on `MongoDBServiceV2#runTransaction()` methods which handle transaction management for any write operation
 
 ```java
@@ -367,12 +374,12 @@ mongoDBServiceV2.runTransaction(session -> {
 ### Insert models and get results (with explicit session management)
 
 - If you want to use a particular transaction context you can pass the `ClientSession` to the `dao.create()` method
-- This is usefull if you wan't to group several operations in the same transaction
+- This is usefully if you want to group several operations in the same transaction
 - You can also get a result after the operations are done (here the List of results from MongoDB)
 - This relies on `MongoDBServiceV2#computeTransaction()` method which handle transaction management for any write operation
 
 ```java
-/* Assume objects are well initialized */
+// Assume objects are well initialized 
 MongoReadWriteDao<DataModel, DataSearchFilter> dao;
 List<DataModel> models, models2;
 MongoDBServiceV2 mongoDBServiceV2;
@@ -387,15 +394,94 @@ List<InsertManyResult> results = mongoDBServiceV2.computeTransaction(session -> 
 
 ## Update
 
+### Update a model 
+
+```java
+//  Assume objects are well initialized
+DataModel model;
+
+// Update model
+dao.update(model);
+```
+
+### Update a model (with explicit session management)
+
+> This case in only useful if you want to perform several operation in one transaction, else there is no need for transaction
+> management for only one document update
+
+```java
+//  Assume objects are well initialized
+DataModel model;
+
+mongoDBServiceV2.computeTransaction(session -> {
+    // ... Other operation with session before
+        
+    // update model with session    
+    dao.update(model,session)
+}
+
+```
+
 ## Upsert
 
 ## Delete
 
+### Delete a model by URI
+
+```java
+//  Assume objects are well initialized
+URI modelToDeleteURI;
+
+// Delete model (throws NoSQLInvalidURIException if the model don't exist)
+// No need to check it before it's done during the delete(URI) method 
+dao.delete(modelToDeleteURI);
+```
+
+
+### Delete a model (with explicit session management)
+
+> This case in only useful if you want to perform several operation in one transaction, else there is no need for transaction
+> management for only one document delete
+
+```java
+//  Assume objects are well initialized
+URI modelToDeleteURI;
+
+mongoDBServiceV2.computeTransaction(session -> {
+        // ... Other operation with session before
+
+        // update model with session    
+        dao.delete(modelToDeleteURI,session)
+});
+```
+
 ## Delete many
 
-# Transaction management
+### Delete many models
 
-## Distributed transaction
+> - The example below reuse the DataSearchFilter example class used [previously](#custom-property-filtering)
+> - By default implementation of MongoReadWriteDao use the mongoDBServiceV2.deleteMany which handle transaction management if no
+> session is provided
+
+```java
+//  Delete all data with the name "test"
+DataSearchFilter deleteFilter = new DataSearchFilter().setName("test");
+dao.deleteMany(deleteFilter);
+```
+
+### Delete many models (with explicit session management)
+
+```java
+//  Delete all data with the name "test"
+DataSearchFilter deleteFilter = new DataSearchFilter().setName("test");
+
+mongoDBServiceV2.computeTransaction(session -> {
+      // ... Other operation with session before
+        
+      dao.deleteMany(deleteFilter, session);  
+});
+
+```
 
 # Parallelism
 

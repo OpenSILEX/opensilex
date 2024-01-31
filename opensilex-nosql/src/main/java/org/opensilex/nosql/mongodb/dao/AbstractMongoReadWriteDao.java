@@ -12,8 +12,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
@@ -124,11 +124,11 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public @NotNull DeleteResult delete(@NotNull @NotEmpty List<URI> uris, ClientSession session) throws MongoException {
+    public @NotNull DeleteResult deleteMany(@NotNull @NotEmpty List<URI> uris, ClientSession session) throws MongoException {
         if (CollectionUtils.isEmpty(uris)) {
             throw new IllegalArgumentException("uris list must not be empty");
         }
-        return mongodb.deleteOnCriteria(collection, session, Filters.in(idField(), uris));
+        return mongodb.deleteMany(collection, session, Filters.in(idField(), uris));
     }
 
     public Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
@@ -136,9 +136,9 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     @Override
-    public @NotNull DeleteResult delete(@NotNull F deleteFilter, ClientSession session) throws MongoException {
+    public @NotNull DeleteResult deleteMany(@NotNull F deleteFilter, ClientSession session) throws MongoException {
         Objects.requireNonNull(deleteFilter);
-        return mongodb.deleteOnCriteria(collection, session, deleteFilterToDocument(deleteFilter));
+        return mongodb.deleteMany(collection, session, deleteFilterToDocument(deleteFilter));
     }
 
     @Override
@@ -148,8 +148,8 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
 
     @Override
-    public @NotNull DeleteResult delete(@NotNull F filter) throws MongoException {
-        return delete(filter, null);
+    public @NotNull DeleteResult deleteMany(@NotNull F filter) throws MongoException {
+        return deleteMany(filter, null);
     }
 
     @Override

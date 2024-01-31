@@ -6,29 +6,11 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb.service.v2;
 
-import ch.qos.logback.core.net.server.Client;
 import com.mongodb.*;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.ClientSession;
-import com.mongodb.client.DistinctIterable;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
+import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
@@ -52,18 +34,26 @@ import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.utils.*;
-
-import static org.opensilex.utils.LogFilter.LOG_TYPE;
-
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingConsumer;
+import org.opensilex.utils.ThrowingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.eq;
 import static net.logstash.logback.argument.StructuredArguments.kv;
+import static org.opensilex.utils.LogFilter.LOG_TYPE;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBServiceV2 extends BaseService {
@@ -335,7 +325,9 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T> T findByURI(ClientSession session, MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
 
-        T instance = session == null ? collection.find(eq(uriField, uri)).first() : collection.find(session, eq(uriField, uri)).first();
+        T instance = session == null ?
+                collection.find(eq(uriField, uri)).first() :
+                collection.find(session, eq(uriField, uri)).first();
 
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
@@ -354,7 +346,7 @@ public class MongoDBServiceV2 extends BaseService {
     public <T extends MongoModel> List<T> findByURIs(MongoCollection<T> collection, Collection<URI> uris) {
         FindIterable<T> queryResult = findIterableByURIs(MongoModel.URI_FIELD, collection, uris.stream());
 
-        List<T> instances = new ArrayList<>();
+        List<T> instances = new ArrayList<>(uris.size());
         for (T res : queryResult) {
             instances.add(res);
         }
@@ -383,7 +375,9 @@ public class MongoDBServiceV2 extends BaseService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MongoDB uriExists {} {} {}", kv(LOG_TYPE, MONGO_CHECK_URI_LOG_MSG), kv("collection", collection.getNamespace().getCollectionName()), kv("uri", uri));
         }
-        FindIterable<T> findIt = session == null ? collection.find(eq(MongoModel.URI_FIELD, uri)) : collection.find(session, eq(MongoModel.URI_FIELD, uri));
+        FindIterable<T> findIt = session == null ?
+                collection.find(eq(MongoModel.URI_FIELD, uri)) :
+                collection.find(session, eq(MongoModel.URI_FIELD, uri));
 
         // Use a minimal projection in order to avoid the fetching of fields which are useless here
         return findIt.projection(EMPTY_PROJECTION).first() != null;
@@ -499,7 +493,9 @@ public class MongoDBServiceV2 extends BaseService {
     public <T> long count(ClientSession session, MongoCollection<T> collection, Bson filter) {
 
         LOGGER.debug("[MONGO_COUNT] : { collection: {},filter: {}}", collection.getNamespace().getCollectionName(), filter);
-        return session == null ? collection.countDocuments(filter) : collection.countDocuments(session, filter);
+        return session == null ?
+                collection.countDocuments(filter) :
+                collection.countDocuments(session, filter);
     }
 
     /**
@@ -619,7 +615,9 @@ public class MongoDBServiceV2 extends BaseService {
         Set<T> distinct = new LinkedHashSet<>();
 
         // map aggregation results a Document, since the aggregation will produce a different document schema
-        AggregateIterable<Document> aggregateIt = session == null ? collection.aggregate(aggregatePipeline, Document.class) : collection.aggregate(session, aggregatePipeline, Document.class);
+        AggregateIterable<Document> aggregateIt = session == null ?
+                collection.aggregate(aggregatePipeline, Document.class) :
+                collection.aggregate(session, aggregatePipeline, Document.class);
 
         // Transform document on the fly and add inside set
         aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
@@ -680,7 +678,9 @@ public class MongoDBServiceV2 extends BaseService {
         }
 
         List<T_RESULT> results = new ArrayList<>();
-        AggregateIterable<T_JOINED> aggregateIt = session == null ? srcCollection.aggregate(pipeline, lookupClass) : srcCollection.aggregate(session, pipeline, lookupClass);
+        AggregateIterable<T_JOINED> aggregateIt = session == null ?
+                srcCollection.aggregate(pipeline, lookupClass) :
+                srcCollection.aggregate(session, pipeline, lookupClass);
 
         aggregateIt.map(convertFunction::apply).forEach(results::add);
         return results;
@@ -771,7 +771,7 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws MongoException {
         LOGGER.debug("MONGO DELETE - Collection : {}, {} uris to delete", collection.getNamespace().getCollectionName(), uris.size());
-        return deleteOnCriteria(collection, session, Filters.in(MongoModel.URI_FIELD, uris));
+        return deleteMany(collection, session, Filters.in(MongoModel.URI_FIELD, uris));
     }
 
 
@@ -813,7 +813,9 @@ public class MongoDBServiceV2 extends BaseService {
      * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/write-operations/upsert/">Insert or Update in a Single Operation</a>
      */
     public <T extends MongoModel> UpdateResult upsert(MongoCollection<T> collection, ClientSession session, T newInstance, Bson idFilter) {
-        return session == null ? collection.replaceOne(idFilter, newInstance, new ReplaceOptions().upsert(true)) : collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
+        return session == null ?
+                collection.replaceOne(idFilter, newInstance, new ReplaceOptions().upsert(true)) :
+                collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
 
     }
 
@@ -910,7 +912,7 @@ public class MongoDBServiceV2 extends BaseService {
      * @return DeleteResult The result of the deletion operation
      * @throws MongoException If an exception related to MongoDB occurs
      */
-    public <T extends MongoModel> DeleteResult deleteOnCriteria(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
+    public <T extends MongoModel> DeleteResult deleteMany(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
 
         if (session != null) {
             return collection.deleteMany(filter);

@@ -1,5 +1,6 @@
 ---
 title: MongoDB DAOs and Service
+description: Description of MongoDB DAO and service
 date: 15/12/2023
 tags:
   - MongoDB
@@ -45,7 +46,8 @@ tags:
 
 # Definitions
 
-- **{Term}** : {definition}
+- **OLTP** : Online Transactional Processing
+- **OLAP** : Online Analytical processing
 
 # Analysis
 
@@ -60,16 +62,12 @@ to store several data-models inside the same database
 - A strong **community** and a **stable team**
 
 
-{Briefly describe the user needs}
-
-- Use case #{number}: As a {user category}, I want to {action}.
-
 ## Non-functional requirements
 
-{Describe all non-functional requirements in this section, and give precise metrics if possible.
-Below are some common examples.}
 
 ### Performance
+
+
 
 ### Reliability
 

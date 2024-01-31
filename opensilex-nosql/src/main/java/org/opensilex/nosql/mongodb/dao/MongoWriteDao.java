@@ -117,7 +117,7 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @return The result of the deletion operation.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull DeleteResult delete(@NotNull @NotEmpty List<URI> uris, ClientSession session) throws MongoException;
+    @NotNull DeleteResult deleteMany(@NotNull @NotEmpty List<URI> uris, ClientSession session) throws MongoException;
 
     /**
      * Delete models based on the provided filter from the database.
@@ -126,7 +126,7 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @return The result of the deletion operation.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull DeleteResult delete(@NotNull F deleteFilter) throws MongoException;
+    @NotNull DeleteResult deleteMany(@NotNull F deleteFilter) throws MongoException;
 
     /**
      * Delete models based on the provided filter from the database within a client session.
@@ -136,5 +136,5 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @return The result of the deletion operation.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull DeleteResult delete(@NotNull F deleteFilter, ClientSession session) throws MongoException;
+    @NotNull DeleteResult deleteMany(@NotNull F deleteFilter, ClientSession session) throws MongoException;
 }

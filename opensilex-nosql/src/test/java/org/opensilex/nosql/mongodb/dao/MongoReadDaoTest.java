@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.opensilex.nosql.MongoDBServiceTest;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -26,7 +30,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -329,7 +336,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     public void testDistinct() {
         // extract distinct types (no pagination here)
         Set<String> names = dao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
-        Assert.assertEquals(ROOT_DOCUMENT_COUNT, names.size());
+        Assert.assertEquals(DEFAULT_PAGE_SIZE, names.size());
         names.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
 
         // no results -> ensure non nullity of Set
@@ -430,7 +437,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         });
 
         // Delete objects
-        innerDao.delete(new MongoSearchFilter());
+        innerDao.deleteMany(new MongoSearchFilter());
     }
 
     @Test
@@ -459,8 +466,9 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         unknown.setUri(URI.create("test:fake_uri"));
         assertThrows(NoSQLInvalidURIException.class, () -> innerDao.update(unknown));
 
-        innerDao.delete(new MongoSearchFilter());
+        innerDao.deleteMany(new MongoSearchFilter());
     }
+
 
     @Test
     public void deleteTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
@@ -474,7 +482,43 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         innerDao.delete(model.getUri());
         assertThrows(NoSQLInvalidURIException.class, () -> innerDao.get(model.getUri()));
 
-        innerDao.delete(new MongoSearchFilter());
+        innerDao.deleteMany(new MongoSearchFilter());
+    }
+
+    @Test
+    public void deleteManyTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
+
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-delete-test", "test");
+
+        // create multiple model with several types
+        URI type1 = URI.create("test:type1");
+        URI type2 = URI.create("test:type2");
+        int nbModelByType = 10;
+
+        List<MongoTestModel> modelsWithType1 = IntStream.range(0, nbModelByType).mapToObj(i -> {
+            MongoTestModel model = new MongoTestModel();
+            model.setRdfType(type1);
+            model.setName("delete_1");
+            return model;
+        }).collect(Collectors.toList());
+        innerDao.create(modelsWithType1);
+
+        List<MongoTestModel> modelsWithType2 = IntStream.range(0, nbModelByType).mapToObj(i -> {
+            MongoTestModel model = new MongoTestModel();
+            model.setRdfType(type2);
+            model.setName("delete_1");
+            return model;
+        }).collect(Collectors.toList());
+        innerDao.create(modelsWithType2);
+
+        Assert.assertEquals(nbModelByType*2, innerDao.count(new MongoSearchFilter()));
+
+        // delete all document
+        MongoSearchFilter filter = new MongoSearchFilter();
+        filter.setRdfTypes(List.of(type1));
+        DeleteResult deleteResult = innerDao.deleteMany(filter);
+        Assert.assertEquals(nbModelByType, deleteResult.getDeletedCount());
+        Assert.assertEquals(nbModelByType, innerDao.count(new MongoSearchFilter()));
     }
 
 }

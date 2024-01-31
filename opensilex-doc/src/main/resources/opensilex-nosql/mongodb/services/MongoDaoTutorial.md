@@ -16,6 +16,8 @@ date: 30/01/2024
   * [Single document write](#single-document-write)
     * [Single document operation](#single-document-operation)
     * [Multiple write operation](#multiple-write-operation)
+      * [Automatic transaction management](#automatic-transaction-management)
+      * [Explicit transaction management](#explicit-transaction-management)
   * [Multiple document operation](#multiple-document-operation)
   * [Distributed transaction](#distributed-transaction)
 * [Dao lifecycle](#dao-lifecycle)
@@ -54,9 +56,6 @@ date: 30/01/2024
   * [Delete many](#delete-many)
     * [Delete many models](#delete-many-models)
     * [Delete many models (with explicit session management)](#delete-many-models-with-explicit-session-management)
-* [Parallelism](#parallelism)
-  * [Read](#read-1)
-  * [Write](#write-1)
 <!-- TOC -->
 
 # Description
@@ -85,18 +84,43 @@ with the use of [ClientSession](https://mongodb.github.io/mongo-java-driver/3.6/
 ### Single document operation
 
 - When creating, updating of deleting a single document, then
-transaction managed is not mandatory since the operation is atomic
-
+transaction managed is not mandatory since the operation is atomic.
+- Operations which don't require transaction management (from` MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter>` interface) : 
+  - `create(T instance)`
+  - `update(T instance)`
+  - `delete(URI uri)`
 ### Multiple write operation
 
 - If you want to group several single write operations inside an atomic operation (ex: doing write on several collections),
 use a `ClientSession` and handle transaction. In this case, there are two-way :
 
-- **(1)** Use `MongoDBServiceV2.runTransaction` and `MongoDBServiceV2.computeTransaction` methods 
+#### Automatic transaction management
+
+- Use `MongoDBServiceV2.runTransaction` and `MongoDBServiceV2.computeTransaction` methods 
   - This is the **recommended** way, since you don't have to handle start, committing, rollback of transaction and session start and close
   - You just have to define which operations perform by using the provided `ClientSession`
-- **(2)** Explicit creation of the `ClientSession` with `MongoDBServiceV2.newSession()`
+  
+> **Example**
+
+```java
+mongodbServiceV2.runTransaction((session) -> {
+    // use session here
+    // the session is created and closed. Transaction is commited (if there are some write to commit) or rollback in case of error  
+});
+
+// or if you have to return some results (here an integer but any type can be returned)
+int result = mongodbServiceV2.computeTransaction((session) -> {
+  // use session here
+  // perform operation and return some results
+  return 1;
+});
+```
+
+#### Explicit transaction management
+- Explicit creation of the `ClientSession` with `MongoDBServiceV2.newSession()`
   - This is **not recommended** since you have to manually handle transaction and session lifecycle. Only use it for specific usage
+
+See `MongoDBServiceV2.computeTransaction` and  `MongoDBServiceV2.computeTransaction` for deeper example of session and transaction management
 
 ## Multiple document operation
 
@@ -110,6 +134,17 @@ you provide the created session to the write operation(s)
 ## Distributed transaction
 
 Use `SparqlMongoTransaction` when you need to perform operation on RDF and on MongoDB
+
+```java
+/* Assume objects are well initialized */
+SPARQLService sparql;
+MongoDBServiceV2 mongodb;
+
+new SparqlMongoTransaction(sparql,mongodb).execute(session -> {
+    // execute distributed transaction on triple store and mongodb dabatases
+    // transaction management over the two database is handled (i.e. both operation are commited or rollback)
+});
+```
 
 # Dao lifecycle
 
@@ -460,7 +495,7 @@ mongoDBServiceV2.computeTransaction(session -> {
 ### Delete many models
 
 > - The example below reuse the DataSearchFilter example class used [previously](#custom-property-filtering)
-> - By default implementation of MongoReadWriteDao use the mongoDBServiceV2.deleteMany which handle transaction management if no
+> - By default, `MongoReadWriteDao` use the `mongoDBServiceV2.deleteMany` which handle transaction management if no
 > session is provided
 
 ```java
@@ -482,9 +517,3 @@ mongoDBServiceV2.computeTransaction(session -> {
 });
 
 ```
-
-# Parallelism
-
-## Read
-
-## Write

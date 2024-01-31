@@ -1080,15 +1080,18 @@ export default class MapView extends Vue {
   //Focus on map vectors
   defineCenter() {
     if(this.featuresOS.length>0 && this.vectorSource[0].$source) {
-        let OSextent = [];
-
-        setTimeout(()=>{
-          this.vectorSource.forEach((v) => {
-              OSextent.push(v.$source.getExtent())});
-          this.mapView.fit(olExtent.boundingExtent(OSextent));
-          // create cluster after
-          this.getClusterFeatures();
-        },200)
+      let extent = olExtent.createEmpty();
+      setTimeout(()=>{
+        this.vectorSource.forEach((v) => {
+          if (v && v.$source) {
+            let extentTemporary = v.$source.getExtent();
+            olExtent.extend(extent, extentTemporary);
+          }
+        });
+        this.mapView.$view.fit(extent);
+        // create cluster after
+        this.getClusterFeatures();
+      },200)
     }
   }
 

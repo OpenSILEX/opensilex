@@ -199,6 +199,7 @@
                     @select="$emit('select', $event)"
                     @unselect="$emit('unselect', $event)"
                     @selectall="$emit('selectall', $event)"
+                    :itemIsSelected="itemIsSelected"
                     class="modalVariablesList">
 
                     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
@@ -365,6 +366,9 @@ export default class VariableList extends Vue {
     $route: any;
     $i18n: any;
     SearchFiltersToggle: boolean = false;
+
+    @Prop()
+    itemIsSelected;
 
     displayActions:boolean = true;
 

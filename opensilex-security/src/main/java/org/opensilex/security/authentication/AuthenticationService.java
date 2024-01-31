@@ -12,7 +12,7 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.impl.PublicClaims;
+import com.auth0.jwt.RegisteredClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
@@ -63,14 +63,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * Default Authentication service implementation for OpenSilex
  *
  * Generate JWT token with java-jwt library
- * For details see: https://github.com/auth0/java-jwt
+ * For details see: <a href="https://github.com/auth0/java-jwt">...</a>
  * JWT claim key definitions: https://www.iana.org/assignments/jwt/jwt.xhtml
  *
  * Generate and validate password hash with BCrypt java library
  * For details see: https://github.com/patrickfav/bcrypt
  *
- * Logged in users are registred in a concurrent map with their token
- * and automatically unregistred after token expiration.
+ * Logged in users are registered in a concurrent map with their token
+ * and automatically unregistered after token expiration.
  *
  * For existing claim ids, see: https://www.iana.org/assignments/jwt/jwt.xhtml#claims
  * </pre>
@@ -157,10 +157,10 @@ public class AuthenticationService extends BaseService implements Service {
      */
     private static Map<String, Class<?>> claimClasses = new HashMap<String, Class<?>>() {
         {
-            put(PublicClaims.ISSUER, String.class);
-            put(PublicClaims.SUBJECT, String.class);
-            put(PublicClaims.ISSUED_AT, Date.class);
-            put(PublicClaims.EXPIRES_AT, Date.class);
+            put(RegisteredClaims.ISSUER, String.class);
+            put(RegisteredClaims.SUBJECT, String.class);
+            put(RegisteredClaims.ISSUED_AT, Date.class);
+            put(RegisteredClaims.EXPIRES_AT, Date.class);
             put(CLAIM_FIRST_NAME, String.class);
             put(CLAIM_LAST_NAME, String.class);
             put(CLAIM_EMAIL, String.class);
@@ -614,15 +614,14 @@ public class AuthenticationService extends BaseService implements Service {
                 providerMetadata.getUserInfoEndpointURI(),
                 tokens.getBearerAccessToken());
 
-        HTTPResponse userInfoHTTPResp = null;
+        HTTPResponse userInfoHTTPResp;
         try {
             userInfoHTTPResp = userInfoReq.toHTTPRequest().send();
         } catch (SerializeException | IOException e) {
-            throw new OpenIDException("Unexpected OpenID eror", e);
+            throw new OpenIDException("Unexpected OpenID error", e);
         }
 
-        UserInfoResponse userInfoResponse = null;
-        userInfoResponse = UserInfoResponse.parse(userInfoHTTPResp);
+        UserInfoResponse userInfoResponse = UserInfoResponse.parse(userInfoHTTPResp);
 
         if (userInfoResponse instanceof UserInfoErrorResponse) {
             ErrorObject error = ((UserInfoErrorResponse) userInfoResponse).getErrorObject();

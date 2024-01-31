@@ -11,7 +11,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
@@ -290,16 +289,12 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             }
 
             Var fieldVar = makeVar(field.getName());
-            try {
-                // Add projection to the multivalued field variable with the GROUP_CONCAT aggregator
-                // build the expression ( GROUP_CONCAT(DISTINCT ?multivalued_field ; separator=',') AS ?multivalued_field__opensilex_concat) into outer select
-                Aggregator groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(fieldVar), GROUP_CONCAT_SEPARATOR);
-                Var fieldConcatVar = makeVar(concatVarNameByFields.get(field));
-                multivaluedSelect.addVar(groupConcat.toString(), fieldConcatVar);
 
-            } catch (ParseException e) {
-                throw new IllegalArgumentException(e);
-            }
+            // Add projection to the multivalued field variable with the GROUP_CONCAT aggregator
+            // build the expression ( GROUP_CONCAT(DISTINCT ?multivalued_field ; separator=',') AS ?multivalued_field__opensilex_concat) into outer select
+            Aggregator groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(fieldVar), GROUP_CONCAT_SEPARATOR);
+            Var fieldConcatVar = makeVar(concatVarNameByFields.get(field));
+            multivaluedSelect.addVar(groupConcat.toString(), fieldConcatVar);
 
             // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
             Triple triple = mapper.classAnalyzer.isReverseRelation(field)

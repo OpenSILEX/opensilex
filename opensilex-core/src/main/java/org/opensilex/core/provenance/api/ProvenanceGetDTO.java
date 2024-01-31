@@ -8,15 +8,14 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.provenance.dal.ActivityModel;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import org.opensilex.core.provenance.dal.ActivityModel;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.security.user.api.UserGetDTO;
 
 /**
  * Provenance Get DTO
@@ -47,10 +46,10 @@ public class ProvenanceGetDTO extends ProvenanceCreationDTO {
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
         if (Objects.nonNull(model.getPublicationDate())) {
-            dto.setPublicationDate(model.getPublicationDate());
+            dto.setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }
         if (Objects.nonNull(model.getLastUpdateDate())) {
-            dto.setLastUpdatedDate(model.getLastUpdateDate());
+            dto.setLastUpdatedDate(OffsetDateTime.ofInstant(model.getLastUpdateDate(), ZoneOffset.UTC));
         }
 
         if (model.getActivity() != null) {

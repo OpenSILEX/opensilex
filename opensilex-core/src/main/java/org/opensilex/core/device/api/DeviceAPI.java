@@ -10,6 +10,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
 import org.bson.Document;
+import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.URIsListPostDTO;
@@ -22,10 +23,12 @@ import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.dal.DeviceGeospatialExporter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -48,6 +51,7 @@ import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -546,6 +550,10 @@ public class DeviceAPI {
                 JsonNode relations = objectNode.get("relations");
                 objectNode.remove("metadata");
                 objectNode.remove("relations");
+                //Remove publication metadata : publisher, publication_date, last_updated_date
+                objectNode.remove("publisher");
+                objectNode.remove("publication_date");
+                objectNode.remove("last_updated_date");
                 JsonNode value = null;
                 for (Object key:metadataKeys) {
                     try {
@@ -1005,6 +1013,43 @@ public class DeviceAPI {
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @POST
+    @Path("export_geospatial")
+    @ApiOperation("Export a given list of devices URIs to shapefile")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data shapefile exported")
+    })
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportGeospatial(
+            @ApiParam(value = "Devices") List<GeometryDTO> selectedObjects,
+            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
+            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql,fs);
+        Map<URI, GeoJsonObject> selectedObjectsMap = new HashMap<>();
+
+        //Get device exported URI
+        selectedObjects.forEach(o ->{
+            selectedObjectsMap.put(URI.create(SPARQLDeserializers.getExpandedURI(o.getUri())), o.getGeometry());
+        });
+
+        // Search exported device detail according the selected uris
+        List<DeviceModel> objDetailList = dao.getDevicesByURI(new ArrayList<>(selectedObjectsMap.keySet()),currentUser);
+
+        //Convert
+        DeviceGeospatialExporter shpExport = new DeviceGeospatialExporter();
+        Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
+
+        return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
+                .build();
     }
 
 }

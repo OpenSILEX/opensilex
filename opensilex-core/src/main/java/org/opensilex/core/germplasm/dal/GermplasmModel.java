@@ -33,6 +33,23 @@ import java.util.List;
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel>{
 
+    public static GermplasmModel fromSPARQLNamedResourceModel(SPARQLNamedResourceModel sparqlNamedResourceModel){
+        GermplasmModel germplasmModel = new GermplasmModel();
+        if(sparqlNamedResourceModel.getUri()!=null){
+            germplasmModel.setUri(sparqlNamedResourceModel.getUri());
+        }
+        if(sparqlNamedResourceModel.getName()!=null){
+            germplasmModel.setName(sparqlNamedResourceModel.getName());
+        }
+        if(sparqlNamedResourceModel.getType()!=null){
+            germplasmModel.setType(sparqlNamedResourceModel.getType());
+        }
+        if(sparqlNamedResourceModel.getTypeLabel()!=null){
+            germplasmModel.setTypeLabel(sparqlNamedResourceModel.getTypeLabel());
+        }
+        return germplasmModel;
+    }
+
     public static final String GRAPH = "germplasm";
 
     @SPARQLIgnore
@@ -110,6 +127,28 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     )
     List<String> synonyms;
     public static final String SYNONYM_VAR = "synonyms";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasm"
+    )
+    protected List<GermplasmModel> parentGermplasms;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasmM"
+    )
+    protected List<GermplasmModel> parentMGermplasms;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasmF"
+    )
+    protected List<GermplasmModel> parentFGermplasms;
+
+    public static final String PARENT_VAR = "parentGermplasm";
+    public static final String PARENT_M_VAR = "parentMGermplasm";
+    public static final String PARENT_F_VAR = "parentFGermplasm";
     
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -214,6 +253,30 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     public void setWebsite(URI website) {
         this.website = website;
+    }
+
+    public List<GermplasmModel> getParentGermplasms() {
+        return parentGermplasms;
+    }
+
+    public void setParentGermplasms(List<GermplasmModel> parentGermplasms) {
+        this.parentGermplasms = parentGermplasms;
+    }
+
+    public List<GermplasmModel> getParentMGermplasms() {
+        return parentMGermplasms;
+    }
+
+    public void setParentMGermplasms(List<GermplasmModel> parentMGermplasms) {
+        this.parentMGermplasms = parentMGermplasms;
+    }
+
+    public List<GermplasmModel> getParentFGermplasms() {
+        return parentFGermplasms;
+    }
+
+    public void setParentFGermplasms(List<GermplasmModel> parentFGermplasms) {
+        this.parentFGermplasms = parentFGermplasms;
     }
     
     @Override

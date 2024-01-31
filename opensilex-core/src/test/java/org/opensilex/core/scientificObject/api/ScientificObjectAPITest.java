@@ -17,6 +17,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.*;
@@ -25,12 +26,17 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
 import org.opensilex.core.data.DataFileAPITest;
-import org.opensilex.core.data.api.*;
+import org.opensilex.core.data.api.CriteriaDTO;
+import org.opensilex.core.data.api.DataCreationDTO;
+import org.opensilex.core.data.api.DataFileCreationDTO;
+import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.ontology.Oeso;
@@ -46,7 +52,10 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -57,7 +66,6 @@ import javax.ws.rs.core.Response.Status;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,7 +74,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static junit.framework.TestCase.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -84,6 +93,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
     public static final String searchGeomPath = path + "/geometry";
+    public static final String exportGeospatialPath = path + "/export_geospatial";
 
     public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
     public static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
@@ -716,11 +726,164 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     /**
+     * Test to check criteria search when there are only "IsNotMeasured" operators
+     */
+    @Test
+    public void testCriteriaSearchOnlyIsNotMeasureds() throws Exception {
+        //create objects
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToReturn = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToKickOff = extractUriFromResponse(postResult);
+
+        //create variable
+        URI integerVariable = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+
+        //Create data
+        //Provenance for data :
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("criteriaSearchTestProv");
+        Response postProvenanceResponse = getJsonPostResponseAsAdmin(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        dataProvenance.setExperiments(Collections.emptyList());
+
+        DataCreationDTO falseIntData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", integerVariable, osToKickOff, 20, dataProvenance);
+        DataCreationDTO falseIntData2 = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", integerVariable, osToKickOff, 30, dataProvenance);
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(falseIntData);
+        dtoList.add(falseIntData2);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        LOGGER.info(postResultData.toString());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        //Search test
+        SingleCriteriaDTO someCriteria = new SingleCriteriaDTO();
+        someCriteria.setVariableUri(integerVariable);
+        someCriteria.setCriteria(MathematicalOperator.NotMeasured);
+
+        CriteriaDTO criteriaForCurrentTest = new CriteriaDTO();
+        criteriaForCurrentTest.setCriteriaList(Collections.singletonList(someCriteria));
+
+        Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        List<ScientificObjectNodeDTO> searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osToReturn, searchResult.get(0).getUri()));
+    }
+
+    /**
+     * Test to check criteria search when there is a "Not measured" as well as some data
+     */
+    @Test
+    public void testCriteriaSearchWithDataAndANotMeasured() throws Exception {
+        //create objects
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osToReturn = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //The next os will validate data criteria but will also have a value where we want it to be not measured
+        URI osThatsAlmostGood= extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //The next os will have only one data that does not validate the criteria
+        URI osThatDoesNotVal= extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        //This os can do nothing right, it's a stupid os
+        URI stupidOs= extractUriFromResponse(postResult);
+
+        //create variables
+        URI integerVariableToBeNotMeasured = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+        URI integerVariable = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+
+        //Create data
+        //Provenance for data :
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("criteriaSearchTestProv");
+        Response postProvenanceResponse = getJsonPostResponseAsAdmin(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        dataProvenance.setExperiments(Collections.emptyList());
+
+        DataCreationDTO osThatsAlmostGoodData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", integerVariableToBeNotMeasured, osThatsAlmostGood, 20, dataProvenance);
+        DataCreationDTO osThatsAlmostGoodData2 = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", integerVariable, osThatsAlmostGood, 5, dataProvenance);
+        DataCreationDTO osToReturnData = dataApi.getCreationDataDTO("2020-10-13T10:29:06.402+0200", integerVariable, osToReturn, 5, dataProvenance);
+        DataCreationDTO otherOsThatsAlmostGoodData = dataApi.getCreationDataDTO("2020-10-14T10:29:06.402+0200", integerVariable, osThatDoesNotVal, 20, dataProvenance);
+        DataCreationDTO stupidOsData = dataApi.getCreationDataDTO("2020-10-15T10:29:06.402+0200", integerVariableToBeNotMeasured, stupidOs, 20, dataProvenance);
+        DataCreationDTO stupidOsData2 = dataApi.getCreationDataDTO("2020-10-16T10:29:06.402+0200", integerVariable, osThatDoesNotVal, 20, dataProvenance);
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(osThatsAlmostGoodData);
+        dtoList.add(osThatsAlmostGoodData2);
+        dtoList.add(osToReturnData);
+        dtoList.add(otherOsThatsAlmostGoodData);
+        dtoList.add(stupidOsData);
+        dtoList.add(stupidOsData2);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        LOGGER.info(postResultData.toString());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        //Search test
+        SingleCriteriaDTO notMeasuredCriteria = new SingleCriteriaDTO();
+        notMeasuredCriteria.setVariableUri(integerVariableToBeNotMeasured);
+        notMeasuredCriteria.setCriteria(MathematicalOperator.NotMeasured);
+
+        SingleCriteriaDTO dataCriteria = new SingleCriteriaDTO();
+        dataCriteria.setVariableUri(integerVariable);
+        dataCriteria.setCriteria(MathematicalOperator.LessThan);
+        dataCriteria.setValue("10");
+
+        List<SingleCriteriaDTO> criteriaDTOList = new ArrayList<>();
+        criteriaDTOList.add(notMeasuredCriteria);
+        criteriaDTOList.add(dataCriteria);
+
+        CriteriaDTO criteriaForCurrentTest = new CriteriaDTO();
+        criteriaForCurrentTest.setCriteriaList(criteriaDTOList);
+
+        Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        List<ScientificObjectNodeDTO> searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osToReturn, searchResult.get(0).getUri()));
+    }
+
+    /**
      * Test to check criteria searches on int types, a decimal types and datetime types.
      * Also verifies that excluded objects from result are correct
      */
     @Test
-    public void testCriteriaSearch() throws Exception {
+    public void testCriteriaSearchWithNoIsNotMeasureds() throws Exception {
         //Create objects, for each ensure that the result is a well-formed URI, else throw exception
         //Separate objects for int tests and 2 other objects for other tests to make sure correct objects get excluded
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
@@ -773,27 +936,27 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         SingleCriteriaDTO lessThan10SingleCriteria = new SingleCriteriaDTO();
         lessThan10SingleCriteria.setVariableUri(integerVariable);
-        lessThan10SingleCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        lessThan10SingleCriteria.setCriteria(MathematicalOperator.LessThan);
         lessThan10SingleCriteria.setValue("10");
 
         SingleCriteriaDTO wrongDatatypeForIntCriteria = new SingleCriteriaDTO();
         wrongDatatypeForIntCriteria.setVariableUri(integerVariable);
-        wrongDatatypeForIntCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        wrongDatatypeForIntCriteria.setCriteria(MathematicalOperator.LessThan);
         wrongDatatypeForIntCriteria.setValue("this is not an int idiot");
 
         SingleCriteriaDTO inexistingVariableCriteria = new SingleCriteriaDTO();
         inexistingVariableCriteria.setVariableUri(new URI("some_random_fake_uri"));
-        inexistingVariableCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        inexistingVariableCriteria.setCriteria(MathematicalOperator.LessThan);
         inexistingVariableCriteria.setValue("this value shouldn't matter");
 
         SingleCriteriaDTO moreThan10Dot5SingleCriteria = new SingleCriteriaDTO();
         moreThan10Dot5SingleCriteria.setVariableUri(decimalVariable);
-        moreThan10Dot5SingleCriteria.setCriteria(new URI(Oeso.moreThan.getURI()));
+        moreThan10Dot5SingleCriteria.setCriteria(MathematicalOperator.MoreThan);
         moreThan10Dot5SingleCriteria.setValue("10.5");
 
         SingleCriteriaDTO equalToo20201011SingleCriteria = new SingleCriteriaDTO();
         equalToo20201011SingleCriteria.setVariableUri(datetimeVariable);
-        equalToo20201011SingleCriteria.setCriteria(new URI(Oeso.equalToo.getURI()));
+        equalToo20201011SingleCriteria.setCriteria(MathematicalOperator.EqualToo);
         equalToo20201011SingleCriteria.setValue("2020-10-11T10:29:06.402+0200");
 
         //Test a single criteria on int type
@@ -934,6 +1097,79 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), getJsonPostResponseAsAdmin(target(createPath), duplicateInGlobal).getStatus());
     }
 
+    @Test
+    public void testExportOSasShpandGeoJson() throws Exception {
 
+        //Create one OS Model
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
+        URI uri = extractUriFromResponse(postResult);
 
+        ScientificObjectModel osModel = new ScientificObjectModel();
+
+        osModel.setName("SO " + soCount++);
+        osModel.setUri(uri);
+        osModel.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
+        osModel.setTypeLabel(new SPARQLLabel("ScientificObject","en"));
+
+        SPARQLModelRelation germplasmRelation = new SPARQLModelRelation();
+        germplasmRelation.setProperty(Oeso.hasGermplasm);
+        germplasmRelation.setValue(speciesUri.toString());
+
+        SPARQLModelRelation replicationRelation = new SPARQLModelRelation();
+        replicationRelation.setProperty(Oeso.hasReplication);
+        replicationRelation.setValue("2");
+
+        List<SPARQLModelRelation> relationList = new ArrayList<>();
+        relationList.add(germplasmRelation);
+        relationList.add(replicationRelation);
+
+        osModel.setRelations(relationList);
+
+        //build geometry
+        List<Position> list = new LinkedList<>();
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97171243, 43.61332417));
+        list.add(new Position(3.9717427, 43.61330558));
+        list.add(new Position(3.97170272, 43.61327122));
+        list.add(new Position(3.97167246, 43.61328981));
+        list.add(new Position(3.97167246, 43.61328981));
+        Geometry geometry = new Polygon(list);
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
+
+        GeometryDTO objToExport=new GeometryDTO();
+        objToExport.setGeometry(geoJsonGeometry);
+        objToExport.setUri(osModel.getUri());
+
+        ArrayList<GeometryDTO> objectsList= new ArrayList<>();
+        objectsList.add(objToExport);
+
+        //build params
+        ArrayList<URI> propsList= new ArrayList<>();
+        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        propsList.add(new URI("vocabulary:hasFactorLevel"));
+        propsList.add(new URI("vocabulary:hasGermplasm"));
+        propsList.add(new URI("vocabulary:hasReplication"));
+
+        Map<String, Object> paramsShp = new HashMap<>() {{
+            put(EXPERIMENT_QUERY_PARAM, experiment);
+            put("format", "shp");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        Map<String, Object> paramsGJson = new HashMap<>() {{
+            put(EXPERIMENT_QUERY_PARAM, experiment);
+            put("format", "geojson");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        // assert service
+        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
+        assertEquals(Status.OK.getStatusCode(), resultShp.getStatus());
+        // assert service
+        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
+        assertEquals(Status.OK.getStatusCode(), resultGJson.getStatus());
+    }
 }

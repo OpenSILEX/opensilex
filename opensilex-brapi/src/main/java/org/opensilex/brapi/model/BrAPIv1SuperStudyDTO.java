@@ -7,9 +7,15 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.utils.ListWithPagination;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -161,7 +167,7 @@ public class BrAPIv1SuperStudyDTO {
         this.trialName = trialName;
     }
 
-    public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model) {
+    public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
 
         this.setStudyDbId(model.getUri().toString());
         this.setStudyName(model.getName());
@@ -187,12 +193,26 @@ public class BrAPIv1SuperStudyDTO {
             this.setProgramDbId(model.getProjects().get(0).getUri().toString());
         }
 
+        ListWithPagination<GermplasmModel> germplasms = germplasmDAO.brapiSearch(
+                user,
+                null,
+                null,
+                null,
+                0,
+                0
+        );
+        if (!germplasms.getList().isEmpty()){
+            Set<GermplasmModel> species = germplasms.getList().stream().map(GermplasmModel::getSpecies).collect(Collectors.toSet());
+            if (species.size() == 1){
+                this.setCommonCropName(species.iterator().next().getName());
+            }
+        }
         return this;
     }
 
-    public static BrAPIv1SuperStudyDTO fromModel(ExperimentModel model) {
+    public static BrAPIv1SuperStudyDTO fromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
         BrAPIv1SuperStudyDTO study = new BrAPIv1SuperStudyDTO();
-        return study.extractFromModel(model);
+        return study.extractFromModel(model, germplasmDAO, user);
 
     }
 }

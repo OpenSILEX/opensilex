@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
@@ -22,7 +20,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -33,7 +30,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.geospatial.dal.ShapeFileExporter;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -47,9 +43,11 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -65,6 +63,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -84,7 +83,6 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -353,10 +351,14 @@ public class ScientificObjectAPI {
         if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
             VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            List<URI> criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
             if(criteriaFilteredObjects != null){
-                searchFilter.setUris(criteriaFilteredObjects);
-                applyNonCriteriaFilters = !criteriaFilteredObjects.isEmpty();
+                if(criteriaFilteredObjects.excludeResults){
+                    searchFilter.setExcludedUris(criteriaFilteredObjects.result);
+                }else{
+                    searchFilter.setUris(criteriaFilteredObjects.result);
+                    applyNonCriteriaFilters = !criteriaFilteredObjects.result.isEmpty();
+                }
             }
         }
 
@@ -375,9 +377,10 @@ public class ScientificObjectAPI {
                     .setExistenceDate(existenceDate)
                     .setCreationDate(creationDate);
 
+            //TODO this crushes the result of criteria search, how should this be handled?
         if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables));
+            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
         }
 
             searchFilter.setPage(page)
@@ -642,7 +645,7 @@ public class ScientificObjectAPI {
             }
             throw mongoException;
         }catch (DuplicateNameException e){
-            throw new IllegalArgumentException(e.getMessage());
+            throw new BadRequestException(e.getMessage());
         }
         catch (Exception ex) {
             sparql.rollbackTransaction();
@@ -801,18 +804,19 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("export_shp")
-    @ApiOperation("Export a given list of scientific object URIs to shapefile")
+    @Path("export_geospatial")
+    @ApiOperation("Export a given list of scientific object URIs to shapefile or geojson")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data shapefile exported")
+            @ApiResponse(code = 200, message = "Data exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response exportShp(
+    public Response exportGeospatial(
             @ApiParam(value = "Scientific objects") List<GeometryDTO> selectedObjects,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
             @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
             @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
@@ -822,7 +826,7 @@ public class ScientificObjectAPI {
 
         //Get OS exported URI
         selectedObjects.forEach(o ->{
-            selectedObjectsMap.put(o.getUri(), o.getGeometry());
+            selectedObjectsMap.put(URI.create(SPARQLDeserializers.getExpandedURI(o.getUri())), o.getGeometry());
         });
 
         // Search exported OS detail according the XP and selected uris, fetch os factors
@@ -836,14 +840,12 @@ public class ScientificObjectAPI {
 
         List<ScientificObjectModel> objDetailList = soDao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)).getList();
 
-        //Convert to shapefiles and create a zip file to export
-        ShapeFileExporter shpExport = new ShapeFileExporter();
-        byte[] zippedFile =shpExport.shpExport(selectedProps, objDetailList, selectedObjectsMap);
+        //Convert
+        ScientificObjectGeospatialExporter shpExport = new ScientificObjectGeospatialExporter();
+        Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
 
-        String zipName = "shpZip_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
-
-        return Response.ok(zippedFile, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + zipName + "\"")
+        return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
                 .build();
     }
 
@@ -1042,60 +1044,6 @@ public class ScientificObjectAPI {
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
-    }
-
-    /**
-     * Contains one main map providing an identifier to each criteria triplet that is invalid.
-     * And 3 other maps to identify what type of error each invalid triplet has.
-     * The 3 add error functions will automatically create the identifier if the triplet didn't already have an error.
-     * (Variable uri not found, Criteria uri not found or Invalid datatype for the given variable.
-     */
-    public static class GetScientificObjectsByDataCriteriaRequestErrors{
-        private final Map<Integer, URI> invalidVariables;
-        private final Map<Integer, URI> invalidCriteriaOperators;
-        private final Map<Integer, String> invalidValueDatatypes;
-        private final Map<SingleCriteriaDTO, Integer> invalidCriterias;
-        int currentIdentifier;
-        public GetScientificObjectsByDataCriteriaRequestErrors(){
-            this.invalidVariables = new HashMap<>();
-            this.invalidCriteriaOperators = new HashMap<>();
-            this.invalidValueDatatypes = new HashMap<>();
-            this.invalidCriterias = new HashMap<>();
-            this.currentIdentifier = 0;
-        }
-        public boolean hasErrors(){
-            return !invalidCriterias.isEmpty();
-        }
-        public void addInvalidVariable(SingleCriteriaDTO invalidCriteria, URI invalidVariable){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidVariables.put(id, invalidVariable);
-        }
-        public void addInvalidCriteriaOperator(SingleCriteriaDTO invalidCriteria, URI invalidCriteriaOperator){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidCriteriaOperators.put(id, invalidCriteriaOperator);
-        }
-        public void addInvalidValueDatatypeError(SingleCriteriaDTO invalidCriteria, String invalidValue){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidValueDatatypes.put(id, invalidValue);
-        }
-        public String generateErrorMessage(){
-            StringBuilder result = new StringBuilder("Errors were found in the following criteria : \n");
-            ObjectMapper objectMapper = new ObjectMapper();
-            for (SingleCriteriaDTO singleCriteriaDTO : invalidCriterias.keySet()) {
-                try {
-                    result.append(objectMapper.writeValueAsString(singleCriteriaDTO));
-                } catch (JsonProcessingException e) {
-                    result.append("{singleCriteriaDTO json serialization failed}");
-                }
-                Integer id = invalidCriterias.get(singleCriteriaDTO);
-                result.append((invalidVariables.get(id) == null ? "" : "variable uri not found, "));
-                result.append((invalidCriteriaOperators.get(id) == null ? "" : "criteria operator not found, "));
-                result.append((invalidValueDatatypes.get(id) == null ? "" : "value does not match required data-type of variable. "));
-                result.append("\n");
-            }
-            return result.toString();
-
-        }
     }
 
     @GET

@@ -120,6 +120,28 @@
                 :uri="germplasm.accession"
                 :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.accession)}"
               ></opensilex-LabelUriView>
+              <!-- Germplasm Parents -->
+              <opensilex-UriListView
+                  label="GermplasmDetails.parent"
+                  :list="parentList"
+                  :inline="false"
+                  v-if="germplasm.has_parent_germplasm!==null && germplasm.has_parent_germplasm.length>0"
+              ></opensilex-UriListView>
+              <!-- Germplasm Parents F -->
+              <opensilex-UriListView
+                  label="GermplasmDetails.parentF"
+                  :list="parentFList"
+                  :inline="false"
+                  v-if="germplasm.has_parent_germplasm_f!==null && germplasm.has_parent_germplasm_f.length>0"
+              ></opensilex-UriListView>
+              <!-- Germplasm Parents M -->
+              <opensilex-UriListView
+                  label="GermplasmDetails.parentM"
+                  :list="parentMList"
+                  :inline="false"
+                  v-if="germplasm.has_parent_germplasm_m!==null && germplasm.has_parent_germplasm_m.length>0"
+              ></opensilex-UriListView>
+              <!-- Metadata -->
               <opensilex-MetadataView
               v-if="germplasm.publisher && germplasm.publisher.uri"
                 :publisher="germplasm.publisher"
@@ -240,6 +262,40 @@ export default class GermplasmDetails extends Vue {
     return this.$store.state.credentials;
   }
 
+  get parentList() {
+    return this.germplasm.has_parent_germplasm.map(parent => {
+      return {
+        uri: parent.uri,
+        value: parent.name,
+        to: {
+          path: "/germplasm/details/" + encodeURIComponent(parent.uri)
+        }
+      };
+    });
+  }
+  get parentMList() {
+    return this.germplasm.has_parent_germplasm_m.map(parent => {
+      return {
+        uri: parent.uri,
+        value: parent.name,
+        to: {
+          path: "/germplasm/details/" + encodeURIComponent(parent.uri)
+        }
+      };
+    });
+  }
+  get parentFList() {
+    return this.germplasm.has_parent_germplasm_f.map(parent => {
+      return {
+        uri: parent.uri,
+        value: parent.name,
+        to: {
+          path: "/germplasm/details/" + encodeURIComponent(parent.uri)
+        }
+      };
+    });
+  }
+
   isDetailsTab() {
       localStorage.setItem("tabPath", this.routeArr[2]);
       localStorage.setItem("tabPage", "1");
@@ -285,6 +341,9 @@ export default class GermplasmDetails extends Vue {
     description: null,
     metadata: null,
     website: null,
+    has_parent_germplasm: [],
+    has_parent_germplasm_m: [],
+    has_parent_germplasm_f: [],
     synonyms: []
   };
 
@@ -372,26 +431,9 @@ export default class GermplasmDetails extends Vue {
 
   @Ref("germplasmForm") readonly germplasmForm!: any;
   updateGermplasm() {
-
     let form: GermplasmForm = this.germplasmForm.getFormRef();
     form.readAttributes(this.germplasm.metadata);
-
-    let updateDTO: GermplasmUpdateDTO = {
-      uri: this.germplasm.uri,
-      name: this.germplasm.name,
-      rdf_type: this.germplasm.rdf_type,
-      species: this.germplasm.species,
-      variety: this.germplasm.variety,
-      accession: this.germplasm.accession,
-      institute: this.germplasm.institute,
-      code: this.germplasm.code,
-      production_year: this.germplasm.production_year,
-      description: this.germplasm.description,
-      metadata: this.germplasm.metadata,
-      website: this.germplasm.website,
-      synonyms: this.germplasm.synonyms
-    }
-    //let germplasmDtoCopy = JSON.parse(JSON.stringify(this.germplasm));
+    let updateDTO : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(this.germplasm);
     this.germplasmForm.showEditForm(updateDTO);
   }
 
@@ -475,6 +517,9 @@ en:
     value: Value
     subtaxa: Subtaxa
     website: Web site
+    parent: Parent Germplasms
+    parentM: Male parents
+    parentF: Female parents
 
 fr:
   GermplasmDetails:
@@ -499,6 +544,8 @@ fr:
     attribute: Attribut
     value: Valeur
     subtaxa: Subtaxa
-    website: Site web    
-
+    website: Site web
+    parent: Parents
+    parentM: Parents mâle
+    parentF: Parents femelles
 </i18n>

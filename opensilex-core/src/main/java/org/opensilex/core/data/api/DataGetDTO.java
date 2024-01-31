@@ -33,10 +33,10 @@ public class DataGetDTO extends DataCreationDTO {
     private UserGetDTO publisher;
 
     @JsonProperty("issued")
-    private Instant publicationDate;
+    private OffsetDateTime publicationDate;
 
     @JsonProperty("modified")
-    private Instant lastUpdatedDate;
+    private OffsetDateTime lastUpdatedDate;
 
     @NotNull
     @ValidURI
@@ -60,19 +60,19 @@ public class DataGetDTO extends DataCreationDTO {
         this.publisher = publisher;
     }
 
-    public Instant getPublicationDate() {
+    public OffsetDateTime getPublicationDate() {
         return publicationDate;
     }
 
-    public void setPublicationDate(Instant publicationDate) {
+    public void setPublicationDate(OffsetDateTime publicationDate) {
         this.publicationDate = publicationDate;
     }
 
-    public Instant getLastUpdatedDate() {
+    public OffsetDateTime getLastUpdatedDate() {
         return lastUpdatedDate;
     }
 
-    public void setLastUpdatedDate(Instant lastUpdatedDate) {
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
@@ -119,10 +119,10 @@ public class DataGetDTO extends DataCreationDTO {
         }
 
         if (Objects.nonNull(model.getPublicationDate())) {
-            setPublicationDate(model.getPublicationDate());
+            setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }
         if (Objects.nonNull(model.getLastUpdateDate())) {
-            setLastUpdatedDate(model.getLastUpdateDate());
+            setLastUpdatedDate(OffsetDateTime.ofInstant(model.getLastUpdateDate(), ZoneOffset.UTC));
         }
 
         setMetadata(model.getMetadata());   

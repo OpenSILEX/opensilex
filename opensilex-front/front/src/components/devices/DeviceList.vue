@@ -302,6 +302,7 @@ export default class DeviceList extends Vue {
     showVariableForm: boolean = false;
     showEventForm: boolean = false;
     showMoveForm: boolean = false;
+
     filter = {
         name: undefined,
         rdf_type: undefined,

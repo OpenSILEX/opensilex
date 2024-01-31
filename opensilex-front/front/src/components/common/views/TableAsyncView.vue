@@ -135,6 +135,7 @@ export interface SlotDetails<T extends NamedResourceDTO> {
   toggleDetails: () => void
 }
 
+
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -147,6 +148,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   @Prop()
   fields;
+
+  /**
+   * Optional mapping if the TableAsyncView's field keys are different to the field names in the model.
+   * Used to permit sorting.
+   */
+  @Prop()
+  fieldKeyToSortableModelLabelMap : {[key : string] : string}
 
   @Prop()
   searchMethod;
@@ -398,11 +406,10 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     this.refresh()
   }
 
-
-   refresh() {
-      this.currentPage = 1;
-      this.pageSize=this.defaultPageSize;
-      this.tableRef.refresh();
+  refresh() {
+    this.currentPage = 1;
+    this.pageSize=this.defaultPageSize;
+    this.tableRef.refresh();
   }
 
   // function that reset the selected elements
@@ -420,7 +427,20 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   onRefreshed() {
     let that = this;
-    this.$emit('refreshed')
+    this.$emit('refreshed');
+
+    //Remove elements from the selection if they are deleted / update the number of badge elements displayed
+    this.selectedItems.forEach((element, index) => {
+      let tableIndex = this.tableRef.sortedItems.findIndex(
+        it => element.uri == it.uri
+      );
+      if (tableIndex < 0) {
+        this.selectedItems.splice(index, 1);
+      }
+    });
+
+    this.numberOfSelectedRows = this.selectedItems.length;
+
     setTimeout(function() {
       that.afterRefreshedItemsSelection();
     }, 1); //do it after real table refreshed
@@ -467,6 +487,10 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
+      //Check to see if we need to get a field identifier for this sort
+      if(this.fieldKeyToSortableModelLabelMap && this.fieldKeyToSortableModelLabelMap[this.sortBy]){
+        orderByText = this.fieldKeyToSortableModelLabelMap[this.sortBy] + "=";
+      }
       if (this.sortDesc) {
         orderBy.push(orderByText + "desc");
       } else {
@@ -568,15 +592,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
           this.selectedItems = [];
         }
 
-        let orderBy = [];
-        if (this.sortBy) {
-          let orderByText = this.sortBy + "=";
-          if (this.sortDesc) {
-            orderBy.push(orderByText + "desc");
-          } else {
-            orderBy.push(orderByText + "asc");
-          }
-        }
+        let orderBy = this.getOrderBy();
 
         this.searchMethod({
           orderBy: orderBy,

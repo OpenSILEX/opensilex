@@ -13,4 +13,15 @@ public class GraphConfigDTO {
     public void setVariable(URI variable) {
         this.variable = variable;
     }
+
+    public String dataLocationInformations;
+
+    public String  getDataLocationInformations() {
+        return dataLocationInformations;
+    }
+
+    public void setDataLocationInformations(String dataLocationInformations) {
+        this.dataLocationInformations = dataLocationInformations;
+    }
+
 }

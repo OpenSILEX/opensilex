@@ -782,52 +782,6 @@ export default class OpenSilexVuePlugin {
     public generateID() {
         return '_' + Math.random().toString(36).substr(2, 9);
     }
-
-    /*public updateURLParameter(key, value, defaultValue?) {
-        try {
-            let queryParams = new URLSearchParams(window.location.search);
-            let rootQuery = window.location.pathname;
-            if (!value || (defaultValue != null && value == defaultValue) || (Array.isArray(value) && value.length==0)) {
-                queryParams.delete(key);
-            } else {
-                console.debug("fucking value : ", value);
-                queryParams.set(key, encodeURI(JSON.stringify(value)));
-            }
-
-            let queryParamString = queryParams.toString();
-            console.debug("fucking value after jsjsjsjsj : ", queryParamString);
-            let url = rootQuery;
-            if (queryParamString) {
-                url += "?" + queryParamString;
-            }
-            window.history.replaceState(queryParams.toString(), document.title, url);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    public updateURLParameters(filter) {
-        for (let [key, value] of Object.entries(filter)) {
-            this.updateURLParameter(key, value, "");
-        } 
-    }
-
-    public updateFiltersFromURL(query, filter) {
-        console.debug("updateFiltersFromURL, query", query);
-        console.debug("updateFiltersFromURL, filter", filter);
-        for (let [key, value] of Object.entries(query)) {
-            query[key] = JSON.parse(decodeURIComponent(value));
-            console.debug("new query[key] : ", query[key]);
-        }
-        for (let [key, value] of Object.entries(filter)) {
-            if (query[key]) {
-                //filter[key] = JSON.parse(decodeURIComponent(query[key]));
-                filter[key] = query[key];
-                console.debug("updateFiltersFromURL, filter[key] after parse", filter[key]);
-            }
-        }
-    }*/
-
     public updateURLParameter(key, value, defaultValue?) {
         try {
             let queryParams = new URLSearchParams(window.location.search);

@@ -7,6 +7,7 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -22,8 +23,8 @@ import java.util.stream.Collectors;
  * @author Alice Boizet
  */
 public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
-    private final String SCIENTIFIC_SUPERVISOR = "ScientificSupervisor";
-    private final String TECHNICAL_SUPERVISOR = "TechnicalSupervisor";
+    private final String SCIENTIFIC_SUPERVISOR = "Scientific Supervisor";
+    private final String TECHNICAL_SUPERVISOR = "Technical Supervisor";
 
     private List<BrAPIv1ContactDTO> contacts;
     private List<BrAPIv1DataLinkDTO> dataLinks;
@@ -143,8 +144,8 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         this.seasons = seasons;
     }
 
-    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
-        super.extractFromModel(model);
+    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount, GermplasmDAO germplasmDAO) throws Exception {
+        super.extractFromModel(model, germplasmDAO, currentAccount);
 
         if (!model.getDescription().isEmpty()){
             this.setStudyDescription(model.getDescription());
@@ -181,8 +182,8 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         return this;
     }
 
-    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
+    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount, GermplasmDAO germplasmDAO) throws Exception {
         BrAPIv1StudyDetailsDTO study = new BrAPIv1StudyDetailsDTO();
-        return study.extractFromModel(model, facilityDAO, organizationDAO, currentAccount);
+        return study.extractFromModel(model, facilityDAO, organizationDAO, currentAccount, germplasmDAO);
     }
 }

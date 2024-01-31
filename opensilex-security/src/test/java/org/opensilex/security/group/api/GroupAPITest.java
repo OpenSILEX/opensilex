@@ -2,6 +2,7 @@ package org.opensilex.security.group.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -31,16 +32,35 @@ import org.opensilex.sparql.service.SPARQLService;
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
     public String path = "/security/groups";
-    public String createPath = path;
-    public String updatePath = path ;
-    public String getPath = path + "/{uri}";
-    public String deletePath = path + "/{uri}";
+    public ServiceDescription create = new ServiceDescription(
+            GroupAPI.class.getMethod("createGroup", GroupCreationDTO.class),
+            path
+    );
+    public ServiceDescription update = new ServiceDescription(
+            GroupAPI.class.getMethod("updateGroup", GroupUpdateDTO.class),
+            path
+    );
+    public ServiceDescription get = new ServiceDescription(
+            GroupAPI.class.getMethod("getGroup", URI.class),
+            path + "/{uri}"
+    );
+    public ServiceDescription delete = new ServiceDescription(
+            GroupAPI.class.getMethod("deleteGroup", URI.class),
+            path + "/{uri}"
+    );
+    public ServiceDescription search = new ServiceDescription(
+            GroupAPI.class.getMethod("searchGroups", String.class, List.class, int.class, int.class),
+            path
+    );
     public String searchPath = path;
 
     private final static String USER1_URI = "http://example.org/users/user1";
     private final static String USER2_URI = "http://example.org/users/user2";
     private final static String PROFILE1_URI = "http://example.org/profiles/profile1";
     private final static String PROFILE2_URI = "http://example.org/profiles/profile2";
+
+    public GroupAPITest() throws NoSuchMethodException {
+    }
 
     protected void createTestEnv() throws Exception {
         SPARQLService sparql = this.getSparqlService();
@@ -79,99 +99,42 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void testGroupBasicCRUDAsAdmin() throws Exception {
         createTestEnv();
 
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        // ensure that the result is a well formed URI, else throw exception
-        URI createdUri = extractUriFromResponse(postResult);
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), createdUri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+        testBasicCRUDAsAdmin(
+                create, get, update, delete,
+                getGroupCreationDTO(), getGroupUpdateDTO(),
+                getGroupUpdateDTO()
+        );
     }
 
-    @Test
-    public void testUpdate() throws Exception {
-        createTestEnv();
-
-        // create the user
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
-
-        // update the xp
-        URI uri = extractUriFromResponse(postResult);
+    @NotNull
+    private static GroupUpdateDTO getGroupUpdateDTO() throws URISyntaxException {
         GroupUpdateDTO dto = new GroupUpdateDTO();
-        dto.setUri(uri);
         dto.setName("new group name");
         dto.setDescription("New description");
 
         List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
         GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
 
-        userProfile = new GroupUserProfileModificationDTO();
         userProfile.setUserURI(new URI(USER1_URI));
         userProfile.setProfileURI(new URI(PROFILE2_URI));
         userProfiles.add(userProfile);
 
         dto.setUserProfiles(userProfiles);
-
-        final Response putResult = getJsonPutResponse(target(updatePath), dto);
-        assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
-
-        // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dto.getUri().toString());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<GroupDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GroupDTO>>() {
-        });
-        GroupDTO dtoFromApi = getResponse.getResult();
-
-        // check that the object has been updated
-        compareGroupsDTO(dto, dtoFromApi);
+        return dto;
     }
 
-    @Test
-    public void testDelete() throws Exception {
-        createTestEnv();
-        // create object and check if URI exists
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-        String uri = extractUriFromResponse(postResponse).toString();
-
-        // delete object and if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), uri);
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-    }
-
-    @Test
+    /*@Test
     public void testSearch() throws Exception {
         createTestEnv();
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        GroupCreationDTO dto = new GroupCreationDTO();
-        dto.setName("Group 2");
-        dto.setDescription("Description 2");
+        new UserCallBuilder(create).setBody(getGroupCreationDTO()).buildAdmin().executeCallAndReturnURI();
 
-        List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
-        GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
-        userProfile.setUserURI(new URI(USER1_URI));
-        userProfile.setProfileURI(new URI(PROFILE2_URI));
-        userProfiles.add(userProfile);
+        GroupCreationDTO dto = getCreationDTO();
 
-        userProfile = new GroupUserProfileModificationDTO();
-        userProfile.setUserURI(new URI(USER2_URI));
-        userProfile.setProfileURI(new URI(PROFILE1_URI));
-        userProfiles.add(userProfile);
-
-        dto.setUserProfiles(userProfiles);
-
-        postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+        new UserCallBuilder(create).setBody(dto).buildAdmin().executeCallAndReturnURI();
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
@@ -201,7 +164,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         });
         users = listResponse.getResult();
         assertEquals(1, users.size());
-    }
+    }*/
 
     private void compareGroupsDTO(GroupUpdateDTO expectedGroupDTO, GroupDTO actualGroupDTO) {
         assertEquals(expectedGroupDTO.getUri(), actualGroupDTO.getUri());

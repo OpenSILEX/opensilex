@@ -18,7 +18,9 @@ import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -35,6 +37,7 @@ import java.net.URI;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
@@ -130,12 +133,13 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
     private final HashMap<String, TokenGetDTO> tokenMap = new HashMap<>();
 
-    protected void testBasicCRUDAsAdmin(
+    protected <T extends SPARQLNamedResourceModel<T>> void testBasicCRUDAsAdmin(
             ServiceDescription createServiceDescription,
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
-            Object entityToPost, Object entityToPut
+            NamedResourceDTO<T> entityToPost, NamedResourceDTO<T> entityToPut,
+            NamedResourceDTO<T> entityExpectedAfterPut
     ) throws Exception {
         // CREATE
         UserCall createCall = new UserCallBuilder(createServiceDescription)
@@ -147,32 +151,35 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         UserCall readCall = new UserCallBuilder(readServiceDescription)
                 .setUriInPath(createdUri.toString())
                 .buildAdmin();
-        URI readUri = readCall.executeCallAndReturnURI();
-        assertEquals(createdUri, readUri);
+        readCall.executeCallAndReturnURI();
 
         // UPDATE
+        entityToPut.setUri(createdUri);
         UserCall updateCall = new UserCallBuilder(updateServiceDescription)
                 .setBody(entityToPut)
                 .buildAdmin();
-        URI updatedUri = updateCall.executeCallAndReturnURI();
-        assertEquals(createdUri, updatedUri);
+        updateCall.executeCallAndReturnURI();
+        NamedResourceDTO<T> readResponse = readCall.executeCallAndDeserialize(new TypeReference<NamedResourceDTO<T>>() {
+        }).getDeserializedResponse();
+        assertEquals(readResponse, entityExpectedAfterPut);
 
         // DELETE
         UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
                 .setUriInPath(createdUri.toString())
                 .buildAdmin();
-        Result<ResourceDTO<?>> deleteResponse = deleteCall.executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
+        deleteCall.executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
         });
         Response result = readCall.executeCall();
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), result.getStatus());
     }
 
-    protected void testBasicCRUDListAsAdmin(
+    protected <T extends SPARQLNamedResourceModel<T>> void testBasicCRUDListAsAdmin(
             ServiceDescription createServiceDescription,
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
-            List<Object> entitiesToPost, List<Object> entitiesToPut
+            List<NamedResourceDTO<T>> entitiesToPost, List<NamedResourceDTO<T>> entitiesToPut,
+            List<NamedResourceDTO<T>> entitiesExpectedAfterPut
     ) throws Exception {
         if (entitiesToPost.size() != entitiesToPut.size()) {
             for (int i = 0; i < entitiesToPost.size(); i++) {
@@ -181,7 +188,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                         readServiceDescription,
                         updateServiceDescription,
                         deleteServiceDescription,
-                        entitiesToPost.get(i), entitiesToPut.get(i)
+                        entitiesToPost.get(i), entitiesToPut.get(i),
+                        entitiesExpectedAfterPut.get(i)
                 );
             }
         }

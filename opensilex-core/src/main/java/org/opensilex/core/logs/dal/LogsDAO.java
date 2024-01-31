@@ -23,7 +23,7 @@ public class LogsDAO {
         this.nosql = nosql;
     }
 
-    public LogModel create(LogModel instance)  throws Exception, MongoWriteException {
+    public LogModel create(LogModel instance)  throws Exception {
         nosql.create(instance, LogModel.class, LOGS_COLLECTION_NAME, LOG_PREFIX);
         return instance;
     }

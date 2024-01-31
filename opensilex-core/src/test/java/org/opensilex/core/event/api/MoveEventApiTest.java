@@ -195,7 +195,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public void testFailWithUnknownTargets() throws Exception {
 
         MoveCreationDTO dto = getCreationDto();
-        dto.setTargets(Arrays.asList(new URI("oeev:unknown_target")));
+        dto.setTargets(List.of(new URI("oeev:unknown_target")));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath),Collections.singletonList(dto));
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());

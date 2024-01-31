@@ -366,7 +366,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     private MoveModel createMove(URI device, FacilityModel fromFacility, FacilityModel toFacility, String end) throws Exception {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
-        moveModel.setTargets(Arrays.asList(device));
+        moveModel.setTargets(Collections.singletonList(device));
         moveModel.setFrom(fromFacility);
         moveModel.setTo(toFacility);
         moveModel.setIsInstant(true);

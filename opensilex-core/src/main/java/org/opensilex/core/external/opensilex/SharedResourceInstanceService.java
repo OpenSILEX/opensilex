@@ -281,16 +281,12 @@ public class SharedResourceInstanceService {
     }
 
     public <T> T getByURI(String path, URI uri, Class<T> type) {
-        try {
-            WebTarget target = httpClient.target(config.apiUrl())
-                    .path(path)
-                    .path(URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.toString()));
+        WebTarget target = httpClient.target(config.apiUrl())
+                .path(path)
+                .path(URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8));
 
-            SingleObjectResponse<T> response = get(target, Collections.emptyMap(), genericType(SingleObjectResponse.class, javaType(type)), true);
-            return response.getResult();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        SingleObjectResponse<T> response = get(target, Collections.emptyMap(), genericType(SingleObjectResponse.class, javaType(type)), true);
+        return response.getResult();
     }
 
     public <T> ListWithPagination<T> getListByURI(String path, String uriParam, Collection<URI> uriCollection, Class<T> type) {

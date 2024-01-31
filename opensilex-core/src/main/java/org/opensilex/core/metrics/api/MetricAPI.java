@@ -40,10 +40,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
@@ -277,7 +274,7 @@ public class MetricAPI {
         MetricDAO metricsDao = new MetricDAO(sparql, nosql);
 
         validateContextAccess(experimentURI);
-        List<URI> experimentUri = Arrays.asList(experimentURI);
+        List<URI> experimentUri = Collections.singletonList(experimentURI);
         ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(experimentUri, startInstant, endInstant, page, pageSize, currentUser.getLanguage());
         ExperimentSummaryModel experimentSummary = null;
         if (experimentSummaries != null && !experimentSummaries.getList().isEmpty()) {

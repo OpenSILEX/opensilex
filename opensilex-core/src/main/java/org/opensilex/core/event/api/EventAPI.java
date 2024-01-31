@@ -417,7 +417,7 @@ public class EventAPI {
             models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 
-            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {

@@ -69,7 +69,7 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
 
     }
     
-    public DataFileCreationDTO getCreationFileDTO(String date) throws URISyntaxException, Exception {
+    public DataFileCreationDTO getCreationFileDTO(String date) throws Exception {
         DataFileCreationDTO dataDTO = new DataFileCreationDTO();
         
         dataDTO.setProvenance(provenance);

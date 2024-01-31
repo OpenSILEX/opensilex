@@ -151,7 +151,7 @@ public class DataAPI {
     public static final int SIZE_MAX = 50000;
     
     Map<URI, URI> rootDeviceTypes = null;
-    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     @Inject
     private MongoDBService nosql;
@@ -812,9 +812,7 @@ public class DataAPI {
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
-            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
-                return true;
-            }
+            return variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())));
 
         }
         return false;
@@ -1034,7 +1032,7 @@ public class DataAPI {
         Instant start = Instant.now();
         List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug(resultList.size() + " observations retrieved " + Duration.between(start, data).toMillis() + " milliseconds elapsed");
 
         Response prepareCSVExport = null;
 
@@ -1046,7 +1044,7 @@ public class DataAPI {
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Export data " + timeElapsed + " milliseconds elapsed");
 
         return prepareCSVExport;
     }
@@ -1106,7 +1104,7 @@ public class DataAPI {
         try{
             List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
             Instant data = Instant.now();
-            LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug(resultList.size() + " observations retrieved " + Duration.between(start, data).toMillis() + " milliseconds elapsed");
 
             if (dto.getCsvFormat().equals("long")) {
                 prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, dto.isWithRawData());
@@ -1120,7 +1118,7 @@ public class DataAPI {
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Export data " + timeElapsed + " milliseconds elapsed");
 
         return prepareCSVExport;
     }
@@ -1303,7 +1301,7 @@ public class DataAPI {
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
+            LOGGER.debug("Insertion " + timeElapsed + " milliseconds elapsed");
             
             validation.setValidCSV(!validation.hasErrors());
         }
@@ -1352,7 +1350,7 @@ public class DataAPI {
         validation = validateWholeCSV(provenanceModel, experiment, file, user);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Validation " + timeElapsed + " milliseconds elapsed");
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -1415,7 +1413,7 @@ public class DataAPI {
 
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -1425,11 +1423,11 @@ public class DataAPI {
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(List.of(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }
             // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
             if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
-                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(List.of(targetHeader + " or " + soHeader));
             }
             
             // 1. check variables
@@ -1568,7 +1566,7 @@ public class DataAPI {
             Map<String, DeviceModel> nameURIDevices,
             HashMap<URI, URI> mapVariableUriDataType, 
             List<ImportDataIndex> duplicateDataByIndex) 
-        throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
+        throws Exception {
         
         boolean validRow = true;
 
@@ -2060,7 +2058,7 @@ public class DataAPI {
     }
 
     // Map who associate each type with its root type
-    private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
+    private Map<URI, URI> getRootDeviceTypes() throws Exception {
 
         SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
@@ -2179,7 +2177,7 @@ public class DataAPI {
                 startInstant,
                 endInstant);
         end = Instant.now();
-        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Duration.between(start, end).toMillis() + " milliseconds elapsed");
 
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 

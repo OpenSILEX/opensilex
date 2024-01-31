@@ -132,11 +132,7 @@ public class ScientificObjectDAO {
 
     public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(ScientificObjectSearchFilter searchFilter) throws Exception {
 
-        if(!searchFilter.getRdfTypes().isEmpty() || !searchFilter.getFactorLevels().isEmpty() || !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") || searchFilter.getFacility() != null) {
-            searchFilter.setOnlyFetchOsWithNoParent(false);
-        } else {
-            searchFilter.setOnlyFetchOsWithNoParent(true);
-        }
+        searchFilter.setOnlyFetchOsWithNoParent(searchFilter.getRdfTypes().isEmpty() && searchFilter.getFactorLevels().isEmpty() && (searchFilter.getPattern().isEmpty() || searchFilter.getPattern().equals(".*")) && searchFilter.getFacility() == null);
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
         if(results.getList().isEmpty()){
@@ -838,7 +834,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
         Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
@@ -932,7 +928,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 

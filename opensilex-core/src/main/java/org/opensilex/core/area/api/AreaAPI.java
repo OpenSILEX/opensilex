@@ -138,7 +138,7 @@ public class AreaAPI {
                 }
                 else{
                     //Create an event with the rdfType from event
-                    areaDTO.event.setTargets(Arrays.asList(areaURI));
+                    areaDTO.event.setTargets(Collections.singletonList(areaURI));
                     EventModel eventModel = areaDTO.event.toModel();
                     eventModel.setPublisher(currentUser.getUri());
                     eventDAO.create(eventModel);
@@ -231,7 +231,7 @@ public class AreaAPI {
                     return new ErrorResponse(
                             Response.Status.UNAUTHORIZED,
                             "Number of associated events",
-                            "More than 1 event associated to this area : " + areaURI.toString()
+                            "More than 1 event associated to this area : " + areaURI
                     ).getResponse();
             }
         } else {
@@ -293,7 +293,7 @@ public class AreaAPI {
                  switch (eventList.getList().size()){
                      case 1:
                          areaDTO.event.setUri(eventList.getList().get(0).getUri());
-                         areaDTO.event.setTargets(Arrays.asList(areaURI));
+                         areaDTO.event.setTargets(Collections.singletonList(areaURI));
                          eventDAO.update(areaDTO.event.toModel());
                          break;
                     case 0: throw new IllegalArgumentException("No event to update for this area : " + areaURI);

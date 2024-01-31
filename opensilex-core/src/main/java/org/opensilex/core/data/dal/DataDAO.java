@@ -248,7 +248,7 @@ public class DataDAO {
             Integer page,
             Integer pageSize) throws Exception {
 
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, Collections.singletonList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
 
         return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
@@ -285,7 +285,7 @@ public class DataDAO {
             Document metadata,
             List<URI> operators) throws Exception {
         
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, Collections.singletonList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
 
         return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
     }
@@ -787,11 +787,11 @@ public class DataDAO {
         return nosql.findByURI(DataFileModel.class, FILE_COLLECTION_NAME, uri);
     }
     
-    public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
+    public void delete(URI uri) throws Exception {
         nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
     }
 
-    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
+    public void delete(List<URI> uris) throws Exception {
         nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uris);
     }
 
@@ -879,7 +879,7 @@ public class DataDAO {
      */
     @Deprecated
     public List<ProvenanceModel> getProvenancesByDevice(AccountModel user, URI uri, String collectionName) throws Exception {
-        Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null, null);
+        Document filter = searchFilter(user, null, null, null, null, Collections.singletonList(uri), null, null, null, null, null, null);
         Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
         return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
     }
@@ -1041,7 +1041,7 @@ public class DataDAO {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
 
@@ -1103,7 +1103,7 @@ public class DataDAO {
         defaultColumns.add("Provenance URI");
 
         Instant variableTime = Instant.now();
-        LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + variables.size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
 
         // Provides the experiment as context if there is only one
@@ -1117,7 +1117,7 @@ public class DataDAO {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
             List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
@@ -1125,7 +1125,7 @@ public class DataDAO {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -1133,7 +1133,7 @@ public class DataDAO {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");    
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
         
         // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
@@ -1260,7 +1260,7 @@ public class DataDAO {
             String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
-            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
                     .header("Content-Disposition", "attachment; filename=" + fileName )
@@ -1307,7 +1307,7 @@ public class DataDAO {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
 
@@ -1333,14 +1333,14 @@ public class DataDAO {
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
-        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
         List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), null);
         for (SPARQLNamedResourceModel obj : objectsList) {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
@@ -1348,7 +1348,7 @@ public class DataDAO {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -1356,7 +1356,7 @@ public class DataDAO {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
 
         // See defaultColumns order
         //        Target
@@ -1472,7 +1472,7 @@ public class DataDAO {
             String fileName = "export_data_long_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
-            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
                     .header("Content-Disposition", "attachment; filename=" + fileName)

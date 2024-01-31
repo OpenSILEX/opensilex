@@ -246,7 +246,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         userCreationDTO.setFirstName("User");
         userCreationDTO.setLastName("Example");
         userCreationDTO.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
-        Response postUserResponse = getJsonPostResponseAsAdmin(target(userAPITest.createPath), userCreationDTO);
+        Response postUserResponse = getJsonPostResponseAsAdmin(target(UserAPITest.createPath), userCreationDTO);
         user = extractUriFromResponse(postUserResponse);
 
         // Profile creation

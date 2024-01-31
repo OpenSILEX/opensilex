@@ -17,9 +17,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
+
 import org.junit.Test;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.factor.api.FactorCreationDTO;
@@ -35,6 +33,8 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+
+import static junit.framework.TestCase.*;
 
 /**
  * @author Arnaud Charleroy
@@ -190,7 +190,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         assertNotNull(factorGetDto);
 
-        assertTrue(factorGetDto.getFactorLevels().size() == initialFactorLevelSize + 1);
+        assertEquals(factorGetDto.getFactorLevels().size(), initialFactorLevelSize + 1);
 
     }
 
@@ -224,7 +224,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         List<FactorGetDTO> list1 = factorListResponse1.getResult();
 
         // System.out.println("System.out.println(list1.size());"+list1.size());
-        assertTrue(list1.size() == 3);
+        assertEquals(3, list1.size());
 
         // wtih parameters
         // System.out.println(creationDTO.getNames().get("en"));
@@ -251,7 +251,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         List<FactorGetDTO> list2 = factorListResponse2.getResult();
         // System.out.println(list2.toString());
 
-        assertTrue(!list2.isEmpty());
+        assertFalse(list2.isEmpty());
 
     }
 

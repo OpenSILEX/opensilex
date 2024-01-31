@@ -77,7 +77,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 
-    private ProvenanceAPITest provAPI = new ProvenanceAPITest();
+    private final ProvenanceAPITest provAPI = new ProvenanceAPITest();
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -140,7 +140,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         //create experiment
         ExperimentAPITest expAPI = new ExperimentAPITest();
-        Response postResultExp = getJsonPostResponseAsAdmin(target(expAPI.createPath), expAPI.getCreationDTO());
+        Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         List<URI> experiments = new ArrayList<>();
         experiments.add(extractUriFromResponse(postResultExp));
         
@@ -221,7 +221,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provenanceImportDatetimeDatatypeError = createOneProvenance("Import test : date with datatype errors");
     }
     
-    public DataCreationDTO getCreationDataDTO(String date) throws URISyntaxException, Exception {
+    public DataCreationDTO getCreationDataDTO(String date) throws Exception {
 
         DataCreationDTO dataDTO = new DataCreationDTO();
         
@@ -615,7 +615,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(AnnotationModel.class);
+        return List.of(AnnotationModel.class);
     }
 
 }

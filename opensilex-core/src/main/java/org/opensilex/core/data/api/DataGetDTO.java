@@ -83,7 +83,7 @@ public class DataGetDTO extends DataCreationDTO {
             this.setDate(dtf.format(odt));
         } else {
             LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();            
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
             this.setDate(dtf.format(date));
         }        
     }

@@ -81,7 +81,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
                     scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsDao), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
 
-                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit.toString() + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit.toString());
+                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit);
                 } catch (OpenSilexModuleNotFoundException ex) {
                     LOGGER.debug("error on start " + SCHEDULE_METRICS);
                     LOGGER.error(ex.getMessage(), ex);

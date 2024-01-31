@@ -2,8 +2,6 @@ package org.opensilex.nosql.mongodb.model;
 
 import org.opensilex.nosql.mongodb.MongoModel;
 
-import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 
 public class MongoTestModel extends MongoModel {
@@ -15,8 +13,8 @@ public class MongoTestModel extends MongoModel {
     public static final String TAGS_FIELD = "tags";
 
 
-    private Integer id;
-    public static final String ID_FIELD = "id";
+    public static final String KEY_FIELD = "key";
+    private Integer key;
 
     private List<Integer> values;
     public static final String VALUES_FIELD = "values";
@@ -45,12 +43,12 @@ public class MongoTestModel extends MongoModel {
         this.tags = tags;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getKey() {
+        return key;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setKey(Integer key) {
+        this.key = key;
     }
 
     public List<Integer> getValues() {

@@ -72,15 +72,16 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                     MongoTestModel.URI_FIELD,
                     MongoTestModel.TYPE_FIELD,
                     MongoTestModel.NAME_FIELD,
-                    MongoTestModel.ID_FIELD)
+                    MongoTestModel.KEY_FIELD)
     );
 
     private static final Function<MongoTestModel, MongoTestModel> DEFAULT_CONVERSION = (model) -> {
+        // this convert function read field from the model and affect these fields inside a nested model
         MongoTestModel nestedModel = new MongoTestModel();
         nestedModel.setUri(model.getUri());
         nestedModel.setRdfType(model.getRdfType());
         nestedModel.setName(model.getName());
-        nestedModel.setId(model.getId());
+        nestedModel.setKey(model.getKey());
         nestedModel.setValues(model.getValues());
         nestedModel.setTags(model.getTags());
 
@@ -123,12 +124,13 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @AfterClass
     public static void stop() {
+
         MongoDBServiceTest.stop();
     }
 
     private static MongoTestModel getModel() {
         MongoTestModel model = new MongoTestModel();
-        model.setId(RANDOM.nextInt());
+        model.setKey(RANDOM.nextInt());
         model.setName(RandomStringUtils.random(16));
         model.setUri(URI.create(TEST_DATASET_BASE_URI + RandomStringUtils.random(16)));
         return model;
@@ -218,11 +220,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     private void testSearch(boolean useStream, boolean useProjection, boolean useConversion, boolean useSession) {
 
         Consumer<MongoTestModel> modelAssertion = (model) -> {
-            if (useProjection) {
-                testFieldProjection(model);
-            }
+            // if conversion is provided, directly test the converted model
             if (useConversion) {
                 testConversion(model);
+            }else if (useProjection) {
+                testFieldProjection(model);
             }
         };
 
@@ -256,7 +258,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         assertNotNull(model.getUri());
         assertNotNull(model.getRdfType());
         assertNotNull(model.getName());
-        assertNotNull(model.getId());
+        assertNotNull(model.getKey());
         assertNull(model.getTags());
         assertNull(model.getValues());
     }
@@ -268,7 +270,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         assertNotNull(nested.getUri());
         assertNotNull(nested.getRdfType());
         assertNotNull(nested.getName());
-        assertNotNull(nested.getId());
+        assertNotNull(nested.getKey());
     }
 
     @Test
@@ -446,6 +448,32 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         parallelInsertTest(true);
     }
 
+    @Test
+    public void createTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-create-test", "test");
+        MongoTestModel model = new MongoTestModel();
+        model.setName("create");
+        innerDao.create(model);
+        assertNotNull(model.getUri());
+        assertEquals(1, innerDao.count(new MongoSearchFilter()));
+    }
+
+
+    @Test
+    public void createAllTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-create-all-test", "test");
+        MongoTestModel model = new MongoTestModel();
+        model.setName("create");
+        MongoTestModel model2 = new MongoTestModel();
+        model2.setName("create2");
+
+        innerDao.create(List.of(model, model2));
+        assertNotNull(model.getUri());
+        assertNotNull(model2.getUri());
+        assertEquals(2, innerDao.count(new MongoSearchFilter()));
+
+        innerDao.deleteMany(new MongoSearchFilter());
+    }
     @Test
     public void updateTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
 

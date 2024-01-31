@@ -75,6 +75,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1]
+
+### Fixed
+
+- [Map] When we open the "map" module, the focus is now on the correct extent of the scientific objects of the experiment.
+
+
 ## [1.2.0] - Caramelized Crystal
 
 > WARNING : upgrading to this new version requires manual operations. Please

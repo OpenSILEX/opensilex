@@ -41,12 +41,12 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     protected final String createPrefix;
     protected final Logger logger;
 
-    protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix, boolean checkUriGeneration, boolean checkUriExistance) {
+    protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix, boolean checkUriGeneration, boolean checkUriExistence) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
         collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
         this.checkUriGeneration = checkUriGeneration;
-        this.checkUriExistence = checkUriExistance;
+        this.checkUriExistence = checkUriExistence;
         this.createPrefix = createPrefix;
         logger = LoggerFactory.getLogger(getClass());
     }

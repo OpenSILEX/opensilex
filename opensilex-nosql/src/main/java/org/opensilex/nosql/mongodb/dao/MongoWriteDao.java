@@ -41,7 +41,8 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @param session The MongoDB client session.
      * @return The result of the insertion operation.
      * @throws MongoException If a MongoDB error occurs.
-     * @throws URISyntaxException If the provided URI is invalid.
+     * @throws URISyntaxException               If there's an issue with URI syntax
+     * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
     @NotNull InsertOneResult create(@NotNull T instance, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException;
 
@@ -96,8 +97,9 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @param uri The URI of the model to delete.
      * @return The result of the deletion operation.
      * @throws MongoException If a MongoDB error occurs.
+     * @throws NoSQLInvalidURIException if no instance is found
      */
-    @NotNull DeleteResult delete(@NotNull URI uri) throws MongoException;
+    @NotNull DeleteResult delete(@NotNull URI uri) throws MongoException, NoSQLInvalidURIException;
 
     /**
      * Delete a model by its URI from the database within a client session.
@@ -106,8 +108,9 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @param session The MongoDB client session.
      * @return The result of the deletion operation.
      * @throws MongoException If a MongoDB error occurs.
+     * @throws NoSQLInvalidURIException if no instance is found
      */
-    @NotNull DeleteResult delete(@NotNull URI uri, ClientSession session) throws MongoException;
+    @NotNull DeleteResult delete(@NotNull URI uri, ClientSession session) throws MongoException, NoSQLInvalidURIException;
 
     /**
      * Delete multiple models by their URIs from the database within a client session.

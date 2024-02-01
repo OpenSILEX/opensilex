@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Interface for MongoDB read operations related to a specific model.
@@ -41,6 +42,15 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @throws NoSQLInvalidURIException If no Model with the given URI is found from database
      */
     @NotNull T get(ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException;
+
+    /**
+     * Finds multiple documents in the specified MongoCollection based on a collection of URIs.
+     *
+     * @param uris       The collection of URIs to search for documents
+     * @param size       The maximum number of URIs to read from uris
+     * @return List<T>     The list of documents found (if any)
+     */
+    @NotNull List<T> findByUris(Stream<URI> uris, int size);
 
     /**
      * Check if a model with the given URI exists.
@@ -185,14 +195,22 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     /**
      * Get distinct values for a specific field based on the provided filter using aggregation within a client session.
      *
-     * @param field       The field for which to get distinct values.
+     * @param distinctField       The field for which to get distinct values.
      * @param resultClass The class of the result type.
      * @param filter      The filter to apply.
      * @param session     The MongoDB client session.
      * @param <T_RESULT>  The result type after conversion.
      * @return Set of distinct values for the specified field using aggregation.
      */
-    <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String field, @NotNull Class<T_RESULT> resultClass, F filter, ClientSession session);
+    <T_RESULT> Set<T_RESULT> distinctAggregation(@NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter, ClientSession session);
+
+    /**
+     * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
+     *
+     * @param aggregationPipeline The list of aggregation arguments
+     * @return Set<T>         The set of results after aggregation
+     */
+    Set<T> aggregate(List<Bson> aggregationPipeline);
 
     /**
      * Perform a lookup aggregation to join collections and apply a conversion function.

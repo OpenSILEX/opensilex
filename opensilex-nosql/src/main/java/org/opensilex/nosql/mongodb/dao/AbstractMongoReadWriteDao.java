@@ -9,6 +9,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.arq.querybuilder.Order;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -16,6 +17,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.StreamWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,8 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     protected final boolean checkUriExistence;
     protected final String createPrefix;
     protected final Logger logger;
+
+    protected static final OrderBy DEFAULT_ORDER_BY = new OrderBy(MongoModel.URI_FIELD, Order.ASCENDING);
 
     protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix, boolean checkUriGeneration, boolean checkUriExistence) {
         Objects.requireNonNull(mongodb);
@@ -112,7 +116,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     public InsertOneResult create(@NotNull T instance, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
         Objects.requireNonNull(instance);
         generateUniqueUriIfNullOrValidateCurrent(instance);
-        return mongodb.create(instance, collection, createPrefix, session);
+        return mongodb.create(instance, collection, session);
     }
 
     @Override
@@ -179,7 +183,11 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     @Override
     public @NotNull DeleteResult deleteMany(@NotNull F deleteFilter, ClientSession session) throws MongoException {
         Objects.requireNonNull(deleteFilter);
-        return mongodb.deleteMany(collection, session, deleteFilterToDocument(deleteFilter));
+        Bson deleteDocument = deleteFilterToDocument(deleteFilter);
+        return session != null ?
+                mongodb.deleteMany(collection, session, deleteDocument) :
+                mongodb.computeTransaction(newSession -> mongodb.deleteMany(collection, newSession, deleteDocument));
+
     }
 
     @Override
@@ -298,7 +306,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
                 MongoModel.URI_FIELD,
                 document -> document.get(idField(), URI.class),
                 filterToBson(filter),
-                filter.getOrderByList(),
+                CollectionUtils.isEmpty(filter.getOrderByList()) ? List.of(DEFAULT_ORDER_BY) : filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize(),
                 session
@@ -363,9 +371,9 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return mongodb.distinctWithPagination(
                 collection,
                 field,
-                document -> document.get(field, resultClass),
+                document -> document.get("_id", resultClass), // the distinct field value is the value of each aggregated document with the key "_id"
                 filterToBson(filter),
-                filter.getOrderByList(),
+                CollectionUtils.isEmpty(filter.getOrderByList()) ? List.of(DEFAULT_ORDER_BY) : filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize(),
                 session
@@ -395,7 +403,4 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return collection;
     }
 
-    public final String getCreatePrefix() {
-        return createPrefix;
-    }
 }

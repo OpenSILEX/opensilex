@@ -14,5 +14,4 @@ public class MongoReadWriteDao<T extends MongoModel,F extends MongoSearchFilter>
         this(mongodb, modelClass, collectionName, createPrefix, true, true);
     }
 
-
 }

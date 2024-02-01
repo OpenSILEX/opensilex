@@ -10,6 +10,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.Order;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -20,6 +21,7 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedIterable;
 
 import java.io.InputStream;
@@ -334,34 +336,48 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     }
 
     @Test
-    public void testDistinct() {
+    public void testDistinct() throws NoSQLAlreadyExistingUriException, URISyntaxException {
+
+        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-distinct-test", "test");
+
+        int nbModel = 20;
+        // create models, with nbModel/2 different names
+        List<MongoTestModel> models = new ArrayList<>(nbModel);
+        for (int i = 0; i < nbModel/2; i ++) {
+            MongoTestModel model1 = new MongoTestModel();
+            model1.setName("name_" +i);
+            MongoTestModel model2 = new MongoTestModel();
+            model2.setName("name_" +i);
+            models.add(model1);
+            models.add(model2);
+        }
+        innerDao.create(models);
+
         // extract distinct types (no pagination here)
-        Set<String> names = dao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
-        Assert.assertEquals(DEFAULT_PAGE_SIZE, names.size());
-        names.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
+        Set<String> distinctNames = innerDao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
+        Assert.assertEquals(nbModel/2, distinctNames.size());
+        distinctNames.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
+
+        // extract distinct types (pagination with aggregation pipeline)
+        MongoSearchFilter filter = new MongoSearchFilter();
+        filter.setOrderByList(List.of(new OrderBy("name", Order.ASCENDING)));
+        filter.setPageSize(5);
+        distinctNames = innerDao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, filter, null);
+        Assert.assertEquals(5, distinctNames.size());
+        distinctNames.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
 
         // no results -> ensure non nullity of Set
         MongoSearchFilter noResultFilter = new MongoSearchFilter();
         noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
         Set<String> noNames = dao.distinct(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
         Assert.assertTrue(noNames.isEmpty());
-    }
 
-    @Test
-    public void testDistinctAggregation() {
-
-        // extract distinct types (pagination enabled : use aggregation pipeline)
-        Set<String> names = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
-        Assert.assertEquals(DEFAULT_PAGE_SIZE, names.size());
-        names.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
-
-        // no results -> ensure non nullity of Set
-        MongoSearchFilter noResultFilter = new MongoSearchFilter();
-        noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
-        Set<String> noNames = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
+        // no results -> ensure non nullity of Set (with aggregation pipeline)
+        noNames = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
         Assert.assertTrue(noNames.isEmpty());
-    }
 
+        innerDao.deleteMany(new MongoSearchFilter());
+    }
 
     private void parallelSearch(ClientSession session) throws InterruptedException {
 
@@ -550,6 +566,9 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         DeleteResult deleteResult = innerDao.deleteMany(filter);
         Assert.assertEquals(nbModelByType, deleteResult.getDeletedCount());
         Assert.assertEquals(nbModelByType, innerDao.count(new MongoSearchFilter()));
+
+        innerDao.deleteMany(new MongoSearchFilter());
+        Assert.assertEquals(0, innerDao.count(new MongoSearchFilter()));
     }
 
 }

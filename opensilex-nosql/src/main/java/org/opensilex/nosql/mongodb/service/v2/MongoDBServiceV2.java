@@ -64,6 +64,9 @@ public class MongoDBServiceV2 extends BaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBServiceV2.class);
     public static final String CHECK_MONGO_SERVER_CONNECTION_LOG_MSG = "MONGO_SERVER_CHECK_CONNECTION";
+
+    public static final String MONGO_CREATE_INDEX_LOG_MSG = "createIndex";
+
     public static final String MONGO_CREATE_LOG_MSG = "insertMany";
     public static final String MONGO_DELETE_MANY_LOG_MSG = "deleteMany";
 
@@ -75,42 +78,23 @@ public class MongoDBServiceV2 extends BaseService {
     public static final String MONGO_LOG_STATUS_OK = "OK";
 
 
-
-
     private final String dbName;
     private MongoClient mongoClient;
-    private final TransactionOptions transactionOptions;
     private MongoDatabase db;
     private URI generationPrefixURI;
     private static String defaultTimezone;
+
+    // Register each index which must be created by collection
+    private static final Map<String, Map<Bson,IndexOptions>> INDEXES_BY_COLLECTION = new HashMap<>();
 
     public MongoDBServiceV2(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
-        transactionOptions = TransactionOptions.builder()
-                .readPreference(ReadPreference.primary())
-                .readConcern(ReadConcern.LOCAL)
-                .writeConcern(WriteConcern.MAJORITY)
-                .build();
-
     }
 
-    @Override
-    public void startup() throws OpenSilexModuleNotFoundException, IOException {
-        mongoClient = buildMongoDBClient();
-        generationPrefixURI = buildGenerationPrefixURI();
-        db = mongoClient.getDatabase(dbName);
-
-        // check connection and close connection in case of connection/authentication error
-        try {
-            if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
-                checkConnection(getImplementedConfig());
-            }
-        } catch (MongoTimeoutException | MongoSecurityException e) {
-            mongoClient.close();
-            throw e;
-        }
+    public static void registerIndex(String collectionName, Bson indexKeys, IndexOptions indexOptions){
+        INDEXES_BY_COLLECTION.computeIfAbsent(collectionName, newKey -> new HashMap<>()).put(indexKeys, indexOptions);
     }
 
     @Override
@@ -142,6 +126,40 @@ public class MongoDBServiceV2 extends BaseService {
         }
     }
 
+    @Override
+    public void startup() throws OpenSilexModuleNotFoundException, IOException {
+        mongoClient = buildMongoDBClient();
+        generationPrefixURI = buildGenerationPrefixURI();
+        db = mongoClient.getDatabase(dbName);
+
+        // check connection and close connection in case of connection/authentication error
+        try {
+            if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
+                checkConnection(getImplementedConfig());
+            }
+        } catch (MongoTimeoutException | MongoSecurityException e) {
+            mongoClient.close();
+            throw e;
+        }
+        createIndexes();
+    }
+
+    private void createIndexes(){
+        INDEXES_BY_COLLECTION.forEach((collectionName, indexes) -> {
+            MongoCollection<?> collection = db.getCollection(collectionName);
+            indexes.forEach((indexKeys, indexOption) -> {
+
+                Instant start = Instant.now();
+                LOGGER.info("{}, {}, collection: {}, index: {}", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collectionName, indexKeys);
+                collection.createIndex(indexKeys, indexOption);
+
+                long durationMs = Duration.between(start, Instant.now()).toMillis();
+                LOGGER.info("{}, {}, collection: {}, index: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collectionName, indexKeys, durationMs);
+            });
+        });
+
+    }
+
     /**
      * @return a new {@link ClientSession}. A transaction is started in the context of this session
      * @apiNote <ul>
@@ -167,8 +185,9 @@ public class MongoDBServiceV2 extends BaseService {
      * Execute the given operation with transaction management
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
+     * {@see @link #computeTransaction(ThrowingFunction)}
      */
-    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) throws Exception {
+    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) throws MongoDBTransactionException {
         computeTransaction(session -> {
             operationInTrx.accept(session);
             return null;
@@ -236,13 +255,12 @@ public class MongoDBServiceV2 extends BaseService {
      * @param <T>                 The type extending MongoModel
      * @param instance            The instance of type T to be inserted
      * @param collection          The MongoCollection where the document will be inserted
-     * @param uriGenerationPrefix The prefix for generating a unique URI
      * @param session             The ClientSession for handling the transaction (can be null)
      * @return InsertOneResult    The result of the insertion operation
      * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
-    public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, String uriGenerationPrefix, ClientSession session) throws URISyntaxException, NoSQLAlreadyExistingUriException {
+    public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, ClientSession session) throws URISyntaxException, NoSQLAlreadyExistingUriException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
@@ -568,9 +586,14 @@ public class MongoDBServiceV2 extends BaseService {
      * @return a Set of unique value for a given field from a collection
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#std-label-aggregation-group-distinct-values">
      * Distinct with aggregation pipeline
+     *
+     * @throws IllegalArgumentException if orderByList is null or empty (Required since the MongoDB aggregation pipeline requires at least one sort clause)
      */
     public <T> Set<T> distinctWithPagination(MongoCollection<?> collection, String distinctField, Function<Document, T> documentExtractor, Bson filter, List<OrderBy> orderByList, int page, int pageSize, ClientSession session) {
 
+        if (CollectionUtils.isEmpty(orderByList)) {
+            throw new IllegalArgumentException("distinctWithPagination required at least on OrderBy. Else the MongoDB aggregation pipeline can't be build");
+        }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(), logOrderList(orderByList), filter);
         }
@@ -608,7 +631,12 @@ public class MongoDBServiceV2 extends BaseService {
                 collection.aggregate(session, aggregatePipeline, Document.class);
 
         // Transform document on the fly and add inside set
-        aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
+        aggregateIt.map(documentExtractor::apply)
+                .forEach(extracted -> {
+                    if (extracted != null) {
+                        distinct.add(extracted);
+                    }
+                });
 
         return distinct;
     }

@@ -48,6 +48,8 @@ tags:
 
 - **OLTP** : Online Transactional Processing
 - **OLAP** : Online Analytical processing
+- **P99 Latency** : The maximum latency observed for 99% of request
+  - Ex a P99 latency of 10ms imply that 99% of the request take less thant 10ms
 
 # Analysis
 
@@ -64,12 +66,34 @@ to store several data-models inside the same database
 
 ## Non-functional requirements
 
+### Performance and reliability
 
-### Performance
+#### SLA (service-level-agreement)
 
+- The table below describe the expected performance for commons read and write operations 
+- This only includes DAOs operation (it doesn't include business logic or the whole request performed inside a single API method)
+- The operation don't expect multi-threading, this means that latency can be reduced if multi-threading is available
+- Of course, it could be greatly optimized, but it's the minimal acceptable for an acceptable user experience
 
+| **Operation**                                   | **Size** | **P99 Latency** | **Notes** |
+|-------------------------------------------------|----------|-----------------|-----------|
+| Insert an unique element                        | 1        | 100 ms          |           |
+| Get by unique identifier                        | 1        | 100 ms          |           |
+| Update an unique element                        | 1        | 100 ms          |           |
+| Delete an unique element                        | 1        | 100 ms          |           |
+| Insert an unique element                        | 1        | 100 ms          |           |
+| Get by unique identifier                        | 1        | 100 ms          |           |
+| Update an unique element                        | 1        | 100 ms          |           |
+| Delete an unique element                        | 1        | 100 ms          |           |
+| Search 1000 element (with index-covered query)  | 1000     | 100 ms          |           |
+| Search 10000 element (with index-covered query) | 10000    | 5 s             |           |
+| Insert 1000 element                             | 1000     | 1 s             |           |
+| Insert 10000 element                            | 1000     | 5 s             |           |
+| Delete 1000  element (with index-covered query) | 1000     | 1 s             |           |
 
-### Reliability
+- This SLA should be respected for any small dataset (<10M of document on a MongoDB single server without replication)
+- Of course, they are variant regarding of the nature of the dataset, the size of the document and the underlying hardware
+but for these basic operation on very-small data the P99 latency should keep this magnitude
 
 # Solution
 
@@ -90,19 +114,6 @@ section. Business logic also includes authorization rules.}
 ## Detailed explanations
 
 ### DAOs and Services
-
-
-## Tests
-
-### Ensure that the MongoDBService is stateless
-
-### Test concurrents calls to MongoDBService 
-
-### Ensure that ClientSession is well closed in case of error
-
-### Read Data Access Objects
-
-### Write Data Access Objects
 
 ## Environment
 

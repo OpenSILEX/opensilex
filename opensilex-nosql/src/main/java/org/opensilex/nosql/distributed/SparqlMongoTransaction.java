@@ -69,7 +69,7 @@ public class SparqlMongoTransaction {
     ) throws Exception {
 
         Objects.requireNonNull(operation);
-        try(ClientSession session = mongodb.newSession()){
+        try(ClientSession session = mongodb.startSession()){
             return this.execute(sparql, session, operation);
         }
     }

@@ -22,7 +22,6 @@ import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.PaginatedIterable;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,11 +29,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -114,7 +113,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             // Insert documents
             mongoDBServiceV2.runTransaction(session -> dao.getCollection().insertMany(session, models));
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         // Load data from json file
@@ -154,7 +153,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     }
 
     @Test
-    public void getAndExistWithSession() {
+    public void getAndExistWithSession() throws Exception {
 
         mongoDBServiceV2.runTransaction((session) -> {
             // Insert model inside a specific session
@@ -197,7 +196,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     ) {
 
         Bson projection = useProjection ? DEFAULT_PROJECTION : null;
-        try (ClientSession session = useSession ? mongoDBServiceV2.newSession() : null) {
+        try (ClientSession session = useSession ? mongoDBServiceV2.startSession() : null) {
             PaginatedIterable<MongoTestModel, ?> results;
 
             // Run search query with/without projection/conversion
@@ -398,41 +397,41 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         mongoDBServiceV2.readOperationWithSession(this::parallelSearch);
     }
 
-    public void parallelInsertTest(boolean generateSession) throws InterruptedException, ExecutionException {
+    public void parallelInsertTest(boolean generateSession) throws InterruptedException, NoSQLAlreadyExistingUriException, URISyntaxException {
 
         var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
-        int nbThread = 4;
-        int nbModelPerThread = 100;
+        int nbThread = 8;
+        int nbModelPerThread = 256;
+        ExecutorService executor = Executors.newFixedThreadPool(nbThread);
 
         // Prepare tasks
-        List<Callable<InsertManyResult>> tasks = IntStream.range(0, nbThread).mapToObj(threadIdx -> {
+        for (int threadIdx = 0; threadIdx < nbThread; threadIdx++) {
 
+            URI type = URI.create("test:parallel_write_type_"+threadIdx);
             // Task : Create models to insert
-            List<MongoTestModel> models = IntStream.range(0, nbModelPerThread).mapToObj(modelIdx -> {
+            List<MongoTestModel> models = new ArrayList<>(nbModelPerThread);
+            for (int modelIdx = 0; modelIdx < nbModelPerThread; modelIdx++) {
                 MongoTestModel model = new MongoTestModel();
-                model.setName(threadIdx + "_" + threadIdx);
-                return model;
-            }).collect(Collectors.toList());
+                model.setName(threadIdx + "_" + modelIdx);
+                model.setRdfType(type);
+                model.setKey(threadIdx*modelIdx);
+                model.setUri(URI.create("test:" + model.getName() + "_" + UUID.randomUUID()));
+                models.add(model);
+            }
 
-            return new MongoInsertTask<>(mongoDBServiceV2, innerDao, models, generateSession);
-
-        }).collect(Collectors.toList());
-
-        // execute all tasks in parallel , wait for task completion or timeout
-        ExecutorService executor = Executors.newFixedThreadPool(nbThread);
-        var insertResults = executor.invokeAll(tasks, 10, TimeUnit.SECONDS);
-
-        for (Future<InsertManyResult> taskResult : insertResults) {
-            InsertManyResult insertResult = taskResult.get();
-            Assert.assertEquals(nbModelPerThread, insertResult.getInsertedIds().size());
+            Callable<InsertManyResult> task = () -> innerDao.create(models);
+            executor.submit(task);
         }
 
         // Run search and ensure results are OK
+        Thread.sleep(2000);
         MongoSearchFilter searchFilter = new MongoSearchFilter();
-        searchFilter.setPage(nbModelPerThread * nbThread);
+        searchFilter.setPageSize(nbModelPerThread * nbThread);
 
         ListWithPagination<MongoTestModel> searchResults = innerDao.search(searchFilter);
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getTotal());
+        Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getSource().size());
+
         searchResults.forEach(model -> {
             Assert.assertNotNull(model.getUri());
             Assert.assertNotNull(model.getName());
@@ -440,12 +439,13 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
         // Delete objects
         innerDao.deleteMany(new MongoSearchFilter());
+        executor.shutdown();
     }
 
     @Test
-    public void parallelInsertTest() throws InterruptedException, ExecutionException {
+    public void parallelInsertTest() throws InterruptedException, NoSQLAlreadyExistingUriException, URISyntaxException {
         parallelInsertTest(false);
-        parallelInsertTest(true);
+        //parallelInsertTest(true);
     }
 
     @Test

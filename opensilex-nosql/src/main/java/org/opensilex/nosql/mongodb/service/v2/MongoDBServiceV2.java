@@ -24,6 +24,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.nosql.exceptions.MongoDBTransactionException;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
@@ -46,6 +47,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -62,14 +65,22 @@ public class MongoDBServiceV2 extends BaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBServiceV2.class);
     public static final String CHECK_MONGO_SERVER_CONNECTION_LOG_MSG = "MONGO_SERVER_CHECK_CONNECTION";
-    public static final String MONGO_CREATE_LOG_MSG = "MONGO_CREATE";
+    public static final String MONGO_CREATE_LOG_MSG = "insertMany";
+    public static final String MONGO_DELETE_MANY_LOG_MSG = "deleteMany";
+
     public static final String MONGO_CHECK_URI_LOG_MSG = "MONGO_CHECK_URI";
 
     private static final Bson EMPTY_PROJECTION = Projections.fields(Projections.include(MongoModel.MONGO_ID_FIELD));
+    public static final String MONGO_LOG_STATUS = "status";
+    public static final String MONGO_LOG_STATUS_START = "START";
+    public static final String MONGO_LOG_STATUS_OK = "OK";
+
+
 
 
     private final String dbName;
     private MongoClient mongoClient;
+    private TransactionOptions trxOptions;
     private MongoDatabase db;
     private URI generationPrefixURI;
     private static String defaultTimezone;
@@ -95,6 +106,12 @@ public class MongoDBServiceV2 extends BaseService {
             mongoClient.close();
             throw e;
         }
+
+        trxOptions = TransactionOptions.builder()
+                .readPreference(ReadPreference.primary())
+                .readConcern(ReadConcern.LOCAL)
+                .writeConcern(WriteConcern.MAJORITY)
+                .build();
     }
 
     @Override
@@ -137,12 +154,12 @@ public class MongoDBServiceV2 extends BaseService {
      * @see MongoClient#startSession()
      * @see ClientSession#startTransaction()
      */
-    public ClientSession newSession() {
+    public ClientSession startSession() {
         return mongoClient.startSession();
     }
 
     public void readOperationWithSession(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws Exception {
-        try (ClientSession session = newSession()) {
+        try (ClientSession session = startSession()) {
             operationInTrx.accept(session);
         }
     }
@@ -151,9 +168,8 @@ public class MongoDBServiceV2 extends BaseService {
      * Execute the given operation with transaction management
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
-     * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
      */
-    public void runTransaction(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws MongoException {
+    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) {
         computeTransaction(session -> {
             operationInTrx.accept(session);
             return null;
@@ -165,25 +181,25 @@ public class MongoDBServiceV2 extends BaseService {
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
      * @param <R>            : The type of result returned by the operation
-     * @throws MongoException If an error occurs during transaction management or inside operationInTrx execution
      */
-    public <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoException {
+    public <R, E extends Exception> R computeTransaction(ThrowingFunction<ClientSession, R, E> operationInTrx) throws MongoDBTransactionException {
 
-        ClientSession session = newSession();
-        session.startTransaction();
-        try {
-            R result = operationInTrx.apply(session);
-            if (session.hasActiveTransaction()) {
-                session.commitTransaction();
-            }
+        try (ClientSession session = mongoClient.startSession()) {
+            LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            R result = session.withTransaction(() -> {
+                try {
+                    return operationInTrx.apply(session);
+                } catch (MongoException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new MongoDBTransactionException(e.getMessage(), e);
+                }
+            });
+            LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
             return result;
-        } catch (Exception e) {
-            if (session.hasActiveTransaction()) {
-                session.abortTransaction();
-            }
-            throw MongoException.fromThrowableNonNull(e);
-        } finally {
-            session.close();
+        }catch (Exception e){
+            LOGGER.error(e.getMessage());
+            throw e;
         }
     }
 
@@ -248,10 +264,9 @@ public class MongoDBServiceV2 extends BaseService {
      * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
-    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
-        }
+    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+
+        LOGGER.info("{} {} collection: {}", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
 
         if (checkUris) {
             for (T instance : instances) {
@@ -261,13 +276,17 @@ public class MongoDBServiceV2 extends BaseService {
             }
         }
 
-        // if a session is provided, simply use it
-        if (session != null) {
-            return collection.insertMany(session, instances);
-        }
+        Instant start = Instant.now();
 
-        // Transaction handling for data integrity since insertMany() can update several documents
-        return computeTransaction(createSession -> collection.insertMany(createSession, instances));
+        // if a session is provided, simply use it
+        // else -> Transaction handling for data integrity since insertMany() can update several documents
+        InsertManyResult result = session != null ?
+                collection.insertMany(session, instances) :
+                computeTransaction(createSession -> collection.insertMany(createSession, instances));
+
+        long durationMs = Duration.between(start, Instant.now()).toMillis();
+        LOGGER.info("{}, {}, collection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG),  kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(),  result.getInsertedIds().size(), durationMs);
+        return result;
     }
 
     /**
@@ -780,7 +799,7 @@ public class MongoDBServiceV2 extends BaseService {
      * @see #update(MongoModel, MongoCollection, Bson, ClientSession)
      */
     public <T extends MongoModel> void update(T newModel, MongoCollection<T> collection, String uriField, ClientSession session) throws NoSQLInvalidURIException {
-        update(newModel, collection, Filters.eq(uriField, newModel.getUri()), session);
+        update(newModel, collection, eq(uriField, newModel.getUri()), session);
     }
 
     /**
@@ -914,13 +933,19 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T extends MongoModel> DeleteResult deleteMany(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
 
-        if (session != null) {
-            return collection.deleteMany(filter);
-        }
+        LOGGER.info("{}, {}, collection: {}", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
+        Instant start = Instant.now();
 
         // if a session is provided use it, else generate a new one for transaction handling,
         // since deleteMany() can update several document inside a collection, transaction handling is always needed
-        return computeTransaction(deleteSession -> collection.deleteMany(filter));
+
+        DeleteResult result =  session != null ?
+                collection.deleteMany(filter) :
+                computeTransaction(deleteSession -> collection.deleteMany(filter));
+
+        long durationMs = Duration.between(start, Instant.now()).toMillis();
+        LOGGER.info("{} {} collection: {}, deleteCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(), result.getDeletedCount(), durationMs);
+        return result;
     }
 
     private String logOrderList(List<OrderBy> orders) {
@@ -930,4 +955,5 @@ public class MongoDBServiceV2 extends BaseService {
             return orders.toString();
         }
     }
+
 }

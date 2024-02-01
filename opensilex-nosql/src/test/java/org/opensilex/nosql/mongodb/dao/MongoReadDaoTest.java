@@ -419,7 +419,10 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                 models.add(model);
             }
 
-            Callable<InsertManyResult> task = () -> innerDao.create(models);
+            // Generate a task
+            Callable<InsertManyResult> task = generateSession ?
+                    () -> mongoDBServiceV2.computeTransaction((session) -> innerDao.create(models, session)) :
+                    () -> innerDao.create(models);
             executor.submit(task);
         }
 
@@ -445,7 +448,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void parallelInsertTest() throws InterruptedException, NoSQLAlreadyExistingUriException, URISyntaxException {
         parallelInsertTest(false);
-        //parallelInsertTest(true);
+        parallelInsertTest(true);
     }
 
     @Test

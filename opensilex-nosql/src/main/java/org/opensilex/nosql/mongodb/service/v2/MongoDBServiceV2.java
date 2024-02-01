@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -80,7 +79,7 @@ public class MongoDBServiceV2 extends BaseService {
 
     private final String dbName;
     private MongoClient mongoClient;
-    private TransactionOptions trxOptions;
+    private final TransactionOptions transactionOptions;
     private MongoDatabase db;
     private URI generationPrefixURI;
     private static String defaultTimezone;
@@ -89,12 +88,18 @@ public class MongoDBServiceV2 extends BaseService {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
+        transactionOptions = TransactionOptions.builder()
+                .readPreference(ReadPreference.primary())
+                .readConcern(ReadConcern.LOCAL)
+                .writeConcern(WriteConcern.MAJORITY)
+                .build();
+
     }
 
     @Override
     public void startup() throws OpenSilexModuleNotFoundException, IOException {
         mongoClient = buildMongoDBClient();
-        generationPrefixURI = getGenerationPrefixURI();
+        generationPrefixURI = buildGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
 
         // check connection and close connection in case of connection/authentication error
@@ -106,12 +111,6 @@ public class MongoDBServiceV2 extends BaseService {
             mongoClient.close();
             throw e;
         }
-
-        trxOptions = TransactionOptions.builder()
-                .readPreference(ReadPreference.primary())
-                .readConcern(ReadConcern.LOCAL)
-                .writeConcern(WriteConcern.MAJORITY)
-                .build();
     }
 
     @Override
@@ -169,7 +168,7 @@ public class MongoDBServiceV2 extends BaseService {
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
      */
-    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) {
+    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) throws Exception {
         computeTransaction(session -> {
             operationInTrx.accept(session);
             return null;
@@ -181,31 +180,42 @@ public class MongoDBServiceV2 extends BaseService {
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
      * @param <R>            : The type of result returned by the operation
+     * @throws MongoDBTransactionException if some errors occurs during operation application but not related to the MongoDB driver.
+     *
+     * @apiNote
+     * <ul>
+     *     <li> Case were {@link MongoDBTransactionException} was throw because of the obligation with lambda to catch or rethrow a {@link RuntimeException}</li>
+     *     <li> But this Exception has no logical meaning, so you have to handle the wrapped Exception {@link MongoDBTransactionException#getInnerException()}</li>
+     * </ul>
      */
-    public <R, E extends Exception> R computeTransaction(ThrowingFunction<ClientSession, R, E> operationInTrx) throws MongoDBTransactionException {
+    public <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoDBTransactionException {
 
         try (ClientSession session = mongoClient.startSession()) {
             LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+
+            // Run operation within transaction handling
             R result = session.withTransaction(() -> {
                 try {
                     return operationInTrx.apply(session);
                 } catch (MongoException e) {
-                    throw e;
+                    throw e; // Exception thrown by the MongoDB driver (client or server side)
                 } catch (Exception e) {
+                    // Other Exception thrown during operation, in this case the operation is  wrapped as a MongoDBTransactionException (A MongoException/RuntimeException)
+                    //Since with lambda we have to catch or rethrow a RuntimeException
                     throw new MongoDBTransactionException(e.getMessage(), e);
                 }
             });
             LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
             return result;
-        }catch (Exception e){
-            LOGGER.error(e.getMessage());
-            throw e;
         }
     }
 
-
-    public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
+    public URI buildGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
         return getOpenSilex().getModuleByClass(SPARQLModule.class).getGenerationPrefixURI();
+    }
+
+    public URI getGenerationPrefixURI() {
+        return generationPrefixURI;
     }
 
     public static String getDefaultTimeZone() {
@@ -236,17 +246,9 @@ public class MongoDBServiceV2 extends BaseService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
         }
-        if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collection);
-        }
-
-        // custom logic which imply to let caller handle the session and transaction
-        if (session != null) {
-            return collection.insertOne(session, instance);
-        } else {
-            // no need to handle transaction in case of only one document insert, if the insert fail, then the collection is unchanged
-            return collection.insertOne(instance);
-        }
+        return session != null ?
+                collection.insertOne(session, instance) :
+                collection.insertOne(instance);
     }
 
     /**
@@ -256,54 +258,21 @@ public class MongoDBServiceV2 extends BaseService {
      * @param instances     The list of instances to be inserted
      * @param collection    The MongoCollection where the documents will be inserted
      * @param session       The ClientSession for handling the transaction (can be null)
-     * @param prefix        The prefix for generating a unique URI
-     * @param checkUris     Boolean indicating whether to check URIs before insertion
-     * @param checkUriExist Boolean indicating whether to check the existence of URIs before insertion
      * @return InsertManyResult The result of the insertion operation
-     * @throws MongoException                   If a MongoDB-related error occurs
-     * @throws URISyntaxException               If there's an issue with URI syntax
-     * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
-    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) {
+
+        Objects.requireNonNull(session);
 
         LOGGER.info("{} {} collection: {}", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
 
-        if (checkUris) {
-            for (T instance : instances) {
-                if (instance.getUri() == null) {
-                    generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collection);
-                }
-            }
-        }
-
         Instant start = Instant.now();
 
-        // if a session is provided, simply use it
-        // else -> Transaction handling for data integrity since insertMany() can update several documents
-        InsertManyResult result = session != null ?
-                collection.insertMany(session, instances) :
-                computeTransaction(createSession -> collection.insertMany(createSession, instances));
-
+        // Transaction handling for data integrity since insertMany() can update several documents
+        InsertManyResult result = collection.insertMany(session, instances);
         long durationMs = Duration.between(start, Instant.now()).toMillis();
         LOGGER.info("{}, {}, collection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG),  kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(),  result.getInsertedIds().size(), durationMs);
         return result;
-    }
-
-    /**
-     * Overloaded method for creating and inserting multiple documents into the specified MongoCollection.
-     * This method omits URI checking.
-     *
-     * @param <T>        The type extending MongoModel
-     * @param instances  The list of instances to be inserted
-     * @param collection The MongoCollection where the documents will be inserted
-     * @param session    The ClientSession for handling the transaction (can be null)
-     * @return InsertManyResult The result of the insertion operation
-     * @throws MongoException                   If a MongoDB-related error occurs
-     * @throws URISyntaxException               If there's an issue with URI syntax
-     * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
-     */
-    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
-        return createAll(instances, collection, session, null, false, false);
     }
 
     /**
@@ -891,36 +860,6 @@ public class MongoDBServiceV2 extends BaseService {
 
     }
 
-
-    /**
-     * Generates a unique URI if null or validates the current URI's existence in the collection.
-     *
-     * @param <T>                 The type extending MongoModel
-     * @param instance            The instance of type T
-     * @param checkUriExist       Boolean indicating whether to check URI existence
-     * @param instanceClassPrefix The prefix for instance class
-     * @param collection          The MongoCollection to check URI existence in
-     * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
-     * @throws URISyntaxException               If there's an issue with URI syntax
-     */
-    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist, String instanceClassPrefix, MongoCollection<T> collection) throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        URI uri = instance.getUri();
-
-        if (uri == null) {
-
-            int retry = 0;
-            String prefix = UriBuilder.fromUri(generationPrefixURI).path(instanceClassPrefix).toString();
-            uri = instance.generateURI(prefix, instance, retry);
-            while (checkUriExist && uriExists(collection, uri, MongoModel.URI_FIELD)) {
-                uri = instance.generateURI(prefix, instance, retry++);
-            }
-            instance.setUri(uri);
-
-        } else if (checkUriExist && uriExists(collection, uri, MongoModel.URI_FIELD)) {
-            throw new NoSQLAlreadyExistingUriException(uri);
-        }
-    }
-
     /**
      * Deletes documents in the specified collection based on a filter with transaction support.
      *
@@ -933,16 +872,12 @@ public class MongoDBServiceV2 extends BaseService {
      */
     public <T extends MongoModel> DeleteResult deleteMany(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
 
+        Objects.requireNonNull(session);
         LOGGER.info("{}, {}, collection: {}", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
         Instant start = Instant.now();
 
-        // if a session is provided use it, else generate a new one for transaction handling,
-        // since deleteMany() can update several document inside a collection, transaction handling is always needed
-
-        DeleteResult result =  session != null ?
-                collection.deleteMany(filter) :
-                computeTransaction(deleteSession -> collection.deleteMany(filter));
-
+        // deleteMany() can update several document inside a collection, transaction handling is always needed
+        DeleteResult result = collection.deleteMany(filter);
         long durationMs = Duration.between(start, Instant.now()).toMillis();
         LOGGER.info("{} {} collection: {}, deleteCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(), result.getDeletedCount(), durationMs);
         return result;

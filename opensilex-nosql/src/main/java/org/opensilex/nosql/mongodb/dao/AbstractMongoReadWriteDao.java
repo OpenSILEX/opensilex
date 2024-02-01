@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -34,13 +35,18 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     protected final MongoDBServiceV2 mongodb;
     protected final MongoCollection<T> collection;
+
+    protected final boolean checkUriGeneration;
+    protected final boolean checkUriExistence;
     protected final String createPrefix;
     protected final Logger logger;
 
-    protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix) {
+    protected AbstractMongoReadWriteDao(@NotNull MongoDBServiceV2 mongodb, @NotNull Class<T> modelClass, @NotNull @NotEmpty String collectionName, String createPrefix, boolean checkUriGeneration, boolean checkUriExistance) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
         collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
+        this.checkUriGeneration = checkUriGeneration;
+        this.checkUriExistence = checkUriExistance;
         this.createPrefix = createPrefix;
         logger = LoggerFactory.getLogger(getClass());
     }
@@ -77,14 +83,40 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return mongodb.uriExists(session, collection, uri);
     }
 
+    /**
+     * Generates a unique URI if null or validates the current URI's existence in the collection.
+     *
+     * @param instance            The instance of type T
+     * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
+     * @throws URISyntaxException               If there's an issue with URI syntax
+     */
+    public void generateUniqueUriIfNullOrValidateCurrent(T instance) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+        URI uri = instance.getUri();
+
+        if (uri == null) {
+
+            int retry = 0;
+            String prefix = UriBuilder.fromUri(mongodb.getGenerationPrefixURI()).path(createPrefix).toString();
+            uri = instance.generateURI(prefix, instance, retry);
+            while (checkUriExistence && mongodb.uriExists(collection, uri, MongoModel.URI_FIELD)) {
+                uri = instance.generateURI(prefix, instance, retry++);
+            }
+            instance.setUri(uri);
+
+        } else if (checkUriExistence && mongodb.uriExists(collection, uri, MongoModel.URI_FIELD)) {
+            throw new NoSQLAlreadyExistingUriException(uri);
+        }
+    }
+
     @Override
     public InsertOneResult create(@NotNull T instance, ClientSession session) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
         Objects.requireNonNull(instance);
+        generateUniqueUriIfNullOrValidateCurrent(instance);
         return mongodb.create(instance, collection, createPrefix, session);
     }
 
     @Override
-    public @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
+    public final @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException {
         return create(instance, null);
     }
 
@@ -98,7 +130,16 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         if (CollectionUtils.isEmpty(instances)) {
             throw new IllegalArgumentException("instances list must not be empty");
         }
-        return mongodb.createAll(instances, collection, session, createPrefix, true, true);
+
+        if (checkUriGeneration) {
+            for (T instance : instances) {
+                generateUniqueUriIfNullOrValidateCurrent(instance);
+            }
+        }
+
+        return session != null ?
+                mongodb.createAll(instances, collection, session):
+                mongodb.computeTransaction(newSession -> mongodb.createAll(instances, collection, newSession));
     }
 
     public Bson getUpdateFilter(T instance) {

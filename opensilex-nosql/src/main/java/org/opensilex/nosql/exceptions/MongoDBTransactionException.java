@@ -15,7 +15,7 @@ import com.mongodb.MongoException;
  */
 public class MongoDBTransactionException extends MongoException {
 
-    protected Exception innerException;
+    private final Exception innerException;
 
     public MongoDBTransactionException(String msg, Exception t) {
         super(msg, t);

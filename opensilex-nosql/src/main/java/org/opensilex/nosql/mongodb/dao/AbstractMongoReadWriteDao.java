@@ -426,13 +426,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     @Override
     public Set<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException {
         Objects.requireNonNull(filter);
-
-        return distinctWithPagination(
-                session,
-                MongoModel.URI_FIELD,
-                filter,
-                document -> document.get(idField(), URI.class)
-        );
+        return distinct(idField(), URI.class, filter, session);
     }
 
     @Override
@@ -504,10 +498,6 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     protected <T_RESULT> Set<T_RESULT> distinctWithPagination(ClientSession session, @NotNull String distinctField, @NotNull F filter, Function<Document, T_RESULT> documentExtractor) {
         Objects.requireNonNull(filter);
-
-        if (CollectionUtils.isEmpty(filter.getOrderByList())) {
-            throw new IllegalArgumentException("distinctWithPagination required at least on OrderBy. Else the MongoDB aggregation pipeline can't be build");
-        }
         if (logger.isDebugEnabled()) {
             logger.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, filter: {}}", collection.getNamespace().getCollectionName(), filter);
         }

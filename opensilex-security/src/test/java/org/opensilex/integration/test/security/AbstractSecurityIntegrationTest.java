@@ -7,6 +7,15 @@
 package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.assertj.core.api.Assertions;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
@@ -16,28 +25,32 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationAPI;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
+import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDTO;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
@@ -131,15 +144,429 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return new ArrayList<>();
     }
+
+    /**
+     * Call the security service and return a new Token
+     *
+     * @param userMail The user identifier
+     * @param userPassword The user password
+     * @return a new Token
+     * @throws Exception in case of error during token retrieval
+     */
+    protected TokenGetDTO queryToken(String userMail, String userPassword) throws Exception {
+
+        AuthenticationDTO authDto = new AuthenticationDTO();
+        authDto.setIdentifier(userMail);
+        authDto.setPassword(userPassword);
+
+        final Response callResult = target("/security/authenticate")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(authDto, MediaType.APPLICATION_JSON_TYPE));
+
+        JsonNode node = callResult.readEntity(JsonNode.class);
+
+        // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
+        Object json = mapper.readValue(node.toString(), Object.class);
+        if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
+            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+            });
+            return res.getResult();
+        }
+
+        throw new Exception("Error while getting token: " + json);
+    }
+
+    /**
+     * Calls the security service and return a new token for the admin
+     *
+     * @return a new token for the admin
+     * @throws Exception
+     */
+    protected TokenGetDTO queryAdminToken() throws Exception {
+        return queryToken(ADMIN_MAIL, ADMIN_PASSWORD);
+    }
+
+    /**
+     * Register the admin token in the token map for usage in tests.
+     *
+     * @throws Exception
+     */
+    protected void registerAdminTokenIfNecessary() throws Exception {
+        if (!tokenMap.containsKey(ADMIN_MAIL)) {
+            tokenMap.put(ADMIN_MAIL, queryAdminToken());
+        }
+    }
+
+    /**
+     * Register a token in the token map for usage in tests. Necessary to use before calling {@link #appendToken(WebTarget, String)}.
+     *
+     * @param userMail The user identifier
+     * @param userPassword The user password
+     * @throws Exception
+     */
+    protected void registerToken(String userMail, String userPassword) throws Exception {
+        tokenMap.put(userMail, queryToken(userMail, userPassword));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param entity the data to POST on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
+        return appendAdminToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param entity the data to POST on the given target
+     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getOctetPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
+        return appendAdminToken(target)
+                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                .post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call. If you wish to perform the action using
+     * the admin account, user the {@link #getJsonPostResponseAsAdmin(WebTarget, Object)} method.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param entity the data to POST on the given target
+     * @param userMail the user identifier to perform the query
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPostResponse(WebTarget target, Object entity, String userMail) throws Exception {
+        return appendToken(target, userMail).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call.
+     *
+     * @param target    the {@link WebTarget} on which POST the given entity
+     * @param multipart the data to POST on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPostResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
+        return appendAdminToken(target.register(MultiPartFeature.class)).post(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call as admin.
+     *
+     * @param target the {@link WebTarget} on which GET the given entity
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonGetResponseAsAdmin(WebTarget target) throws Exception {
+        return appendAdminToken(target).get();
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} POST service call.
+     *
+     * @param target the {@link WebTarget} on which GET the given entity
+     * @param userMail the user identifier to perform the query
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonGetResponse(WebTarget target, String userMail) throws Exception {
+        return appendToken(target, userMail).get();
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} PUT service call.
+     *
+     * @param target    the {@link WebTarget} on which PUT the given entity
+     * @param multipart the data to PUT on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPutResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
+        return appendAdminToken(target.register(MultiPartFeature.class)).put(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
+    }
+
+    /**
+     * Get {@link Response} from an {@link ApiProtected} PUT service call.
+     *
+     * @param target the {@link WebTarget} on which PUT the given entity
+     * @param entity the data to PUT on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPutResponse(WebTarget target, Object entity) throws Exception {
+        return appendAdminToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
+     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call as admin.
+     *
+     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param uri    the URI of the resource to fetch from the given target.
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonGetByUriResponseAsAdmin(WebTarget target, String uri) throws Exception {
+        return appendAdminToken(target.resolveTemplate("uri", uri)).get();
+    }
+
+    /**
+     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
+     *
+     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param uri    the URI of the resource to fetch from the given target.
+     * @param userMail the user identifier to perform the query.
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonGetByUriResponse(WebTarget target, String uri, String userMail) throws Exception {
+        return appendToken(target.resolveTemplate("uri", uri), userMail).get();
+    }
+
+    /**
+     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
+     *
+     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param uri    the URI of the resource to fetch from the given target.
+     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception {
+        return appendAdminToken(target.resolveTemplate("uri", uri))
+                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                .get();
+    }
+
+    /**
+     * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service call.
+     *
+     * @param target the {@link WebTarget} on which DELETE the given uri
+     * @param uri    the URI of the resource to DELETE
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getDeleteByUriResponse(WebTarget target, String uri) throws Exception {
+        return appendAdminToken(target.resolveTemplate("uri", uri)).delete();
+    }
+
+    /**
+     * Get {@link Response} from a public DELETE service call.
+     *
+     * @param target the {@link WebTarget} on which DELETE some content
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
+        return appendAdminToken(target).delete();
+    }
+
+    private static final String ADMIN_MAIL = "admin@opensilex.org";
+    private static final String ADMIN_PASSWORD = "admin";
     private final HashMap<String, TokenGetDTO> tokenMap = new HashMap<>();
 
-    protected <T extends SPARQLNamedResourceModel<T>> void testBasicCRUDAsAdmin(
+    /**
+     * Append a token header for the admin user to the given {@link WebTarget}
+     *
+     * @param target the {@link WebTarget} on which append params
+     * @return the updated {@link WebTarget}
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Invocation.Builder appendAdminToken(WebTarget target) throws Exception {
+        registerAdminTokenIfNecessary();
+
+        return appendToken(target, ADMIN_MAIL);
+    }
+
+    /**
+     * Append a token header to the give {@link WebTarget}. The token must first be registered using the method {@link #registerToken(String, String)}
+     * before your test.
+     *
+     * @param target the {@link WebTarget} on which append params
+     * @param userMail the use identifier to perform the query
+     * @return the updated {@link WebTarget}
+     * @throws IllegalArgumentException if a token has not been registered for this user yet
+     */
+    protected Invocation.Builder appendToken(WebTarget target, String userMail) throws IllegalArgumentException {
+        if (!tokenMap.containsKey(userMail)) {
+            throw new IllegalArgumentException("Cannot find a token for user " + userMail + ". Please generate a token using `registerToken` before your test.");
+        }
+
+        return target.request(MediaType.APPLICATION_JSON_TYPE)
+                .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userMail).getToken());
+    }
+
+    /**
+     * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
+     *
+     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param createPath   the path to the service which allow to create an entity
+     * @param deletePath   the path to the service which allow to delete an entity
+     * @param entity       the entity on which apply create, read and delete
+     */
+    protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
+
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entity);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        // ensure that the result is a well formed URI, else throw exception
+        String uri = extractUriFromResponse(postResult).toString();
+
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // delete object and check if URI no longer exists
+        final Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+
+        getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
+    /**
+     * Call the createPath with the given entity list
+     * then for each entity : check if entity has been created, delete it and then check that the resource has been deleted
+     *
+     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param createPath   the path to the service which allow to create an entity
+     * @param deletePath   the path to the service which allow to delete an entity
+     * @param entities     the List of entity on which apply create, read and delete
+     */
+    protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
+
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entities);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        List<URI> uris = extractUriListFromPaginatedListResponse(postResult);
+
+        for (URI uri : uris) {
+            Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
+            assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+            // delete object and check if URI no longer exists
+            final Response delResult = getDeleteByUriResponse(target(deletePath), uri.toString());
+            assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+
+            getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
+            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        }
+
+    }
+
+
+    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        registerAdminTokenIfNecessary();
+        return getSearchResults(searchPath, page, pageSize, searchCriteria, typeReference, ADMIN_MAIL);
+    }
+
+    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+        if (searchCriteria == null) {
+            searchCriteria = new HashMap<>();
+        }
+        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriteria);
+        final Response getResult = appendToken(searchTarget, userMail).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        return readResponse(getResult, typeReference).getResult();
+    }
+
+    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        return this.getSearchResultsAsAdmin(searchPath, 0, 20, searchCriteria, typeReference);
+    }
+
+    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+        return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
+    }
+
+    protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {
+        if (searchCriteria == null) {
+            searchCriteria = new HashMap<>();
+        }
+        WebTarget searchTarget = appendQueryParams(target(searchPath), searchCriteria);
+        final Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
+    }
+
+    public static boolean isDeepMapIncluded(Map<String, Object> superMap, Map<String, Object> subMap) {
+        for (Map.Entry<String, Object> entry : subMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            Object correspondingValue = superMap.get(key);
+
+            if (value instanceof Map && correspondingValue instanceof Map) {
+                if (!isDeepMapIncluded((Map<String, Object>) value, (Map<String, Object>) correspondingValue)) {
+                    return false;
+                }
+            } else if (value instanceof List) {
+                for (Map v1 : (List<Map>)value) {
+                    for (Map v2 : (List<Map>)correspondingValue) {
+                        if (isDeepMapIncluded(v1, v2)) {
+                            return true;
+                        }
+                    }
+                }
+            } else if (!superMap.containsKey(key) || !superMap.get(key).equals(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static Map<String, Object> convertToNestedMap(Object object) {
+        // Convert the object to a map
+        Map<String, Object> map = mapper.convertValue(object, Map.class);
+        map.values().removeAll(Collections.singleton(null));
+
+        // Recursively convert nested objects to nested maps of maps
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (
+                    !(entry.getValue() instanceof String) &&
+                            !(entry.getValue() instanceof Integer)
+            ) {
+                Object nestedObject = entry.getValue();
+                if (Objects.isNull(nestedObject)) {
+                    map.remove(entry.getKey());
+                } else if (nestedObject instanceof List) {
+                    List<Object> nestedList = new ArrayList<>();
+                    for (Object value : (List) nestedObject) {
+                        nestedList.add(convertToNestedMap(value));
+                    }
+                    if (nestedList.isEmpty()) {
+                        map.remove(entry.getKey());
+                    } else {
+                        entry.setValue(nestedList);
+                    }
+                } else {
+                    Map<String, Object> nestedMap = convertToNestedMap(nestedObject);
+                    if (nestedMap.isEmpty()) {
+                        map.remove(entry.getKey());
+                    } else {
+                        entry.setValue(nestedMap);
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
+    protected <T> void testBasicCRUDAsAdmin(
             ServiceDescription createServiceDescription,
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
-            NamedResourceDTO<T> entityToPost, NamedResourceDTO<T> entityToPut,
-            NamedResourceDTO<T> entityExpectedAfterPut
+            NamedResourceDTO<?> entityToPost, NamedResourceDTO<?> entityToPut,
+            Map<String, Object> attributesToCheck, TypeReference<SingleObjectResponse<T>> entityTypeReference
     ) throws Exception {
         // CREATE
         UserCall createCall = new UserCallBuilder(createServiceDescription)
@@ -159,27 +586,30 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 .setBody(entityToPut)
                 .buildAdmin();
         updateCall.executeCallAndReturnURI();
-        NamedResourceDTO<T> readResponse = readCall.executeCallAndDeserialize(new TypeReference<NamedResourceDTO<T>>() {
-        }).getDeserializedResponse();
-        assertEquals(readResponse, entityExpectedAfterPut);
+        // Get the updated object
+        SingleObjectResponse<T> readResponse = readCall.executeCallAndDeserialize(entityTypeReference).getDeserializedResponse();
+        Map<String, Object> responseAttributes = mapper.convertValue(readResponse.getResult(), Map.class);
+        // TODO : Try linkedHashMAp or other types instead of Map?
+        // Check attributes value
+        boolean tmp = isDeepMapIncluded(responseAttributes, attributesToCheck);
+        assertTrue(tmp);
 
         // DELETE
         UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
                 .setUriInPath(createdUri.toString())
                 .buildAdmin();
-        deleteCall.executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
-        });
+        deleteCall.executeCallAndReturnURI();
         Response result = readCall.executeCall();
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), result.getStatus());
     }
 
-    protected <T extends SPARQLNamedResourceModel<T>> void testBasicCRUDListAsAdmin(
+    protected <T> void testBasicCRUDListAsAdmin(
             ServiceDescription createServiceDescription,
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
-            List<NamedResourceDTO<T>> entitiesToPost, List<NamedResourceDTO<T>> entitiesToPut,
-            List<NamedResourceDTO<T>> entitiesExpectedAfterPut
+            List<NamedResourceDTO<?>> entitiesToPost, List<NamedResourceDTO<?>> entitiesToPut,
+            List<Map<String, Object>> attributesToCheck, TypeReference<SingleObjectResponse<T>> entitiesTypeReference
     ) throws Exception {
         if (entitiesToPost.size() != entitiesToPut.size()) {
             for (int i = 0; i < entitiesToPost.size(); i++) {
@@ -189,7 +619,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                         updateServiceDescription,
                         deleteServiceDescription,
                         entitiesToPost.get(i), entitiesToPut.get(i),
-                        entitiesExpectedAfterPut.get(i)
+                        attributesToCheck.get(i), entitiesTypeReference
                 );
             }
         }
@@ -215,11 +645,11 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             super(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
             this.userEmail = userEmail;
             this.userPassword = userPassword;
+            this.httpMethod = findHttpMethod(serviceMethod);
         }
 
         @Override
         public Response executeCall() throws Exception {
-            httpMethod = findHttpMethod(serviceMethod);
             WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
             authenticateAndRegisterIfNecessary(userEmail, userPassword);
             appendToken(target, userEmail);
@@ -239,19 +669,41 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 });
                 return URI.create(response.getDeserializedResponse().getResult());
             } else {
-                Result<ResourceDTO<?>> readResponse = executeCallAndDeserialize(new TypeReference<ResourceDTO<?>>() {
+                Result<SPARQLResourceModel> readResponse = executeCallAndDeserialize(new TypeReference<SPARQLResourceModel>() {
                 });
                 return readResponse.getDeserializedResponse().getUri();
             }
         }
 
-        protected Invocation.Builder appendToken(WebTarget target, String userEmail) throws IllegalArgumentException {
-            if (!tokenMap.containsKey(userEmail)) {
-                throw new IllegalArgumentException("Cannot find a token for user " + userEmail + ". Please generate a token using `registerToken` before your test.");
+        @Override
+        protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body, MediaType callMediaType, List<MediaType> responseMediaTypes) {
+
+            Invocation.Builder requestBuilder;
+            if (Objects.isNull(callMediaType)) {
+                requestBuilder = target.request(MediaType.APPLICATION_JSON);
+            } else {
+                requestBuilder = target.request(callMediaType);
             }
 
-            return target.request(MediaType.APPLICATION_JSON_TYPE)
-                    .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userEmail).getToken());
+            if (!(responseMediaTypes == null) && !responseMediaTypes.isEmpty()) {
+                for (MediaType mediaType : responseMediaTypes) {
+                    requestBuilder = requestBuilder.accept(mediaType);
+                }
+            }
+
+            requestBuilder = requestBuilder.header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userEmail).getToken());
+
+            if(Objects.equals(httpMethod, HttpMethod.GET)) {
+                return requestBuilder.get();
+            } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
+                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
+                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
+                return requestBuilder.delete();
+            } else {
+                throw new UnsupportedOperationException("HTTP method not supported");
+            }
         }
 
         protected void authenticateAndRegisterIfNecessary(String userEmail, String userPassword) throws Exception {
@@ -261,7 +713,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 authDto.setIdentifier(userEmail);
                 authDto.setPassword(userPassword);
 
-                PublicCall tokenCall = new UserCallBuilder(authenticate).setBody(authDto).build();
+                PublicCall tokenCall = new PublicCallBuilder<>(authenticate).setBody(authDto).build();
 
                 Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
                         new TypeReference<SingleObjectResponse<TokenGetDTO>>() {

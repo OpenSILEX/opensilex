@@ -1,33 +1,34 @@
 package org.opensilex.security.group.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.collections4.IterableMap;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.PredicateUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.mail.internet.InternetAddress;
-import javax.ws.rs.client.WebTarget;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
+
+import javax.mail.internet.InternetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
@@ -102,16 +103,35 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     public void testGroupBasicCRUDAsAdmin() throws Exception {
         createTestEnv();
 
+        Map<String, Object> attributesMap = convertToNestedMap(getGroupGetDTO());
+        attributesMap.values().removeAll(Collections.singleton(null));
         testBasicCRUDAsAdmin(
                 create, get, update, delete,
                 getGroupCreationDTO(), getGroupUpdateDTO(),
-                getGroupUpdateDTO()
+                attributesMap,
+                new TypeReference<SingleObjectResponse<GroupGetDTO>>() {
+                }
         );
     }
 
-    @NotNull
     private static GroupUpdateDTO getGroupUpdateDTO() throws URISyntaxException {
         GroupUpdateDTO dto = new GroupUpdateDTO();
+        dto.setName("new group name");
+        dto.setDescription("New description");
+
+        List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
+        GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
+
+        userProfile.setUserURI(new URI(USER1_URI));
+        userProfile.setProfileURI(new URI(PROFILE2_URI));
+        userProfiles.add(userProfile);
+
+        dto.setUserProfiles(userProfiles);
+        return dto;
+    }
+
+    private static GroupGetDTO getGroupGetDTO() throws URISyntaxException {
+        GroupGetDTO dto = new GroupGetDTO();
         dto.setName("new group name");
         dto.setDescription("New description");
 

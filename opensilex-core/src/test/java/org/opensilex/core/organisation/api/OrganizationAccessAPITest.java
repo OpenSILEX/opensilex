@@ -127,6 +127,9 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
+    public OrganizationAccessAPITest() throws NoSuchMethodException {
+    }
+
     @Before
     public void beforeTest() throws Exception {
         createAndRegisterUserProfileGroups();
@@ -269,14 +272,14 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         groupWithUserCreationDTO.setName("Group with user");
         groupWithUserCreationDTO.setDescription("Group with user");
         groupWithUserCreationDTO.setUserProfiles(Collections.singletonList(groupUserProfileDTO));
-        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithUserCreationDTO);
+        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithUserCreationDTO);
         groupWithUser = extractUriFromResponse(postGroupWithUserResponse);
 
         // Group without user creation
         GroupCreationDTO groupWithoutUserCreationDTO = new GroupCreationDTO();
         groupWithoutUserCreationDTO.setName("Group without user");
         groupWithoutUserCreationDTO.setDescription("Group without user");
-        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithoutUserCreationDTO);
+        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithoutUserCreationDTO);
         groupWithoutUser = extractUriFromResponse(postGroupWithoutUserResponse);
 
         // Register the token for login into tests

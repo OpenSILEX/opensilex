@@ -508,7 +508,9 @@ export default class ExperimentScientificObjects extends Vue {
 
     console.debug("searchoing....", JSON.stringify(this.filters));
     let orderBy = ["name=asc"];
-    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm || this.filters.criteriaDto) {
+    const hasAnyCriterion = this.filters.criteriaDto.criteria_list.length > 0;
+    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 ||
+        this.filters.name.length !== 0 || this.filters.germplasm || hasAnyCriterion) {
        return this.soService.searchScientificObjects(
         this.uri, // experiment uri?: string,
         this.filters.types, 

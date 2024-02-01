@@ -97,38 +97,22 @@ but for these basic operation on very-small data the P99 latency should keep thi
 
 # Solution
 
-{Describe the solution we chose in OpenSILEX. You can explain why this solution was chosen, which
-other solutions were considered and why they were not kept.}
-
-## Business logic
-
-{If some specific business rules are applicable in the solution, describe them extensively in this
-section. Business logic also includes authorization rules.}
 
 ## Technical specifications
 
-## Technical definitions
+### Dao
 
-- **{Term}** : {definition}
+The class diagram below describe the methods available for any MongoDB based DAO
 
-## Detailed explanations
+![MongoReadWriteDao.png](uml/MongoReadWriteDao.png)
 
-### DAOs and Services
+> **MongoReadWriteDao**
 
-## Environment
+The Dao is parametrized with two types `T, F` : 
+- `T` : the type of `MongoModel` to handle with the Dao
+- `F` : The type of `MongoSearchFilter` to handle. This object contains all search filter corresponding to a `MongoModel`
 
-{Describe the packages and libraries required for the solution, and the specific version if needed.}
+When implementing a new Dao for some class, this dao must extend the `MongoReadWriteDao` class and specify the model class and the corresponding 
+filter.
 
-# Limitations and improvements
-
-{Describe the known limits of the solution. If you have potential solutions to suggest, you
-can specify them here.}
-
-# Documentation
-
-## MongoDB
-
-## Design-Patterns
-
-{List internal and external documentations relevant to the feature. For example, configuration
-instructions or an external library documentation website}.
+See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods

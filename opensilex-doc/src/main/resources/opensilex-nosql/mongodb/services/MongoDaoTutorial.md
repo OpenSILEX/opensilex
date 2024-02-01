@@ -248,16 +248,31 @@ public class DataSearchFilter extends MongoSearchFilter {
     /* Match document with an equality filter on the "name" field */
     private String name;
 }
-
-
 ```
 
-and the following Dao which use this `DataSearchFilter` as search filter
+and the following Dao which use this `DataSearchFilter` as search filter.
+This Dao must override the method `public List<Bson> getBsonFilters(F searchQuery)` as following :
 
 ```java
+import com.mongodb.client.model.Filters;
+import org.apache.commons.lang3.StringUtils;
+
 // The DataDao define how to handle the DataSearchFilter search criteria
 // It's the responsibility of this class to use the correct filter on MongoCollection
 public class DataDao extends MongoReadWriteDao<DataModel, DataSearchFilter> {
+
+  @Override
+  public List<Bson> getBsonFilters(DataSearchFilter searchQuery) {
+    // Conserve semantic of basic field from search filter
+    List<Bson> filters = super.getBsonFilters();
+
+    // Define a new regex filter with the name
+    if (!StringUtils.isEmpty(searchQuery.getName())) {
+      filters.add(Filters.regex("name", searchQuery.getName()));
+    }
+    
+    return filters;
+  }
 }
 ```
 
@@ -268,6 +283,14 @@ MongoSearchFilter filter = new MongoSearchFilter().setName("opensilex");
 /* Run search*/
 ListWithPagination<DataModel> results = dataDao.search(filter);
 ```
+
+This filter is used for several methods : 
+
+- `count()`
+- `search()`
+- `deleteMany()`
+- `distinct()`
+- `lookupAggregation()`
 
 ### Session management
 

@@ -322,15 +322,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
      *
      * @param filter      The filter to apply during the search
      * @param projection  The projection to apply (can be null)
-     * @param orderByList The list of fields to order by
-     * @param page        The page number for pagination
-     * @param pageSize    The size of each page for pagination
      * @param session     The ClientSession for handling the transaction (can be null)
      * @return Map.Entry<FindIterable < T>, Long>    The query results and the total count of results
      */
-    protected Map.Entry<FindIterable<T>, Long> findWithPagination(Bson filter, Bson projection, List<OrderBy> orderByList, int page, int pageSize, ClientSession session) {
+    protected Map.Entry<FindIterable<T>, Long> findWithPagination(Bson projection, F filter, ClientSession session) {
 
-        long resultsNumber = collection.countDocuments(filter);
+        Bson bsonFilter = filterToBson(filter);
+        long resultsNumber = collection.countDocuments(bsonFilter);
 
         // call isDebugEnabled before displaying log, since LogOrderList is a function. We don't want to call this method, is DEBUG logging is not enabled
         if (logger.isDebugEnabled()) {
@@ -341,12 +339,12 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
             return null;
         }
         FindIterable<T> queryResult = session == null ?
-                collection.find(filter) :
-                collection.find(session, filter);
+                collection.find(bsonFilter) :
+                collection.find(session, bsonFilter);
 
-        queryResult.sort(mongodb.buildSort(orderByList))
-                .skip(page * pageSize)
-                .limit(pageSize);
+        queryResult.sort(mongodb.buildSort(filter.getOrderByList()))
+                .skip(filter.getPage() * filter.getPageSize())
+                .limit(filter.getPageSize());
 
         if (projection != null) {
             queryResult.projection(projection);
@@ -364,15 +362,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     public ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
         Objects.requireNonNull(filter);
 
-        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(
-                filterToBson(filter),
-                projection,
-                filter.getOrderByList(),
-                filter.getPage(),
-                filter.getPageSize(),
-                session
-        );
-
+        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(projection, filter, session);
         if (resultAndCount == null) {
             return new ListWithPagination<>(Collections.emptyList());
         }
@@ -390,21 +380,14 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         Objects.requireNonNull(filter);
         Objects.requireNonNull(convertFunction);
 
-        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(
-                filterToBson(filter),
-                projection,
-                filter.getOrderByList(),
-                filter.getPage(),
-                filter.getPageSize(),
-                session
-        );
+        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(projection, filter, session);
         if (resultAndCount == null) {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
         // iterate over MongoDB result and convert result on the fly before collect them inside a List
         int resultCount = resultAndCount.getValue().intValue();
-        List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
+        List<T_CONVERTED> convertedResults = new ArrayList<>(filter.getPageSize());
         resultAndCount.getKey().forEach(
                 mongoResult -> convertedResults.add(convertFunction.apply(mongoResult))
         );
@@ -427,14 +410,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
         Objects.requireNonNull(filter);
 
-        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(
-                filterToBson(filter),
-                projection,
-                filter.getOrderByList(),
-                filter.getPage(),
-                filter.getPageSize(),
-                session
-        );
+        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(projection, filter, session);
 
         // no result, return StreamWithPagination with an empty Stream
         if (resultAndCount == null) {

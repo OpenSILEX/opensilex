@@ -2682,25 +2682,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * }
      * </pre>
      */
-    public List<SPARQLResourceModel> getSubtypes(URI typeURI, String labelLang) throws SPARQLException {
+    public List<SPARQLResourceModel> getSubtypesUrisAndLabels(URI typeURI, String labelLang) throws SPARQLException {
         Var typeVar = makeVar("type");
         Var labelVar = makeVar("label");
         SelectBuilder select = new SelectBuilder().addVar(typeVar).addVar(labelVar).setDistinct(true);
         Node typeObject = SPARQLDeserializers.nodeURI(typeURI);
 
         select.addWhere(typeVar, RDF.type, typeObject);
-
-        if (Objects.nonNull(labelLang) && !labelLang.isBlank()) {
-            WhereBuilder askedLabel = new WhereBuilder()
-                    .addWhere(typeVar, SKOS.prefLabel, labelVar)
-                    .addFilter(langFilter(labelVar, labelLang));
-            select.addOptional(askedLabel);
-        }
-
-        WhereBuilder askedLabel = new WhereBuilder()
-                .addWhere(typeVar, SKOS.prefLabel, labelVar)
-                .addFilter(langFilter(labelVar, OpenSilex.DEFAULT_LANGUAGE));
-        select.addOptional(askedLabel);
+        AddWherePartForPreflabelWithLangFilter(labelLang, typeVar, labelVar, select);
+        AddWherePartForPreflabelWithLangFilter(OpenSilex.DEFAULT_LANGUAGE, typeVar, labelVar, select);
 
         return connection.executeSelectQueryAsStream(select)
                 .map(result -> {
@@ -2710,12 +2700,34 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     try {
                         subtype.setUri(new URI(subtypeURI));
                     } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("error while getting subtypes uris of type : "+typeURI+". Unreadable URI : "+subtypeURI, e);
                     }
                     subtype.setTypeLabel(new SPARQLLabel(label, "en"));
                     return subtype;
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * @param labelLang is the asked lang for the prefLabel, WhereBuilder is not added if labelLang is null or blank
+     * @param subjectVar is the SPARQL variable representing the subject in the select request
+     * @param labelVar is the SPARQL variable representing the label in the select request
+     * @param select is the selectBuilder to add the part of the query
+     * exemple of generated query :
+     * <pre>
+     *OPTIONAL {
+     *  ?uriSubtype <http://www.w3.org/2004/02/skos/core#prefLabel> ?labelFr.
+     *  FILTER (langMatches(lang(?labelFr), "fr")).
+     *}
+     * </pre>
+     */
+    private static void AddWherePartForPreflabelWithLangFilter(String labelLang, Var subjectVar, Var labelVar, SelectBuilder select) {
+        if (Objects.nonNull(labelLang) && !labelLang.isBlank()) {
+            WhereBuilder askedLabel = new WhereBuilder()
+                    .addWhere(subjectVar, SKOS.prefLabel, labelVar)
+                    .addFilter(langFilter(labelVar, labelLang));
+            select.addOptional(askedLabel);
+        }
     }
 
 }

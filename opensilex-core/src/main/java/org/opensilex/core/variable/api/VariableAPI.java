@@ -71,7 +71,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)

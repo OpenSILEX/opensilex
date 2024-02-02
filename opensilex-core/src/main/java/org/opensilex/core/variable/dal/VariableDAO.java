@@ -414,7 +414,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     public List<SPARQLResourceModel> getTemporalIntervalValues(String labelLang) throws URISyntaxException, SPARQLException {
-        return sparql.getSubtypes( new URI(Time.TemporalUnit.getURI()), labelLang );
+        return sparql.getSubtypesUrisAndLabels( new URI(Time.TemporalUnit.getURI()), labelLang );
     }
 }
 

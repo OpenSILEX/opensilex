@@ -28,6 +28,7 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -75,7 +76,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.*;
 
 /**
  * Implementation of SPARQLService
@@ -2253,23 +2254,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
-    public List<URI> getRdfTypes(URI uri, Node graph) throws SPARQLException {
-
-        Var typeVar = makeVar("type");
-        SelectBuilder select = new SelectBuilder().addVar(typeVar).setDistinct(true);
-        Node subject = SPARQLDeserializers.nodeURI(uri);
-
-        if(graph != null){
-            select.addGraph(graph,subject, RDF.type, typeVar);
-        }else{
-            select.addWhere(subject, RDF.type, typeVar);
-        }
-
-        return connection.executeSelectQueryAsStream(select)
-                .map(result -> URIDeserializer.formatURI(result.getStringValue(typeVar.getVarName())))
-                .collect(Collectors.toList());
-    }
-
     /**
      *
      * @param graph the SPARQL graph (optional)
@@ -2655,4 +2639,83 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new ConflictException("URI <"+instanceURI+"> is linked with other ressources");
         }
     }
+
+    public List<URI> getRdfTypes(URI uri, Node graph) throws SPARQLException {
+
+        Var typeVar = makeVar("type");
+        SelectBuilder select = new SelectBuilder().addVar(typeVar).setDistinct(true);
+        Node subject = SPARQLDeserializers.nodeURI(uri);
+
+        if(graph != null){
+            select.addGraph(graph,subject, RDF.type, typeVar);
+        }else{
+            select.addWhere(subject, RDF.type, typeVar);
+        }
+
+        return connection.executeSelectQueryAsStream(select)
+                .map(result -> URIDeserializer.formatURI(result.getStringValue(typeVar.getVarName())))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     *
+     * @param typeURI you want subtypes of.
+     * @param labelLang of the preflabel, if not found request will search for "en" prefLabel.
+     * @return subtypes as SPARQLRessourceModel with URI and TypeLabel.
+     * @throws SPARQLException
+     * ecemple of request for time:TemporalUnit subtypes
+     * <pre>
+     * PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     * PREFIX time: <http://www.w3.org/2006/time#>
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * SELECT ?uriSubtype ?label{
+     *   ?uriSubtype rdf:type time:TemporalUnit.
+     *   OPTIONAL {
+     *     ?uriSubtype <http://www.w3.org/2004/02/skos/core#prefLabel> ?labelFr.
+     *     FILTER (langMatches(lang(?labelFr), "fr")).
+     *   }
+     *   OPTIONAL {
+     *     ?uriSubtype <http://www.w3.org/2004/02/skos/core#prefLabel> ?labelEn.
+     *     FILTER (langMatches(lang(?labelEn), "en")).
+     *   }
+     *   BIND (COALESCE(?labelFr, ?labelEn) AS ?label).
+     * }
+     * </pre>
+     */
+    public List<SPARQLResourceModel> getSubtypes(URI typeURI, String labelLang) throws SPARQLException {
+        Var typeVar = makeVar("type");
+        Var labelVar = makeVar("label");
+        SelectBuilder select = new SelectBuilder().addVar(typeVar).addVar(labelVar).setDistinct(true);
+        Node typeObject = SPARQLDeserializers.nodeURI(typeURI);
+
+        select.addWhere(typeVar, RDF.type, typeObject);
+
+        if (Objects.nonNull(labelLang) && !labelLang.isBlank()) {
+            WhereBuilder askedLabel = new WhereBuilder()
+                    .addWhere(typeVar, SKOS.prefLabel, labelVar)
+                    .addFilter(langFilter(labelVar, labelLang));
+            select.addOptional(askedLabel);
+        }
+
+        WhereBuilder askedLabel = new WhereBuilder()
+                .addWhere(typeVar, SKOS.prefLabel, labelVar)
+                .addFilter(langFilter(labelVar, OpenSilex.DEFAULT_LANGUAGE));
+        select.addOptional(askedLabel);
+
+        return connection.executeSelectQueryAsStream(select)
+                .map(result -> {
+                    String subtypeURI = result.getStringValue(typeVar.getVarName());
+                    String label = result.getStringValue(labelVar.getVarName());
+                    SPARQLResourceModel subtype = new SPARQLResourceModel();
+                    try {
+                        subtype.setUri(new URI(subtypeURI));
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                    subtype.setTypeLabel(new SPARQLLabel(label, "en"));
+                    return subtype;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

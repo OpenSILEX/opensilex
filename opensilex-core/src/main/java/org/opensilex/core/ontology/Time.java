@@ -61,4 +61,10 @@ public class Time {
      * OWL Property which associate a xsd:dateTimeStamp datatype to an time:Instant
      */
     public static final Property inXSDDateTimeStamp = Ontology.property(NS,"inXSDDateTimeStamp");
+
+    /**
+     * @see <a href="https://www.w3.org/TR/owl-time/#time:TemporalUnit">time:TemporalUnit</a>
+     * OWL Class which define a temporal unit like second or day
+     */
+    public static final Property TemporalUnit = Ontology.property(NS,"TemporalUnit");
 }

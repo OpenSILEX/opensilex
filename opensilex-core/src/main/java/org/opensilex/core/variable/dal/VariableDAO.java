@@ -21,6 +21,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.Time;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -410,6 +411,10 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
 
+    }
+
+    public List<SPARQLResourceModel> getTemporalIntervalValues(String labelLang) throws URISyntaxException, SPARQLException {
+        return sparql.getSubtypes( new URI(Time.TemporalUnit.getURI()), labelLang );
     }
 }
 

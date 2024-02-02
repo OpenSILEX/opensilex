@@ -25,7 +25,6 @@ import org.opensilex.core.variable.api.entity.EntityAPI;
 import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityAPI;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityDetailsDTO;
-import org.opensilex.core.variable.api.intervals.TimeIntervalEnum;
 import org.opensilex.core.variable.api.intervals.VariableTimeIntervalDTO;
 import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
@@ -47,6 +46,8 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -399,7 +400,7 @@ public class VariableAPI {
 
     @GET
     @Path("time_intervals")
-    @ApiOperation(value = "Get variables time intervals")
+    @ApiOperation(value = "Get possible values for time intervals")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return time intervals", response = VariableTimeIntervalDTO.class, responseContainer = "List")
     })
@@ -407,11 +408,10 @@ public class VariableAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTimeIntervals(
             @ApiParam(value = "Language", example = "fr") @QueryParam("lang") @DefaultValue("en") String lang
-    ) throws URISyntaxException {
-        TimeIntervalEnum[] intervals = TimeIntervalEnum.values();
-        Locale locale = new Locale(lang);
-        List<VariableTimeIntervalDTO> timeIntervals = Stream.of(intervals).map(
-                interval -> new VariableTimeIntervalDTO(interval.name(), interval.getLabel(locale))
+    ) throws URISyntaxException, SPARQLException {
+        List<SPARQLResourceModel> intervals = getDao().getTemporalIntervalValues(lang);
+        List<VariableTimeIntervalDTO> timeIntervals = intervals.stream().map(
+                interval -> new VariableTimeIntervalDTO(interval.getUri().toString(), interval.getTypeLabel().getDefaultValue())
         ).collect(Collectors.toList());
 
         return new PaginatedListResponse<>(timeIntervals).getResponse();

@@ -342,7 +342,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
                 collection.find(bsonFilter) :
                 collection.find(session, bsonFilter);
 
-        queryResult.sort(mongodb.buildSort(filter.getOrderByList()))
+        queryResult.sort(buildSort(filter.getOrderByList()))
                 .skip(filter.getPage() * filter.getPageSize())
                 .limit(filter.getPageSize());
 
@@ -512,7 +512,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
         // sort
         List<OrderBy> orderByList = CollectionUtils.isEmpty(filter.getOrderByList()) ? List.of(DEFAULT_ORDER_BY) : filter.getOrderByList();
-        Document order = mongodb.buildSort(orderByList);
+        Document order = buildSort(orderByList);
         aggregatePipeline.add(Aggregates.sort(order.toBsonDocument()));
 
         // pagination : skip and limit
@@ -598,7 +598,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
         // sort
         if (filter != null && !CollectionUtils.isEmpty(filter.getOrderByList())) {
-            Document order = mongodb.buildSort(filter.getOrderByList());
+            Document order = buildSort(filter.getOrderByList());
             pipeline.add(Aggregates.sort(order.toBsonDocument()));
         }
 
@@ -614,6 +614,21 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
 
     public final MongoCollection<T> getCollection() {
         return collection;
+    }
+
+    public Document buildSort(List<OrderBy> orderByList) {
+        Document sort = new Document();
+        if (CollectionUtils.isEmpty(orderByList)) {
+            return sort;
+        }
+        for (OrderBy orderBy : orderByList) {
+            if (orderBy.getOrder().equals(Order.ASCENDING)) {
+                sort.put(orderBy.getFieldName(), 1);
+            } else if (orderBy.getOrder().equals(Order.DESCENDING)) {
+                sort.put(orderBy.getFieldName(), -1);
+            }
+        }
+        return sort;
     }
 
 }

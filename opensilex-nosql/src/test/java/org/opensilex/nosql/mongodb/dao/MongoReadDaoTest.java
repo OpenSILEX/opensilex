@@ -413,7 +413,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         mongoDBServiceV2.readOperationWithSession(this::parallelSearch);
     }
 
-    public void parallelInsertTest(boolean generateSession) throws InterruptedException, NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void parallelInsertTest(boolean generateSession) throws InterruptedException {
 
         var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
         int nbThread = 4;
@@ -569,6 +569,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
         innerDao.deleteMany(new MongoSearchFilter());
         Assert.assertEquals(0, innerDao.count(new MongoSearchFilter()));
+    }
+
+    @Test
+    public void testSparqlMongoTransaction(){
+
     }
 
 }

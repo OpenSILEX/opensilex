@@ -212,7 +212,7 @@ public class MongoDBServiceV2 extends BaseService {
                 } catch (MongoException e) {
                     throw e; // Exception thrown by the MongoDB driver (client or server side)
                 } catch (Exception e) {
-                    // Other Exception thrown during operation, in this case the operation is  wrapped as a MongoDBTransactionException (A MongoException/RuntimeException)
+                    // Other Exception thrown during operation, in this case the operation is wrapped as a MongoDBTransactionException (A MongoException/RuntimeException)
                     //Since with lambda we have to catch or rethrow a RuntimeException
                     throw new MongoDBTransactionException(e.getMessage(), e);
                 }

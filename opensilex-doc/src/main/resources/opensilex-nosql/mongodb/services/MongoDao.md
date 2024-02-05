@@ -112,7 +112,42 @@ The Dao is parametrized with two types `T, F` :
 - `T` : the type of `MongoModel` to handle with the Dao
 - `F` : The type of `MongoSearchFilter` to handle. This object contains all search filter corresponding to a `MongoModel`
 
+The `MongoReadWriteDao` implementation provides methods for read and write operation for a given model and a given search filter.
 When implementing a new Dao for some class, this dao must extend the `MongoReadWriteDao` class and specify the model class and the corresponding 
 filter.
 
 See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods
+
+
+### MongoDBServiceV2
+
+![MongoDBServiceV2.png](uml/MongoDBServiceV2.png)
+
+The `MongoDBServiceV2` classes provides method for the following features : 
+- `MongoClient` initialization ( `buildMongoDBClient()` ). This client is initialized during service initialization (`startup()`)
+- Run operation with transaction : `runTransaction()` and `computeTransaction()`
+- Création of indexes in database (if not already exist)
+
+### Indexes generation
+
+In any Dao classes, you must use the static method `MongoDBService.registerIndex(collectionName, index, indexOptions)` in order
+to register a new indexes which must be created during OpenSILEX startup.
+This method call must be performed with static context
+
+> Example
+
+```java
+import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+
+public class DataDao extends MongoReadWriteDao<DataModel,DataSearchFilter> {
+    
+    // Creation of two indexes
+    // One unique index on uri, and another index on target
+    static {
+      MongoDBServiceV2.registerIndex("data",Indexes.ascending("uri"), new IndexOptions().unique(true));
+      MongoDBServiceV2.registerIndex("data",Indexes.ascending("target"), null);
+    }
+}
+```
+
+

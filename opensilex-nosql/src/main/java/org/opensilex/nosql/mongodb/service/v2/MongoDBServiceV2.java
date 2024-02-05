@@ -38,10 +38,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
@@ -74,7 +71,17 @@ public class MongoDBServiceV2 extends BaseService {
         defaultTimezone = config.timezone();
     }
 
+    /**
+     * Register the creation of some MongoDB index
+     * @param collectionName Name of the MongoDB collection on which create index (required)
+     * @param indexKeys The index key (created with {@link com.mongodb.client.model.Indexes} (required)
+     * @param indexOptions Specific Index option (Can be null)
+     * @see com.mongodb.client.model.Indexes
+     * @see IndexOptions
+     */
     public static void registerIndex(String collectionName, Bson indexKeys, IndexOptions indexOptions){
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(indexKeys);
         INDEXES_BY_COLLECTION.computeIfAbsent(collectionName, newKey -> new HashMap<>()).put(indexKeys, indexOptions);
     }
 
@@ -132,7 +139,12 @@ public class MongoDBServiceV2 extends BaseService {
 
                 Instant start = Instant.now();
                 LOGGER.info("{}, {}, collection: {}, index: {}", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collectionName, indexKeys);
-                collection.createIndex(indexKeys, indexOption);
+
+                if(indexOption != null){
+                    collection.createIndex(indexKeys, indexOption);
+                }else{
+                    collection.createIndex(indexKeys);
+                }
 
                 long durationMs = Duration.between(start, Instant.now()).toMillis();
                 LOGGER.info("{}, {}, collection: {}, index: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collectionName, indexKeys, durationMs);

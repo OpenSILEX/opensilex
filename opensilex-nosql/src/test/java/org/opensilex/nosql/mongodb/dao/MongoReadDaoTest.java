@@ -416,7 +416,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     public void parallelInsertTest(boolean generateSession) throws InterruptedException, NoSQLAlreadyExistingUriException, URISyntaxException {
 
         var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
-        int nbThread = 1;
+        int nbThread = 4;
         int nbModelPerThread = 1024;
         ExecutorService executor = Executors.newFixedThreadPool(nbThread);
 

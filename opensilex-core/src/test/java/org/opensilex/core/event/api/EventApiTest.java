@@ -10,7 +10,6 @@ package org.opensilex.core.event.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.After;

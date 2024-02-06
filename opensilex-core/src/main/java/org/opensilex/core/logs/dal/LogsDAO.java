@@ -5,8 +5,7 @@
  */
 package org.opensilex.core.logs.dal;
 
-import com.mongodb.MongoWriteException;
-import org.opensilex.nosql.mongodb.MongoDBService; 
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 /**
  *

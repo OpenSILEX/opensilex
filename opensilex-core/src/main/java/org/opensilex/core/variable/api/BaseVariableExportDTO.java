@@ -2,7 +2,6 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.BaseVariableModel;
 
 import java.net.URI;

@@ -43,7 +43,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -845,7 +844,7 @@ public class ScientificObjectAPI {
         Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
 
         return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
+                .header("Content-Disposition", "attachment; filename=\"" + Arrays.toString(result.entrySet().stream().findFirst().get().getValue()) + "\"")
                 .build();
     }
 

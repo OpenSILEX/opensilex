@@ -1434,99 +1434,96 @@ public class DataAPI {
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
             VariableDAO dao = new VariableDAO(sparql,nosql,fs);
 
-            if (ids != null) {
+            for (int i = 0; i < ids.length; i++) {
+                String header = ids[i];
+                if (header == null) {
+                    csvValidation.addEmptyHeader(i + 1);
+                } else {
 
-                for (int i = 0; i < ids.length; i++) {
-                    String header = ids[i];
-                    if (header == null) {
-                        csvValidation.addEmptyHeader(i+1);
-                    } else {                       
-                    
-                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
+                    if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader)
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
-                            || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
-                            headerByIndex.put(i, header);                            
-                        
-                        } else {                        
-                            try {
-                                if (!URIDeserializer.validateURI(header)) {
+                        || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
+                        headerByIndex.put(i, header);
+
+                    } else {
+                        try {
+                            if (!URIDeserializer.validateURI(header)) {
+                                csvValidation.addInvalidHeaderURI(i, header);
+                            } else {
+                                VariableModel var = dao.get(URI.create(header));
+                                // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
+                                if (var == null) {
                                     csvValidation.addInvalidHeaderURI(i, header);
-                                } else {                                    
-                                    VariableModel var = dao.get(URI.create(header));
-                                    // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
-                                    if (var == null) {
-                                        csvValidation.addInvalidHeaderURI(i, header);
-                                    } else {
-                                        mapVariableUriDataType.put(var.getUri(), var.getDataType());
-                                        // TODO : Validate duplicate variable colonne
-                                        headerByIndex.put(i, header);
-                                    }                                                                               
+                                } else {
+                                    mapVariableUriDataType.put(var.getUri(), var.getDataType());
+                                    // TODO : Validate duplicate variable colonne
+                                    headerByIndex.put(i, header);
                                 }
-                            } catch (URISyntaxException e) {
-                                csvValidation.addInvalidHeaderURI(i, ids[i]);
                             }
+                        } catch (URISyntaxException e) {
+                            csvValidation.addInvalidHeaderURI(i, ids[i]);
                         }
                     }
                 }
+            }
 
-                // 1.1 return error variables
-                if (csvValidation.hasErrors()) {
-                    return csvValidation;
+            // 1.1 return error variables
+            if (csvValidation.hasErrors()) {
+                return csvValidation;
+            }
+            csvValidation.setHeadersFromArray(ids);
+
+            int rowIndex = 0;
+            String[] values;
+
+            // Line 2
+            String[] headersLabels = csvReader.parseNext();
+            csvValidation.setHeadersLabelsFromArray(headersLabels);
+
+            // Line 3
+            csvReader.parseNext();
+            // Line 4
+            int nbError = 0;
+            boolean validateCSVRow = false;
+            while ((values = csvReader.parseNext()) != null) {
+                try {
+                    validateCSVRow = validateCSVRow(
+                            provenance,
+                            experiment,
+                            sensingDeviceFoundFromProvenance,
+                            variableCheckedDevice,
+                            variableCheckedProvDevice,
+                            checkedVariables,
+                            values,
+                            rowIndex,
+                            csvValidation,
+                            headerByIndex,
+                            xpDAO,
+                            notExistingExperiments,
+                            duplicatedExperiments,
+                            nameURIExperiments,
+                            ontologyDAO,
+                            notExistingTargets,
+                            duplicatedTargets,
+                            nameURITargets,
+                            scientificObjectDAO,
+                            nameURIScientificObjectsInXp,
+                            scientificObjectsNotInXp,
+                            deviceDAO,
+                            notExistingDevices,
+                            duplicatedDevices,
+                            nameURIDevices,
+                            mapVariableUriDataType,
+                            duplicateDataByIndex);
+                } catch (CSVDataTypeException e) {
+                    csvValidation.addInvalidDataTypeError(e.getCsvCell());
                 }
-                csvValidation.setHeadersFromArray(ids);
-
-                int rowIndex = 0;
-                String[] values;
-
-                // Line 2
-                String[] headersLabels = csvReader.parseNext();
-                csvValidation.setHeadersLabelsFromArray(headersLabels);
-
-                // Line 3
-                csvReader.parseNext();
-                // Line 4
-                int nbError = 0;
-                boolean validateCSVRow = false;
-                while ((values = csvReader.parseNext()) != null) {
-                    try {
-                        validateCSVRow = validateCSVRow(
-                                provenance,
-                                experiment,
-                                sensingDeviceFoundFromProvenance,
-                                variableCheckedDevice,
-                                variableCheckedProvDevice,
-                                checkedVariables,
-                                values, 
-                                rowIndex, 
-                                csvValidation, 
-                                headerByIndex, 
-                                xpDAO,
-                                notExistingExperiments,
-                                duplicatedExperiments,
-                                nameURIExperiments,                                
-                                ontologyDAO,
-                                notExistingTargets,
-                                duplicatedTargets,
-                                nameURITargets,
-                                scientificObjectDAO,
-                                nameURIScientificObjectsInXp,
-                                scientificObjectsNotInXp,
-                                deviceDAO,
-                                notExistingDevices,
-                                duplicatedDevices,
-                                nameURIDevices,
-                                mapVariableUriDataType, 
-                                duplicateDataByIndex);
-                    } catch (CSVDataTypeException e) {
-                        csvValidation.addInvalidDataTypeError(e.getCsvCell());
-                    }
-                    rowIndex++;
-                    if (!validateCSVRow) {
-                        nbError++;
-                    }
-                    if (nbError >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
-                        break;
-                    }
+                rowIndex++;
+                if (!validateCSVRow) {
+                    nbError++;
+                }
+                if (nbError >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
+                    break;
                 }
             }
         }
@@ -1575,7 +1572,7 @@ public class DataAPI {
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
-        Boolean missingTargetOrDevice = false;
+        boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
 

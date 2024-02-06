@@ -5,12 +5,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.sparql.model.C;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 import java.net.URI;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 
 /**
  * @author Hamza Ikiou

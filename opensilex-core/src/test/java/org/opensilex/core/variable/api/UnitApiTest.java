@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 /**

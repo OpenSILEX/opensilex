@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.opensilex.core.data.dal.DataComputedModel;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

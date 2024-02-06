@@ -8,15 +8,7 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.Required;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

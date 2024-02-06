@@ -7,6 +7,8 @@
 package org.opensilex.core.metrics.dal;
 
 import java.net.URI;
+
+import org.jetbrains.annotations.NotNull;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
@@ -45,7 +47,7 @@ public class ExperimentSummaryModel extends GlobalSummaryModel {
     }
 
     @Override
-    public int compareTo(Object t) {
+    public int compareTo(@NotNull Object t) {
         return this.getCreationDate().isAfter(((ExperimentSummaryModel) t).getCreationDate()) ? 1 : 0;
     }
 

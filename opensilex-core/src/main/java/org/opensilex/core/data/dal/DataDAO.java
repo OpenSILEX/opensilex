@@ -815,8 +815,8 @@ public class DataDAO {
 
             List<URI> list = new ArrayList<>(variableURIs);
             List<URI> listToSend = new ArrayList<>();
-            if (total > 0 && (page * pageSize) < total) {
-                if (page == null || page < 0) {
+            if (page * pageSize < total) {
+                if (page < 0) {
                     page = 0;
                 }                
                 int fromIndex = page*pageSize;
@@ -1140,13 +1140,13 @@ public class DataDAO {
             // Method
             // Unit
             // Variable 
-            writer.writeNext(methods.toArray(new String[methods.size()]));
-            writer.writeNext(units.toArray(new String[units.size()]));
-            writer.writeNext(variablesList.toArray(new String[variablesList.size()]));
+            writer.writeNext(methods.toArray(new String[0]));
+            writer.writeNext(units.toArray(new String[0]));
+            writer.writeNext(variablesList.toArray(new String[0]));
             // empty line
             writer.writeNext(new String[defaultColumns.size()]);
             // headers
-            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+            writer.writeNext(defaultColumns.toArray(new String[0]));
 
             // Search in map indexed by date for exp, prov, object and data            
             for (Map.Entry<Instant, Map<ExportDataIndex, List<DataExportDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
@@ -1249,7 +1249,7 @@ public class DataDAO {
                     }
                     
 
-                    String[] row = csvRow.toArray(new String[csvRow.size()]);
+                    String[] row = csvRow.toArray(new String[0]);
                     writer.writeNext(row);                        
                     
                 }
@@ -1371,7 +1371,7 @@ public class DataDAO {
         //        Variable URI
         //        Data Description URI
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
-            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+            writer.writeNext(defaultColumns.toArray(new String[0]));
             for (Map.Entry<Instant, List<DataGetDTO>> entry : dataByInstant.entrySet()) {
                 List<DataGetDTO> val = entry.getValue();
                 for (DataGetDTO dataGetDTO : val) {
@@ -1462,7 +1462,7 @@ public class DataDAO {
                         // provenance Uri
                         csvRow.add(dataGetDTO.getProvenance().getUri().toString());
 
-                        String[] row = csvRow.toArray(new String[csvRow.size()]);
+                        String[] row = csvRow.toArray(new String[0]);
                         writer.writeNext(row);
                     }
                 }

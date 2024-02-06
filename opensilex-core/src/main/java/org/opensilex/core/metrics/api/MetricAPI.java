@@ -402,12 +402,12 @@ public class MetricAPI {
     //and returns a List<CountListItemPeriodDTO> containing all items which were recently added (since oldestItemList)
     public CountListItemPeriodDTO substractTwoCountItemModelLists(List<CountItemModel> latestItemList, List<CountItemModel> oldestItemList){
         CountListItemPeriodDTO periodList = new CountListItemPeriodDTO();
-        Integer totalCountDiff = 0; //count over all item counts which were added within a specific entity type (i.e. over all ScientificObject item counts)
+        int totalCountDiff = 0; //count over all item counts which were added within a specific entity type (i.e. over all ScientificObject item counts)
 
         if (latestItemList != null) {
             for (CountItemModel item : latestItemList) {
                 //CountItemModel diffCountItemModel = new CountItemModel();
-                Boolean itemIsInOldSysSummary = false;
+                boolean itemIsInOldSysSummary = false;
                 Integer countDiff = 0; //NEW
 
                 if (oldestItemList != null) {

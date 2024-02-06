@@ -35,7 +35,6 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;

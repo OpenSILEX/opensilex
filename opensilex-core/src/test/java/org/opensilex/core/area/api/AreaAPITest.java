@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
 
+import static junit.framework.Assert.assertNotSame;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -49,15 +50,15 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
             path
     );
     protected final ServiceDescription update = new ServiceDescription(
-            AreaAPI.class.getMethod("getByURI", URI.class),
+            AreaAPI.class.getMethod("updateArea", AreaUpdateDTO.class),
             path
     );
     protected final ServiceDescription delete = new ServiceDescription(
-            AreaAPI.class.getMethod("getByURI", URI.class),
+            AreaAPI.class.getMethod("deleteArea", URI.class),
             path + "/{uri}"
     );
     protected final ServiceDescription exportGeospatial = new ServiceDescription(
-            AreaAPI.class.getMethod("getByURI", URI.class),
+            AreaAPI.class.getMethod("exportGeospatial", List.class, List.class, String.class, int.class),
             path + "/export_geospatial"
     );
     private int soCount = 1;
@@ -93,22 +94,27 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
-    protected URI createDefaultArea(boolean geometryError) throws Exception {
-        UserCall createArea = new UserCallBuilder(create).setBody(getCreationDTO(geometryError)).buildAdmin();
+    protected URI createDefaultArea() throws Exception {
+        UserCall createArea = new UserCallBuilder(create).setBody(getCreationDTO(false)).buildAdmin();
         return createArea.executeCallAndReturnURI();
+    }
+
+    protected Response createDefaultAreaWithError() throws Exception {
+        UserCall createArea = new UserCallBuilder(create).setBody(getCreationDTO(true)).buildAdmin();
+        return createArea.executeCall();
     }
 
     @Test
     public void testCreate() throws Exception {
         // ensure that the result is a well-formed URI, else throw exception
-        URI createdUri = createDefaultArea(false);
+        URI createdUri = createDefaultArea();
         new UserCallBuilder(getByUri).setUriInPath(createdUri.toString()).buildAdmin().executeCallAndReturnURI();
     }
 
     @Test
     public void testUpdate() throws Exception {
         // create the area
-        URI createdUri = createDefaultArea(false);
+        URI createdUri = createDefaultArea();
 
         // update the area
         AreaCreationDTO areaDTO = getCreationDTO(false);
@@ -138,11 +144,12 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testDelete() throws Exception {
         // create object and check if URI exists
-        URI uri = createDefaultArea(false);
+        URI uri = createDefaultArea();
 
         // delete object and check if URI no longer exists
         UserCall deleteCall = new UserCallBuilder(delete).setUriInPath(uri.toString()).buildAdmin();
-        deleteCall.executeCall();
+        URI uriDelete = deleteCall.executeCallAndReturnURI();
+        assertEquals(uri, uriDelete);
 
         UserCall getCall = new UserCallBuilder(getByUri).setUriInPath(uri.toString()).buildAdmin();
         Response getResult = getCall.executeCall();
@@ -151,7 +158,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByURI() throws Exception {
-        URI uri = createDefaultArea(false);
+        URI uri = createDefaultArea();
 
         UserCall getArea = new UserCallBuilder(getByUri)
                 .setUriInPath(uri.toString())
@@ -163,7 +170,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriBadUri() throws Exception {
-        URI uri = createDefaultArea(false);
+        URI uri = createDefaultArea();
 
         // call the service with a non-existing pseudo random URI
         UserCall getArea = new UserCallBuilder(getByUri)
@@ -175,7 +182,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchIntersectsArea() throws Exception {
-        URI uri = createDefaultArea(false);
+        URI uri = createDefaultArea();
 
         UserCall getArea = new UserCallBuilder(getByUri)
                 .setUriInPath(uri.toString())
@@ -184,21 +191,17 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         }));
     }
 
-    @Test(expected = Exception.class) // TODO : WHY?
+    @Test
     public void testSearchIntersectsAreaErrorGeometry() throws Exception {
-        URI uri = createDefaultArea(true); // TODO : WHY?
-
-        UserCall getArea = new UserCallBuilder(getByUri).setUriInPath(uri.toString()).buildAdmin();
-        Result<SingleObjectResponse<AreaGetDTO>> getResult = getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
-        });
-        assertNotNull(getResult.getDeserializedResponse().getResult());
+        Response responseFail = createDefaultAreaWithError();
+        assertEquals(responseFail.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test
     public void testExportAreasAsShpandGeoJson() throws Exception {
         // This test is kind of weird. Ask Alexia what it does
         //Create one Area
-        URI uri = createDefaultArea(false);
+        URI uri = createDefaultArea();
         // Especially here. Why add params to a model of an Area whose URI already exists?
         AreaModel areaModel = new AreaModel();
 

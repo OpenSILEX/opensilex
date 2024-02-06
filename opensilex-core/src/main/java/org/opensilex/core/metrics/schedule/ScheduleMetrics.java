@@ -75,7 +75,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     try {
                         systemTimeUnit = TimeUnit.valueOf(systemMetricsTimeUnit);
                     } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Bad experiment time unit set" + systemTimeUnit);
+                        throw new RuntimeException("Bad experiment time unit set" + null);
                     }
                     MetricDAO metricsDao = new MetricDAO(sparql, nosql);
                     scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
@@ -106,7 +106,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private class CreateExperimentSummaries implements Runnable {
+    private static class CreateExperimentSummaries implements Runnable {
 
         private final MetricDAO metricsDao;
 
@@ -128,7 +128,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private class CreateSystemSummary implements Runnable {
+    private static class CreateSystemSummary implements Runnable {
 
         private final MetricDAO metricsDao;
 

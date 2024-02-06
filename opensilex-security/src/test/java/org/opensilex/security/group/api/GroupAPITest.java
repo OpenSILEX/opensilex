@@ -103,7 +103,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     public void testGroupBasicCRUDAsAdmin() throws Exception {
         createTestEnv();
 
-        Map<String, Object> attributesMap = convertToNestedMap(getGroupGetDTO());
+        LinkedHashMap<String, Object> attributesMap = convertToNestedMap(getGroupGetDTO());
         attributesMap.values().removeAll(Collections.singleton(null));
         testBasicCRUDAsAdmin(
                 create, get, update, delete,

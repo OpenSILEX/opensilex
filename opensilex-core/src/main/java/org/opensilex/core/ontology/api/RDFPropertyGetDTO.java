@@ -2,7 +2,6 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;

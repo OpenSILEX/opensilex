@@ -528,6 +528,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         protected void checkParamsExist(Map<String, Object> params, Method serviceMethod) {
             List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
+                    .filter(parameter -> parameter.getAnnotation(QueryParam.class) != null)
                     .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
                     .collect(Collectors.toList());
             assertTrue(availableParams.containsAll(params.keySet()));
@@ -572,7 +573,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected String pathTemplate;
 
         protected MediaType callMediaType = null;
-        protected List<MediaType> responseMediaTypes = null;
+        protected List<MediaType> responseMediaTypes = new ArrayList<>();
 
         public PublicCallBuilder(ServiceDescription serviceDescription) {
             this.serviceMethod = serviceDescription.getServiceMethod();

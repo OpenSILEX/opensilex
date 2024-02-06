@@ -5,7 +5,6 @@
  */
 package org.opensilex.core.device.dal;
 
-import java.net.URI;
 import java.util.Map;
 import org.opensilex.nosql.mongodb.MongoModel;
 

@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.exception;
 
-import org.opensilex.core.data.dal.DataModel;
-
 /**
  *
  * @author Julien Bonnefont

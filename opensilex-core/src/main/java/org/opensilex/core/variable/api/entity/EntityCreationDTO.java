@@ -6,7 +6,6 @@
 
 package org.opensilex.core.variable.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.variable.api.BaseVariableCreationDTO;
 import org.opensilex.core.variable.dal.EntityModel;

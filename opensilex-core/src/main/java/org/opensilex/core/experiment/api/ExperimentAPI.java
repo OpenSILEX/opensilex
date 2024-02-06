@@ -855,7 +855,7 @@ public class ExperimentAPI {
                         String header = ids[i];
                         if (!header.equals("raw_data")) {                            
                             try {
-                                if (header == null || !URIDeserializer.validateURI(header)) {
+                                if (!URIDeserializer.validateURI(header)) {
                                     csvValidation.addInvalidHeaderURI(i, header);
                                 } else {
                                     VariableModel var = dao.get(URI.create(header));

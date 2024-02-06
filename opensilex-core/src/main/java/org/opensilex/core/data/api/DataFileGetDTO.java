@@ -7,11 +7,10 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;

@@ -13,6 +13,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.solr.client.solrj.response.RangeFacet;
 import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -497,19 +498,25 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
     }
 
-    public static boolean isDeepMapIncluded(Map<String, Object> superMap, Map<String, Object> subMap) {
+    public static boolean nonNullAttributesInclusionComparison(Object superObject, Object subObject) {
+        LinkedHashMap<String, Object> superMap = convertToNestedMap(superObject);
+        LinkedHashMap<String, Object> subMap = convertToNestedMap(subObject);
+        return isDeepMapIncluded(superMap, subMap);
+    }
+
+    public static boolean isDeepMapIncluded(LinkedHashMap<String, Object> superMap, LinkedHashMap<String, Object> subMap) {
         for (Map.Entry<String, Object> entry : subMap.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             Object correspondingValue = superMap.get(key);
 
             if (value instanceof Map && correspondingValue instanceof Map) {
-                if (!isDeepMapIncluded((Map<String, Object>) value, (Map<String, Object>) correspondingValue)) {
+                if (!isDeepMapIncluded((LinkedHashMap<String, Object>) value, (LinkedHashMap<String, Object>) correspondingValue)) {
                     return false;
                 }
             } else if (value instanceof List) {
-                for (Map v1 : (List<Map>)value) {
-                    for (Map v2 : (List<Map>)correspondingValue) {
+                for (LinkedHashMap v1 : (List<LinkedHashMap>)value) {
+                    for (LinkedHashMap v2 : (List<LinkedHashMap>)correspondingValue) {
                         if (isDeepMapIncluded(v1, v2)) {
                             return true;
                         }
@@ -522,23 +529,28 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return true;
     }
 
-    protected static Map<String, Object> convertToNestedMap(Object object) {
+    protected static LinkedHashMap<String, Object> convertToNestedMap(Object object) {
         // Convert the object to a map
-        Map<String, Object> map = mapper.convertValue(object, Map.class);
+        LinkedHashMap<String, Object> map = mapper.convertValue(object, LinkedHashMap.class);
         map.values().removeAll(Collections.singleton(null));
 
         // Recursively convert nested objects to nested maps of maps
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (
                     !(entry.getValue() instanceof String) &&
-                            !(entry.getValue() instanceof Integer)
+                            !(entry.getValue() instanceof Integer) &&
+                            !(entry.getValue() instanceof Short) &&
+                            !(entry.getValue() instanceof Long) &&
+                            !(entry.getValue() instanceof Float) &&
+                            !(entry.getValue() instanceof Double) &&
+                            !(entry.getValue() instanceof Boolean)
             ) {
                 Object nestedObject = entry.getValue();
                 if (Objects.isNull(nestedObject)) {
                     map.remove(entry.getKey());
                 } else if (nestedObject instanceof List) {
                     List<Object> nestedList = new ArrayList<>();
-                    for (Object value : (List) nestedObject) {
+                    for (Object value : (List<Object>) nestedObject) {
                         nestedList.add(convertToNestedMap(value));
                     }
                     if (nestedList.isEmpty()) {
@@ -547,7 +559,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                         entry.setValue(nestedList);
                     }
                 } else {
-                    Map<String, Object> nestedMap = convertToNestedMap(nestedObject);
+                    LinkedHashMap<String, Object> nestedMap = convertToNestedMap(nestedObject);
                     if (nestedMap.isEmpty()) {
                         map.remove(entry.getKey());
                     } else {
@@ -566,7 +578,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
             NamedResourceDTO<?> entityToPost, NamedResourceDTO<?> entityToPut,
-            Map<String, Object> attributesToCheck, TypeReference<SingleObjectResponse<T>> entityTypeReference
+            LinkedHashMap<String, Object> attributesToCheck, TypeReference<SingleObjectResponse<T>> entityTypeReference
     ) throws Exception {
         // CREATE
         UserCall createCall = new UserCallBuilder(createServiceDescription)
@@ -588,11 +600,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         updateCall.executeCallAndReturnURI();
         // Get the updated object
         SingleObjectResponse<T> readResponse = readCall.executeCallAndDeserialize(entityTypeReference).getDeserializedResponse();
-        Map<String, Object> responseAttributes = mapper.convertValue(readResponse.getResult(), Map.class);
-        // TODO : Try linkedHashMAp or other types instead of Map?
+        LinkedHashMap<String, Object> responseAttributes = mapper.convertValue(readResponse.getResult(), LinkedHashMap.class);
         // Check attributes value
-        boolean tmp = isDeepMapIncluded(responseAttributes, attributesToCheck);
-        assertTrue(tmp);
+        assertTrue(isDeepMapIncluded(responseAttributes, attributesToCheck));
 
         // DELETE
         UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
@@ -609,7 +619,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
             List<NamedResourceDTO<?>> entitiesToPost, List<NamedResourceDTO<?>> entitiesToPut,
-            List<Map<String, Object>> attributesToCheck, TypeReference<SingleObjectResponse<T>> entitiesTypeReference
+            List<LinkedHashMap<String, Object>> attributesToCheck, TypeReference<SingleObjectResponse<T>> entitiesTypeReference
     ) throws Exception {
         if (entitiesToPost.size() != entitiesToPut.size()) {
             for (int i = 0; i < entitiesToPost.size(); i++) {
@@ -664,7 +674,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         }
 
         public URI executeCallAndReturnURI() throws Exception {
-            if (Objects.equals(httpMethod, HttpMethod.PUT) || Objects.equals(httpMethod, HttpMethod.POST)) {
+            if (Objects.equals(httpMethod, HttpMethod.PUT) ||
+                    Objects.equals(httpMethod, HttpMethod.POST) ||
+                    Objects.equals(httpMethod, HttpMethod.DELETE)) {
                 Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {
                 });
                 return URI.create(response.getDeserializedResponse().getResult());

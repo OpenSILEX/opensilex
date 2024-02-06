@@ -5,7 +5,6 @@
  */
 package org.opensilex.core.variable.dal;
 
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
@@ -14,7 +13,6 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 

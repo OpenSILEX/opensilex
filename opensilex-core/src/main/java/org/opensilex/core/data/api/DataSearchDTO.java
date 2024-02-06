@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.utils.OrderBy;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

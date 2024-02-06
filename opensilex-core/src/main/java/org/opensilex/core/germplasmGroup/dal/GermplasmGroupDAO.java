@@ -29,7 +29,6 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 

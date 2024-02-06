@@ -9,14 +9,12 @@ package org.opensilex.core.provenance.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.security.user.api.UserGetDTO;
 
 /**
  * Provenance Get DTO

@@ -44,7 +44,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;

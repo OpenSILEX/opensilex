@@ -40,6 +40,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 import static org.opensilex.nosql.mongodb.service.v2.MongoLogType.*;
@@ -132,7 +133,7 @@ public class MongoDBServiceV2 extends BaseService {
         createIndexes();
     }
 
-    private void createIndexes(){
+    public void createIndexes(){
         INDEXES_BY_COLLECTION.forEach((collectionName, indexes) -> {
             MongoCollection<?> collection = db.getCollection(collectionName);
             indexes.forEach((indexKeys, indexOption) -> {
@@ -168,7 +169,7 @@ public class MongoDBServiceV2 extends BaseService {
         return mongoClient.startSession();
     }
 
-    public void readOperationWithSession(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws Exception {
+    public void withSession(ThrowingConsumer<ClientSession, Exception> operationInTrx) throws Exception {
         try (ClientSession session = startSession()) {
             operationInTrx.accept(session);
         }
@@ -178,10 +179,23 @@ public class MongoDBServiceV2 extends BaseService {
      * Execute the given operation with transaction management
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
-     * {@see @link #computeTransaction(ThrowingFunction)}
+     * @see #computeTransaction(Function)
      */
-    public void runTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) throws MongoDBTransactionException {
+    public void runTransaction(Consumer<ClientSession> operationInTrx) throws MongoDBTransactionException {
         computeTransaction(session -> {
+            operationInTrx.accept(session);
+            return null;
+        });
+    }
+
+    /**
+     * Execute the given operation with transaction management
+     *
+     * @param operationInTrx A Consumer which can execute database query by using a ClientSession
+     * @see #computeThrowingTransaction(ThrowingFunction)
+     */
+    public void runThrowingTransaction(ThrowingConsumer<ClientSession,Exception> operationInTrx) throws Exception {
+        computeThrowingTransaction(session -> {
             operationInTrx.accept(session);
             return null;
         });
@@ -192,15 +206,28 @@ public class MongoDBServiceV2 extends BaseService {
      *
      * @param operationInTrx A Consumer which can execute database query by using a ClientSession
      * @param <R>            : The type of result returned by the operation
-     * @throws MongoDBTransactionException if some errors occurs during operation application but not related to the MongoDB driver.
      *
-     * @apiNote
-     * <ul>
-     *     <li> Case were {@link MongoDBTransactionException} was throw because of the obligation with lambda to catch or rethrow a {@link RuntimeException}</li>
-     *     <li> But this Exception has no logical meaning, so you have to handle the wrapped Exception {@link MongoDBTransactionException#getInnerException()}</li>
-     * </ul>
      */
-    public <R> R computeTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws MongoDBTransactionException {
+    public <R> R computeTransaction(Function<ClientSession, R> operationInTrx){
+
+        try (ClientSession session = mongoClient.startSession()) {
+            LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+
+            // Run operation within transaction handling
+            R result = session.withTransaction(() -> operationInTrx.apply(session));
+            LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            return result;
+        }
+    }
+
+    /**
+     * Execute the given operation with transaction management and return results
+     *
+     * @param operationInTrx A Consumer which can execute database query by using a ClientSession
+     * @param <R>            : The type of result returned by the operation
+     * @throws MongoDBTransactionException if some errors occurs during operation application but not related to the MongoDB driver.
+     */
+    public <R> R computeThrowingTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws Exception {
 
         try (ClientSession session = mongoClient.startSession()) {
             LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
@@ -219,6 +246,8 @@ public class MongoDBServiceV2 extends BaseService {
             });
             LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
             return result;
+        }catch (MongoDBTransactionException e){
+            throw e.getInnerException();
         }
     }
 

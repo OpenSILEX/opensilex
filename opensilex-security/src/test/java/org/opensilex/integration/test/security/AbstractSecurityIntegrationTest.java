@@ -8,6 +8,13 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.solr.client.solrj.response.RangeFacet;
+import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
@@ -16,11 +23,16 @@ import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.authentication.api.AuthenticationAPI;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
+import org.opensilex.server.response.JsonResponse;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.ResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -28,28 +40,26 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-
+import static org.junit.Assert.assertTrue;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
 
 /**
  * @author Vincent MIGOT
  * <p>
- * Abstract class used in OpenSILEX for Secure API testing.
- * This is used for testing services that necessitate any authentication.
- * This will not include any support for direct Mongodb setup and teardown.
- * For that you should use the AbstractMongoIntegrationTest class.
+ * Abstract class used for Secure API testing
  */
 public abstract class AbstractSecurityIntegrationTest extends AbstractIntegrationTest {
 
@@ -57,19 +67,17 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
     protected static SecurityModule securityModule;
 
-    public Response searchUserResource(Map<String, Object> params, Method searchMethod, String searchPath, String userMail) throws Exception {
+    protected static final ServiceDescription authenticate;
 
-        checkSearchParamsExist(params, searchMethod);
-
-        // Execute search and return response
-        WebTarget searchTarget = appendQueryParams(target(searchPath), params);
-        appendToken(searchTarget, userMail);
-        return appendAdminToken(searchTarget).get();
-    }
-
-    public Response searchAdminResource(Map<String, Object> params, Method searchMethod, String searchPath) throws Exception {
-        registerAdminTokenIfNecessary();
-        return searchUserResource(params, searchMethod, searchPath, ADMIN_MAIL);
+    static {
+        try {
+            authenticate = new ServiceDescription(
+                    AuthenticationAPI.class.getMethod("authenticate", AuthenticationDTO.class),
+                    AuthenticationAPI.PATH + "/" + AuthenticationAPI.AUTHENTICATE_PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @BeforeClass
@@ -455,16 +463,28 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
 
-    protected <T> List<T> getParsedAdminSearchResults(String searchPath, Map<String, Object> searchCriteria, Method searchMethod, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        return getParsedUserSearchResults(searchPath, searchCriteria, searchMethod, typeReference, ADMIN_MAIL);
+    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        registerAdminTokenIfNecessary();
+        return getSearchResults(searchPath, page, pageSize, searchCriteria, typeReference, ADMIN_MAIL);
     }
 
-    protected <T> List<T> getParsedUserSearchResults(String searchPath, Map<String, Object> searchCriteria, Method searchMethod, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
-
-        Response getResult = searchUserResource(searchCriteria, searchMethod, searchPath, userMail);
+    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+        if (searchCriteria == null) {
+            searchCriteria = new HashMap<>();
+        }
+        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriteria);
+        final Response getResult = appendToken(searchTarget, userMail).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         return readResponse(getResult, typeReference).getResult();
+    }
+
+    protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        return this.getSearchResultsAsAdmin(searchPath, 0, 20, searchCriteria, typeReference);
+    }
+
+    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+        return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
     }
 
     protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {
@@ -476,5 +496,298 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
+    }
+
+    public static boolean nonNullAttributesInclusionComparison(Object superObject, Object subObject) {
+        LinkedHashMap<String, Object> superMap = convertToNestedMap(superObject);
+        LinkedHashMap<String, Object> subMap = convertToNestedMap(subObject);
+        return isDeepMapIncluded(superMap, subMap);
+    }
+
+    public static boolean isDeepMapIncluded(LinkedHashMap<String, Object> superMap, LinkedHashMap<String, Object> subMap) {
+        for (Map.Entry<String, Object> entry : subMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            Object correspondingValue = superMap.get(key);
+
+            if (value instanceof Map && correspondingValue instanceof Map) {
+                if (!isDeepMapIncluded((LinkedHashMap<String, Object>) value, (LinkedHashMap<String, Object>) correspondingValue)) {
+                    return false;
+                }
+            } else if (value instanceof List) {
+                for (LinkedHashMap v1 : (List<LinkedHashMap>)value) {
+                    for (LinkedHashMap v2 : (List<LinkedHashMap>)correspondingValue) {
+                        if (isDeepMapIncluded(v1, v2)) {
+                            return true;
+                        }
+                    }
+                }
+            } else if (!superMap.containsKey(key) || !superMap.get(key).equals(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static LinkedHashMap<String, Object> convertToNestedMap(Object object) {
+        // Convert the object to a map
+        LinkedHashMap<String, Object> map = mapper.convertValue(object, LinkedHashMap.class);
+        map.values().removeAll(Collections.singleton(null));
+
+        // Recursively convert nested objects to nested maps of maps
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (
+                    !(entry.getValue() instanceof String) &&
+                            !(entry.getValue() instanceof Integer) &&
+                            !(entry.getValue() instanceof Short) &&
+                            !(entry.getValue() instanceof Long) &&
+                            !(entry.getValue() instanceof Float) &&
+                            !(entry.getValue() instanceof Double) &&
+                            !(entry.getValue() instanceof Boolean)
+            ) {
+                Object nestedObject = entry.getValue();
+                if (Objects.isNull(nestedObject)) {
+                    map.remove(entry.getKey());
+                } else if (nestedObject instanceof List) {
+                    List<Object> nestedList = new ArrayList<>();
+                    for (Object value : (List<Object>) nestedObject) {
+                        nestedList.add(convertToNestedMap(value));
+                    }
+                    if (nestedList.isEmpty()) {
+                        map.remove(entry.getKey());
+                    } else {
+                        entry.setValue(nestedList);
+                    }
+                } else {
+                    LinkedHashMap<String, Object> nestedMap = convertToNestedMap(nestedObject);
+                    if (nestedMap.isEmpty()) {
+                        map.remove(entry.getKey());
+                    } else {
+                        entry.setValue(nestedMap);
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
+    protected <T> void testBasicCRUDAsAdmin(
+            ServiceDescription createServiceDescription,
+            ServiceDescription readServiceDescription,
+            ServiceDescription updateServiceDescription,
+            ServiceDescription deleteServiceDescription,
+            NamedResourceDTO<?> entityToPost, NamedResourceDTO<?> entityToPut,
+            LinkedHashMap<String, Object> attributesToCheck, TypeReference<SingleObjectResponse<T>> entityTypeReference
+    ) throws Exception {
+        // CREATE
+        UserCall createCall = new UserCallBuilder(createServiceDescription)
+                .setBody(entityToPost)
+                .buildAdmin();
+        URI createdUri = createCall.executeCallAndReturnURI();
+
+        // READ
+        UserCall readCall = new UserCallBuilder(readServiceDescription)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin();
+        readCall.executeCallAndReturnURI();
+
+        // UPDATE
+        entityToPut.setUri(createdUri);
+        UserCall updateCall = new UserCallBuilder(updateServiceDescription)
+                .setBody(entityToPut)
+                .buildAdmin();
+        updateCall.executeCallAndReturnURI();
+        // Get the updated object
+        SingleObjectResponse<T> readResponse = readCall.executeCallAndDeserialize(entityTypeReference).getDeserializedResponse();
+        LinkedHashMap<String, Object> responseAttributes = mapper.convertValue(readResponse.getResult(), LinkedHashMap.class);
+        // Check attributes value
+        assertTrue(isDeepMapIncluded(responseAttributes, attributesToCheck));
+
+        // DELETE
+        UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin();
+        deleteCall.executeCallAndReturnURI();
+        Response result = readCall.executeCall();
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), result.getStatus());
+    }
+
+    protected <T> void testBasicCRUDListAsAdmin(
+            ServiceDescription createServiceDescription,
+            ServiceDescription readServiceDescription,
+            ServiceDescription updateServiceDescription,
+            ServiceDescription deleteServiceDescription,
+            List<NamedResourceDTO<?>> entitiesToPost, List<NamedResourceDTO<?>> entitiesToPut,
+            List<LinkedHashMap<String, Object>> attributesToCheck, TypeReference<SingleObjectResponse<T>> entitiesTypeReference
+    ) throws Exception {
+        if (entitiesToPost.size() != entitiesToPut.size()) {
+            for (int i = 0; i < entitiesToPost.size(); i++) {
+                testBasicCRUDAsAdmin(
+                        createServiceDescription,
+                        readServiceDescription,
+                        updateServiceDescription,
+                        deleteServiceDescription,
+                        entitiesToPost.get(i), entitiesToPut.get(i),
+                        attributesToCheck.get(i), entitiesTypeReference
+                );
+            }
+        }
+    }
+
+    public class UserCall extends PublicCall {
+
+        private final String userEmail;
+        private final String userPassword;
+
+        /**
+         * Constructs a new UserCall with the specified service method, path template and HTTP method.
+         *
+         * @param serviceMethod the method of the webservice (e.g. ExperimentAPI.searchExperiments for the experiment
+         *                      webservice. -> use ExperimentAPI.class.getMethod())
+         * @param pathTemplate  the path template for the webservice. Can be a regular path or a template that contains
+         *                      parts to replace (e.g. /core/experiments/{uri}. {uri} is a placeholder to be replaced by
+         *                      the actual resource's URI)
+         */
+        public UserCall(Map<String, Object> params, Object body, Map<String, Object> pathTemplateParams,
+                        Method serviceMethod, String pathTemplate, String userEmail, MediaType callMediaType,
+                        List<MediaType> responseMediaTypes, String userPassword) {
+            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
+            this.userEmail = userEmail;
+            this.userPassword = userPassword;
+            this.httpMethod = findHttpMethod(serviceMethod);
+        }
+
+        @Override
+        public Response executeCall() throws Exception {
+            WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
+            authenticateAndRegisterIfNecessary(userEmail, userPassword);
+            appendToken(target, userEmail);
+            return makeCorrectCall(target, httpMethod, body, callMediaType, responseMediaTypes);
+        }
+
+        @Override
+        public <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
+            Response response = executeCall();
+            assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+            return new Result<>(readResponse(response, typeReference, serviceMethod), response);
+        }
+
+        public URI executeCallAndReturnURI() throws Exception {
+            if (Objects.equals(httpMethod, HttpMethod.PUT) ||
+                    Objects.equals(httpMethod, HttpMethod.POST) ||
+                    Objects.equals(httpMethod, HttpMethod.DELETE)) {
+                Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {
+                });
+                return URI.create(response.getDeserializedResponse().getResult());
+            } else {
+                Result<SPARQLResourceModel> readResponse = executeCallAndDeserialize(new TypeReference<SPARQLResourceModel>() {
+                });
+                return readResponse.getDeserializedResponse().getUri();
+            }
+        }
+
+        @Override
+        protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body, MediaType callMediaType, List<MediaType> responseMediaTypes) {
+
+            Invocation.Builder requestBuilder;
+            if (Objects.isNull(callMediaType)) {
+                requestBuilder = target.request(MediaType.APPLICATION_JSON);
+            } else {
+                requestBuilder = target.request(callMediaType);
+            }
+
+            if (!(responseMediaTypes == null) && !responseMediaTypes.isEmpty()) {
+                for (MediaType mediaType : responseMediaTypes) {
+                    requestBuilder = requestBuilder.accept(mediaType);
+                }
+            }
+
+            requestBuilder = requestBuilder.header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userEmail).getToken());
+
+            if(Objects.equals(httpMethod, HttpMethod.GET)) {
+                return requestBuilder.get();
+            } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
+                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
+                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+            } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
+                return requestBuilder.delete();
+            } else {
+                throw new UnsupportedOperationException("HTTP method not supported");
+            }
+        }
+
+        protected void authenticateAndRegisterIfNecessary(String userEmail, String userPassword) throws Exception {
+
+            if (!tokenMap.containsKey(userEmail)){
+                AuthenticationDTO authDto = new AuthenticationDTO();
+                authDto.setIdentifier(userEmail);
+                authDto.setPassword(userPassword);
+
+                PublicCall tokenCall = new PublicCallBuilder<>(authenticate).setBody(authDto).build();
+
+                Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
+                        new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
+                        }
+                );
+                TokenGetDTO userToken = postResult.getDeserializedResponse().getResult();
+                tokenMap.put(userEmail, userToken);
+            }
+        }
+    }
+
+    public class UserCallBuilder extends PublicCallBuilder<UserCallBuilder> {
+
+        private String userEmail;
+        private String userPassword;
+
+        public UserCallBuilder setUserEmail(String userEmail) {
+            this.userEmail = userEmail;
+            return self();
+        }
+
+        public UserCallBuilder setUserPassword(String userPassword) {
+            this.userPassword = userPassword;
+            return self();
+        }
+
+        public UserCallBuilder(ServiceDescription serviceDescription) {
+            super(serviceDescription);
+        }
+
+        @Override
+        protected UserCallBuilder self() {
+            return this;
+        }
+
+        @Override
+        public UserCall build() {
+            return new UserCall(
+                    params,
+                    body,
+                    pathTemplateParams,
+                    serviceMethod,
+                    pathTemplate,
+                    userEmail,
+                    callMediaType,
+                    responseMediaTypes,
+                    userPassword
+            );
+        }
+
+        public UserCall buildAdmin() {
+            return new UserCall(
+                    params,
+                    body,
+                    pathTemplateParams,
+                    serviceMethod,
+                    pathTemplate,
+                    DEFAULT_SUPER_ADMIN_EMAIL,
+                    callMediaType,
+                    responseMediaTypes,
+                    DEFAULT_SUPER_ADMIN_PASSWORD
+            );
+        }
     }
 }

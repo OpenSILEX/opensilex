@@ -13,8 +13,6 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
@@ -30,7 +28,6 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -42,7 +39,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -132,11 +128,7 @@ public class ScientificObjectDAO {
 
     public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(ScientificObjectSearchFilter searchFilter) throws Exception {
 
-        if(!searchFilter.getRdfTypes().isEmpty() || !searchFilter.getFactorLevels().isEmpty() || !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") || searchFilter.getFacility() != null) {
-            searchFilter.setOnlyFetchOsWithNoParent(false);
-        } else {
-            searchFilter.setOnlyFetchOsWithNoParent(true);
-        }
+        searchFilter.setOnlyFetchOsWithNoParent(searchFilter.getRdfTypes().isEmpty() && searchFilter.getFactorLevels().isEmpty() && (searchFilter.getPattern().isEmpty() || searchFilter.getPattern().equals(".*")) && searchFilter.getFacility() == null);
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
         if(results.getList().isEmpty()){
@@ -838,7 +830,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
         Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
@@ -932,7 +924,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 

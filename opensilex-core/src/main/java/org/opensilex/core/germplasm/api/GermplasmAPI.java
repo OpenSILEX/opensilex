@@ -742,7 +742,7 @@ public class GermplasmAPI {
 
         // check that fromAccession, fromVariety or fromSpecies are given
         boolean missingLink = true;
-        String message = new String();
+        String message = "";
         if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
             missingLink = false;
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Variety.getURI())) {
@@ -848,11 +848,7 @@ public class GermplasmAPI {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
             GermplasmModel variety = dao.get(varietyURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), speciesURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
+            return SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), speciesURI.toString());
         } catch (Exception e) {
             return true; //the variety doesn't exist in the database yet
         }
@@ -866,11 +862,7 @@ public class GermplasmAPI {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
             GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), speciesURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
+            return SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), speciesURI.toString());
         } catch (Exception e) {
             return true; //the accession doesn't exist in the database yet
         }
@@ -884,11 +876,7 @@ public class GermplasmAPI {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         try {
             GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), varietyURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
+            return SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), varietyURI.toString());
         } catch (Exception e) {
             return true; //the accession doesn't exist in the database yet
         }
@@ -932,10 +920,7 @@ public class GermplasmAPI {
             if (!SPARQLDeserializers.compareURIs(this.species.toString(), other.species.toString())) {
                 return false;
             }
-            if (!SPARQLDeserializers.compareURIs(this.variety.toString(), other.variety.toString())) {
-                return false;
-            }
-            return true;
+            return SPARQLDeserializers.compareURIs(this.variety.toString(), other.variety.toString());
         }
 
     }
@@ -967,10 +952,7 @@ public class GermplasmAPI {
                 return false;
             }
             final KeyType other = (KeyType) obj;
-            if (!SPARQLDeserializers.compareURIs(this.type.toString(), other.type.toString())) {
-                return false;
-            }
-            return true;
+            return SPARQLDeserializers.compareURIs(this.type.toString(), other.type.toString());
         }
     }
 
@@ -1010,10 +992,7 @@ public class GermplasmAPI {
                 return false;
             }
             final KeyGermplasm other = (KeyGermplasm) obj;
-            if (!SPARQLDeserializers.compareURIs(this.uri.toString(), other.uri.toString())) {
-                return false;
-            }
-            return true;
+            return SPARQLDeserializers.compareURIs(this.uri.toString(), other.uri.toString());
         }
     }
 

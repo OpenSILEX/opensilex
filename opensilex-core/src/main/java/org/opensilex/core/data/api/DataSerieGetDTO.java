@@ -8,7 +8,6 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.data.dal.DataProvenanceModel;
 
 import javax.validation.Valid;
 import java.util.List;

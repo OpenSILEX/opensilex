@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;

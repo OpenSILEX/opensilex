@@ -7,11 +7,10 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -42,7 +41,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
     protected UserGetDTO publisher;
 
     @JsonProperty("issued")
-    protected Instant publicationDate;
+    protected OffsetDateTime publicationDate;
 
     public UserGetDTO getPublisher() {
         return publisher;
@@ -52,11 +51,11 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         this.publisher = publisher;
     }
 
-    public Instant getPublicationDate() {
+    public OffsetDateTime getPublicationDate() {
         return publicationDate;
     }
 
-    public void setPublicationDate(Instant publicationDate) {
+    public void setPublicationDate(OffsetDateTime publicationDate) {
         this.publicationDate = publicationDate;
     }
 
@@ -67,7 +66,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
             this.setDate(dtf.format(odt));
         } else {
             LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();           
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
             this.setDate(dtf.format(date));
         }        
     }
@@ -83,7 +82,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setArchive(model.getArchive());
         dto.setFilename(model.getFilename());
         if (Objects.nonNull(model.getPublicationDate())) {
-            dto.setPublicationDate(model.getPublicationDate());
+            dto.setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }
 
         return dto;

@@ -97,7 +97,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
     public void readFile() throws Exception {
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -293,7 +293,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
                 // nom-empty value and unknown property -> error
                 if (!nullOrEmpty) {
-                    CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, "unknown property " + property.toString() + " for type " + model.getType());
+                    CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, "unknown property " + property + " for type " + model.getType());
                     validation.addInvalidValueError(csvCell);
                 }
 

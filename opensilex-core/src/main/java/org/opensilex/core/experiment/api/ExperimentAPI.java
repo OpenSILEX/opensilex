@@ -643,7 +643,7 @@ public class ExperimentAPI {
         if (provenanceUri != null) {
             try {
                 provDAO.get(provenanceUri);
-                provenancesArrayList = new ArrayList<>(Arrays.asList(provenanceUri));
+                provenancesArrayList = new ArrayList<>(List.of(provenanceUri));
             } catch (NoSQLInvalidURIException e) {
                 throw new NotFoundURIException("Provenance URI not found: ", provenanceUri);
 
@@ -671,7 +671,7 @@ public class ExperimentAPI {
         Instant start = Instant.now();
         List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, null, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug(resultList.size() + " observations retrieved " + Duration.between(start, data).toMillis() + " milliseconds elapsed");
 
         Response prepareCSVExport = null;
 
@@ -683,7 +683,7 @@ public class ExperimentAPI {
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Export data " + timeElapsed + " milliseconds elapsed");
 
         return prepareCSVExport;
     }
@@ -764,7 +764,7 @@ public class ExperimentAPI {
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
+            LOGGER.debug("Insertion " + timeElapsed + " milliseconds elapsed");
 
             validation.setValidCSV(!validation.hasErrors());
         }
@@ -812,7 +812,7 @@ public class ExperimentAPI {
         validation = validateWholeCSV(xpUri, provenanceModel, file, currentUser);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
+        LOGGER.debug("Validation " + timeElapsed + " milliseconds elapsed");
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -835,7 +835,7 @@ public class ExperimentAPI {
 
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -855,7 +855,7 @@ public class ExperimentAPI {
                         String header = ids[i];
                         if (!header.equals("raw_data")) {                            
                             try {
-                                if (header == null || !URIDeserializer.validateURI(header)) {
+                                if (!URIDeserializer.validateURI(header)) {
                                     csvValidation.addInvalidHeaderURI(i, header);
                                 } else {
                                     VariableModel var = dao.get(URI.create(header));
@@ -929,7 +929,7 @@ public class ExperimentAPI {
             List<String> scientificObjectsNotInXp, 
             HashMap<URI, URI> mapVariableUriDataType, 
             List<ImportDataIndex> duplicateDataByIndex
-    ) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, Exception {
+    ) throws Exception {
 
         boolean validRow = true;
         ScientificObjectModel object = null;

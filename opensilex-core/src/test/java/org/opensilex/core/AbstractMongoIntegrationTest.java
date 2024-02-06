@@ -47,7 +47,7 @@ public abstract class AbstractMongoIntegrationTest extends AbstractSecurityInteg
 
     private static MongodExecutable mongoExec;
     private static MongodProcess mongod;
-    private static int replicaCount = 0;
+    private static final int replicaCount = 0;
 
     public static final int MONGO_PORT = 28018;
     public static final String MONGO_DATABASE = "admin";

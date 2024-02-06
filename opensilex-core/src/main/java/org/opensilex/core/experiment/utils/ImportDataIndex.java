@@ -105,10 +105,7 @@ public class ImportDataIndex {
         if (!Objects.equals(this.objectUri, other.objectUri)) {
             return false;
         }
-        if (!Objects.equals(this.deviceUri, other.deviceUri)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.deviceUri, other.deviceUri);
     }
 
 

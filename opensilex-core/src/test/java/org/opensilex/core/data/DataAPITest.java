@@ -31,7 +31,6 @@ import org.apache.jena.vocabulary.XSD;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,10 +44,7 @@ import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
@@ -77,7 +73,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 
-    private ProvenanceAPITest provAPI = new ProvenanceAPITest();
+    private final ProvenanceAPITest provAPI = new ProvenanceAPITest();
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -140,7 +136,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         //create experiment
         ExperimentAPITest expAPI = new ExperimentAPITest();
-        Response postResultExp = getJsonPostResponseAsAdmin(target(expAPI.createPath), expAPI.getCreationDTO());
+        Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         List<URI> experiments = new ArrayList<>();
         experiments.add(extractUriFromResponse(postResultExp));
         
@@ -221,7 +217,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provenanceImportDatetimeDatatypeError = createOneProvenance("Import test : date with datatype errors");
     }
     
-    public DataCreationDTO getCreationDataDTO(String date) throws URISyntaxException, Exception {
+    public DataCreationDTO getCreationDataDTO(String date) throws Exception {
 
         DataCreationDTO dataDTO = new DataCreationDTO();
         
@@ -615,7 +611,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(AnnotationModel.class);
+        return List.of(AnnotationModel.class);
     }
 
 }

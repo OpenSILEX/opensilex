@@ -333,12 +333,11 @@ public class ExperimentDAO {
 
     public Set<URI> getUserExperiments(AccountModel user) throws Exception {
         String lang = user.getLanguage();
-        Set<URI> userExperiments = new HashSet<>();
         List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
             appendUserExperimentsFilter(select, user);
         });
 
-        userExperiments.addAll(xps);
+        Set<URI> userExperiments = new HashSet<>(xps);
 
         return userExperiments;
     }
@@ -346,13 +345,12 @@ public class ExperimentDAO {
     /**
      * Get only running experiments available for a selected user
      * @param user current user
-     * @return List of current experiment that are not ended
+     * @return Set of current experiment that are not ended
      * @throws Exception 
      */
     public Set<URI> getRunningUserExperiments(AccountModel user) throws Exception {
         String lang = user.getLanguage();
-        Set<URI> userExperiments = new HashSet<>(); 
-        
+
         List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
             appendUserExperimentsFilter(select, user); 
             Var uriVar = makeVar(ExperimentModel.URI_FIELD);
@@ -361,7 +359,7 @@ public class ExperimentDAO {
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(endDateTriple))); 
         });
 
-        userExperiments.addAll(xps);
+        Set<URI> userExperiments = new HashSet<>(xps);
 
         return userExperiments;
     }

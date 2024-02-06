@@ -297,11 +297,7 @@ public class DataValidateUtils {
                 throw new TimezoneException(timezone);
             }                        
         }
-                
-        if (instant == null) {
-            throw new UnableToParseDateException(date);
-        }
-    
+
         return instant;
     }
 

@@ -293,7 +293,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public void testFailWithUnknownSpecies() throws Exception {
         // create variable with an unknown species
         VariableCreationDTO dto = getCreationDto();
-        dto.setSpecies(Arrays.asList(URI.create("test:unknown_species_1")));
+        dto.setSpecies(List.of(URI.create("test:unknown_species_1")));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
@@ -327,7 +327,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // create variable with variety -> should fail, since variable expect species, not variety
         VariableCreationDTO dto = getCreationDto();
-        dto.setSpecies(Arrays.asList(variety.getUri()));
+        dto.setSpecies(Collections.singletonList(variety.getUri()));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
@@ -350,7 +350,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // run a search query with species filter
         Map<String, Object> searchParams = new HashMap<>();
-        searchParams.put("species", Arrays.asList(GERMPLASM_URI_1));
+        searchParams.put("species", Collections.singletonList(GERMPLASM_URI_1));
 
         // convert returned JSON into dtos
         List<VariableGetDTO> results = getSearchResultsAsAdmin(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
@@ -371,7 +371,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // ensure that no variables is returned when using a species not linked to any variable
         searchParams = new HashMap<>();
-        searchParams.put("species", Arrays.asList("test:unknown_species_in_search"));
+        searchParams.put("species", List.of("test:unknown_species_in_search"));
         List<VariableGetDTO> noVariables = getSearchResultsAsAdmin(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
         });
         assertTrue(noVariables.isEmpty());

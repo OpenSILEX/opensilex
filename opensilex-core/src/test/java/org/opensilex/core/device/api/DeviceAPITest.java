@@ -27,7 +27,6 @@ import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -66,7 +65,6 @@ import java.util.function.BiPredicate;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author rcolin
@@ -366,7 +364,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     private MoveModel createMove(URI device, FacilityModel fromFacility, FacilityModel toFacility, String end) throws Exception {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
-        moveModel.setTargets(Arrays.asList(device));
+        moveModel.setTargets(Collections.singletonList(device));
         moveModel.setFrom(fromFacility);
         moveModel.setTo(toFacility);
         moveModel.setIsInstant(true);

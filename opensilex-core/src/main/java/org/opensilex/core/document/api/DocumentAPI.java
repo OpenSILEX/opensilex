@@ -129,11 +129,7 @@ public class DocumentAPI {
                     ).getResponse();
                 }
 
-                if(Boolean.toString(docDto.getDeprecated()) == null){
-                    documentModel.setDeprecated("false");
-                }
-
-                boolean isType = documentDAO.isDocumentType(docDto.getType()); 
+                boolean isType = documentDAO.isDocumentType(docDto.getType());
                 if (!isType) {
                     // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
                     return new ErrorResponse(

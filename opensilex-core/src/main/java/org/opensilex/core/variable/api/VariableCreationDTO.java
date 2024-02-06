@@ -248,7 +248,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
                 SpeciesModel speciesModel = new SpeciesModel();
                 speciesModel.setUri(uri);
                 speciesModelList.add(speciesModel);
-            };
+            }
             model.setSpecies(speciesModelList);
 
         }

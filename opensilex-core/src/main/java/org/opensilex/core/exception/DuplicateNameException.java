@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.exception;
 
-import java.net.URI;
-
 /**
  *
  * @author Alice Boizet

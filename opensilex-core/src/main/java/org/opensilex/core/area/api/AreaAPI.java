@@ -34,7 +34,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -138,7 +137,7 @@ public class AreaAPI {
                 }
                 else{
                     //Create an event with the rdfType from event
-                    areaDTO.event.setTargets(Arrays.asList(areaURI));
+                    areaDTO.event.setTargets(Collections.singletonList(areaURI));
                     EventModel eventModel = areaDTO.event.toModel();
                     eventModel.setPublisher(currentUser.getUri());
                     eventDAO.create(eventModel);
@@ -231,7 +230,7 @@ public class AreaAPI {
                     return new ErrorResponse(
                             Response.Status.UNAUTHORIZED,
                             "Number of associated events",
-                            "More than 1 event associated to this area : " + areaURI.toString()
+                            "More than 1 event associated to this area : " + areaURI
                     ).getResponse();
             }
         } else {
@@ -293,7 +292,7 @@ public class AreaAPI {
                  switch (eventList.getList().size()){
                      case 1:
                          areaDTO.event.setUri(eventList.getList().get(0).getUri());
-                         areaDTO.event.setTargets(Arrays.asList(areaURI));
+                         areaDTO.event.setTargets(Collections.singletonList(areaURI));
                          eventDAO.update(areaDTO.event.toModel());
                          break;
                     case 0: throw new IllegalArgumentException("No event to update for this area : " + areaURI);
@@ -566,7 +565,7 @@ public class AreaAPI {
         Map<String, byte[]> result = shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
 
         return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + result.entrySet().stream().findFirst().get().getValue() + "\"")
+                .header("Content-Disposition", "attachment; filename=\"" + Arrays.toString(result.entrySet().stream().findFirst().get().getValue()) + "\"")
                 .build();
     }
 }

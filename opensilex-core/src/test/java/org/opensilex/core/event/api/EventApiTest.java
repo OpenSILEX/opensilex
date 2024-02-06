@@ -10,7 +10,6 @@ package org.opensilex.core.event.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.After;
@@ -75,7 +74,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
         SPARQLService sparql = getSparqlService();
         Node facilityGraph = sparql.getDefaultGraph(FacilityModel.class);
-        sparql.create(facilityGraph, Arrays.asList(facilityA));
+        sparql.create(facilityGraph, Collections.singletonList(facilityA));
 
         so1 = new ScientificObjectModel();
         so1.setName("so1");
@@ -271,7 +270,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
     public void testCreateWithRelationsWithUnknownTarget() throws Exception {
 
         EventCreationDTO dto = getCreationDto();
-        dto.setTargets(Arrays.asList(new URI("oeev:unknown_target")));
+        dto.setTargets(List.of(new URI("oeev:unknown_target")));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath),Collections.singletonList(dto));
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -358,7 +357,6 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         dto.setDescription("new description");
         postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(dto));
         URI uri2 = extractUriListFromPaginatedListResponse(postResult).get(0);
-        ;
 
         results = getSearchResultsAsAdmin(searchPath, new HashMap<>(), new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
@@ -589,7 +587,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(EventModel.class);
+        return List.of(EventModel.class);
     }
 
 }

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataFileModel;

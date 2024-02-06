@@ -31,7 +31,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -39,7 +38,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -281,16 +279,12 @@ public class SharedResourceInstanceService {
     }
 
     public <T> T getByURI(String path, URI uri, Class<T> type) {
-        try {
-            WebTarget target = httpClient.target(config.apiUrl())
-                    .path(path)
-                    .path(URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.toString()));
+        WebTarget target = httpClient.target(config.apiUrl())
+                .path(path)
+                .path(URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8));
 
-            SingleObjectResponse<T> response = get(target, Collections.emptyMap(), genericType(SingleObjectResponse.class, javaType(type)), true);
-            return response.getResult();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        SingleObjectResponse<T> response = get(target, Collections.emptyMap(), genericType(SingleObjectResponse.class, javaType(type)), true);
+        return response.getResult();
     }
 
     public <T> ListWithPagination<T> getListByURI(String path, String uriParam, Collection<URI> uriCollection, Class<T> type) {

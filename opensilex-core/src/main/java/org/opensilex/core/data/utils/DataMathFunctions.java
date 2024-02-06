@@ -1,6 +1,5 @@
 package org.opensilex.core.data.utils;
 
-import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.dal.DataComputedModel;
 
 import java.time.Instant;

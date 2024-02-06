@@ -35,7 +35,6 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -417,7 +416,7 @@ public class EventAPI {
             models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 
-            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {

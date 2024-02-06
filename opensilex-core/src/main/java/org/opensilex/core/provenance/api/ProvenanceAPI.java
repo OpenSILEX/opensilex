@@ -371,10 +371,8 @@ public class ProvenanceAPI {
 
         checkAgentRdfTypeAndSortThemIntoDeviceAndOperator(agentModels, devices, operators);
 
-        Set<URI> notAgentUris = new HashSet<>();
-
         Collection<URI> devicesUris = devices.stream().map(AgentModel::getUri).collect(Collectors.toList());
-        notAgentUris.addAll(sparql.getExistingUris(DeviceModel.class, devicesUris, false));
+        Set<URI> notAgentUris = new HashSet<>(sparql.getExistingUris(DeviceModel.class, devicesUris, false));
 
         Collection<URI> operatorsUris = operators.stream().map(AgentModel::getUri).collect(Collectors.toList());
         notAgentUris.addAll(sparql.getExistingUris(PersonModel.class, operatorsUris, false));

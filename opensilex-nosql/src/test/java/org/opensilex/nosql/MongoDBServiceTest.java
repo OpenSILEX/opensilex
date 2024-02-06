@@ -15,6 +15,8 @@ import static org.opensilex.nosql.EmbedMongoClient.MONGO_PORT;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 import java.io.IOException;
@@ -27,13 +29,15 @@ import java.net.Socket;
 public abstract class MongoDBServiceTest extends AbstractUnitTest {
 
     protected static EmbedMongoClient embedMongoClient;
-    protected static MongoDBServiceV2 mongoDBServiceV2;
+    protected static MongoDBServiceV2 mongoDBv2;
+    protected static SPARQLService sparql;
 
     @BeforeClass
     public static void setUp(){
         try{
             embedMongoClient = EmbedMongoClient.getInstance();
-            mongoDBServiceV2 = getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+            mongoDBv2 = getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+            sparql = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         }catch (IOException | InterruptedException e){
             throw new RuntimeException(e);
         }
@@ -53,6 +57,8 @@ public abstract class MongoDBServiceTest extends AbstractUnitTest {
 
     @Test
     public void testGetService(){
-        assertNotNull(mongoDBServiceV2);
+        assertNotNull(mongoDBv2);
     }
+
+
 }

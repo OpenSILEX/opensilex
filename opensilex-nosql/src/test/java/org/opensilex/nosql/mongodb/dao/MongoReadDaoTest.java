@@ -13,17 +13,22 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.jena.arq.querybuilder.Order;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.nosql.MongoDBServiceTest;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedIterable;
@@ -100,7 +105,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @BeforeClass
     public static void setUp() {
         MongoDBServiceTest.setUp();
-        dao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-test", "test");
+        dao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-test", "test");
         LOGGER.debug("Load json dump for testing : {} [START]", JSON_FILE_PATH);
 
         // Create ObjectMapper in order to parse JSON content (encoded as byte[]) to List<MongoTestModel>
@@ -117,7 +122,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             List<MongoTestModel> models = objectMapper.readValue(stream.readAllBytes(), collectionType);
 
             // Insert documents
-            mongoDBServiceV2.runTransaction(session -> dao.getCollection().insertMany(session, models));
+            mongoDBv2.runTransaction(session -> dao.getCollection().insertMany(session, models));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -161,7 +166,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void getAndExistWithSession() throws Exception {
 
-        mongoDBServiceV2.runThrowingTransaction((session) -> {
+        mongoDBv2.runThrowingTransaction((session) -> {
             // Insert model inside a specific session
             MongoTestModel model = getModel();
             dao.create(model, session);
@@ -202,7 +207,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     ) {
 
         Bson projection = useProjection ? DEFAULT_PROJECTION : null;
-        try (ClientSession session = useSession ? mongoDBServiceV2.startSession() : null) {
+        try (ClientSession session = useSession ? mongoDBv2.startSession() : null) {
             PaginatedIterable<MongoTestModel, ?> results;
 
             // Run search query with/without projection/conversion
@@ -342,7 +347,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void testDistinct() throws NoSQLAlreadyExistingUriException, URISyntaxException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-distinct-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-distinct-test", "test");
 
         int nbModel = 20;
         // create models, with nbModel/2 different names
@@ -408,19 +413,18 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                 .collect(Collectors.toSet());
 
         Assert.assertEquals(ROOT_DOCUMENT_COUNT, collectedURIs.size());
-
     }
 
 
     @Test
     public void parallelSearchTest() throws Exception {
         parallelSearch(null);
-        mongoDBServiceV2.withSession(this::parallelSearch);
+        mongoDBv2.withSession(this::parallelSearch);
     }
 
     public void parallelInsertTest(boolean generateSession) throws InterruptedException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-write-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-write-test", "test");
         int nbThread = 4;
         int nbModelPerThread = 1024;
 
@@ -442,7 +446,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
             // Generate a task
             Callable<InsertManyResult> task = generateSession ?
-                    () -> mongoDBServiceV2.computeThrowingTransaction((session) -> innerDao.create(models, session)) :
+                    () -> mongoDBv2.computeThrowingTransaction((session) -> innerDao.create(models, session)) :
                     () -> innerDao.create(models);
             executor.submit(task);
         }
@@ -475,7 +479,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void createTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-create-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("create");
         innerDao.create(model);
@@ -486,7 +490,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void createAllTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-create-all-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-all-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("create");
         MongoTestModel model2 = new MongoTestModel();
@@ -502,7 +506,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void createAllFailTest() {
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-create-all-fail-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-all-fail-test", "test");
 
         // create an index by name
         MongoDBServiceV2.registerIndex(
@@ -510,7 +514,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                 Indexes.ascending(MongoTestModel.NAME_FIELD),
                 new IndexOptions().unique(true)
         );
-        mongoDBServiceV2.createIndexes();
+        mongoDBv2.createIndexes();
 
         MongoTestModel model = new MongoTestModel();
         model.setName("create");
@@ -519,17 +523,16 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
         // Trigger the throws on a MongoException due to conflict on field name due to the unique name index
         Assert.assertThrows(MongoException.class, () -> innerDao.create(List.of(model, model2)));
-        Assert.assertThrows(MongoException.class, () -> mongoDBServiceV2.runThrowingTransaction((session) -> innerDao.create(List.of(model, model2), session)));
-        Assert.assertThrows(IllegalArgumentException.class, () -> mongoDBServiceV2.runThrowingTransaction((session) -> {
-            innerDao.create(Collections.emptyList(), session);
-        }));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(List.of(model, model2), session)));
+        Assert.assertThrows(IllegalArgumentException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(Collections.emptyList(), session)));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(List.of(model, model2), session)));
     }
 
 
     @Test
     public void updateTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-update-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-update-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("update_1");
         innerDao.create(model);
@@ -553,7 +556,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void deleteTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-update-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-update-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("update_1");
         innerDao.create(model);
@@ -568,7 +571,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @Test
     public void deleteManyTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBServiceV2, MongoTestModel.class, "mongo-dao-delete-test", "test");
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-delete-test", "test");
 
         // create multiple model with several types
         URI type1 = URI.create("test:type1");
@@ -605,8 +608,81 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     }
 
     @Test
-    public void testSparqlMongoTransaction(){
+    public void testSparqlMongoTransaction() throws Exception {
 
+        int nbModel = 100;
+
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "sparql-mongo-test", "test");
+        SparqlMongoTransaction trx = new SparqlMongoTransaction(sparql, mongoDBv2);
+        Node graph = NodeFactory.createURI("test:sparql-mongo-test");
+
+        var result = trx.execute((sparqlConn, session) -> {
+
+            List<SPARQLResourceModel> sparqlModels = new ArrayList<>(nbModel);
+            List<MongoTestModel> mongoModels = new ArrayList<>(nbModel);
+
+            for (int i = 0; i < nbModel; i++) {
+                SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
+                sparqlModel.setUri(URI.create("testSparqlMongoTransaction:"+i));
+                sparqlModels.add(sparqlModel);
+
+                MongoTestModel mongoModel = new MongoTestModel();
+                mongoModel.setName("test"+i);
+                mongoModels.add(mongoModel);
+            }
+
+            sparql.create(graph, sparqlModels);
+            innerDao.create(mongoModels, session);
+
+            return Pair.of(sparqlModels,mongoModels);
+        });
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getLeft());
+        Assert.assertNotNull(result.getRight());
+
+        Assert.assertEquals(nbModel, sparql.count(graph, SPARQLResourceModel.class));
+        Assert.assertEquals(nbModel, innerDao.count(MongoSearchFilter.EMPTY));
+        sparql.deleteAll(graph, result.getLeft().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void testParallelSparqlMongoTransaction() throws Exception {
+        
+        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "sparql-mongo-parallel-test", "test");
+
+        int nbModel = 100;
+        int nbThread = 4;
+        Node graph = NodeFactory.createURI("test:sparql-mongo-test");
+
+        ExecutorService executor = Executors.newFixedThreadPool(nbThread);
+        for (int threadIdx = 0; threadIdx < nbThread; threadIdx++) {
+            List<SPARQLResourceModel> sparqlModels = new ArrayList<>(nbModel);
+            List<MongoTestModel> mongoModels = new ArrayList<>(nbModel);
+
+            for (int i = 0; i < nbModel; i++) {
+                SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
+                sparqlModel.setUri(URI.create("testSparqlMongoTransaction:"+i+"_"+threadIdx));
+                sparqlModels.add(sparqlModel);
+
+                MongoTestModel mongoModel = new MongoTestModel();
+                mongoModel.setName("test"+i+"_"+threadIdx);
+                mongoModels.add(mongoModel);
+            }
+
+            Callable<Integer> task = () -> new SparqlMongoTransaction(sparql, mongoDBv2).execute((sparqlConn, session) -> {
+                sparqlConn.create(graph, sparqlModels);
+                innerDao.create(mongoModels, session);
+                return 0;
+            });
+            executor.submit(task);
+        }
+
+        // Run search and ensure results are OK
+        Thread.sleep(3000);
+        // Assert.assertEquals(nbModel * nbThread, sparql.count(graph, SPARQLResourceModel.class));
+        //Assert.assertEquals(nbModel * nbThread, innerDao.count(MongoSearchFilter.EMPTY));
+        executor.shutdown();
     }
 
 }

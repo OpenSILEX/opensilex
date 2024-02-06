@@ -7,6 +7,8 @@ import java.net.URI;
 
 public class MongoSearchFilter extends SearchFilter {
 
+    public static final MongoSearchFilter EMPTY = new MongoSearchFilter();
+
     URI uri;
 
     boolean logicalAnd;

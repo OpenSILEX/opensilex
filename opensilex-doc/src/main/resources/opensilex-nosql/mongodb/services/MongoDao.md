@@ -23,25 +23,13 @@ tags:
 * [Definitions](#definitions)
 * [Analysis](#analysis)
   * [Non-functional requirements](#non-functional-requirements)
-    * [Performance](#performance)
-    * [Reliability](#reliability)
+    * [Performance and reliability](#performance-and-reliability)
+      * [SLA (service-level-agreement)](#sla-service-level-agreement)
 * [Solution](#solution)
-  * [Business logic](#business-logic)
   * [Technical specifications](#technical-specifications)
-  * [Technical definitions](#technical-definitions)
-  * [Detailed explanations](#detailed-explanations)
-    * [DAOs and Services](#daos-and-services)
-  * [Tests](#tests)
-    * [Ensure that the MongoDBService is stateless](#ensure-that-the-mongodbservice-is-stateless)
-    * [Test concurrents calls to MongoDBService](#test-concurrents-calls-to-mongodbservice-)
-    * [Ensure that ClientSession is well closed in case of error](#ensure-that-clientsession-is-well-closed-in-case-of-error)
-    * [Read Data Access Objects](#read-data-access-objects)
-    * [Write Data Access Objects](#write-data-access-objects)
-  * [Environment](#environment)
-* [Limitations and improvements](#limitations-and-improvements)
-* [Documentation](#documentation)
-  * [MongoDB](#mongodb)
-  * [Design-Patterns](#design-patterns)
+    * [Dao](#dao)
+    * [MongoDBServiceV2](#mongodbservicev2)
+    * [Indexes generation](#indexes-generation)
 <!-- TOC -->
 
 # Definitions
@@ -125,8 +113,14 @@ See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods
 
 The `MongoDBServiceV2` classes provides method for the following features : 
 - `MongoClient` initialization ( `buildMongoDBClient()` ). This client is initialized during service initialization (`startup()`)
-- Run operation with transaction : `runTransaction()` and `computeTransaction()`
+- Run operation with transaction : 
+  - `runTransaction()` : run an operation with transaction handling
+  - `computeTransaction()` : run an operation with transaction handling and return result
+  - `runThrowingTransaction()` : run a potentially throwing operation with transaction handling
+  - `computeThrowingTransaction()` : run a potentially throwing operation with transaction handling and return result
 - Création of indexes in database (if not already exist)
+  - `MongoDBService.registerIndex(collectionName, index, indexOptions)` : register an index to create
+  - `createIndexes()` : Create (if not-exists) all indexes registered previously with `MongoDBService.registerIndex`
 
 ### Indexes generation
 

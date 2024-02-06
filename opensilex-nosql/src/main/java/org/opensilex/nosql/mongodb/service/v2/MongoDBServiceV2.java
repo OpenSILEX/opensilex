@@ -271,21 +271,6 @@ public class MongoDBServiceV2 extends BaseService {
         return this.db;
     }
 
-    public Document buildSort(List<OrderBy> orderByList) {
-        Document sort = new Document();
-        if (CollectionUtils.isEmpty(orderByList)) {
-            return sort;
-        }
-        for (OrderBy orderBy : orderByList) {
-            if (orderBy.getOrder().equals(Order.ASCENDING)) {
-                sort.put(orderBy.getFieldName(), 1);
-            } else if (orderBy.getOrder().equals(Order.DESCENDING)) {
-                sort.put(orderBy.getFieldName(), -1);
-            }
-        }
-        return sort;
-    }
-
     public final MongoClient buildMongoDBClient() throws IOException {
         return buildMongoDBClient(getImplementedConfig());
     }

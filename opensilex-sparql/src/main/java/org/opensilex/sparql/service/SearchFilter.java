@@ -16,12 +16,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Generic search filter for database request
  * @author rcolin
  */
-public abstract class SparqlSearchFilter {
+public abstract class SearchFilter {
+
+    public static final int DEFAULT_PAGE_SIZE = 20;
 
     protected Collection<URI> includedUris;
-
+    protected Collection<URI> rdfTypes;
     protected List<OrderBy> orderByList;
     protected Integer page;
     protected Integer pageSize;
@@ -29,10 +32,10 @@ public abstract class SparqlSearchFilter {
     @JsonIgnore
     protected String lang;
 
-    protected SparqlSearchFilter() {
+    protected SearchFilter() {
         this.lang = OpenSilex.DEFAULT_LANGUAGE;
         this.page = 0;
-        this.pageSize = 20;
+        this.pageSize = DEFAULT_PAGE_SIZE;
         this.orderByList = Collections.emptyList();
         this.includedUris = Collections.emptyList();
     }
@@ -41,7 +44,7 @@ public abstract class SparqlSearchFilter {
         return includedUris;
     }
 
-    public SparqlSearchFilter setIncludedUris(Collection<URI> includedUris) {
+    public SearchFilter setIncludedUris(Collection<URI> includedUris) {
         this.includedUris = includedUris;
         return this;
     }
@@ -52,7 +55,7 @@ public abstract class SparqlSearchFilter {
         return orderByList;
     }
 
-    public SparqlSearchFilter setOrderByList(List<OrderBy> orderByList) {
+    public SearchFilter setOrderByList(List<OrderBy> orderByList) {
         this.orderByList = orderByList;
         return this;
     }
@@ -62,7 +65,7 @@ public abstract class SparqlSearchFilter {
         return page;
     }
 
-    public SparqlSearchFilter setPage(Integer page) {
+    public SearchFilter setPage(Integer page) {
         this.page = page;
         return this;
     }
@@ -73,7 +76,7 @@ public abstract class SparqlSearchFilter {
         return pageSize;
     }
 
-    public SparqlSearchFilter setPageSize(Integer pageSize) {
+    public SearchFilter setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -82,9 +85,17 @@ public abstract class SparqlSearchFilter {
         return lang;
     }
 
-    public SparqlSearchFilter setLang(String lang) {
+    public SearchFilter setLang(String lang) {
         this.lang = lang;
         return this;
+    }
+
+    public Collection<URI> getRdfTypes() {
+        return rdfTypes;
+    }
+
+    public void setRdfTypes(Collection<URI> rdfTypes) {
+        this.rdfTypes = rdfTypes;
     }
 
     /**

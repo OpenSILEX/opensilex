@@ -19,6 +19,8 @@ import java.util.List;
  */
 public class LogFilter extends ThresholdFilter {
 
+    public static final String LOG_TYPE = "type";
+
     /**
      * Method to force debug output.
      */

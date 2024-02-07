@@ -29,6 +29,8 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedIterable;
@@ -651,38 +653,42 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         
         var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "sparql-mongo-parallel-test", "test");
 
-        int nbModel = 100;
-        int nbThread = 4;
+        int nbModelPerThread = 100;
+        int nbThread = 2;
         Node graph = NodeFactory.createURI("test:sparql-mongo-test");
 
+        // Prepare tasks
         ExecutorService executor = Executors.newFixedThreadPool(nbThread);
-        for (int threadIdx = 0; threadIdx < nbThread; threadIdx++) {
-            List<SPARQLResourceModel> sparqlModels = new ArrayList<>(nbModel);
-            List<MongoTestModel> mongoModels = new ArrayList<>(nbModel);
 
-            for (int i = 0; i < nbModel; i++) {
+        for (int threadIdx = 0; threadIdx < nbThread; threadIdx++) {
+            List<SPARQLResourceModel> sparqlModels = new ArrayList<>(nbModelPerThread);
+            List<MongoTestModel> mongoModels = new ArrayList<>(nbModelPerThread);
+            SPARQLService newService = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, RDF4JInMemoryServiceFactory.class).provide();
+
+            for (int modelIdx = 0; modelIdx < nbModelPerThread; modelIdx++) {
                 SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
-                sparqlModel.setUri(URI.create("testSparqlMongoTransaction:"+i+"_"+threadIdx));
+                sparqlModel.setUri(URI.create("test:" + threadIdx + "_" + UUID.randomUUID()));
                 sparqlModels.add(sparqlModel);
 
                 MongoTestModel mongoModel = new MongoTestModel();
-                mongoModel.setName("test"+i+"_"+threadIdx);
+                mongoModel.setName("test"+modelIdx+"_"+threadIdx);
                 mongoModels.add(mongoModel);
             }
 
-            Callable<Integer> task = () -> new SparqlMongoTransaction(sparql, mongoDBv2).execute((sparqlConn, session) -> {
-                sparqlConn.create(graph, sparqlModels);
-                innerDao.create(mongoModels, session);
-                return 0;
+            var transaction = new SparqlMongoTransaction(newService, mongoDBv2);
+            Callable<InsertManyResult> task = () -> transaction.execute((sparqlConn, session) -> {
+                newService.createWithoutTransaction(graph, sparqlModels, 1000, false, false);
+                return innerDao.create(mongoModels, session);
             });
             executor.submit(task);
         }
 
         // Run search and ensure results are OK
-        Thread.sleep(3000);
-        // Assert.assertEquals(nbModel * nbThread, sparql.count(graph, SPARQLResourceModel.class));
-        //Assert.assertEquals(nbModel * nbThread, innerDao.count(MongoSearchFilter.EMPTY));
+        Thread.sleep(2000);
+        // Assert.assertEquals(nbModelPerThread * nbThread, sparql.count(graph, SPARQLResourceModel.class));
+        Assert.assertEquals(nbModelPerThread * nbThread, innerDao.count(MongoSearchFilter.EMPTY));
         executor.shutdown();
+        innerDao.deleteMany(MongoSearchFilter.EMPTY);
     }
 
 }

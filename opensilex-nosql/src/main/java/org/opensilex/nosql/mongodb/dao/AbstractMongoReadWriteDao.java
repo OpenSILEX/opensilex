@@ -36,8 +36,7 @@ import java.util.stream.StreamSupport;
 
 import static com.mongodb.client.model.Filters.eq;
 import static net.logstash.logback.argument.StructuredArguments.kv;
-import static org.opensilex.nosql.mongodb.service.v2.MongoLogType.*;
-import static org.opensilex.utils.LogFilter.LOG_TYPE;
+import static org.opensilex.utils.LogFilter.*;
 
 public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter> implements MongoWriteDao<T, F>, MongoReadDao<T, F> {
 
@@ -62,10 +61,6 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         this.checkUriExistence = checkUriExistence;
         this.createPrefix = createPrefix;
         logger = LoggerFactory.getLogger(getClass());
-    }
-
-    protected void createIndexes() {
-        // no index by default
     }
 
     @Override
@@ -159,7 +154,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         generateUniqueUriIfNullOrValidateCurrent(instance);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, MONGO_CREATE_LOG_MSG));
+            logger.debug("MongoDB create, collection: {} {}", collection.getNamespace().getCollectionName(), kv(LOG_TYPE, CREATE_MANY_MSG));
         }
         return session != null ?
                 collection.insertOne(session, instance) :
@@ -182,7 +177,6 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
             throw new IllegalArgumentException("instances list must not be empty");
         }
 
-        logger.info("{} {} collection: {}", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
         Instant start = Instant.now();
 
         if (checkUriGeneration) {
@@ -197,7 +191,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
                 mongodb.computeTransaction(newSession -> collection.insertMany(newSession, instances));
 
         long durationMs = Duration.between(start, Instant.now()).toMillis();
-        logger.info("{}, {}, collection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_LOG_MSG),  kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(),  result.getInsertedIds().size(), durationMs);
+        logger.info("{} {} collection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE, CREATE_MANY_MSG),  kv(LOG_STATUS, LOG_STATUS_OK), collection.getNamespace().getCollectionName(),  result.getInsertedIds().size(), durationMs);
         return result;
     }
 
@@ -264,7 +258,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     }
 
     protected @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
-        logger.info("{}, {}, collection: {}", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collection.getNamespace().getCollectionName());
+        logger.info("{}, {}, collection: {}", kv(LOG_TYPE, DELETE_MANY_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_START), collection.getNamespace().getCollectionName());
         Instant start = Instant.now();
 
         // deleteMany() can update several document inside a collection, transaction handling is always needed
@@ -273,7 +267,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
                 mongodb.computeTransaction(newSession -> collection.deleteMany(newSession, deleteFilterBson));
 
         long durationMs = Duration.between(start, Instant.now()).toMillis();
-        logger.info("{} {} collection: {}, deleteCount: {}, duration: {} ms", kv(LOG_TYPE, MONGO_DELETE_MANY_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collection.getNamespace().getCollectionName(), result.getDeletedCount(), durationMs);
+        logger.info("{} {} collection: {}, deleteCount: {}, duration: {} ms", kv(LOG_TYPE, DELETE_MANY_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_OK), collection.getNamespace().getCollectionName(), result.getDeletedCount(), durationMs);
         return result;
     }
 

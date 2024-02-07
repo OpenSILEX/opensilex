@@ -477,4 +477,9 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     public void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex) {
         this.mapperIndex = mapperIndex;
     }
+
+    @Override
+    public String toString() {
+        return rdf4JConnection.getClass().getSimpleName() + "@" + System.identityHashCode(this);
+    }
 }

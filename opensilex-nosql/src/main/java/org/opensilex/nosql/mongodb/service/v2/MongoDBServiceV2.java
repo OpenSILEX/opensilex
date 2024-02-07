@@ -10,11 +10,8 @@ import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.arq.querybuilder.Order;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -28,7 +25,6 @@ import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
 import org.slf4j.Logger;
@@ -43,8 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
-import static org.opensilex.nosql.mongodb.service.v2.MongoLogType.*;
-import static org.opensilex.utils.LogFilter.LOG_TYPE;
+import static org.opensilex.utils.LogFilter.*;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBServiceV2 extends BaseService {
@@ -139,7 +134,7 @@ public class MongoDBServiceV2 extends BaseService {
             indexes.forEach((indexKeys, indexOption) -> {
 
                 Instant start = Instant.now();
-                LOGGER.info("{}, {}, collection: {}, index: {}", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_START), collectionName, indexKeys);
+                LOGGER.info("{}, {}, collection: {}, index: {}", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_START), collectionName, indexKeys);
 
                 if(indexOption != null){
                     collection.createIndex(indexKeys, indexOption);
@@ -148,7 +143,7 @@ public class MongoDBServiceV2 extends BaseService {
                 }
 
                 long durationMs = Duration.between(start, Instant.now()).toMillis();
-                LOGGER.info("{}, {}, collection: {}, index: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(MONGO_LOG_STATUS, MONGO_LOG_STATUS_OK), collectionName, indexKeys, durationMs);
+                LOGGER.info("{}, {}, collection: {}, index: {}, duration: {} ms", kv(LOG_TYPE, MONGO_CREATE_INDEX_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_OK), collectionName, indexKeys, durationMs);
             });
         });
 
@@ -211,11 +206,11 @@ public class MongoDBServiceV2 extends BaseService {
     public <R> R computeTransaction(Function<ClientSession, R> operationInTrx){
 
         try (ClientSession session = mongoClient.startSession()) {
-            LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            LOGGER.info("MongoDB transaction [START]");
 
             // Run operation within transaction handling
             R result = session.withTransaction(() -> operationInTrx.apply(session));
-            LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            LOGGER.info("MongoDB transaction [COMMIT]");
             return result;
         }
     }
@@ -230,7 +225,7 @@ public class MongoDBServiceV2 extends BaseService {
     public <R> R computeThrowingTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws Exception {
 
         try (ClientSession session = mongoClient.startSession()) {
-            LOGGER.info("Transaction start. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            LOGGER.info("Transaction {}", LOG_STATUS_START);
 
             // Run operation within transaction handling
             R result = session.withTransaction(() -> {
@@ -244,9 +239,10 @@ public class MongoDBServiceV2 extends BaseService {
                     throw new MongoDBTransactionException(e.getMessage(), e);
                 }
             });
-            LOGGER.info("Transaction committed. serverSessionTransactionNumber: {}", session.getServerSession().getTransactionNumber());
+            LOGGER.info("Transaction {}", LOG_STATUS_OK);
             return result;
         }catch (MongoDBTransactionException e){
+            LOGGER.error("Transaction fail [ROLLBACK] {}", e.getMessage());
             throw e.getInnerException();
         }
     }

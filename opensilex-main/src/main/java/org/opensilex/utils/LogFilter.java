@@ -20,6 +20,14 @@ import java.util.List;
 public class LogFilter extends ThresholdFilter {
 
     public static final String LOG_TYPE = "type";
+    public static final String CREATE_MANY_MSG = "insertMany";
+    public static final String DELETE_MANY_LOG_MSG = "deleteMany";
+    public static final String LOG_STATUS = "status";
+    public static final String LOG_STATUS_START = "START";
+    public static final String LOG_STATUS_OK = "OK";
+
+    public static final String LOG_DURATION = "duration";
+
 
     /**
      * Method to force debug output.

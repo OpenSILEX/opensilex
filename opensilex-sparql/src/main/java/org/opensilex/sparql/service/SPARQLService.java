@@ -57,10 +57,7 @@ import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingConsumer;
-import org.opensilex.utils.ThrowingFunction;
+import org.opensilex.utils.*;
 import org.opensilex.utils.functionnal.ThrowingSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +66,8 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -77,7 +76,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.utils.LogFilter.*;
 
 /**
  * Implementation of SPARQLService
@@ -1128,7 +1129,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+    public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
         if (reuseSameQuery && maxInstancePerQuery <= 0) {
@@ -1138,9 +1139,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if(instances.isEmpty()){
             return;
         }
+        Instant start = Instant.now();
 
         validate(instances, null);
-
         UpdateBuilder updateBuilder = new UpdateBuilder();
 
         // use the same query for the instance and her sub-instance if a query batch size is specified
@@ -1177,6 +1178,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         } else {
             executeUpdateQuery(updateBuilder);
         }
+
+        long durationMs = Duration.between(start, Instant.now()).toMillis();
+        LOGGER.info("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE, CREATE_MANY_MSG), kv(LOG_STATUS, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION, durationMs));
     }
 
     /**
@@ -1188,7 +1192,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     public <T extends SPARQLResourceModel> void createWithTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
         withTransaction(() -> {
-            create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
+            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
             return null;
         });
     }

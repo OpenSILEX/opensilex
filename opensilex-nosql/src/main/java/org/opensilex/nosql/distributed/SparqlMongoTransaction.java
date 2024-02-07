@@ -4,10 +4,13 @@ import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.functionnal.ThrowingBiFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -17,6 +20,7 @@ import java.util.function.UnaryOperator;
  */
 public class SparqlMongoTransaction {
 
+    protected final Logger logger;
     private final SPARQLService sparql;
     private final MongoDBServiceV2 mongodb;
 
@@ -27,6 +31,7 @@ public class SparqlMongoTransaction {
         this.sparql = sparql;
         this.mongodb = mongodb;
         customExceptionMappingFlag = false;
+        logger = LoggerFactory.getLogger(getClass());
     }
 
     /**
@@ -69,9 +74,7 @@ public class SparqlMongoTransaction {
     ) throws Exception {
 
         Objects.requireNonNull(operation);
-        try(ClientSession session = mongodb.startSession()){
-            return this.execute(sparql, session, operation);
-        }
+        return this.execute(sparql, operation);
     }
 
 
@@ -96,48 +99,42 @@ public class SparqlMongoTransaction {
      *      </li>
      * </ul>
      */
-    public <R, E extends Exception> R execute(SPARQLService sparqlConnection, ClientSession mongoSession, ThrowingBiFunction<SPARQLService, ClientSession, R, E> operation
+    public <R, E extends Exception> R execute(SPARQLService sparqlConnection,ThrowingBiFunction<SPARQLService, ClientSession, R, E> operation
     ) throws Exception {
 
-        R result;
+        try {
+            sparql.startTransaction();
+            R result = mongodb.computeThrowingTransaction((mongoSession) -> operation.apply(sparqlConnection, mongoSession));
 
+            if (sparql.hasActiveTransaction()) {
+                sparql.commitTransaction();
+            }
+            return result;
+        } catch (Exception e) {
+            if (sparql.hasActiveTransaction()) {
+                sparql.rollbackTransaction(e);
+            }
+            throw e;
+        }
         /* Phase 1 : Check if the database is ready to commit the transaction
          - Start transactions
          - Performs operation on each data-source
          */
-        sparql.startTransaction();
-        mongoSession.startTransaction();
 
-        try {
-            // Performs business logic and write inside transaction
-            result = operation.apply(sparqlConnection, mongoSession);
-        } catch (Exception e) {
-            throw handleTransaction(e, sparql, mongoSession);
-        }
-
-        // Phase 2 :Commit transaction
-        try {
-            if (sparql.hasActiveTransaction()) {
-                sparql.commitTransaction();
-            }
-            if (mongoSession.hasActiveTransaction()) {
-                mongoSession.commitTransaction();
-            }
-            return result;
-
-        } catch (Exception e) {
-            throw handleTransaction(e, sparql, mongoSession);
-        }
     }
 
     private Exception handleTransaction(Exception e, SPARQLService sparql, ClientSession mongoSession) throws Exception {
         // Try to rollback
         if (sparql.hasActiveTransaction()) {
             sparql.rollbackTransaction();
+            logger.info("sparql transaction [ROLLBACK]");
         }
         if (mongoSession.hasActiveTransaction()) {
             mongoSession.abortTransaction();
+            logger.info("mongodb transaction [ROLLBACK]");
         }
+
+        logger.error(e.getMessage());
 
         // Custom application of
         Class<? extends Exception> exceptionClass = e.getClass();

@@ -137,7 +137,7 @@ public class EventDAO<T extends EventModel> {
 
     public List<T> create(List<T> models) throws Exception {
         check(models, true);
-        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.createWithTransaction(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
         return models;
     }
 

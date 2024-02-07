@@ -61,6 +61,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
+import org.opensilex.utils.functionnal.ThrowingSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,7 +290,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
-            LOGGER.error("SPARQL TRANSACTION ROLLBACK: ", ex);
+            LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
         }
@@ -1109,10 +1110,74 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true, true);
+        createWithTransaction(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
+
+
+    public <R> R withTransaction(ThrowingSupplier<R,Exception> operation) throws Exception {
+        try{
+            startTransaction();
+            R result = operation.get();
+            commitTransaction();
+            return result;
+        }catch (Exception e){
+            rollbackTransaction(e);
+            throw e;
+        }
+    }
+
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+
+        boolean reuseSameQuery = maxInstancePerQuery != null;
+        if (reuseSameQuery && maxInstancePerQuery <= 0) {
+            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
+        }
+
+        if(instances.isEmpty()){
+            return;
+        }
+
+        validate(instances, null);
+
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+
+        // use the same query for the instance and her sub-instance if a query batch size is specified
+        UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
+
+        // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
+        int insertedInstanceNb = 0;
+
+        startTransaction();
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+
+        for (T instance : instances) {
+            if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                instance.setPublicationDate(OffsetDateTime.now());
+            }
+
+            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
+            prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
+            mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
+
+            // if query limit is reached, then insert query and reset builder
+            if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
+                executeUpdateQuery(updateBuilder);
+                insertedInstanceNb = 0;
+                updateBuilder = new UpdateBuilder();
+                subInstanceUpdateBuilder = updateBuilder;
+            }
+        }
+
+        if (reuseSameQuery) {
+            if (insertedInstanceNb > 0) {
+                executeUpdateQuery(updateBuilder);
+            }
+        } else {
+            executeUpdateQuery(updateBuilder);
+        }
+    }
 
     /**
      * @param graph               the graph onto instance are created
@@ -1121,64 +1186,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param checkUriExist       indicate if the service must check if instances already exist
      * @param <T>                 the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
-
-        boolean reuseSameQuery = maxInstancePerQuery != null;
-
-        if (reuseSameQuery && maxInstancePerQuery <= 0) {
-            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
-        }
-
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-
-        if (instances.size() > 0) {
-            validate(instances, null);
-
-            UpdateBuilder updateBuilder = new UpdateBuilder();
-
-            // use the same query for the instance and her sub-instance if a query batch size is specified
-            UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
-
-            try {
-                // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
-                int insertedInstanceNb = 0;
-
-                startTransaction();
-
-                for (T instance : instances) {
-                    if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
-                        instance.setPublicationDate(OffsetDateTime.now());
-                    }
-
-                    SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                    prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
-                    mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
-
-                    // if query limit is reached, then insert query and reset builder
-                    if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
-                        executeUpdateQuery(updateBuilder);
-                        insertedInstanceNb = 0;
-                        updateBuilder = new UpdateBuilder();
-                        subInstanceUpdateBuilder = updateBuilder;
-                    }
-                }
-
-                if (reuseSameQuery) {
-                    if (insertedInstanceNb > 0) {
-                        executeUpdateQuery(updateBuilder);
-                    }
-                } else {
-                    executeUpdateQuery(updateBuilder);
-                }
-
-                commitTransaction();
-
-            } catch (Exception e) {
-                rollbackTransaction();
-                throw e;
-            }
-
-        }
+    public <T extends SPARQLResourceModel> void createWithTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+        withTransaction(() -> {
+            create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
+            return null;
+        });
     }
 
     /**

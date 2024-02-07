@@ -20,11 +20,13 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
+import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.IOException;
@@ -138,6 +140,11 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                     }
                 }
         ));
+    }
+
+    @Override
+    protected void readRelations(int rowIdx, String[] row, CsvHeader csvHeader, ScientificObjectModel model, ClassModel classModel, CsvOwlRestrictionValidator restrictionValidator) {
+        super.readRelations(rowIdx, row, csvHeader, model, classModel, restrictionValidator);
     }
 
     private void addFactorLevelValidation() throws Exception {

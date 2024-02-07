@@ -387,9 +387,4 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
 
     }
 
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(GermplasmModel.class);
-    }
-
 }

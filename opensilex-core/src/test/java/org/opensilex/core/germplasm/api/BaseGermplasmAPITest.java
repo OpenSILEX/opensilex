@@ -12,8 +12,11 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,50 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     public static final String createPath = path;
     public static final String updatePath = path;
     public static final String deletePath = path + "/{uri}";
+
+    protected static final ServiceDescription get;
+    protected static final ServiceDescription search;
+    protected static final ServiceDescription create;
+    protected static final ServiceDescription update;
+    protected static final ServiceDescription delete;
+
+    static {
+        try {
+            get = new ServiceDescription(
+                    GermplasmAPI.class.getMethod("getGermplasm", URI.class),
+                    path + "/{uri}"
+            );
+            search = new ServiceDescription(
+                    GermplasmAPI.class.getMethod(
+                            "searchGermplasm",
+                            String.class, URI.class, String.class, String.class, Integer.class,
+                            URI.class, URI.class, URI.class, URI.class, String.class, URI.class,
+                            List.class, List.class, List.class, String.class, List.class, int.class, int.class
+                    ),
+                    path
+            );
+            create = new ServiceDescription(
+                    GermplasmAPI.class.getMethod(
+                            "createGermplasm", GermplasmCreationDTO.class, Boolean.class
+                    ),
+                    path
+            );
+            update = new ServiceDescription(
+                    GermplasmAPI.class.getMethod(
+                            "updateGermplasm", GermplasmUpdateDTO.class
+                    ),
+                    path
+            );
+            delete = new ServiceDescription(
+                    GermplasmAPI.class.getMethod(
+                            "deleteGermplasm", URI.class
+                    ),
+                    path + "/{uri}"
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
@@ -64,28 +111,12 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
 
 
     protected URI createSpecies() throws Exception {
-        // create species
-        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
-        return extractUriFromResponse(postResultSpecies);
+        return new UserCallBuilder(create).setBody(getCreationSpeciesDTO()).buildAdmin().executeCallAndReturnURI();
     }
-
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(GermplasmModel.class);
+    protected URI createVariety(URI speciesUri) throws Exception {
+        return new UserCallBuilder(create).setBody(getCreationVarietyDTO(speciesUri)).buildAdmin().executeCallAndReturnURI();
     }
-
-    protected void testSearchParams(Map<String, Object> params) throws Exception {
-        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        final Response getResult = appendAdminToken(searchTarget).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<>() {
-        });
-        List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
-
-        assertFalse(germplasmList.isEmpty());
+    protected URI createAccession(URI varietyUri) throws Exception {
+        return new UserCallBuilder(create).setBody(getCreationAccessionDTO(varietyUri)).buildAdmin().executeCallAndReturnURI();
     }
 }

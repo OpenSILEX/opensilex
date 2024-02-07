@@ -9,4 +9,5 @@ public class Faidarev1StudyListResponse extends BrapiPaginatedListResponse<Faida
     public Faidarev1StudyListResponse(ListWithPagination<Faidarev1StudyDTO> paginatedList) {
         super(paginatedList);
     }
+    public Faidarev1StudyListResponse(){super();}
 }

@@ -13,6 +13,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**

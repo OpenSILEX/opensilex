@@ -42,6 +42,43 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
     public static String createPath = path;
     public static String updatePath = path ;
     public static String deletePath = path + "/{uri}";
+
+    protected static final ServiceDescription get;
+    protected static final ServiceDescription search;
+    protected static final ServiceDescription create;
+    protected static final ServiceDescription update;
+    protected static final ServiceDescription delete;
+
+    static {
+        try {
+            get = new ServiceDescription(
+                    ExperimentAPI.class.getMethod("getExperiment", URI.class),
+                    uriPath
+            );
+            search = new ServiceDescription(
+                    ExperimentAPI.class.getMethod(
+                            "searchExperiments",
+                            String.class, Integer.class, Boolean.class, List.class, List.class,
+                            List.class, Boolean.class, List.class, List.class, int.class, int.class),
+                    searchPath
+            );
+            create = new ServiceDescription(
+                    ExperimentAPI.class.getMethod("createExperiment", ExperimentCreationDTO.class),
+                    createPath
+            );
+            update = new ServiceDescription(
+                    ExperimentAPI.class.getMethod("updateExperiment", ExperimentCreationDTO.class),
+                    updatePath
+            );
+            delete = new ServiceDescription(
+                    ExperimentAPI.class.getMethod("deleteExperiment", URI.class),
+                    deletePath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static String getAvailableFacilitiesPath = uriPath + "/available_facilities";
     private static final TypeReference<PaginatedListResponse<FacilityGetDTO>> GET_AVAILABLE_FACILITIES_RETURN_TYPE =
             new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};

@@ -501,12 +501,19 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return mapper.convertValue(node, type);
         }
 
-        /**
-         * Converts the object into a string representation.
-         * @return the string representation of the object
-         */
+
+        @Override
         public String toString() {
-            return mapper.convertValue(this, LinkedHashMap.class).toString();
+            return "PublicCall{" +
+                    "params=" + params +
+                    ", body=" + body +
+                    ", pathTemplateParams=" + pathTemplateParams +
+                    ", serviceMethod=" + serviceMethod +
+                    ", pathTemplate='" + pathTemplate + '\'' +
+                    ", httpMethod='" + httpMethod + '\'' +
+                    ", callMediaType=" + callMediaType +
+                    ", responseMediaTypes=" + responseMediaTypes +
+                    '}';
         }
 
         private class UriResoucreDTO {

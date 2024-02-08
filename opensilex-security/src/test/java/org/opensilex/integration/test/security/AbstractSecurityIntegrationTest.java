@@ -8,13 +8,6 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Maps;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.solr.client.solrj.response.RangeFacet;
-import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
@@ -27,7 +20,6 @@ import org.opensilex.security.authentication.api.AuthenticationAPI;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
 import org.opensilex.server.response.JsonResponse;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -40,14 +32,12 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.*;
 
@@ -408,10 +398,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     /**
      * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
      *
-     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param getByUriPath the path to the service which allow to fetch an entity by its URI
      * @param createPath   the path to the service which allow to create an entity
      * @param deletePath   the path to the service which allow to delete an entity
-     * @param entity       the entity on which apply create, read and delete
+     * @param entity       the entity to create, read and delete
      */
     protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
 
@@ -436,10 +426,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * Call the createPath with the given entity list
      * then for each entity : check if entity has been created, delete it and then check that the resource has been deleted
      *
-     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param getByUriPath the path to the service which allow to fetch an entity by its URI
      * @param createPath   the path to the service which allow to create an entity
      * @param deletePath   the path to the service which allow to delete an entity
-     * @param entities     the List of entity on which apply create, read and delete
+     * @param entities     the List of entities to create, read and delete
      */
     protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
 
@@ -498,12 +488,12 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
     }
 
-    public static boolean nonNullAttributesInclusionComparison(Object superObject, Object subObject) {
-        LinkedHashMap<String, Object> superMap = convertToNestedMap(superObject);
-        LinkedHashMap<String, Object> subMap = convertToNestedMap(subObject);
-        return isDeepMapIncluded(superMap, subMap);
-    }
-
+    /**
+     * This method checks if all elements of a nested map (subMap) are included in another nested map (superMap).
+     * @param superMap The map that is supposed to contain all elements of the subMap.
+     * @param subMap The map whose elements are checked if they are contained in the superMap.
+     * @return returns true if all elements of the subMap are included in the superMap, otherwise it returns false.
+     */
     public static boolean isDeepMapIncluded(LinkedHashMap<String, Object> superMap, LinkedHashMap<String, Object> subMap) {
         for (Map.Entry<String, Object> entry : subMap.entrySet()) {
             String key = entry.getKey();
@@ -529,11 +519,17 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return true;
     }
 
-    protected static LinkedHashMap<String, Object> convertToNestedMap(Object object) {
+    /**
+     * This method converts a given object into a nested map, and removes all null and empty values.
+     * @param object The object to be converted into a map.
+     * @return returns a LinkedHashMap where the object has been converted into a map and all null values have been removed.
+     */
+    protected static LinkedHashMap<String, Object> convertToNotNullNestedMap(Object object) {
         // Convert the object to a map
         LinkedHashMap<String, Object> map = mapper.convertValue(object, LinkedHashMap.class);
         map.values().removeAll(Collections.singleton(null));
 
+        List<String> keysToRemove = new ArrayList<>();
         // Recursively convert nested objects to nested maps of maps
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (
@@ -551,88 +547,162 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 } else if (nestedObject instanceof List) {
                     List<Object> nestedList = new ArrayList<>();
                     for (Object value : (List<Object>) nestedObject) {
-                        nestedList.add(convertToNestedMap(value));
+                        nestedList.add(convertToNotNullNestedMap(value));
                     }
                     if (nestedList.isEmpty()) {
-                        map.remove(entry.getKey());
+                        keysToRemove.add(entry.getKey());
                     } else {
                         entry.setValue(nestedList);
                     }
                 } else {
-                    LinkedHashMap<String, Object> nestedMap = convertToNestedMap(nestedObject);
+                    LinkedHashMap<String, Object> nestedMap = convertToNotNullNestedMap(nestedObject);
                     if (nestedMap.isEmpty()) {
-                        map.remove(entry.getKey());
+                        keysToRemove.add(entry.getKey());
                     } else {
                         entry.setValue(nestedMap);
                     }
                 }
             }
         }
+        for (String key:keysToRemove) {
+            map.remove(key);
+        }
 
         return map;
     }
 
-    protected <T> void testBasicCRUDAsAdmin(
+    /**
+     * This method simulates a basic CREATE operation as an administrator.
+     * @param createServiceDescription The service description of the create operation.
+     * @param entityToPost The entity to be posted.
+     * @return returns the URI of the created resource.
+     * @throws Exception if the operation fails.
+     */
+    protected URI testBasicCreateAsAdmin(
             ServiceDescription createServiceDescription,
+            ResourceDTO<?> entityToPost
+    ) throws Exception {
+        return new UserCallBuilder(createServiceDescription)
+                .setBody(entityToPost)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+    }
+
+    /**
+     * This method tests a basic READ operation as an administrator.
+     * @param readServiceDescription The service description of the read operation.
+     * @param entityTypeReference The type reference of the entity to be read.
+     * @param resourceUri The URI of the resource to be read.
+     * @return returns the read entity.
+     * @throws Exception if the operation fails.
+     */
+    protected <T> T testBasicReadAsAdmin(
+            ServiceDescription readServiceDescription,
+            TypeReference<T> entityTypeReference,
+            URI resourceUri
+    ) throws Exception {
+        return new UserCallBuilder(readServiceDescription)
+                .setUriInPath(resourceUri.toString())
+                .buildAdmin()
+                .executeCallAndDeserialize(entityTypeReference)
+                .getDeserializedResponse();
+    }
+
+    /**
+     * This method tests a basic UPDATE operation as an administrator. null or empty parameters aren't taken into account.
+     * @param readServiceDescription The service description of the read operation.
+     * @param updateServiceDescription The service description of the update operation.
+     * @param entityToPut The entity for the update.
+     * @param entityTypeReference The type reference of the entity to be updated.
+     * @throws Exception if the operation fails.
+     */
+    protected <T extends JsonResponse<?>> void testBasicUpdateAsAdmin(
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
-            ServiceDescription deleteServiceDescription,
-            NamedResourceDTO<?> entityToPost, NamedResourceDTO<?> entityToPut,
-            LinkedHashMap<String, Object> attributesToCheck, TypeReference<SingleObjectResponse<T>> entityTypeReference
+            ResourceDTO<?> entityToPut,
+            TypeReference<T> entityTypeReference
     ) throws Exception {
-        // CREATE
-        UserCall createCall = new UserCallBuilder(createServiceDescription)
-                .setBody(entityToPost)
-                .buildAdmin();
-        URI createdUri = createCall.executeCallAndReturnURI();
-
-        // READ
-        UserCall readCall = new UserCallBuilder(readServiceDescription)
-                .setUriInPath(createdUri.toString())
-                .buildAdmin();
-        readCall.executeCallAndReturnURI();
-
-        // UPDATE
-        entityToPut.setUri(createdUri);
         UserCall updateCall = new UserCallBuilder(updateServiceDescription)
                 .setBody(entityToPut)
                 .buildAdmin();
         updateCall.executeCallAndReturnURI();
         // Get the updated object
-        SingleObjectResponse<T> readResponse = readCall.executeCallAndDeserialize(entityTypeReference).getDeserializedResponse();
-        LinkedHashMap<String, Object> responseAttributes = mapper.convertValue(readResponse.getResult(), LinkedHashMap.class);
+        T readResponse = testBasicReadAsAdmin(readServiceDescription, entityTypeReference, entityToPut.getUri());
+        LinkedHashMap<String, Object> responseAttributes = convertToNotNullNestedMap(readResponse.getResult());
+        LinkedHashMap<String, Object> expectedAttributes = convertToNotNullNestedMap(entityToPut);
         // Check attributes value
-        assertTrue(isDeepMapIncluded(responseAttributes, attributesToCheck));
-
-        // DELETE
-        UserCall deleteCall = new UserCallBuilder(deleteServiceDescription)
-                .setUriInPath(createdUri.toString())
-                .buildAdmin();
-        deleteCall.executeCallAndReturnURI();
-        Response result = readCall.executeCall();
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), result.getStatus());
+        assertTrue(isDeepMapIncluded(responseAttributes, expectedAttributes));
     }
 
-    protected <T> void testBasicCRUDListAsAdmin(
+    /**
+     * This method tests a basic DELETE operation as an administrator.
+     * @param readServiceDescription The service description of the read operation.
+     * @param deleteServiceDescription The service description of the delete operation.
+     * @param resourceUri The URI of the resource to be deleted.
+     * @throws Exception if the operation fails.
+     */
+    protected void testBasicDeleteAsAdmin(
+            ServiceDescription readServiceDescription,
+            ServiceDescription deleteServiceDescription,
+            URI resourceUri
+    ) throws Exception {
+        new UserCallBuilder(deleteServiceDescription)
+                .setUriInPath(resourceUri.toString())
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        Response readResult = new UserCallBuilder(readServiceDescription)
+                .setUriInPath(resourceUri.toString())
+                .buildAdmin()
+                .executeCall();
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), readResult.getStatus());
+    }
+
+    /**
+     * This method tests the basic CRUD operations as an administrator.
+     * null or empty parameters aren't taken into account to check the update step.
+     * @param createServiceDescription The service description of the create operation.
+     * @param readServiceDescription The service description of the read operation.
+     * @param updateServiceDescription The service description of the update operation.
+     * @param deleteServiceDescription The service description of the delete operation.
+     * @param entityToPost The entity to be posted.
+     * @param entityToPut The entity for the update.
+     * @param entityTypeReference The type reference of the entity to be manipulated.
+     * @throws Exception if any of the operations fail.
+     */
+    protected <T extends JsonResponse<?>> void testBasicCRUDAsAdmin(
             ServiceDescription createServiceDescription,
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
             ServiceDescription deleteServiceDescription,
-            List<NamedResourceDTO<?>> entitiesToPost, List<NamedResourceDTO<?>> entitiesToPut,
-            List<LinkedHashMap<String, Object>> attributesToCheck, TypeReference<SingleObjectResponse<T>> entitiesTypeReference
+            ResourceDTO<?> entityToPost, ResourceDTO<?> entityToPut,
+            TypeReference<T> entityTypeReference
     ) throws Exception {
-        if (entitiesToPost.size() != entitiesToPut.size()) {
-            for (int i = 0; i < entitiesToPost.size(); i++) {
-                testBasicCRUDAsAdmin(
-                        createServiceDescription,
-                        readServiceDescription,
-                        updateServiceDescription,
-                        deleteServiceDescription,
-                        entitiesToPost.get(i), entitiesToPut.get(i),
-                        attributesToCheck.get(i), entitiesTypeReference
-                );
-            }
+        // CREATE
+        URI createdUri = testBasicCreateAsAdmin(createServiceDescription, entityToPost);
+        // READ
+        testBasicReadAsAdmin(readServiceDescription, entityTypeReference, createdUri);
+        // UPDATE
+        testBasicUpdateAsAdmin(readServiceDescription, updateServiceDescription, entityToPut, entityTypeReference);
+        // DELETE
+        testBasicDeleteAsAdmin(readServiceDescription, deleteServiceDescription, createdUri);
+    }
+
+    protected TokenGetDTO authenticateAndRegisterIfNecessary(String userEmail, String userPassword) throws Exception {
+
+        if (!tokenMap.containsKey(userEmail)){
+            AuthenticationDTO authDto = new AuthenticationDTO();
+            authDto.setIdentifier(userEmail);
+            authDto.setPassword(userPassword);
+
+            PublicCall tokenCall = new PublicCallBuilder<>(authenticate).setBody(authDto).build();
+
+            Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
+                    new TypeReference<SingleObjectResponse<TokenGetDTO>>() {}
+            );
+            TokenGetDTO userToken = postResult.getDeserializedResponse().getResult();
+            tokenMap.put(userEmail, userToken);
         }
+        return tokenMap.get(userEmail);
     }
 
     public class UserCall extends PublicCall {
@@ -655,85 +725,48 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             super(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
             this.userEmail = userEmail;
             this.userPassword = userPassword;
-            this.httpMethod = findHttpMethod(serviceMethod);
+            this.httpMethod = findHttpMethod();
         }
 
+        /**
+         * Executes the call and returns the raw response.
+         * @return the response of the call.
+         * @throws Exception if there is an error executing the call
+         */
         @Override
         public Response executeCall() throws Exception {
-            WebTarget target = createTarget(params, pathTemplateParams, serviceMethod, pathTemplate);
+            WebTarget target = createTarget();
             authenticateAndRegisterIfNecessary(userEmail, userPassword);
             appendToken(target, userEmail);
-            return makeCorrectCall(target, httpMethod, body, callMediaType, responseMediaTypes);
+            return makeCorrectCall(target);
         }
 
+        /**
+         * Makes the correct call based on the target.
+         * @param target the target for the call
+         * @return the response of the call
+         */
         @Override
-        public <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
-            Response response = executeCall();
-            assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
-            return new Result<>(readResponse(response, typeReference, serviceMethod), response);
-        }
-
-        public URI executeCallAndReturnURI() throws Exception {
-            if (Objects.equals(httpMethod, HttpMethod.PUT) ||
-                    Objects.equals(httpMethod, HttpMethod.POST) ||
-                    Objects.equals(httpMethod, HttpMethod.DELETE)) {
-                Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {
-                });
-                return URI.create(response.getDeserializedResponse().getResult());
-            } else {
-                Result<SPARQLResourceModel> readResponse = executeCallAndDeserialize(new TypeReference<SPARQLResourceModel>() {
-                });
-                return readResponse.getDeserializedResponse().getUri();
-            }
-        }
-
-        @Override
-        protected Response makeCorrectCall(WebTarget target, String httpMethod, Object body, MediaType callMediaType, List<MediaType> responseMediaTypes) {
-
-            Invocation.Builder requestBuilder;
-            if (Objects.isNull(callMediaType)) {
-                requestBuilder = target.request(MediaType.APPLICATION_JSON);
-            } else {
-                requestBuilder = target.request(callMediaType);
-            }
-
-            if (!(responseMediaTypes == null) && !responseMediaTypes.isEmpty()) {
-                for (MediaType mediaType : responseMediaTypes) {
-                    requestBuilder = requestBuilder.accept(mediaType);
-                }
-            }
-
+        protected Response makeCorrectCall(WebTarget target) {
+            Invocation.Builder requestBuilder = buildRequestBuilder(target);
             requestBuilder = requestBuilder.header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + tokenMap.get(userEmail).getToken());
-
-            if(Objects.equals(httpMethod, HttpMethod.GET)) {
-                return requestBuilder.get();
-            } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
-                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
-            } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
-                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
-            } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
-                return requestBuilder.delete();
-            } else {
-                throw new UnsupportedOperationException("HTTP method not supported");
-            }
+            return executeRequest(requestBuilder);
         }
 
-        protected void authenticateAndRegisterIfNecessary(String userEmail, String userPassword) throws Exception {
-
-            if (!tokenMap.containsKey(userEmail)){
-                AuthenticationDTO authDto = new AuthenticationDTO();
-                authDto.setIdentifier(userEmail);
-                authDto.setPassword(userPassword);
-
-                PublicCall tokenCall = new PublicCallBuilder<>(authenticate).setBody(authDto).build();
-
-                Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
-                        new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
-                        }
-                );
-                TokenGetDTO userToken = postResult.getDeserializedResponse().getResult();
-                tokenMap.put(userEmail, userToken);
-            }
+        @Override
+        public String toString() {
+            return "UserCall{" +
+                    "userEmail='" + userEmail + '\'' +
+                    ", userPassword='" + userPassword + '\'' +
+                    ", params=" + params +
+                    ", body=" + body +
+                    ", pathTemplateParams=" + pathTemplateParams +
+                    ", serviceMethod=" + serviceMethod +
+                    ", pathTemplate='" + pathTemplate + '\'' +
+                    ", httpMethod='" + httpMethod + '\'' +
+                    ", callMediaType=" + callMediaType +
+                    ", responseMediaTypes=" + responseMediaTypes +
+                    '}';
         }
     }
 
@@ -760,6 +793,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         protected UserCallBuilder self() {
             return this;
         }
+
 
         @Override
         public UserCall build() {

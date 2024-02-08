@@ -817,4 +817,30 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertTrue(sparql.uriExists(A.class, longUri));
     }
+
+    @Test
+    public void getSubtypesUris() throws Exception {
+        URI parentTypeURI = new URI("http://test.opensilex.org/Parent");
+        createSPARQLResourceModel(parentTypeURI, new URI("owl:Class") );
+
+        List<URI> expectedChildTypes = Arrays.asList( new URI("http://test.opensilex.org/Child1"), new URI("http://test.opensilex.org/Child2") );
+        expectedChildTypes.forEach(childType -> createSPARQLResourceModel(childType, parentTypeURI));
+
+        //create another type that should not be returned
+        createSPARQLResourceModel( new URI("http://test.opensilex.org/Other"), new URI("http://test.opensilex.org/otherParent") );
+
+        List<URI> resultChildTypes = sparql.getSubtypesUrisAndLabels(parentTypeURI, null).stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+        assertEquals(expectedChildTypes, resultChildTypes);
+    }
+
+    private static void createSPARQLResourceModel(URI uri, URI typeURI) {
+        try {
+            SPARQLResourceModel model = new SPARQLResourceModel();
+            model.setUri(uri);
+            model.setType(typeURI);
+            sparql.create(model);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

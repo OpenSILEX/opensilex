@@ -27,30 +27,26 @@ Allow the user to define the time between two data recording
 
 ### Non-functional requirements
 
-For now not much, before this documentation the feature was largely hardcoded in the front. What we are looking for now is a functional feature with complete translation system. 
+Use the ontology to store the values of time interval.
 
 ## Solution
 
-A web service is available to get all the accepted values of time interval. This service send the values as an object containing 'id' and 'label' fields. The 'id' field never change, that what we have to store in the database. The 'label' field change with the language asked in the request. If any language is asked then it will be sent in english. 
-
-For now there is no check for values when a variable is created nor updated.
+A web service is available to get all the accepted values of time interval. This values correspond to the subtype of the `time:TemporalUnit` class. The label is the displayable name of the time interval and can be translated in different languages, english is returned by default (no language asked or translation not found in the asked language).  
 
 ## Technical specifications
 
 ### Detailed explanations
 
-The different values of time intervals are given thanks to the `TimeIntervalEnum.java` Enum. This Enum allow developers to work easily with these values and to easily add or delete some values.
+The different values of time intervals are stored in the ontology as subtypes of the `time:TemporalUnit` class. The translation is also stored in the ontology as `skos:prefLabel`. Many translations are available for each time interval. The default language is english.
 
-For translation, we use `ResourceBundle` and `Locale` classes withe `.properties` files. The translation keys are directly determined by the Enum itself.
+To correspond with our original values, we added to subtypes of `time:TemporalUnit` : `oeso:Milisecond` and `oeso:UniqueMeasure`. Both has english and French translations.
+
+## Front
+
+In the Vue-JS client, time intervals are loaded in the store at the start of the client and reloaded each time the user will change the language (to get the correct translation label).
+
+Label is displayed and URI is sent to back (for variable creation or filter)
 
 ### Tests
 
-**TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO**
-{Describe the automatic tests related to this feature, where they are located and what they are supposed
-to check.}
-
-## Limitations and improvements
-
-For now different values are given thanks to an Enum, it may be better if we get it from an existing ontology and directly store the URI rather than the actual key.
-
-Even the translations could be stored thanks to ontology.
+For now there is only one unit test on `SPARQLService::getSubtypes` method. It tests if the method returns the right values for a given parent type. It does not test for label search yet.

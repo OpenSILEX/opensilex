@@ -33,6 +33,7 @@
 
         <div class="row">
             <div class="col" v-if="!linkedToAreaForm">
+                <!-- Target -->
                 <opensilex-TagInputForm
                     :value.sync="form.targets"
                     :baseType="this.$opensilex.Oeev.CONCERNS"
@@ -46,7 +47,7 @@
 
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
-          <!-- Comment -->
+          <!-- Description -->
           <opensilex-TextAreaForm
               :value.sync="form.description"
               label="component.common.description"
@@ -60,6 +61,7 @@
 
         <div class="row">
             <div class="col">
+                <!--Is instant-->
                 <opensilex-FormField
                     :required="true"
                     label="Event.is-instant"
@@ -115,7 +117,7 @@
         ></opensilex-OntologyRelationsForm>
 
         <div>
-            <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
+            <opensilex-MoveForm v-if="isMove()" :form.sync="form" ref="moveForm"></opensilex-MoveForm>
         </div>
 
     </ValidationObserver>
@@ -136,6 +138,7 @@ import TypeForm from "../../common/forms/TypeForm.vue";
 export default class EventForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("moveForm") readonly moveForm!: MoveForm;
 
     $opensilex: OpenSilexVuePlugin;
     ontologyService: OntologyService;
@@ -278,6 +281,10 @@ export default class EventForm extends Vue {
         // add the propriety disabled to "move"
         move.isDisabled = true;
       }
+    }
+
+    handleSubmitError(){
+        this.moveForm.handleSubmitError()
     }
 }
 </script>

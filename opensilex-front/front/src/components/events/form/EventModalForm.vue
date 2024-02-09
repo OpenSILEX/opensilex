@@ -249,8 +249,6 @@
                             position: position
                         }));
                     }
-                } else {
-                    move.targets_positions = undefined;
                 }
             }
         }

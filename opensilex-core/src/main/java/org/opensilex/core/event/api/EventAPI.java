@@ -31,11 +31,11 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -415,6 +415,11 @@ public class EventAPI {
 
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
             models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
+            for (var move : models) {
+                if (move.getFrom() != null && move.getTo() == null) {
+                    throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
+                }
+            }
             dao.create(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;

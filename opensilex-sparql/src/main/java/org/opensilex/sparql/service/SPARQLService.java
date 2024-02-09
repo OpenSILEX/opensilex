@@ -1111,7 +1111,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        createWithTransaction(graph, instances, null, true, true);
+        create(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1190,7 +1190,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param checkUriExist       indicate if the service must check if instances already exist
      * @param <T>                 the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void createWithTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
         withTransaction(() -> {
             createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
             return null;

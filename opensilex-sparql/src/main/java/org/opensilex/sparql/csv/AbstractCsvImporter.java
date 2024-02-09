@@ -694,7 +694,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     }
                 }
             }
-            sparql.createWithTransaction(NodeFactory.createURI(graph.toString()), models, models.size(), false, true);
+            sparql.create(NodeFactory.createURI(graph.toString()), models, models.size(), false, true);
         }
     }
 }

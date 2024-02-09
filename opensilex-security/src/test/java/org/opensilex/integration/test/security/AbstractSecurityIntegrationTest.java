@@ -143,6 +143,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return a new Token
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected TokenGetDTO queryToken(String userMail, String userPassword) throws Exception {
 
         AuthenticationDTO authDto = new AuthenticationDTO();
@@ -172,6 +173,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return a new token for the admin
      * @throws Exception
      */
+    @Deprecated
     protected TokenGetDTO queryAdminToken() throws Exception {
         return queryToken(ADMIN_MAIL, ADMIN_PASSWORD);
     }
@@ -181,6 +183,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      *
      * @throws Exception
      */
+    @Deprecated
     protected void registerAdminTokenIfNecessary() throws Exception {
         if (!tokenMap.containsKey(ADMIN_MAIL)) {
             tokenMap.put(ADMIN_MAIL, queryAdminToken());
@@ -194,6 +197,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param userPassword The user password
      * @throws Exception
      */
+    @Deprecated
     protected void registerToken(String userMail, String userPassword) throws Exception {
         tokenMap.put(userMail, queryToken(userMail, userPassword));
     }
@@ -206,6 +210,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
         return appendAdminToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
@@ -218,6 +223,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getOctetPostResponseAsAdmin(WebTarget target, Object entity) throws Exception {
         return appendAdminToken(target)
                 .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
@@ -234,6 +240,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonPostResponse(WebTarget target, Object entity, String userMail) throws Exception {
         return appendToken(target, userMail).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
@@ -246,6 +253,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonPostResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
         return appendAdminToken(target.register(MultiPartFeature.class)).post(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
     }
@@ -257,6 +265,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonGetResponseAsAdmin(WebTarget target) throws Exception {
         return appendAdminToken(target).get();
     }
@@ -269,6 +278,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonGetResponse(WebTarget target, String userMail) throws Exception {
         return appendToken(target, userMail).get();
     }
@@ -281,6 +291,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonPutResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
         return appendAdminToken(target.register(MultiPartFeature.class)).put(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
     }
@@ -293,6 +304,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonPutResponse(WebTarget target, Object entity) throws Exception {
         return appendAdminToken(target).put(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
@@ -305,6 +317,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonGetByUriResponseAsAdmin(WebTarget target, String uri) throws Exception {
         return appendAdminToken(target.resolveTemplate("uri", uri)).get();
     }
@@ -318,6 +331,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getJsonGetByUriResponse(WebTarget target, String uri, String userMail) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri), userMail).get();
     }
@@ -330,6 +344,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception {
         return appendAdminToken(target.resolveTemplate("uri", uri))
                 .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
@@ -344,19 +359,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Response getDeleteByUriResponse(WebTarget target, String uri) throws Exception {
         return appendAdminToken(target.resolveTemplate("uri", uri)).delete();
-    }
-
-    /**
-     * Get {@link Response} from a public DELETE service call.
-     *
-     * @param target the {@link WebTarget} on which DELETE some content
-     * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
-     */
-    protected Response getDeleteJsonResponse(WebTarget target) throws Exception {
-        return appendAdminToken(target).delete();
     }
 
     private static final String ADMIN_MAIL = "admin@opensilex.org";
@@ -370,6 +375,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return the updated {@link WebTarget}
      * @throws Exception in case of error during token retrieval
      */
+    @Deprecated
     protected Invocation.Builder appendAdminToken(WebTarget target) throws Exception {
         registerAdminTokenIfNecessary();
 
@@ -385,6 +391,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return the updated {@link WebTarget}
      * @throws IllegalArgumentException if a token has not been registered for this user yet
      */
+    @Deprecated
     protected Invocation.Builder appendToken(WebTarget target, String userMail) throws IllegalArgumentException {
         if (!tokenMap.containsKey(userMail)) {
             throw new IllegalArgumentException("Cannot find a token for user " + userMail + ". Please generate a token using `registerToken` before your test.");
@@ -402,6 +409,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param deletePath   the path to the service which allow to delete an entity
      * @param entity       the entity to create, read and delete
      */
+    @Deprecated
     protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
 
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entity);
@@ -430,6 +438,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param deletePath   the path to the service which allow to delete an entity
      * @param entities     the List of entities to create, read and delete
      */
+    @Deprecated
     protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
 
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entities);
@@ -451,12 +460,13 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
     }
 
-
+    @Deprecated
     protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
         registerAdminTokenIfNecessary();
         return getSearchResults(searchPath, page, pageSize, searchCriteria, typeReference, ADMIN_MAIL);
     }
 
+    @Deprecated
     protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
         if (searchCriteria == null) {
             searchCriteria = new HashMap<>();
@@ -468,14 +478,17 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return readResponse(getResult, typeReference).getResult();
     }
 
+    @Deprecated
     protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
         return this.getSearchResultsAsAdmin(searchPath, 0, 20, searchCriteria, typeReference);
     }
 
+    @Deprecated
     protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
         return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
     }
 
+    @Deprecated
     protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {
         if (searchCriteria == null) {
             searchCriteria = new HashMap<>();

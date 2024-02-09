@@ -23,7 +23,6 @@ import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -596,7 +595,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @return returns the read entity.
      * @throws Exception if the operation fails.
      */
-    protected <T> T testBasicReadAsAdmin(
+    protected <T extends JsonResponse<?>> T testBasicReadAsAdmin(
             ServiceDescription readServiceDescription,
             TypeReference<T> entityTypeReference,
             URI resourceUri
@@ -622,10 +621,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             ResourceDTO<?> entityToPut,
             TypeReference<T> entityTypeReference
     ) throws Exception {
-        UserCall updateCall = new UserCallBuilder(updateServiceDescription)
+        new UserCallBuilder(updateServiceDescription)
                 .setBody(entityToPut)
-                .buildAdmin();
-        updateCall.executeCallAndReturnURI();
+                .buildAdmin()
+                .executeCallAssertStatus(Response.Status.OK);
         // Get the updated object
         T readResponse = testBasicReadAsAdmin(readServiceDescription, entityTypeReference, entityToPut.getUri());
         LinkedHashMap<String, Object> responseAttributes = convertToNotNullNestedMap(readResponse.getResult());
@@ -645,16 +644,15 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             ServiceDescription readServiceDescription,
             ServiceDescription deleteServiceDescription,
             URI resourceUri
-    ) throws Exception {
+    ) {
         new UserCallBuilder(deleteServiceDescription)
                 .setUriInPath(resourceUri.toString())
                 .buildAdmin()
-                .executeCallAndReturnURI();
-        Response readResult = new UserCallBuilder(readServiceDescription)
+                .executeCallAssertStatus(Response.Status.OK);
+        new UserCallBuilder(readServiceDescription)
                 .setUriInPath(resourceUri.toString())
                 .buildAdmin()
-                .executeCall();
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), readResult.getStatus());
+                .executeCallAssertStatus(Response.Status.NOT_FOUND);
     }
 
     /**
@@ -682,6 +680,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         // READ
         testBasicReadAsAdmin(readServiceDescription, entityTypeReference, createdUri);
         // UPDATE
+        entityToPut.setUri(createdUri);
         testBasicUpdateAsAdmin(readServiceDescription, updateServiceDescription, entityToPut, entityTypeReference);
         // DELETE
         testBasicDeleteAsAdmin(readServiceDescription, deleteServiceDescription, createdUri);

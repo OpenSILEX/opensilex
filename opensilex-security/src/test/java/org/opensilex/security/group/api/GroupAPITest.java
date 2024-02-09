@@ -1,10 +1,6 @@
 package org.opensilex.security.group.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.collections4.IterableMap;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.collections4.PredicateUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
@@ -16,19 +12,20 @@ import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.server.response.JsonResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
@@ -103,12 +100,9 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     public void testGroupBasicCRUDAsAdmin() throws Exception {
         createTestEnv();
 
-        LinkedHashMap<String, Object> attributesMap = convertToNestedMap(getGroupGetDTO());
-        attributesMap.values().removeAll(Collections.singleton(null));
         testBasicCRUDAsAdmin(
                 create, get, update, delete,
                 getGroupCreationDTO(), getGroupUpdateDTO(),
-                attributesMap,
                 new TypeReference<SingleObjectResponse<GroupGetDTO>>() {
                 }
         );
@@ -130,84 +124,47 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         return dto;
     }
 
-    private static GroupGetDTO getGroupGetDTO() throws URISyntaxException {
-        GroupGetDTO dto = new GroupGetDTO();
-        dto.setName("new group name");
-        dto.setDescription("New description");
-
-        List<GroupUserProfileDTO> userProfiles = new ArrayList<>();
-        GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
-
-        userProfile.setUserURI(new URI(USER1_URI));
-        userProfile.setProfileURI(new URI(PROFILE2_URI));
-        userProfiles.add(userProfile);
-
-        dto.setUserProfiles(userProfiles);
-        return dto;
-    }
-
-    /*@Test
+    @Test
     public void testSearch() throws Exception {
         createTestEnv();
 
-        new UserCallBuilder(create).setBody(getGroupCreationDTO()).buildAdmin().executeCallAndReturnURI();
+        new UserCallBuilder(create)
+                .setBody(getGroupCreationDTO())
+                .buildAdmin()
+                .executeCallAssertStatus(Response.Status.CREATED);
 
-        GroupCreationDTO dto = getCreationDTO();
+        GroupCreationDTO dto = getGroupCreationDTO();
+        dto.setName("Group 2");
+        dto.setDescription("Description 2");
 
-        new UserCallBuilder(create).setBody(dto).buildAdmin().executeCallAndReturnURI();
+        GroupUserProfileModificationDTO userProfile = new GroupUserProfileModificationDTO();
+        userProfile.setUserURI(new URI(USER2_URI));
+        userProfile.setProfileURI(new URI(PROFILE1_URI));
 
-        Map<String, Object> params = new HashMap<String, Object>() {
-            {
-                put("name", "Group.*");
-            }
-        };
+        dto.getUserProfiles().add(
+            userProfile
+        );
 
-        WebTarget target = appendSearchParams(target(searchPath), 0, 50, params);
-        Response getSearchResult = appendAdminToken(target).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
+        new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAssertStatus(Response.Status.CREATED);
 
-        JsonNode node = getSearchResult.readEntity(JsonNode.class);
-        PaginatedListResponse<GroupDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupDTO>>() {
-        });
+        PaginatedListResponse<GroupDTO> listResponse = new UserCallBuilder(search).addParam("name", "Group.*")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GroupDTO>>() {})
+                .getDeserializedResponse();
         List<GroupDTO> users = listResponse.getResult();
 
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
 
-        params.put("name", "Group 2");
-        target = appendSearchParams(target(searchPath), 0, 50, params);
-        getSearchResult = appendAdminToken(target).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
-
-        node = getSearchResult.readEntity(JsonNode.class);
-        listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GroupDTO>>() {
-        });
-        users = listResponse.getResult();
-        assertEquals(1, users.size());
-    }*/
-
-    private void compareGroupsDTO(GroupUpdateDTO expectedGroupDTO, GroupDTO actualGroupDTO) {
-        assertEquals(expectedGroupDTO.getUri(), actualGroupDTO.getUri());
-        assertEquals(expectedGroupDTO.getName(), actualGroupDTO.getName());
-        assertEquals(expectedGroupDTO.getUserProfiles().size(), actualGroupDTO.getUserProfiles().size());
-
-        Map<String, String> userProfilesExpected = new HashMap<>();
-        expectedGroupDTO.getUserProfiles().forEach((userProfile) -> {
-            userProfilesExpected.put(
-                    userProfile.getUserURI().toString(),
-                    userProfile.getProfileURI().toString()
-            );
-        });
-
-        Map<String, String> userProfilesActual = new HashMap<>();
-        expectedGroupDTO.getUserProfiles().forEach((userProfile) -> {
-            userProfilesActual.put(
-                    userProfile.getUserURI().toString(),
-                    userProfile.getProfileURI().toString()
-            );
-        });
-
-        assertTrue(compareMaps(userProfilesExpected, userProfilesActual));
+        PaginatedListResponse<GroupDTO> listResponse2 = new UserCallBuilder(search).addParam("name", "Group 2")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GroupDTO>>() {})
+                .getDeserializedResponse();
+        List<GroupDTO> users2 = listResponse2.getResult();
+        assertEquals(1, users2.size());
     }
 
     @Override

@@ -45,7 +45,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -327,7 +326,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public void executeCallAssertStatus(Response.Status expectedStatus) {
             try (Response response = executeCall()) {
-                assertEquals(response.getStatus(), expectedStatus.getStatusCode());
+                assertEquals(expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -339,7 +338,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @return the deserialized response
          * @throws Exception if there is an error executing the call or deserializing the response
          */
-        public <T> Result <T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
+        public <T extends JsonResponse<?>> Result<T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
             try (Response response = executeCall()) {
                 assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
                 Result<T> result = new Result<>(readResponse(response, typeReference), response);
@@ -361,7 +360,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 });
                 return URI.create(response.getDeserializedResponse().getResult());
             } else {
-                Result<JsonResponse<UriResoucreDTO>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
+                Result<OpensilexResponseDeserialize<UriResourceDTO>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
                 });
                 return readResponse.getDeserializedResponse().getResult().getUri();
             }
@@ -426,7 +425,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws UnsupportedOperationException if the HTTP method is not supported
          */
         protected Response executeRequest(Invocation.Builder requestBuilder) {
-
+            LOGGER.debug(String.valueOf(this));
             if(Objects.equals(httpMethod, HttpMethod.GET)) {
                 return requestBuilder.get();
             } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
@@ -515,24 +514,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                     ", responseMediaTypes=" + responseMediaTypes +
                     '}';
         }
-
-        private class UriResoucreDTO {
-
-            /**
-             * uri
-             */
-            @ValidURI
-            @ApiModelProperty()
-            protected URI uri;
-
-            public URI getUri() {
-                return uri;
-            }
-
-            public void setUri(URI uri) {
-                this.uri = uri;
-            }
-        }
     }
 
     protected class PublicCallBuilder<T extends PublicCallBuilder<T>> {
@@ -616,8 +597,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * This class represents the result of a call in two parts : the raw response and the deserialized one.
      */
     public class Result <T> {
-        private T deserializedResponse;
-        private Response response;
+        private final T deserializedResponse;
+        private final Response response;
 
         public Result(T deserializedResponse, Response response) {
             this.deserializedResponse = deserializedResponse;
@@ -650,5 +631,31 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         public String getPathTemplate() {
             return pathTemplate;
         }
+    }
+
+    private static class UriResourceDTO {
+
+        /**
+         * uri
+         */
+        @ValidURI
+        @ApiModelProperty()
+        protected URI uri;
+
+        public UriResourceDTO() {
+
+        }
+
+        public URI getUri() {
+            return uri;
+        }
+
+        public void setUri(URI uri) {
+            this.uri = uri;
+        }
+    }
+
+    private static class OpensilexResponseDeserialize<T> extends JsonResponse<T> {
+
     }
 }

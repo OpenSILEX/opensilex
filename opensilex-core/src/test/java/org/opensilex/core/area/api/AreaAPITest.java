@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
 
-import static junit.framework.Assert.assertNotSame;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -108,7 +107,10 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     public void testCreate() throws Exception {
         // ensure that the result is a well-formed URI, else throw exception
         URI createdUri = createDefaultArea();
-        new UserCallBuilder(getByUri).setUriInPath(createdUri.toString()).buildAdmin().executeCallAndReturnURI();
+        new UserCallBuilder(getByUri)
+                .setUriInPath(createdUri.toString())
+                .buildAdmin()
+                .executeCallAssertStatus(Response.Status.OK);
     }
 
     @Test
@@ -124,7 +126,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         areaDTO.setGeometry(geometryToGeoJson(geometry));
 
-        new UserCallBuilder(update).setBody(areaDTO).buildAdmin().executeCallAndReturnURI();
+        new UserCallBuilder(update).setBody(areaDTO).buildAdmin().executeCallAssertStatus(Response.Status.OK);
 
         // retrieve the new area and compare it to the expected area
         SingleObjectResponse<AreaCreationDTO> getResponse = new UserCallBuilder(getByUri)

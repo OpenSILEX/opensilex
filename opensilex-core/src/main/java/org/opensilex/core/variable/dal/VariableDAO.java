@@ -43,6 +43,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 

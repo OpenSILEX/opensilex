@@ -18,10 +18,7 @@ import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.bson.conversions.Bson;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.opensilex.nosql.MongoDBServiceTest;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
@@ -78,7 +75,12 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     private static final int ROOT_DOCUMENT_COUNT = 100;
     private static final int EXPECTED_RESULT_BY_TYPE = 10;
 
-    private static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> dao;
+    // Use this DAO inside test just for searching document from the JSON dump
+    private static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> searchDao;
+
+    // Other DAO used just for write other read/write tests
+    private static MongoReadWriteDao<MongoTestModel, MongoSearchFilter> readWriteDao;
+
     private static final Bson DEFAULT_PROJECTION = Projections.fields(
             Projections.include(
                     MongoTestModel.URI_FIELD,
@@ -107,7 +109,8 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @BeforeClass
     public static void setUp() {
         MongoDBServiceTest.setUp();
-        dao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-test", "test");
+        searchDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-search-test", "test");
+        readWriteDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-read-write-test", "test");
         LOGGER.debug("Load json dump for testing : {} [START]", JSON_FILE_PATH);
 
         // Create ObjectMapper in order to parse JSON content (encoded as byte[]) to List<MongoTestModel>
@@ -124,7 +127,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             List<MongoTestModel> models = objectMapper.readValue(stream.readAllBytes(), collectionType);
 
             // Insert documents
-            mongoDBv2.runTransaction(session -> dao.getCollection().insertMany(session, models));
+            mongoDBv2.runTransaction(session -> searchDao.getCollection().insertMany(session, models));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -136,8 +139,13 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @AfterClass
     public static void stop() {
-
+        searchDao.getCollection().drop();
         MongoDBServiceTest.stop();
+    }
+
+    @After
+    public void afterEach() {
+        readWriteDao.getCollection().drop();
     }
 
     private static MongoTestModel getModel() {
@@ -152,17 +160,17 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     public void getAndExists() throws NoSQLInvalidURIException {
 
         // ensure exist/get return results with a known uri
-        assertNotNull(dao.get(SINGLETON_URI));
-        assertTrue(dao.exists(SINGLETON_URI));
+        assertNotNull(searchDao.get(SINGLETON_URI));
+        assertTrue(searchDao.exists(SINGLETON_URI));
 
         // ensure exist/get don't return results with unknown uri
         URI fakeUri = URI.create("opensilex:fake_uri");
-        assertFalse(dao.exists(fakeUri));
-        assertThrows(NoSQLInvalidURIException.class, () -> dao.get(fakeUri));
+        assertFalse(searchDao.exists(fakeUri));
+        assertThrows(NoSQLInvalidURIException.class, () -> searchDao.get(fakeUri));
 
         // ensure null checking
-        assertThrows(NullPointerException.class, () -> dao.exists(null));
-        assertThrows(NullPointerException.class, () -> dao.get(null));
+        assertThrows(NullPointerException.class, () -> searchDao.exists(null));
+        assertThrows(NullPointerException.class, () -> searchDao.get(null));
     }
 
     @Test
@@ -171,31 +179,31 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         mongoDBv2.runThrowingTransaction((session) -> {
             // Insert model inside a specific session
             MongoTestModel model = getModel();
-            dao.create(model, session);
+            searchDao.create(model, session);
 
             // Should exist inside of session context
-            assertNotNull(dao.get(session, model.getUri()));
+            assertNotNull(searchDao.get(session, model.getUri()));
 
             // Should not exist outside of session since transaction has not been committed
-            assertThrows(NoSQLInvalidURIException.class, () -> dao.get(model.getUri()));
-            assertFalse(dao.exists(model.getUri()));
+            assertThrows(NoSQLInvalidURIException.class, () -> searchDao.get(model.getUri()));
+            assertFalse(searchDao.exists(model.getUri()));
         });
     }
 
     @Test
     public void count() {
         MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
-        assertEquals(1, dao.count(filter));
+        assertEquals(1, searchDao.count(filter));
 
         filter = new MongoSearchFilter();
-        assertEquals(ROOT_DOCUMENT_COUNT, dao.count(filter));
+        assertEquals(ROOT_DOCUMENT_COUNT, searchDao.count(filter));
 
         filter.setRdfTypes(TYPE_LIST);
-        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, dao.count(filter));
+        assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, searchDao.count(filter));
 
         filter = new MongoSearchFilter();
         filter.setIncludedUris(URI_LIST);
-        assertEquals(URI_LIST.size(), dao.count(filter));
+        assertEquals(URI_LIST.size(), searchDao.count(filter));
     }
 
     private void testSearch(
@@ -214,11 +222,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
             // Run search query with/without projection/conversion
             if (useConversion) {
-                results = dao.search(session, filter, projection, DEFAULT_CONVERSION);
+                results = searchDao.search(session, filter, projection, DEFAULT_CONVERSION);
             } else {
                 results = useStream ?
-                        dao.searchAsStream(session, filter, projection) :
-                        dao.search(session, filter, projection);
+                        searchDao.searchAsStream(session, filter, projection) :
+                        searchDao.search(session, filter, projection);
             }
 
             // Run assertion on results and on each item from results
@@ -235,7 +243,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             // if conversion is provided, directly test the converted model
             if (useConversion) {
                 testConversion(model);
-            }else if (useProjection) {
+            } else if (useProjection) {
                 testFieldProjection(model);
             }
         };
@@ -336,58 +344,54 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void testDistinctUris() {
-        Set<URI> uris = dao.distinctUris(new MongoSearchFilter());
+        Set<URI> uris = searchDao.distinctUris(new MongoSearchFilter());
         Assert.assertEquals(ROOT_DOCUMENT_COUNT, uris.size());
         uris.forEach(Assert::assertNotNull);
 
         MongoSearchFilter noResultFilter = new MongoSearchFilter();
         noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
-        Set<URI> noUris = dao.distinctUris(noResultFilter);
+        Set<URI> noUris = searchDao.distinctUris(noResultFilter);
         Assert.assertTrue(noUris.isEmpty());
     }
 
     @Test
     public void testDistinct() throws NoSQLAlreadyExistingUriException, URISyntaxException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-distinct-test", "test");
-
         int nbModel = 20;
         // create models, with nbModel/2 different names
         List<MongoTestModel> models = new ArrayList<>(nbModel);
-        for (int i = 0; i < nbModel/2; i ++) {
+        for (int i = 0; i < nbModel / 2; i++) {
             MongoTestModel model1 = new MongoTestModel();
-            model1.setName("name_" +i);
+            model1.setName("name_" + i);
             MongoTestModel model2 = new MongoTestModel();
-            model2.setName("name_" +i);
+            model2.setName("name_" + i);
             models.add(model1);
             models.add(model2);
         }
-        innerDao.create(models);
+        readWriteDao.create(models);
 
         // extract distinct types (no pagination here)
-        Set<String> distinctNames = innerDao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
-        Assert.assertEquals(nbModel/2, distinctNames.size());
+        Set<String> distinctNames = readWriteDao.distinct(MongoTestModel.NAME_FIELD, String.class, new MongoSearchFilter(), null);
+        Assert.assertEquals(nbModel / 2, distinctNames.size());
         distinctNames.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
 
         // extract distinct types (pagination with aggregation pipeline)
         MongoSearchFilter filter = new MongoSearchFilter();
         filter.setOrderByList(List.of(new OrderBy("name", Order.ASCENDING)));
         filter.setPageSize(5);
-        distinctNames = innerDao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, filter, null);
+        distinctNames = readWriteDao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, filter, null);
         Assert.assertEquals(5, distinctNames.size());
         distinctNames.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
 
         // no results -> ensure non nullity of Set
         MongoSearchFilter noResultFilter = new MongoSearchFilter();
         noResultFilter.setRdfTypes(List.of(URI.create("test:unknown_type")));
-        Set<String> noNames = dao.distinct(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
+        Set<String> noNames = searchDao.distinct(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
         Assert.assertTrue(noNames.isEmpty());
 
         // no results -> ensure non nullity of Set (with aggregation pipeline)
-        noNames = dao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
+        noNames = searchDao.distinctAggregation(MongoTestModel.NAME_FIELD, String.class, noResultFilter, null);
         Assert.assertTrue(noNames.isEmpty());
-
-        innerDao.deleteMany(new MongoSearchFilter());
     }
 
     private void parallelSearch(ClientSession session) throws InterruptedException {
@@ -400,7 +404,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         List<Callable<Integer>> tasks = IntStream.range(0, nbThread).mapToObj(page -> {
             MongoSearchFilter filter = new MongoSearchFilter();
             filter.setPage(page).setPageSize(pageSize);
-            return new PaginatedSearchTask<>(dao, collectedModels, filter, session);
+            return new PaginatedSearchTask<>(searchDao, collectedModels, filter, session);
         }).collect(Collectors.toList());
 
         // execute all tasks in parallel , wait for task completion or timeout
@@ -426,7 +430,6 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     public void parallelInsertTest(boolean generateSession) throws InterruptedException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-write-test", "test");
         int nbThread = 4;
         int nbModelPerThread = 1024;
 
@@ -448,8 +451,8 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
             // Generate a task
             Callable<InsertManyResult> task = generateSession ?
-                    () -> mongoDBv2.computeThrowingTransaction((session) -> innerDao.create(models, session)) :
-                    () -> innerDao.create(models);
+                    () -> mongoDBv2.computeThrowingTransaction((session) -> readWriteDao.create(models, session)) :
+                    () -> readWriteDao.create(models);
             executor.submit(task);
         }
 
@@ -458,7 +461,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         MongoSearchFilter searchFilter = new MongoSearchFilter();
         searchFilter.setPageSize(nbModelPerThread * nbThread);
 
-        ListWithPagination<MongoTestModel> searchResults = innerDao.search(searchFilter);
+        ListWithPagination<MongoTestModel> searchResults = readWriteDao.search(searchFilter);
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getTotal());
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getSource().size());
 
@@ -468,7 +471,6 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         });
 
         // Delete objects
-        innerDao.deleteMany(new MongoSearchFilter());
         executor.shutdown();
 
     }
@@ -481,38 +483,34 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void createTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("create");
-        innerDao.create(model);
+        readWriteDao.create(model);
         assertNotNull(model.getUri());
-        assertEquals(1, innerDao.count(new MongoSearchFilter()));
+        assertEquals(1, readWriteDao.count(new MongoSearchFilter()));
     }
 
 
     @Test
     public void createAllTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-all-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("create");
         MongoTestModel model2 = new MongoTestModel();
         model2.setName("create2");
 
-        innerDao.create(List.of(model, model2));
+        readWriteDao.create(List.of(model, model2));
         assertNotNull(model.getUri());
         assertNotNull(model2.getUri());
-        assertEquals(2, innerDao.count(new MongoSearchFilter()));
+        assertEquals(2, readWriteDao.count(new MongoSearchFilter()));
 
-        innerDao.deleteMany(new MongoSearchFilter());
     }
 
     @Test
     public void createAllFailTest() {
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-create-all-fail-test", "test");
 
         // create an index by name
         MongoDBServiceV2.registerIndex(
-                innerDao.getCollection().getNamespace().getCollectionName(),
+                readWriteDao.getCollection().getNamespace().getCollectionName(),
                 Indexes.ascending(MongoTestModel.NAME_FIELD),
                 new IndexOptions().unique(true)
         );
@@ -524,56 +522,50 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         model2.setName("create");
 
         // Trigger the throws on a MongoException due to conflict on field name due to the unique name index
-        Assert.assertThrows(MongoException.class, () -> innerDao.create(List.of(model, model2)));
-        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(List.of(model, model2), session)));
-        Assert.assertThrows(IllegalArgumentException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(Collections.emptyList(), session)));
-        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> innerDao.create(List.of(model, model2), session)));
+        Assert.assertThrows(MongoException.class, () -> readWriteDao.create(List.of(model, model2)));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(List.of(model, model2), session)));
+        Assert.assertThrows(IllegalArgumentException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(Collections.emptyList(), session)));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(List.of(model, model2), session)));
     }
 
 
     @Test
     public void updateTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-update-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("update_1");
-        innerDao.create(model);
+        readWriteDao.create(model);
 
         model.setName("update_2");
         model.setRdfType(URI.create("test:updated_type"));
-        innerDao.update(model);
+        readWriteDao.update(model);
 
-        MongoTestModel modelFromDB = innerDao.get(model.getUri());
+        MongoTestModel modelFromDB = readWriteDao.get(model.getUri());
         Assert.assertEquals(modelFromDB.getName(), model.getName());
         Assert.assertEquals(modelFromDB.getRdfType(), model.getRdfType());
 
         MongoTestModel unknown = new MongoTestModel();
         unknown.setUri(URI.create("test:fake_uri"));
-        assertThrows(NoSQLInvalidURIException.class, () -> innerDao.update(unknown));
+        assertThrows(NoSQLInvalidURIException.class, () -> readWriteDao.update(unknown));
 
-        innerDao.deleteMany(new MongoSearchFilter());
     }
 
 
     @Test
     public void deleteTest() throws NoSQLAlreadyExistingUriException, URISyntaxException, NoSQLInvalidURIException {
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-update-test", "test");
         MongoTestModel model = new MongoTestModel();
         model.setName("update_1");
-        innerDao.create(model);
+        readWriteDao.create(model);
 
-        Assert.assertNotNull(innerDao.get(model.getUri()));
-        innerDao.delete(model.getUri());
-        assertThrows(NoSQLInvalidURIException.class, () -> innerDao.get(model.getUri()));
+        Assert.assertNotNull(readWriteDao.get(model.getUri()));
+        readWriteDao.delete(model.getUri());
+        assertThrows(NoSQLInvalidURIException.class, () -> readWriteDao.get(model.getUri()));
 
-        innerDao.deleteMany(new MongoSearchFilter());
     }
 
     @Test
     public void deleteManyTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
-
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-delete-test", "test");
 
         // create multiple model with several types
         URI type1 = URI.create("test:type1");
@@ -586,7 +578,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             model.setName("delete_1");
             return model;
         }).collect(Collectors.toList());
-        innerDao.create(modelsWithType1);
+        readWriteDao.create(modelsWithType1);
 
         List<MongoTestModel> modelsWithType2 = IntStream.range(0, nbModelByType).mapToObj(i -> {
             MongoTestModel model = new MongoTestModel();
@@ -594,19 +586,18 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             model.setName("delete_1");
             return model;
         }).collect(Collectors.toList());
-        innerDao.create(modelsWithType2);
+        readWriteDao.create(modelsWithType2);
 
-        Assert.assertEquals(nbModelByType*2, innerDao.count(new MongoSearchFilter()));
+        Assert.assertEquals(nbModelByType * 2, readWriteDao.count(new MongoSearchFilter()));
 
         // delete all document
         MongoSearchFilter filter = new MongoSearchFilter();
         filter.setRdfTypes(List.of(type1));
-        DeleteResult deleteResult = innerDao.deleteMany(filter);
+        DeleteResult deleteResult = readWriteDao.deleteMany(filter);
         Assert.assertEquals(nbModelByType, deleteResult.getDeletedCount());
-        Assert.assertEquals(nbModelByType, innerDao.count(new MongoSearchFilter()));
+        Assert.assertEquals(nbModelByType, readWriteDao.count(new MongoSearchFilter()));
 
-        innerDao.deleteMany(new MongoSearchFilter());
-        Assert.assertEquals(0, innerDao.count(new MongoSearchFilter()));
+        Assert.assertEquals(0, readWriteDao.count(new MongoSearchFilter()));
     }
 
     @Test
@@ -614,7 +605,6 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
         int nbModel = 100;
 
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "sparql-mongo-test", "test");
         SparqlMongoTransaction trx = new SparqlMongoTransaction(sparql, mongoDBv2);
         Node graph = NodeFactory.createURI("test:sparql-mongo-test");
 
@@ -625,18 +615,18 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
             for (int i = 0; i < nbModel; i++) {
                 SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
-                sparqlModel.setUri(URI.create("testSparqlMongoTransaction:"+i));
+                sparqlModel.setUri(URI.create("testSparqlMongoTransaction:" + i));
                 sparqlModels.add(sparqlModel);
 
                 MongoTestModel mongoModel = new MongoTestModel();
-                mongoModel.setName("test"+i);
+                mongoModel.setName("test" + i);
                 mongoModels.add(mongoModel);
             }
 
             sparql.create(graph, sparqlModels);
-            innerDao.create(mongoModels, session);
+            readWriteDao.create(mongoModels, session);
 
-            return Pair.of(sparqlModels,mongoModels);
+            return Pair.of(sparqlModels, mongoModels);
         });
 
         Assert.assertNotNull(result);
@@ -644,14 +634,12 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         Assert.assertNotNull(result.getRight());
 
         Assert.assertEquals(nbModel, sparql.count(graph, SPARQLResourceModel.class));
-        Assert.assertEquals(nbModel, innerDao.count(MongoSearchFilter.EMPTY));
+        Assert.assertEquals(nbModel, readWriteDao.count(MongoSearchFilter.EMPTY));
         sparql.deleteAll(graph, result.getLeft().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
     }
 
     @Test
     public void testParallelSparqlMongoTransaction() throws Exception {
-        
-        var innerDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "sparql-mongo-parallel-test", "test");
 
         int nbModelPerThread = 100;
         int nbThread = 2;
@@ -671,14 +659,14 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
                 sparqlModels.add(sparqlModel);
 
                 MongoTestModel mongoModel = new MongoTestModel();
-                mongoModel.setName("test"+modelIdx+"_"+threadIdx);
+                mongoModel.setName("test" + modelIdx + "_" + threadIdx);
                 mongoModels.add(mongoModel);
             }
 
             var transaction = new SparqlMongoTransaction(newService, mongoDBv2);
             Callable<InsertManyResult> task = () -> transaction.execute((sparqlConn, session) -> {
                 newService.createWithoutTransaction(graph, sparqlModels, 1000, false, false);
-                return innerDao.create(mongoModels, session);
+                return readWriteDao.create(mongoModels, session);
             });
             executor.submit(task);
         }
@@ -686,9 +674,9 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         // Run search and ensure results are OK
         Thread.sleep(2000);
         // Assert.assertEquals(nbModelPerThread * nbThread, sparql.count(graph, SPARQLResourceModel.class));
-        Assert.assertEquals(nbModelPerThread * nbThread, innerDao.count(MongoSearchFilter.EMPTY));
+        Assert.assertEquals(nbModelPerThread * nbThread, readWriteDao.count(MongoSearchFilter.EMPTY));
         executor.shutdown();
-        innerDao.deleteMany(MongoSearchFilter.EMPTY);
+        readWriteDao.deleteMany(MongoSearchFilter.EMPTY);
     }
 
 }

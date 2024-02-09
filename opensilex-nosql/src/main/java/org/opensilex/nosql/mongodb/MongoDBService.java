@@ -45,6 +45,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.nosql.mongodb.codec.*;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -70,10 +71,15 @@ public class MongoDBService extends BaseService {
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
+    // V2 service : used for an easier transition from this one to the new V2
+    private MongoDBServiceV2 serviceV2;
+
     public MongoDBService(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
+        serviceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+        Objects.requireNonNull(serviceV2);
     }
 
     /**
@@ -689,5 +695,9 @@ public class MongoDBService extends BaseService {
         } else {
             return orders.toString();
         }
+    }
+
+    public MongoDBServiceV2 getServiceV2() {
+        return serviceV2;
     }
 }

@@ -146,9 +146,26 @@ new SparqlMongoTransaction(sparql,mongodb).execute(session -> {
 });
 ```
 
-# Dao lifecycle
+# Dao and service lifecycle
 
-## Creation
+## Service creation
+
+```java
+
+class MyAPI {
+  @Inject
+  private MongoDBService mongodb;
+
+  @GET
+  public Response service{
+      
+    MongoDBServiceV2 mongodbV2 = mongodb.getServiceV2();
+    // work with new service 
+  }
+}
+```
+
+## DAO Creation
 
 > Initialization of a Dao for handling `DataModel` inside the `data` collection
 

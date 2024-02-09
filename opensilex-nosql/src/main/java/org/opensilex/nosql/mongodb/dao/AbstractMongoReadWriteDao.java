@@ -257,9 +257,13 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return deleteResult;
     }
 
-    protected @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
+    protected final @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
         logger.info("{}, {}, collection: {}", kv(LOG_TYPE, DELETE_MANY_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_START), collection.getNamespace().getCollectionName());
         Instant start = Instant.now();
+
+        if(deleteFilterBson.toBsonDocument().isEmpty()){
+            throw new IllegalArgumentException("You can't provide an empty filter when deleting documents inside a collection");
+        }
 
         // deleteMany() can update several document inside a collection, transaction handling is always needed
         DeleteResult result = session != null ?
@@ -279,7 +283,14 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         return deleteMany(session, Filters.in(idField(), uris));
     }
 
-    public Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
+    /**
+     * @param deleteFilter the delete filter
+     * @return the {@link Bson} document passed to mongodb for finding which document delete
+     *
+     * @apiNote By default, this method return the {@link Bson} returned by {@link #filterToBson(MongoSearchFilter)}, which means
+     * that DELETION and SEARCH use the same filter. You can override this method if you what to provide a different semantic.
+     */
+    protected Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
         return filterToBson(deleteFilter);
     }
 

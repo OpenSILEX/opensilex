@@ -102,7 +102,9 @@ export class SearchStore {
 }
 
 async function loadTimeIntervalsLabels(){
-  const service: VariablesService = getOpenSilexPlugin().getService("opensilex.VariablesService")
+  const openSilex = getOpenSilexPlugin()
+  if (! openSilex) { return }
+  const service: VariablesService = await openSilex.getService("opensilex.VariablesService")
   const response = await service.getTimeIntervals(store.state.lang)
   store.state.time_interval_list = response.response.result
 }

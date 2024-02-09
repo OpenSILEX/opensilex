@@ -291,7 +291,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
-            LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+            if(ex != null){
+                LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+            }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
         }
@@ -2219,8 +2221,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 clearGraph(graph);
             }
             commitTransaction();
-        } finally {
+        }catch (Exception e){
             rollbackTransaction();
+            throw e;
         }
     }
 

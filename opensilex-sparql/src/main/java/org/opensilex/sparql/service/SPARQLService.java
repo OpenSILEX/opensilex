@@ -2660,7 +2660,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      *
      * @param typeURI you want subtypes of.
-     * @param labelLang of the preflabel, if not found request will search for "en" prefLabel.
+     * @param labelLang of the preflabel, if not found request will search for OpensSilex default language prefLabel.
      * @return subtypes as SPARQLRessourceModel with URI and TypeLabel.
      * @throws SPARQLException
      * ecemple of request for time:TemporalUnit subtypes
@@ -2682,7 +2682,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * }
      * </pre>
      */
-    public List<SPARQLResourceModel> getSubtypesUrisAndLabels(URI typeURI, String labelLang) throws SPARQLException {
+    public List<SPARQLResourceModel> getSubtypesUrisAndPrefLabel(URI typeURI, String labelLang) throws SPARQLException {
         Var typeVar = makeVar("type");
         Var labelVar = makeVar("label");
         SelectBuilder select = new SelectBuilder().addVar(typeVar).addVar(labelVar).setDistinct(true);
@@ -2702,7 +2702,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     } catch (URISyntaxException e) {
                         throw new RuntimeException("error while getting subtypes uris of type : "+typeURI+". Unreadable URI : "+subtypeURI, e);
                     }
-                    subtype.setTypeLabel(new SPARQLLabel(label, "en"));
+                    subtype.setTypeLabel(new SPARQLLabel(label, OpenSilex.DEFAULT_LANGUAGE));
                     return subtype;
                 })
                 .collect(Collectors.toList());

@@ -829,7 +829,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         //create another type that should not be returned
         createSPARQLResourceModel( new URI("http://test.opensilex.org/Other"), new URI("http://test.opensilex.org/otherParent") );
 
-        List<URI> resultChildTypes = sparql.getSubtypesUrisAndLabels(parentTypeURI, null).stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+        List<URI> resultChildTypes = sparql.getSubtypesUrisAndPrefLabel(parentTypeURI, null).stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
         assertEquals(expectedChildTypes, resultChildTypes);
     }
 

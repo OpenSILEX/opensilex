@@ -2,7 +2,7 @@
     <opensilex-SelectForm
         label="VariableForm.time-interval"
         :selected.sync="selectedTimeIntervalId"
-        :options="periodList"
+        :options="timeintervalsAsOptions"
         placeholder="VariableForm.time-interval-placeholder"
         helpMessage="VariableForm.time-interval-help"
         @keyup.enter.native="emitHandlingEnterKey"
@@ -14,15 +14,14 @@ import {Component, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../../models/Store";
-import {VariableTimeIntervalDTO} from "opensilex-core/model/variableTimeIntervalDTO";
-import {VariablesService} from "opensilex-core/api/variables.service";
+import {SelectableItem} from "../../common/forms/SelectForm.vue";
+import {BasicURIAndLabelDTO} from "opensilex-core/model/basicURIAndLabelDTO";
 
 @Component
 export default class VariableTimeIntervalSelector extends Vue {
   //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin
     public readonly $store: OpenSilexStore
-    private service: VariablesService
   //#endregion
 
   //#region Props
@@ -31,8 +30,13 @@ export default class VariableTimeIntervalSelector extends Vue {
   //#endregion
 
   //#region Computed
-  private get periodList(): Array<VariableTimeIntervalDTO> {
-      return this.$store.state.time_interval_list
+  private get timeintervalsAsOptions(): Array<SelectableItem> {
+      return this.$store.state.time_interval_list.map((timeinterval: BasicURIAndLabelDTO) => {
+        return {
+          id: timeinterval.uri,
+          label: timeinterval.label
+        }
+      })
     }
   //#endregion
 
@@ -40,12 +44,6 @@ export default class VariableTimeIntervalSelector extends Vue {
   private emitHandlingEnterKey() {
     this.$emit("handlingEnterKey")
   }
-  //#endregion
-
-  //#region Hooks
-  created() {
-      this.service = this.$opensilex.getService("opensilex.VariablesService");
-    }
   //#endregion
 
 }

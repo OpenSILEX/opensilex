@@ -148,7 +148,7 @@ import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
-export interface SelectableItem {
+export type SelectableItem = {
   id: string,
   label: string,
   isDisabled?: boolean

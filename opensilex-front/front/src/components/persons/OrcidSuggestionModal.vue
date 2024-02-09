@@ -116,8 +116,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
 import {BModal} from "bootstrap-vue";
-
-export type Option = { id: string, label: string }
+import {SelectableItem} from "../common/forms/SelectForm.vue";
 
 @Component({})
 export default class OrcidSuggestionModal extends Vue {
@@ -126,8 +125,8 @@ export default class OrcidSuggestionModal extends Vue {
 
   @Ref("orcidModal") readonly modal!: BModal;
 
-  mailOptions: Array<Option> = []
-  affiliationOptions: Array<Option> = []
+  mailOptions: Array<SelectableItem> = []
+  affiliationOptions: Array<SelectableItem> = []
 
   keepLastName: boolean = true
   keepFirstName: boolean = true
@@ -165,7 +164,7 @@ export default class OrcidSuggestionModal extends Vue {
     }
   }
 
-  extractOptionsFromArray(array: Array<string>): Array<Option> {
+  extractOptionsFromArray(array: Array<string>): Array<SelectableItem> {
     return  array.map(element => {
       return {id: element, label: element}
     })

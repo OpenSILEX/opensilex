@@ -798,7 +798,7 @@ export default class GermplasmTable extends Vue {
         form.code == null &&
         form.synonyms.length == 0 &&
         form.metadata == null &&
-        form.relations == null &&
+        (form.relations == null || form.relations.length === 0) &&
         form.website == null
       ) {
         this.emptyLines = this.emptyLines + 1;
@@ -963,7 +963,12 @@ export default class GermplasmTable extends Vue {
                 errorMessage =
                   error.response.metadata.status[0].exception.details;
               } catch (e2) {
-                errorMessage = this.$t("component.common.errors.unexpected-error");
+                if(error.response[0].message.includes("is not a valid URI")){
+                  errorMessage= this.$t("component.common.errors.not-a-valid-uri");
+                } else {
+                  errorMessage = this.$t("component.common.errors.unexpected-error");
+                }
+
               }
             }
 

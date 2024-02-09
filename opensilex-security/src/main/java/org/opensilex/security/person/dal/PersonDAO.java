@@ -201,16 +201,9 @@ public class PersonDAO {
     /**
      * @param uriList List of the URIs of the Persons you are looking for
      * @return List<PersonModel> corresponding to the URIs in uriList
-     * @throws Exception
      */
     public List<PersonModel> getList(List<URI> uriList) throws Exception{
         return sparql.getListByURIs(PersonModel.class, uriList, null);
     }
 
-    /**
-     * @param uri : URI of the Person to delete
-     */
-    public void delete(URI uri) throws Exception {
-        sparql.delete(PersonModel.class, uri);
-    }
 }

@@ -15,6 +15,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.geojson.GeoJsonObject;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.area.dal.AreaModel;
@@ -22,6 +23,7 @@ import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 
@@ -216,9 +218,11 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         list.add(new Position(3.97167246, 43.61328981));
         list.add(new Position(3.97167246, 43.61328981));
         Geometry geometry = new Polygon(list);
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
 
         GeometryDTO objToExport=new GeometryDTO();
-        objToExport.setGeometry(geometryToGeoJson(geometry));
+        objToExport.setGeometry(geoJsonGeometry);
         objToExport.setUri(areaModel.getUri());
 
         ArrayList<GeometryDTO> objectsList= new ArrayList<>();

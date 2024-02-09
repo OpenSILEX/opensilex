@@ -12,7 +12,7 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;

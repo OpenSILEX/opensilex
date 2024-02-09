@@ -135,6 +135,7 @@ export interface SlotDetails<T extends NamedResourceDTO> {
   toggleDetails: () => void
 }
 
+
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -147,6 +148,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   @Prop()
   fields;
+
+  /**
+   * Optional mapping if the TableAsyncView's field keys are different to the field names in the model.
+   * Used to permit sorting.
+   */
+  @Prop()
+  fieldKeyToSortableModelLabelMap : {[key : string] : string}
 
   @Prop()
   searchMethod;
@@ -479,6 +487,10 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
+      //Check to see if we need to get a field identifier for this sort
+      if(this.fieldKeyToSortableModelLabelMap && this.fieldKeyToSortableModelLabelMap[this.sortBy]){
+        orderByText = this.fieldKeyToSortableModelLabelMap[this.sortBy] + "=";
+      }
       if (this.sortDesc) {
         orderBy.push(orderByText + "desc");
       } else {
@@ -580,15 +592,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
           this.selectedItems = [];
         }
 
-        let orderBy = [];
-        if (this.sortBy) {
-          let orderByText = this.sortBy + "=";
-          if (this.sortDesc) {
-            orderBy.push(orderByText + "desc");
-          } else {
-            orderBy.push(orderByText + "asc");
-          }
-        }
+        let orderBy = this.getOrderBy();
 
         this.searchMethod({
           orderBy: orderBy,

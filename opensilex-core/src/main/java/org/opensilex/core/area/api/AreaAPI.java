@@ -34,6 +34,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;

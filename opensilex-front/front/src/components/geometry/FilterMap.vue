@@ -151,7 +151,7 @@ export default class FilterMap extends Vue {
               [], // rdfTypes?: Array<string>,
               "", // pattern?: string,
               undefined, // parentURI?: string,
-              germplasm || undefined,
+              germplasm ?  [germplasm] : undefined,
               factorLevels, // factorLevels?: Array<string>,
               undefined, // facility?: string,
               undefined,

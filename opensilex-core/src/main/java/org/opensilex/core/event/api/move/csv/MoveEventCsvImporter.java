@@ -87,6 +87,12 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
             anyMoveFieldNonNull = true;
         }
 
+        if(StringUtils.isNotEmpty(from) && StringUtils.isEmpty(to)){
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"To");
+            cell.setMessage("Cannot declare a move with a 'From' value but without a 'To' value.");
+            validation.addMissingRequiredValue(cell);
+        }
+
         // parse all properties which define a position : point,x,y,z,positionDescription
         if(!CollectionUtils.isEmpty(model.getTargets())){
 

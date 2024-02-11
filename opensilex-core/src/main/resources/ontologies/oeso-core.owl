@@ -753,25 +753,25 @@ OESO</rdfs:label>
 
     <!-- http://www.w3.org/2004/02/skos/core#broader -->
 
-    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#broader"/>
+    <!-- <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#broader"/> -->
 
 
 
     <!-- http://www.w3.org/2004/02/skos/core#closeMatch -->
 
-    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#closeMatch"/>
+    <!-- <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#closeMatch"/> -->
 
 
 
     <!-- http://www.w3.org/2004/02/skos/core#exactMatch -->
 
-    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#exactMatch"/>
+    <!-- <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#exactMatch"/> -->
 
 
 
     <!-- http://www.w3.org/2004/02/skos/core#narrower -->
 
-    <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#narrower"/>
+    <!-- <owl:DatatypeProperty rdf:about="http://www.w3.org/2004/02/skos/core#narrower"/> -->
 
 
 
@@ -1918,7 +1918,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase">
-      <rdfs:subClassOf>
+    <!--   <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#broader"/>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
@@ -1941,7 +1941,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
                 <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#narrower"/>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
-        </rdfs:subClassOf>
+        </rdfs:subClassOf> -->
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
@@ -2031,7 +2031,7 @@ Used in OpenSILEX for group things</rdfs:comment>
 
     <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
 
-    <owl:Class rdf:about="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  <!--   <owl:Class rdf:about="http://www.w3.org/2002/07/owl#DatatypeProperty"/> -->
 
 
 

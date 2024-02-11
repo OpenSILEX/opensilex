@@ -2124,7 +2124,7 @@ Used in OpenSILEX for group things</rdfs:comment>
 
     <!-- http://purl.org/dc/elements/1.1/contributor -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/contributor">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/contributor">
         <terms:description xml:lang="en">Examples of a Contributor include a person, an organization, or a service. Typically, the name of a Contributor should be used to indicate the entity.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#contributor-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2132,13 +2132,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:comment xml:lang="en">An entity responsible for making contributions to the resource.</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Contributor</rdfs:label>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/coverage -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/coverage">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/coverage">
         <terms:description xml:lang="en">Spatial topic and spatial applicability may be a named place or a location specified by its geographic coordinates. Temporal topic may be a named period, date, or date range. A jurisdiction may be a named administrative entity or a geographic place to which the resource applies. Recommended best practice is to use a controlled vocabulary such as the Thesaurus of Geographic Names [TGN]. Where appropriate, named places or time periods can be used in preference to numeric identifiers such as sets of coordinates or date ranges.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#coverage-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2147,13 +2147,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Coverage</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/creator -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/creator">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/creator">
         <terms:description xml:lang="en">Examples of a Creator include a person, an organization, or a service. Typically, the name of a Creator should be used to indicate the entity.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#creator-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2162,13 +2162,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Creator</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/date -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/date">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/date">
         <terms:description xml:lang="en">Date may be used to express temporal information at any level of granularity.  Recommended best practice is to use an encoding scheme, such as the W3CDTF profile of ISO 8601 [W3CDTF].</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#date-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2177,19 +2177,19 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Date</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/description -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/description"/>
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/description"/> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/format -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/format">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/format">
         <terms:description xml:lang="en">Examples of dimensions include size and duration. Recommended best practice is to use a controlled vocabulary such as the list of Internet Media Types [MIME].</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#format-007"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2198,13 +2198,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Format</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/identifier -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/identifier">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/identifier">
         <terms:description xml:lang="en">Recommended best practice is to identify the resource by means of a string conforming to a formal identification system. </terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#identifier-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2213,13 +2213,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Identifier</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/language -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/language">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/language">
         <terms:description xml:lang="en">Recommended best practice is to use a controlled vocabulary such as RFC 4646 [RFC4646].</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#language-007"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2229,13 +2229,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="en">Language</rdfs:label>
         <rdfs:seeAlso rdf:resource="http://www.ietf.org/rfc/rfc4646.txt"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/publisher -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/publisher">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/publisher">
         <terms:description xml:lang="en">Examples of a Publisher include a person, an organization, or a service. Typically, the name of a Publisher should be used to indicate the entity.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#publisher-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2244,13 +2244,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Publisher</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/relation -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/relation">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/relation">
         <terms:description xml:lang="en">Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system. </terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#relation-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2259,13 +2259,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Relation</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/rights -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/rights">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/rights">
         <terms:description xml:lang="en">Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#rights-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2274,19 +2274,19 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Rights</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/source -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/source"/>
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/source"/> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/subject -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/subject">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/subject">
         <terms:description xml:lang="en">Typically, the subject will be represented using keywords, key phrases, or classification codes. Recommended best practice is to use a controlled vocabulary.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#subject-007"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2295,19 +2295,19 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Subject</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/title -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/title"/>
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/title"/> -->
 
 
 
     <!-- http://purl.org/dc/elements/1.1/type -->
 
-    <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/type">
+    <!-- <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/type">
         <terms:description xml:lang="en">Recommended best practice is to use a controlled vocabulary such as the DCMI Type Vocabulary [DCMITYPE]. To describe the file format, physical medium, or dimensions of the resource, use the Format element.</terms:description>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#type-006"/>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2316,7 +2316,7 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Type</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-    </owl:NamedIndividual>
+    </owl:NamedIndividual> -->
 
 
     <!--

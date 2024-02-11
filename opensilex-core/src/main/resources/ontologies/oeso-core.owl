@@ -608,13 +608,13 @@ OESO</rdfs:label>
 
     <!-- http://purl.org/dc/elements/1.1/description -->
 
-    <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/description"/>
+     <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/description"/>
 
 
 
     <!-- http://purl.org/dc/elements/1.1/title -->
 
-    <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/title"/>
+  <!--   <owl:DatatypeProperty rdf:about="http://purl.org/dc/elements/1.1/title"/> -->
 
 
 
@@ -1007,12 +1007,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -1203,11 +1205,10 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:label xml:lang="fr">Capteur</rdfs:label>
         <rdfs:label xml:lang="en">SensingDevice</rdfs:label>
-
          <rdfs:subClassOf>
                 <owl:Restriction>
                     <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#measures"/>
-                    <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
+                    <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
                 </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -1354,24 +1355,24 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
-        <rdfs:subClassOf>
+        <!-- <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasGroup"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/security#Group"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/security#Group"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#usesOrganization"/>
-                <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+                <owl:someValuesFrom rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
             </owl:Restriction>
-        </rdfs:subClassOf>
+        </rdfs:subClassOf> -->
     </owl:Class>
 
 
@@ -1677,7 +1678,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -1917,7 +1918,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase">
-        <rdfs:subClassOf>
+      <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#broader"/>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>

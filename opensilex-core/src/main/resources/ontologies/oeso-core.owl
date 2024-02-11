@@ -950,7 +950,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="xsd:string"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -1058,7 +1058,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="xsd:string"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -1717,14 +1717,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="xsd:string"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
          <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGeometry"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="xsd:string"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -1758,7 +1758,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#measures"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>

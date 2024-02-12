@@ -12,7 +12,7 @@
                     :uri="data.item.target"
                     :value="objects[data.item.target]"
                     :to="{
-            path: getTargetPath(data.item.target)
+            path: $opensilex.getTargetPath(data.item.target, contextUri, objectsPath[data.item.target])
           }"
                 ></opensilex-UriLink>
             </template>
@@ -189,22 +189,6 @@ export default class DataList extends Vue {
         }
     }
 
-    getTargetPath(uri: string) {
-        let defaultOsPath: string = this.objectsPath[uri];
-        if(! defaultOsPath){
-            return "";
-        }
-
-        let osPath = defaultOsPath.replace(':uri', encodeURIComponent(uri))
-
-        // pass encoded experiment inside OS path URL
-        if(this.contextUri && this.contextUri.length > 0){
-            return osPath.replace(':experiment', encodeURIComponent(this.contextUri));
-        }else{ // no experiment passed
-            return osPath.replace(':experiment', "");
-        }
-    }
-
     loadProvenance(selectedValue) {
         if (selectedValue != undefined && selectedValue != null) {
             this.getProvenance(selectedValue.id).then((prov) => {
@@ -226,8 +210,8 @@ export default class DataList extends Vue {
             });
     }
 
-    objects = {};
-    objectsPath = {};
+    objects : {[key : string] : string} = {};
+    objectsPath : {[key : string] : string} = {};
     variableNames = {};
     provenances = {};
     devices = {};
@@ -286,17 +270,7 @@ export default class DataList extends Vue {
                         }
 
                         if (objectsToLoad.length > 0) {
-                            let promiseObject = this.ontologyService
-                                .getURILabelsList(objectsToLoad, this.contextUri, true)
-                                .then((httpObj) => {
-                                    for (let j in httpObj.response.result) {
-                                        let obj = httpObj.response.result[j];
-                                        this.objects[obj.uri] =
-                                            obj.name + " (" + obj.rdf_type_name + ")";
-                                    }
-                                })
-                                .catch(reject);
-                            promiseArray.push(promiseObject);
+                            promiseArray.push(this.$opensilex.loadOntologyLabelsWithType(objectsToLoad, this.contextUri, this.objects, this.ontologyService));
                         }
 
                         let promiseFacility = this.dataService

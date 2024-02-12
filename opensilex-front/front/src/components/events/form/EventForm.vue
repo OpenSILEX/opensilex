@@ -82,7 +82,7 @@
                     :value.sync="form.start"
                     label="Event.start"
                     :maxDate="form.end"
-                    :required="startRequired"        
+                    :required="startRequired"
                     helpMessage="Event.start-help"
                     @input="updateRequiredProps('startDateSelector')"
                     @clear="updateRequiredProps('startDateSelector')"
@@ -94,7 +94,9 @@
                     ref="endDateSelector"
                     :value.sync="form.end"
                     label="Event.end"
-                    :required="endRequired"               
+                    :minDate="form.start"
+                    :required="endRequired"
+                    @update:value="updateRequiredProps"
                     helpMessage="Event.end-help"
                     @input="updateRequiredProps('endDateSelector')"
                     @clear="updateRequiredProps('endDateSelector')"
@@ -213,11 +215,11 @@ export default class EventForm extends Vue {
     setContext(context) {
         this.context = context;
     }
- 
+
     updateIsInstantFilter(ref){
         this.$emit('change');
         this.updateRequiredProps(ref)
-    } 
+    }
 
     updateRequiredProps(ref){
         if (this.form.end === "") {
@@ -229,10 +231,10 @@ export default class EventForm extends Vue {
 
         if (this.form.is_instant) {
             this.endRequired = true;
-        } else {           
+        } else {
             if(this.form.start == undefined && this.form.end == undefined) {
                 this.startRequired = true;
-                this.endRequired = true; 
+                this.endRequired = true;
             } else {
                 this.startRequired = !!this.form.start;
                 this.endRequired = !!this.form.end;

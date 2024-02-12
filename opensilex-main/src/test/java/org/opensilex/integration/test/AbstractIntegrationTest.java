@@ -324,7 +324,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @param expectedStatus the expected status of the response
          * @throws RuntimeException if there is an error executing the call or if the response status does not match the expected status
          */
-        public void executeCallAssertStatus(Response.Status expectedStatus) {
+        public void executeCallAndAssertStatus(Response.Status expectedStatus) {
             try (Response response = executeCall()) {
                 assertEquals(expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {

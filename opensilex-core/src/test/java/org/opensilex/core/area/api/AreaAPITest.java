@@ -110,7 +110,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         new UserCallBuilder(getByUri)
                 .setUriInPath(createdUri.toString())
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.OK);
+                .executeCallAndAssertStatus(Response.Status.OK);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         areaDTO.setGeometry(geometryToGeoJson(geometry));
 
-        new UserCallBuilder(update).setBody(areaDTO).buildAdmin().executeCallAssertStatus(Response.Status.OK);
+        new UserCallBuilder(update).setBody(areaDTO).buildAdmin().executeCallAndAssertStatus(Response.Status.OK);
 
         // retrieve the new area and compare it to the expected area
         SingleObjectResponse<AreaCreationDTO> getResponse = new UserCallBuilder(getByUri)

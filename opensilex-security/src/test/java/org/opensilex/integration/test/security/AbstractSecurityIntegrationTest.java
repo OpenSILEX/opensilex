@@ -536,7 +536,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param object The object to be converted into a map.
      * @return returns a LinkedHashMap where the object has been converted into a map and all null values have been removed.
      */
-    protected static LinkedHashMap<String, Object> convertToNotNullNestedMap(Object object) {
+    public static LinkedHashMap<String, Object> convertToNotNullNestedMap(Object object) {
         // Convert the object to a map
         LinkedHashMap<String, Object> map = mapper.convertValue(object, LinkedHashMap.class);
         map.values().removeAll(Collections.singleton(null));
@@ -637,7 +637,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         new UserCallBuilder(updateServiceDescription)
                 .setBody(entityToPut)
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.OK);
+                .executeCallAndAssertStatus(Response.Status.OK);
         // Get the updated object
         T readResponse = testBasicReadAsAdmin(readServiceDescription, entityTypeReference, entityToPut.getUri());
         LinkedHashMap<String, Object> responseAttributes = convertToNotNullNestedMap(readResponse.getResult());
@@ -661,11 +661,11 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         new UserCallBuilder(deleteServiceDescription)
                 .setUriInPath(resourceUri.toString())
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.OK);
+                .executeCallAndAssertStatus(Response.Status.OK);
         new UserCallBuilder(readServiceDescription)
                 .setUriInPath(resourceUri.toString())
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.NOT_FOUND);
+                .executeCallAndAssertStatus(Response.Status.NOT_FOUND);
     }
 
     /**

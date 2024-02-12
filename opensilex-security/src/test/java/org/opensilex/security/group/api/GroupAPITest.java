@@ -131,7 +131,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         new UserCallBuilder(create)
                 .setBody(getGroupCreationDTO())
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.CREATED);
+                .executeCallAndAssertStatus(Response.Status.CREATED);
 
         GroupCreationDTO dto = getGroupCreationDTO();
         dto.setName("Group 2");
@@ -148,7 +148,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         new UserCallBuilder(create)
                 .setBody(dto)
                 .buildAdmin()
-                .executeCallAssertStatus(Response.Status.CREATED);
+                .executeCallAndAssertStatus(Response.Status.CREATED);
 
         PaginatedListResponse<GroupDTO> listResponse = new UserCallBuilder(search).addParam("name", "Group.*")
                 .buildAdmin()

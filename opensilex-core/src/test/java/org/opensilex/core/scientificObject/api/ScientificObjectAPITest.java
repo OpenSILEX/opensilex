@@ -67,7 +67,6 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -773,7 +772,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -863,7 +862,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -966,7 +965,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -986,7 +985,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Arrays.asList(moreThan10Dot5SingleCriteria, equalToo20201011SingleCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -1005,7 +1004,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(wrongDatatypeForIntCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
@@ -1014,7 +1013,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(inexistingVariableCriteria)));
         currentScientificObjectSearchParams = new HashMap<String, Object>() {
             {
-                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), StandardCharsets.UTF_8));
+                put("criteria_on_data", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
             }
         };
         searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);

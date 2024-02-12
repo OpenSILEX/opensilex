@@ -34,23 +34,26 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
             GroupAPI.class.getMethod("createGroup", GroupCreationDTO.class),
             path
     );
+    public String createPath = path;
     public ServiceDescription update = new ServiceDescription(
             GroupAPI.class.getMethod("updateGroup", GroupUpdateDTO.class),
             path
     );
+    public String getPath = path + "/{uri}";
     public ServiceDescription get = new ServiceDescription(
             GroupAPI.class.getMethod("getGroup", URI.class),
             path + "/{uri}"
     );
+    public String deletePath = path + "/{uri}";
     public ServiceDescription delete = new ServiceDescription(
             GroupAPI.class.getMethod("deleteGroup", URI.class),
             path + "/{uri}"
     );
+    public String searchPath = path;
     public ServiceDescription search = new ServiceDescription(
             GroupAPI.class.getMethod("searchGroups", String.class, List.class, int.class, int.class),
             path
     );
-    public String searchPath = path;
 
     private final static String USER1_URI = "http://example.org/users/user1";
     private final static String USER2_URI = "http://example.org/users/user2";

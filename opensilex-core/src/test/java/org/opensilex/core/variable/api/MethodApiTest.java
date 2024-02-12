@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;

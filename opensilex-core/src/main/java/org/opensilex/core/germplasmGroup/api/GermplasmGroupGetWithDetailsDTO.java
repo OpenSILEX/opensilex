@@ -2,6 +2,7 @@ package org.opensilex.core.germplasmGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 
 import java.util.ArrayList;

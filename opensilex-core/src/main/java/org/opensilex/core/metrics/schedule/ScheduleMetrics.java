@@ -75,13 +75,13 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     try {
                         systemTimeUnit = TimeUnit.valueOf(systemMetricsTimeUnit);
                     } catch (IllegalArgumentException e) {
-                        throw new RuntimeException("Bad experiment time unit set" + null);
+                        throw new RuntimeException("Bad experiment time unit set" + systemTimeUnit);
                     }
                     MetricDAO metricsDao = new MetricDAO(sparql, nosql);
                     scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
                     scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsDao), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
 
-                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit);
+                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit.toString() + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit.toString());
                 } catch (OpenSilexModuleNotFoundException ex) {
                     LOGGER.debug("error on start " + SCHEDULE_METRICS);
                     LOGGER.error(ex.getMessage(), ex);
@@ -106,7 +106,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private static class CreateExperimentSummaries implements Runnable {
+    private class CreateExperimentSummaries implements Runnable {
 
         private final MetricDAO metricsDao;
 
@@ -128,7 +128,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
     /**
      * Represent a thread that will be launched at each application start
      */
-    private static class CreateSystemSummary implements Runnable {
+    private class CreateSystemSummary implements Runnable {
 
         private final MetricDAO metricsDao;
 

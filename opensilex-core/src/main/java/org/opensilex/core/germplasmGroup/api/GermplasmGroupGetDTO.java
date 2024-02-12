@@ -6,9 +6,16 @@
 package org.opensilex.core.germplasmGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Maximilian HART

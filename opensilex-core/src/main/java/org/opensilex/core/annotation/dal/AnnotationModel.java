@@ -7,6 +7,7 @@
 
 package org.opensilex.core.annotation.dal;
 
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -14,6 +15,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 

@@ -141,7 +141,7 @@ public class DataFilesAPI {
         
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         try {
-            validDataFileDescription(Collections.singletonList(dto));
+            validDataFileDescription(Arrays.asList(dto));
             DataFileModel model = dto.newModel();
             model.setPublisher(user.getUri());
             model.setFilename(fileContentDisposition.getFileName());
@@ -221,7 +221,7 @@ public class DataFilesAPI {
                 dataList.add(model);
             }
 
-            dataList = dao.createAllFiles(dataList);
+            dataList = (List<DataFileModel>) dao.createAllFiles(dataList);
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList){
                 createdResources.add(data.getUri());

@@ -8,6 +8,7 @@ package org.opensilex.core.germplasmGroup.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.rest.validation.Required;
 
 import java.net.URI;
 import java.time.OffsetDateTime;

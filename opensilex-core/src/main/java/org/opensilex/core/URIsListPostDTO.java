@@ -5,6 +5,7 @@
  */
 package org.opensilex.core;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
 import org.opensilex.server.rest.validation.ValidURI;

@@ -81,8 +81,8 @@ public class MetricDAO {
         metricsCollection.createIndex(Indexes.descending(GlobalSummaryModel.CREATION_DATE_FIELD));
     }
 
-    public ListWithPagination<ExperimentSummaryModel> getExperimentSummaries(List<URI> experimentURIs, Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws Exception {
-        List<OrderBy> orderByList = List.of(new OrderBy(ExperimentSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
+    public ListWithPagination<ExperimentSummaryModel> getExperimentSummaries(List<URI> experimentURIs, Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws URISyntaxException, Exception {
+        List<OrderBy> orderByList = Arrays.asList(new OrderBy(ExperimentSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document searchFilter = searchFilter(ExperimentSummaryModel.SUMMARY_TYPE, experimentURIs, startInstant, endInstant);
 
         ListWithPagination<ExperimentSummaryModel> searchWithPagination = nosql.searchWithPagination(ExperimentSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
@@ -136,7 +136,7 @@ public class MetricDAO {
     }
 
     public ListWithPagination<SystemSummaryModel> getSystemSummaryWithPagination(Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws Exception {
-        List<OrderBy> orderByList = List.of(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
+        List<OrderBy> orderByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document searchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, endInstant);
 
         ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
@@ -210,17 +210,17 @@ public class MetricDAO {
         List<SystemSummaryModel>  searchFirstLast = null;
 
         //latest only
-        List<OrderBy> orderDescendByList = List.of(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
+        List<OrderBy> orderDescendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document latestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, null, endInstant);
         SystemSummaryModel latestSmodel = setSystemSummaryModelForSearchResult(latestSearchFilter, orderDescendByList, currentLanguage, null, endInstant);
 
         if (latestSmodel != null) {
             //oldest only
-            List<OrderBy> orderAscendByList = List.of(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING));
+            List<OrderBy> orderAscendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING));
             Document oldestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, null);
             SystemSummaryModel oldestSmodel = setSystemSummaryModelForSearchResult(oldestSearchFilter, orderAscendByList, currentLanguage, startInstant, null);
 
-            searchFirstLast = (oldestSmodel != null) ? Arrays.asList(latestSmodel, oldestSmodel) : List.of(latestSmodel);
+            searchFirstLast = (oldestSmodel != null) ? Arrays.asList(latestSmodel, oldestSmodel) : Arrays.asList(latestSmodel);
         }
 
         return searchFirstLast;
@@ -355,7 +355,7 @@ public class MetricDAO {
             }
             filter.put(SystemSummaryModel.CREATION_DATE_FIELD, dateFilter);
         }
-        Logger.debug("MetricsDAO:searchFilter() set to: " + filter);
+        Logger.debug("MetricsDAO:searchFilter() set to: " + filter.toString());
         return filter;
     }
 
@@ -418,7 +418,7 @@ public class MetricDAO {
     private CountListItemModel getDataCountByVariables(URI experimentURI, AccountModel currentUser) throws Exception {
         List<URI> experiments = null;
         if (experimentURI != null) {
-            experiments = List.of(experimentURI);
+            experiments = Arrays.asList(experimentURI);
         }
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
 

@@ -1,5 +1,6 @@
 package org.opensilex.core.experiment.dal;
 
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 

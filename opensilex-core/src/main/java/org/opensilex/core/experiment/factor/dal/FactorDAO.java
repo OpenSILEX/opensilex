@@ -78,7 +78,7 @@ public class FactorDAO {
 
     /**
      * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a
-     * {@link List} from the {@link org.opensilex.core.experiment.factor.api.FactorGetDTO}
+     * {@link List} from the {@link FactorSearchDTO}
      *
      * @param name name search attribute
      * @param factorLevelName name search factorLevel attribute

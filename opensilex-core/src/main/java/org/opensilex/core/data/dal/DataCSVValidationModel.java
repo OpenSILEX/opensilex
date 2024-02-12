@@ -50,7 +50,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
        
     private List<String> headersLabels = new ArrayList<>();
 
-    private final List<AnnotationModel> annotationsOnObjects = new ArrayList<>();
+    private List<AnnotationModel> annotationsOnObjects = new ArrayList<>();
 
     private Integer nbLinesImported = 0;
 

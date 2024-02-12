@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.time.Instant;
 import org.bson.Document;

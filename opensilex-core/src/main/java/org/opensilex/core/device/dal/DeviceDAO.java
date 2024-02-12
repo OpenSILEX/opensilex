@@ -40,6 +40,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;

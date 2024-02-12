@@ -13,7 +13,6 @@ import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,7 +48,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         // create organization
         organization = new OrganizationModel();
         organization.setUri(URI.create("test:infra"));
-        sparql.create(OrganizationModel.class, Collections.singletonList(organization));
+        sparql.create(OrganizationModel.class, Arrays.asList(organization));
 
         // create facilities
         facilityA = new FacilityModel();
@@ -66,13 +65,13 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
 
         // create sites
         siteA = getModel(1);
-        siteA.setOrganizations(Collections.singletonList(organization));
-        siteA.setFacilities(Collections.singletonList(facilityA));
+        siteA.setOrganizations(Arrays.asList(organization));
+        siteA.setFacilities(Arrays.asList(facilityA));
         siteB = getModel(2);
-        siteB.setOrganizations(Collections.singletonList(organization));
-        siteB.setFacilities(Collections.singletonList(facilityB));
+        siteB.setOrganizations(Arrays.asList(organization));
+        siteB.setFacilities(Arrays.asList(facilityB));
         siteC = getModel(3);
-        siteC.setOrganizations(Collections.singletonList(organization));
+        siteC.setOrganizations(Arrays.asList(organization));
         siteC.setFacilities(Arrays.asList(facilityA, facilityB));
         sparql.create(SiteModel.class, Arrays.asList(siteA, siteB, siteC));
 
@@ -85,7 +84,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         SiteSearchFilter filter = new SiteSearchFilter();
         filter.setLang("en");
         filter.setUser(user);
-        filter.setUserOrganizations(Collections.singletonList(organization.getUri()));
+        filter.setUserOrganizations(Arrays.asList(organization.getUri()));
         filter.setSkipUserOrganizationFetch(true);
 
         List<SiteModel> objects = dao.search(filter).getList();

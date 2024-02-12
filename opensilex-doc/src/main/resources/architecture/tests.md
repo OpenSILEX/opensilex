@@ -30,6 +30,7 @@
     * [Base abstract classes](#base-abstract-classes)
     * [Inner classes for calls](#inner-classes-for-calls)
     * [Helper methods](#helper-methods)
+    * [Usage examples](#usage-examples)
 <!-- TOC -->
 
 ## Framework and libraries
@@ -100,3 +101,10 @@ Most helper methods are in the `AbstractSecurityIntegrationTest` class :
   unless you have a different use case\]__
 
 __WARNING__ : Don't just test the basic CRUD. Add other pertinent tests for your feature or bugfix.
+
+### Usage examples
+
+You can find usage examples in the following test classes :
+* `AreaAPITest` examples of calls using `UserCall`
+* `AuthenticationAPITest` examples of public calls
+* `GroupAPITest` examples of tests using `testBasicCRUDAsAdmin`

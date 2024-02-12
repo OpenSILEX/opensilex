@@ -127,9 +127,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
-    public OrganizationAccessAPITest() throws NoSuchMethodException {
-    }
-
     @Before
     public void beforeTest() throws Exception {
         createAndRegisterUserProfileGroups();

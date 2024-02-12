@@ -98,3 +98,5 @@ Most helper methods are in the `AbstractSecurityIntegrationTest` class :
   Tests basic delete of a resource, asserts success, reads the resource again and asserts not found.
 * `testBasicCRUDAsAdmin` Tests basic CRUD by calling the four previous methods. __\[Use this method instead of the previous four
   unless you have a different use case\]__
+
+__WARNING__ : Don't just test the basic CRUD. Add other pertinent tests for your feature or bugfix.

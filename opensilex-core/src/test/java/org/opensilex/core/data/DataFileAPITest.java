@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -68,7 +69,7 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
 
     }
     
-    public DataFileCreationDTO getCreationFileDTO(String date) throws Exception {
+    public DataFileCreationDTO getCreationFileDTO(String date) throws URISyntaxException, Exception {
         DataFileCreationDTO dataDTO = new DataFileCreationDTO();
         
         dataDTO.setProvenance(provenance);

@@ -293,6 +293,14 @@ export default class OntologyCsvImporter extends Vue {
                 }
             }
 
+            if (errors.missingRequiredValueErrors.length > 0) {
+                generalErrors.list.missingRequiredValueErrors = errors.missingRequiredValueErrors;
+                generalErrors.listSize++;
+                if (!generalErrors.firstErrorType) {
+                    generalErrors.firstErrorType = "missingRequiredValueErrors";
+                }
+            }
+
             if (generalErrors.firstErrorType) {
                 generalErrors.listSize--;
                 let firstErrorType = generalErrors.firstErrorType;
@@ -356,6 +364,11 @@ export default class OntologyCsvImporter extends Vue {
                 return this.$t(
                     "OntologyCsvImporter.validationErrorInvalidRowSizeErrorsMessage",
                     {row_size: validationError.colIndex, header_size: validation.errors.csvHeader.realCsvHeaderLength} // append offset since (uri,type) column are not counted
+                );
+            case "missingToValue":
+                return this.$t(
+                    "OntologyCsvImporter.missingToValue",
+                    validationError
                 );
             default:
                 return this.$t(
@@ -477,7 +490,7 @@ en:
         duplicateURIErrors: Duplicate URI
         invalidRowSizeErrors: Invalid row size
         validationErrorMessage: "Column: '{header}' - Value: '{value}' - Details: '{message}'"
-        validationErrorMissingRequiredMessage: "Column: '{header}'"
+        validationErrorMissingRequiredMessage: "Column: '{header}' - Details : '{message}'"
         validationErrorMissingHeaderMessage: "Column: '{header}'"
         validationErrorEmptyHeaderMessage: "Header: column '{header}' - Empty column"
         validationErrorDuplicateURIMessage: "Header: column '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
@@ -494,6 +507,7 @@ en:
         errorType: "Error type"
         detail: Detail
         invalidDateErrors: Invalid date
+        missingToValue: "Cannot declare a move with a 'From' value but without a 'To' value."
 fr:
     OntologyCsvImporter:
         import: Import CSV
@@ -518,7 +532,7 @@ fr:
         duplicateURIErrors: URI dupliquée
         invalidRowSizeErrors: Taile de ligne invalide
         validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}' - Détail: '{message}'"
-        validationErrorMissingRequiredMessage: "Colonne: '{header}'"
+        validationErrorMissingRequiredMessage: "Column: '{header}' - Details : '{message}'"
         validationErrorMissingHeaderMessage: "En-tête: '{header}'"
         validationErrorEmptyHeaderMessage: "En-tête: '{header}' - Colonne vide"
         validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
@@ -535,4 +549,5 @@ fr:
         errorType: "Type d'erreur"
         detail: Détail
         invalidDateErrors: Date invalide
+        missingToValue: "Impossible de déclarer un déplacement avec une valeur 'De' mais sans valeur 'Vers'."
 </i18n>

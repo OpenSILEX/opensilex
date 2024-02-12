@@ -19,6 +19,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**

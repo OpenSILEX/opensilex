@@ -249,7 +249,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         userCreationDTO.setFirstName("User");
         userCreationDTO.setLastName("Example");
         userCreationDTO.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
-        Response postUserResponse = getJsonPostResponseAsAdmin(target(UserAPITest.createPath), userCreationDTO);
+        Response postUserResponse = getJsonPostResponseAsAdmin(target(userAPITest.createPath), userCreationDTO);
         user = extractUriFromResponse(postUserResponse);
 
         // Profile creation
@@ -272,14 +272,14 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         groupWithUserCreationDTO.setName("Group with user");
         groupWithUserCreationDTO.setDescription("Group with user");
         groupWithUserCreationDTO.setUserProfiles(Collections.singletonList(groupUserProfileDTO));
-        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithUserCreationDTO);
+        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithUserCreationDTO);
         groupWithUser = extractUriFromResponse(postGroupWithUserResponse);
 
         // Group without user creation
         GroupCreationDTO groupWithoutUserCreationDTO = new GroupCreationDTO();
         groupWithoutUserCreationDTO.setName("Group without user");
         groupWithoutUserCreationDTO.setDescription("Group without user");
-        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithoutUserCreationDTO);
+        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithoutUserCreationDTO);
         groupWithoutUser = extractUriFromResponse(postGroupWithoutUserResponse);
 
         // Register the token for login into tests

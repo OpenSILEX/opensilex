@@ -151,7 +151,7 @@ public class DataAPI {
     public static final int SIZE_MAX = 50000;
     
     Map<URI, URI> rootDeviceTypes = null;
-    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     @Inject
     private MongoDBService nosql;
@@ -812,7 +812,9 @@ public class DataAPI {
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
-            return variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())));
+            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
+                return true;
+            }
 
         }
         return false;
@@ -1032,7 +1034,7 @@ public class DataAPI {
         Instant start = Instant.now();
         List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retrieved " + Duration.between(start, data).toMillis() + " milliseconds elapsed");
+        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
         Response prepareCSVExport = null;
 
@@ -1044,7 +1046,7 @@ public class DataAPI {
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + timeElapsed + " milliseconds elapsed");
+        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
         return prepareCSVExport;
     }
@@ -1104,7 +1106,7 @@ public class DataAPI {
         try{
             List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
             Instant data = Instant.now();
-            LOGGER.debug(resultList.size() + " observations retrieved " + Duration.between(start, data).toMillis() + " milliseconds elapsed");
+            LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
             if (dto.getCsvFormat().equals("long")) {
                 prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, dto.isWithRawData());
@@ -1118,7 +1120,7 @@ public class DataAPI {
 
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + timeElapsed + " milliseconds elapsed");
+        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
         return prepareCSVExport;
     }
@@ -1301,7 +1303,7 @@ public class DataAPI {
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + timeElapsed + " milliseconds elapsed");
+            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
             
             validation.setValidCSV(!validation.hasErrors());
         }
@@ -1350,7 +1352,7 @@ public class DataAPI {
         validation = validateWholeCSV(provenanceModel, experiment, file, user);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Validation " + timeElapsed + " milliseconds elapsed");
+        LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -1413,7 +1415,7 @@ public class DataAPI {
 
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -1423,107 +1425,110 @@ public class DataAPI {
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(List.of(deviceHeader + " or " + targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }
             // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
             if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
-                csvValidation.addMissingHeaders(List.of(targetHeader + " or " + soHeader));
+                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
             }
             
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
             VariableDAO dao = new VariableDAO(sparql,nosql,fs);
 
-            for (int i = 0; i < ids.length; i++) {
-                String header = ids[i];
-                if (header == null) {
-                    csvValidation.addEmptyHeader(i + 1);
-                } else {
+            if (ids != null) {
 
-                    if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader)
+                for (int i = 0; i < ids.length; i++) {
+                    String header = ids[i];
+                    if (header == null) {
+                        csvValidation.addEmptyHeader(i+1);
+                    } else {                       
+                    
+                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
-                        || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
-                        headerByIndex.put(i, header);
-
-                    } else {
-                        try {
-                            if (!URIDeserializer.validateURI(header)) {
-                                csvValidation.addInvalidHeaderURI(i, header);
-                            } else {
-                                VariableModel var = dao.get(URI.create(header));
-                                // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
-                                if (var == null) {
+                            || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
+                            headerByIndex.put(i, header);                            
+                        
+                        } else {                        
+                            try {
+                                if (!URIDeserializer.validateURI(header)) {
                                     csvValidation.addInvalidHeaderURI(i, header);
-                                } else {
-                                    mapVariableUriDataType.put(var.getUri(), var.getDataType());
-                                    // TODO : Validate duplicate variable colonne
-                                    headerByIndex.put(i, header);
+                                } else {                                    
+                                    VariableModel var = dao.get(URI.create(header));
+                                    // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
+                                    if (var == null) {
+                                        csvValidation.addInvalidHeaderURI(i, header);
+                                    } else {
+                                        mapVariableUriDataType.put(var.getUri(), var.getDataType());
+                                        // TODO : Validate duplicate variable colonne
+                                        headerByIndex.put(i, header);
+                                    }                                                                               
                                 }
+                            } catch (URISyntaxException e) {
+                                csvValidation.addInvalidHeaderURI(i, ids[i]);
                             }
-                        } catch (URISyntaxException e) {
-                            csvValidation.addInvalidHeaderURI(i, ids[i]);
                         }
                     }
                 }
-            }
 
-            // 1.1 return error variables
-            if (csvValidation.hasErrors()) {
-                return csvValidation;
-            }
-            csvValidation.setHeadersFromArray(ids);
-
-            int rowIndex = 0;
-            String[] values;
-
-            // Line 2
-            String[] headersLabels = csvReader.parseNext();
-            csvValidation.setHeadersLabelsFromArray(headersLabels);
-
-            // Line 3
-            csvReader.parseNext();
-            // Line 4
-            int nbError = 0;
-            boolean validateCSVRow = false;
-            while ((values = csvReader.parseNext()) != null) {
-                try {
-                    validateCSVRow = validateCSVRow(
-                            provenance,
-                            experiment,
-                            sensingDeviceFoundFromProvenance,
-                            variableCheckedDevice,
-                            variableCheckedProvDevice,
-                            checkedVariables,
-                            values,
-                            rowIndex,
-                            csvValidation,
-                            headerByIndex,
-                            xpDAO,
-                            notExistingExperiments,
-                            duplicatedExperiments,
-                            nameURIExperiments,
-                            ontologyDAO,
-                            notExistingTargets,
-                            duplicatedTargets,
-                            nameURITargets,
-                            scientificObjectDAO,
-                            nameURIScientificObjectsInXp,
-                            scientificObjectsNotInXp,
-                            deviceDAO,
-                            notExistingDevices,
-                            duplicatedDevices,
-                            nameURIDevices,
-                            mapVariableUriDataType,
-                            duplicateDataByIndex);
-                } catch (CSVDataTypeException e) {
-                    csvValidation.addInvalidDataTypeError(e.getCsvCell());
+                // 1.1 return error variables
+                if (csvValidation.hasErrors()) {
+                    return csvValidation;
                 }
-                rowIndex++;
-                if (!validateCSVRow) {
-                    nbError++;
-                }
-                if (nbError >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
-                    break;
+                csvValidation.setHeadersFromArray(ids);
+
+                int rowIndex = 0;
+                String[] values;
+
+                // Line 2
+                String[] headersLabels = csvReader.parseNext();
+                csvValidation.setHeadersLabelsFromArray(headersLabels);
+
+                // Line 3
+                csvReader.parseNext();
+                // Line 4
+                int nbError = 0;
+                boolean validateCSVRow = false;
+                while ((values = csvReader.parseNext()) != null) {
+                    try {
+                        validateCSVRow = validateCSVRow(
+                                provenance,
+                                experiment,
+                                sensingDeviceFoundFromProvenance,
+                                variableCheckedDevice,
+                                variableCheckedProvDevice,
+                                checkedVariables,
+                                values, 
+                                rowIndex, 
+                                csvValidation, 
+                                headerByIndex, 
+                                xpDAO,
+                                notExistingExperiments,
+                                duplicatedExperiments,
+                                nameURIExperiments,                                
+                                ontologyDAO,
+                                notExistingTargets,
+                                duplicatedTargets,
+                                nameURITargets,
+                                scientificObjectDAO,
+                                nameURIScientificObjectsInXp,
+                                scientificObjectsNotInXp,
+                                deviceDAO,
+                                notExistingDevices,
+                                duplicatedDevices,
+                                nameURIDevices,
+                                mapVariableUriDataType, 
+                                duplicateDataByIndex);
+                    } catch (CSVDataTypeException e) {
+                        csvValidation.addInvalidDataTypeError(e.getCsvCell());
+                    }
+                    rowIndex++;
+                    if (!validateCSVRow) {
+                        nbError++;
+                    }
+                    if (nbError >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
+                        break;
+                    }
                 }
             }
         }
@@ -1563,7 +1568,7 @@ public class DataAPI {
             Map<String, DeviceModel> nameURIDevices,
             HashMap<URI, URI> mapVariableUriDataType, 
             List<ImportDataIndex> duplicateDataByIndex) 
-        throws Exception {
+        throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
         
         boolean validRow = true;
 
@@ -1572,7 +1577,7 @@ public class DataAPI {
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
-        boolean missingTargetOrDevice = false;
+        Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
 
@@ -2055,7 +2060,7 @@ public class DataAPI {
     }
 
     // Map who associate each type with its root type
-    private Map<URI, URI> getRootDeviceTypes() throws Exception {
+    private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
         SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
@@ -2174,7 +2179,7 @@ public class DataAPI {
                 startInstant,
                 endInstant);
         end = Instant.now();
-        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Duration.between(start, end).toMillis() + " milliseconds elapsed");
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
 
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 

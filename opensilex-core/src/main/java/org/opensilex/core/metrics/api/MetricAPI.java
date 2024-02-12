@@ -40,7 +40,10 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
@@ -274,7 +277,7 @@ public class MetricAPI {
         MetricDAO metricsDao = new MetricDAO(sparql, nosql);
 
         validateContextAccess(experimentURI);
-        List<URI> experimentUri = Collections.singletonList(experimentURI);
+        List<URI> experimentUri = Arrays.asList(experimentURI);
         ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(experimentUri, startInstant, endInstant, page, pageSize, currentUser.getLanguage());
         ExperimentSummaryModel experimentSummary = null;
         if (experimentSummaries != null && !experimentSummaries.getList().isEmpty()) {
@@ -402,12 +405,12 @@ public class MetricAPI {
     //and returns a List<CountListItemPeriodDTO> containing all items which were recently added (since oldestItemList)
     public CountListItemPeriodDTO substractTwoCountItemModelLists(List<CountItemModel> latestItemList, List<CountItemModel> oldestItemList){
         CountListItemPeriodDTO periodList = new CountListItemPeriodDTO();
-        int totalCountDiff = 0; //count over all item counts which were added within a specific entity type (i.e. over all ScientificObject item counts)
+        Integer totalCountDiff = 0; //count over all item counts which were added within a specific entity type (i.e. over all ScientificObject item counts)
 
         if (latestItemList != null) {
             for (CountItemModel item : latestItemList) {
                 //CountItemModel diffCountItemModel = new CountItemModel();
-                boolean itemIsInOldSysSummary = false;
+                Boolean itemIsInOldSysSummary = false;
                 Integer countDiff = 0; //NEW
 
                 if (oldestItemList != null) {

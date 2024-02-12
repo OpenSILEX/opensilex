@@ -6,6 +6,7 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.ontology.api.RDFObjectDTO;

@@ -77,7 +77,10 @@ public class ExportDataIndex {
         if (!Objects.equals(this.provenanceUri, other.provenanceUri)) {
             return false;
         }
-        return Objects.equals(this.objectUri, other.objectUri);
+        if (!Objects.equals(this.objectUri, other.objectUri)) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -12,7 +12,6 @@ import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -62,7 +61,7 @@ public class SpeciesDAOTest extends AbstractMongoIntegrationTest {
         expA = getExperimentModel(1);
         expA.setSpecies(Arrays.asList(s1, s2));
         expB = getExperimentModel(2);
-        expB.setSpecies(Collections.singletonList(s3));
+        expB.setSpecies(Arrays.asList(s3));
         sparql.create(ExperimentModel.class, Arrays.asList(expA, expB));
 
         dao = new SpeciesDAO(sparql);

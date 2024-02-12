@@ -25,7 +25,7 @@ public interface CoreConfig {
     @ConfigDescription(
             value = "Metrics options"
     )
-    MetricsConfig metrics();
+    public MetricsConfig metrics();
 
     @ConfigDescription(
             value = "List of shared resource instances"

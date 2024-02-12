@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -105,7 +106,7 @@ public class FactorLevelDAO {
 
 
     /**
-     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link org.opensilex.core.experiment.api.ExperimentGetDTO}
+     * Append FILTER or VALUES clause on the given {@link SelectBuilder} for each non-empty simple attribute ( not a {@link List} from the {@link ExperimentSearchDTO}
      *
      * @param alias search factor levels by alias
      * @param hasFactor search factor levels by factors

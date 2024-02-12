@@ -7,21 +7,16 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  *
@@ -66,7 +61,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
             this.setDate(dtf.format(odt));
         } else {
             LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();           
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
             this.setDate(dtf.format(date));
         }        
     }

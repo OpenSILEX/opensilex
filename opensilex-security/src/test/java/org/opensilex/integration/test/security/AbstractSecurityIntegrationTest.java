@@ -559,7 +559,17 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 } else if (nestedObject instanceof List) {
                     List<Object> nestedList = new ArrayList<>();
                     for (Object value : (List<Object>) nestedObject) {
-                        nestedList.add(convertToNotNullNestedMap(value));
+                        if (value instanceof String ||
+                                value instanceof Integer ||
+                                value instanceof Short ||
+                                value instanceof Long ||
+                                value instanceof Float ||
+                                value instanceof Double ||
+                                value instanceof Boolean) {
+                            nestedList.add(value);
+                        } else {
+                            nestedList.add(convertToNotNullNestedMap(value));
+                        }
                     }
                     if (nestedList.isEmpty()) {
                         keysToRemove.add(entry.getKey());

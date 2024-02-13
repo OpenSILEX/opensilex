@@ -706,6 +706,7 @@ import Point from "ol/geom/Point";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 import GeoJSONFeature from "vuelayers/src/ol-ext/format";
+import Feature from "ol/Feature";
 import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService, DataService, TargetPositionCreationDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
@@ -1440,12 +1441,13 @@ export default class MapView extends Vue {
             startDate,
             endDate
         )
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>
-            ) => {
-              const res = http.response.result as any;
-              res.forEach((element) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
+            const res :ScientificObjectNodeDTO[] = http.response.result;
+            if(res.length === 0){
+              this.$opensilex.showInfoToast(this.$i18n.t("ScientificObjects.info").toString());
+            }
+            else{
+              res.forEach((element :any) => {
                 if (element.geometry !== null) {
                   element.geometry.properties = {
                     creation_date: element.creation_date,
@@ -1472,6 +1474,7 @@ export default class MapView extends Vue {
                 this.endReceipt = true;
               }
             }
+          }
         )
         .catch((e) => {
           this.$opensilex.errorHandler(e);
@@ -2686,6 +2689,7 @@ en:
     update: Update filter
     created: the filter
   ScientificObjects:
+    info: No geolocated scientific objects in this experiment.
     title: Scientific object
     update: Scientific object has been updated
     display: Scientific objects
@@ -2754,6 +2758,7 @@ fr:
     update: Mise à jour du filtre
     created: Le filtre
   ScientificObjects:
+    info: Aucun objet scientifique géolocalisé dans cette expérimentation.
     title: Objet scientifique
     update: L'objet scientifique a été mis à jour
     display: Objets scientifiques

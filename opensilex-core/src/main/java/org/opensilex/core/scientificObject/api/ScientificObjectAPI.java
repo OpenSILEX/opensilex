@@ -235,6 +235,7 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+        List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
         int lengthMapGeo = 0;
 
         // Get SO with geometry for the experiment
@@ -250,16 +251,21 @@ public class ScientificObjectAPI {
             lengthMapGeo++;
         }
 
-        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
-
-        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
-        for(ScientificObjectNodeDTO dto : dtoList){
-            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElseThrow(NullPointerException::new).getGeometry());
-        }
-
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
 
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        if(lengthMapGeo == 0){
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        } else {
+            dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
+            //Use a temporary list to delete objects already found and reduce the size of the list to be iterated.
+            List<ScientificObjectNodeDTO> dtoMapGeoTmp = new ArrayList<>(dtoMapGeo);
+            // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
+            for(ScientificObjectNodeDTO dto : dtoList){
+                dto.setGeometry(dtoMapGeoTmp.stream().filter(o -> SPARQLDeserializers.compareURIs(o.getUri(),dto.getUri())).findAny().orElseThrow(NullPointerException::new).getGeometry());
+                dtoMapGeoTmp.removeIf(g -> SPARQLDeserializers.compareURIs(g.getUri(),dto.getUri()));
+            }
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        }
     }
 
     @GET

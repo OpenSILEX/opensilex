@@ -640,7 +640,6 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
 
     @Test
     public void testParallelSparqlMongoTransaction() throws Exception {
-
         int nbModelPerThread = 100;
         int nbThread = 2;
         Node graph = NodeFactory.createURI("test:sparql-mongo-test");
@@ -676,7 +675,6 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         // Assert.assertEquals(nbModelPerThread * nbThread, sparql.count(graph, SPARQLResourceModel.class));
         Assert.assertEquals(nbModelPerThread * nbThread, readWriteDao.count(MongoSearchFilter.EMPTY));
         executor.shutdown();
-        readWriteDao.deleteMany(MongoSearchFilter.EMPTY);
     }
 
 }

@@ -78,8 +78,6 @@ public class MongoDBService extends BaseService {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
-        serviceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
-        Objects.requireNonNull(serviceV2);
     }
 
     /**
@@ -698,6 +696,10 @@ public class MongoDBService extends BaseService {
     }
 
     public MongoDBServiceV2 getServiceV2() {
+        if(serviceV2 == null){
+            serviceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+            Objects.requireNonNull(serviceV2);
+        }
         return serviceV2;
     }
 }

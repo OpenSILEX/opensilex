@@ -261,10 +261,6 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         logger.info("{}, {}, collection: {}", kv(LOG_TYPE, DELETE_MANY_LOG_MSG), kv(LOG_STATUS, LOG_STATUS_START), collection.getNamespace().getCollectionName());
         Instant start = Instant.now();
 
-        if(deleteFilterBson.toBsonDocument().isEmpty()){
-            throw new IllegalArgumentException("You can't provide an empty filter when deleting documents inside a collection");
-        }
-
         // deleteMany() can update several document inside a collection, transaction handling is always needed
         DeleteResult result = session != null ?
                 collection.deleteMany(session, deleteFilterBson) :
@@ -286,12 +282,17 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     /**
      * @param deleteFilter the delete filter
      * @return the {@link Bson} document passed to mongodb for finding which document delete
+     * @throws IllegalArgumentException if the provided deleteFilter contains no filter (it prevent the deletion of the whole database)
      *
      * @apiNote By default, this method return the {@link Bson} returned by {@link #filterToBson(MongoSearchFilter)}, which means
      * that DELETION and SEARCH use the same filter. You can override this method if you what to provide a different semantic.
      */
-    protected Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
-        return filterToBson(deleteFilter);
+    private final Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
+        List<Bson> bsonFilters = getBsonFilters(deleteFilter);
+        if(CollectionUtils.isEmpty(bsonFilters)){
+            throw new IllegalArgumentException("You can't provide an empty filter when deleting documents inside a collection");
+        }
+        return bsonFiltersToBson(bsonFilters, deleteFilter.isLogicalAnd());
     }
 
     @Override
@@ -467,7 +468,10 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
     protected @NotNull Bson filterToBson(@NotNull F searchFilter) {
 
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
+        return bsonFiltersToBson(bsonFilters, searchFilter.isLogicalAnd());
+    }
 
+    protected Bson bsonFiltersToBson(List<Bson> bsonFilters, boolean logicalAnd){
         if (bsonFilters.isEmpty()) {
             return Filters.empty();
         } else if (bsonFilters.size() == 1) {
@@ -475,7 +479,7 @@ public abstract class AbstractMongoReadWriteDao<T extends MongoModel, F extends 
         }
 
         // append each filter with a logical AND or logical OR
-        if (searchFilter.isLogicalAnd()) {
+        if (logicalAnd) {
             return Filters.and(bsonFilters);
         } else {
             return Filters.or(bsonFilters);

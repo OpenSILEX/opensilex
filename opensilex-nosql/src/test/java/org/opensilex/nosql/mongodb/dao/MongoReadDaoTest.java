@@ -24,10 +24,13 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
+import org.opensilex.nosql.mongodb.model.SparqlMongoTestModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedIterable;
@@ -107,7 +110,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     private static final Random RANDOM = new Random();
 
     @BeforeClass
-    public static void setUp() {
+    public static void setUp()  {
         MongoDBServiceTest.setUp();
         searchDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-dao-search-test", "test");
         readWriteDao = new MongoReadWriteDao<>(mongoDBv2, MongoTestModel.class, "mongo-read-write-test", "test");
@@ -135,6 +138,14 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         // Load data from json file
         long durationMs = Duration.between(start, Instant.now()).toMillis();
         LOGGER.debug("Load json dump for testing : {} [OK] duration: {} ms", JSON_FILE_PATH, durationMs);
+
+        SPARQLServiceFactory factory = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+
+        try {
+            factory.getMapperIndex().addClasses(SparqlMongoTestModel.class);
+        } catch (SPARQLInvalidClassDefinitionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterClass
@@ -146,6 +157,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
     @After
     public void afterEach() {
         readWriteDao.getCollection().drop();
+        Assert.assertEquals(0, readWriteDao.count(new MongoSearchFilter()));
     }
 
     private static MongoTestModel getModel() {
@@ -522,10 +534,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         model2.setName("create");
 
         // Trigger the throws on a MongoException due to conflict on field name due to the unique name index
-        Assert.assertThrows(MongoException.class, () -> readWriteDao.create(List.of(model, model2)));
-        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(List.of(model, model2), session)));
+        List<MongoTestModel> models = List.of(model, model2);
+        Assert.assertThrows(MongoException.class, () -> readWriteDao.create(models));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(models, session)));
         Assert.assertThrows(IllegalArgumentException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(Collections.emptyList(), session)));
-        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(List.of(model, model2), session)));
+        Assert.assertThrows(MongoException.class, () -> mongoDBv2.runThrowingTransaction((session) -> readWriteDao.create(models, session)));
     }
 
 
@@ -596,8 +609,11 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         DeleteResult deleteResult = readWriteDao.deleteMany(filter);
         Assert.assertEquals(nbModelByType, deleteResult.getDeletedCount());
         Assert.assertEquals(nbModelByType, readWriteDao.count(new MongoSearchFilter()));
+    }
 
-        Assert.assertEquals(0, readWriteDao.count(new MongoSearchFilter()));
+    @Test
+    public void testDeleteManyWithEmptyFilterFail(){
+        Assert.assertThrows(IllegalArgumentException.class, () -> readWriteDao.deleteMany(MongoSearchFilter.EMPTY));
     }
 
     @Test
@@ -608,13 +624,16 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         SparqlMongoTransaction trx = new SparqlMongoTransaction(sparql, mongoDBv2);
         Node graph = NodeFactory.createURI("test:sparql-mongo-test");
 
+        Assert.assertEquals(0, sparql.count(SparqlMongoTestModel.class));
+        Assert.assertEquals(0, readWriteDao.count(MongoSearchFilter.EMPTY));
+
         var result = trx.execute((sparqlConn, session) -> {
 
             List<SPARQLResourceModel> sparqlModels = new ArrayList<>(nbModel);
             List<MongoTestModel> mongoModels = new ArrayList<>(nbModel);
 
             for (int i = 0; i < nbModel; i++) {
-                SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
+                SPARQLResourceModel sparqlModel = new SparqlMongoTestModel();
                 sparqlModel.setUri(URI.create("testSparqlMongoTransaction:" + i));
                 sparqlModels.add(sparqlModel);
 
@@ -633,9 +652,10 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         Assert.assertNotNull(result.getLeft());
         Assert.assertNotNull(result.getRight());
 
-        Assert.assertEquals(nbModel, sparql.count(graph, SPARQLResourceModel.class));
+        Assert.assertEquals(nbModel, sparql.count(graph, SparqlMongoTestModel.class));
         Assert.assertEquals(nbModel, readWriteDao.count(MongoSearchFilter.EMPTY));
-        sparql.deleteAll(graph, result.getLeft().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
+
+        sparql.clearGraph(graph.toString());
     }
 
     @Test
@@ -653,7 +673,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
             SPARQLService newService = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, RDF4JInMemoryServiceFactory.class).provide();
 
             for (int modelIdx = 0; modelIdx < nbModelPerThread; modelIdx++) {
-                SPARQLResourceModel sparqlModel = new SPARQLResourceModel();
+                SPARQLResourceModel sparqlModel = new SparqlMongoTestModel();
                 sparqlModel.setUri(URI.create("test:" + threadIdx + "_" + UUID.randomUUID()));
                 sparqlModels.add(sparqlModel);
 
@@ -673,6 +693,7 @@ public class MongoReadDaoTest extends MongoDBServiceTest {
         // Run search and ensure results are OK
         Thread.sleep(2000);
         // Assert.assertEquals(nbModelPerThread * nbThread, sparql.count(graph, SPARQLResourceModel.class));
+        Assert.assertEquals(nbModelPerThread * nbThread, sparql.count(graph, SparqlMongoTestModel.class));
         Assert.assertEquals(nbModelPerThread * nbThread, readWriteDao.count(MongoSearchFilter.EMPTY));
         executor.shutdown();
     }

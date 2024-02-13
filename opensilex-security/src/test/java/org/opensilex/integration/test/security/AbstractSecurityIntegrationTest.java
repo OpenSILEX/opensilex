@@ -22,6 +22,7 @@ import org.opensilex.security.authentication.api.TokenGetDTO;
 import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -501,30 +502,98 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     * This method checks if all elements of a nested map (subMap) are included in another nested map (superMap).
-     * @param superMap The map that is supposed to contain all elements of the subMap.
-     * @param subMap The map whose elements are checked if they are contained in the superMap.
+     * This method checks if all elements of a nested Map (subMap) are included in another nested Map (superMap).
+     * @param superMap The Map that is supposed to contain all elements of the subMap.
+     * @param subMap The Map whose elements are checked if they are contained in the superMap.
      * @return returns true if all elements of the subMap are included in the superMap, otherwise it returns false.
      */
     public static boolean isDeepMapIncluded(LinkedHashMap<String, Object> superMap, LinkedHashMap<String, Object> subMap) {
         for (Map.Entry<String, Object> entry : subMap.entrySet()) {
+
             String key = entry.getKey();
+            // Case key not in superMap
+            if (!superMap.containsKey(key)){
+                return false;
+            }
             Object value = entry.getValue();
             Object correspondingValue = superMap.get(key);
 
+            // Case recursion on internal Map returns false
             if (value instanceof Map && correspondingValue instanceof Map) {
                 if (!isDeepMapIncluded((LinkedHashMap<String, Object>) value, (LinkedHashMap<String, Object>) correspondingValue)) {
                     return false;
                 }
-            } else if (value instanceof List) {
-                for (LinkedHashMap v1 : (List<LinkedHashMap>)value) {
-                    for (LinkedHashMap v2 : (List<LinkedHashMap>)correspondingValue) {
-                        if (isDeepMapIncluded(v1, v2)) {
-                            return true;
+            }
+
+            // Case List elements not included
+            else if (value instanceof List && correspondingValue instanceof List) {
+                if (!isDeepListIncluded((List<Object>)value, (List<Object>) correspondingValue)){
+                    return false;
+                }
+            }
+
+            // Case primitives aren't equal
+            if (!Objects.equals(value, correspondingValue)) {
+
+                equalityFound:
+                {
+                    // Case String representations of URIs equals
+                    if (value instanceof String && superMap.get(key) instanceof String) {
+                        try {
+                            if (SPARQLDeserializers.compareURIs((String)value, (String)correspondingValue)) {
+                                break equalityFound;
+                            }
+                        } catch (Exception ignored) {
+
+                        }
+                    }
+
+                    // Case no equality found
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * This method checks if all elements of a nested List (subList) are included in another nested List (superList).
+     * @param superList The List that is supposed to contain all elements of the subList.
+     * @param subList The List whose elements are checked if they are contained in the superList.
+     * @return returns true if all elements of the subList are included in the superList, otherwise it returns false.
+     */
+    public static boolean isDeepListIncluded(List<Object> superList, List<Object> subList) {
+        for (Object subElement : subList) {
+            found:
+            {
+                for (Object superElement : superList) {
+                    // case elements are equal (handles all primitives)
+                    if (Objects.equals(subElement, superElement)) {
+                        break found;
+                    }
+                    // case elements are Maps and the subElement is included in the superElement
+                    else if (subElement instanceof Map && superElement instanceof Map) {
+                        if (isDeepMapIncluded((LinkedHashMap<String, Object>) subElement,
+                                (LinkedHashMap<String, Object>) superElement)) {
+                            break found;
+                        }
+                    }
+                    // case elements are Lists and the subElement is included in the superElement
+                    else if (subElement instanceof List && superElement instanceof List) {
+                        if (isDeepListIncluded((List) subElement,
+                                (List) superElement)) {
+                            break found;
+                        }
+                    }
+                    // case elements are string representations of URIs and are equals
+                    else if (subElement instanceof String && superElement instanceof String) {
+                        try {
+                            return SPARQLDeserializers.compareURIs((String)subElement, (String)superElement);
+                        } catch (Exception ignored) {
+
                         }
                     }
                 }
-            } else if (!superMap.containsKey(key) || !superMap.get(key).equals(value)) {
                 return false;
             }
         }

@@ -1648,15 +1648,55 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Sample -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#SampleInterval -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Sample">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SampleInterval">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:label xml:lang="en">Sample</rdfs:label>
-        <rdfs:label xml:lang="fr">Échantillon</rdfs:label>
+        <rdfs:label xml:lang="en">Sample interval</rdfs:label>
+        <rdfs:label xml:lang="fr">Granularité d'échantillon</rdfs:label>
     </owl:Class>
 
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MilimeterSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">millimeter (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">millimeter</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">millimetre</skos:prefLabel>
+    </owl:Class>
 
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CentimeterSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">centimeter (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">centimeter</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">centimètre</skos:prefLabel>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MeterSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">meter (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">meter</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">mètre</skos:prefLabel>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#KilometerSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">kilometer (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">kilometer</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">kilomètre</skos:prefLabel>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FieldSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">field (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">field</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">champ</skos:prefLabel>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RegionSampling">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#SampleInterval"/>
+        <rdfs:label xml:lang="en">region (unit of distance sampling)</rdfs:label>
+        <skos:prefLabel xml:lang="en">region</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">région</skos:prefLabel>
+    </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificDocument -->
 

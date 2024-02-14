@@ -416,6 +416,25 @@ public class VariableAPI {
         return new PaginatedListResponse<>(timeIntervals).getResponse();
     }
 
+    @GET
+    @Path("sample_intervals")
+    @ApiOperation(value = "Get possible values for sample intervals")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return sample intervals", response = basicURIAndLabelDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSampleIntervals(
+            @ApiParam(value = "Language", example = "fr") @QueryParam("lang") @DefaultValue("en") String lang
+    ) throws URISyntaxException, SPARQLException {
+        List<SPARQLResourceModel> intervals = getDao().getSampleIntervalValues(lang);
+        List<basicURIAndLabelDTO> sampleIntervals = intervals.stream().map(
+                interval -> new basicURIAndLabelDTO(interval.getUri().toString(), interval.getTypeLabel().getDefaultValue())
+        ).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(sampleIntervals).getResponse();
+    }
+
     /**
      * * Return a list of variables corresponding to the given URIs
      *

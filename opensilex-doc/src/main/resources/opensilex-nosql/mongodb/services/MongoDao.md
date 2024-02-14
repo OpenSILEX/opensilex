@@ -41,7 +41,7 @@ tags:
 
 # Analysis
 
-OpenSILEX rely on [MongoDB](https://www.mongodb.com/fr-fr) for the storage and the interrogation of several's kind
+OpenSILEX relies on [MongoDB](https://www.mongodb.com/fr-fr) for the storage and the interrogation of several kinds
 of data models.
 The use of MongoDB is guided by the following reasons : 
 - A **semi-structured** data-model which provides flexibility for developers for updating data-models and allow
@@ -58,10 +58,10 @@ to store several data-models inside the same database
 
 #### SLA (service-level-agreement)
 
-- The table below describe the expected performance for commons read and write operations 
-- This only includes DAOs operation (it doesn't include business logic or the whole request performed inside a single API method)
-- The operation don't expect multi-threading, this means that latency can be reduced if multi-threading is available
-- Of course, it could be greatly optimized, but it's the minimal acceptable for an acceptable user experience
+- The table below describes the expected performance for common read and write operations 
+- This only includes DAOs operations (it doesn't include business logic or the whole request performed inside a single API method)
+- The operation doesn't expect multi-threading, this means that latency can be reduced if multi-threading is available
+- Of course, it could be greatly optimized, but it's the minimal expectations for an acceptable user experience
 
 | **Operation**                                   | **Size** | **P99 Latency** | **Notes** |
 |-------------------------------------------------|----------|-----------------|-----------|
@@ -79,9 +79,9 @@ to store several data-models inside the same database
 | Insert 10000 element                            | 1000     | 5 s             |           |
 | Delete 1000  element (with index-covered query) | 1000     | 1 s             |           |
 
-- This SLA should be respected for any small dataset (<10M of document on a MongoDB single server without replication)
-- Of course, they are variant regarding of the nature of the dataset, the size of the document and the underlying hardware
-but for these basic operation on very-small data the P99 latency should keep this magnitude
+- This SLA should be respected for any small dataset (<10M documents on a MongoDB single server without replication)
+- Of course, they are variant regarding the nature of the dataset, the size of the document and the underlying hardware
+but for these basic operations on very-small data the P99 latency should keep this magnitude
 
 # Solution
 
@@ -90,7 +90,7 @@ but for these basic operation on very-small data the P99 latency should keep thi
 
 ### Dao
 
-The class diagram below describe the methods available for any MongoDB based DAO
+The class diagram below describes the methods available for any MongoDB based DAO
 
 ![MongoReadWriteDao.png](uml/MongoReadWriteDao.png)
 
@@ -98,9 +98,9 @@ The class diagram below describe the methods available for any MongoDB based DAO
 
 The Dao is parametrized with two types `T, F` : 
 - `T` : the type of `MongoModel` to handle with the Dao
-- `F` : The type of `MongoSearchFilter` to handle. This object contains all search filter corresponding to a `MongoModel`
+- `F` : The type of `MongoSearchFilter` to handle. This object contains all search filters corresponding to a `MongoModel`
 
-The `MongoReadWriteDao` implementation provides methods for read and write operation for a given model and a given search filter.
+The `MongoReadWriteDao` implementation provides methods for the read and write operations for a given model and a given search filter.
 When implementing a new Dao for some class, this dao must extend the `MongoReadWriteDao` class and specify the model class and the corresponding 
 filter.
 
@@ -118,14 +118,14 @@ The `MongoDBServiceV2` classes provides method for the following features :
   - `computeTransaction()` : run an operation with transaction handling and return result
   - `runThrowingTransaction()` : run a potentially throwing operation with transaction handling
   - `computeThrowingTransaction()` : run a potentially throwing operation with transaction handling and return result
-- Création of indexes in database (if not already exist)
+- Creation of indexes in database (if they don't already exist)
   - `MongoDBService.registerIndex(collectionName, index, indexOptions)` : register an index to create
   - `createIndexes()` : Create (if not-exists) all indexes registered previously with `MongoDBService.registerIndex`
 
 ### Indexes generation
 
-In any Dao classes, you must use the static method `MongoDBService.registerIndex(collectionName, index, indexOptions)` in order
-to register a new indexes which must be created during OpenSILEX startup.
+In any Dao class, you must use the static method `MongoDBService.registerIndex(collectionName, index, indexOptions)` in order
+to register a new index which must be created during OpenSILEX startup.
 This method call must be performed with static context
 
 > Example

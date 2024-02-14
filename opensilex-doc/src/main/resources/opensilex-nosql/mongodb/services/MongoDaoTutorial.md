@@ -62,20 +62,20 @@ date: 30/01/2024
 
 ## Using Mongo based DAO
 
-- MongoDB based Dao allow to easily perform Read (Get, Search) and Write (Create, Update, Delete)
+- MongoDB based Dao allows easy performances for Read (Get, Search) and Write (Create, Update, Delete)
   operations for a specific model inside a given collection.
-- The standard implementation `MongoReadWriteDao` rely on `MongoDBServiceV2` for
-  read/write and transaction management and use Java Generic in order to specify the `MongoModel` and `MongoSearchFilter` to use
+- The standard implementation `MongoReadWriteDao` relies on `MongoDBServiceV2` for
+  read/write and transaction management and uses Java Generics in order to specify the `MongoModel` and `MongoSearchFilter` to use
 - The recommended way is to specialize this class or to simply use it for each domain/concept
   related to a given API
 
 ## Read/Write operations and Session management
 
-- MongoDB allow the use of transaction in order to guarantee
-the atomicity of write operations (Either the operation success of fail)
-- With the MongoDB JAVA API, the use of transaction is performed
+- MongoDB allows the use of transactions in order to guarantee
+the atomicity of write operations (The operation is either a success or a fail)
+- With the MongoDB JAVA API, the use of transactions is performed
 with the use of [ClientSession](https://mongodb.github.io/mongo-java-driver/3.6/javadoc/index.html?com/mongodb/session/ClientSession.html).
-- Several way for transaction handling are described in the next session
+- Several ways for transaction handling are described in the next session
 
 # Transaction management : MongoDBServiceV2
 
@@ -92,7 +92,7 @@ transaction managed is not mandatory since the operation is atomic.
 ### Multiple write operation
 
 - If you want to group several single write operations inside an atomic operation (ex: doing write on several collections),
-use a `ClientSession` and handle transaction. In this case, there are two-way :
+use a `ClientSession` and handle a transaction. In this case, there are two-ways :
 
 #### Automatic transaction management
 
@@ -120,20 +120,20 @@ int result = mongodbServiceV2.computeTransaction((session) -> {
 - Explicit creation of the `ClientSession` with `MongoDBServiceV2.newSession()`
   - This is **not recommended** since you have to manually handle transaction and session lifecycle. Only use it for specific usage
 
-See `MongoDBServiceV2.computeTransaction` and  `MongoDBServiceV2.computeTransaction` for deeper example of session and transaction management
+See `MongoDBServiceV2.runTransaction` and  `MongoDBServiceV2.computeTransaction` for a deeper example of session and transaction management
 
 ## Multiple document operation
 
-- For operation which can results to multiple document write, the transaction handling 
-is mandatory to ensure atomicity. In this case, there are two-way :
-  - If you don't provide a `ClientSession`, then the write operations (`create`, `deleteOnCriteria`) which deals with multiple document, automatically create one (if not provided), and use-it
+- For operations which can result in multiple document writes, the transaction handling 
+is mandatory to ensure atomicity. In this case, there are two-ways :
+  - If you don't provide a `ClientSession`, then the write operations (`create`, `deleteOnCriteria`) which deal with multiple documents, automatically creates one (if not provided), and uses it
 to ensure transaction management
   - You create the `ClientSession` with `MongoDBServiceV2.runTransaction`/`MongoDBServiceV2.computeTransaction` and 
-you provide the created session to the write operation(s)
+you provide the write operation(s) to the created session
 
 ## Distributed transaction
 
-Use `SparqlMongoTransaction` when you need to perform operation on RDF and on MongoDB
+Use `SparqlMongoTransaction` when you need to perform operations on RDF and on MongoDB
 
 ```java
 /* Assume objects are well initialized */
@@ -249,11 +249,11 @@ ListWithPagination<DataModel> results = dataDao.search(filter);
 ```
 
 **Note** :
-- The search criteria `MongoSearchFilter#getRdfTypes()` is generic but may be not relevant to some MongoDB DAO
+- The search criteria `MongoSearchFilter#getRdfTypes()` is generic but may be not relevant to some MongoDB DAOs
 
 #### Custom property filtering
 
-> Considering the following MongoModel and the corresponding MongoSearchFilter which add the search filter `name`
+> Considering the following MongoModel and the corresponding MongoSearchFilter which adds the search filter `name`
 
 ```java
 public class DataModel extends MongoModel {
@@ -267,8 +267,8 @@ public class DataSearchFilter extends MongoSearchFilter {
 }
 ```
 
-and the following Dao which use this `DataSearchFilter` as search filter.
-This Dao must override the method `public List<Bson> getBsonFilters(F searchQuery)` as following :
+and the following Dao which uses this `DataSearchFilter` as search filter.
+This Dao must override the method `public List<Bson> getBsonFilters(F searchQuery)` like the following :
 
 ```java
 import com.mongodb.client.model.Filters;
@@ -328,7 +328,7 @@ ListWithPagination<DataModel> results = dataDao.search(session, filter, null);
 
 ### Results filtering/projection
 
-> Search method provide a way to limit to field to fetch from the Database.
+> The search method provides a way to limit the fields to fetch from the Database.
 > This is useful is you known that only a subset of Document fields is required.
 > It offers better performance due to a lower Network bandwidth usage and less CPU/RAM usage on client side.
 
@@ -352,9 +352,9 @@ ListWithPagination<DataModel> results = dataDao.search(null, filter, projection)
 
 ### Results conversion
 
-> Search method allow to convert results from database and to collect it inside the `ListWithPagination` usually returned.
+> The search method allows the conversion of results from the database and to collect them inside the `ListWithPagination` usually returned.
 > You can use this method when you need to iterate model over database results and convert each model to a DTO.
-> In this case you don't have to collect the model list and to re-create a new DTO result. This save space and CPU time.
+> In this case you don't have to collect the model list to re-create a new DTO result. This saves space and CPU time.
 
 ```java
 /* Create filter */
@@ -387,7 +387,7 @@ dao.searchAsStream(filter).forEach(model -> resultUris2.add(model.getUri()));
 #### Combine Stream search and results projection
 
 > If we only want to extract a List of URIs (or any subset of field) of document which match some criteria, the best way
-> is to perform a Stream-based search and to provide a projection which only include the uri field.
+> is to perform a Stream-based search and to provide a projection which only includes the uri field.
 
 ```java
 /* Create projection on uri field */
@@ -405,8 +405,8 @@ List<URI> resultUris = results.getSource().map(DataModel::getUri).collect(Collec
 
 ## Count
 
-> The `count(*)` methods has the same signature as `search(*)` methods, but instead return 
-> the number of Document matching the given search criteria. 
+> The `count(*)` methods have the same signature as `search(*)` methods, but instead return 
+> the number of Documents matching the given search criteria. 
 
 # Write
 
@@ -414,8 +414,8 @@ List<URI> resultUris = results.getSource().map(DataModel::getUri).collect(Collec
 
 ### Insert models (without explicit session management)
 
-- When using `MongoReadWriteDao`, this dao rely on `MongoDBServiceV2#createAll()` method
-- This method guarantee that the insertion of List of models is done with transaction management
+- When using `MongoReadWriteDao`, this dao relies on `MongoDBServiceV2#createAll()` method
+- This method guarantees that the insertion of List of models is done with transaction management
 - So the operation is atomic, all models are inserted or no models are inserted
 
 ```java
@@ -449,9 +449,9 @@ mongoDBServiceV2.runTransaction(session -> {
 ### Insert models and get results (with explicit session management)
 
 - If you want to use a particular transaction context you can pass the `ClientSession` to the `dao.create()` method
-- This is usefully if you want to group several operations in the same transaction
+- This is useful if you want to group several operations in the same transaction
 - You can also get a result after the operations are done (here the List of results from MongoDB)
-- This relies on `MongoDBServiceV2#computeTransaction()` method which handle transaction management for any write operation
+- This relies on `MongoDBServiceV2#computeTransaction()` method which handles transaction management for any write operation
 
 ```java
 // Assume objects are well initialized 
@@ -481,7 +481,7 @@ dao.update(model);
 
 ### Update a model (with explicit session management)
 
-> This case in only useful if you want to perform several operation in one transaction, else there is no need for transaction
+> This case in only useful if you want to perform several operations in one transaction, otherwise there is no need for transaction
 > management for only one document update
 
 ```java
@@ -515,7 +515,7 @@ dao.delete(modelToDeleteURI);
 
 ### Delete a model (with explicit session management)
 
-> This case in only useful if you want to perform several operation in one transaction, else there is no need for transaction
+> This case in only useful if you want to perform several operations in one transaction, otherwise there is no need for transaction
 > management for only one document delete
 
 ```java
@@ -534,8 +534,8 @@ mongoDBServiceV2.computeTransaction(session -> {
 
 ### Delete many models
 
-> - The example below reuse the DataSearchFilter example class used [previously](#custom-property-filtering)
-> - By default, `MongoReadWriteDao` use the `mongoDBServiceV2.deleteMany` which handle transaction management if no
+> - The example below reuses the DataSearchFilter example class used [previously](#custom-property-filtering)
+> - By default, `MongoReadWriteDao` uses the `mongoDBServiceV2.deleteMany` which handles transaction management if no
 > session is provided
 
 ```java

@@ -497,7 +497,6 @@ mongoDBServiceV2.computeTransaction(session -> {
 
 ```
 
-## Upsert
 
 ## Delete
 

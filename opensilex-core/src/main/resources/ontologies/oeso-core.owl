@@ -1355,13 +1355,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
-        <!-- <rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasGroup"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/security#Group"/>
+                <owl:minQualifiedCardinality rdf:resource="http://www.opensilex.org/security#Group"/>0</owl:minQualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
+      <!--   <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>

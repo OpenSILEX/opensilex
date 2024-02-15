@@ -3,6 +3,7 @@ package org.opensilex.security.group.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -34,22 +35,18 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
             GroupAPI.class.getMethod("createGroup", GroupCreationDTO.class),
             path
     );
-    public String createPath = path;
     public ServiceDescription update = new ServiceDescription(
             GroupAPI.class.getMethod("updateGroup", GroupUpdateDTO.class),
             path
     );
-    public String getPath = path + "/{uri}";
     public ServiceDescription get = new ServiceDescription(
             GroupAPI.class.getMethod("getGroup", URI.class),
             path + "/{uri}"
     );
-    public String deletePath = path + "/{uri}";
     public ServiceDescription delete = new ServiceDescription(
             GroupAPI.class.getMethod("deleteGroup", URI.class),
             path + "/{uri}"
     );
-    public String searchPath = path;
     public ServiceDescription search = new ServiceDescription(
             GroupAPI.class.getMethod("searchGroups", String.class, List.class, int.class, int.class),
             path

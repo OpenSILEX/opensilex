@@ -1,21 +1,19 @@
 package org.opensilex.security.authentication.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.junit.Assert;
 import org.junit.Test;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.account.api.AccountAPI;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.group.api.GroupAPI;
 import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -32,10 +30,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
 //    }
     
     protected static final String path = "/security";
-    protected static final String renewTokenPath = path + "/renew-token";
-    protected static final String logoutPath = path + "/logout";
-    protected static final String credentialsPath = path + "/credentials";
-
     protected static final ServiceDescription renewToken;
     protected static final ServiceDescription logout;
     protected static final ServiceDescription credentials;
@@ -44,25 +38,18 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         try {
             renewToken = new ServiceDescription(
                     AuthenticationAPI.class.getMethod("renewToken", String.class),
-                    renewTokenPath
+                    path + "/renew-token"
             );
             logout = new ServiceDescription(
                     AuthenticationAPI.class.getMethod("logout"),
-                    logoutPath
+                    path + "/logout"
             );
             credentials = new ServiceDescription(
                     AuthenticationAPI.class.getMethod("getCredentialsGroups"),
-                    credentialsPath
+                    path + "/credentials"
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    // TODO : check supplier use in UserCall 
-    private void assertResponseStatus(Supplier<Response> responseSupplier, Response.Status expectedStatus){
-        try(Response response= responseSupplier.get()){
-            Assert.assertEquals(expectedStatus.getStatusCode(), response.getStatus());
         }
     }
 
@@ -77,28 +64,28 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         // Renew token withold but still valid token -> OK
-        putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
+        putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + oldToken.getToken())
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         // Renew token without token -> UNAUTHORIZED
-        assertResponseStatus(() -> target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
-                        .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE)),
-                                Response.Status.UNAUTHORIZED       );
+        putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), putResult.getStatus());
 
-        putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
+        putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), putResult.getStatus());
 
         // Renew token with empty token -> UNAUTHORIZED
-        putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
-                .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + "")
+        putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
+                .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX)
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), putResult.getStatus());
 
         // Renew token with invalid token -> UNAUTHORIZED
-        putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
+        putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + "fdgdfgdsfgdsfgd")
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), putResult.getStatus());
@@ -115,7 +102,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), deleteResult.getStatus());
 
         // Try to renew token without authorization
-        Response putResult = target(renewTokenPath).request(MediaType.APPLICATION_JSON_TYPE)
+        Response putResult = target(renewToken.getPathTemplate()).request(MediaType.APPLICATION_JSON_TYPE)
                 .header(ApiProtected.HEADER_NAME, ApiProtected.TOKEN_PARAMETER_PREFIX + oldToken.getToken())
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE));
         assertEquals(Response.Status.FORBIDDEN.getStatusCode(), putResult.getStatus());
@@ -127,14 +114,14 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<CredentialsGroupDTO>>() {
         }).getDeserializedResponse();
 
-        List<String> accountCredentialsMap = new ArrayList<String>() {
+        List<String> accountCredentialsMap = new ArrayList<>() {
             {
                 add(AccountAPI.CREDENTIAL_ACCOUNT_MODIFICATION_ID);
                 add("account-access");
             }
         };
 
-        List<String> groupCredentialsMap = new ArrayList<String>() {
+        List<String> groupCredentialsMap = new ArrayList<>() {
             {
                 add(GroupAPI.CREDENTIAL_GROUP_DELETE_ID);
                 add(GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID);
@@ -144,13 +131,9 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
 
         getResponse.getResult().forEach((credentialGroup) -> {
             if (credentialGroup.getGroupId().equals(AccountAPI.CREDENTIAL_GROUP_ACCOUNT_ID)) {
-                credentialGroup.getCredentials().forEach((credential) -> {
-                    assertTrue(accountCredentialsMap.contains(credential.getId()));
-                });
+                credentialGroup.getCredentials().forEach((credential) -> assertTrue(accountCredentialsMap.contains(credential.getId())));
             } else if (credentialGroup.getGroupId().equals(GroupAPI.CREDENTIAL_GROUP_GROUP_ID)) {
-                credentialGroup.getCredentials().forEach((credential) -> {
-                    assertTrue(groupCredentialsMap.contains(credential.getId()));
-                });
+                credentialGroup.getCredentials().forEach((credential) -> assertTrue(groupCredentialsMap.contains(credential.getId())));
             }
         });
     }

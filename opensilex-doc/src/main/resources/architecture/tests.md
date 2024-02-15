@@ -12,7 +12,7 @@
 >
 > Currently covered topics :
 >
-> - {topic 1}
+> - {Test classes}
 >
 > Missing topics :
 >

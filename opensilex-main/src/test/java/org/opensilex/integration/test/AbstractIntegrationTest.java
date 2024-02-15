@@ -9,7 +9,6 @@ package org.opensilex.integration.test;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -31,7 +30,6 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.RestApplication;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,7 +270,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     @Deprecated
     protected List<URI> extractUriListFromPaginatedListResponse(final Response response) {
         JsonNode node = response.readEntity(JsonNode.class);
-        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
+        PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         return listResponse.getResult();
     }
@@ -292,18 +290,26 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected final Map<String, Object> pathTemplateParams; // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
         protected final Method serviceMethod;
         protected final String pathTemplate;
-
-        protected String httpMethod;
-
+        protected final String httpMethod;
         protected final MediaType callMediaType;
         protected final List<MediaType> responseMediaTypes;
 
-        public PublicCall(Map<String, Object> params, Object body, Map<String, Object> pathTemplateParams, Method serviceMethod, String pathTemplate, MediaType callMediaType, List<MediaType> responseMediaTypes) {
+        public PublicCall(
+                Map<String, Object> params,
+                Object body,
+                Map<String, Object> pathTemplateParams,
+                Method serviceMethod,
+                String pathTemplate,
+                String httpMethod,
+                MediaType callMediaType,
+                List<MediaType> responseMediaTypes
+        ) {
             this.params = params;
             this.body = body;
             this.pathTemplateParams = pathTemplateParams;
             this.serviceMethod = serviceMethod;
             this.pathTemplate = pathTemplate;
+            this.httpMethod = httpMethod;
             this.callMediaType = callMediaType;
             this.responseMediaTypes = responseMediaTypes;
         }
@@ -314,7 +320,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws Exception if there is an error executing the call
          */
         public Response executeCall() throws Exception {
-            httpMethod = findHttpMethod();
             WebTarget target = createTarget();
             return makeCorrectCall(target);
         }
@@ -360,28 +365,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 });
                 return URI.create(response.getDeserializedResponse().getResult());
             } else {
-                Result<OpensilexResponseDeserialize<UriResourceDTO>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
+                Result<DeserializedResponse<UriResourceDTO>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
                 });
                 return readResponse.getDeserializedResponse().getResult().getUri();
-            }
-        }
-
-        /**
-         * Finds the HTTP method for the service method.
-         * @return the HTTP method for the service method
-         * @throws UnsupportedOperationException if the HTTP method is not supported
-         */
-        protected String findHttpMethod() {
-            if (serviceMethod.isAnnotationPresent(GET.class)) {
-                return HttpMethod.GET;
-            } else if (serviceMethod.isAnnotationPresent(POST.class)) {
-                return HttpMethod.POST;
-            } else if (serviceMethod.isAnnotationPresent(PUT.class)) {
-                return HttpMethod.PUT;
-            } else if (serviceMethod.isAnnotationPresent(DELETE.class)) {
-                return HttpMethod.DELETE;
-            } else {
-                throw new UnsupportedOperationException("HTTP method not supported");
             }
         }
 
@@ -402,18 +388,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         protected Invocation.Builder buildRequestBuilder(WebTarget target) {
 
-            Invocation.Builder requestBuilder;
-            if (Objects.isNull(callMediaType)) {
-                requestBuilder = target.request(MediaType.APPLICATION_JSON);
-            } else {
-                requestBuilder = target.request(callMediaType);
-            }
+            Invocation.Builder requestBuilder = target.request(callMediaType);
 
-            if (!(responseMediaTypes == null) && !responseMediaTypes.isEmpty()) {
-                for (MediaType mediaType : responseMediaTypes) {
-                    requestBuilder = requestBuilder.accept(mediaType);
-                }
-            }
+            requestBuilder.accept(responseMediaTypes.toArray(new MediaType[0]));
 
             return requestBuilder;
         }
@@ -446,7 +423,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected WebTarget createTarget() {
             WebTarget target = target(pathTemplate);
             if (!params.isEmpty()){
-                checkParamsExist();
                 target = appendQueryParams(target);
             }
             if (!pathTemplateParams.isEmpty()) {
@@ -477,18 +453,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
 
         /**
-         * Checks if the parameters exist for the service method.
-         * @throws AssertionError if not all parameters exist for the service method
-         */
-        protected void checkParamsExist() {
-            List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
-                    .filter(parameter -> parameter.getAnnotation(QueryParam.class) != null)
-                    .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
-                    .collect(Collectors.toList());
-            assertTrue(availableParams.containsAll(params.keySet()));
-        }
-
-        /**
          * Reads the response and converts it into a specified type.
          * @param response the response to read
          * @param type the type to convert the response into
@@ -498,6 +462,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             JsonNode node = response.readEntity(JsonNode.class);
 
             return mapper.convertValue(node, type);
+        }
+
+        public JsonNode executeCallAnReturnJsonNode() throws Exception {
+            try (Response response = executeCall()) {
+                JsonNode node = response.readEntity(JsonNode.class);
+                response.close();
+                return node;
+            }
         }
 
 
@@ -520,13 +492,13 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         protected Map<String, Object> params = new HashMap<>();
         protected Object body = null;
-        // Most of the time this is used for GET or DELETE by URI : {"uri":"myResourceUri"}
         protected Map<String, Object> pathTemplateParams = new HashMap<>();
         protected Method serviceMethod;
         protected String pathTemplate;
 
-        protected MediaType callMediaType = null;
-        protected List<MediaType> responseMediaTypes = new ArrayList<>();
+        protected MediaType callMediaType = MediaType.valueOf(MediaType.APPLICATION_JSON);
+        protected List<MediaType> responseMediaTypes = Collections.singletonList(MediaType.valueOf(MediaType.APPLICATION_JSON));
+        protected String httpMethod;
 
         public PublicCallBuilder(ServiceDescription serviceDescription) {
             this.serviceMethod = serviceDescription.getServiceMethod();
@@ -558,13 +530,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return self();
         }
 
-        public T setUriInPath(String uri) {
+        public T setUriInPath(URI uri) {
             this.pathTemplateParams.put("uri", uri);
-            return self();
-        }
-
-        public T setPathTemplate(String pathTemplate) {
-            this.pathTemplate = pathTemplate;
             return self();
         }
 
@@ -589,14 +556,61 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
 
         public PublicCall build() {
-            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
+            preBuildChecks();
+            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes);
+        }
+
+        /**
+         * A method to perform pre-build checks : check if the parameters exist for the service method, find the HTTP method, check if the path parameters exist
+         */
+        protected void preBuildChecks() {
+            checkParamsExist();
+            findHttpMethod();
+            checkPathParamsExist();
+        }
+
+        /**
+         * Checks if the parameters exist for the service method.
+         * @throws AssertionError if not all parameters exist for the service method
+         */
+        protected void checkParamsExist() {
+            List<String> availableParams = Arrays.stream(serviceMethod.getParameters())
+                    .filter(parameter -> parameter.getAnnotation(QueryParam.class) != null)
+                    .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
+                    .collect(Collectors.toList());
+            assertTrue(availableParams.containsAll(params.keySet()));
+        }
+
+        /**
+         * Finds the HTTP method for the service method.
+         * @throws UnsupportedOperationException if the HTTP method is not supported
+         */
+        protected void findHttpMethod() {
+            if (serviceMethod.isAnnotationPresent(GET.class)) {
+                httpMethod = HttpMethod.GET;
+            } else if (serviceMethod.isAnnotationPresent(POST.class)) {
+                httpMethod = HttpMethod.POST;
+            } else if (serviceMethod.isAnnotationPresent(PUT.class)) {
+                httpMethod = HttpMethod.PUT;
+            } else if (serviceMethod.isAnnotationPresent(DELETE.class)) {
+                httpMethod = HttpMethod.DELETE;
+            } else {
+                throw new UnsupportedOperationException("HTTP method not supported");
+            }
+        }
+
+        /**
+         * Method to check if all path parameters exist in the path template.
+         */
+        protected void checkPathParamsExist() {
+            assertTrue(pathTemplateParams.entrySet().stream().allMatch(entry -> pathTemplate.contains("{" + entry.getKey() + "}")));
         }
     }
 
     /**
      * This class represents the result of a call in two parts : the raw response and the deserialized one.
      */
-    public class Result <T> {
+    public static class Result<T> {
         private final T deserializedResponse;
         private final Response response;
 
@@ -612,50 +626,5 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         public Response getResponse() {
             return response;
         }
-    }
-
-    public static class ServiceDescription {
-
-        private final Method serviceMethod;
-        private final String pathTemplate;
-
-        public ServiceDescription(Method serviceMethod, String pathTemplate) {
-            this.serviceMethod = serviceMethod;
-            this.pathTemplate = pathTemplate;
-        }
-
-        public Method getServiceMethod() {
-            return serviceMethod;
-        }
-
-        public String getPathTemplate() {
-            return pathTemplate;
-        }
-    }
-
-    private static class UriResourceDTO {
-
-        /**
-         * uri
-         */
-        @ValidURI
-        @ApiModelProperty()
-        protected URI uri;
-
-        public UriResourceDTO() {
-
-        }
-
-        public URI getUri() {
-            return uri;
-        }
-
-        public void setUri(URI uri) {
-            this.uri = uri;
-        }
-    }
-
-    private static class OpensilexResponseDeserialize<T> extends JsonResponse<T> {
-
     }
 }

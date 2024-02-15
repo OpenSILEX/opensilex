@@ -8,11 +8,13 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.flipkart.zjsonpatch.JsonDiff;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
@@ -39,12 +41,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
+
+
 
 /**
  * @author Vincent MIGOT
@@ -124,7 +131,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             graphsToClean.add(graphURI.toString());
         }
 
-        sparqlService.clearGraphs(graphsToClean.toArray(new String[graphsToClean.size()]));
+        sparqlService.clearGraphs(graphsToClean.toArray(new String[0]));
     }
 
     /**
@@ -160,8 +167,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         // need to convert according a TypeReference, because the expected SingleObjectResponse is a generic object
         Object json = mapper.readValue(node.toString(), Object.class);
         if (callResult.getStatus() == Response.Status.OK.getStatusCode()) {
-            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<SingleObjectResponse<TokenGetDTO>>() {
-            });
+            SingleObjectResponse<TokenGetDTO> res = mapper.convertValue(node, new TypeReference<>() {});
             return res.getResult();
         }
 
@@ -239,10 +245,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param entity the data to POST on the given target
      * @param userMail the user identifier to perform the query
      * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
      */
     @Deprecated
-    protected Response getJsonPostResponse(WebTarget target, Object entity, String userMail) throws Exception {
+    protected Response getJsonPostResponse(WebTarget target, Object entity, String userMail) {
         return appendToken(target, userMail).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
@@ -277,10 +282,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param target the {@link WebTarget} on which GET the given entity
      * @param userMail the user identifier to perform the query
      * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
      */
     @Deprecated
-    protected Response getJsonGetResponse(WebTarget target, String userMail) throws Exception {
+    protected Response getJsonGetResponse(WebTarget target, String userMail) {
         return appendToken(target, userMail).get();
     }
 
@@ -330,10 +334,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param uri    the URI of the resource to fetch from the given target.
      * @param userMail the user identifier to perform the query.
      * @return target invocation response.
-     * @throws Exception in case of error during token retrieval
      */
     @Deprecated
-    protected Response getJsonGetByUriResponse(WebTarget target, String uri, String userMail) throws Exception {
+    protected Response getJsonGetByUriResponse(WebTarget target, String uri, String userMail) {
         return appendToken(target.resolveTemplate("uri", uri), userMail).get();
     }
 
@@ -416,7 +419,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), entity);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        // ensure that the result is a well formed URI, else throw exception
+        // ensure that the result is a well-formed URI, else throw exception
         String uri = extractUriFromResponse(postResult).toString();
 
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri);
@@ -468,7 +471,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     @Deprecated
-    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+    protected <T> List<T> getSearchResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) {
         if (searchCriteria == null) {
             searchCriteria = new HashMap<>();
         }
@@ -485,7 +488,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     @Deprecated
-    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) throws Exception {
+    protected <T> List<T> getSearchResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference, String userMail) {
         return this.getSearchResults(searchPath, 0, 20, searchCriteria, typeReference, userMail);
     }
 
@@ -502,164 +505,50 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     * This method checks if all elements of a nested Map (subMap) are included in another nested Map (superMap).
-     * @param superMap The Map that is supposed to contain all elements of the subMap.
-     * @param subMap The Map whose elements are checked if they are contained in the superMap.
-     * @return returns true if all elements of the subMap are included in the superMap, otherwise it returns false.
+     * Check if a JSON node is included in another JSON node and validate the differences. Includes special checks for "uri"
+     * and ignores null values.
+     *
+     * @param  json     the original JSON node
+     * @param  subJson  the JSON node to be checked for inclusion
+     * @return          true if the subJson is included in json, false otherwise
      */
-    public static boolean isDeepMapIncluded(LinkedHashMap<String, Object> superMap, LinkedHashMap<String, Object> subMap) {
-        for (Map.Entry<String, Object> entry : subMap.entrySet()) {
+    public static boolean isJsonIncluded(JsonNode json, JsonNode subJson) {
+        JsonNode diffs = JsonDiff.asJson(json, subJson);
+        List<JsonNode> diffList = mapper.convertValue(diffs, new TypeReference<>() {});
 
-            String key = entry.getKey();
-            // Case key not in superMap
-            if (!superMap.containsKey(key)){
+        // Operations "op" here can be "replace", "remove" or "add".
+        // "remove" is allowed as some info is added during creation (publisher for example)"
+        // "add" is not allowed as everything that is in the creation object should be in the response.
+        // "replace" can be allowed for URIs (difference between long and short) and nulls.
+
+        for (JsonNode diff : diffList) {
+            if (diff.get("op").asText().equals("add")) {
+                LOGGER.info(
+                        "Key: " + diff.get("path") + "couldn't be matched during Json comparison\n"
+                        + "Json: " + json + "\n"
+                        + "SubJson: " + subJson
+                );
                 return false;
-            }
-            Object value = entry.getValue();
-            Object correspondingValue = superMap.get(key);
-
-            // Case recursion on internal Map returns false
-            if (value instanceof Map && correspondingValue instanceof Map) {
-                if (!isDeepMapIncluded((LinkedHashMap<String, Object>) value, (LinkedHashMap<String, Object>) correspondingValue)) {
-                    return false;
-                }
-            }
-
-            // Case List elements not included
-            else if (value instanceof List && correspondingValue instanceof List) {
-                if (!isDeepListIncluded((List<Object>)value, (List<Object>) correspondingValue)){
-                    return false;
-                }
-            }
-
-            // Case primitives aren't equal
-            if (!Objects.equals(value, correspondingValue)) {
-
-                equalityFound:
-                {
-                    // Case String representations of URIs equals
-                    if (value instanceof String && superMap.get(key) instanceof String) {
-                        try {
-                            if (SPARQLDeserializers.compareURIs((String)value, (String)correspondingValue)) {
-                                break equalityFound;
-                            }
-                        } catch (Exception ignored) {
-
-                        }
+            } else if (diff.get("op").asText().equals("replace")) {
+                if (diff.get("value").isTextual() && json.get(diff.get("path").asText()).isTextual()) {
+                    if (!SPARQLDeserializers.compareURIs(
+                            diff.get("value").asText(), json.get(diff.get("path").asText()).asText()
+                    )) {
+                        LOGGER.info(
+                                "Values: " + diff.get("value").asText() + " and " + json.get(diff.get("path").asText()).asText() + "\n" +
+                                "For key: " + diff.get("path") + "couldn't be matched during Json comparison even with a long/short URI comparison\n"
+                                + "Json: " + json + "\n"
+                                + "SubJson: " + subJson
+                        );
+                        return false;
                     }
-
-                    // Case no equality found
+                }
+                if (!diff.get("value").isNull()) {
                     return false;
                 }
             }
         }
         return true;
-    }
-
-    /**
-     * This method checks if all elements of a nested List (subList) are included in another nested List (superList).
-     * @param superList The List that is supposed to contain all elements of the subList.
-     * @param subList The List whose elements are checked if they are contained in the superList.
-     * @return returns true if all elements of the subList are included in the superList, otherwise it returns false.
-     */
-    public static boolean isDeepListIncluded(List<Object> superList, List<Object> subList) {
-        for (Object subElement : subList) {
-            found:
-            {
-                for (Object superElement : superList) {
-                    // case elements are equal (handles all primitives)
-                    if (Objects.equals(subElement, superElement)) {
-                        break found;
-                    }
-                    // case elements are Maps and the subElement is included in the superElement
-                    else if (subElement instanceof Map && superElement instanceof Map) {
-                        if (isDeepMapIncluded((LinkedHashMap<String, Object>) subElement,
-                                (LinkedHashMap<String, Object>) superElement)) {
-                            break found;
-                        }
-                    }
-                    // case elements are Lists and the subElement is included in the superElement
-                    else if (subElement instanceof List && superElement instanceof List) {
-                        if (isDeepListIncluded((List) subElement,
-                                (List) superElement)) {
-                            break found;
-                        }
-                    }
-                    // case elements are string representations of URIs and are equals
-                    else if (subElement instanceof String && superElement instanceof String) {
-                        try {
-                            return SPARQLDeserializers.compareURIs((String)subElement, (String)superElement);
-                        } catch (Exception ignored) {
-
-                        }
-                    }
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * This method converts a given object into a nested map, and removes all null and empty values.
-     * @param object The object to be converted into a map.
-     * @return returns a LinkedHashMap where the object has been converted into a map and all null values have been removed.
-     */
-    public static LinkedHashMap<String, Object> convertToNotNullNestedMap(Object object) {
-        // Convert the object to a map
-        LinkedHashMap<String, Object> map = mapper.convertValue(object, LinkedHashMap.class);
-        map.values().removeAll(Collections.singleton(null));
-
-        List<String> keysToRemove = new ArrayList<>();
-        // Recursively convert nested objects to nested maps of maps
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (
-                    !(entry.getValue() instanceof String) &&
-                            !(entry.getValue() instanceof Integer) &&
-                            !(entry.getValue() instanceof Short) &&
-                            !(entry.getValue() instanceof Long) &&
-                            !(entry.getValue() instanceof Float) &&
-                            !(entry.getValue() instanceof Double) &&
-                            !(entry.getValue() instanceof Boolean)
-            ) {
-                Object nestedObject = entry.getValue();
-                if (Objects.isNull(nestedObject)) {
-                    map.remove(entry.getKey());
-                } else if (nestedObject instanceof List) {
-                    List<Object> nestedList = new ArrayList<>();
-                    for (Object value : (List<Object>) nestedObject) {
-                        if (value instanceof String ||
-                                value instanceof Integer ||
-                                value instanceof Short ||
-                                value instanceof Long ||
-                                value instanceof Float ||
-                                value instanceof Double ||
-                                value instanceof Boolean) {
-                            nestedList.add(value);
-                        } else {
-                            nestedList.add(convertToNotNullNestedMap(value));
-                        }
-                    }
-                    if (nestedList.isEmpty()) {
-                        keysToRemove.add(entry.getKey());
-                    } else {
-                        entry.setValue(nestedList);
-                    }
-                } else {
-                    LinkedHashMap<String, Object> nestedMap = convertToNotNullNestedMap(nestedObject);
-                    if (nestedMap.isEmpty()) {
-                        keysToRemove.add(entry.getKey());
-                    } else {
-                        entry.setValue(nestedMap);
-                    }
-                }
-            }
-        }
-        for (String key:keysToRemove) {
-            map.remove(key);
-        }
-
-        return map;
     }
 
     /**
@@ -693,7 +582,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             URI resourceUri
     ) throws Exception {
         return new UserCallBuilder(readServiceDescription)
-                .setUriInPath(resourceUri.toString())
+                .setUriInPath(resourceUri)
                 .buildAdmin()
                 .executeCallAndDeserialize(entityTypeReference)
                 .getDeserializedResponse();
@@ -704,25 +593,25 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param readServiceDescription The service description of the read operation.
      * @param updateServiceDescription The service description of the update operation.
      * @param entityToPut The entity for the update.
-     * @param entityTypeReference The type reference of the entity to be updated.
      * @throws Exception if the operation fails.
      */
-    protected <T extends JsonResponse<?>> void testBasicUpdateAsAdmin(
+    protected void testBasicUpdateAsAdmin(
             ServiceDescription readServiceDescription,
             ServiceDescription updateServiceDescription,
-            ResourceDTO<?> entityToPut,
-            TypeReference<T> entityTypeReference
+            ResourceDTO<?> entityToPut
     ) throws Exception {
         new UserCallBuilder(updateServiceDescription)
                 .setBody(entityToPut)
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
         // Get the updated object
-        T readResponse = testBasicReadAsAdmin(readServiceDescription, entityTypeReference, entityToPut.getUri());
-        LinkedHashMap<String, Object> responseAttributes = convertToNotNullNestedMap(readResponse.getResult());
-        LinkedHashMap<String, Object> expectedAttributes = convertToNotNullNestedMap(entityToPut);
+        JsonNode responseJson = new UserCallBuilder(readServiceDescription)
+                .setUriInPath(entityToPut.getUri())
+                .buildAdmin()
+                .executeCallAnReturnJsonNode();
+        JsonNode expectedJson = mapper.convertValue(entityToPut, JsonNode.class);
         // Check attributes value
-        assertTrue(isDeepMapIncluded(responseAttributes, expectedAttributes));
+        assertTrue(isJsonIncluded(responseJson.get("result"), expectedJson));
     }
 
     /**
@@ -730,7 +619,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param readServiceDescription The service description of the read operation.
      * @param deleteServiceDescription The service description of the delete operation.
      * @param resourceUri The URI of the resource to be deleted.
-     * @throws Exception if the operation fails.
      */
     protected void testBasicDeleteAsAdmin(
             ServiceDescription readServiceDescription,
@@ -738,11 +626,11 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             URI resourceUri
     ) {
         new UserCallBuilder(deleteServiceDescription)
-                .setUriInPath(resourceUri.toString())
+                .setUriInPath(resourceUri)
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
         new UserCallBuilder(readServiceDescription)
-                .setUriInPath(resourceUri.toString())
+                .setUriInPath(resourceUri)
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.NOT_FOUND);
     }
@@ -773,7 +661,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         testBasicReadAsAdmin(readServiceDescription, entityTypeReference, createdUri);
         // UPDATE
         entityToPut.setUri(createdUri);
-        testBasicUpdateAsAdmin(readServiceDescription, updateServiceDescription, entityToPut, entityTypeReference);
+        testBasicUpdateAsAdmin(readServiceDescription, updateServiceDescription, entityToPut);
         // DELETE
         testBasicDeleteAsAdmin(readServiceDescription, deleteServiceDescription, createdUri);
     }
@@ -788,7 +676,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             PublicCall tokenCall = new PublicCallBuilder<>(authenticate).setBody(authDto).build();
 
             Result<SingleObjectResponse<TokenGetDTO>> postResult = tokenCall.executeCallAndDeserialize(
-                    new TypeReference<SingleObjectResponse<TokenGetDTO>>() {}
+                    new TypeReference<>() {}
             );
             TokenGetDTO userToken = postResult.getDeserializedResponse().getResult();
             tokenMap.put(userEmail, userToken);
@@ -810,13 +698,21 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
          *                      parts to replace (e.g. /core/experiments/{uri}. {uri} is a placeholder to be replaced by
          *                      the actual resource's URI)
          */
-        public UserCall(Map<String, Object> params, Object body, Map<String, Object> pathTemplateParams,
-                        Method serviceMethod, String pathTemplate, String userEmail, MediaType callMediaType,
-                        List<MediaType> responseMediaTypes, String userPassword) {
-            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, callMediaType, responseMediaTypes);
+        public UserCall(
+                Map<String, Object> params,
+                Object body,
+                Map<String, Object> pathTemplateParams,
+                Method serviceMethod,
+                String pathTemplate,
+                String userEmail,
+                MediaType callMediaType,
+                String httpMethod,
+                List<MediaType> responseMediaTypes,
+                String userPassword
+        ) {
+            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes);
             this.userEmail = userEmail;
             this.userPassword = userPassword;
-            this.httpMethod = findHttpMethod();
         }
 
         /**
@@ -888,6 +784,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
         @Override
         public UserCall build() {
+            preBuildChecks();
             return new UserCall(
                     params,
                     body,
@@ -896,12 +793,14 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                     pathTemplate,
                     userEmail,
                     callMediaType,
+                    httpMethod,
                     responseMediaTypes,
                     userPassword
             );
         }
 
         public UserCall buildAdmin() {
+            preBuildChecks();
             return new UserCall(
                     params,
                     body,
@@ -910,6 +809,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                     pathTemplate,
                     DEFAULT_SUPER_ADMIN_EMAIL,
                     callMediaType,
+                    httpMethod,
                     responseMediaTypes,
                     DEFAULT_SUPER_ADMIN_PASSWORD
             );

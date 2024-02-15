@@ -15,6 +15,7 @@
   * [Set up config](#set-up-config)
   * [Put a PDF from your computer to a sever](#put-a-pdf-from-your-computer-to-a-sever)
     * [exemple](#exemple)
+* [RGPD file exemple](#rgpd-file-exemple)
 <!-- TOC -->
 
 # How to use
@@ -64,3 +65,7 @@ scp {path of your PDF}/{name of your PDF} @{target server}:{ABSOLUTE path for yo
 ```shell
 scp ~/Downloads/rgpd.pdf @testserver:/home/me/opensilex-document/rgpd/rgpd_en.pdf  
 ```
+
+# RGPD file exemple
+
+You can find an example of a GDPR file, available in English and French, in the [GDPR_example](./GDPR_example) directory. Don't forget to export it in PDF format before using it.

@@ -177,8 +177,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         UserCall getArea = new UserCallBuilder(getByUri)
                 .setUriInPath(uri.toString() + "7FG4FG89FG4GH4GH57")
                 .buildAdmin();
-        final Response getResult = getArea.executeCall();
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        getArea.executeCallAndAssertStatus(Response.Status.NOT_FOUND);
     }
 
     @Test

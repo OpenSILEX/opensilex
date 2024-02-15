@@ -31,6 +31,8 @@ import {OntologyService, VariableDatatypeDTO, VariablesService} from 'opensilex-
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
+import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 declare var $cookies: VueCookies;
 
@@ -132,6 +134,44 @@ export default class OpenSilexVuePlugin {
             }
         });
         return path;
+    }
+
+    /**
+     * Gets the in-app navigation path of the uri in question from a pre-calculated uri-path map
+     *
+     * @param uri , uri of the target (any type) that we want to navigate to
+     * @param context , uri of the containg experiment, null if no experiment
+     * @param objectsPath , the pre-calculated uri to path map to search in
+     */
+    getTargetPath(uri: string, context: string, objectPath : string) : string {
+        if(! objectPath){
+            return "";
+        }
+
+        let osPath = objectPath.replace(':uri', encodeURIComponent(uri))
+
+        // pass encoded experiment inside OS path URL
+        if(context && context.length > 0){
+            return osPath.replace(':experiment', encodeURIComponent(context));
+        }else{ // no experiment passed
+            return osPath.replace(':experiment', "");
+        }
+    }
+
+    /**
+     * Creates strings of format 'name (type)', places them in a uri to result map with vue.set
+     *
+     * @param objectsToLoad , the uris of ontology objects that we want to create labels for
+     * @param context , experimental context
+     */
+    loadOntologyLabelsWithType(objectsToLoad: Array<string>, context: string, uriResultMap : {[x: string]:string}, ontologyService: OntologyService):  Promise<void | HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>>{
+        return ontologyService
+            .getURILabelsList(objectsToLoad, context, true)
+            .then((httpObj) => {
+                for (let obj of httpObj.response.result) {
+                    Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
+                }
+            });
     }
 
     // get front ressources depending to a specific module theme

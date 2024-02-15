@@ -302,6 +302,9 @@ components["opensilex-Dropdown"] = Dropdown;
 import ItemsPropertiesSelector from './common/filters/ItemsPropertiesSelector.vue';
 components["opensilex-ItemsPropertiesSelector"] = ItemsPropertiesSelector;
 
+import BasicUriAndLabelDTOSelectForm from './common/forms/BasicUriAndLabelDTOSelectForm.vue';
+components["opensilex-BasicUriAndLabelDTOSelectForm"] = BasicUriAndLabelDTOSelectForm;
+
 // Vocabulary/Ontology
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
@@ -557,8 +560,6 @@ import VariableDevicesSelector from './variables/form/VariableDevicesSelector.vu
 components["opensilex-VariableDevicesSelector"] = VariableDevicesSelector;
 import VariableDataTypeSelector from './variables/form/VariableDataTypeSelector.vue';
 components["opensilex-VariableDataTypeSelector"] = VariableDataTypeSelector;
-import VariableTimeIntervalSelector from './variables/form/VariableTimeIntervalSelector.vue';
-components["opensilex-VariableTimeIntervalSelector"] = VariableTimeIntervalSelector;
 import VariableHelp from './variables/views/VariableHelp.vue';
 components["opensilex-VariableHelp"] = VariableHelp;
 import VariableCreate from './variables/form/VariableCreate.vue';

@@ -1,6 +1,6 @@
 <template>
   <opensilex-SelectForm
-      label="VariableForm.time-interval"
+      :label="label"
       :selected.sync="selectedDtoUri"
       :options="DTOsAsOptions"
       placeholder="VariableForm.time-interval-placeholder"
@@ -17,7 +17,6 @@ import {BasicURIAndLabelDTO} from "opensilex-core/model/basicURIAndLabelDTO";
 
 @Component
 export default class BasicUriAndLabelDTOSelectForm extends Vue {
-  //#endregion
 
   //#region Props
   @PropSync("selectedURI")
@@ -25,6 +24,9 @@ export default class BasicUriAndLabelDTOSelectForm extends Vue {
 
   @Prop({required: true, default: () => []})
   private readonly DTOs: Array<BasicURIAndLabelDTO>
+
+  @Prop()
+  private readonly label: string
   //#endregion
 
   //#region Computed
@@ -36,14 +38,12 @@ export default class BasicUriAndLabelDTOSelectForm extends Vue {
       }
     })
   }
-
   //#endregion
 
   //#region Events
   private emitHandlingEnterKey() {
     this.$emit("handlingEnterKey")
   }
-
   //#endregion
 
 }

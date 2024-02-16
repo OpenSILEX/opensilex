@@ -102,13 +102,6 @@ public class StudiesAPI extends FaidareCall {
         Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
         if (studyDbId != null && xpDao.get(studyDbId, currentUser) == null) {
             throw new NotFoundURIException(studyDbId);
-        } else if (studyDbId != null) {
-            return new SingleObjectResponse<>(
-                    studyDTOBuilder.fromModel(
-                            xpDao.get(studyDbId, currentUser),
-                            currentUser
-                    )
-            ).getResponse();
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
                     .setEnded(isEnded)

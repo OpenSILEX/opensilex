@@ -15,6 +15,7 @@ import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonModel;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,14 @@ import java.util.List;
  * @author Vincent MIGOT
  */
 public class ExperimentCreationDTO extends ExperimentDTO {
+
+    public ExperimentCreationDTO(URI uri, String name, LocalDate startDate, LocalDate endDate, String description, String objective, List<URI> organizations, List<URI> facilities, List<URI> projects, List<URI> scientificSupervisors, List<URI> technicalSupervisors, List<URI> groups, List<URI> factors, Boolean isPublic) {
+        super(uri, name, startDate, endDate, description, objective, organizations, facilities, projects, scientificSupervisors, technicalSupervisors, groups, factors, isPublic);
+    }
+
+    public ExperimentCreationDTO() {
+
+    }
 
     public ExperimentModel newModel() {
 

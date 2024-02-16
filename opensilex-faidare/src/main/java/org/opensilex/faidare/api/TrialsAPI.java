@@ -54,7 +54,7 @@ public class TrialsAPI extends FaidareCall {
         @ApiResponse(code = 200, message = "retrieve trials information", response = Faidarev1TrialListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getVariablesList(
+    public Response getTrialsList(
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {

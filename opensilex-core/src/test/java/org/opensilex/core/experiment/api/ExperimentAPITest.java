@@ -14,6 +14,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -45,7 +46,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
 
     protected static final ServiceDescription get;
     protected static final ServiceDescription search;
-    protected static final ServiceDescription create;
+    public static final ServiceDescription create;
     protected static final ServiceDescription update;
     protected static final ServiceDescription delete;
 
@@ -79,6 +80,12 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         }
     }
 
+    protected static final String DEFAULT_EXPERIMENT_NAME = "xp";
+    protected static final LocalDate DEFAULT_EXPERIMENT_TIME = LocalDate.now();
+    protected static final LocalDate DEFAULT_EXPERIMENT_START_DATE = DEFAULT_EXPERIMENT_TIME.minusDays(3);
+    protected static final LocalDate DEFAULT_EXPERIMENT_END_DATE = DEFAULT_EXPERIMENT_TIME.plusDays(3);
+    protected static final String DEFAULT_EXPERIMENT_OBJECTIVE = "Objective";
+
     public static String getAvailableFacilitiesPath = uriPath + "/available_facilities";
     private static final TypeReference<PaginatedListResponse<FacilityGetDTO>> GET_AVAILABLE_FACILITIES_RETURN_TYPE =
             new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
@@ -86,12 +93,11 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
     public static ExperimentCreationDTO getCreationDTO() {
 
         ExperimentCreationDTO xpDto = new ExperimentCreationDTO();
-        xpDto.setName("xp");
+        xpDto.setName(DEFAULT_EXPERIMENT_NAME);
 
-        LocalDate currentDate = LocalDate.now();
-        xpDto.setStartDate(currentDate.minusDays(3));
-        xpDto.setEndDate(currentDate.plusDays(3));
-        xpDto.setObjective("Objective");
+        xpDto.setStartDate(DEFAULT_EXPERIMENT_START_DATE);
+        xpDto.setEndDate(DEFAULT_EXPERIMENT_END_DATE);
+        xpDto.setObjective(DEFAULT_EXPERIMENT_OBJECTIVE);
         return xpDto;
     }
 

@@ -218,9 +218,11 @@
 
                 <!-- time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                  <opensilex-VariableTimeIntervalSelector
-                      :timeinterval.sync="form.time_interval"
-                  ></opensilex-VariableTimeIntervalSelector>
+                  <opensilex-BasicUriAndLabelDTOSelectForm
+                      :selectedURI.sync="form.time_interval"
+                      :DTOs="this.$store.state.time_interval_list"
+                      label ="VariableForm.time-interval"
+                  ></opensilex-BasicUriAndLabelDTOSelectForm>
                 </div>
 
                 <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
@@ -228,14 +230,11 @@
 
                 <!-- sample/distance-interval -->
                 <div class="col-lg-6" id="v-step-sampling-interval">
-                    <opensilex-SelectForm
-                        label="VariableForm.sampling-interval"
-                        :selected.sync="form.sampling_interval"
-                        :multiple="false"
-                        :options="sampleList"
-                        placeholder="VariableForm.sampling-interval-placeholder"
-                        helpMessage="VariableForm.sampling-interval-help"
-                    ></opensilex-SelectForm>
+                  <opensilex-BasicUriAndLabelDTOSelectForm
+                      :selectedURI.sync="form.sampling_interval"
+                      :DTOs="this.$store.state.sample_interval_list"
+                      label="VariableForm.sampling-interval"
+                  ></opensilex-BasicUriAndLabelDTOSelectForm>
                 </div>
 
                 <!-- description -->

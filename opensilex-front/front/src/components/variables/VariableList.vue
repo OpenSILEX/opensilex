@@ -158,11 +158,13 @@
                       <!-- Time interval -->
                       <div>
                         <opensilex-FilterField>
-                            <opensilex-VariableTimeIntervalSelector v-if="loadAdvancedSearchFilters"
-                                :timeinterval.sync="filter.timeInterval"
-                                @handlingEnterKey="refresh()"
-                                class="searchFilter"
-                            ></opensilex-VariableTimeIntervalSelector>
+                          <opensilex-BasicUriAndLabelDTOSelectForm
+                              :selectedURI.sync="filter.timeInterval"
+                              :DTOs="timeIntervals"
+                              label ="VariableForm.time-interval"
+                              @handlingEnterKey="refresh()"
+                              class="searchFilter"
+                          ></opensilex-BasicUriAndLabelDTOSelectForm>
                         </opensilex-FilterField>
                       </div>
 
@@ -356,28 +358,45 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
+import {BasicURIAndLabelDTO} from "opensilex-core/model/basicURIAndLabelDTO";
 
 @Component
 export default class VariableList extends Vue {
-    $opensilex: OpenSilexVuePlugin;
-    $service: VariablesService;
-    $store: OpenSilexStore;
-    $route: any;
-    $i18n: any;
-    SearchFiltersToggle: boolean = false;
+  //#region Plugins and services
+  $opensilex: OpenSilexVuePlugin;
+  $service: VariablesService;
+  $store: OpenSilexStore;
+  $route: any;
+  $i18n: any;
+  SearchFiltersToggle: boolean = false;
+  //#endregion
 
-    @Prop()
-    itemIsSelected;
+  @Prop()
+  itemIsSelected;
 
-    displayActions:boolean = true;
+  displayActions:boolean = true;
 
-    get user() {
-        return this.$store.state.user;
-    }
+  //#region Computed
+  private get user() {
+      return this.$store.state.user;
+  }
 
-    get credentials() {
-        return this.$store.state.credentials;
-    }
+  private get credentials() {
+      return this.$store.state.credentials;
+  }
+
+  private get timeIntervals(): Array<BasicURIAndLabelDTO> {
+    return this.$store.state.time_interval_list
+  }
+
+  private get onlySelected() {
+  return this.tableRef.onlySelected;
+  }
+
+  private get lang() {
+  return this.$store.state.lang;
+  }
+  //#endregion
 
     @Prop({
         default: true
@@ -447,14 +466,6 @@ export default class VariableList extends Vue {
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: GroupVariablesModalList;
     @Ref("tableRef") readonly tableRef!: TableAsyncView<VariableGetDTO>;
-
-    get onlySelected() {
-        return this.tableRef.onlySelected;
-    }
-
-    get lang() {
-        return this.$store.state.lang;
-    }
 
     created() {
         this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);

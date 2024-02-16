@@ -122,7 +122,7 @@
             <opensilex-StringView label="VariableForm.time-interval"
                                   :value="time_interval"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.sampling-interval"
-                                  :value="variable.sampling_interval"></opensilex-StringView>
+                                  :value="sample_interval"></opensilex-StringView>
 
             <opensilex-UriView v-if="variable && variable.trait" title="VariableForm.trait-uri"
                                :uri="variable.trait" :url="variable.trait"></opensilex-UriView>
@@ -210,10 +210,19 @@ export default class VariableDetails extends Vue {
   }
 
   private get time_interval(): string {
-    const interval = this.$store.state.time_interval_list.filter(interval => interval.id === this.variable.time_interval).pop()
-    if ( ! interval) { return this.variable.time_interval } //if the "interval" is not a key but a free text as it was before (2024-01-04)
+    if (!this.variable.time_interval) { return "" }
+    const interval = this.$store.state.time_interval_list.filter(interval => this.$opensilex.getShortUri(interval.uri) === this.$opensilex.getShortUri(this.variable.time_interval) ).pop()
+    if ( ! interval) { return this.variable.time_interval } //if the "interval" is not a URI but a free text as it was before (2024-01-04)
     return interval.label
   }
+
+  private get sample_interval(): string {
+    if (!this.variable.sampling_interval) { return "" }
+    const interval = this.$store.state.sample_interval_list.filter(interval => this.$opensilex.getShortUri(interval.uri) === this.$opensilex.getShortUri(this.variable.sampling_interval) ).pop()
+    if ( ! interval) { return this.variable.sampling_interval } //if the "interval" is not a URI but a free text as it was before (2024-01-04)
+    return interval.label
+  }
+
   //#endregion
 
 

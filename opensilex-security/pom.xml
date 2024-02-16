@@ -63,6 +63,15 @@
             <artifactId>assertj</artifactId>
             <version>3.6.2</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.flipkart.zjsonpatch/zjsonpatch -->
+        <!-- Dependency for JSON comparison -->
+        <dependency>
+            <groupId>com.flipkart.zjsonpatch</groupId>
+            <artifactId>zjsonpatch</artifactId>
+            <version>0.4.16</version>
+        </dependency>
+
     </dependencies>    
         
     <build>

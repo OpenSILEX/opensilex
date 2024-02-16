@@ -20,6 +20,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -108,7 +109,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         // ensure that the result is a well-formed URI, else throw exception
         URI createdUri = createDefaultArea();
         new UserCallBuilder(getByUri)
-                .setUriInPath(createdUri.toString())
+                .setUriInPath(createdUri)
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
     }
@@ -130,7 +131,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
         // retrieve the new area and compare it to the expected area
         SingleObjectResponse<AreaCreationDTO> getResponse = new UserCallBuilder(getByUri)
-                .setUriInPath(createdUri.toString())
+                .setUriInPath(createdUri)
                 .buildAdmin()
                 .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaCreationDTO>>() {
                 })
@@ -149,13 +150,12 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         URI uri = createDefaultArea();
 
         // delete object and check if URI no longer exists
-        UserCall deleteCall = new UserCallBuilder(delete).setUriInPath(uri.toString()).buildAdmin();
+        UserCall deleteCall = new UserCallBuilder(delete).setUriInPath(uri).buildAdmin();
         URI uriDelete = deleteCall.executeCallAndReturnURI();
         assertEquals(uri, uriDelete);
 
-        UserCall getCall = new UserCallBuilder(getByUri).setUriInPath(uri.toString()).buildAdmin();
-        Response getResult = getCall.executeCall();
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        UserCall getCall = new UserCallBuilder(getByUri).setUriInPath(uri).buildAdmin();
+        getCall.executeCallAndAssertStatus(Response.Status.NOT_FOUND);
     }
 
     @Test
@@ -163,7 +163,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         URI uri = createDefaultArea();
 
         UserCall getArea = new UserCallBuilder(getByUri)
-                .setUriInPath(uri.toString())
+                .setUriInPath(uri)
                 .buildAdmin();
         Result<SingleObjectResponse<AreaGetDTO>> getResponse = getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         });
@@ -176,10 +176,9 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
         // call the service with a non-existing pseudo random URI
         UserCall getArea = new UserCallBuilder(getByUri)
-                .setUriInPath(uri.toString() + "7FG4FG89FG4GH4GH57")
+                .setUriInPath( new URI(uri.toString() + "7FG4FG89FG4GH4GH57"))
                 .buildAdmin();
-        final Response getResult = getArea.executeCall();
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        getArea.executeCallAndAssertStatus(Response.Status.NOT_FOUND);
     }
 
     @Test
@@ -187,7 +186,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         URI uri = createDefaultArea();
 
         UserCall getArea = new UserCallBuilder(getByUri)
-                .setUriInPath(uri.toString())
+                .setUriInPath(uri)
                 .buildAdmin();
         assertNotNull(getArea.executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         }));
@@ -253,7 +252,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         UserCallBuilder exportCallBuilder = new UserCallBuilder(exportGeospatial)
                 .setParams(paramsShp)
                 .setBody(objectsList)
-                .addResponseMediaType(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+                .setResponseMediaTypes(Collections.singletonList(MediaType.APPLICATION_OCTET_STREAM_TYPE));
 
         UserCall exportCall = exportCallBuilder.buildAdmin();
         exportCall.executeCall();

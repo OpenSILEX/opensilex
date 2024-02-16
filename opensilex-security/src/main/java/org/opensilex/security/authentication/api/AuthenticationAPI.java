@@ -47,7 +47,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.opensilex.security.authentication.AuthenticationService.DEFAULT_SUPER_ADMIN_EMAIL;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
 
 /**
  * <pre>

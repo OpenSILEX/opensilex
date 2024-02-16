@@ -127,6 +127,9 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
+    public OrganizationAccessAPITest() throws NoSuchMethodException {
+    }
+
     @Before
     public void beforeTest() throws Exception {
         createAndRegisterUserProfileGroups();
@@ -252,7 +255,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         // Profile creation
         ProfileCreationDTO profileCreationDTO = new ProfileCreationDTO();
         profileCreationDTO.setName("Access test profile");
-        profileCreationDTO.setCredentials(new ArrayList<String>() {{
+        profileCreationDTO.setCredentials(new ArrayList<>() {{
             add(OrganizationAPI.CREDENTIAL_ORGANIZATION_MODIFICATION_ID);
             add(FacilityAPI.CREDENTIAL_FACILITY_MODIFICATION_ID);
         }});
@@ -269,14 +272,14 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         groupWithUserCreationDTO.setName("Group with user");
         groupWithUserCreationDTO.setDescription("Group with user");
         groupWithUserCreationDTO.setUserProfiles(Collections.singletonList(groupUserProfileDTO));
-        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithUserCreationDTO);
+        Response postGroupWithUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithUserCreationDTO);
         groupWithUser = extractUriFromResponse(postGroupWithUserResponse);
 
         // Group without user creation
         GroupCreationDTO groupWithoutUserCreationDTO = new GroupCreationDTO();
         groupWithoutUserCreationDTO.setName("Group without user");
         groupWithoutUserCreationDTO.setDescription("Group without user");
-        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.createPath), groupWithoutUserCreationDTO);
+        Response postGroupWithoutUserResponse = getJsonPostResponseAsAdmin(target(groupAPITest.create.getPathTemplate()), groupWithoutUserCreationDTO);
         groupWithoutUser = extractUriFromResponse(postGroupWithoutUserResponse);
 
         // Register the token for login into tests
@@ -365,12 +368,12 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchOrganizationsAsAdmin() throws Exception {
-        List<ResourceDagDTO<OrganizationModel>> result = getSearchResultsAsAdmin(SEARCH_PATH, null, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {});
+        List<ResourceDagDTO<OrganizationModel>> result = getSearchResultsAsAdmin(SEARCH_PATH, null, new TypeReference<>() {});
         assertEquals(accessibleOrganizationURISet.size() + forbiddenOrganizationsURISet.size(), result.size());
     }
 
     @Test
-    public void testSearchOrganizations() throws Exception {
+    public void testSearchOrganizations() {
         assert !accessibleOrganizationURISet.isEmpty();
         assert !forbiddenOrganizationsURISet.isEmpty();
 
@@ -390,7 +393,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testGetAccessibleOrganizations() throws Exception {
+    public void testGetAccessibleOrganizations() {
         assert !accessibleOrganizationURISet.isEmpty();
 
         Response getResponse;
@@ -403,7 +406,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testGetForbiddenOrganizationsShouldFail() throws Exception {
+    public void testGetForbiddenOrganizationsShouldFail() {
         assert !forbiddenOrganizationsURISet.isEmpty();
 
         Response getResponse;
@@ -417,7 +420,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchFacilitiesAsAdmin() throws Exception {
-        List<FacilityGetDTO> result = getSearchResultsAsAdmin(FacilityApiTest.SEARCH_PATH, null, new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {});
+        List<FacilityGetDTO> result = getSearchResultsAsAdmin(FacilityApiTest.SEARCH_PATH, null, new TypeReference<>() {});
         assertEquals(accessibleFacilityURISet.size() + forbiddenFacilityURISet.size(), result.size());
     }
 

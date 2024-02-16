@@ -14,7 +14,7 @@ import javax.mail.internet.InternetAddress;
 
 import java.util.List;
 
-import static org.opensilex.security.SecurityModule.GUEST_OPENSILEX_ORG;
+import static org.opensilex.security.SecurityModule.DEFAULT_GUEST_EMAIL;
 
 /**
  * @author rcolin
@@ -88,7 +88,7 @@ public class UserCommandsTest {
 
         // ensure that account is well created
         AccountDAO accountDAO = new AccountDAO(openSilexTestEnv.getSparql());
-        AccountModel guestModel = accountDAO.getByEmail(new InternetAddress(GUEST_OPENSILEX_ORG));
+        AccountModel guestModel = accountDAO.getByEmail(new InternetAddress(DEFAULT_GUEST_EMAIL));
         Assert.assertNotNull(guestModel);
 
         // check guest credentials

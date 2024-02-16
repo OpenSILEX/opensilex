@@ -10,6 +10,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.rest.validation.Required;
 
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_PASSWORD;
+
 /**
  * <pre>
  * Authentication DTO
@@ -37,7 +40,7 @@ public class AuthenticationDTO {
     private String password;
 
     @Required
-    @ApiModelProperty(value = "User identifier, email or URI", example = "admin@opensilex.org")
+    @ApiModelProperty(value = "User identifier, email or URI", example = DEFAULT_SUPER_ADMIN_EMAIL)
     public String getIdentifier() {
         return identifier;
     }
@@ -47,7 +50,7 @@ public class AuthenticationDTO {
     }
 
     @Required
-    @ApiModelProperty(value = "User password", example = "admin")
+    @ApiModelProperty(value = "User password", example = DEFAULT_SUPER_ADMIN_PASSWORD)
     public String getPassword() {
         return password;
     }

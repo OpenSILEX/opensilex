@@ -101,12 +101,14 @@ export class SearchStore {
 
 }
 
-async function loadTimeIntervalsLabels(){
+async function loadTimeAndSampleIntervalsLabels(){
   const openSilex = getOpenSilexPlugin()
   if (! openSilex) { return }
   const service: VariablesService = await openSilex.getService("opensilex.VariablesService")
-  const response = await service.getTimeIntervals(store.state.lang)
-  store.state.time_interval_list = response.response.result
+  const timeResponse = await service.getTimeIntervals(store.state.lang)
+  const sampleResponse = await service.getSampleIntervals(store.state.lang)
+  store.state.sample_interval_list = sampleResponse.response.result
+  store.state.time_interval_list = timeResponse.response.result
 }
 
 let store = new Vuex.Store({
@@ -166,7 +168,8 @@ let store = new Vuex.Store({
       CREDENTIAL_PROVENANCE_MODIFICATION_ID: "provenance-modification",
       CREDENTIAL_PROVENANCE_DELETE_ID: "provenance-delete"
     },
-    time_interval_list: []
+    time_interval_list: [],
+    sample_interval_list: []
   },
   getters: {
     language: (state) => {
@@ -174,6 +177,9 @@ let store = new Vuex.Store({
     },
     timeIntervalList: (state) => {
       return state.time_interval_list
+    },
+    sampleIntervalList: (state) => {
+      return state.sample_interval_list
     }
   },
   mutations: {
@@ -323,7 +329,7 @@ let store = new Vuex.Store({
       console.debug("Define user language", lang);
       state.user.setLocale(lang);
       state.lang = lang;
-      loadTimeIntervalsLabels()
+      loadTimeAndSampleIntervalsLabels()
     },
     storeCandidatePage(state, router) {
       state.previousPageCandidate = computePage(router);

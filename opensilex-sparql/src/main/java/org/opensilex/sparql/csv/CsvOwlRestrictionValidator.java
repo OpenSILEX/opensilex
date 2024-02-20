@@ -61,6 +61,12 @@ public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellV
         validationModel.addAlreadyExistingURIError(context);
     }
 
+    @Override
+    public void addInvalidDateError(CsvCellValidationContext cellContext) {
+        super.addInvalidDateError(cellContext);
+        validationModel.addInvalidDateErrors(cellContext);
+    }
+
     /**
      * Register error when the row size is equals to the expected CSV header size
      * @param context error context
@@ -70,6 +76,10 @@ public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellV
         validationModel.addAInvalidRowSizeError(context);
     }
 
+    /**
+     *
+     * Performs validations on the value of a cell
+     */
     protected void validateCsvValue(int rowIdx, int colIdx, ClassModel classModel, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction) {
         validateModelRelation(graph, classModel, model, property, value, restriction, () -> {
             CsvCellValidationContext cell = new CsvCellValidationContext();

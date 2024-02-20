@@ -663,12 +663,18 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
+    /**
+     *
+     * @param resourceTrees , the roots from where to build our tree of options
+     * @param buildOptions , extra options : nodesToIgnoreList takes a list of long uris to not be added to the tree of options.
+     */
     public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?): Array<GenericTreeOption> {
         let options = [];
 
         buildOptions = buildOptions || {
             expanded: null,
-            disableSubTree: null
+            disableSubTree: null,
+            nodesToIgnoreList: null
         };
 
         if (buildOptions.expanded == null) {
@@ -705,9 +711,11 @@ export default class OpenSilexVuePlugin {
         }
 
         resourceTree.children.forEach(child => {
-            let subOption = this.buildTreeOptions(child, buildOptions, disableChildren);
-            if (!subOption.isDisabled || subOption.children) {
-                option.children.push(subOption);
+            if(!buildOptions.nodesToIgnoreList || !buildOptions.nodesToIgnoreList.includes(this.getLongUri(child.uri))){
+                let subOption = this.buildTreeOptions(child, buildOptions, disableChildren);
+                if (!subOption.isDisabled || subOption.children) {
+                    option.children.push(subOption);
+                }
             }
         });
 

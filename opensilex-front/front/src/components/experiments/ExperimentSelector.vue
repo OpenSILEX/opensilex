@@ -1,9 +1,9 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :required="required"
     :label="label"
-    :selected.sync="experimentsURI"
+    :selected="experimentsURI"
     :multiple="multiple"
     :searchMethod="searchExperiments"
     :clearable="clearable"
@@ -13,26 +13,31 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 // @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 
 @Component
 export default class ExperimentSelector extends Vue {
   $opensilex: any;
   pageSize = 10;
+  page = 0;
 
   @PropSync("experiments")
   experimentsURI;
+
+  @Watch("experimentsURI")
+  test(){
+    console.log("experimentSelect - expeURI ", this.experimentsURI)
+  }
 
   @Prop({
     default: "component.experiment.experiment",
@@ -48,7 +53,7 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   required;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   get placeholder() {
     return this.multiple
@@ -62,16 +67,7 @@ export default class ExperimentSelector extends Vue {
     this.experimentsByUriCache = new Map();
   }
 
-  loadMoreItems(){
-    this.pageSize = 0;
-    let selectForm: any = this.$refs.selectForm;
-    selectForm.refresh();
-    this.$nextTick(() => {
-      selectForm.openTreeselect();
-    })
-  }
-
-  searchExperiments(name) {
+  searchExperiments(name, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
@@ -84,8 +80,8 @@ export default class ExperimentSelector extends Vue {
         undefined,
         undefined,
         undefined,
-        0,
-        this.pageSize
+        page,
+        pageSize
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {

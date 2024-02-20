@@ -1,4 +1,5 @@
 <template>
+  <!-- Commun  -->
   <opensilex-FormField
     :rules="rules"
     :required="required"
@@ -6,6 +7,7 @@
     :label="label"
     :helpMessage="helpMessage"
   >
+  <!-------------------------------------------------------------------->
     <template v-slot:field="field">
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
@@ -40,6 +42,7 @@
           </template>
 
         </treeselect>
+        <!-- FIN modal search  -->
 
         <!-- Second case : not modal -->
         <treeselect
@@ -91,9 +94,14 @@
             </div>
           </template>
         </treeselect>
+        <!-- FIN not modal search  -->
+
+        <!-- MODAL CONDITION  -->
         <b-input-group-append v-if="isModalSearch">
           <b-button class="createButton greenThemeColor" @click="showModal">>></b-button>
         </b-input-group-append>
+
+        <!-- NOT MODAL CONDITION  -> détail view-->
         <b-input-group-append v-else-if="!actionHandler && viewHandler">
            <opensilex-DetailButton
             v-if="viewHandler"
@@ -104,6 +112,8 @@
             class="greenThemeColor"
           ></opensilex-DetailButton>
         </b-input-group-append>
+
+        <!-- NOT MODAL CONDITION  -> create entity view-->
         <b-input-group-append v-else-if="actionHandler">
           <b-button class="greenThemeColor" @click="actionHandler">+</b-button>
           <opensilex-DetailButton
@@ -114,7 +124,12 @@
             :small="true"
           ></opensilex-DetailButton>
         </b-input-group-append>
+
       </b-input-group>
+
+
+
+      <!-- MODAL CONDITION  -->
       <component
         v-if="isModalSearch"
         :is="modalComponent"
@@ -139,6 +154,7 @@
       ></component>
 
     </template>
+    <!-------------------------------------------------------------------->
   </opensilex-FormField>
 </template>
 
@@ -510,7 +526,10 @@ export default class SelectForm extends Vue {
     } 
     else {
       if (this.multiple) {
+        console.log("selectform Value ", value)
+        console.log("selectForm selection AV", this.selection)
         this.selection.push(value.id);
+        console.log("this.selectForm.selection AP ", this.selection)
       } else {
         this.selection = value.id;
       }
@@ -536,6 +555,7 @@ export default class SelectForm extends Vue {
   }
 
   onValidate() {
+    console.log("selectForm onValidate")
     if(this.selectedTmp == null || this.selectedTmp.length == 0) {
       this.loading = false;
     } else {
@@ -683,6 +703,8 @@ export default class SelectForm extends Vue {
         })
         .catch(self.$opensilex.errorHandler);
     }, 300);
+
+    // console.log("selectform searchM", this.searchMethod)
   }
 
   debounceSearch;

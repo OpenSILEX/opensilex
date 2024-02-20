@@ -158,6 +158,7 @@ export default class DataList extends Vue {
     }
 
   refresh() {
+    console.log("this.filter", this.filter)
     this.$opensilex.updateURLParameters(this.filter);
     this.tableRef.changeCurrentPage(1);
   }

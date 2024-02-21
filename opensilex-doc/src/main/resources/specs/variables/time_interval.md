@@ -1,29 +1,40 @@
-# Specifications : [Variables] {Time interval}
+# Specifications : [Variables] Time interval
 
 **Document history (please add a line when you edit the document)**
 
 | Date       | Editor(s)          | OpenSILEX version | Comment           |
 |------------|--------------------|-------------------|-------------------|
-| 2024-01-05 | yvan.roux@inrae.fr | 1.0.3             | Document creation |
+| 2024-02-15 | yvan.roux@inrae.fr | 1.2.1             | Document creation |
 
 
 ## Table of contents
 
 <!-- TOC -->
-* [Specifications : [Variables] {Time interval}](#specifications--variables-time-interval)
+* [Specifications : [Variables] Time interval](#specifications--variables-time-interval)
   * [Table of contents](#table-of-contents)
   * [Needs](#needs)
     * [Non-functional requirements](#non-functional-requirements)
   * [Solution](#solution)
   * [Technical specifications](#technical-specifications)
     * [Detailed explanations](#detailed-explanations)
+  * [Front](#front)
     * [Tests](#tests)
-  * [Limitations and improvements](#limitations-and-improvements)
 <!-- TOC -->
 
 ## Needs
 
-Allow the user to define the time between two data recording
+Allow the user to define the time between two data recording.
+
+Proposed values are :
+- millisecond
+- second
+- minute
+- hour
+- day
+- week
+- month
+- year
+- unique measure
 
 ### Non-functional requirements
 
@@ -49,4 +60,4 @@ Label is displayed and URI is sent to back (for variable creation or filter)
 
 ### Tests
 
-For now there is only one unit test on `SPARQLService::getSubtypes` method. It tests if the method returns the right values for a given parent type. It does not test for label search yet.
+For now there is only one unit test on `SPARQLService::searchAndReturnUrisAndPrefLabel` method. It tests if the method returns the right values for a given parent type. It does not test for label search yet.

@@ -66,7 +66,7 @@ public class Oeso {
     public static final Property fromSharedResourceInstance = Ontology.property(NS, "fromSharedResourceInstance");
 
     // ---- VARIABLES Unit ----
-    public static final Resource SampleInterval = Ontology.resource(NS, "SampleInterval");
+    public static final Resource SampleInterval = Ontology.resource(NS, "Sample");
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");
     public static final Property hasSamplingInterval = Ontology.property(NS, "hasSamplingInterval");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");

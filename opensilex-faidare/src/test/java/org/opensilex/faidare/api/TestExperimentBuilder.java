@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-class TestExperimentBuilder extends AbstractSecurityIntegrationTest {
+class TestExperimentBuilder {
     private static final String stringPrefix = "default experiment ";
 
     private URI uri = new URI("test:default-experiment-uri/");
@@ -176,7 +176,7 @@ class TestExperimentBuilder extends AbstractSecurityIntegrationTest {
         return dtoList;
     }
 
-    public URI create() throws Exception {
+    public ExperimentCreationDTO createDTO() throws Exception {
         ExperimentCreationDTO dto = new ExperimentCreationDTO();
 
         dto.setUri(new URI(getUri().toString() + dtoList.size()));
@@ -194,11 +194,7 @@ class TestExperimentBuilder extends AbstractSecurityIntegrationTest {
         dto.setFactors(getFactors());
         dto.setIsPublic(getPublic());
 
-        URI createdURI = new UserCallBuilder(ExperimentAPITest.create)
-                .setBody(dto)
-                .buildAdmin()
-                .executeCallAndReturnURI();
         dtoList.add(dto);
-        return createdURI;
+        return dto;
     }
 }

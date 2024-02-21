@@ -64,7 +64,41 @@ public abstract class ExperimentDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
+    public ExperimentDTO(
+            URI uri,
+            String name,
+            LocalDate startDate,
+            LocalDate endDate,
+            String description,
+            String objective,
+            List<URI> organizations,
+            List<URI> facilities,
+            List<URI> projects,
+            List<URI> scientificSupervisors,
+            List<URI> technicalSupervisors,
+            List<URI> groups,
+            List<URI> factors,
+            Boolean isPublic
+    ) {
+        this.uri = uri;
+        this.name = name;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.description = description;
+        this.objective = objective;
+        this.organizations = organizations;
+        this.facilities = facilities;
+        this.projects = projects;
+        this.scientificSupervisors = scientificSupervisors;
+        this.technicalSupervisors = technicalSupervisors;
+        this.groups = groups;
+        this.factors = factors;
+        this.isPublic = isPublic;
+    }
 
+    public ExperimentDTO() {
+
+    }
 
     public URI getUri() {
         return uri;

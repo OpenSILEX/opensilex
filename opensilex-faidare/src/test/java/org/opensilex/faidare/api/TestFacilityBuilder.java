@@ -1,18 +1,39 @@
 package org.opensilex.faidare.api;
 
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLService;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestFacilityBuilder extends AbstractSecurityIntegrationTest {
+public class TestFacilityBuilder  {
+
+    @Inject
+    private SPARQLService sparql;
+
+    @Inject
+    private MongoDBService nosql;
+
+    @CurrentUser
+    AccountModel currentUser;
+
     private static final String stringPrefix = "default facility ";
 
     private URI uri = new URI("test:default-facility-uri/");
@@ -134,7 +155,7 @@ public class TestFacilityBuilder extends AbstractSecurityIntegrationTest {
         return dtoList;
     }
 
-    public URI create() throws Exception {
+    public FacilityCreationDTO createDTO() throws Exception {
         FacilityCreationDTO dto = new FacilityCreationDTO();
 
         dto.setUri(new URI(getUri().toString() + dtoList.size()));
@@ -148,12 +169,7 @@ public class TestFacilityBuilder extends AbstractSecurityIntegrationTest {
         dto.setSites(getSites());
         dto.setVariableGroups(getVariableGroups());
 
-
-        URI createdURI = new UserCallBuilder(ExperimentAPITest.create)
-                .setBody(dto)
-                .buildAdmin()
-                .executeCallAndReturnURI();
         dtoList.add(dto);
-        return createdURI;
+        return dto;
     }
 }

@@ -178,7 +178,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     }
 
     private URI createFacility(String name, URI orgURI, boolean createdByUser) throws Exception {
-        WebTarget createTarget = target(FacilityApiTest.CREATE_PATH);
+        WebTarget createTarget = target(FacilityApiTest.create.getPathTemplate());
         FacilityCreationDTO facilityCreationDTO = getFacilityCreationDTO(name, orgURI);
         Response postFacilityResponse;
 

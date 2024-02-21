@@ -49,10 +49,10 @@ public class LocationsAPI extends FaidareCall {
     @ApiOperation(value = "Faidarev1CallDTO to retrieve a list of locations available in the system",
             notes = "retrieve locations information")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "retrieve locations information", response = Faidarev1LocationDTO.class)})
+            @ApiResponse(code = 200, message = "retrieve locations information", response = Faidarev1LocationListResponse.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getVariablesList(
+    public Response getLocationsList(
             @ApiParam(value = "Search by Location") @QueryParam("locationDbId") URI locationDbId,
             @ApiParam(value = "Name of the field to sort by: locationDbId") @QueryParam("sortBy") String sortBy,
             @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,

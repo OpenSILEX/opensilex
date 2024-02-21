@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -31,11 +32,23 @@ import static junit.framework.TestCase.*;
  */
 public class OrganizationAPITest extends AbstractMongoIntegrationTest {
 
-    protected String path = "/core/organisations";
+    protected static final String path = "/core/organisations";
 
     protected String uriPath = path + "/{uri}";
     protected String searchPath = path ;
-    protected String createPath = path ;
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                OrganizationAPI.class.getMethod("createOrganization", OrganizationCreationDTO.class),
+                path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 
@@ -73,7 +86,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -88,10 +101,10 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testUpdateParents() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root2 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
@@ -105,10 +118,10 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testUpdateParentsCycle() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(root1));
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(root1));
         URI root2 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
@@ -122,7 +135,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testUpdateParentsSelf() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root1); }}));
@@ -132,13 +145,13 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearch() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root2 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(root1));
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(root1));
         URI root1Child1 = extractUriFromResponse(creationResponse);
 
         final Response getResult = appendAdminToken(target(searchPath)).get();
@@ -167,7 +180,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testSearchAfterCreate() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
         Response getResult = getJsonGetResponseAsAdmin(target(searchPath));
@@ -177,7 +190,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
 
         assertEquals(1, response.getResult().size());
 
-        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root2 = extractUriFromResponse(creationResponse);
 
 
@@ -194,7 +207,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testSearchAfterUpdate() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
         Response getResult = getJsonGetResponseAsAdmin(target(searchPath));
@@ -222,7 +235,7 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testSearchAfterDelete() throws Exception {
-        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
         Response getResult = getJsonGetResponseAsAdmin(target(searchPath));

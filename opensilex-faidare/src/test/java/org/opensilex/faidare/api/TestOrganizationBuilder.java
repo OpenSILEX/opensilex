@@ -1,6 +1,7 @@
 package org.opensilex.faidare.api;
 
 import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.organisation.api.OrganizationAPITest;
 import org.opensilex.core.organisation.api.OrganizationCreationDTO;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 
@@ -9,7 +10,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestOrganizationBuilder extends AbstractSecurityIntegrationTest {
+public class TestOrganizationBuilder {
 
     private static final String stringPrefix = "default organization ";
 
@@ -110,7 +111,7 @@ public class TestOrganizationBuilder extends AbstractSecurityIntegrationTest {
         return dtoList;
     }
 
-    public URI create() throws Exception {
+    public OrganizationCreationDTO createDTO() throws Exception {
         OrganizationCreationDTO dto = new OrganizationCreationDTO();
 
         dto.setUri(new URI(getUri().toString() + dtoList.size()));
@@ -122,12 +123,7 @@ public class TestOrganizationBuilder extends AbstractSecurityIntegrationTest {
         dto.setGroups(getGroups());
         dto.setFacilities(getFacilities());
 
-
-        URI createdURI = new UserCallBuilder(ExperimentAPITest.create)
-                .setBody(dto)
-                .buildAdmin()
-                .executeCallAndReturnURI();
         dtoList.add(dto);
-        return createdURI;
+        return dto;
     }
 }

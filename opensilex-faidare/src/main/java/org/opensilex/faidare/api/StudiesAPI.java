@@ -33,6 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * @author Gabriel Besombes
@@ -60,7 +62,7 @@ public class StudiesAPI extends FaidareCall {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
-    public Response getStudies(
+    public Response getStudiesList(
             @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
             @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
             @ApiParam(value = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
@@ -100,8 +102,14 @@ public class StudiesAPI extends FaidareCall {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
-        if (studyDbId != null && xpDao.get(studyDbId, currentUser) == null) {
-            throw new NotFoundURIException(studyDbId);
+        ListWithPagination<ExperimentModel> resultList;
+        if (studyDbId != null) {
+            ExperimentModel model = xpDao.get(studyDbId, currentUser);
+            if (Objects.isNull(model)) {
+                throw new NotFoundURIException(studyDbId);
+            } else {
+                resultList = new ListWithPagination<>(Collections.singletonList(model), 0, 0, 0);
+            }
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
                     .setEnded(isEnded)
@@ -110,21 +118,21 @@ public class StudiesAPI extends FaidareCall {
                     .setPage(page)
                     .setPageSize(pageSize);
 
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
-
-            ListWithPagination<Faidarev1StudyDTO> resultDTOList = resultList.convert(
-                    Faidarev1StudyDTO.class,
-                    experimentModel -> {
-                        try {
-                            return studyDTOBuilder.fromModel(
-                                    experimentModel,
-                                    currentUser);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
-            return new Faidarev1StudyListResponse(resultDTOList).getResponse();
+            resultList = xpDao.search(filter);
         }
+
+        ListWithPagination<Faidarev1StudyDTO> resultDTOList = resultList.convert(
+                Faidarev1StudyDTO.class,
+                experimentModel -> {
+                    try {
+                        return studyDTOBuilder.fromModel(
+                                experimentModel,
+                                currentUser);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+        return new Faidarev1StudyListResponse(resultDTOList).getResponse();
     }
 }

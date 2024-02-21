@@ -43,12 +43,22 @@ public class Faidarev1StudyDTOBuilder {
                                 .map(endDate -> endDate.isBefore(LocalDate.now()))
                                 .orElse(model.getStartDate().isAfter(LocalDate.now())) ? "false" : "true"
                 ) // TODO : for review : shouldn't the "Active" information be in the ExperimentModel?
-                .setStudyDescription(model.getDescription())
-                .setSeasons(
-                        IntStream.rangeClosed(model.getStartDate().getYear(), model.getEndDate().getYear())
-                                .mapToObj(String::valueOf)
-                                .collect(Collectors.toList())
-                );
+                .setStudyDescription(model.getDescription());
+
+        if (Objects.nonNull(model.getEndDate())) {
+            dto.setSeasons(
+                    IntStream.rangeClosed(model.getStartDate().getYear(), model.getEndDate().getYear())
+                            .mapToObj(String::valueOf)
+                            .collect(Collectors.toList())
+            );
+        } else {
+            dto.setSeasons(
+                    IntStream.rangeClosed(model.getStartDate().getYear(), LocalDate.now().getYear())
+                            .mapToObj(String::valueOf)
+                            .collect(Collectors.toList())
+            );
+        }
+
 
         if (!model.getProjects().isEmpty()) {
             // ProgramName not a list, so only the first one is kept

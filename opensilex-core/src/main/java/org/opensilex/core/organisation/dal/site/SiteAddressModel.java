@@ -33,4 +33,11 @@ public class SiteAddressModel extends AddressModel {
     public void setSite(SiteModel site) {
         this.site = site;
     }
+
+    @Override
+    public String toString() {
+        return getStreetAddress() + "\n"
+                + getPostalCode() + " " + getLocality() + "\n"
+                + getCountryName();
+    }
 }

@@ -56,7 +56,7 @@ public class GermplasmAPI extends FaidareCall {
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
-    public Response getGermplasmBySearch(
+    public Response getGermplasmsBySearch(
             @ApiParam(value = "Search by germplasmDbId") @QueryParam("germplasmDbId") URI uri,
             @ApiParam(value = "Search by germplasmPUI") @QueryParam("germplasmPUI") URI germplasmPUI,
             @ApiParam(value = "Search by germplasmName") @QueryParam("germplasmName") String germplasmName,

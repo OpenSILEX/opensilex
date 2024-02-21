@@ -57,7 +57,7 @@ public class Faidarev1LocationDTOBuilder {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                if (parentModel.getSites().size() == 1) {
+                if (parentModel.getSites().size() == 1 && parentModel.getSites().get(0).getAddress() != null) {
                     return parentModel;
                 } else {
                     return null;

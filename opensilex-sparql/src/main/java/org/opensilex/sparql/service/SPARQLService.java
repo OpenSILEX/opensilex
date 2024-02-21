@@ -2686,7 +2686,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * }
      * </pre>
      */
-    public List<SPARQLResourceModel> getSubtypesUrisAndPrefLabel(URI typeURI, String labelLang) throws SPARQLException {
+    public List<SPARQLResourceModel> searchAndReturnUrisAndPrefLabel(URI typeURI, String labelLang) throws SPARQLException {
         Var typeVar = makeVar("type");
         Var labelVar = makeVar("label");
         SelectBuilder select = new SelectBuilder().addVar(typeVar).addVar(labelVar).setDistinct(true);

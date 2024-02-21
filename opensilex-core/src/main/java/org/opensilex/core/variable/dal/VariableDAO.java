@@ -43,7 +43,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -414,11 +413,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     public List<SPARQLResourceModel> getTemporalIntervalValues(String labelLang) throws SPARQLException {
-        return sparql.getSubtypesUrisAndPrefLabel( URI.create(Time.TemporalUnit.getURI()), labelLang );
+        return sparql.searchAndReturnUrisAndPrefLabel( URI.create(Time.TemporalUnit.getURI()), labelLang );
     }
 
     public List<SPARQLResourceModel> getSampleIntervalValues(String labelLang) throws SPARQLException {
-        return sparql.getSubtypesUrisAndPrefLabel(URI.create(Oeso.SampleInterval.getURI()), labelLang);
+        return sparql.searchAndReturnUrisAndPrefLabel(URI.create(Oeso.SampleInterval.getURI()), labelLang);
     }
 }
 

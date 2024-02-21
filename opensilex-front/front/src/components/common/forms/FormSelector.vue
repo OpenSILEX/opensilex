@@ -24,6 +24,7 @@
           @select="select"
           :multiple="multiple"
           :selected.sync="selection"
+          :placeholder="placeholder"
 
           ref="treeref"
         >
@@ -177,9 +178,6 @@ export default class FormSelector extends Vue {
   @Prop()
   options;
 
-  // @Prop()
-  // searchMethod;
-
   @Prop({
     default: true,
   })
@@ -318,7 +316,7 @@ export default class FormSelector extends Vue {
    * Refresh key for the Treeselect component. Used by the {@link refresh} method.
    */
 
-  // treeselectRefreshKey: number = 0;
+  treeselectRefreshKey: number = 0;
 
 // juste fonction et l'@AsyncComputedProp() dans l'enfant ?
   // @AsyncComputedProp()

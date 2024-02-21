@@ -60,7 +60,7 @@
             <template v-slot:filters>
 
               <!-- Name -->
-              <!-- <div>
+              <div>
               <opensilex-FilterField>
                 <label for="name">{{ $t("component.common.name") }}</label>
                 <opensilex-StringFilter
@@ -72,7 +72,7 @@
                 ></opensilex-StringFilter>
                 <br>
               </opensilex-FilterField>
-              </div> -->
+              </div>
         
               <!-- Experiments --> 
               <div>   
@@ -89,7 +89,7 @@
               </div>
 
               <!-- Types --> 
-              <!-- <div>
+              <div>
               <opensilex-FilterField>
                 <label for="type">{{ $t("component.common.type") }}</label>
                 <opensilex-ScientificObjectTypeSelector
@@ -99,7 +99,7 @@
                   class="searchFilter"
                 ></opensilex-ScientificObjectTypeSelector>
               </opensilex-FilterField>
-              </div> -->
+              </div>
             </template>
 
             <template v-slot:advancedSearch>
@@ -339,6 +339,5 @@ export default class ScientificObjectsView extends Vue {
 .createButton{
   margin-bottom: 10px;
   margin-top: -15px;
-
 }
 </style>

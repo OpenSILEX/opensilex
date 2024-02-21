@@ -5,9 +5,11 @@
     v-on="$listeners"
     :async="searchMethod != null"
     :default-options="searchMethod != null" 
+    :placeholder="$t(placeholder)"
     :load-options="loadOptions"
     :multiple="multiple"
     :show-count="showCount"
+    :limit="limit"
     @deselect="deselect"
     @select="select"
     @input="clearIfNeeded"
@@ -90,11 +92,17 @@ internalOption = null;
   })
   resultLimit;
 
+  @Prop({default: 1})
+  limit: number; // limit number of items in the input box
+  
   @Prop()
   optionsLoadingMethod;
 
   @Prop()
   defaultSelectedValue;
+
+  @Prop()
+  placeholder: string;
 
   selectedTmp = [];
 
@@ -405,6 +413,7 @@ onSelectionChange() {
   }
 
   clearIfNeeded(values) {
+    console.log("clearIfNeeded values : ", values, " / ", values.length)
     if (this.multiple) {
       if (values.length == 0) {
         console.log("clearIf 1er ifselection av", this.selection)
@@ -420,11 +429,13 @@ onSelectionChange() {
       return;
     }
 
+    /** value had */
     if (this.multiple) {
       let newValues = [];
       for (let i in values) {
-        newValues.push(values[i].id);
+        newValues.push(values[i]);
       }
+      console.log("newValues", newValues)
         console.log("clearIf selection av", this.selection )
       this.selection = newValues;
       console.log("clearIf  selection ap ", this.selection)

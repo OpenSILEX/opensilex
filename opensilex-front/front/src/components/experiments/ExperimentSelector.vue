@@ -3,7 +3,7 @@
     ref="formSelector"
     :required="required"
     :label="label"
-    :selected="experimentsURI"
+    :selected.sync="experimentsURI"
     :multiple="multiple"
     :searchMethod="searchExperiments"
     :clearable="clearable"
@@ -33,11 +33,6 @@ export default class ExperimentSelector extends Vue {
 
   @PropSync("experiments")
   experimentsURI;
-
-  @Watch("experimentsURI")
-  test(){
-    console.log("experimentSelect - expeURI ", this.experimentsURI)
-  }
 
   @Prop({
     default: "component.experiment.experiment",

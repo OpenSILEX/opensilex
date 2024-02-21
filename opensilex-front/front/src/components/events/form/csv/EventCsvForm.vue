@@ -89,7 +89,7 @@
             let path = this.isMove ? "/core/events/moves/import" : "/core/events/import";
 
             return this.$opensilex.uploadFileToService(
-                path, {description: {}, file: csvFile}, null, false
+                path, {description: {validationToken: validationToken}, file: csvFile}, null, false
             );
         }
 

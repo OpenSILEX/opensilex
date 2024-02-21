@@ -48,7 +48,7 @@
         @Prop({default: "FacilitySelector.placeholder"})
         placeholder;
 
-        @Prop({ default: true })
+        @Prop({ default: false })
           required: boolean;      
 
         created() {

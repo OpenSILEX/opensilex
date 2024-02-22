@@ -2,13 +2,13 @@
   <opensilex-SelectForm
     ref="selectForm"
     :label="label"
-    :selected.sync="entityURI"
+    :selected.sync="interestEntityURI"
     :multiple="multiple"
-    :searchMethod="searchEntities"
-    :itemLoadingMethod="loadEntities"
+    :searchMethod="searchInterestEntities"
+    :itemLoadingMethod="loadInterestEntities"
     :clearable="clearable"
     :placeholder="placeholder"
-    noResultsText="component.entity.form.selector.filter-search-no-result"
+    noResultsText="component.interestEntity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -21,18 +21,18 @@
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {EntityGetDTO} from "opensilex-core/index";
-import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import {InterestEntityGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../../common/forms/SelectForm.vue";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
-export default class EntitySelector extends Vue {
+export default class InterestEntitySelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
 
-  @PropSync("entity")
-  entityURI;
+  @PropSync("interestEntity")
+  interestEntityURI;
 
   @Prop()
   label;
@@ -44,7 +44,7 @@ export default class EntitySelector extends Vue {
   clearable;
 
   @Prop()
-  sharedResourceInstance?: string;
+  sharedResourceInstance;
 
   @Ref("selectForm") readonly selectForm!: SelectForm;
 
@@ -55,23 +55,23 @@ export default class EntitySelector extends Vue {
 
   get placeholder() {
     return this.multiple
-      ? "component.entity.form.selector.placeholder-multiple"
-      : "component.entity.form.selector.placeholder";
+      ? "component.interestEntity.form.selector.placeholder-multiple"
+      : "component.interestEntity.form.selector.placeholder";
   }
 
-  loadEntities(entities): Promise<Array<EntityGetDTO>> {
+  loadInterestEntities(interestEntities): Promise<Array<InterestEntityGetDTO>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getEntitiesByURIs(entities, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
+      .getInterestEntitiesByURIs(interestEntities, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http.response.result;
       })
-      .catch(this.$opensilex.errorHandler); 
+      .catch(this.$opensilex.errorHandler);
   }
 
-  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
+  searchInterestEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchEntities(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
-    .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
+    .searchInterestEntity(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http;
     });
   }
@@ -104,21 +104,21 @@ export default class EntitySelector extends Vue {
 
 en:
   component: 
-    entity: 
+    interestEntity: 
         form:
           selector:
-            placeholder : Select one entity
-            placeholder-multiple : Select one or more entities
-            filter-search-no-result : No entities found
+            placeholder : Select one entity of interest
+            placeholder-multiple : Select one or more entities of interest
+            filter-search-no-result : No entities of interest found
     
             
 fr:
   component: 
-    entity: 
+    interestEntity: 
         form: 
           selector:
-            placeholder : Sélectionner une entité
-            placeholder-multiple : Sélectionner une ou plusieurs entités
-            filter-search-no-result : Aucune entité trouvée
+            placeholder : Sélectionner une entité d'intérêt
+            placeholder-multiple : Sélectionner une ou plusieurs entités d'intérêt
+            filter-search-no-result : Aucune entité d'intérêt trouvée
 
 </i18n>

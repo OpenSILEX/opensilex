@@ -19,9 +19,9 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ExternalOntologies} from "../../../../models/ExternalOntologies";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import {MethodCreationDTO, MethodGetDTO, VariablesService} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {MethodUpdateDTO} from "opensilex-core/model/methodUpdateDTO";
 
 @Component

@@ -2,13 +2,13 @@
   <opensilex-SelectForm
     ref="selectForm"
     :label="label"
-    :selected.sync="methodURI"
+    :selected.sync="entityURI"
     :multiple="multiple"
-    :searchMethod="searchMethods"
-    :itemLoadingMethod="loadMethods"
+    :searchMethod="searchEntities"
+    :itemLoadingMethod="loadEntities"
     :clearable="clearable"
     :placeholder="placeholder"
-    noResultsText="component.method.form.selector.filter-search-no-result"
+    noResultsText="component.entity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -21,18 +21,18 @@
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {MethodGetDTO} from "opensilex-core/index";
-import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import {EntityGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../../common/forms/SelectForm.vue";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
-export default class MethodSelector extends Vue {
+export default class EntitySelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
 
-  @PropSync("method")
-  methodURI;
+  @PropSync("entity")
+  entityURI;
 
   @Prop()
   label;
@@ -44,7 +44,7 @@ export default class MethodSelector extends Vue {
   clearable;
 
   @Prop()
-  sharedResourceInstance;
+  sharedResourceInstance?: string;
 
   @Ref("selectForm") readonly selectForm!: SelectForm;
 
@@ -55,23 +55,23 @@ export default class MethodSelector extends Vue {
 
   get placeholder() {
     return this.multiple
-      ? "component.method.form.selector.placeholder-multiple"
-      : "component.method.form.selector.placeholder";
+      ? "component.entity.form.selector.placeholder-multiple"
+      : "component.entity.form.selector.placeholder";
   }
 
-  loadMethods(methods): Promise<Array<MethodGetDTO>> {
+  loadEntities(entities): Promise<Array<EntityGetDTO>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getMethodsByURIs(methods, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
+      .getEntitiesByURIs(entities, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http.response.result;
       })
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchMethods(name): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
+  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchMethods(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
-    .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
+    .searchEntities(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });
   }
@@ -104,21 +104,21 @@ export default class MethodSelector extends Vue {
 
 en:
   component: 
-    method: 
+    entity: 
         form:
           selector:
-            placeholder : Select one method
-            placeholder-multiple : Select one or more methods
-            filter-search-no-result : No methods found
+            placeholder : Select one entity
+            placeholder-multiple : Select one or more entities
+            filter-search-no-result : No entities found
     
             
 fr:
   component: 
-    method: 
+    entity: 
         form: 
           selector:
-            placeholder : Sélectionner une méthode
-            placeholder-multiple : Sélectionner une ou plusieurs méthodes
-            filter-search-no-result : Aucune méthode trouvée
+            placeholder : Sélectionner une entité
+            placeholder-multiple : Sélectionner une ou plusieurs entités
+            filter-search-no-result : Aucune entité trouvée
 
 </i18n>

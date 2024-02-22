@@ -5,12 +5,12 @@
 
             <div class="col">
                 <opensilex-UriForm
-                    :uri.sync="form.uri"
-                    label="component.common.uri"
-                    :editMode="editMode"
-                    :generated.sync="uriGenerated"
-                    :required="true"
-                    helpMessage="MethodForm.uri-help"
+                        :uri.sync="form.uri"
+                        label="component.common.uri"
+                        :generated.sync="uriGenerated"
+                        :required="true"
+                        helpMessage="InterestEntityForm.uri-help"
+                        :editMode="editMode"
                 ></opensilex-UriForm>
             </div>
         </div>
@@ -25,7 +25,7 @@
                         label="component.common.name"
                         type="text"
                         :required="true"
-                        placeholder="MethodForm.name-placeholder"
+                        placeholder="InterestEntityForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <p> {{$t("MethodForm.ontologies-help")}}</p>
+                        <p> {{$t("InterestEntityForm.ontologies-help")}}</p>
                     </div>
                 </div>
             </div>
@@ -74,52 +74,48 @@
     </ValidationObserver>
 </template>
 
-
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../../models/ExternalOntologies";
-    import MethodCreate from "./MethodCreate.vue";
-    // @ts-ignore
-    import { MethodCreationDTO } from "opensilex-core/index";
+import Vue from "vue";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import InterestEntityCreate from "./InterestEntityCreate.vue";
+// @ts-ignore
+import { InterestEntityCreationDTO } from "opensilex-core/index";
 
-    @Component
-    export default class MethodForm extends Vue {
-        $opensilex: any;
+@Component
+export default class InterestEntityForm extends Vue {
+    $opensilex: any;
 
-        title = "";
-        uriGenerated = true;
+    title = "";
+    uriGenerated = true;
 
-        @Prop()
-        editMode;
+    @Prop()
+    editMode;
 
-        errorMsg: String = "";
+    errorMsg: String = "";
 
-        @PropSync("form")
-        methodDto: MethodCreationDTO;
+    @PropSync("form")
+    interestEntityDto: InterestEntityCreationDTO;
 
-        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(MethodCreate.selectedOntologies);
+    externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(InterestEntityCreate.selectedOntologies);
 
-        handleErrorMessage(errorMsg: string) {
-            this.errorMsg = errorMsg;
-        }
-
-        @Ref("modalRef") readonly modalRef!: any;
-        @Ref("validatorRef") readonly validatorRef!: any;
-
-        reset() {
-            this.uriGenerated = true;
-            return this.validatorRef.reset();
-        }
-
-        validate() {
-            return this.validatorRef.validate();
-        }
+    handleErrorMessage(errorMsg: string) {
+        this.errorMsg = errorMsg;
     }
-</script>
 
-<style scoped lang="scss">
-</style>
+    @Ref("modalRef") readonly modalRef!: any;
+    @Ref("validatorRef") readonly validatorRef!: any;
+
+    reset() {
+        this.uriGenerated = true;
+        return this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
+    }
+}
+</script>
 
 <style scoped lang="scss">
     a {color: #007bff;}

@@ -2,13 +2,13 @@
   <opensilex-SelectForm
     ref="selectForm"
     :label="label"
-    :selected.sync="interestEntityURI"
+    :selected.sync="methodURI"
     :multiple="multiple"
-    :searchMethod="searchInterestEntities"
-    :itemLoadingMethod="loadInterestEntities"
+    :searchMethod="searchMethods"
+    :itemLoadingMethod="loadMethods"
     :clearable="clearable"
     :placeholder="placeholder"
-    noResultsText="component.interestEntity.form.selector.filter-search-no-result"
+    noResultsText="component.method.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -21,18 +21,18 @@
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {InterestEntityGetDTO} from "opensilex-core/index";
-import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import {MethodGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../../common/forms/SelectForm.vue";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
-export default class InterestEntitySelector extends Vue {
+export default class MethodSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
 
-  @PropSync("interestEntity")
-  interestEntityURI;
+  @PropSync("method")
+  methodURI;
 
   @Prop()
   label;
@@ -55,23 +55,23 @@ export default class InterestEntitySelector extends Vue {
 
   get placeholder() {
     return this.multiple
-      ? "component.interestEntity.form.selector.placeholder-multiple"
-      : "component.interestEntity.form.selector.placeholder";
+      ? "component.method.form.selector.placeholder-multiple"
+      : "component.method.form.selector.placeholder";
   }
 
-  loadInterestEntities(interestEntities): Promise<Array<InterestEntityGetDTO>> {
+  loadMethods(methods): Promise<Array<MethodGetDTO>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getInterestEntitiesByURIs(interestEntities, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
+      .getMethodsByURIs(methods, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http.response.result;
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch(this.$opensilex.errorHandler); 
   }
 
-  searchInterestEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>> {
+  searchMethods(name): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchInterestEntity(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
-    .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
+    .searchMethods(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });
   }
@@ -104,21 +104,21 @@ export default class InterestEntitySelector extends Vue {
 
 en:
   component: 
-    interestEntity: 
+    method: 
         form:
           selector:
-            placeholder : Select one entity of interest
-            placeholder-multiple : Select one or more entities of interest
-            filter-search-no-result : No entities of interest found
+            placeholder : Select one method
+            placeholder-multiple : Select one or more methods
+            filter-search-no-result : No methods found
     
             
 fr:
   component: 
-    interestEntity: 
+    method: 
         form: 
           selector:
-            placeholder : Sélectionner une entité d'intérêt
-            placeholder-multiple : Sélectionner une ou plusieurs entités d'intérêt
-            filter-search-no-result : Aucune entité d'intérêt trouvée
+            placeholder : Sélectionner une méthode
+            placeholder-multiple : Sélectionner une ou plusieurs méthodes
+            filter-search-no-result : Aucune méthode trouvée
 
 </i18n>

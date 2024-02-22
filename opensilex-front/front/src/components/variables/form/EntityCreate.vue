@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="CharacteristicForm.add"
-            editTitle="CharacteristicForm.edit"
+            createTitle="EntityForm.add"
+            editTitle="EntityForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -19,17 +19,17 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ExternalOntologies} from "../../../../models/ExternalOntologies";
-import {CharacteristicCreationDTO, CharacteristicGetDTO, VariablesService} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
-import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdateDTO";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 
 @Component
-    export default class CharacteristicModalForm extends Vue {
+    export default class EntityCreate extends Vue {
 
         steps = [
-            {component: "opensilex-CharacteristicForm"}
-            ,{component: "opensilex-CharacteristicExternalReferencesForm"}
+            {component: "opensilex-EntityForm"}
+            ,{component : "opensilex-EntityExternalReferencesForm"}
         ];
 
         static selectedOntologies: string[] = [
@@ -61,7 +61,7 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm(form : CharacteristicGetDTO) {
+        showEditForm(form : EntityGetDTO) {
             this.wizardRef.showEditForm(form);
         }
 
@@ -70,7 +70,7 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm(): CharacteristicCreationDTO {
+        getEmptyForm(): EntityCreationDTO {
             return {
                 uri: null,
                 name: null,
@@ -82,12 +82,12 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
             };
         }
 
-        create(form: CharacteristicCreationDTO){
+        create(form: EntityCreationDTO){
             return this.service
-                .createCharacteristic(form)
-                .then((http: HttpResponse<OpenSilexResponse>) => {
+                .createEntity(form)
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("CharacteristicForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
@@ -100,12 +100,12 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
                 });
         }
 
-        update(form: CharacteristicUpdateDTO){
+        update(form: EntityUpdateDTO){
             return this.service
-                .updateCharacteristic(form)
+                .updateEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("CharacteristicForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onUpdate", form);
                 })
@@ -119,6 +119,7 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
         setLoading(value: boolean) {
             this.loadingWizard = value;
         }
+
     }
 
 </script>
@@ -128,19 +129,19 @@ import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdate
 
 <i18n>
 en:
-    CharacteristicForm:
-        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new characteristic with an auto-generated URI"
-        ontologies-help: "Click on one of these reference ontologies. If a characteristic matches with the desired characteristic, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The characteristic
-        add: Add a characteristic
-        edit: Edit a characteristic
-        name-placeholder: Height
+    EntityForm:
+        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
+        ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
+        name: The entity
+        add: Add entity
+        edit: Edit entity
+        name-placeholder: Plant
 fr:
-    CharacteristicForm:
-        uri-help: "Décocher si vous souhaitez ajouter une caractéristique à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une caractéristique avec une URI auto-generée"
-        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une caractéristique correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de la caractéristique dans le champ 'Nom'."
-        name: La caractéristique
-        add: Ajouter une caractéristique
-        edit: Éditer une caractéristique
-        name-placeholder: Hauteur
+    EntityForm:
+        uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
+        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
+        name: L'entité
+        add: Ajouter une entité
+        edit: Éditer une entité
+        name-placeholder: Plante
 </i18n>

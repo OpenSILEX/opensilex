@@ -10,7 +10,7 @@
                     :editMode="editMode"
                     :generated.sync="uriGenerated"
                     :required="true"
-                    helpMessage="CharacteristicForm.uri-help"
+                    helpMessage="MethodForm.uri-help"
                 ></opensilex-UriForm>
             </div>
         </div>
@@ -25,7 +25,7 @@
                         label="component.common.name"
                         type="text"
                         :required="true"
-                        placeholder="CharacteristicForm.name-placeholder"
+                        placeholder="MethodForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
@@ -65,25 +65,26 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <p> {{$t("CharacteristicForm.ontologies-help")}}</p>
+                        <p> {{$t("MethodForm.ontologies-help")}}</p>
                     </div>
                 </div>
             </div>
 
         </div>
-
     </ValidationObserver>
 </template>
+
 
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {ExternalOntologies} from "../../../../models/ExternalOntologies";
-    import CharacteristicModalForm from "./CharacteristicModalForm.vue";
-    import { CharacteristicCreationDTO } from 'opensilex-core/index';
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import MethodCreate from "./MethodCreate.vue";
+    // @ts-ignore
+    import { MethodCreationDTO } from "opensilex-core/index";
 
     @Component
-    export default class CharacteristicForm extends Vue {
+    export default class MethodForm extends Vue {
         $opensilex: any;
 
         title = "";
@@ -95,9 +96,9 @@
         errorMsg: String = "";
 
         @PropSync("form")
-        dto: CharacteristicCreationDTO;
+        methodDto: MethodCreationDTO;
 
-        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(CharacteristicModalForm.selectedOntologies);
+        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(MethodCreate.selectedOntologies);
 
         handleErrorMessage(errorMsg: string) {
             this.errorMsg = errorMsg;
@@ -116,6 +117,9 @@
         }
     }
 </script>
+
+<style scoped lang="scss">
+</style>
 
 <style scoped lang="scss">
     a {color: #007bff;}

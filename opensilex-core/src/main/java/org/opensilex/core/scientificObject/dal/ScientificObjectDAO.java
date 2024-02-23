@@ -262,10 +262,10 @@ public class ScientificObjectDAO {
             });
         }
 
-        if (searchFilter.getPage() == null || searchFilter.getPage()  < 0) {
+        if (searchFilter.getPage()  < 0) {
             searchFilter.setPage(0);
         }
-        if (searchFilter.getPageSize() != null && searchFilter.getPageSize() > 0) {
+        if (searchFilter.getPageSize() > 0) {
             select.setOffset(searchFilter.getPage() * searchFilter.getPageSize());
             select.setLimit(searchFilter.getPageSize());
         }

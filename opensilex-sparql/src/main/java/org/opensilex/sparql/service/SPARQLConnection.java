@@ -30,15 +30,15 @@ import java.util.stream.Stream;
  */
 public interface SPARQLConnection extends Service {
 
-    public boolean executeAskQuery(AskBuilder ask) throws SPARQLException;
+    boolean executeAskQuery(AskBuilder ask) throws SPARQLException;
 
-    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLException;
+    List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLException;
 
-    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException;
+    List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException;
 
-    public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException;
+    List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException;
 
-    public default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLException {
+    default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLException {
         return executeSelectQuery(select, null);
     }
 
@@ -46,37 +46,39 @@ public interface SPARQLConnection extends Service {
         return executeSelectQuery(select).stream();
     }
 
-    public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException;
+    void executeUpdateQuery(UpdateBuilder update) throws SPARQLException;
 
     void executeUpdateQuery(String update) throws SPARQLException;
 
-    public void executeDeleteQuery(UpdateBuilder update) throws SPARQLException;
+    void executeDeleteQuery(UpdateBuilder update) throws SPARQLException;
 
-    public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException;
+    List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException;
 
-    public void clearGraph(URI graph) throws SPARQLException;
+    void clearGraph(URI graph) throws SPARQLException;
 
     void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException;
 
-    public void clear() throws SPARQLException;
+    void clear() throws SPARQLException;
 
-    public void startTransaction() throws SPARQLException;
+    boolean hasActiveTransaction();
 
-    public void commitTransaction() throws SPARQLException;
+    void startTransaction() throws SPARQLException;
 
-    public default void rollbackTransaction(Exception ex) throws Exception {
+    void commitTransaction() throws SPARQLException;
+
+    default void rollbackTransaction(Exception ex) throws Exception {
         if (ex != null) {
             throw ex;
         }
     }
 
-    public void disableSHACL() throws SPARQLException;
+    void disableSHACL() throws SPARQLException;
 
-    public void enableSHACL() throws SPARQLException;
+    void enableSHACL() throws SPARQLException;
     
-    public boolean isShaclEnabled();
+    boolean isShaclEnabled();
 
-    public default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
+    default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
         Node graphNode = graph != null
                 ? NodeFactory.createURI(graph.toString())
                 : null;
@@ -97,13 +99,13 @@ public interface SPARQLConnection extends Service {
         executeUpdateQuery(insertQuery);
     }
 
-    public default void loadOntology(URI graph, String ontology, Lang format) throws SPARQLException {
+    default void loadOntology(URI graph, String ontology, Lang format) throws SPARQLException {
         ByteArrayInputStream ontologyStream = new ByteArrayInputStream(ontology.getBytes());
         loadOntology(graph, ontologyStream, format);
     }
 
-    public SPARQLClassObjectMapperIndex getMapperIndex();
+    SPARQLClassObjectMapperIndex getMapperIndex();
 
-    public void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex);
+    void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex);
 
 }

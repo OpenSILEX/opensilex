@@ -16,23 +16,26 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Generic search filter for database request
  * @author rcolin
  */
-public abstract class SparqlSearchFilter {
+public abstract class SearchFilter {
+
+    public static final int DEFAULT_PAGE_SIZE = 20;
 
     protected Collection<URI> includedUris;
-
+    protected Collection<URI> rdfTypes;
     protected List<OrderBy> orderByList;
-    protected Integer page;
-    protected Integer pageSize;
+    protected int page;
+    protected int pageSize;
 
     @JsonIgnore
     protected String lang;
 
-    protected SparqlSearchFilter() {
+    protected SearchFilter() {
         this.lang = OpenSilex.DEFAULT_LANGUAGE;
         this.page = 0;
-        this.pageSize = 20;
+        this.pageSize = DEFAULT_PAGE_SIZE;
         this.orderByList = Collections.emptyList();
         this.includedUris = Collections.emptyList();
     }
@@ -41,7 +44,7 @@ public abstract class SparqlSearchFilter {
         return includedUris;
     }
 
-    public SparqlSearchFilter setIncludedUris(Collection<URI> includedUris) {
+    public SearchFilter setIncludedUris(Collection<URI> includedUris) {
         this.includedUris = includedUris;
         return this;
     }
@@ -52,28 +55,34 @@ public abstract class SparqlSearchFilter {
         return orderByList;
     }
 
-    public SparqlSearchFilter setOrderByList(List<OrderBy> orderByList) {
+    public SearchFilter setOrderByList(List<OrderBy> orderByList) {
         this.orderByList = orderByList;
         return this;
     }
 
     @ApiModelProperty(name = "page", value = "Page number")
-    public Integer getPage() {
+    public int getPage() {
         return page;
     }
 
-    public SparqlSearchFilter setPage(Integer page) {
+    public SearchFilter setPage(int page) {
+        if(page < 0){
+            throw new IllegalArgumentException("pageSize must be >= to 0");
+        }
         this.page = page;
         return this;
     }
 
     @ApiModelProperty(name = "page_size", value = "Page size")
     @JsonProperty("page_size")
-    public Integer getPageSize() {
+    public int getPageSize() {
         return pageSize;
     }
 
-    public SparqlSearchFilter setPageSize(Integer pageSize) {
+    public SearchFilter setPageSize(int pageSize) {
+        if(pageSize < 0){
+            throw new IllegalArgumentException("pageSize must be >= to 0");
+        }
         this.pageSize = pageSize;
         return this;
     }
@@ -82,9 +91,17 @@ public abstract class SparqlSearchFilter {
         return lang;
     }
 
-    public SparqlSearchFilter setLang(String lang) {
+    public SearchFilter setLang(String lang) {
         this.lang = lang;
         return this;
+    }
+
+    public Collection<URI> getRdfTypes() {
+        return rdfTypes;
+    }
+
+    public void setRdfTypes(Collection<URI> rdfTypes) {
+        this.rdfTypes = rdfTypes;
     }
 
     /**

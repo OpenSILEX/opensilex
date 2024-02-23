@@ -45,6 +45,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.nosql.mongodb.codec.*;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -70,6 +71,9 @@ public class MongoDBService extends BaseService {
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
+    // V2 service : used for an easier transition from this one to the new V2
+    private MongoDBServiceV2 serviceV2;
+
     public MongoDBService(MongoDBConfig config) {
         super(config);
         dbName = config.database();
@@ -79,7 +83,7 @@ public class MongoDBService extends BaseService {
     /**
      * Test if the connection to the MongoDB server is OK
      * @param config MongoDB configuration
-     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeout()}
+     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeoutMs()}
      * @throws MongoSecurityException If the execution of this command is unauthorized by the MongoDB server
      *
      * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">MongoDB ping</a>
@@ -152,7 +156,7 @@ public class MongoDBService extends BaseService {
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
                 .applyToClusterSettings(builder -> builder
                         .hosts(Collections.singletonList(new ServerAddress(config.host(), config.port())))
-                        .serverSelectionTimeout(config.serverSelectionTimeout(),TimeUnit.MILLISECONDS)
+                        .serverSelectionTimeout(config.serverSelectionTimeoutMs(),TimeUnit.MILLISECONDS)
                 ).codecRegistry(codecRegistry)
                 .applyToSocketSettings(builder -> builder
                         .connectTimeout(config.connectTimeoutMs(), TimeUnit.MILLISECONDS)
@@ -689,5 +693,13 @@ public class MongoDBService extends BaseService {
         } else {
             return orders.toString();
         }
+    }
+
+    public MongoDBServiceV2 getServiceV2() {
+        if(serviceV2 == null){
+            serviceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+            Objects.requireNonNull(serviceV2);
+        }
+        return serviceV2;
     }
 }

@@ -2,12 +2,12 @@ package org.opensilex.core.device.dal;
 
 import org.bson.Document;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.LocalDate;
 
-public class DeviceSearchFilter extends SparqlSearchFilter {
+public class DeviceSearchFilter extends SearchFilter {
 
     private String namePattern;
     private URI rdfType;

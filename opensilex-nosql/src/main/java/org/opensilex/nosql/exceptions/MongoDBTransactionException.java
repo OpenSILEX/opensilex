@@ -6,24 +6,23 @@
 //******************************************************************************
 package org.opensilex.nosql.exceptions;
 
+import com.mongodb.MongoException;
+
 /**
  * Base exception for big data service.
- * <pre>
- * TODO: Not really implemented yet !
- * </pre>
  * 
- * @see org.opensilex.nosql.service.NoSQLService
- * @author Vincent Migot
+ * @author rcolin
  */
-public class NoSQLTransactionException extends Exception {
+public class MongoDBTransactionException extends MongoException {
 
-    /**
-     * Constructor to encapsulate other exceptions
-     * 
-     * @param ex Exception to encapsulate
-     */
-    public NoSQLTransactionException(Exception ex) {
-        super(ex);
+    private final Exception innerException;
+
+    public MongoDBTransactionException(String msg, Exception t) {
+        super(msg, t);
+        this.innerException = t;
     }
 
+    public Exception getInnerException() {
+        return innerException;
+    }
 }

@@ -5,9 +5,13 @@
 //******************************************************************************
 package org.opensilex.utils;
 
-import java.util.ArrayList;
+import org.opensilex.utils.pagination.PaginatedIterable;
+
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to define a paginated list.
@@ -15,60 +19,28 @@ import java.util.function.Function;
  * @author Vincent Migot
  * @param <T> Generic list parameter
  */
-public class ListWithPagination<T> {
+public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
 
     /**
      * List content for current page.
      */
     private final List<T> list;
 
-    /**
-     * Total number of elements.
-     */
-    private final Integer total;
-
-    /**
-     * Current page.
-     */
-    private final Integer page;
-
-    /**
-     * Page size.
-     */
-    private final Integer pageSize;
-
-    /**
-     * Constructor for a complete list without pagination.
-     *
-     * @param list
-     */
     public ListWithPagination(List<T> list) {
         this(list, 0, 0, list.size());
     }
 
-    /**
-     * Constructor for a page list.
-     *
-     * @param list list of element for the current page.
-     * @param page current page
-     * @param pageSize page size
-     * @param total total elements count
-     */
-    public ListWithPagination(List<T> list, Integer page, Integer pageSize, Integer total) {
+    public ListWithPagination(List<T> list, int page, int pageSize, int total) {
+        super(total, page, pageSize);
+        Objects.requireNonNull(list);
         this.list = list;
-        this.total = total;
+    }
 
-        if (page == null || page < 0) {
-            this.page = 0;
-        } else {
-            this.page = page;
-        }
-
-        if (pageSize != null && pageSize > 0) {
-            this.pageSize = pageSize;
-        } else {
-            this.pageSize = pageSize;
-        }
+    public ListWithPagination(List<T> list, Integer page, Integer pageSize, int total) {
+        this(list,
+                page == null || page < 0 ? 0 : page,
+                pageSize == null || pageSize < 0 ? 0 : pageSize,
+                total);
     }
 
     /**
@@ -81,33 +53,6 @@ public class ListWithPagination<T> {
     }
 
     /**
-     * Get total number of elements in the list.
-     *
-     * @return total count
-     */
-    public int getTotal() {
-        return total;
-    }
-
-    /**
-     * Get current page index.
-     *
-     * @return current page
-     */
-    public int getPage() {
-        return page;
-    }
-
-    /**
-     * Get page size.
-     *
-     * @return page size
-     */
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    /**
      * Method to convert a paginated list into another.
      *
      * @param <U> Conversion result class
@@ -116,13 +61,21 @@ public class ListWithPagination<T> {
      * @return new paginated list of conversion result class
      */
     public <U> ListWithPagination<U> convert(Class<U> resultClass, Function<T, U> converter) {
-        List<U> resultList = new ArrayList<>(this.list.size());
 
-        this.list.forEach((T element) -> {
-            resultList.add(converter.apply(element));
-        });
+        List<U> resultList = list.stream()
+                .map(converter)
+                .collect(Collectors.toList());
 
-        return new ListWithPagination<U>(resultList, this.page, this.pageSize, this.total);
+        return new ListWithPagination<>(resultList, this.page, this.pageSize, this.total);
     }
 
+    @Override
+    public void forEach(Consumer<T> action) {
+        list.forEach(action);
+    }
+
+    @Override
+    public List<T> getSource() {
+        return getList();
+    }
 }

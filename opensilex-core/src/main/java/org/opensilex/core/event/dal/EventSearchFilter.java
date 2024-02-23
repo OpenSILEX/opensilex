@@ -1,12 +1,12 @@
 package org.opensilex.core.event.dal;
 
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-public class EventSearchFilter extends SparqlSearchFilter {
+public class EventSearchFilter extends SearchFilter {
 
     protected String target;
     protected List<URI> targets;

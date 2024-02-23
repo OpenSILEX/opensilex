@@ -1,8 +1,7 @@
 package org.opensilex.core.experiment.dal;
 
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * Object which group all filters (can be null/empty) which can apply for a {@link ExperimentModel} search
  * @author bmaussang
  */
-public class ExperimentSearchFilter extends SparqlSearchFilter {
+public class ExperimentSearchFilter extends SearchFilter {
 
     private Integer year;
     private String name;

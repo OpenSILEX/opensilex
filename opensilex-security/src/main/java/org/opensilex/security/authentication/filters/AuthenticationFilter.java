@@ -6,16 +6,16 @@
 //******************************************************************************n the template in the editor.
 package org.opensilex.security.authentication.filters;
 
+import net.logstash.logback.argument.StructuredArguments;
 import org.opensilex.security.authentication.AuthenticationService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -48,17 +48,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 /**
  * <pre>
  * Authentication filter
  * For more information on request filters with Jersey
- * see: https://eclipse-ee4j.github.io/jersey.github.io/documentation/latest/filters-and-interceptors.html
+ * see: <a href="https://eclipse-ee4j.github.io/jersey.github.io/documentation/latest/filters-and-interceptors.html">...</a>
  *
  * For any API service call, check if method is annotated with {@code org.opensilex.server.security.ApiProtected}
  * In that case parse header token to determine current user.
  * If user as "admin" flag, allow access to protected service.
  * Otherwise check if current method is in user credentials.
- * Throw {@code org.opensilex.server.exceptions.UnauthorizedException} if issues occured during token decoding or no token provided
+ * Throw {@code org.opensilex.server.exceptions.UnauthorizedException} if issues occurred during token decoding or no token provided
  * Throw {@code org.opensilex.server.exceptions.ForbiddenException} if user is not found or don't have right credentials
  *
  * If user is identified, it can be accessed in the corresponding API method this way:
@@ -92,7 +94,12 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
     private static final String HOST_NAME = "host-name";
     private static final String REQUEST_ID = "request-id";
     private static final String USER_ID = "user-id";
-    
+
+    private static final String INCOMING_REQUEST_URI = "http_request_uri";
+    private static final String INCOMING_REQUEST_METHOD = "http_request_method";
+    private static final String INCOMING_REQUEST_HEADER = "http_request_header";
+    private static final String INCOMING_REQUEST_BODY = "http_request_body";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     @Context
@@ -116,13 +123,21 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
     
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        Optional<String> clientId = Optional.fromNullable(httpRequest.getHeader("X-Forwarded-For"));
-        MDC.put(CLIENT_ID, clientId.or(defaultClientId())); 
+
+        String clientId = java.util.Optional.ofNullable(httpRequest.getHeader("X-Forwarded-For"))
+                .orElse(defaultClientId());
+
+        // MDC (attributes propagated to each log write inside the current thread)
+        MDC.put(CLIENT_ID, clientId);
         MDC.put(REQUEST_ID, UUID.randomUUID().toString());
         MDC.put(HOST_NAME, httpRequest.getServerName());
-        
-        LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
-        LOGGER.debug("Incoming request method: " + requestContext.getMethod());
+
+        // request attributes
+        LOGGER.debug("Incoming request",
+                kv(INCOMING_REQUEST_URI, requestContext.getUriInfo().getRequestUri()),
+                kv(INCOMING_REQUEST_METHOD, requestContext.getMethod())
+        );
+
         final AtomicBoolean isJSON = new AtomicBoolean(false);
         requestContext.getHeaders().forEach((header, value) -> {
             if (value.size() == 1) {
@@ -130,16 +145,20 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
                     isJSON.set(true);
                 }
             }
-            LOGGER.debug("Incoming request header: " + header + " -> " + value);
         });
+        LOGGER.debug("Incoming request header", kv(INCOMING_REQUEST_HEADER, requestContext.getHeaders()));
 
+
+        // request body
         try {
             if (isJSON.get()) {
-                String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
+
+                // #TODO : Avoid read + JSON parsing + rewrite of JSON  body ? only used for logging
+                String body = IOUtils.toString(requestContext.getEntityStream(), StandardCharsets.UTF_8);
                 ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
                 String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
-                LOGGER.debug("Incoming request JSON body: \n" + json);
-                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+                LOGGER.debug("Incoming request JSON body", kv(INCOMING_REQUEST_BODY, json));
+                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
             }
         } catch (IOException ex) {
             throw new IllegalArgumentException("Error JSON: " + ex.getMessage());
@@ -176,7 +195,7 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
                 }
 
             } catch (JWTVerificationException | URISyntaxException ex) {
-                LOGGER.debug("Error while decoding and verifying token: " + ex.getMessage());
+                LOGGER.debug("Error while decoding and verifying token: {}", ex.getMessage());
                 if (isSecuredAPI) {
                     throw new UnauthorizedException();
                 } else {

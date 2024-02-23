@@ -9,8 +9,12 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.spi.FilterReply;
+import net.logstash.logback.argument.StructuredArgument;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 /**
  * Logging filter for SLF4J.
@@ -18,6 +22,24 @@ import java.util.List;
  * @author Vincent Migot
  */
 public class LogFilter extends ThresholdFilter {
+
+    public static final String LOG_TYPE_KEY = "log_type";
+
+    public static final String TRANSACTION = "TRANSACTION";
+
+    public static final String LOG_STATUS_LOG_KEY = "status";
+    public static final String LOG_ERROR_MESSAGE_KEY = "error_message";
+
+    public static final String LOG_STATUS_START = "START";
+    public static final String LOG_STATUS_OK = "OK";
+    public static final String LOG_STATUS_ERROR = "ERROR";
+    public static final String LOG_STATUS_ROLLBACK = "ROLLBACK";
+    public static final String LOG_DURATION_MS_KEY = "duration_ms";
+
+    public static final StructuredArgument STATUS_START_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_START);
+    public static final StructuredArgument STATUS_OK_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_OK);
+
+    public static final StructuredArgument STATUS_ERROR_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_ERROR);
 
     /**
      * Method to force debug output.
@@ -39,17 +61,17 @@ public class LogFilter extends ThresholdFilter {
     /**
      * List of logger to include at custom level.
      */
-    private List<String> loggerIncludeList = new ArrayList<String>();
+    private final List<String> loggerIncludeList = new ArrayList<>();
 
     /**
      * List of logger to exclude from custom level.
      */
-    private List<String> loggerExcludeList = new ArrayList<String>();
+    private final List<String> loggerExcludeList = new ArrayList<>();
 
     /**
      * List of logger to use at debug level.
      */
-    private List<String> debug = new ArrayList<String>();
+    private final List<String> debug = new ArrayList<>();
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
@@ -61,7 +83,7 @@ public class LogFilter extends ThresholdFilter {
             return FilterReply.ACCEPT;
         }
 
-        boolean hasMatch = (loggerIncludeList.size() == 0);
+        boolean hasMatch = (loggerIncludeList.isEmpty());
         for (String logger : loggerIncludeList) {
             if (event.getLoggerName().startsWith(logger)) {
                 hasMatch = true;

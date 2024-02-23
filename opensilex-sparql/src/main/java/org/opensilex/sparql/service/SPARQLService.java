@@ -57,10 +57,8 @@ import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingConsumer;
-import org.opensilex.utils.ThrowingFunction;
+import org.opensilex.utils.*;
+import org.opensilex.utils.functionnal.ThrowingSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +66,8 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -76,7 +76,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.utils.LogFilter.*;
 
 /**
  * Implementation of SPARQLService
@@ -264,9 +266,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     private int transactionLevel = 0;
 
     @Override
+    public boolean hasActiveTransaction() {
+        return connection.hasActiveTransaction();
+    }
+
+    @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            LOGGER.debug("SPARQL TRANSACTION START");
+            LOGGER.info("SPARQL TRANSACTION START");
             connection.startTransaction();
         }
         transactionLevel++;
@@ -276,7 +283,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
-            LOGGER.debug("SPARQL TRANSACTION COMMIT");
+            LOGGER.info("SPARQL TRANSACTION COMMIT");
             connection.commitTransaction();
         }
     }
@@ -284,7 +291,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
-            LOGGER.error("SPARQL TRANSACTION ROLLBACK: ", ex);
+            if(ex != null){
+                LOGGER.info("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+            }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
         }
@@ -1109,6 +1118,72 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
 
+
+    public <R> R withTransaction(ThrowingSupplier<R,Exception> operation) throws Exception {
+        try{
+            startTransaction();
+            R result = operation.get();
+            commitTransaction();
+            return result;
+        }catch (Exception e){
+            rollbackTransaction(e);
+            throw e;
+        }
+    }
+
+    public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+
+        boolean reuseSameQuery = maxInstancePerQuery != null;
+        if (reuseSameQuery && maxInstancePerQuery <= 0) {
+            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
+        }
+
+        if(instances.isEmpty()){
+            return;
+        }
+        Instant start = Instant.now();
+
+        validate(instances, null);
+        UpdateBuilder updateBuilder = new UpdateBuilder();
+
+        // use the same query for the instance and her sub-instance if a query batch size is specified
+        UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
+
+        // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
+        int insertedInstanceNb = 0;
+
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+
+        for (T instance : instances) {
+            if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                instance.setPublicationDate(OffsetDateTime.now());
+            }
+
+            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
+            prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
+            mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
+
+            // if query limit is reached, then insert query and reset builder
+            if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
+                executeUpdateQuery(updateBuilder);
+                insertedInstanceNb = 0;
+                updateBuilder = new UpdateBuilder();
+                subInstanceUpdateBuilder = updateBuilder;
+            }
+        }
+
+        if (reuseSameQuery) {
+            if (insertedInstanceNb > 0) {
+                executeUpdateQuery(updateBuilder);
+            }
+        } else {
+            executeUpdateQuery(updateBuilder);
+        }
+
+        long durationMs = Duration.between(start, Instant.now()).toMillis();
+        LOGGER.info("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
+    }
+
     /**
      * @param graph               the graph onto instance are created
      * @param instances           the list of instance to create
@@ -1117,63 +1192,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param <T>                 the SPARQLResourceModel type
      */
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
-
-        boolean reuseSameQuery = maxInstancePerQuery != null;
-
-        if (reuseSameQuery && maxInstancePerQuery <= 0) {
-            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
-        }
-
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-
-        if (instances.size() > 0) {
-            validate(instances, null);
-
-            UpdateBuilder updateBuilder = new UpdateBuilder();
-
-            // use the same query for the instance and her sub-instance if a query batch size is specified
-            UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
-
-            try {
-                // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
-                int insertedInstanceNb = 0;
-
-                startTransaction();
-
-                for (T instance : instances) {
-                    if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
-                        instance.setPublicationDate(OffsetDateTime.now());
-                    }
-
-                    SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                    prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
-                    mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
-
-                    // if query limit is reached, then insert query and reset builder
-                    if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
-                        executeUpdateQuery(updateBuilder);
-                        insertedInstanceNb = 0;
-                        updateBuilder = new UpdateBuilder();
-                        subInstanceUpdateBuilder = updateBuilder;
-                    }
-                }
-
-                if (reuseSameQuery) {
-                    if (insertedInstanceNb > 0) {
-                        executeUpdateQuery(updateBuilder);
-                    }
-                } else {
-                    executeUpdateQuery(updateBuilder);
-                }
-
-                commitTransaction();
-
-            } catch (Exception e) {
-                rollbackTransaction();
-                throw e;
-            }
-
-        }
+        withTransaction(() -> {
+            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
+            return null;
+        });
     }
 
     /**
@@ -1329,6 +1351,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
 
         try {
+            // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
             startTransaction();
 
             // load old instance and replace new fields
@@ -1362,6 +1385,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> void update(Node graph, List<T> instances) throws Exception {
         try {
+            // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
             startTransaction();
 
             if (instances.size() > 0) {
@@ -1406,6 +1430,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
+            // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
             startTransaction();
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
 
@@ -1478,6 +1503,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, List<URI> uris) throws Exception {
         if (uris.size() > 0) {
             try {
+                // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
                 startTransaction();
                 for (URI uri : uris) {
                     delete(graph, objectClass, uri);
@@ -1493,6 +1519,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     private void deleteURIClassMap(Map<URI, Class<? extends SPARQLResourceModel>> deleteList) throws Exception {
         if (deleteList.size() > 0) {
             try {
+                // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
                 startTransaction();
                 for (Map.Entry<URI, Class<? extends SPARQLResourceModel>> deleteItem : deleteList.entrySet()) {
                     delete(deleteItem.getValue(), deleteItem.getKey());
@@ -2198,8 +2225,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 clearGraph(graph);
             }
             commitTransaction();
-        } finally {
+        }catch (Exception e){
             rollbackTransaction();
+            throw e;
         }
     }
 

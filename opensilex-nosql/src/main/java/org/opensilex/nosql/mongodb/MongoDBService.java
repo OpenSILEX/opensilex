@@ -19,7 +19,6 @@ import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.eq;
 
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
@@ -391,50 +390,32 @@ public class MongoDBService extends BaseService {
         return sort;
     }
 
-
     public <T> ListWithPagination<T> searchWithPagination(
             Class<T> instanceClass,
             String collectionName,
             Document filter,
             List<OrderBy> orderByList,
             Integer page,
-            Integer pageSize
-            ) {
-        return searchWithPagination(instanceClass, collectionName, filter, orderByList, page, pageSize,0);
-    }
+            Integer pageSize) {
 
-    public <T> ListWithPagination<T> searchWithPagination(
-            Class<T> instanceClass,
-            String collectionName,
-            Document filter,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize,
-            int countLimit) {
-
+        List<T> results = new ArrayList<T>();
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        long resultsNumber = collection.countDocuments(filter, new CountOptions().skip(page * pageSize).limit(countLimit));
+        long resultsNumber = collection.countDocuments(filter);
         int total = (int) resultsNumber;
 
         LOGGER.debug("MONGO SEARCH WITH PAGINATION - Collection : " + collectionName + " - Order : " + LogOrderList(orderByList) + " - Filter : " + filter.toString());
 
-        if(total == 0){
-            return new ListWithPagination<>(Collections.emptyList(), page, pageSize, 0);
+        if (total > 0) {
+            Document sort = buildSort(orderByList);
+
+            FindIterable<T> queryResult = collection.find(filter).sort(sort).skip(page * pageSize).limit(pageSize);
+
+            for (T res : queryResult) {
+                results.add(res);
+            }
         }
 
-        Document sort = buildSort(orderByList);
-
-        FindIterable<T> queryResult = collection
-                .find(filter)
-                .sort(sort)
-                .skip(page * pageSize)
-                .limit(pageSize);
-
-        List<T> results = new ArrayList<>();
-        for (T res : queryResult) {
-            results.add(res);
-        }
-        return new ListWithPagination<>(results, page, pageSize, total, countLimit);
+        return new ListWithPagination(results, page, pageSize, total);
 
     }
 

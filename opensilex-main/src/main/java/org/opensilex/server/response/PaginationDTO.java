@@ -35,6 +35,11 @@ public class PaginationDTO {
     private final long totalPages;
 
     /**
+     * Indicate if a limit in the number of element to count was applied during the database call
+     */
+    private final long limitCount;
+
+    /**
      * Empty constructor assume no pagination.
      */
     public PaginationDTO() {
@@ -42,6 +47,7 @@ public class PaginationDTO {
         this.currentPage = 0;
         this.totalCount = 0;
         this.totalPages = 0;
+        this.limitCount = 0;
     }
 
     /**
@@ -52,11 +58,15 @@ public class PaginationDTO {
      * @param totalCount Total item count
      */
     public PaginationDTO(long pageSize, long currentPage, long totalCount) {
+        this(pageSize, currentPage, totalCount, 0);
+    }
+
+    public PaginationDTO(long pageSize, long currentPage, long totalCount, long limitCount) {
         this.pageSize = pageSize;
         this.currentPage = currentPage;
         this.totalCount = totalCount;
 
-        // Add a page if the the total number of elements divided by the page
+        // Add a page if the total number of elements divided by the page
         if (pageSize == 0) {
             totalPages = 0;
         } else {
@@ -66,6 +76,7 @@ public class PaginationDTO {
                 totalPages = (totalCount / this.pageSize) + 1;
             }
         }
+        this.limitCount = limitCount;
     }
 
     /**
@@ -102,5 +113,9 @@ public class PaginationDTO {
      */
     public long getTotalPages() {
         return totalPages;
+    }
+
+    public long getLimitCount() {
+        return limitCount;
     }
 }

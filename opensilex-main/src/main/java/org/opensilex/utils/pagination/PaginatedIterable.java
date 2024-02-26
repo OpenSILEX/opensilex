@@ -73,6 +73,10 @@ public abstract class PaginatedIterable<T, S>{
         return pageSize;
     }
 
+    public int getCountLimit() {
+        return countLimit;
+    }
+
     public abstract void forEach(Consumer<T> action);
 
     /**

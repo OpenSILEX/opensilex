@@ -44,7 +44,7 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
     public PaginatedListResponse(Status status, ListWithPagination<T> paginatedList) {
         super(status);
         this.result = paginatedList.getList();
-        this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
+        this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal(), paginatedList.getCountLimit()));
     }
 
     /**

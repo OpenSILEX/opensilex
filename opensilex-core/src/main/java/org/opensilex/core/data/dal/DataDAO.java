@@ -1544,13 +1544,13 @@ public class DataDAO {
         List<DataGetDTO> dtoList = new ArrayList<>();
         modelList.getList().forEach(dataModel -> {
             DataGetDTO dto = DataGetDTO.getDtoFromModel(dataModel, dateVariables);
-            if (Objects.nonNull(dataModel.getPublisher())) {
+            /*if (Objects.nonNull(dataModel.getPublisher())) {
                 try {
                     dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataModel.getPublisher())));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            }
+            }*/
             dtoList.add(dto);
         });
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());

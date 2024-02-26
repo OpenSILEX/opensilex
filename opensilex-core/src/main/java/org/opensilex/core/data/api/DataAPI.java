@@ -55,10 +55,12 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -248,7 +250,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDTO.class),
+            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDetailsDTO.class),
             @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
@@ -257,7 +259,15 @@ public class DataAPI {
 
         try {
             DataModel model = dao.get(uri);
-            return new SingleObjectResponse<>(dao.modelToDTO(model)).getResponse();
+            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, dao.getAllDateVariables());
+
+            // fetch detailed information about publisher account
+            if(model.getPublisher() != null){
+                UserGetDTO userGetDTO = UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher()));
+                dto.setPublisher(userGetDTO);
+            }
+            return new SingleObjectResponse<>(dto).getResponse();
+
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
@@ -382,6 +392,7 @@ public class DataAPI {
             int page,
             int pageSize) throws Exception{
 
+        // #TODO use a DAO which inherit from MongoReadWriteDao
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
         //convert dates
@@ -414,6 +425,8 @@ public class DataAPI {
             }
         }
 
+        // #TODO use a DAO which inherit from MongoReadWriteDao
+        // Pass a custom projection and a convert function directly to the Dao in order to avoid useless converts
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 experiments,
@@ -431,8 +444,7 @@ public class DataAPI {
                 page,
                 pageSize
         );
-
-        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
+        ListWithPagination<DataGetSearchDTO> resultDTOList = dao.modelListToDTO(resultList);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
@@ -574,7 +586,6 @@ public class DataAPI {
 
     public Response update(
             @ApiParam("Data description") @Valid DataUpdateDTO dto
-            //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
@@ -583,7 +594,8 @@ public class DataAPI {
             DataModel model = dto.newModel();
             validData(Collections.singletonList(model));
             dao.update(model);
-            return new SingleObjectResponse<>(dao.modelToDTO(model)).getResponse();
+            return new ObjectUriResponse(model.getUri()).getResponse();
+
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
         } catch (MongoBulkWriteException e) {

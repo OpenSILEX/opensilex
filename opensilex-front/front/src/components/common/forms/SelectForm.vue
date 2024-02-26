@@ -703,8 +703,6 @@ export default class SelectForm extends Vue {
         })
         .catch(self.$opensilex.errorHandler);
     }, 300);
-
-    // console.log("selectform searchM", this.searchMethod)
   }
 
   debounceSearch;

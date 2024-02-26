@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
@@ -21,7 +21,7 @@
     :viewHandler="viewHandler"
     :required="required"
     :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -29,6 +29,7 @@
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue"
 
 
 @Component
@@ -36,6 +37,7 @@ export default class DataProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
+  @Ref("formSelector") readonly formSelector!: FormSelector;
   @Ref("selectForm") readonly selectForm!: SelectForm;
 
   @Prop()
@@ -80,9 +82,11 @@ export default class DataProvenanceSelector extends Vue {
   viewHandlerDetailsVisible: boolean;
 
   refresh() {
-    this.selectForm.refresh();
+    // this.formSelector.refresh();
   }
+
   select(value) {
+    console.log("dataProvSelector select value :", value)
     this.$emit("select", value);
   }
 
@@ -100,6 +104,7 @@ export default class DataProvenanceSelector extends Vue {
       .getService("opensilex.DataService")
       .getUsedProvenancesByTargets(this.experiments, this.variables, this.devices, this.targets)
       .then(http => {
+        console.log("dataProvSeletor loadProv : ", http.response.result)
         return http.response.result;
       });
   }

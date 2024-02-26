@@ -2,11 +2,18 @@
   <treeselect
     ref="treeref"
     v-bind="$attrs"
+    v-bind:class="{
+    'multiselect-action': actionHandler,
+    'multiselect-view': viewHandler, // class if viewHandler = function
+    }"
     v-on="$listeners"
     :async="searchMethod != null"
-    :default-options="searchMethod != null" 
+    :value="selectedValues"
+    valueFormat="node"
     :placeholder="$t(placeholder)"
+    :default-options="searchMethod != null" 
     :load-options="loadOptions"
+    :options="options || internalOption"
     :multiple="multiple"
     :show-count="showCount"
     :limit="limit"
@@ -103,6 +110,22 @@ internalOption = null;
 
   @Prop()
   placeholder: string;
+
+  @Prop({
+    default: null,
+  })
+  actionHandler;
+
+  @Prop({
+    default: null,
+  })
+  viewHandler;
+
+  @Prop({
+    default: false,
+  })
+  viewHandlerDetailsVisible
+
 
   selectedTmp = [];
 
@@ -242,6 +265,7 @@ onSelectionChange() {
 
   loadOptions({ action, searchQuery, callback }) {
     if (action === "ASYNC_SEARCH") {
+      console.log("customTS loadOp - async")
       this.debounceSearch(searchQuery, callback);
     } else if (action === "LOAD_ROOT_OPTIONS") {
       if (this.optionsLoadingMethod) {
@@ -253,20 +277,22 @@ onSelectionChange() {
               nodeList.push(this.conversionMethod(item));
             });
             this.internalOption = nodeList;
+
             if(list.length>0 && this.defaultSelectedValue){
               var URISelected = []
               list.forEach((element, index) => {
                 URISelected.push(element.uri);
               });
               this.selection=URISelected;
-              console.log("loadOp this.selection ", this.selection)
               this.$emit("select", this.selection);
             }
             
+            console.log("customTS loadOp load root options ", this.internalOption)
             callback(null, this.internalOption);
             this.$opensilex.enableLoader();
           })
           .catch(this.$opensilex.errorHandler);
+
       } else if (this.options) {
         this.internalOption = this.options;
         callback(null, this.internalOption);
@@ -402,6 +428,7 @@ onSelectionChange() {
         this.selection = this.selection.filter((id) => id !== item.id);
               console.log("deselect ap", this.selection)
     } else {
+      console.log("deselect selection : ", this.selection)
         this.selection = null;
       }
   
@@ -413,7 +440,8 @@ onSelectionChange() {
   }
 
   clearIfNeeded(values) {
-    console.log("clearIfNeeded values : ", values, " / ", values.length)
+    console.log("clearIfNeeded values : ", values)
+
     if (this.multiple) {
       if (values.length == 0) {
         console.log("clearIf 1er ifselection av", this.selection)
@@ -422,18 +450,19 @@ onSelectionChange() {
         this.$emit("clear");
         return;
       }
-    } else if (!values) {
+    }
+    
+    else if (!values) {
       console.log("clearIf no value ", this.selection)
       this.selection = undefined;
       this.$emit("clear");
       return;
     }
 
-    /** value had */
     if (this.multiple) {
       let newValues = [];
       for (let i in values) {
-        newValues.push(values[i]);
+        newValues.push(values[i].id); // id because valueFormat="node" if we dont have a valueFormat we dont need the id
       }
       console.log("newValues", newValues)
         console.log("clearIf selection av", this.selection )

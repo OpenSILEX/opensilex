@@ -413,8 +413,11 @@ export default class DataView extends Vue {
 
   showProvenanceDetails() {
     if (this.selectedProvenance != null) {
+      console.log("dataview - selectedprov n'est pas nulle")
       this.visibleDetails = !this.visibleDetails;
     }
+    console.log("dataview - selectedProvenance : ", this.selectedProvenance)
+      console.log("showProvDetails :", this.visibleDetails)
   }
 
   getProvenance(uri: string) {
@@ -428,7 +431,8 @@ export default class DataView extends Vue {
   }
 
   loadProvenance(selectedValue) {
-    if (selectedValue != undefined) {
+    console.log("loadProv ", selectedValue)
+    if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id);
     }
   }

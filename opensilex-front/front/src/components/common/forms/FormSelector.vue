@@ -13,6 +13,7 @@
       <b-input-group class="select-button-container">
 
         <opensilex-CustomTreeselect
+        ref="customTreeselect"
           v-bind="$attrs"
           v-on="$listeners"
           :searchMethod="searchMethod"
@@ -22,11 +23,12 @@
           @totalCount="updateTotalCount"
           @resultCount="updateResultCount"
           @select="select"
+          @deselect="deselect"
           :multiple="multiple"
           :selected.sync="selection"
           :placeholder="placeholder"
-
-          ref="treeref"
+          :optionsLoadingMethod="optionsLoadingMethod"
+          :viewHandler="viewHandler"
         >
           <!-- @deselect="deselect"
           @select="select"
@@ -37,11 +39,15 @@
            -->
 
           <!-- choix dans les listes déroulantes -->
-
+          <template v-slot:option-label ="{ node }" >
+            <opensilex-CustomTreeselectOptionLabel :node="node" />
+            <!-- <slot name="option-label" v-bind:node="node">{{ node.label }}</slot> -->
+          </template>
+          
           
           <!-- elements selectionnés (pour les filtres à choix multiples) -->
           <template v-slot:value-label="{ node }">
-            <opensilex-CustomValueLabel :node="node" />
+            <opensilex-CustomTreeselectValueLabel :node="node" />
           </template>
           
           <template v-slot:after-list v-if="resultCount < totalCount">
@@ -93,6 +99,7 @@ import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import CustomTreeselect from "./CustomTreeselect.vue";
 
+
 export interface SelectableItem {
   id: string,
   label: string,
@@ -107,9 +114,16 @@ export default class FormSelector extends Vue {
   loading = false;
 
   @Ref("treeref") readonly  treeref!: any;
+  @Ref("customTreeselect") readonly customTreeselect!: CustomTreeselect;
 
   @PropSync("selected")
   selection;
+
+  @Watch("selection") 
+  test() {
+    console.log("formSelector - watcher selection  :", this.selection)
+  }
+  
 
 
   isMultiple: boolean = false;
@@ -251,10 +265,8 @@ export default class FormSelector extends Vue {
   })
   actionHandler;
 
-  @Prop({
-    default: null,
-  })
-  viewHandler;
+  @Prop()
+  viewHandler: Function;
 
   @Prop({
     default: false,
@@ -312,84 +324,6 @@ export default class FormSelector extends Vue {
 
   firstTimeOpening = false;
 
-  /**
-   * Refresh key for the Treeselect component. Used by the {@link refresh} method.
-   */
-
-  treeselectRefreshKey: number = 0;
-
-// juste fonction et l'@AsyncComputedProp() dans l'enfant ?
-  // @AsyncComputedProp()
-  // selectedValues(): Promise<any> {
-  //   return new Promise((resolve, reject) => {
-  //     console.log("Async FormSelect")
-  //       if (this.itemLoadingMethod) {
-  //         if (!this.selection || this.selection.length == 0) {
-  //           if (this.multiple) {
-  //             resolve([]);
-  //           } else {
-  //             resolve();
-  //           }
-  //         } else if (this.currentValue) {
-  //           resolve(this.currentValue);
-  //         } else {
-  //           this.$opensilex.disableLoader();
-  //           let uris = this.selection;
-  //           if (!this.multiple) {
-  //             uris = [this.selection];
-  //           }
-  //           let loadingPromise = this.itemLoadingMethod(uris);
-  //           if (!(loadingPromise instanceof Promise)) {
-  //             loadingPromise = Promise.resolve(loadingPromise);
-  //           }
-  //           loadingPromise
-  //               .then((list) => {
-  //                 let nodeList = [];
-  //                 list.forEach((item) => {
-  //                   nodeList.push(this.conversionMethod(item));
-  //                 });
-  //                 if (this.multiple) {
-  //                   this.currentValue = nodeList;
-  //                 } else {
-  //                   this.currentValue = nodeList[0];
-  //                 }
-  //                 // this.selectedValuesData = this.currentValue;
-  //                 resolve(this.currentValue);
-  //               })
-  //               .catch((error) => {
-
-  //                 this.$opensilex.errorHandler(error);
-  //                 reject(error);
-  //               });
-  //         }
-  //       } else if (this.searchMethod) {
-  //         // If there is a search method but no item loading method, then initial values
-  //         // cannot be retrieved.
-  //         console.warn("A search method was specified but no item loading method.")
-  //         resolve(undefined);
-  //       } else {
-  //         let currentOptions = this.options || this.internalOption;
-  //         if (this.multiple) {
-  //           if (this.selection && this.selection.length > 0) {
-  //             let items = this.findListInTree(currentOptions, this.selection);
-  //             // this.selectedValuesData = items;
-  //             resolve(items);
-  //           } else {
-  //             resolve([]);
-  //           }
-  //         } else {
-  //           if (this.selection) {
-  //             let item = this.findInTree(currentOptions, this.selection);
-  //             // this.selectedValuesData = item;
-  //             resolve(item);
-  //           } else {
-  //             resolve();
-  //           }
-  //         }
-  //     }
-  //   });
-  // }
-
   setSelectorToFirstTimeOpen(){
     this.firstTimeOpening = true;
   }
@@ -410,11 +344,15 @@ export default class FormSelector extends Vue {
     }
   }
 
+  refresh(){
+    this.customTreeselect.refresh()
+  }
+
     loadMoreItems(){
     this.resultLimit = 0;
-    this.treeref.refresh();
+    this.customTreeselect.refresh();
     this.$nextTick(() => {
-      this.treeref.openTreeselect();
+      this.customTreeselect.openTreeselect();
     // selectForm.refresh();
     // this.$nextTick(() => {
     //   selectForm.openTreeselect();
@@ -453,6 +391,7 @@ export default class FormSelector extends Vue {
       }
     } else {
       if (this.selection) {
+        console.log("hiddenValue : ", this.selection)
         return this.selection;
       }
     }
@@ -485,8 +424,12 @@ export default class FormSelector extends Vue {
   }
 
   select(value){
-    console.log("FormSelector value", value)
+    console.log("FormSelector  $select : value", value)
     this.$emit("select", value);
+  }
+
+  deselect(value){
+    this.$emit("deselect", value)
   }
 
   updateTotalCount(totalCountUpdate){

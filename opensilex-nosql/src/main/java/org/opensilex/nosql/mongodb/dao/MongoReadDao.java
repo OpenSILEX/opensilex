@@ -12,7 +12,6 @@ import org.opensilex.utils.pagination.StreamWithPagination;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -248,5 +247,10 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
             @NotNull Class<T_JOINED> lookupClass,
             @NotNull Function<T_JOINED, T_RESULT> convertFunction
     );
+
+    /**
+     * @return the total number of Document inside the collection
+     */
+    long collectionDocumentCount();
 
 }

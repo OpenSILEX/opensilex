@@ -37,6 +37,7 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -167,7 +168,12 @@ public class DataDAO {
 
         Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
 
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
+        MongoDBConfig config = nosql.getImplementedConfig();
+        int countLimit = config.maxCountLimit();
+        if (pageSize != null && pageSize > 0) {
+            countLimit = Math.min(pageSize * config.maxPageCountLimit(), config.maxCountLimit());
+        }
+        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize, countLimit);
     }
     
      public int count(

@@ -19,6 +19,7 @@ import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.eq;
 
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
@@ -390,17 +391,30 @@ public class MongoDBService extends BaseService {
         return sort;
     }
 
+
     public <T> ListWithPagination<T> searchWithPagination(
             Class<T> instanceClass,
             String collectionName,
             Document filter,
             List<OrderBy> orderByList,
             Integer page,
-            Integer pageSize) {
+            Integer pageSize
+            ) {
+        return searchWithPagination(instanceClass, collectionName, filter, orderByList, page, pageSize,0);
+    }
+
+    public <T> ListWithPagination<T> searchWithPagination(
+            Class<T> instanceClass,
+            String collectionName,
+            Document filter,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize,
+            int countLimit) {
 
         List<T> results = new ArrayList<T>();
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        long resultsNumber = collection.countDocuments(filter);
+        long resultsNumber = collection.countDocuments(filter, new CountOptions().limit(countLimit));
         int total = (int) resultsNumber;
 
         LOGGER.debug("MONGO SEARCH WITH PAGINATION - Collection : " + collectionName + " - Order : " + LogOrderList(orderByList) + " - Filter : " + filter.toString());

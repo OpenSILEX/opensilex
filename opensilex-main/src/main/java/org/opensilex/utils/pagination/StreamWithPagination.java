@@ -16,30 +16,25 @@ import java.util.stream.Stream;
  */
 public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
 
-    private final Stream<T> stream;
-
     /**
      * @param stream the Stream of objects
      * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} or {@link StreamWithPagination#StreamWithPagination()} instead
      */
     public StreamWithPagination(Stream<T> stream, int total, int page, int pageSize) throws IllegalArgumentException{
-        super(total, page, pageSize);
-        Objects.requireNonNull(stream);
-        this.stream = stream;
+        super(stream, total, page, pageSize);
+    }
+
+    public StreamWithPagination(Stream<T> stream, int total, int page, int pageSize, int countLimit) throws IllegalArgumentException{
+        super(stream, total, page, pageSize, countLimit);
     }
 
     public StreamWithPagination(){
-        super(0,0,0);
-        stream = Stream.empty();
+        super(Stream.empty(),0,0,0,0);
     }
     @Override
     public void forEach(Consumer<T> action) {
-        stream.forEach(action);
+        getSource().forEach(action);
     }
 
-    @Override
-    public Stream<T> getSource() {
-        return stream;
-    }
 
 }

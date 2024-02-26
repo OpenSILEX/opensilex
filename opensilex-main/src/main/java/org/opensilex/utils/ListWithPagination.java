@@ -21,19 +21,12 @@ import java.util.stream.Collectors;
  */
 public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
 
-    /**
-     * List content for current page.
-     */
-    private final List<T> list;
-
     public ListWithPagination(List<T> list) {
         this(list, 0, 0, list.size());
     }
 
     public ListWithPagination(List<T> list, int page, int pageSize, int total) {
-        super(total, page, pageSize);
-        Objects.requireNonNull(list);
-        this.list = list;
+        this(list, total, page, pageSize, 0);
     }
 
     public ListWithPagination(List<T> list, Integer page, Integer pageSize, int total) {
@@ -43,13 +36,17 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
                 total);
     }
 
+    public ListWithPagination(List<T> list, int total, int page, int pageSize, int countLimit) {
+        super(list, total, page, pageSize, countLimit);
+    }
+
     /**
      * Get list of elements for current page.
      *
      * @return list of elements
      */
     public List<T> getList() {
-        return list;
+        return getSource();
     }
 
     /**
@@ -62,7 +59,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
      */
     public <U> ListWithPagination<U> convert(Class<U> resultClass, Function<T, U> converter) {
 
-        List<U> resultList = list.stream()
+        List<U> resultList = getSource().stream()
                 .map(converter)
                 .collect(Collectors.toList());
 
@@ -71,11 +68,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
 
     @Override
     public void forEach(Consumer<T> action) {
-        list.forEach(action);
+        getSource().forEach(action);
     }
 
-    @Override
-    public List<T> getSource() {
-        return getList();
-    }
 }

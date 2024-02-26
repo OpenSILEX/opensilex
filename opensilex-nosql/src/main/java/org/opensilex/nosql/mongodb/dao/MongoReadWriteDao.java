@@ -11,7 +11,10 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.arq.querybuilder.Order;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
@@ -84,6 +87,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     protected static final OrderBy DEFAULT_ORDER_BY = new OrderBy(MongoModel.URI_FIELD, Order.ASCENDING);
     protected final MongoLogger mongoLogger;
 
+    protected final Bson statCommand;
+
     /**
      * @param mongodb The MongoDB service object
      * @param modelClass The MongoDB model class handled by this DAO instance
@@ -119,6 +124,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         this.logger = LoggerFactory.getLogger(getClass());
         this.mongoLogger = new MongoLogger(collectionName, logger);
+        this.statCommand = new BsonDocument("collStats", new BsonString(collectionName));
     }
 
     /**
@@ -420,9 +426,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * </ul>
      */
     protected CountOptions getDefaultCountOptions(F filter){
-        return new CountOptions()
-                .skip(filter.getPage() * filter.getPageSize())
-                .limit(Math.min(filter.getPageSize() * mongoDBConfig.maxPageCountLimit(),  mongoDBConfig.maxCountLimit()));
+
+        return new CountOptions().skip(filter.getPage() * filter.getPageSize());
     }
 
     /**
@@ -461,11 +466,12 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @param filter      The filter to apply during the search
      * @param projection  The projection to apply (can be null)
      * @param session     The ClientSession for handling the transaction (can be null)
-     * @return Map.Entry<FindIterable < T>, Long>    The query results and the total count of results
+     * @return Triple<FindIterable < T>, Long, CountOptions>   : The query results, the total count of results and the {@link CountOptions} used for counting
      */
-    protected Map.Entry<FindIterable<T>, Long> findWithPagination(Bson projection, F filter, Bson bsonFilter, ClientSession session) {
+    protected Triple<FindIterable<T>, Long, CountOptions> findWithPagination(Bson projection, F filter, Bson bsonFilter, ClientSession session) {
 
-        long resultsNumber = count(session, bsonFilter, getDefaultCountOptions(filter));
+        CountOptions countOptions = getDefaultCountOptions(filter);
+        long resultsNumber = count(session, bsonFilter, countOptions);
         if (resultsNumber == 0) {
             return null;
         }
@@ -482,7 +488,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             queryResult.projection(projection);
         }
 
-        return new AbstractMap.SimpleImmutableEntry<>(queryResult, resultsNumber);
+        return Triple.of(queryResult, resultsNumber, countOptions);
     }
 
     @Override
@@ -505,19 +511,19 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         String bsonFilterStr = bsonFilter.toString();
         Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, bsonFilterStr);
 
-        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(projection, filter, bsonFilter, session);
-        if (resultAndCount == null) {
+        var searchResult = findWithPagination(projection, filter, bsonFilter, session);
+        if (searchResult == null) {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
         // iterate over MongoDB result and convert result on the fly before collect them inside a List
         List<T_CONVERTED> convertedResults = new ArrayList<>(filter.getPageSize());
-        resultAndCount.getKey().forEach(
+        searchResult.getLeft().forEach(
                 mongoResult -> convertedResults.add(convertFunction.apply(mongoResult))
         );
         mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, bsonFilterStr, RESULT_COUNT, convertedResults.size());
 
-        return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultAndCount.getValue().intValue());
+        return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), searchResult.getMiddle().intValue(), searchResult.getRight().getLimit());
     }
 
     @Override
@@ -539,22 +545,22 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         String bsonFilterStr = bsonFilter.toString();
 
         Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, bsonFilterStr);
-        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(projection, filter, bsonFilter, session);
+        var searchResults = findWithPagination(projection, filter, bsonFilter, session);
 
         // no result, return StreamWithPagination with an empty Stream
-        if (resultAndCount == null) {
+        if (searchResults == null) {
             return new StreamWithPagination<>();
         }
 
         // Build the StreamWithPagination with results Stream and results count
         // No log of operation since consuming <-> database cursor reading in not done here
-        int resultCount = resultAndCount.getValue().intValue();
-        Stream<T> resultStream = StreamSupport.stream(resultAndCount.getKey().spliterator(), false);
+        int resultCount = searchResults.getMiddle().intValue();
+        Stream<T> resultStream = StreamSupport.stream(searchResults.getLeft().spliterator(), false);
 
         // The effective number of element to consume inside the Stream is min(resultCount, pageSize)
         // if resultCount > pageSize, then only 'pageSize' element nb are returned, else only 'resultCount' nb element are returned
         mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, bsonFilterStr, RESULT_COUNT, Math.min(resultCount, filter.getPageSize()));
-        return new StreamWithPagination<>(resultStream, resultCount, filter.getPage(), filter.getPageSize());
+        return new StreamWithPagination<>(resultStream, resultCount, filter.getPage(), filter.getPageSize(), searchResults.getRight().getLimit());
     }
 
     @Override
@@ -848,4 +854,16 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return sort;
     }
 
+    protected Document getCollectionStats(){
+        Instant operationStart = mongoLogger.logOperationStart("mongo_collection_stats");
+        Document stats = mongodb.getDatabase().runCommand(statCommand);
+        mongoLogger.logOperationOk("mongo_collection_stats", operationStart);
+        return stats;
+    }
+
+    @Override
+    public long collectionDocumentCount() {
+        Document stats = getCollectionStats();
+        return stats.get("count", Long.class);
+    }
 }

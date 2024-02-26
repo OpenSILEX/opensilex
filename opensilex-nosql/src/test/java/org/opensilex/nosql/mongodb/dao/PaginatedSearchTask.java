@@ -26,7 +26,7 @@ final class PaginatedSearchTask<T extends MongoModel,F extends MongoSearchFilter
         // write results from database inside collectedModels. Use page and pageSize to determine offset
         int startIndex = searchFilter.getPage()* searchFilter.getPageSize();
         AtomicInteger arrayIndex = new AtomicInteger(startIndex);
-        dao.searchAsStream(session, searchFilter, null).getSource().forEach(model ->
+        dao.searchAsStreamWithPagination(session, searchFilter, null).getSource().forEach(model ->
                 collectedModels[arrayIndex.getAndIncrement()] = model
         );
 

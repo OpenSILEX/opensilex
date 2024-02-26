@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -234,13 +233,19 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         try (ClientSession session = useSession ? mongoDBv2.startSession() : null) {
             PaginatedIterable<MongoTestModel, ?> results;
 
+            MongoSearchQuery<MongoTestModel, MongoSearchFilter, MongoTestModel> query = new MongoSearchQuery<>();
+            query.setSession(session);
+            query.setFilter(filter);
+            query.setProjection(projection);
+            query.setConvertFunction(DEFAULT_CONVERSION);
+
             // Run search query with/without projection/conversion
             if (useConversion) {
-                results = searchDao.search(session, filter, projection, DEFAULT_CONVERSION);
+                results = searchDao.searchWithPagination(query);
             } else {
                 results = useStream ?
-                        searchDao.searchAsStream(session, filter, projection) :
-                        searchDao.search(session, filter, projection);
+                        searchDao.searchAsStreamWithPagination(query) :
+                        searchDao.searchWithPagination(query);
             }
 
             // Run assertion on results and on each item from results
@@ -476,7 +481,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoSearchFilter searchFilter = new MongoSearchFilter();
         searchFilter.setPageSize(nbModelPerThread * nbThread);
 
-        ListWithPagination<MongoTestModel> searchResults = readWriteDao.search(searchFilter);
+        ListWithPagination<MongoTestModel> searchResults = readWriteDao.searchWithPagination(searchFilter);
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getTotal());
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getSource().size());
 

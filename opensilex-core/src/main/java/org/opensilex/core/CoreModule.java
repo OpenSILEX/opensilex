@@ -164,12 +164,12 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
                 Lang.RDFXML,
                 "peco"
         ));
-        list.add(new OntologyFileDefinition(
+ /*      list.add(new OntologyFileDefinition(
                 OA.NS,
                 ONTOLOGIES_DIRECTORY + "/oa.rdf",
                 Lang.RDFXML,
                 "oa"
-        ));
+        )); */
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY + "/oeso-core.owl",

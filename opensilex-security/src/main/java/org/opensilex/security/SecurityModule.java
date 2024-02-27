@@ -251,7 +251,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
                 true
         ));
 
-        list.add(new OntologyFileDefinition(
+    /*   list.add(new OntologyFileDefinition(
                 FOAF.NAMESPACE,
                 "ontologies/foaf.rdf",
                 Lang.RDFXML,
@@ -259,20 +259,19 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
                 FOAF.NAMESPACE
         ));
 
-        list.add(new OntologyFileDefinition(
+         list.add(new OntologyFileDefinition(
                 VCARD4.NAMESPACE,
                 "ontologies/vcard.ttl",
                 Lang.TTL,
                 "vcard"
         ));
-
-        list.add(new OntologyFileDefinition(
+         list.add(new OntologyFileDefinition(
                 ORG.NAMESPACE,
                 "ontologies/org.ttl",
                 Lang.TTL,
                 "org"
         ));
-
+*/
         return list;
     }
 }

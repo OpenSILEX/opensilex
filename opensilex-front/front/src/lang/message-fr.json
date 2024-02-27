@@ -180,7 +180,8 @@
             "version-label": {
                 "develop": "Develop",
                 "release": "Release"
-            }
+            },
+            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect."
         },
         "menu": {
             "dashboard": "Tableau de bord",

@@ -69,9 +69,6 @@ public abstract class ProjectDTO {
 
     @JsonProperty("administrative_contacts")
     protected List<URI> administrativeContacts = new ArrayList<>();
-    
-    @JsonProperty("experiments")
-    protected List<URI> experiments = new ArrayList<>();
 
 
     public URI getUri() {
@@ -183,15 +180,6 @@ public abstract class ProjectDTO {
 
     public ProjectDTO setHomePage(URI homePage) {
         this.homePage = homePage;
-        return this;
-    }
-
-    public List<URI> getExperiments() {
-        return experiments;
-    }
-    
-    public ProjectDTO setExperiments(List<URI> experiments) {
-        this.experiments = experiments;
         return this;
     }
 

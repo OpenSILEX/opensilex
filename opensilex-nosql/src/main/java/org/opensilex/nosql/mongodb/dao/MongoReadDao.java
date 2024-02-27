@@ -187,7 +187,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *
      * @param session The MongoDB client session.
      * @param filter  The filter to apply.
-     * @return Set of distinct URIs matching the filter.
+     * @return List of distinct URIs matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
     List<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException;
@@ -196,7 +196,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * Get distinct URIs of models based on the provided filter
      *
      * @param filter The filter to apply.
-     * @return Set of distinct URIs matching the filter.
+     * @return List of distinct URIs matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
     List<URI> distinctUris(@NotNull F filter) throws MongoException;
@@ -209,7 +209,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @param field       The field for which to get distinct values.
      * @param resultClass The class of the result type.
      * @param filter      The filter to apply.
-     * @return Set of distinct values for the specified field.
+     * @return List of distinct values for the specified field.
      */
     <T_RESULT> List<T_RESULT> distinct(ClientSession session, @NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
 

@@ -420,21 +420,19 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * </ul>
      */
     protected CountOptions getDefaultCountOptions(F filter) {
-        CountOptions countOptions = new CountOptions().skip(filter.getPage() * filter.getPageSize());
+        CountOptions countOptions = new CountOptions()
+                .skip(filter.getPage() * filter.getPageSize());
 
-        // Query asked for explicit very large page : allow it
-        // ideally, should be only allowed for internal query (not from user directly)
-        if (filter.getPageSize() > mongoDBConfig.maxPageCountLimit()) {
-            return countOptions.limit(filter.getPageSize());
-        } // large page and need to display several pages
-        else if (filter.getPageSize() * mongoDBConfig.maxPageCountLimit() > mongoDBConfig.maxCountLimit()) {
-            return countOptions.limit(filter.getPageSize() * mongoDBConfig.maxPageCountLimit());
-        } // default case : try to limit the number of document to fetch
-        else if(filter.getPageSize() > 0){
-            return countOptions.limit(Math.min(filter.getPageSize() * mongoDBConfig.maxPageCountLimit(), mongoDBConfig.maxCountLimit()));
-        }else{ // to pageSize specified, limit by default
+        // No pageSize specified, limit by default
+        if (filter.getPageSize() == 0) {
             return countOptions.limit(mongoDBConfig.maxCountLimit());
         }
+
+        // case 1 : Large page and need to display several pages
+        // case 2 : Query asked for explicit large page : allow it. Ideally, should be only allowed for internal query (not from user directly)
+        return filter.getPageSize() < mongoDBConfig.maxCountLimit() ?
+                countOptions.limit(filter.getPageSize() * mongoDBConfig.maxPageCountLimit()) :
+                countOptions.limit(filter.getPageSize());
     }
 
     /**
@@ -470,10 +468,12 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     /**
      * Finds documents in the specified MongoCollection with pagination support.
      *
-     * @param mongoSearchQuery@return Triple<FindIterable < T>, Long, CountOptions>   : The query results, the total count of results and the {@link CountOptions} used for counting
+     * @param mongoSearchQuery@return Triple<FindIterable < T>, Long, CountOptions> : The query results, the total count of results and the {@link CountOptions} used for counting
      */
     protected <T_CONVERTED> Triple<FindIterable<T>, Long, CountOptions> findWithPagination(MongoSearchQuery<T, F, T_CONVERTED> mongoSearchQuery) {
 
+
+        // count documents
         CountOptions countOptions = mongoSearchQuery.getCountOptions() == null ?
                 getDefaultCountOptions(mongoSearchQuery.getFilter()) :
                 mongoSearchQuery.getCountOptions();
@@ -483,14 +483,17 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             return null;
         }
 
+        // search with filter and session
         FindIterable<T> queryResult = mongoSearchQuery.getSession() == null ?
                 collection.find(mongoSearchQuery.getFilterBson()) :
                 collection.find(mongoSearchQuery.getSession(), mongoSearchQuery.getFilterBson());
 
+        // apply sort and pagination
         queryResult.sort(buildSort(mongoSearchQuery.getFilter().getOrderByList()))
                 .skip(mongoSearchQuery.getFilter().getPage() * mongoSearchQuery.getFilter().getPageSize())
                 .limit(mongoSearchQuery.getFilter().getPageSize());
 
+        // apply projection
         if (mongoSearchQuery.getProjection() != null) {
             queryResult.projection(mongoSearchQuery.getProjection());
         }
@@ -505,7 +508,11 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     @Override
     public ListWithPagination<T> searchWithPagination(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
-        return searchWithPagination(new MongoSearchQuery<>(session, filter, projection, Function.identity(), null));
+        return searchWithPagination(new MongoSearchQuery<T, F, T>()
+                .setSession(session)
+                .setFilter(filter)
+                .setProjection(projection)
+                .setConvertFunction(Function.identity())); // Use Function.identity() in order to use only only one searchWithPagination method, here no conversion is done
     }
 
     @Override
@@ -514,10 +521,12 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         Objects.requireNonNull(mongoSearchQuery.getFilter());
         Objects.requireNonNull(mongoSearchQuery.getConvertFunction());
 
+        // compute Bson filter from 'high-level' filter
         Bson bsonFilter = filterToBson(mongoSearchQuery.getFilter());
         mongoSearchQuery.setFilterBson(bsonFilter);
-        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, mongoSearchQuery.getFilterBsonStr());
 
+        // run count and search
+        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, mongoSearchQuery.getFilterBsonStr());
         var searchResult = findWithPagination(mongoSearchQuery);
         if (searchResult == null) {
             return new ListWithPagination<>(Collections.emptyList());
@@ -541,12 +550,17 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     @Override
     public final <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(@NotNull F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
-        return searchWithPagination(new MongoSearchQuery<>(null, filter, null, convertFunction, null));
+        return searchWithPagination(new MongoSearchQuery<T, F, T_CONVERTED>()
+                .setFilter(filter)
+                .setConvertFunction(convertFunction));
     }
 
     @Override
     public StreamWithPagination<T> searchAsStreamWithPagination(ClientSession session, F filter, Bson projection) throws MongoException {
-        return searchAsStreamWithPagination(new MongoSearchQuery<>(session, filter, projection, null, null));
+        return searchAsStreamWithPagination(new MongoSearchQuery<T, F, T>()
+                .setFilter(filter)
+                .setSession(session)
+                .setProjection(projection));
     }
 
     @Override
@@ -554,17 +568,17 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         Objects.requireNonNull(mongoSearchQuery.getFilter());
 
+        // compute Bson filter from 'high-level' filter
         Bson bsonFilter = filterToBson(mongoSearchQuery.getFilter());
         mongoSearchQuery.setFilterBson(bsonFilter);
 
+        // run count and search
         Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, mongoSearchQuery.getFilterBsonStr());
         var searchResults = findWithPagination(mongoSearchQuery);
-
-        // no result, return StreamWithPagination with an empty Stream
-        if (searchResults == null) {
+        if (searchResults == null) { // no result, return StreamWithPagination with an empty Stream
             return new StreamWithPagination<>();
-        }
 
+        }
         // Build the StreamWithPagination with results Stream and results count
         int resultCount = searchResults.getMiddle().intValue();
         Stream<T> resultStream = StreamSupport.stream(searchResults.getLeft().spliterator(), false);

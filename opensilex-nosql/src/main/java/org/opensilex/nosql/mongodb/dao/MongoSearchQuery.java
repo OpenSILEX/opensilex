@@ -14,39 +14,38 @@ import com.mongodb.client.model.CountOptions;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
 
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * A parameter object used to group the different options when running a read/search query
+ * @param <T> The type of the MongoDB model.
+ * @param <F> The kind of filter specific to this DAO.
+ * @param <T_RESULT> The Type of object after model conversion (optional)
+ *
+ * @author rcolin
+ */
 public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter, T_RESULT> {
+
+    // The MongoDB client session
     private ClientSession session;
-    @NotNull
+
+    // The filter to apply
     private F filter;
+
+    // Only used in order to store effective Bson without recomputing it from F filter (ex : for logging or count+find)
     private Bson filterBson;
+
+    // Only used in order to store effective Bson without recomputing it from F filter (ex: when use it for logging
     private String filterBsonStr;
 
     private Bson projection;
-    @NotNull
+
+    // The function to convert models to another type.
     private Function<T, T_RESULT> convertFunction;
+
+    // Custom CountOptions to use during count before the search with pagination
     private CountOptions countOptions;
-
-    /**
-     * @param session         The MongoDB client session.
-     * @param filter          The filter to apply.
-     * @param projection      The projection to apply on search results.
-     * @param convertFunction The function to convert models to another type.
-     * @param countOptions    Custom CountOptions to use for the search with pagination
-     */
-    public MongoSearchQuery(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_RESULT> convertFunction, CountOptions countOptions) {
-        this.session = session;
-        this.filter = filter;
-        this.projection = projection;
-        this.convertFunction = convertFunction;
-        this.countOptions = countOptions;
-    }
-
-    public MongoSearchQuery() {
-    }
 
     public ClientSession getSession() {
         return session;
@@ -68,29 +67,34 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
         return countOptions;
     }
 
-    public void setSession(ClientSession session) {
+    public MongoSearchQuery<T, F, T_RESULT> setSession(ClientSession session) {
         this.session = session;
+        return this;
     }
 
-    public void setFilter(F filter) {
+    public MongoSearchQuery<T, F, T_RESULT> setFilter(F filter) {
         this.filter = filter;
+        return this;
     }
 
-    public void setProjection(Bson projection) {
+    public MongoSearchQuery<T, F, T_RESULT> setProjection(Bson projection) {
         this.projection = projection;
+        return this;
     }
 
-    public void setConvertFunction(Function<T, T_RESULT> convertFunction) {
+    public MongoSearchQuery<T, F, T_RESULT> setConvertFunction(Function<T, T_RESULT> convertFunction) {
         this.convertFunction = convertFunction;
+        return this;
     }
 
     public void setCountOptions(CountOptions countOptions) {
         this.countOptions = countOptions;
     }
 
-    public void setFilterBson(Bson filterBson) {
+    public MongoSearchQuery<T, F, T_RESULT> setFilterBson(Bson filterBson) {
         Objects.requireNonNull(filterBson);
         this.filterBson = filterBson;
+        return this;
     }
 
     public Bson getFilterBson() {

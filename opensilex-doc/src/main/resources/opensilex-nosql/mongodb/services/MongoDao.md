@@ -26,9 +26,10 @@ tags:
     * [Performance and reliability](#performance-and-reliability)
       * [SLA (service-level-agreement)](#sla-service-level-agreement)
 * [Solution](#solution)
-  * [Technical specifications](#technical-specifications)
-    * [Dao](#dao)
-    * [MongoDBServiceV2](#mongodbservicev2)
+  * [MongoReadWriteDao](#mongoreadwritedao)
+    * [Pagination handling](#pagination-handling)
+      * [Count limiting](#count-limiting)
+  * [MongoDBServiceV2](#mongodbservicev2)
     * [Indexes generation](#indexes-generation)
 <!-- TOC -->
 
@@ -85,10 +86,7 @@ but for these basic operations on very-small data the P99 latency should keep th
 
 # Solution
 
-
-## Technical specifications
-
-### Dao
+## MongoReadWriteDao
 
 The class diagram below describes the methods available for any MongoDB based DAO
 
@@ -106,8 +104,51 @@ filter.
 
 See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods
 
+### Pagination handling
 
-### MongoDBServiceV2
+The `MongoReadWriteDao` handle pagination when using `searchWithPagination()` and `searchAsStreamWithPagination()`.
+These method return a `ListWithPagination` and `StreamWithPagination` which store the following information:
+
+- `total` : The total number of element counted for this search with a count query
+- `page` : The page number (passed to the `MongoSearchFilter` filter)
+- `pageSize` : The page size (passed to the `MongoSearchFilter` filter)
+- `countLimit` : The maximum number of counted element
+
+#### Count limiting
+
+- The `countLimit` information is returned in order to know if the `MongoReadWriteDao` has limited the number of element to count, 
+in order to prevent performance issues when the MongoDB server has to iterate over a large number of document.
+- The `MongoReadWriteDao` use a `CountOptions` in order to indicate this to the MongoDB server when calling `countDocument()`
+
+By default, if no `CountOptions` is provided during the call to `searchWithPagination(MongoSearchQuery)` and `searchAsStreamWithPagination(MongoSearchQuery)`
+then a default CountOptions is used (returned by `MongoReadWriteDao.getDefaultCountOptions(F)` method).
+
+
+The default behavior is the following :
+
+> Skip
+
+- Skip n document according the value of (page * pageSize) by using `CountOptions.skip(n)`
+  - Note you should always keep this option, else the count is not accurate since it count document from beginning
+
+> Limit
+
+- If no `pageSize` was provided (`pageSize` == 0), then a default count limit (from MongoDB config `maxCountLimit` setting) is applied with `CountOptions.limit(limit)`
+  - This default behavior of document count
+- If the `pageSize` is inferior to the MongoDB config count limit : set a limit equals to k `pageSize`, with k equals to MongoDB config `maxPageCountLimit` setting
+  - This allows to provide a count sufficient for the desired page number 
+- Else just use the `pageSize` as count limit 
+  - This is useful in case of explicit call with a large page, e.g: for internal queries
+
+> Redefine custom count options
+
+If this semantic don't match with your requirement you can : 
+- Just pass a custom `CountOptions` inside the `MongoSearchQuery` for `searchWithPagination(MongoSearchQuery)` and `searchAsStreamWithPagination(MongoSearchQuery)`
+- Just pass a custom `CountOptions` inside the `count(session, filter, countOptions)` method
+- Override the `MongoReadWriteDao.getDefaultCountOptions(F)` method
+  - Note this method is used by the 3 methods (count, search and searchAsStream)
+
+## MongoDBServiceV2
 
 ![MongoDBServiceV2.png](uml/MongoDBServiceV2.png)
 
@@ -143,5 +184,3 @@ public class DataDao extends MongoReadWriteDao<DataModel,DataSearchFilter> {
     }
 }
 ```
-
-

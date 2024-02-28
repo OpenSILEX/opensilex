@@ -25,6 +25,7 @@
           :noActions="true"
           :pageSize="5"
           :noUpdateURL="true"
+          :experimentUri="experiment"
           @select="$emit('select', $event)"
           @unselect="$emit('unselect', $event)"
           @selectall="$emit('selectall', $event)"
@@ -40,6 +41,12 @@ import GermplasmList from "./GermplasmList.vue";
 @Component
 export default class GermplasmModalList extends GermplasmList {
   @Ref("germplasmSelection") readonly germplasmSelection!: any;
+
+  /**
+   * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
+   */
+  @Prop()
+  experiment: string;
 
   selectItem(row) {
       this.germplasmSelection.onItemSelected(row);

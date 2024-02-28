@@ -14,6 +14,7 @@ import com.mongodb.client.model.CountOptions;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
 
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -72,7 +73,8 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
         return this;
     }
 
-    public MongoSearchQuery<T, F, T_RESULT> setFilter(F filter) {
+    public MongoSearchQuery<T, F, T_RESULT> setFilter(@NotNull F filter) {
+        Objects.requireNonNull(filter);
         this.filter = filter;
         return this;
     }
@@ -82,7 +84,8 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
         return this;
     }
 
-    public MongoSearchQuery<T, F, T_RESULT> setConvertFunction(Function<T, T_RESULT> convertFunction) {
+    public MongoSearchQuery<T, F, T_RESULT> setConvertFunction(@NotNull Function<T, T_RESULT> convertFunction) {
+        Objects.requireNonNull(convertFunction);
         this.convertFunction = convertFunction;
         return this;
     }

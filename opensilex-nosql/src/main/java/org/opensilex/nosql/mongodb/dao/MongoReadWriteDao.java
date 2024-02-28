@@ -466,36 +466,35 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     /**
-     * Finds documents in the specified MongoCollection with pagination support.
-     *
-     * @param mongoSearchQuery@return Triple<FindIterable < T>, Long, CountOptions> : The query results, the total count of results and the {@link CountOptions} used for counting
+     * Finds documents in this MongoCollection with pagination support.
+     * @param query The search query
+     * @return The query results, the total count of results and the {@link CountOptions} used for counting
      */
-    protected <T_CONVERTED> Triple<FindIterable<T>, Long, CountOptions> findWithPagination(MongoSearchQuery<T, F, T_CONVERTED> mongoSearchQuery) {
-
+    protected <T_CONVERTED> Triple<FindIterable<T>, Long, CountOptions> findWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) {
 
         // count documents
-        CountOptions countOptions = mongoSearchQuery.getCountOptions() == null ?
-                getDefaultCountOptions(mongoSearchQuery.getFilter()) :
-                mongoSearchQuery.getCountOptions();
+        CountOptions countOptions = query.getCountOptions() == null ?
+                getDefaultCountOptions(query.getFilter()) :
+                query.getCountOptions();
 
-        long resultsNumber = count(mongoSearchQuery.getSession(), mongoSearchQuery.getFilterBson(), countOptions);
+        long resultsNumber = count(query.getSession(), query.getFilterBson(), countOptions);
         if (resultsNumber == 0) {
             return null;
         }
 
         // search with filter and session
-        FindIterable<T> queryResult = mongoSearchQuery.getSession() == null ?
-                collection.find(mongoSearchQuery.getFilterBson()) :
-                collection.find(mongoSearchQuery.getSession(), mongoSearchQuery.getFilterBson());
+        FindIterable<T> queryResult = query.getSession() == null ?
+                collection.find(query.getFilterBson()) :
+                collection.find(query.getSession(), query.getFilterBson());
 
         // apply sort and pagination
-        queryResult.sort(buildSort(mongoSearchQuery.getFilter().getOrderByList()))
-                .skip(mongoSearchQuery.getFilter().getPage() * mongoSearchQuery.getFilter().getPageSize())
-                .limit(mongoSearchQuery.getFilter().getPageSize());
+        queryResult.sort(buildSort(query.getFilter().getOrderByList()))
+                .skip(query.getFilter().getPage() * query.getFilter().getPageSize())
+                .limit(query.getFilter().getPageSize());
 
         // apply projection
-        if (mongoSearchQuery.getProjection() != null) {
-            queryResult.projection(mongoSearchQuery.getProjection());
+        if (query.getProjection() != null) {
+            queryResult.projection(query.getProjection());
         }
 
         return Triple.of(queryResult, resultsNumber, countOptions);
@@ -512,37 +511,36 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 .setSession(session)
                 .setFilter(filter)
                 .setProjection(projection)
-                .setConvertFunction(Function.identity())); // Use Function.identity() in order to use only only one searchWithPagination method, here no conversion is done
+                .setConvertFunction(Function.identity())); // Use Function.identity() in order to use only one searchWithPagination method, here no conversion is done
     }
 
     @Override
-    public <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(MongoSearchQuery<T, F, T_CONVERTED> mongoSearchQuery) throws MongoException {
-
-        Objects.requireNonNull(mongoSearchQuery.getFilter());
-        Objects.requireNonNull(mongoSearchQuery.getConvertFunction());
+    public <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) throws MongoException {
 
         // compute Bson filter from 'high-level' filter
-        Bson bsonFilter = filterToBson(mongoSearchQuery.getFilter());
-        mongoSearchQuery.setFilterBson(bsonFilter);
+        Bson bsonFilter = filterToBson(query.getFilter());
+        query.setFilterBson(bsonFilter);
 
         // run count and search
-        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, mongoSearchQuery.getFilterBsonStr());
-        var searchResult = findWithPagination(mongoSearchQuery);
+        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, query.getFilterBsonStr());
+        Triple<FindIterable<T>, Long, CountOptions> searchResult = findWithPagination(query);
         if (searchResult == null) {
-            return new ListWithPagination<>(Collections.emptyList());
+            // return empty list, keep information about the pagination used
+            return new ListWithPagination<>(Collections.emptyList(), query.getFilter().getPage(), query.getFilter().getPageSize(), 0);
         }
+        long resultCount = Math.min(searchResult.getMiddle(), query.getFilter().getPageSize());
 
         // iterate over MongoDB result and convert result on the fly before collect them inside a List
-        List<T_CONVERTED> convertedResults = new ArrayList<>(mongoSearchQuery.getFilter().getPageSize());
+        List<T_CONVERTED> convertedResults = new ArrayList<>((int) resultCount);
         searchResult.getLeft().forEach(
-                mongoResult -> convertedResults.add(mongoSearchQuery.getConvertFunction().apply(mongoResult))
+                mongoResult -> convertedResults.add(query.getConvertFunction().apply(mongoResult))
         );
-        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, mongoSearchQuery.getFilterBsonStr(), RESULT_COUNT, convertedResults.size());
+        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, convertedResults.size());
 
         return new ListWithPagination<>(
                 convertedResults,
-                mongoSearchQuery.getFilter().getPage(),
-                mongoSearchQuery.getFilter().getPageSize(),
+                query.getFilter().getPage(),
+                query.getFilter().getPageSize(),
                 searchResult.getMiddle().intValue(),
                 searchResult.getRight().getLimit()
         );
@@ -564,19 +562,20 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
-    public StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> mongoSearchQuery) throws MongoException {
+    public StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> query) throws MongoException {
 
-        Objects.requireNonNull(mongoSearchQuery.getFilter());
+        Objects.requireNonNull(query.getFilter());
 
         // compute Bson filter from 'high-level' filter
-        Bson bsonFilter = filterToBson(mongoSearchQuery.getFilter());
-        mongoSearchQuery.setFilterBson(bsonFilter);
+        Bson bsonFilter = filterToBson(query.getFilter());
+        query.setFilterBson(bsonFilter);
 
         // run count and search
-        Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, mongoSearchQuery.getFilterBsonStr());
-        var searchResults = findWithPagination(mongoSearchQuery);
+        Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, query.getFilterBsonStr());
+        var searchResults = findWithPagination(query);
         if (searchResults == null) { // no result, return StreamWithPagination with an empty Stream
-            return new StreamWithPagination<>();
+            // return empty Stream, keep information about the pagination used
+            return new StreamWithPagination<>(Stream.empty(), query.getFilter().getPage(), query.getFilter().getPageSize(), 0);
 
         }
         // Build the StreamWithPagination with results Stream and results count
@@ -585,13 +584,13 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         // The effective number of element to consume inside the Stream is min(resultCount, pageSize)
         // if resultCount > pageSize, then only 'pageSize' element nb are returned, else only 'resultCount' nb element are returned
-        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, mongoSearchQuery.getFilterBsonStr(), RESULT_COUNT, Math.min(resultCount, mongoSearchQuery.getFilter().getPageSize()));
+        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, Math.min(resultCount, query.getFilter().getPageSize()));
 
         return new StreamWithPagination<>(
                 resultStream,
                 resultCount,
-                mongoSearchQuery.getFilter().getPage(),
-                mongoSearchQuery.getFilter().getPageSize(),
+                query.getFilter().getPage(),
+                query.getFilter().getPageSize(),
                 searchResults.getRight().getLimit()
         );
     }
@@ -704,15 +703,38 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return results;
     }
 
-    /**
-     * @param session           The ClientSession for handling the transaction (can be null)
-     * @param distinctField     The field for which we required distinct value
-     * @param filter            The filter to apply during the search
-     * @param documentExtractor a Function which define how to convert a {@link Document} inside the desired {@code T_RESULT}
-     * @param <T_RESULT>        The type of result
-     * @return a paginated list of distinct values for a field inside the collection managed by this DAO
-     */
-    protected <T_RESULT> ListWithPagination<T_RESULT> distinctWithPagination(ClientSession session, @NotNull String distinctField, @NotNull F filter, Function<Document, T_RESULT> documentExtractor) {
+    @Override
+    public List<T> aggregate(List<Bson> pipeline) {
+
+        String pipelineStr = pipeline.toString();
+        Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
+
+        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
+        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipeline);
+
+        List<T> results = new ArrayList<>();
+        for (T res : aggregate) {
+            results.add(res);
+        }
+        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
+
+        return results;
+    }
+
+    @Override
+    public Stream<T> aggregateAsStream(List<Bson> pipeline) {
+
+        String pipelineStr = pipeline.toString();
+        Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
+        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
+        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
+
+        return StreamSupport.stream(aggregate.spliterator(), false);
+    }
+
+    @Override
+    public <T_RESULT> ListWithPagination<T_RESULT> distinctWithPagination(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter) {
+
         Objects.requireNonNull(filter);
 
         Bson bsonFilter = filterToBson(filter);
@@ -750,8 +772,9 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 collection.aggregate(aggregatePipeline, Document.class) :
                 collection.aggregate(session, aggregatePipeline, Document.class);
 
-        // Transform document on the fly and add inside set
-        aggregateIt.map(documentExtractor::apply)
+        // Transform document on the fly and add inside list
+        // the distinct field value is the value of each aggregated document with the key "_id"
+        aggregateIt.map(document -> document.get("_id", resultClass))
                 .forEach(extracted -> {
                     if (extracted != null) {
                         distinctValues.add(extracted);
@@ -760,47 +783,6 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         mongoLogger.logOperationOk(DISTINCT, operationStart, FILTER, bsonFilterStr, RESULT_COUNT, distinctValues.size());
 
         return new ListWithPagination<>(distinctValues, filter.getPage(), filter.getPageSize(), distinctValues.size());
-    }
-
-
-    @Override
-    public List<T> aggregate(List<Bson> pipeline) {
-
-        String pipelineStr = pipeline.toString();
-        Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
-
-        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
-        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipeline);
-
-        List<T> results = new ArrayList<>();
-        for (T res : aggregate) {
-            results.add(res);
-        }
-        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
-
-        return results;
-    }
-
-    @Override
-    public Stream<T> aggregateAsStream(List<Bson> pipeline) {
-
-        String pipelineStr = pipeline.toString();
-        Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
-        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
-        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
-
-        return StreamSupport.stream(aggregate.spliterator(), false);
-    }
-
-    @Override
-    public <T_RESULT> ListWithPagination<T_RESULT> distinctAggregation(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter) {
-
-        return distinctWithPagination(
-                session,
-                distinctField,
-                filter,
-                document -> document.get("_id", resultClass) // the distinct field value is the value of each aggregated document with the key "_id"
-        );
     }
 
     @Override

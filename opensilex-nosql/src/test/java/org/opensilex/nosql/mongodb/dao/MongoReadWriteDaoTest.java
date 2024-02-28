@@ -398,7 +398,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoSearchFilter filter = new MongoSearchFilter();
         filter.setOrderByList(List.of(new OrderBy("name", Order.ASCENDING)));
         filter.setPageSize(5);
-        ListWithPagination<String> distinctNamesPaginated = readWriteDao.distinctAggregation(null, MongoTestModel.NAME_FIELD, String.class, filter);
+        ListWithPagination<String> distinctNamesPaginated = readWriteDao.distinctWithPagination(null, MongoTestModel.NAME_FIELD, String.class, filter);
         Assert.assertEquals(5, distinctNamesPaginated.getList().size());
 
         distinctNamesPaginated.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
@@ -410,7 +410,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         Assert.assertTrue(noNames.isEmpty());
 
         // no results -> ensure non nullity of Set (with aggregation pipeline)
-        ListWithPagination<String> noNamesPaginated = searchDao.distinctAggregation(null, MongoTestModel.NAME_FIELD, String.class, noResultFilter);
+        ListWithPagination<String> noNamesPaginated = searchDao.distinctWithPagination(null, MongoTestModel.NAME_FIELD, String.class, noResultFilter);
         Assert.assertTrue(noNamesPaginated.getList().isEmpty());
     }
 

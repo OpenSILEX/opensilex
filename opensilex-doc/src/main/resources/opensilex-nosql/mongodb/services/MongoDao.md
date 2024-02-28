@@ -8,13 +8,6 @@ tags:
 
 # Specifications : MongoDB DAOs and Service
 
-**Document history (please add a line when you edit the document)**
-
-| Date       | Editor(s)    | OpenSILEX version | Comment           |
-|------------|--------------|-------------------|-------------------|
-| 15/12/2023 | Renaud COLIN |                   | Document creation |
-
-
 # Table of contents
 
 <!-- TOC -->

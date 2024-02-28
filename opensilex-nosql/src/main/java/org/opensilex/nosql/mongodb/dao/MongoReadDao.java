@@ -126,7 +126,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * Search for models based on the provided filter within a client session and apply a conversion function.
      *
      * @param <T_RESULT>       The result type after conversion.
-     * @param mongoSearchQuery The search query
+     * @param query The search query
      * @return List of converted models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      * @apiNote
@@ -146,7 +146,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *     <li>{@link MongoSearchQuery#getConvertFunction()} : The document convert function.</li>
      * </ul>
      */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> mongoSearchQuery) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session.
@@ -169,7 +169,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     /**
      * Search for models based on the provided filter within a client session.
      *
-     * @param mongoSearchQuery The Mongo search query object parameter
+     * @param query The Mongo search query object parameter
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      *
@@ -180,7 +180,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *     <li>{@link MongoSearchQuery#getProjection()}} : The projection to apply on search results..</li>
      * </ul>
      */
-    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> mongoSearchQuery) throws MongoException;
+    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> query) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter within a client session.
@@ -210,7 +210,10 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @param resultClass The class of the result type.
      * @param filter      The filter to apply.
      * @return List of distinct values for the specified field.
-     */
+     *
+     * @apiNote With this method, the page and pageSize specified in {@link MongoSearchFilter#getPage()} and  {@link MongoSearchFilter#getPageSize()}
+     * are not used. Use the {@link #distinctWithPagination(ClientSession, String, Class, MongoSearchFilter)} method in case you want to apply pagination
+      */
     <T_RESULT> List<T_RESULT> distinct(ClientSession session, @NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
 
     /**
@@ -229,7 +232,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * </ul>
      *
      */
-    <T_RESULT> ListWithPagination<T_RESULT> distinctAggregation(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
+    <T_RESULT> ListWithPagination<T_RESULT> distinctWithPagination(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
 
     /**
      * Performs an aggregation operation on the specified collection using the provided aggregation arguments.

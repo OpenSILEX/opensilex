@@ -1,29 +1,17 @@
 package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.core.germplasm.api.BaseGermplasmAPITest;
-import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
-import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
 import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
-import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
 import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class GermplasmAPITest extends BaseGermplasmAPITest {
 
@@ -49,7 +37,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
     public void testSearch() throws Exception {
 
         URI speciesUri = createSpecies();
-        SingleObjectResponse<GermplasmGetSingleDTO> speciesGetResponse = new UserCallBuilder(get).setUriInPath(String.valueOf(speciesUri)).buildAdmin().executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
+        SingleObjectResponse<GermplasmGetSingleDTO> speciesGetResponse = new UserCallBuilder(get).setUriInPath(speciesUri).buildAdmin().executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
         }).getDeserializedResponse();
         URI varietyUri = createVariety(speciesUri);
         URI accessionUri = createAccession(varietyUri);

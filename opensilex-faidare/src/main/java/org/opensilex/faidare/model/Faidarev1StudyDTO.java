@@ -30,13 +30,6 @@ public class Faidarev1StudyDTO {
     private List<Faidarev1DataLinkDTO> dataLinks;
     private String license;
     private Faidarev1LocationDTO location;
-    private Double altitude;
-    private String countryCode;
-    private String countryName;
-    private String instituteAddress;
-    private String instituteName;
-    private Double latitude;
-    private Double longitude;
     private String studyDescription;
     private List<String> seasons;
 
@@ -190,69 +183,6 @@ public class Faidarev1StudyDTO {
 
     public Faidarev1StudyDTO setLocation(Faidarev1LocationDTO location) {
         this.location = location;
-        return this;
-    }
-
-    public Double getAltitude() {
-        return altitude;
-    }
-
-    public Faidarev1StudyDTO setAltitude(Double altitude) {
-        this.altitude = altitude;
-        return this;
-    }
-
-    public String getCountryCode() {
-        return countryCode;
-    }
-
-    public Faidarev1StudyDTO setCountryCode(String countryCode) {
-        this.countryCode = countryCode;
-        return this;
-    }
-
-    public String getCountryName() {
-        return countryName;
-    }
-
-    public Faidarev1StudyDTO setCountryName(String countryName) {
-        this.countryName = countryName;
-        return this;
-    }
-
-    public String getInstituteAddress() {
-        return instituteAddress;
-    }
-
-    public Faidarev1StudyDTO setInstituteAddress(String instituteAddress) {
-        this.instituteAddress = instituteAddress;
-        return this;
-    }
-
-    public String getInstituteName() {
-        return instituteName;
-    }
-
-    public Faidarev1StudyDTO setInstituteName(String instituteName) {
-        this.instituteName = instituteName;
-        return this;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public Faidarev1StudyDTO setLatitude(Double latitude) {
-        this.latitude = latitude;
-        return this;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public Faidarev1StudyDTO setLongitude(Double longitude) {
-        this.longitude = longitude;
         return this;
     }
 

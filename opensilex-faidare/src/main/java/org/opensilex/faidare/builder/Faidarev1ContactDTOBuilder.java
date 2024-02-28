@@ -17,6 +17,7 @@ public class Faidarev1ContactDTOBuilder {
                 .setContactDbId(personModel.getUri().toString())
                 .setName(
                         personModel.getLastName().toUpperCase()
+                                + " "
                                 + personModel.getFirstName().substring(0,1).toUpperCase()
                                 + personModel.getFirstName().substring(1)
                 )

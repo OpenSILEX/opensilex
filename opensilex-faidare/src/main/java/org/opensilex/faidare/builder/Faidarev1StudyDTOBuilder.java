@@ -60,6 +60,7 @@ public class Faidarev1StudyDTOBuilder {
         }
 
 
+        // TODO : Remove this? and map projects to trials instead?
         if (!model.getProjects().isEmpty()) {
             // ProgramName not a list, so only the first one is kept
             ProjectModel firstProject = model.getProjects().get(0);
@@ -73,8 +74,6 @@ public class Faidarev1StudyDTOBuilder {
             FacilityModel facility = facilitiesList.get(0);
             Faidarev1LocationDTO locationDTO = locationDTOBuilder.fromModel(facility, currentAccount);
             dto.setLocation(locationDTO);
-            dto.setLatitude(locationDTO.getLatitude());
-            dto.setLongitude(locationDTO.getLongitude());
         }
 
         List<Faidarev1ContactDTO> studyContacts = new ArrayList<>();
@@ -92,6 +91,8 @@ public class Faidarev1StudyDTOBuilder {
                     .collect(Collectors.toList()));
         }
         dto.setContacts(studyContacts);
+
+        // TODO : Add mapping for last update (add in docs too)
 
         return dto;
 

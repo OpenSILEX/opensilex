@@ -1,9 +1,6 @@
 package org.opensilex.faidare.api;
 
-import org.opensilex.core.experiment.api.ExperimentAPITest;
-import org.opensilex.core.organisation.api.OrganizationAPITest;
 import org.opensilex.core.organisation.api.OrganizationCreationDTO;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -105,9 +102,9 @@ public class TestOrganizationBuilder {
         return this;
     }
 
-    private static List<OrganizationCreationDTO> dtoList = new ArrayList<>();
+    private List<OrganizationCreationDTO> dtoList = new ArrayList<>();
 
-    public static List<OrganizationCreationDTO> getDTOList() {
+    public List<OrganizationCreationDTO> getDTOList() {
         return dtoList;
     }
 

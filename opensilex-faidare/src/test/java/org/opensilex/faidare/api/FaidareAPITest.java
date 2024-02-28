@@ -1,26 +1,42 @@
 package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.Before;
+import com.mongodb.client.model.geojson.Geometry;
+import com.mongodb.client.model.geojson.Polygon;
+import com.mongodb.client.model.geojson.Position;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
-import org.opensilex.core.organisation.api.FacilityApiTest;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.project.api.ProjectCreationDTO;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 
 public class FaidareAPITest extends AbstractMongoIntegrationTest {
 
-    public boolean valuesMatch(JsonNode expected, JsonNode actual, Map<String, String> keysMatching) {
+    public static TestFacilityBuilder facilityBuilder;
+    public static TestPersonBuilder personBuilder;
+    public static TestProjectBuilder projectBuilder;
+    public static TestExperimentBuilder experimentBuilder;
+
+    public static boolean valuesMatch(JsonNode expected, JsonNode actual, Map<String, String> keysMatching) {
         for (Map.Entry<String, String> entry : keysMatching.entrySet()) {
             if (!expected.has(entry.getKey()) || !expected.get(entry.getKey()).equals(actual.get(entry.getValue()))) {
                 return false;
@@ -28,23 +44,62 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         }
         return true;
     }
-    @Before
-    public void globalFaidareSetUp() throws Exception {
-        TestFacilityBuilder facilityBuilder = new TestFacilityBuilder();
+
+    // Note : it would have been better for this to run only once before all faidare tests, but I couldn't make it work.
+    @BeforeClass
+    public static void faidareSetUp() throws Exception {
+
+        OpenSilex openSilex = getOpensilex();
+        SPARQLService sparql = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        MongoDBService nosql = openSilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        AccountModel user = sparql.search(AccountModel.class, null).get(0);
+
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        PersonDAO personDAO = new PersonDAO(sparql);
+        ProjectDAO projectDAO = new ProjectDAO(sparql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+
+        facilityBuilder = new TestFacilityBuilder();
+        Geometry polygon = new Polygon(List.of(
+                new Position(3.6466941625891147, 43.50868910423751),
+                new Position(3.8664207250891147, 43.81071556648839),
+                new Position(4.075160959464115, 43.484780209220666),
+                new Position(3.6466941625891147, 43.50868910423751)
+        ));
+        facilityBuilder.setGeometry(geometryToGeoJson(polygon));
         for (int i=0; i<5; i++) {
-            new UserCallBuilder(FacilityApiTest.create)
-                    .setBody(facilityBuilder.createDTO())
-                    .buildAdmin()
-                    .executeCallAndAssertStatus(Response.Status.CREATED);
+            FacilityCreationDTO dto = facilityBuilder.createDTO();
+            facilityDAO.create(dto.newModel(), polygon, user);
         }
 
-        TestExperimentBuilder experimentBuilder = new TestExperimentBuilder();
+        personBuilder = new TestPersonBuilder();
         for (int i=0; i<5; i++) {
-            experimentBuilder.setFacilities(List.of(TestFacilityBuilder.getDTOList().get(i).getUri()));
-            new UserCallBuilder(ExperimentAPITest.create)
-                    .setBody(experimentBuilder.createDTO())
-                    .buildAdmin()
-                    .executeCallAndAssertStatus(Response.Status.CREATED);
+            PersonDTO dto = personBuilder.createDTO();
+            PersonModel model = PersonModel.fromDTO(dto, sparql);
+            personDAO.create(model, null);
+        }
+
+        projectBuilder = new TestProjectBuilder();
+        for (int i=0; i<5; i++) {
+            projectBuilder.setCoordinators(List.of(personBuilder.getDTOList().get(i).getUri()));
+            projectBuilder.setScientificContacts(List.of(personBuilder.getDTOList().get(i).getUri()));
+            projectBuilder.setAdministrativeContacts(List.of(personBuilder.getDTOList().get(i).getUri()));
+
+            ProjectCreationDTO dto = projectBuilder.createDTO();
+            ProjectModel model = dto.newModel();
+            projectDAO.create(model);
+        }
+
+        experimentBuilder = new TestExperimentBuilder();
+        for (int i=0; i<5; i++) {
+            experimentBuilder.setFacilities(List.of(facilityBuilder.getDTOList().get(i).getUri()));
+            experimentBuilder.setScientificSupervisors(List.of(personBuilder.getDTOList().get(i).getUri()));
+            experimentBuilder.setTechnicalSupervisors(List.of(personBuilder.getDTOList().get(i).getUri()));
+            experimentBuilder.setProjects(List.of(projectBuilder.getDTOList().get(i).getUri()));
+
+            ExperimentCreationDTO dto = experimentBuilder.createDTO();
+            experimentDAO.create(dto.newModel());
         }
     }
 }

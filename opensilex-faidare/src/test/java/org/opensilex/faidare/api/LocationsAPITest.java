@@ -2,51 +2,81 @@ package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.model.geojson.Geometry;
+import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.core.organisation.api.FacilityApiTest;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
-import org.opensilex.faidare.model.Faidarev1LocationDTO;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.integration.test.ServiceDescription;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
-public class LocationsAPITest extends FacilityApiTest {
+public class LocationsAPITest extends FaidareAPITest {
 
-    public static final String path = "/faidare/v1/locations";
+    protected static ServiceDescription search;
 
-
-
-    protected void testSearchParams(Map<String, Object> params) throws Exception {
-        WebTarget searchTarget = appendSearchParams(target(path), 0, 20, params);
-        final Response getResult = appendAdminToken(searchTarget).get();
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        List<Faidarev1LocationDTO> faidarev1LocationDTOList = mapper.convertValue(node.get("result").get("data"), new TypeReference<>() {
-        });
-
-        assertFalse(faidarev1LocationDTOList.isEmpty());
+    static {
+        try {
+            search = new ServiceDescription(
+                    LocationsAPI.class.getMethod(
+                            "getLocationsList", URI.class, String.class, String.class, int.class, int.class),
+                    "/faidare/v1/locations"
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    public void testSearch() throws Exception {
-        FacilityCreationDTO facilityCreationDTO = getCreationDTO(1);
-        Response creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facilityCreationDTO);
-        assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
+    public void testGet() throws Exception {
+        BrapiPaginatedListResponse<JsonNode> deserializedSearchResult = new AbstractSecurityIntegrationTest.UserCallBuilder(search)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<BrapiPaginatedListResponse<JsonNode>>(){})
+                .getDeserializedResponse();
+        Assert.assertEquals(5, deserializedSearchResult.getResult().getData().size());
+    }
 
-        Map<String, Object> params = new HashMap<>();
-        testSearchParams(params);
+    @Test
+    public void testGetByUri() throws Exception {
+        FacilityCreationDTO facilityCreationDTO = facilityBuilder.getDTOList().get(0);
+        BrapiPaginatedListResponse<JsonNode> deserializedSearchResult = new UserCallBuilder(search)
+                .addParam("locationDbId", facilityCreationDTO.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<BrapiPaginatedListResponse<JsonNode>>(){})
+                .getDeserializedResponse();
 
-        params.put("locationDbId", extractUriFromResponse(creationResponse));
-        testSearchParams(params);
+        Assert.assertEquals(1, deserializedSearchResult.getResult().getData().size());
+
+        // Check first level mapping
+        Map<String, String> keysMatching = new HashMap<>(){{
+            put("name", "locationName");
+        }};
+        JsonNode expected = mapper.convertValue(facilityCreationDTO, JsonNode.class);
+        JsonNode actual = deserializedSearchResult.getResult().getData().get(0);
+        assertTrue(valuesMatch(
+                expected,
+                actual,
+                keysMatching
+        ));
+
+        // Check geometry
+        Geometry facilityGeometry = geoJsonToGeometry(facilityCreationDTO.getGeometry());
+        org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
+        Point centroid = facilityJtsGeometry.getCentroid();
+        assertEquals(centroid.getX(), actual.get("longitude").asDouble());
+        assertEquals(centroid.getY(), actual.get("latitude").asDouble());
+
+        // Check type
+        SPARQLDeserializers.compareURIs(expected.get("rdf_type").asText(), actual.get("locationType").asText());
     }
 }

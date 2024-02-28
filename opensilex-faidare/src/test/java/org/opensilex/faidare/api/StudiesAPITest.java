@@ -4,37 +4,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
-import org.opensilex.core.experiment.api.ExperimentGetListDTO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.faidare.builder.Faidarev1StudyDTOBuilder;
-import org.opensilex.faidare.model.Faidarev1StudyDTO;
-import org.opensilex.faidare.responses.Faidarev1StudyListResponse;
 import org.opensilex.integration.test.ServiceDescription;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.JsonResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ListWithPagination;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class StudiesAPITest  extends FaidareAPITest{
+public class StudiesAPITest extends FaidareAPITest {
 
     protected static ServiceDescription search;
 
@@ -53,8 +34,17 @@ public class StudiesAPITest  extends FaidareAPITest{
     }
 
     @Test
+    public void testGet() throws Exception {
+        BrapiPaginatedListResponse<JsonNode> deserializedSearchResult = new AbstractSecurityIntegrationTest.UserCallBuilder(search)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<BrapiPaginatedListResponse<JsonNode>>(){})
+                .getDeserializedResponse();
+        assertEquals(5, deserializedSearchResult.getResult().getData().size());
+    }
+
+    @Test
     public void testGetByUri() throws Exception {
-        ExperimentCreationDTO experimentCreationDTO1 = TestExperimentBuilder.getDTOList().get(0);
+        ExperimentCreationDTO experimentCreationDTO1 = experimentBuilder.getDTOList().get(0);
         BrapiPaginatedListResponse<JsonNode> deserializedSearchResult = new UserCallBuilder(search)
                 .addParam("studyDbId", experimentCreationDTO1.getUri())
                 .buildAdmin()
@@ -63,6 +53,7 @@ public class StudiesAPITest  extends FaidareAPITest{
 
         assertEquals(1, deserializedSearchResult.getResult().getData().size());
 
+        // Check first level mapping
         Map<String, String> keysMatching = new HashMap<>(){{
             put("name", "studyName");
             put("start_date", "startDate");
@@ -76,7 +67,11 @@ public class StudiesAPITest  extends FaidareAPITest{
                 actual,
                 keysMatching
         ));
+
+        // Check deeper level mapping
         assertEquals(expected.get("facilities").get(0), actual.get("location").get("locationDbId"));
+        assertEquals(expected.get("scientific_supervisors").get(0), actual.get("contacts").get(0).get("contactDbId"));
+        assertEquals(expected.get("technical_supervisors").get(0), actual.get("contacts").get(1).get("contactDbId"));
     }
 
 }

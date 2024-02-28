@@ -1,20 +1,13 @@
 package org.opensilex.faidare.api;
 
 import org.geojson.GeoJsonObject;
-import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -40,7 +33,7 @@ public class TestFacilityBuilder  {
 
     private String name = stringPrefix + "name";
 
-    private URI type;
+    private URI type = URI.create(Oeso.Facility.getURI());
 
     private List<RDFObjectRelationDTO> relations;
 
@@ -149,9 +142,9 @@ public class TestFacilityBuilder  {
         return this;
     }
 
-    private static List<FacilityCreationDTO> dtoList = new ArrayList<>();
+    private List<FacilityCreationDTO> dtoList = new ArrayList<>();
 
-    public static List<FacilityCreationDTO> getDTOList() {
+    public List<FacilityCreationDTO> getDTOList() {
         return dtoList;
     }
 

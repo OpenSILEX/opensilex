@@ -1,8 +1,6 @@
 package org.opensilex.faidare.api;
 
-import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,7 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-class TestExperimentBuilder {
+public class TestExperimentBuilder {
     private static final String stringPrefix = "default experiment ";
 
     private URI uri = new URI("test:default-experiment-uri/");
@@ -170,9 +168,9 @@ class TestExperimentBuilder {
         return this;
     }
 
-    private static List<ExperimentCreationDTO> dtoList = new ArrayList<>();
+    private List<ExperimentCreationDTO> dtoList = new ArrayList<>();
 
-    public static List<ExperimentCreationDTO> getDTOList() {
+    public List<ExperimentCreationDTO> getDTOList() {
         return dtoList;
     }
 

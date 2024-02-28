@@ -412,24 +412,29 @@ public class MongoDBService extends BaseService {
             Integer pageSize,
             int countLimit) {
 
-        List<T> results = new ArrayList<T>();
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        long resultsNumber = collection.countDocuments(filter, new CountOptions().limit(countLimit));
+        long resultsNumber = collection.countDocuments(filter, new CountOptions().skip(page * pageSize).limit(countLimit));
         int total = (int) resultsNumber;
 
         LOGGER.debug("MONGO SEARCH WITH PAGINATION - Collection : " + collectionName + " - Order : " + LogOrderList(orderByList) + " - Filter : " + filter.toString());
 
-        if (total > 0) {
-            Document sort = buildSort(orderByList);
-
-            FindIterable<T> queryResult = collection.find(filter).sort(sort).skip(page * pageSize).limit(pageSize);
-
-            for (T res : queryResult) {
-                results.add(res);
-            }
+        if(total == 0){
+            return new ListWithPagination<>(Collections.emptyList(), page, pageSize, 0);
         }
 
-        return new ListWithPagination(results, page, pageSize, total);
+        Document sort = buildSort(orderByList);
+
+        FindIterable<T> queryResult = collection
+                .find(filter)
+                .sort(sort)
+                .skip(page * pageSize)
+                .limit(pageSize);
+
+        List<T> results = new ArrayList<>();
+        for (T res : queryResult) {
+            results.add(res);
+        }
+        return new ListWithPagination<>(results, page, pageSize, total, countLimit);
 
     }
 

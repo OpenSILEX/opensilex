@@ -358,7 +358,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
-import {BasicURIAndLabelDTO} from "opensilex-core/model/basicURIAndLabelDTO";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
 export default class VariableList extends Vue {
@@ -385,7 +385,7 @@ export default class VariableList extends Vue {
       return this.$store.state.credentials;
   }
 
-  private get timeIntervals(): Array<BasicURIAndLabelDTO> {
+  private get timeIntervals(): Array<NamedResourceDTO> {
     return this.$store.state.time_interval_list
   }
 

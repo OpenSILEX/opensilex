@@ -218,11 +218,13 @@
 
                 <!-- time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                  <opensilex-BasicUriAndLabelDTOSelectForm
-                      :selectedURI.sync="form.time_interval"
-                      :DTOs="this.$store.state.time_interval_list"
-                      label ="VariableForm.time-interval"
-                  ></opensilex-BasicUriAndLabelDTOSelectForm>
+                  <opensilex-SelectForm
+                      label="VariableForm.time-interval"
+                      :selected.sync="form.time_interval"
+                      :options="this.$opensilex.getTimeIntervalsAsSelectableItem()"
+                      placeholder="VariableForm.time-interval-placeholder"
+                      helpMessage="VariableForm.time-interval-help"
+                  ></opensilex-SelectForm>
                 </div>
 
                 <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
@@ -230,11 +232,13 @@
 
                 <!-- sample/distance-interval -->
                 <div class="col-lg-6" id="v-step-sampling-interval">
-                  <opensilex-BasicUriAndLabelDTOSelectForm
-                      :selectedURI.sync="form.sampling_interval"
-                      :DTOs="this.$store.state.sample_interval_list"
+                  <opensilex-SelectForm
                       label="VariableForm.sampling-interval"
-                  ></opensilex-BasicUriAndLabelDTOSelectForm>
+                      :selected.sync="form.sampling_interval"
+                      :options="this.$opensilex.getSampleIntervalsAsSelectableItem()"
+                      placeholder="VariableForm.sampling-interval-placeholder"
+                      helpMessage="VariableForm.sampling-interval-help"
+                  ></opensilex-SelectForm>
                 </div>
 
                 <!-- description -->
@@ -340,6 +344,8 @@ export default class VariableForm extends Vue {
                 label: this.$i18n.t("VariableForm.dimension-values." + sample)
             })
         }
+
+        this.$opensilex.getTimeIntervalsAsSelectableItem()
 
         this.loadDatatypes();
     }

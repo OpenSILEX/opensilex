@@ -158,13 +158,15 @@
                       <!-- Time interval -->
                       <div>
                         <opensilex-FilterField>
-                          <opensilex-BasicUriAndLabelDTOSelectForm
-                              :selectedURI.sync="filter.timeInterval"
-                              :DTOs="timeIntervals"
-                              label ="VariableForm.time-interval"
-                              @handlingEnterKey="refresh()"
+                          <opensilex-SelectForm
+                              label="VariableForm.time-interval"
+                              :selected.sync="filter.timeInterval"
+                              :options="timeIntervalsAsSelectableItem"
+                              placeholder="VariableForm.time-interval-placeholder"
+                              helpMessage="VariableForm.time-interval-help"
+                              @keyup.enter.native="refresh()"
                               class="searchFilter"
-                          ></opensilex-BasicUriAndLabelDTOSelectForm>
+                          ></opensilex-SelectForm>
                         </opensilex-FilterField>
                       </div>
 
@@ -358,7 +360,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {SelectableItem} from "../common/forms/SelectForm.vue";
 
 @Component
 export default class VariableList extends Vue {
@@ -385,16 +387,16 @@ export default class VariableList extends Vue {
       return this.$store.state.credentials;
   }
 
-  private get timeIntervals(): Array<NamedResourceDTO> {
-    return this.$store.state.time_interval_list
-  }
-
   private get onlySelected() {
   return this.tableRef.onlySelected;
   }
 
   private get lang() {
   return this.$store.state.lang;
+  }
+
+  private get timeIntervalsAsSelectableItem(): Array<SelectableItem> {
+    return this.$opensilex.getTimeIntervalsAsSelectableItem();
   }
   //#endregion
 

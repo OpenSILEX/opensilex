@@ -33,6 +33,7 @@ import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {SelectableItem} from "../components/common/forms/SelectForm.vue";
 
 declare var $cookies: VueCookies;
 
@@ -1286,6 +1287,26 @@ export default class OpenSilexVuePlugin {
                 })
                 .catch(reject);
         });
+    }
+
+    //return time intervals as an array of SelectableItem
+    public getTimeIntervalsAsSelectableItem() {
+        return this.mapNamedResourceDtoToSelectableItems(this.$store.getters.timeIntervalList);
+    }
+
+    //return sample intervals as an array of SelectableItem
+    public getSampleIntervalsAsSelectableItem() {
+        return this.mapNamedResourceDtoToSelectableItems(this.$store.getters.sampleIntervalList);
+    }
+
+
+    private mapNamedResourceDtoToSelectableItems(namedResourceDtoList: Array<NamedResourceDTO>): Array<SelectableItem> {
+        return namedResourceDtoList.map((dto: NamedResourceDTO) => {
+            return {
+                id: dto.uri,
+                label: dto.name
+            }
+        })
     }
 
     public namespaces = {};

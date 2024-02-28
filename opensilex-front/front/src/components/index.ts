@@ -302,9 +302,6 @@ components["opensilex-Dropdown"] = Dropdown;
 import ItemsPropertiesSelector from './common/filters/ItemsPropertiesSelector.vue';
 components["opensilex-ItemsPropertiesSelector"] = ItemsPropertiesSelector;
 
-import BasicUriAndLabelDTOSelectForm from './common/forms/BasicUriAndLabelDTOSelectForm.vue';
-components["opensilex-BasicUriAndLabelDTOSelectForm"] = BasicUriAndLabelDTOSelectForm;
-
 // Vocabulary/Ontology
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;

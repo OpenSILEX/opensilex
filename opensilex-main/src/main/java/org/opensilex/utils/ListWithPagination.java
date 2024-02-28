@@ -26,7 +26,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
     }
 
     public ListWithPagination(List<T> list, int page, int pageSize, int total) {
-        this(list, total, page, pageSize, 0);
+        this(list, page, pageSize, total, 0);
     }
 
     public ListWithPagination(List<T> list, Integer page, Integer pageSize, int total) {
@@ -36,7 +36,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
                 total);
     }
 
-    public ListWithPagination(List<T> list, int total, int page, int pageSize, int countLimit) {
+    public ListWithPagination(List<T> list,int page, int pageSize, int total, int countLimit) {
         super(list, total, page, pageSize, countLimit);
     }
 

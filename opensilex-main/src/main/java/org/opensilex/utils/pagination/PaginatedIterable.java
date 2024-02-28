@@ -1,17 +1,19 @@
 package org.opensilex.utils.pagination;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * Class which define any Object which can be Iterable and provides pagination mechanism after a Database Search request
  * @param <T> The type of elements which are iterable
+ * @param <S> Type of class which is iterable on T element
  */
 public abstract class PaginatedIterable<T, S>{
 
     /**
-     * Total number of element
+     * The iterable of T
      */
-    protected final int total;
+    protected final S source;
 
     /**
      * Current page.
@@ -24,41 +26,49 @@ public abstract class PaginatedIterable<T, S>{
     protected final int pageSize;
 
     /**
+     * Total number of element
+     */
+    protected final int total;
+
+    /**
      * Indicate if the count query was used with a limit on the number of element to count.
      * This can be done for performance reason, in order to not iterate each document to count, when this number becomes high
      */
     protected final int countLimit;
 
-    protected final S source;
-
-    protected PaginatedIterable(S source, int total, int page, int pageSize, int countLimit) {
-        if(total < 0){
-            throw new IllegalArgumentException("total must be >= 0");
-        }
+    /**
+     * @param source the iterable source of T
+     * @param page current page
+     * @param pageSize page size
+     * @param total total elements count
+     * @throws IllegalArgumentException if page, total or pageSize is < 0
+     */
+    protected PaginatedIterable(S source, int page, int pageSize, int total, int countLimit) {
+        Objects.requireNonNull(source);
         if(page < 0){
             throw new IllegalArgumentException("page must be >= 0");
         }
         if(pageSize < 0){
             throw new IllegalArgumentException("pageSize must be >= 0");
         }
+        if(total < 0){
+            throw new IllegalArgumentException("total must be >= 0");
+        }
         if(countLimit < 0){
             throw new IllegalArgumentException("countLimit must be >= 0");
         }
-        this.total = total;
+        this.source = source;
         this.page = page;
         this.pageSize = pageSize;
+        this.total = total;
         this.countLimit = countLimit;
-        this.source = source;
     }
 
     /**
-     * @param page current page
-     * @param pageSize page size
-     * @param total total elements count
-     * @throws IllegalArgumentException if page, total or pageSize is < 0
+     * @see #PaginatedIterable(Object, int, int, int, int)
      */
-    protected PaginatedIterable(S source, int total, int page, int pageSize) throws IllegalArgumentException {
-        this(source, total, page, pageSize, 0);
+    protected PaginatedIterable(S source, int page, int pageSize, int total) {
+        this(source, page, pageSize, total, 0);
     }
 
     public int getTotal() {

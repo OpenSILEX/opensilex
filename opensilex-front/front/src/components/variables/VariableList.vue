@@ -361,6 +361,8 @@ import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
 import {SelectableItem} from "../common/forms/SelectForm.vue";
+import {Route} from "vue-router";
+import VueI18n from "vue-i18n";
 
 @Component
 export default class VariableList extends Vue {
@@ -368,8 +370,8 @@ export default class VariableList extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $service: VariablesService;
   $store: OpenSilexStore;
-  $route: any;
-  $i18n: any;
+  $route: Route;
+  $i18n: VueI18n;
   SearchFiltersToggle: boolean = false;
   //#endregion
 

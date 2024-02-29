@@ -118,7 +118,7 @@
                       ></opensilex-UriListView>
 
             <opensilex-StringView label="OntologyPropertyForm.data-type"
-                                  :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
+                                  :value="this.$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.time-interval"
                                   :value="time_interval"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.sampling-interval"

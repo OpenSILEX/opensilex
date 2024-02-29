@@ -157,6 +157,7 @@ export default class DefaultMenuComponent extends Vue {
   height: 65px;
   width: 60px;
   left: 0px;
+  top: 0px;
   background-color: #00a38d;
 }
 

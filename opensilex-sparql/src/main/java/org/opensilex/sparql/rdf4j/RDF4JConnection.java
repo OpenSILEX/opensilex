@@ -6,6 +6,8 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.apache.jena.arq.querybuilder.*;
+import org.eclipse.rdf4j.IsolationLevel;
+import org.eclipse.rdf4j.IsolationLevels;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -228,6 +230,11 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
                 throw new SPARQLException(ex.getMessage());
             }
         }
+    }
+
+    @Override
+    public boolean hasActiveTransaction() {
+        return rdf4JConnection.isActive();
     }
 
     @Override
@@ -471,5 +478,14 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     @Override
     public void setMapperIndex(SPARQLClassObjectMapperIndex mapperIndex) {
         this.mapperIndex = mapperIndex;
+    }
+
+    /**
+     * @apiNote Override for a better display of the connection type and identify
+     * (Especially useful for traceability of connection inside logging)
+     */
+    @Override
+    public String toString() {
+        return rdf4JConnection.getClass().getSimpleName() + "@" + System.identityHashCode(this);
     }
 }

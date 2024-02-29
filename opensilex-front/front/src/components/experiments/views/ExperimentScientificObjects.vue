@@ -99,16 +99,11 @@
             
             <!-- Germplasm -->
             <div>
-              <opensilex-FilterField>
-                <b-form-group>
-                  <opensilex-GermplasmSelector
-                    :multiple="false"
-                    :germplasm.sync="filters.germplasm"
-                    :experiment="uri"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                  ></opensilex-GermplasmSelector>
-                </b-form-group>
+              <opensilex-FilterField quarterWidth="false">
+                <opensilex-GermplasmSelectorWithFilter
+                    :germplasmsUris.sync="filters.germplasm"
+                    :experimentUri="uri"
+                ></opensilex-GermplasmSelectorWithFilter>
               </opensilex-FilterField>
             </div>
 
@@ -506,7 +501,6 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchMethod(nodeURI, page, pageSize) {
 
-    console.debug("searchoing....", JSON.stringify(this.filters));
     let orderBy = ["name=asc"];
     const hasAnyCriterion = this.filters.criteriaDto.criteria_list.length > 0;
     if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 ||

@@ -29,6 +29,7 @@
           :placeholder="placeholder"
           :optionsLoadingMethod="optionsLoadingMethod"
           :viewHandler="viewHandler"
+          :itemLoadingMethod="itemLoadingMethod"
         >
           <!-- @deselect="deselect"
           @select="select"
@@ -346,6 +347,10 @@ export default class FormSelector extends Vue {
 
   refresh(){
     this.customTreeselect.refresh()
+  }
+
+  openTreeselect(){
+    this.customTreeselect.openTreeselect()
   }
 
     loadMoreItems(){

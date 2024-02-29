@@ -50,9 +50,9 @@ export default class EntitySelector extends Vue {
   @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Watch("sharedResourceInstance")
-  // onSriChange() {
-  //   // this.formSelector.refresh();
-  // }
+  onSriChange() {
+    this.formSelector.refresh()
+  }
 
   get placeholder() {
     return this.multiple
@@ -89,13 +89,13 @@ export default class EntitySelector extends Vue {
     this.$emit("handlingEnterKey")
   }
 
-  // loadMoreItems(){
-  //   this.pageSize = 0;
-  //   this.formSelector.refresh();
-  //   this.$nextTick(() => {
-  //     this.formSelector.openTreeselect();
-  //   })
-  // }
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.formSelector.refresh();
+    this.$nextTick(() => {
+      this.formSelector.openTreeselect();
+    })
+  }
 }
 </script>
 

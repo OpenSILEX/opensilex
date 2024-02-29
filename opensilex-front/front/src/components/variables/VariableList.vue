@@ -652,7 +652,7 @@ export default class VariableList extends Vue {
         unitsCount: result.unitUris.length,
         interestEntityCount: result.interestEntityUris.length
       });
-      this.$opensilex.showSuccessToast(message);
+      this.$opensilex.showSuccessToast(message.toString());
     }
 
     detailsExportVariables() {
@@ -723,7 +723,7 @@ export default class VariableList extends Vue {
         this.$service
             .updateVariablesGroup(form)
             .then((http: HttpResponse<OpenSilexResponse>) => {
-                let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.update-success-message");
+                let message = this.$i18n.t(form.name).toString() + this.$i18n.t("component.common.success.update-success-message").toString();
                 this.$opensilex.showSuccessToast(message);
                 let uri = http.response.result;
                 console.debug("variable group updated", uri);

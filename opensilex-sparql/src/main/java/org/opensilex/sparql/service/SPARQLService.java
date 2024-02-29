@@ -78,6 +78,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.langFilter;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import static org.opensilex.utils.LogFilter.*;
 

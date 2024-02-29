@@ -66,5 +66,5 @@ public class Time {
      * @see <a href="https://www.w3.org/TR/owl-time/#time:TemporalUnit">time:TemporalUnit</a>
      * OWL Class which define a temporal unit like second or day
      */
-    public static final Property TemporalUnit = Ontology.property(NS,"TemporalUnit");
+    public static final Resource TemporalUnit = Ontology.property(NS,"TemporalUnit");
 }

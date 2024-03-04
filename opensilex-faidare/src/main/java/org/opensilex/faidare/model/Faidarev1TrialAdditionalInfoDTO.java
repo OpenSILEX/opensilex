@@ -7,7 +7,7 @@ public class Faidarev1TrialAdditionalInfoDTO {
     private String description;
     private String financialFunding;
     private List<String> relatedProjects;
-    private List<Faidarev1ExtendedContactDTO> coordinators;
+    private List<Faidarev1ContactDTO> coordinators;
 
     public String getShortName() {
         return shortName;
@@ -45,16 +45,16 @@ public class Faidarev1TrialAdditionalInfoDTO {
         return this;
     }
 
-    public List<Faidarev1ExtendedContactDTO> getCoordinators() {
+    public List<Faidarev1ContactDTO> getCoordinators() {
         return coordinators;
     }
 
-    public Faidarev1TrialAdditionalInfoDTO setCoordinators(List<Faidarev1ExtendedContactDTO> coordinators) {
+    public Faidarev1TrialAdditionalInfoDTO setCoordinators(List<Faidarev1ContactDTO> coordinators) {
         this.coordinators = coordinators;
         return this;
     }
 
-    public Faidarev1TrialAdditionalInfoDTO(String shortName, String description, String financialFunding, List<String> relatedProjects, List<Faidarev1ExtendedContactDTO> coordinators){
+    public Faidarev1TrialAdditionalInfoDTO(String shortName, String description, String financialFunding, List<String> relatedProjects, List<Faidarev1ContactDTO> coordinators){
         this.shortName = shortName;
         this.description = description;
         this.financialFunding = financialFunding;

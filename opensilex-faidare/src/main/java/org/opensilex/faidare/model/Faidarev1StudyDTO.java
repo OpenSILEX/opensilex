@@ -19,17 +19,19 @@ public class Faidarev1StudyDTO {
     private String endDate;
     private String locationDbId;
     private String locationName;
+    private Faidarev1LastUpdateDTO lastUpdate;
+    private String name;
     private String programDbId;
     private String programName;
     private String startDate;
+    private String studyType;
     private String studyDbId;
     private String studyName;
     private String trialDbId;
     private String trialName;
+    private List<String> trialDbIds;
     private List<Faidarev1ContactDTO> contacts;
     private List<Faidarev1DataLinkDTO> dataLinks;
-    private String license;
-    private Faidarev1LocationDTO location;
     private String studyDescription;
     private List<String> seasons;
 
@@ -87,6 +89,24 @@ public class Faidarev1StudyDTO {
         return this;
     }
 
+    public Faidarev1LastUpdateDTO getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public Faidarev1StudyDTO setLastUpdate(Faidarev1LastUpdateDTO lastUpdate) {
+        this.lastUpdate = lastUpdate;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Faidarev1StudyDTO setName(String name) {
+        this.name = name;
+        return this;
+    }
+
     public String getProgramDbId() {
         return programDbId;
     }
@@ -111,6 +131,15 @@ public class Faidarev1StudyDTO {
 
     public Faidarev1StudyDTO setStartDate(String startDate) {
         this.startDate = startDate;
+        return this;
+    }
+
+    public String getStudyType() {
+        return studyType;
+    }
+
+    public Faidarev1StudyDTO setStudyType(String studyType) {
+        this.studyType = studyType;
         return this;
     }
 
@@ -150,6 +179,14 @@ public class Faidarev1StudyDTO {
         return this;
     }
 
+    public List<String> getTrialDbIds() {
+        return trialDbIds;
+    }
+
+    public void setTrialDbIds(List<String> trialDbIds) {
+        this.trialDbIds = trialDbIds;
+    }
+
     public List<Faidarev1ContactDTO> getContacts() {
         return contacts;
     }
@@ -165,24 +202,6 @@ public class Faidarev1StudyDTO {
 
     public Faidarev1StudyDTO setDataLinks(List<Faidarev1DataLinkDTO> dataLinks) {
         this.dataLinks = dataLinks;
-        return this;
-    }
-
-    public String getLicense() {
-        return license;
-    }
-
-    public Faidarev1StudyDTO setLicense(String license) {
-        this.license = license;
-        return this;
-    }
-
-    public Faidarev1LocationDTO getLocation() {
-        return location;
-    }
-
-    public Faidarev1StudyDTO setLocation(Faidarev1LocationDTO location) {
-        this.location = location;
         return this;
     }
 

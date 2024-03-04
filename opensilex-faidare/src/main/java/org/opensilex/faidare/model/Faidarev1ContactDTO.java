@@ -12,7 +12,7 @@ package org.opensilex.faidare.model;
 public class Faidarev1ContactDTO {
     private String contactDbId;
     private String email;
-    private String instituteName;
+    private String institutionName;
     private String name;
     private String orcid;
     private String type;
@@ -35,12 +35,12 @@ public class Faidarev1ContactDTO {
         return this;
     }
 
-    public String getInstituteName() {
-        return instituteName;
+    public String getInstitutionName() {
+        return institutionName;
     }
 
-    public Faidarev1ContactDTO setInstituteName(String instituteName) {
-        this.instituteName = instituteName;
+    public Faidarev1ContactDTO setInstitutionName(String institutionName) {
+        this.institutionName = institutionName;
         return this;
     }
 

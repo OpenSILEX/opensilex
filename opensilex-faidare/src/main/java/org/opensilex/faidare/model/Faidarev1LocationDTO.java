@@ -14,16 +14,19 @@ import java.util.Map;
  */
 public class Faidarev1LocationDTO {
     private String abbreviation;
+    private String abreviation;
     private Map<String, String> additionalInfo;
     private Double altitude;
     private String countryCode;
     private String countryName;
     private String documentationURL;
     private String instituteAddress;
+    private String instituteAdress;
     private String instituteName;
     private Double latitude;
     private String locationDbId;
     private String locationName;
+    private String name;
     private String locationType;
     private Double longitude;
 
@@ -33,6 +36,15 @@ public class Faidarev1LocationDTO {
 
     public Faidarev1LocationDTO setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
+        return this;
+    }
+
+    public String getAbreviation() {
+        return abreviation;
+    }
+
+    public Faidarev1LocationDTO setAbreviation(String abreviation) {
+        this.abreviation = abreviation;
         return this;
     }
 
@@ -81,6 +93,15 @@ public class Faidarev1LocationDTO {
         return this;
     }
 
+    public String getInstituteAdress() {
+        return instituteAdress;
+    }
+
+    public Faidarev1LocationDTO setInstituteAdress(String instituteAdress) {
+        this.instituteAdress = instituteAdress;
+        return this;
+    }
+
     public String getInstituteAddress() {
         return instituteAddress;
     }
@@ -123,6 +144,15 @@ public class Faidarev1LocationDTO {
 
     public Faidarev1LocationDTO setLocationName(String locationName) {
         this.locationName = locationName;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Faidarev1LocationDTO setName(String name) {
+        this.name = name;
         return this;
     }
 

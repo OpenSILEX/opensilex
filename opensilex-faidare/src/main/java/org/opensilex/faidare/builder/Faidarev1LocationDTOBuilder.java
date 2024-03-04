@@ -28,6 +28,7 @@ public class Faidarev1LocationDTOBuilder {
         Faidarev1LocationDTO dto = new Faidarev1LocationDTO();
         dto.setLocationDbId(model.getUri().toString())
                 .setLocationName(model.getName())
+                .setName(model.getName())
                 .setLocationType(model.getType().toString());
 
 
@@ -66,11 +67,12 @@ public class Faidarev1LocationDTOBuilder {
             if (parentsWithOneAddress.size()==1) { // If exactly one organisation on this level with exactly one site
                 OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
                 SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
-                dto.setInstituteAddress(parentAddress.toString());
-                dto.setInstituteName(institute.getName());
+                dto.setInstituteAddress(parentAddress.toString())
+                        .setInstituteAdress(parentAddress.toString())
+                        .setInstituteName(institute.getName());
                 String countryName = parentAddress.getCountryName();
-                dto.setCountryName(countryName);
-                dto.setCountryCode(new Locale(countryName).getISO3Country());
+                dto.setCountryName(countryName)
+                        .setCountryCode(new Locale(countryName).getISO3Country());
                 directParentOrganizations.remove(parentsWithOneAddress.get(0));
             } else if (parentsWithOneAddress.size()>1) { // If more than one, go an Organisation level above
                 Set<OrganizationModel> newParents = new HashSet<>();

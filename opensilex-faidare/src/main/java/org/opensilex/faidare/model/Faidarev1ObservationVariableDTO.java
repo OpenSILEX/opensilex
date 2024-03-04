@@ -28,7 +28,8 @@ public class Faidarev1ObservationVariableDTO {
     private Faidarev1TraitDTO trait;
     private String xref;
     private String observationVariableDbId;
-    private String observationVariableName;
+    private String name;
+    private String date;
     private String ontologyDbId;
     private String ontologyName;
 
@@ -167,12 +168,21 @@ public class Faidarev1ObservationVariableDTO {
         return this;
     }
 
-    public String getObservationVariableName() {
-        return observationVariableName;
+    public String getName() {
+        return name;
     }
 
-    public Faidarev1ObservationVariableDTO setObservationVariableName(String observationVariableName) {
-        this.observationVariableName = observationVariableName;
+    public Faidarev1ObservationVariableDTO setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public Faidarev1ObservationVariableDTO setDate(String date) {
+        this.date = date;
         return this;
     }
 

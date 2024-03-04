@@ -41,10 +41,6 @@ public class CallsAPI extends FaidareCall {
             notes = "Check the available faidare calls"
     )
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_CALLS_GROUP_ID,
-            credentialLabelKey = CREDENTIAL_CALLS_GROUP_LABEL_KEY
-    )
     @FaidareVersion("1.3")
     @ApiResponses(value = {
         @ApiResponse(

@@ -4,9 +4,8 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.faidare.model.Faidarev1ContactDTO;
-import org.opensilex.faidare.model.Faidarev1LocationDTO;
+import org.opensilex.faidare.model.Faidarev1LastUpdateDTO;
 import org.opensilex.faidare.model.Faidarev1StudyDTO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
@@ -36,6 +35,7 @@ public class Faidarev1StudyDTOBuilder {
 
         dto.setStudyDbId(model.getUri().toString())
                 .setStudyName(model.getName())
+                .setName(model.getName())
                 .setStartDate(Objects.toString(model.getStartDate(), null))
                 .setEndDate(Objects.toString(model.getEndDate(), null))
                 .setActive(
@@ -44,6 +44,12 @@ public class Faidarev1StudyDTOBuilder {
                                 .orElse(model.getStartDate().isAfter(LocalDate.now())) ? "false" : "true"
                 ) // TODO : for review : shouldn't the "Active" information be in the ExperimentModel?
                 .setStudyDescription(model.getDescription());
+
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            Faidarev1LastUpdateDTO updateDTO = new Faidarev1LastUpdateDTO();
+            updateDTO.setTimestamp(model.getLastUpdateDate().toString());
+            dto.setLastUpdate(updateDTO);
+        }
 
         if (Objects.nonNull(model.getEndDate())) {
             dto.setSeasons(
@@ -59,21 +65,15 @@ public class Faidarev1StudyDTOBuilder {
             );
         }
 
-
-        // TODO : Remove this? and map projects to trials instead?
         if (!model.getProjects().isEmpty()) {
-            // ProgramName not a list, so only the first one is kept
-            ProjectModel firstProject = model.getProjects().get(0);
-            dto.setProgramName(firstProject.getName());
-            dto.setProgramDbId(firstProject.getUri().toString());
+            dto.setTrialDbIds(model.getProjects().stream().map(projectModel -> projectModel.getUri().toString()).collect(Collectors.toList()));
         }
 
         List<FacilityModel> facilitiesList = model.getFacilities();
-        Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityDAO, organizationDAO);
         if (!facilitiesList.isEmpty()){
             FacilityModel facility = facilitiesList.get(0);
-            Faidarev1LocationDTO locationDTO = locationDTOBuilder.fromModel(facility, currentAccount);
-            dto.setLocation(locationDTO);
+            dto.setLocationDbId(facility.getUri().toString())
+                    .setLocationName(facility.getName());
         }
 
         List<Faidarev1ContactDTO> studyContacts = new ArrayList<>();
@@ -91,8 +91,6 @@ public class Faidarev1StudyDTOBuilder {
                     .collect(Collectors.toList()));
         }
         dto.setContacts(studyContacts);
-
-        // TODO : Add mapping for last update (add in docs too)
 
         return dto;
 

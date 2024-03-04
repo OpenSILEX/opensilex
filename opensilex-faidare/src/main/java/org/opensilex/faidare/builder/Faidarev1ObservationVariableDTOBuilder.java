@@ -20,7 +20,8 @@ public class Faidarev1ObservationVariableDTOBuilder {
         Faidarev1MethodDTOBuilder methodDTOBuilder = new Faidarev1MethodDTOBuilder();
         Faidarev1ScaleDTOBuilder scaleDTOBuilder = new Faidarev1ScaleDTOBuilder();
         dto.setObservationVariableDbId(variableModel.getUri().toString())
-                .setObservationVariableName(variableModel.getName())
+                .setName(variableModel.getName())
+                .setDate(Objects.toString(variableModel.getPublicationDate(), null))
                 .setTrait(
                         new Faidarev1TraitDTO()
                                 .setName(
@@ -31,6 +32,8 @@ public class Faidarev1ObservationVariableDTOBuilder {
                                                 )
                                 )
                                 .setTraitDbId(Objects.toString(variableModel.getTraitUri(), null))
+                                .setAttribute(Objects.toString(variableModel.getCharacteristic().getName(), null))
+                                .setEntity(Objects.toString(variableModel.getEntity().getName(), null))
                 )
                 .setMethod(methodDTOBuilder.fromModel(variableModel.getMethod()))
                 .setScale(scaleDTOBuilder.fromModel(variableModel.getUnit(), variableModel.getDataType().toString()))

@@ -17,7 +17,7 @@ public class Faidarev1MethodDTO {
     private String description;
     private String formula;
     private String methodDbId;
-    private String methodName;
+    private String name;
     private String reference;
 
     public String getFaidareClass() {
@@ -56,12 +56,12 @@ public class Faidarev1MethodDTO {
         return this;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public String getName() {
+        return name;
     }
 
-    public Faidarev1MethodDTO setMethodName(String methodName) {
-        this.methodName = methodName;
+    public Faidarev1MethodDTO setName(String name) {
+        this.name = name;
         return this;
     }
 

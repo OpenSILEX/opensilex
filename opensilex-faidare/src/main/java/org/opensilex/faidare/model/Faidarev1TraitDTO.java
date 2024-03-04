@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -22,6 +24,7 @@ public class Faidarev1TraitDTO {
     private String attribute;
     private String status;
     private String xref;
+    @JsonProperty("class")
     private String traitClass;
 
     public String getTraitDbId() {

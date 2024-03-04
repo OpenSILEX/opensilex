@@ -5,6 +5,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
 import org.opensilex.security.account.dal.AccountModel;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -29,13 +30,16 @@ public class Faidarev1GermplasmDTOBuilder {
                 .setInstituteCode(model.getInstitute())
                 .setDocumentationURL(Objects.toString(model.getWebsite(), null))
                 .setSynonyms(model.getSynonyms())
-                .setStudyDbId(
-                        germplasmDAO.getExpFromGermplasm(accountModel, model.getUri(), null, null, null, null)
-                                .getList()
-                                .stream()
-                                .map(experimentModel -> experimentModel.getUri().toString())
-                                .collect(Collectors.toList())
-                );
+                .setSpecies(model.getSpecies().getName());
+
+        List<String> studiesUri = germplasmDAO.getExpFromGermplasm(accountModel, model.getUri(), null, null, null, null)
+                .getList()
+                .stream()
+                .map(experimentModel -> experimentModel.getUri().toString())
+                .collect(Collectors.toList());
+        if (!studiesUri.isEmpty()) {
+            dto.setStudyDbId(studiesUri);
+        }
 
         return dto;
     }

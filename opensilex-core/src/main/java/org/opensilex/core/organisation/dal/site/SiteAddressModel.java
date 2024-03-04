@@ -7,6 +7,8 @@ import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
+import java.util.Objects;
+
 /**
  * Address of a site.
  *
@@ -32,12 +34,5 @@ public class SiteAddressModel extends AddressModel {
 
     public void setSite(SiteModel site) {
         this.site = site;
-    }
-
-    @Override
-    public String toString() {
-        return getStreetAddress() + "\n"
-                + getPostalCode() + " " + getLocality() + "\n"
-                + getCountryName();
     }
 }

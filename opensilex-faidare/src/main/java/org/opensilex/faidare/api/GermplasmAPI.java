@@ -9,6 +9,7 @@ package org.opensilex.faidare.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.builder.Faidarev1GermplasmDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
 import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
@@ -16,8 +17,9 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -27,6 +29,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * The faidare germplasm corresponds to an accession in OpenSILEX
@@ -64,6 +68,19 @@ public class GermplasmAPI extends FaidareCall {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        if (Objects.isNull(ontologyDAO.getRdfType(new URI(Oeso.Accession.getURI()), "en"))){
+            Faidarev1GermplasmListResponse response = new Faidarev1GermplasmListResponse(new ListWithPagination<>(new ArrayList<>()));
+            response.setStatus(Response.Status.SERVICE_UNAVAILABLE);
+            response.addMetadataStatus(
+                    new StatusDTO(
+                            "The accession notion doesn't exist in your instance so this service is unavailable",
+                            StatusLevel.ERROR
+                    )
+            );
+            return response.getResponse();
+        }
+
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         if (germplasmPUI != null && uri == null) {
@@ -71,18 +88,10 @@ public class GermplasmAPI extends FaidareCall {
         }
 
         Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
-        if(uri != null) {
-            return new SingleObjectResponse<>(
-                    germplasmDTOBuilder.fromModel(
-                            germplasmDAO.get(uri, currentUser, false),
-                            currentUser
-                    )
-            ).getResponse();
-        }
 
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
                 currentUser,
-                null,
+                uri,
                 germplasmName,
                 commonCropName,
                 page,

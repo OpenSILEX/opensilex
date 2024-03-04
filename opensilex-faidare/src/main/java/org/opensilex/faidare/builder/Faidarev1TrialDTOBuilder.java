@@ -21,7 +21,7 @@ public class Faidarev1TrialDTOBuilder {
 
     public Faidarev1TrialDTO fromModel(ProjectModel projectModel, AccountModel accountModel) throws Exception {
         Faidarev1StudySummaryDTOBuilder studySummaryDTOBuilder = new Faidarev1StudySummaryDTOBuilder();
-        Faidarev1ExtendedContactDTOBuilder extendedContactDTOBuilder = new Faidarev1ExtendedContactDTOBuilder();
+        Faidarev1ContactDTOBuilder contactDTOBuilder = new Faidarev1ContactDTOBuilder();
         Faidarev1TrialDTO dto = new Faidarev1TrialDTO();
         dto.setDocumentationURL(Objects.toString(projectModel.getHomePage(), null))
                 .setEndDate(Objects.toString(projectModel.getEndDate(), null))
@@ -40,9 +40,9 @@ public class Faidarev1TrialDTOBuilder {
                 .setContacts(
                         Stream.concat(
                                         projectModel.getAdministrativeContacts()
-                                                .stream().map(extendedContactDTOBuilder::fromModel),
+                                                .stream().map(person -> contactDTOBuilder.fromModel(person, null)),
                                         projectModel.getScientificContacts()
-                                                .stream().map(extendedContactDTOBuilder::fromModel))
+                                                .stream().map(person -> contactDTOBuilder.fromModel(person, null)))
                                 .collect(Collectors.toList())
                 )
                 .setAdditionalInfo(
@@ -54,7 +54,7 @@ public class Faidarev1TrialDTOBuilder {
                                         .stream().map(projectModel1 -> projectModel1.getUri().toString())
                                         .collect(Collectors.toList()),
                                 projectModel.getCoordinators()
-                                        .stream().map(extendedContactDTOBuilder::fromModel)
+                                        .stream().map(person -> contactDTOBuilder.fromModel(person, null))
                                         .collect(Collectors.toList())
                         )
                 );

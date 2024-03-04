@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.faidare.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -21,6 +23,7 @@ public class Faidarev1GermplasmDTO {
     protected String defaultDisplayName;
     protected String documentationURL;
     protected List<Object> donors; // type Donor has no equivalent in OpenSILEX
+    protected String genus;
     protected String germplasmDbId;
     protected String germplasmName;
     protected String germplasmPUI;
@@ -28,14 +31,14 @@ public class Faidarev1GermplasmDTO {
     protected String instituteName;
     protected String pedigree;
     protected String seedSource;
+    protected String species;
     protected String speciesAuthority;
     protected String subtaxa;
     protected String subtaxaAuthority;
     protected List<String> synonyms;
     protected List<Object> taxonIds; // type TaxonId has no equivalent in OpenSILEX
-    protected String sourceName;
-    protected String taxonId;
     protected List<String> typeOfGermplasmStorageCode;
+    @JsonProperty("studyDbIb") // error on faidare's side
     protected List<String> studyDbId;
 
     public String getAccessionNumber() {
@@ -218,24 +221,6 @@ public class Faidarev1GermplasmDTO {
         return this;
     }
 
-    public String getSourceName() {
-        return sourceName;
-    }
-
-    public Faidarev1GermplasmDTO setSourceName(String sourceName) {
-        this.sourceName = sourceName;
-        return this;
-    }
-
-    public String getTaxonId() {
-        return taxonId;
-    }
-
-    public Faidarev1GermplasmDTO setTaxonId(String taxonId) {
-        this.taxonId = taxonId;
-        return this;
-    }
-
     public List<String> getTypeOfGermplasmStorageCode() {
         return typeOfGermplasmStorageCode;
     }
@@ -251,6 +236,24 @@ public class Faidarev1GermplasmDTO {
 
     public Faidarev1GermplasmDTO setStudyDbId(List<String> studyDbId) {
         this.studyDbId = studyDbId;
+        return this;
+    }
+
+    public String getGenus() {
+        return genus;
+    }
+
+    public Faidarev1GermplasmDTO setGenus(String genus) {
+        this.genus = genus;
+        return this;
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public Faidarev1GermplasmDTO setSpecies(String species) {
+        this.species = species;
         return this;
     }
 }

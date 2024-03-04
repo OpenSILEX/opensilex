@@ -14,7 +14,7 @@ public class Faidarev1ScaleDTOBuilder {
         Faidarev1ScaleDTO dto = new Faidarev1ScaleDTO();
 
         dto.setScaleDbId(unitModel.getUri().toString())
-                .setScaleName(unitModel.getName());
+                .setName(unitModel.getName());
 
         return dto;
     }

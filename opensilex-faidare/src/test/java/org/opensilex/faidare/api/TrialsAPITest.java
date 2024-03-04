@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
+import org.opensilex.core.experiment.api.ExperimentCreationDTO;
+import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.project.api.ProjectCreationDTO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
@@ -63,6 +65,13 @@ public class TrialsAPITest  extends FaidareAPITest {
         assertEquals(expected.get("financial_funding"), actual.get("additionalInfo").get("financialFunding"));
         assertEquals(expected.get("related_projects"), actual.get("additionalInfo").get("relatedProjects"));
         assertEquals(expected.get("coordinators").get(0), actual.get("additionalInfo").get("coordinators").get(0).get("contactDbId"));
+
+        FacilityCreationDTO expectedLocation = facilityBuilder.getDTOList().get(0);
+        ExperimentCreationDTO expectedStudy = experimentBuilder.getDTOList().get(0);
+        assertEquals(expectedLocation.getUri().toString(), actual.get("studies").get(0).get("locationDbId").asText());
+        assertEquals(expectedLocation.getName(), actual.get("studies").get(0).get("locationName").asText());
+        assertEquals(expectedStudy.getUri().toString(), actual.get("studies").get(0).get("studyDbId").asText());
+        assertEquals(expectedStudy.getName(), actual.get("studies").get(0).get("studyName").asText());
 
     }
 }

@@ -4,17 +4,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+import org.apache.jena.arq.querybuilder.Converters;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.BeforeClass;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.project.api.ProjectCreationDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.variable.api.VariableCreationDTO;
+import org.opensilex.core.variable.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.api.PersonDTO;
@@ -22,7 +33,10 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.sparql.utils.Ontology;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +49,12 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
     public static TestPersonBuilder personBuilder;
     public static TestProjectBuilder projectBuilder;
     public static TestExperimentBuilder experimentBuilder;
+
+    public static TestVariableBuilder variableBuilder;
+    public static TestEntityBuilder entityBuilder;
+    public static TestMethodBuilder methodBuilder;
+    public static TestUnitBuilder unitBuilder;
+    public static TestCharacteristicBuilder characteristicBuilder;
 
     public static boolean valuesMatch(JsonNode expected, JsonNode actual, Map<String, String> keysMatching) {
         for (Map.Entry<String, String> entry : keysMatching.entrySet()) {
@@ -52,6 +72,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         OpenSilex openSilex = getOpensilex();
         SPARQLService sparql = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         MongoDBService nosql = openSilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        FileStorageService fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         AccountModel user = sparql.search(AccountModel.class, null).get(0);
 
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
@@ -59,6 +80,12 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         PersonDAO personDAO = new PersonDAO(sparql);
         ProjectDAO projectDAO = new ProjectDAO(sparql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+        BaseVariableDAO<CharacteristicModel> characteristicDAO = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+        BaseVariableDAO<MethodModel> methodDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
+        BaseVariableDAO<EntityModel> entityDAO = new BaseVariableDAO<>(EntityModel.class, sparql);
+        BaseVariableDAO<UnitModel> unitDAO = new BaseVariableDAO<>(UnitModel.class, sparql);
 
         facilityBuilder = new TestFacilityBuilder();
         Geometry polygon = new Polygon(List.of(
@@ -100,6 +127,34 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
 
             ExperimentCreationDTO dto = experimentBuilder.createDTO();
             experimentDAO.create(dto.newModel());
+        }
+
+        variableBuilder = new TestVariableBuilder();
+        entityBuilder = new TestEntityBuilder();
+        methodBuilder = new TestMethodBuilder();
+        unitBuilder = new TestUnitBuilder();
+        characteristicBuilder = new TestCharacteristicBuilder();
+        for (int i=0; i<5; i++) {
+            EntityModel entityModel = entityBuilder.createDTO().newModel();
+            entityDAO.create(entityModel);
+
+            MethodModel methodModel = methodBuilder.createDTO().newModel();
+            methodDAO.create(methodModel);
+
+            UnitModel unitModel = unitBuilder.createDTO().newModel();
+            unitDAO.create(unitModel);
+
+            CharacteristicModel characteristicModel = characteristicBuilder.createDTO().newModel();
+            characteristicDAO.create(characteristicModel);
+
+            VariableModel variableModel = variableBuilder
+                    .setEntity(entityModel.getUri())
+                    .setMethod(methodModel.getUri())
+                    .setUnit(unitModel.getUri())
+                    .setCharacteristic(characteristicModel.getUri())
+                    .createDTO()
+                    .newModel();
+            variableDAO.create(variableModel);
         }
     }
 }

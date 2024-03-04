@@ -13,7 +13,7 @@ public class Faidarev1ScaleDTO {
     private String dataType; // - Code - Duration - Nominal - Numerical - Ordinal - Text - Date
     private String decimalPlaces;
     private String scaleDbId;
-    private String scaleName;
+    private String name;
     private String validValues;
     private String xref;
 
@@ -44,12 +44,12 @@ public class Faidarev1ScaleDTO {
         return this;
     }
 
-    public String getScaleName() {
-        return scaleName;
+    public String getName() {
+        return name;
     }
 
-    public Faidarev1ScaleDTO setScaleName(String scaleName) {
-        this.scaleName = scaleName;
+    public Faidarev1ScaleDTO setName(String name) {
+        this.name = name;
         return this;
     }
 

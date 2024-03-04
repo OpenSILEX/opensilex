@@ -13,7 +13,7 @@ public class Faidarev1MethodDTOBuilder {
     public Faidarev1MethodDTO fromModel(MethodModel methodModel){
         Faidarev1MethodDTO dto = new Faidarev1MethodDTO();
         dto.setMethodDbId(methodModel.getUri().toString())
-                .setMethodName(methodModel.getName())
+                .setName(methodModel.getName())
                 .setDescription(Objects.toString(methodModel.getDescription(), null));
 
         return dto;

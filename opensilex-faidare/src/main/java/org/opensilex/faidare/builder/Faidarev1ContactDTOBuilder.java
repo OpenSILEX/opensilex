@@ -22,7 +22,8 @@ public class Faidarev1ContactDTOBuilder {
                                 + personModel.getFirstName().substring(1)
                 )
                 .setOrcid(Objects.toString(personModel.getOrcid(), null))
-                .setType(role);
+                .setType(role)
+                .setInstitutionName(personModel.getAffiliation());
         return dto;
     }
 }

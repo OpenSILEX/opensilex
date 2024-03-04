@@ -34,7 +34,7 @@ import java.util.Collections;
  */
 @Api("faidare")
 @Path("/faidare/")
-public class VariablesAPI extends FaidareCall {
+public class ObservationVariablesAPI extends FaidareCall {
     
     @Inject
     private SPARQLService sparql;

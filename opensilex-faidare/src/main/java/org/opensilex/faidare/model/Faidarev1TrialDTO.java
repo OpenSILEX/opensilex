@@ -22,7 +22,7 @@ public class Faidarev1TrialDTO {
     private String trialType;
     private Faidarev1DatasetAuthorshipDTO datasetAuthorship;
     private List<Faidarev1StudySummaryDTO> studies;
-    private List<Faidarev1ExtendedContactDTO> contacts;
+    private List<Faidarev1ContactDTO> contacts;
     private String programDbId;
     private String programName;
 
@@ -116,11 +116,11 @@ public class Faidarev1TrialDTO {
         return this;
     }
 
-    public List<Faidarev1ExtendedContactDTO> getContacts() {
+    public List<Faidarev1ContactDTO> getContacts() {
         return contacts;
     }
 
-    public Faidarev1TrialDTO setContacts(List<Faidarev1ExtendedContactDTO> contacts) {
+    public Faidarev1TrialDTO setContacts(List<Faidarev1ContactDTO> contacts) {
         this.contacts = contacts;
         return this;
     }

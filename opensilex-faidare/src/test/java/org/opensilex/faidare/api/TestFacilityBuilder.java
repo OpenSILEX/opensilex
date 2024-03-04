@@ -39,7 +39,7 @@ public class TestFacilityBuilder  {
 
     private String typeLabel;
 
-    private FacilityAddressDTO address;
+    private FacilityAddressDTO address = new FacilityAddressDTO();
 
     private GeoJsonObject geometry;
 

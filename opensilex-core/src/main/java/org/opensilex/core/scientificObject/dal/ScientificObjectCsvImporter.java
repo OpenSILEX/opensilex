@@ -14,7 +14,6 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
@@ -357,11 +356,11 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             Map<SPARQLNamedResourceModel,Geometry> objectsGeometry = (Map<SPARQLNamedResourceModel,Geometry>) geometryMetadatas;
 
             // convert (object,geometry) map into list of GeospatialModel
-             List<GeospatialModel> geospatialModels = objectsGeometry
-                     .entrySet()
-                     .stream()
-                     .map(entry -> new GeospatialModel(entry.getKey(),graph,entry.getValue()))
-                     .collect(Collectors.toList());
+            List<GeospatialModel> geospatialModels = objectsGeometry
+                    .entrySet()
+                    .stream()
+                    .map(entry -> new GeospatialModel(entry.getKey(),graph,entry.getValue()))
+                    .collect(Collectors.toList());
 
             geoDAO.createAll(geospatialModels);
 

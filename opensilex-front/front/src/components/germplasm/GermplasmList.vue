@@ -93,7 +93,7 @@
                             </div>
 
                             <!-- Experiments -->
-                            <div>
+                            <div v-if="!experimentUri">
                                 <opensilex-FilterField>
                                     <opensilex-ExperimentSelector
                                         label="GermplasmList.filter.experiment"
@@ -309,6 +309,12 @@ export default class GermplasmList extends Vue {
     })
     noActions;
 
+  /**
+   * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
+   */
+    @Prop()
+    experimentUri: string;
+
     get user() {
         return this.$store.state.user;
     }
@@ -325,10 +331,8 @@ export default class GermplasmList extends Vue {
         return this.$store.state.lang;
     }
 
-    germplasmTypes = [];
     species = [];
     speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
-    experimentsList = [];
     SearchFiltersToggle: boolean = true;
 
   filter = {
@@ -468,7 +472,7 @@ export default class GermplasmList extends Vue {
       undefined,
       this.filter.germplasm_group,
       this.filter.institute,
-      this.filter.experiment,
+      this.experimentUri || this.filter.experiment,
       this.filter.parent_germplasms,
       this.filter.parent_germplasms_m,
       this.filter.parent_germplasms_f,
@@ -514,31 +518,6 @@ export default class GermplasmList extends Vue {
             .downloadFilefromPostService(path, filename, "csv", exportDto, this.lang);
     }
 
-
-    loadExperiments() {
-        let expService: ExperimentsService = this.$opensilex.getService(
-            "opensilex.ExperimentsService"
-        );
-
-        this.experimentsList = [];
-        expService
-            .searchExperiments()
-            .then(
-                (
-                    http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
-                ) => {
-                    for (let i = 0; i < http.response.result.length; i++) {
-                        let expDTO = http.response.result[i];
-                        this.experimentsList.push({
-                            value: expDTO.uri,
-                            text: expDTO.name
-                        });
-                    }
-                }
-            )
-            .catch(this.$opensilex.errorHandler);
-    }
-
     loadSpecies() {
         let service: SpeciesService = this.$opensilex.getService(
             "opensilex.SpeciesService"
@@ -562,7 +541,6 @@ export default class GermplasmList extends Vue {
     }
 
     updateLang() {
-        this.loadExperiments();
         this.loadSpecies();
         this.refresh();
     }

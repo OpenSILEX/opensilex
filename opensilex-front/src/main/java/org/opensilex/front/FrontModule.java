@@ -111,6 +111,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuExclusions(frontConfig.menuExclusions());
             config.setApplicationName(frontConfig.applicationName());
             config.setConnectAsGuest(frontConfig.connectAsGuest());
+            config.setNotificationMessage(frontConfig.notificationMessage());
+            config.setNotificationEndDate(frontConfig.notificationEndDate());
+            config.setNotificationColorTheme(frontConfig.notificationColorTheme());
 
             if (frontConfig.matomo() != null) {
                 try {

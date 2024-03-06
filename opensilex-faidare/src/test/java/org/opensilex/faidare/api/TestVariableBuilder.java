@@ -1,12 +1,7 @@
 package org.opensilex.faidare.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.vocabulary.XSD;
-import org.opensilex.core.experiment.api.ExperimentCreationDTO;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableCreationDTO;
-import org.opensilex.server.rest.validation.ValidURI;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -211,7 +206,7 @@ public class TestVariableBuilder {
         return this;
     }
 
-    private List<VariableCreationDTO> dtoList = new ArrayList<>();
+    private final List<VariableCreationDTO> dtoList = new ArrayList<>();
 
     public List<VariableCreationDTO> getDTOList() {
         return dtoList;

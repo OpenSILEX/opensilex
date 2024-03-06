@@ -24,14 +24,6 @@ import java.util.List;
  */
 public class ExperimentCreationDTO extends ExperimentDTO {
 
-    public ExperimentCreationDTO(URI uri, String name, LocalDate startDate, LocalDate endDate, String description, String objective, List<URI> organizations, List<URI> facilities, List<URI> projects, List<URI> scientificSupervisors, List<URI> technicalSupervisors, List<URI> groups, List<URI> factors, Boolean isPublic) {
-        super(uri, name, startDate, endDate, description, objective, organizations, facilities, projects, scientificSupervisors, technicalSupervisors, groups, factors, isPublic);
-    }
-
-    public ExperimentCreationDTO() {
-
-    }
-
     public ExperimentModel newModel() {
 
         ExperimentModel model = new ExperimentModel();

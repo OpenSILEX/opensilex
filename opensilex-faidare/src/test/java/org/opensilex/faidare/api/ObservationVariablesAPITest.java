@@ -12,14 +12,13 @@ import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ObservationVariablesAPITest extends FaidareAPITest {
 
-    protected static ServiceDescription search;
+    protected static final ServiceDescription search;
 
     static {
         try {

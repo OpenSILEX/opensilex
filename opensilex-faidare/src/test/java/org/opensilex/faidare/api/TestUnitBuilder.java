@@ -105,7 +105,7 @@ public class TestUnitBuilder {
         return this;
     }
 
-    private List<UnitCreationDTO> dtoList = new ArrayList<>();
+    private final List<UnitCreationDTO> dtoList = new ArrayList<>();
 
     public List<UnitCreationDTO> getDTOList() {
         return dtoList;

@@ -168,7 +168,7 @@ public class TestExperimentBuilder {
         return this;
     }
 
-    private List<ExperimentCreationDTO> dtoList = new ArrayList<>();
+    private final List<ExperimentCreationDTO> dtoList = new ArrayList<>();
 
     public List<ExperimentCreationDTO> getDTOList() {
         return dtoList;

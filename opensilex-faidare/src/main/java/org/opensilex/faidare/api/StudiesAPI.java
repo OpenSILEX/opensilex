@@ -21,7 +21,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;

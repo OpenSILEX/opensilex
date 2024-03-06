@@ -102,7 +102,7 @@ public class TestOrganizationBuilder {
         return this;
     }
 
-    private List<OrganizationCreationDTO> dtoList = new ArrayList<>();
+    private final List<OrganizationCreationDTO> dtoList = new ArrayList<>();
 
     public List<OrganizationCreationDTO> getDTOList() {
         return dtoList;

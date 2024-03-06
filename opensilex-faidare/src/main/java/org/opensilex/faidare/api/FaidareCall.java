@@ -28,7 +28,7 @@ abstract class FaidareCall {
 
     public static final Reflections REFLECTIONS = new Reflections("org.opensilex.faidare");
 
-    public static List<Faidarev1CallDTO> faidareCallsInfo = new ArrayList<>();
+    public static final List<Faidarev1CallDTO> faidareCallsInfo = new ArrayList<>();
 
     public static List<Faidarev1CallDTO> getfaidareCallsInfo(){
         if(faidareCallsInfo.isEmpty()) {

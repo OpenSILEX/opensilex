@@ -131,7 +131,7 @@ public class TestProjectBuilder {
         this.relatedProjects = relatedProjects;
     }
 
-    private List<ProjectCreationDTO> dtoList = new ArrayList<>();
+    private final List<ProjectCreationDTO> dtoList = new ArrayList<>();
 
     public List<ProjectCreationDTO> getDTOList() {
         return dtoList;

@@ -84,7 +84,7 @@ public class TestScientificObjectBuilder extends AbstractSecurityIntegrationTest
         return this;
     }
 
-    private List<ScientificObjectCreationDTO> dtoList = new ArrayList<>();
+    private final List<ScientificObjectCreationDTO> dtoList = new ArrayList<>();
 
     public List<ScientificObjectCreationDTO> getDTOList() {
         return dtoList;

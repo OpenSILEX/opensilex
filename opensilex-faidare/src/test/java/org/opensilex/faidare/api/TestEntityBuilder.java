@@ -85,7 +85,7 @@ public class TestEntityBuilder {
         return this;
     }
 
-    private List<EntityCreationDTO> dtoList = new ArrayList<>();
+    private final List<EntityCreationDTO> dtoList = new ArrayList<>();
 
     public List<EntityCreationDTO> getDTOList() {
         return dtoList;

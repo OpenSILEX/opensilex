@@ -85,7 +85,7 @@ public class TestMethodBuilder {
         return this;
     }
 
-    private List<MethodCreationDTO> dtoList = new ArrayList<>();
+    private final List<MethodCreationDTO> dtoList = new ArrayList<>();
 
     public List<MethodCreationDTO> getDTOList() {
         return dtoList;

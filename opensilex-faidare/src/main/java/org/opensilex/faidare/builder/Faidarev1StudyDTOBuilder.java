@@ -22,15 +22,10 @@ public class Faidarev1StudyDTOBuilder {
     private final String SCIENTIFIC_SUPERVISOR = "ScientificSupervisor";
     private final String TECHNICAL_SUPERVISOR = "TechnicalSupervisor";
 
-    private final FacilityDAO facilityDAO;
-    private final OrganizationDAO organizationDAO;
-
     public Faidarev1StudyDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
-        this.facilityDAO = facilityDAO;
-        this.organizationDAO = organizationDAO;
     }
 
-    public Faidarev1StudyDTO fromModel(ExperimentModel model, AccountModel currentAccount) throws Exception {
+    public Faidarev1StudyDTO fromModel(ExperimentModel model, AccountModel currentAccount) {
         Faidarev1StudyDTO dto = new Faidarev1StudyDTO();
 
         dto.setStudyDbId(model.getUri().toString())

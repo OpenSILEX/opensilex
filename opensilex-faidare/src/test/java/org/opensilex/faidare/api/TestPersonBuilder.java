@@ -93,7 +93,7 @@ public class TestPersonBuilder {
         return this;
     }
 
-    private List<PersonDTO> dtoList = new ArrayList<>();
+    private final List<PersonDTO> dtoList = new ArrayList<>();
 
     public List<PersonDTO> getDTOList() {
         return dtoList;

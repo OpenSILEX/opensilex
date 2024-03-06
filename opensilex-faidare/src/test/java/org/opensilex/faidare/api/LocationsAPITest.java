@@ -23,7 +23,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
 public class LocationsAPITest extends FaidareAPITest {
 
-    protected static ServiceDescription search;
+    protected static final ServiceDescription search;
 
     static {
         try {

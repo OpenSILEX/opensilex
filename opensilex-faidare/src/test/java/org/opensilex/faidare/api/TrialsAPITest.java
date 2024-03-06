@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TrialsAPITest  extends FaidareAPITest {
 
-    protected static ServiceDescription search;
+    protected static final ServiceDescription search;
 
     static {
         try {

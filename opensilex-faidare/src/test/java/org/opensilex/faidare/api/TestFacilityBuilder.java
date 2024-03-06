@@ -142,7 +142,7 @@ public class TestFacilityBuilder  {
         return this;
     }
 
-    private List<FacilityCreationDTO> dtoList = new ArrayList<>();
+    private final List<FacilityCreationDTO> dtoList = new ArrayList<>();
 
     public List<FacilityCreationDTO> getDTOList() {
         return dtoList;

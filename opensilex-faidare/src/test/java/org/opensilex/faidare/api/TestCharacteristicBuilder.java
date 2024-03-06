@@ -85,7 +85,7 @@ public class TestCharacteristicBuilder {
         return this;
     }
 
-    private List<CharacteristicCreationDTO> dtoList = new ArrayList<>();
+    private final List<CharacteristicCreationDTO> dtoList = new ArrayList<>();
 
     public List<CharacteristicCreationDTO> getDTOList() {
         return dtoList;

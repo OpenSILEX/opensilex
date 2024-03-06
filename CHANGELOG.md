@@ -1,7 +1,11 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.2.1]](#121)
+  * [[1.2.3]](#123)
     * [Fixed](#fixed)
+  * [[1.2.2]](#122)
+    * [Fixed](#fixed-1)
+  * [[1.2.1]](#121)
+    * [Fixed](#fixed-2)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
@@ -35,13 +39,13 @@
     * [Added or changed](#added-or-changed-1)
     * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
-    * [Fixed](#fixed-1)
+    * [Fixed](#fixed-3)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
     * [Added or changed](#added-or-changed-2)
-    * [Fixed](#fixed-2)
+    * [Fixed](#fixed-4)
   * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
     * [Added or changed](#added-or-changed-3)
-    * [Fixed](#fixed-3)
+    * [Fixed](#fixed-5)
   * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
     * [Added](#added)
     * [Added in pre-production](#added-in-pre-production)
@@ -57,15 +61,15 @@
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
     * [Added](#added-3)
-    * [Fixed](#fixed-4)
+    * [Fixed](#fixed-6)
   * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
     * [Added](#added-4)
     * [Changed](#changed-1)
   * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
-    * [Fixed](#fixed-5)
+    * [Fixed](#fixed-7)
   * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
     * [Added](#added-5)
-    * [Fixed](#fixed-6)
+    * [Fixed](#fixed-8)
   * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
     * [Added](#added-6)
 <!-- TOC -->
@@ -76,6 +80,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.3]
+
+### Fixed
+
+- [Data] Data and datafile tables now load correctly even when all targets are undefined
 
 ## [1.2.2]
 

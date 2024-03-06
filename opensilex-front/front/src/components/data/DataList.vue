@@ -3,6 +3,7 @@
         <opensilex-TableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
+            :countMethod="countDataList"
             :fields="fields"
             defaultSortBy="date"
             :defaultSortDesc="true"
@@ -218,6 +219,29 @@ export default class DataList extends Vue {
     facilities = {};
     operators = {};
 
+
+
+   countDataList(options) {
+    return this.dataService.countData(
+            this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
+            this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
+            undefined, // timezone,
+            this.filter.experiments, // experiments
+            this.filter.targets, //targets
+            this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
+            this.$opensilex.prepareGetParameter(this.filter.devices), // devices
+            undefined, // min_confidence
+            undefined, // max_confidence
+            undefined, // provenance
+            undefined, // metadata
+            // this.filter.germplasm_group, //Group of germs
+            this.$opensilex.prepareGetParameter(this.filter.operators),
+            this.filter.germplasm
+            // [].concat(this.filter.facilities, this.filter.scientificObjects) // os & facilities
+        )
+    }
+
+
     searchDataList(options) {
         let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
         if (provUris != undefined) {
@@ -322,6 +346,10 @@ export default class DataList extends Vue {
                                 resolve(http);
                             })
                         });
+        //                         if(this.tableRef.showCount == true) {
+        //     console.log("searchMethod call loadAll")
+        //     this.countDataList(options)
+        // }
 
                     } else {
                         resolve(http);

@@ -11,6 +11,7 @@ import org.apache.jena.vocabulary.XSD;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -274,18 +275,18 @@ public class BrAPIv1ObservationVariableDTO {
             BrAPIv1ScaleDTO variableScale = BrAPIv1ScaleDTO.fromModel(variableModel.getUnit());
 
             URI dataTypeUri = variableModel.getDataType();
-            if (Objects.equals(dataTypeUri, URI.create(XSD.decimal.getURI()))
-                    | Objects.equals(dataTypeUri, URI.create(XSD.integer.getURI()))){
+            if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.decimal.getURI()))
+                    | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.integer.getURI()))){
                 variableScale.setDataType("Numerical");
             }
-            if (Objects.equals(dataTypeUri, URI.create(XSD.date.getURI()))
-                    | Objects.equals(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
+            if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.date.getURI()))
+                    | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
                 variableScale.setDataType("Date");
             }
-            if (Objects.equals(dataTypeUri, URI.create(XSD.xstring.getURI()))){
+            if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.xstring.getURI()))){
                 variableScale.setDataType("Text");
             }
-            if (Objects.equals(dataTypeUri, URI.create(XSD.xboolean.getURI()))){
+            if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.xboolean.getURI()))){
                 variableScale.setDataType("Nominal");
             }
 

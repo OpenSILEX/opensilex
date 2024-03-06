@@ -37,7 +37,7 @@ public class Faidarev1StudyDTOBuilder {
                         Optional.ofNullable(model.getEndDate())
                                 .map(endDate -> endDate.isBefore(LocalDate.now()))
                                 .orElse(model.getStartDate().isAfter(LocalDate.now())) ? "false" : "true"
-                ) // TODO : for review : shouldn't the "Active" information be in the ExperimentModel?
+                )
                 .setStudyDescription(model.getDescription());
 
         if (Objects.nonNull(model.getLastUpdateDate())) {

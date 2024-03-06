@@ -36,7 +36,7 @@ public class Faidarev1ObservationVariableDTOBuilder {
                                 .setEntity(Objects.toString(variableModel.getEntity().getName(), null))
                 )
                 .setMethod(methodDTOBuilder.fromModel(variableModel.getMethod()))
-                .setScale(scaleDTOBuilder.fromModel(variableModel.getUnit(), variableModel.getDataType().toString()))
+                .setScale(scaleDTOBuilder.fromModel(variableModel.getUnit(), variableModel.getDataType()))
                 .setCrop(
                         Optional.ofNullable(variableModel.getSpecies())
                                 .filter(list -> list.size() == 1)

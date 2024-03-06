@@ -1,8 +1,10 @@
 package org.opensilex.faidare.builder;
 
+import org.apache.jena.vocabulary.XSD;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.faidare.model.Faidarev1ScaleDTO;
 
+import java.net.URI;
 import java.util.Objects;
 
 public class Faidarev1ScaleDTOBuilder {
@@ -19,19 +21,21 @@ public class Faidarev1ScaleDTOBuilder {
         return dto;
     }
 
-    public Faidarev1ScaleDTO fromModel(UnitModel unitModel, String dataTypeUri){
+    public Faidarev1ScaleDTO fromModel(UnitModel unitModel, URI dataTypeUri){
         Faidarev1ScaleDTO dto = this.fromModel(unitModel);
 
-        if (Objects.equals(dataTypeUri, "xsd:decimal") | Objects.equals(dataTypeUri, "xsd:integer")){
+        if (Objects.equals(dataTypeUri, URI.create(XSD.decimal.getURI()))
+                | Objects.equals(dataTypeUri, URI.create(XSD.integer.getURI()))){
             dto.setDataType("Numerical");
         }
-        if (Objects.equals(dataTypeUri, "xsd:date") | Objects.equals(dataTypeUri, "xsd:dateTime")){
+        if (Objects.equals(dataTypeUri, URI.create(XSD.date.getURI()))
+                | Objects.equals(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
             dto.setDataType("Date");
         }
-        if (Objects.equals(dataTypeUri, "xsd:string")){
+        if (Objects.equals(dataTypeUri, URI.create(XSD.xstring.getURI()))){
             dto.setDataType("Text");
         }
-        if (Objects.equals(dataTypeUri, "xsd:boolean")){
+        if (Objects.equals(dataTypeUri, URI.create(XSD.xboolean.getURI()))){
             dto.setDataType("Nominal");
         }
 

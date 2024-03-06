@@ -7,10 +7,12 @@
 package org.opensilex.brapi.model;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.vocabulary.XSD;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.VariableModel;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -271,17 +273,19 @@ public class BrAPIv1ObservationVariableDTO {
         if (variableModel.getUnit() != null){
             BrAPIv1ScaleDTO variableScale = BrAPIv1ScaleDTO.fromModel(variableModel.getUnit());
 
-            String dataTypeUri = variableModel.getDataType().toString();
-            if (Objects.equals(dataTypeUri, "xsd:decimal") | Objects.equals(dataTypeUri, "xsd:integer")){
+            URI dataTypeUri = variableModel.getDataType();
+            if (Objects.equals(dataTypeUri, URI.create(XSD.decimal.getURI()))
+                    | Objects.equals(dataTypeUri, URI.create(XSD.integer.getURI()))){
                 variableScale.setDataType("Numerical");
             }
-            if (Objects.equals(dataTypeUri, "xsd:date") | Objects.equals(dataTypeUri, "xsd:dateTime")){
+            if (Objects.equals(dataTypeUri, URI.create(XSD.date.getURI()))
+                    | Objects.equals(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
                 variableScale.setDataType("Date");
             }
-            if (Objects.equals(dataTypeUri, "xsd:string")){
+            if (Objects.equals(dataTypeUri, URI.create(XSD.xstring.getURI()))){
                 variableScale.setDataType("Text");
             }
-            if (Objects.equals(dataTypeUri, "xsd:boolean")){
+            if (Objects.equals(dataTypeUri, URI.create(XSD.xboolean.getURI()))){
                 variableScale.setDataType("Nominal");
             }
 

@@ -39,7 +39,6 @@ import org.opensilex.server.response.ObjectUriResponse;
 
 /**
  * @author vmigot
- * <p>
  * Abstract class used in OpenSILEX for Secure API testing with Mongodb support.
  * This is used for testing services with direct Mongodb setup and teardown (specific Before and After tests methods, etc...)
  */

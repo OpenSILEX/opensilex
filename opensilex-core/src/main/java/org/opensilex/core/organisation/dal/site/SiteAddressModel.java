@@ -7,8 +7,6 @@ import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
-import java.util.Objects;
-
 /**
  * Address of a site.
  *

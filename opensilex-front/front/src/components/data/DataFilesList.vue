@@ -219,10 +219,6 @@ export default class DataFilesList extends Vue {
       );
     }
 
-    returnEmptyPromise(): number {
-      return undefined;
-    }
-
 
     getTargetPath(uri: string) {
     let defaultOsPath: string = this.objectsPath[uri];

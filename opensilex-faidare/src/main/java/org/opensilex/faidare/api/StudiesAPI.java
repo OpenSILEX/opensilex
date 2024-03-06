@@ -75,16 +75,10 @@ public class StudiesAPI extends FaidareCall {
         ArrayList<OrderBy> orderByList = new ArrayList<>();
 
         if (!StringUtils.isEmpty(sortBy)) {
-            switch (sortBy) {
-                case "studyDbId":
-                    sortBy = "uri";
-                    break;
-                case "seasonDbId":
-                    sortBy = "campaign";
-                    break;
-                default:
-                    sortBy = "";
-                    break;
+            if (sortBy.equals("studyDbId")) {
+                sortBy = "uri";
+            } else {
+                sortBy = "";
             }
             String orderByStr;
             if (!StringUtils.isEmpty(sortOrder)) {

@@ -201,11 +201,11 @@ export default class DataFilesList extends Vue {
      /**
      * Construct paths for each target's UriLink components according to their type.
      */
-    loadObjectsPath() {
+    private loadObjectsPath(): Promise<unknown> {
       // ensure that at least one object has been loaded (in case where all data in the page have no target)
       let objectURIs = Object.keys(this.objects);
       if (!objectURIs || objectURIs.length == 0) {
-        return;
+        return Promise.resolve();
       }
 
       return this.ontologyService

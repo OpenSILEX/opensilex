@@ -611,6 +611,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
           this.totalRow = http.response.metadata.pagination.totalCount;
+          // this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1;
+          // // +1 si booleen hasNext (page) est true. CurrentPage commence à 1 et non 0 donc aucun probleme à la premiere page
+
           // totalCount = le total de datas
           // totalPages = le total de pages
           console.log("searchMethod response :", http.response)
@@ -619,7 +622,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
           this.isSearching = false;
           this.$opensilex.enableLoader();
           if( this.showCount == true ){
-            this.loadAll()
+            this.showCount = false
           }
           return http.response.result;
         })
@@ -644,8 +647,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       this.isSearching = false;
       this.$opensilex.enableLoader();
       console.log("this.showcount av ", this.showCount)
-      this.showCount = !this.showCount
-       console.log("this.showcount ap ", this.showCount)
+      this.showCount = !this.showCount;
+      console.log("this.showcount ap ", this.showCount)
       return http.response.result;
     })
   }

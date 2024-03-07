@@ -346,10 +346,6 @@ export default class DataList extends Vue {
                                 resolve(http);
                             })
                         });
-        //                         if(this.tableRef.showCount == true) {
-        //     console.log("searchMethod call loadAll")
-        //     this.countDataList(options)
-        // }
 
                     } else {
                         resolve(http);

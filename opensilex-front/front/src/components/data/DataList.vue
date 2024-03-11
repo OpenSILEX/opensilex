@@ -1,6 +1,6 @@
 <template>
     <div>
-        <opensilex-TableAsyncView
+        <opensilex-DataTableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
             :countMethod="countDataList"
@@ -50,7 +50,7 @@
                 </b-button-group>
             </template>
 
-        </opensilex-TableAsyncView>
+        </opensilex-DataTableAsyncView>
 
         <opensilex-DataProvenanceModalView
             ref="dataProvenanceModalView"
@@ -241,13 +241,14 @@ export default class DataList extends Vue {
             undefined, // max_confidence
             provUris, // provenance
             undefined, // metadata
-            this.$opensilex.prepareGetParameter(this.filter.operators),
-            [].concat(
-                this.filter.facilities, 
-                this.filter.scientificObjects, 
-                this.filter.germplasm,
-                this.filter.germplasm_group
-            )
+            this.$opensilex.prepareGetParameter(this.filter.operators)
+            // ,
+            // [].concat(
+            //     this.filter.facilities, 
+            //     this.filter.scientificObjects, 
+            //     this.filter.germplasm,
+            //     this.filter.germplasm_group
+            // )
 
         )
     }

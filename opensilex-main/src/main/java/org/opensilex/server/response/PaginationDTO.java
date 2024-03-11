@@ -35,9 +35,12 @@ public class PaginationDTO {
     private final long totalPages;
 
     /**
-     * Indicate if a limit in the number of element to count was applied during the database call
+     * Indicate if the count query was used with a limit on the number of element to count.
+     * This can be done for performance reason, in order to not iterate each document to count, when this number becomes high
      */
     private final long limitCount;
+
+    private boolean hasNextPage;
 
     /**
      * Empty constructor assume no pagination.
@@ -48,6 +51,7 @@ public class PaginationDTO {
         this.totalCount = 0;
         this.totalPages = 0;
         this.limitCount = 0;
+        this.hasNextPage = false;
     }
 
     /**
@@ -77,6 +81,17 @@ public class PaginationDTO {
             }
         }
         this.limitCount = limitCount;
+
+        setHasNextPage();
+    }
+
+    public PaginationDTO(long pageSize, long currentPage, boolean hasNextPage) {
+        this.pageSize = pageSize;
+        this.currentPage = currentPage;
+        this.hasNextPage = hasNextPage;
+        this.totalCount = 0;
+        this.totalPages = 0;
+        this.limitCount = 0;
     }
 
     /**
@@ -109,7 +124,7 @@ public class PaginationDTO {
     /**
      * Getter for total pages.
      *
-     * @return toatal pages
+     * @return total pages
      */
     public long getTotalPages() {
         return totalPages;
@@ -117,5 +132,18 @@ public class PaginationDTO {
 
     public long getLimitCount() {
         return limitCount;
+    }
+
+    public boolean getHasNextPage() {
+        return hasNextPage;
+    }
+
+    public void setHasNextPage(){
+        // there is a next page if the last page is not reached
+        this.hasNextPage = totalPages > currentPage;
+    }
+
+    public void setHasNextPage(boolean hasNextPage) {
+        this.hasNextPage = hasNextPage;
     }
 }

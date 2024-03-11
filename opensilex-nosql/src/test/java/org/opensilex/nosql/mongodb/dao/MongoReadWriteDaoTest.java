@@ -25,6 +25,8 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.model.SparqlMongoTestModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;

@@ -1,5 +1,6 @@
 package org.opensilex.utils.pagination;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -16,16 +17,48 @@ import java.util.stream.Stream;
  */
 public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
 
+    private boolean hasNextPageBeenChecked = true;
+
     /**
+     * Constructor for an empty stream. Just keep the information about the provided pagination
+     */
+    public StreamWithPagination(long page, long pageSize){
+        super(Stream.empty(), page, pageSize, 0, 0);
+    }
+
+    /**
+     /**
+     * Constructor for a non-empty list, with information about provided pagination and the counted element number
+     *
      * @param stream the Stream of objects
      * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} instead
      */
-    public StreamWithPagination(Stream<T> stream, long page, long pageSize,long total) throws IllegalArgumentException{
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize, long total) throws IllegalArgumentException {
         super(stream, total, page, pageSize, total);
     }
 
-    public StreamWithPagination(Stream<T> stream, long page, long pageSize) throws IllegalArgumentException{
-        super(stream, page, pageSize, 0);
+    /**
+     * Constructor for a non-empty stream, with information about provided pagination, the counted element number and the count limit
+     * which has applied
+     */
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize, long total, long countLimit) {
+        super(stream, page, pageSize, total, countLimit);
+    }
+
+    /**
+     /**
+     * Constructor for a non-empty list, with information about provided pagination and the counted element number
+     *
+     * @param stream the Stream of objects
+     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} instead
+     */
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize) throws IllegalArgumentException {
+        super(stream, page, pageSize, false);
+        hasNextPageBeenChecked = false;
+    }
+
+    public boolean isHasNextPageBeenChecked() {
+        return hasNextPageBeenChecked;
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.mongodb.client.model.CountOptions;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 
@@ -101,28 +103,6 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     @NotNull ListWithPagination<T> searchWithPagination(@NotNull F filter) throws MongoException;
 
     /**
-     * Search for models based on the provided filter within a client session.
-     *
-     * @param session    The MongoDB client session.
-     * @param filter     The filter to apply.
-     * @param projection The projection to apply on search results.
-     * @return List of models matching the filter with pagination information.
-     * @throws MongoException If a MongoDB error occurs.
-     */
-    @NotNull ListWithPagination<T> searchWithPagination(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
-
-    /**
-     * Search for models based on the provided filter and apply a conversion function.
-     *
-     * @param filter          The filter to apply.
-     * @param convertFunction The function to convert models to another type.
-     * @param <T_RESULT>      The result type after conversion.
-     * @return List of converted models matching the filter with pagination information.
-     * @throws MongoException If a MongoDB error occurs.
-     */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(@NotNull F filter, Function<T, T_RESULT> convertFunction) throws MongoException;
-
-    /**
      * Search for models based on the provided filter within a client session and apply a conversion function.
      *
      * @param <T_RESULT>       The result type after conversion.
@@ -149,25 +129,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
 
     /**
-     * Search for models based on the provided filter within a client session.
-     *
-     * @param session    The MongoDB client session.
-     * @param filter     The filter to apply.
-     * @param projection The projection to apply on search results.
-     * @return Stream of models matching the filter with pagination information.
-     * @throws MongoException If a MongoDB error occurs.
-     *
-     * @apiNote Use the following fields from {@code mongoSearchQuery} :
-     * <ul>
-     *     <li>{@link MongoSearchQuery#getSession()} : The MongoDB client session.</li>
-     *     <li>{@link MongoSearchQuery#getFilter()} : The filter to apply.</li>
-     *     <li>{@link MongoSearchQuery#getProjection()}} : The projection to apply on search results..</li>
-     * </ul>
-     */
-    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
-
-    /**
-     * Search for models based on the provided filter within a client session.
+     * Search for models based on the provided query
      *
      * @param query The Mongo search query object parameter
      * @return Stream of models matching the filter with pagination information.

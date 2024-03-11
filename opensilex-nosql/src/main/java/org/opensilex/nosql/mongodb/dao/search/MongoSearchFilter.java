@@ -1,4 +1,4 @@
-package org.opensilex.nosql.mongodb.dao;
+package org.opensilex.nosql.mongodb.dao.search;
 
 
 import org.opensilex.sparql.service.SearchFilter;

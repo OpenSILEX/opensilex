@@ -7,7 +7,7 @@
  * ************************************************************************************
  */
 
-package org.opensilex.nosql.mongodb.dao;
+package org.opensilex.nosql.mongodb.dao.search;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.CountOptions;
@@ -18,6 +18,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_COUNT_STRATEGY.*;
+
 /**
  * A parameter object used to group the different options when running a read/search query
  * @param <T> The type of the MongoDB model.
@@ -27,6 +29,22 @@ import java.util.function.Function;
  * @author rcolin
  */
 public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter, T_RESULT> {
+
+    /**
+     * Define the strategy to use for counting element before running the search
+     */
+    public enum PAGINATED_SEARCH_COUNT_STRATEGY {
+
+        /**
+         * Only check if there exists a next page during the search
+         */
+        CHECK_IF_NEXT_PAGE_EXISTS,
+
+        /**
+         * Run a count query before the search
+         */
+        COUNT_QUERY_BEFORE_SEARCH
+    }
 
     // The MongoDB client session
     private ClientSession session;
@@ -45,8 +63,16 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
     // The function to convert models to another type.
     private Function<T, T_RESULT> convertFunction;
 
+    // The count strategy for paginated search
+    private PAGINATED_SEARCH_COUNT_STRATEGY countStrategy;
+
+
     // Custom CountOptions to use during count before the search with pagination
     private CountOptions countOptions;
+
+    public MongoSearchQuery() {
+        countStrategy = COUNT_QUERY_BEFORE_SEARCH;
+    }
 
     public ClientSession getSession() {
         return session;
@@ -109,5 +135,14 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
             filterBsonStr = filterBson.toString();
         }
         return filterBsonStr;
+    }
+
+    public PAGINATED_SEARCH_COUNT_STRATEGY getCountStrategy() {
+        return countStrategy;
+    }
+
+    public MongoSearchQuery<T, F, T_RESULT> setCountStrategy(PAGINATED_SEARCH_COUNT_STRATEGY countStrategy) {
+        this.countStrategy = countStrategy;
+        return this;
     }
 }

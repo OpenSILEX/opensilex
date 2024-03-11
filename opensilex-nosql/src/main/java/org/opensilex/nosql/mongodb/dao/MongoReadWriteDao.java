@@ -11,7 +11,6 @@ import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.arq.querybuilder.Order;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -22,8 +21,11 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
 
+import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_COUNT_STRATEGY.*;
 import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
 
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -420,8 +422,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * </ul>
      */
     protected CountOptions getDefaultCountOptions(F filter) {
-        CountOptions countOptions = new CountOptions()
-                .skip(filter.getPage() * filter.getPageSize());
+        CountOptions countOptions = new CountOptions();
 
         // No pageSize specified, limit by default
         if (filter.getPageSize() == 0) {
@@ -465,21 +466,14 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return count(session, filterToBson(filter), countOptions == null ? getDefaultCountOptions(filter) : countOptions);
     }
 
-    /**
-     * Finds documents in this MongoCollection with pagination support.
-     * @param query The search query
-     * @return The query results, the total count of results and the {@link CountOptions} used for counting
-     */
-    protected <T_CONVERTED> Triple<FindIterable<T>, Long, CountOptions> findWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) {
+    protected <T_CONVERTED>  FindIterable<T> getFindIterable(MongoSearchQuery<T, F, T_CONVERTED> query){
 
-        // count documents
-        CountOptions countOptions = query.getCountOptions() == null ?
-                getDefaultCountOptions(query.getFilter()) :
-                query.getCountOptions();
+        F filter = query.getFilter();
+        int limit = filter.getPageSize();
 
-        long resultsNumber = count(query.getSession(), query.getFilterBson(), countOptions);
-        if (resultsNumber == 0) {
-            return null;
+        // just ask the database for one more element in order to check if there are other result after the current page
+        if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+            limit++;
         }
 
         // search with filter and session
@@ -488,111 +482,115 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 collection.find(query.getSession(), query.getFilterBson());
 
         // apply sort and pagination
-        queryResult.sort(buildSort(query.getFilter().getOrderByList()))
-                .skip(query.getFilter().getPage() * query.getFilter().getPageSize())
-                .limit(query.getFilter().getPageSize());
+        queryResult.sort(buildSort(filter.getOrderByList()))
+                .skip(filter.getPage() * filter.getPageSize())
+                .limit(limit);
 
         // apply projection
         if (query.getProjection() != null) {
             queryResult.projection(query.getProjection());
         }
 
-        return Triple.of(queryResult, resultsNumber, countOptions);
+        return queryResult;
     }
 
     @Override
     public final ListWithPagination<T> searchWithPagination(@NotNull F filter) throws MongoException {
-        return searchWithPagination(null, filter, null);
-    }
-
-    @Override
-    public ListWithPagination<T> searchWithPagination(ClientSession session, @NotNull F filter, Bson projection) throws MongoException {
-        return searchWithPagination(new MongoSearchQuery<T, F, T>()
-                .setSession(session)
-                .setFilter(filter)
-                .setProjection(projection)
-                .setConvertFunction(Function.identity())); // Use Function.identity() in order to use only one searchWithPagination method, here no conversion is done
+        return searchWithPagination(new MongoSearchQuery<T, F, T>().setFilter(filter));
     }
 
     @Override
     public <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) throws MongoException {
 
-        // compute Bson filter from 'high-level' filter
+
+        // compute Bson filter filter
+        F filter = query.getFilter();
         Bson bsonFilter = filterToBson(query.getFilter());
         query.setFilterBson(bsonFilter);
-
-        // run count and search
         Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, query.getFilterBsonStr());
-        Triple<FindIterable<T>, Long, CountOptions> searchResult = findWithPagination(query);
-        if (searchResult == null) {
+
+        long totalCount = 0;
+        int countLimit = 0;
+        List<T_CONVERTED> results;
+        ListWithPagination<T_CONVERTED> paginatedList;
+
+        if (query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS) {
+            results = new ArrayList<>(filter.getPageSize());
+        } else {
+            // run count query
+            CountOptions countOptions  = query.getCountOptions() == null ? getDefaultCountOptions(filter) : query.getCountOptions();
+            totalCount = count(query.getSession(), query.getFilterBson(), countOptions);
+
             // return empty list, keep information about the pagination used
-            return new ListWithPagination<>(Collections.emptyList(), query.getFilter().getPage(), query.getFilter().getPageSize(), 0);
+            if(totalCount == 0){
+                return new ListWithPagination<>(filter.getPage(), filter.getPageSize());
+            }
+            results = new ArrayList<>((int) (Math.min(totalCount, filter.getPageSize())));
+            countLimit = countOptions.getLimit();
         }
-        long resultCount = Math.min(searchResult.getMiddle(), query.getFilter().getPageSize());
 
-        // iterate over MongoDB result and convert result on the fly before collect them inside a List
-        List<T_CONVERTED> convertedResults = new ArrayList<>((int) resultCount);
-        searchResult.getLeft().forEach(
-                mongoResult -> convertedResults.add(query.getConvertFunction().apply(mongoResult))
-        );
-        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, convertedResults.size());
+        // Run the search query and get cursor/iterable over database results
+        FindIterable<T> dbResults = getFindIterable(query);
+        try(MongoCursor<T> dbResultsIt = dbResults.iterator()){
 
-        return new ListWithPagination<>(
-                convertedResults,
-                query.getFilter().getPage(),
-                query.getFilter().getPageSize(),
-                searchResult.getMiddle().intValue(),
-                searchResult.getRight().getLimit()
-        );
-    }
+            // Iterate over MongoDB result and convert result on the fly before collect them inside a List
+            // if !dbResultsIt.hasNext() -> less result that the specified page size
+            for (int i = 0; i < filter.getPageSize() && dbResultsIt.hasNext(); i++) {
+                results.add(query.getConvertFunction().apply(dbResultsIt.next()));
+            }
 
-    @Override
-    public final <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(@NotNull F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
-        return searchWithPagination(new MongoSearchQuery<T, F, T_CONVERTED>()
-                .setFilter(filter)
-                .setConvertFunction(convertFunction));
-    }
+            // Return the list and just indicate if there exists one document on the next page
+            if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+                paginatedList = new ListWithPagination<>(results, filter.getPage(), filter.getPageSize(), dbResultsIt.hasNext());
+            }else{
+                // return the list with information about counted element and the used limit
+                paginatedList = new ListWithPagination<>(results, filter.getPage(), filter.getPageSize(), totalCount, countLimit);
+            }
+        }
 
-    @Override
-    public StreamWithPagination<T> searchAsStreamWithPagination(ClientSession session, F filter, Bson projection) throws MongoException {
-        return searchAsStreamWithPagination(new MongoSearchQuery<T, F, T>()
-                .setFilter(filter)
-                .setSession(session)
-                .setProjection(projection));
+        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, results.size());
+        return paginatedList;
     }
 
     @Override
     public StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> query) throws MongoException {
 
-        Objects.requireNonNull(query.getFilter());
-
-        // compute Bson filter from 'high-level' filter
+        // compute Bson filter filter
+        F filter = query.getFilter();
         Bson bsonFilter = filterToBson(query.getFilter());
         query.setFilterBson(bsonFilter);
-
-        // run count and search
         Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, query.getFilterBsonStr());
-        var searchResults = findWithPagination(query);
-        if (searchResults == null) { // no result, return StreamWithPagination with an empty Stream
+
+        long totalCount = 0;
+        int countLimit = 0;
+        Stream<T> results;
+        StreamWithPagination<T> paginatedStream;
+
+        if (query.getCountStrategy() == COUNT_QUERY_BEFORE_SEARCH) {
+            // run count query
+            CountOptions countOptions  = query.getCountOptions() == null ? getDefaultCountOptions(filter) : query.getCountOptions();
+            totalCount = count(query.getSession(), query.getFilterBson(), countOptions);
+
             // return empty Stream, keep information about the pagination used
-            return new StreamWithPagination<>(Stream.empty(), query.getFilter().getPage(), query.getFilter().getPageSize(), 0);
-
+            if(totalCount == 0){
+                return new StreamWithPagination<>(filter.getPage(), filter.getPageSize());
+            }
+            countLimit = countOptions.getLimit();
         }
-        // Build the StreamWithPagination with results Stream and results count
-        int resultCount = searchResults.getMiddle().intValue();
-        Stream<T> resultStream = StreamSupport.stream(searchResults.getLeft().spliterator(), false);
 
-        // The effective number of element to consume inside the Stream is min(resultCount, pageSize)
-        // if resultCount > pageSize, then only 'pageSize' element nb are returned, else only 'resultCount' nb element are returned
-        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, Math.min(resultCount, query.getFilter().getPageSize()));
+        // Run the search query and get cursor/iterable over database results
+        FindIterable<T> dbResults = getFindIterable(query);
+        results = StreamSupport.stream(dbResults.spliterator(), false);
 
-        return new StreamWithPagination<>(
-                resultStream,
-                resultCount,
-                query.getFilter().getPage(),
-                query.getFilter().getPageSize(),
-                searchResults.getRight().getLimit()
-        );
+        if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+            paginatedStream = new StreamWithPagination<>(results, filter.getPage(), filter.getPageSize(), 0);
+        }else{
+            // return the list with information about counted element and the used limit
+            paginatedStream = new StreamWithPagination<>(results, filter.getPage(), filter.getPageSize(), totalCount, countLimit);
+        }
+
+        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, totalCount);
+        return paginatedStream;
     }
 
     @Override
@@ -875,3 +873,4 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return stats.get("count", Long.class);
     }
 }
+

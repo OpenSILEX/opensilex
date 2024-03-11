@@ -2,6 +2,8 @@ package org.opensilex.nosql.mongodb.dao;
 
 import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +28,11 @@ final class PaginatedSearchTask<T extends MongoModel,F extends MongoSearchFilter
         // write results from database inside collectedModels. Use page and pageSize to determine offset
         int startIndex = searchFilter.getPage()* searchFilter.getPageSize();
         AtomicInteger arrayIndex = new AtomicInteger(startIndex);
-        dao.searchAsStreamWithPagination(session, searchFilter, null).getSource().forEach(model ->
+
+        dao.searchAsStreamWithPagination(new MongoSearchQuery<T, F, T>()
+                .setFilter(searchFilter)
+                .setSession(session)
+        ).getSource().forEach(model ->
                 collectedModels[arrayIndex.getAndIncrement()] = model
         );
 

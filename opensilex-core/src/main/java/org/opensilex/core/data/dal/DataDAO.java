@@ -1541,7 +1541,7 @@ public class DataDAO {
                 .map(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
                 .collect(Collectors.toList());
 
-        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal(), modelList.getCountLimit());
+        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal(), modelList.getLimitCount());
     }
 
     /**

@@ -1,5 +1,7 @@
 package org.opensilex.utils.pagination;
 
+import org.opensilex.server.response.PaginationDTO;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -15,28 +17,7 @@ public abstract class PaginatedIterable<T, S>{
      */
     protected final S source;
 
-    /**
-     * Current page.
-     */
-    protected final long page;
-
-    /**
-     * Page size.
-     */
-    protected final long pageSize;
-
-    /**
-     * Total number of element
-     */
-    protected final long total;
-
-    /**
-     * Indicate if the count query was used with a limit on the number of element to count.
-     * This can be done for performance reason, in order to not iterate each document to count, when this number becomes high
-     */
-    protected final long countLimit;
-
-    protected final boolean hasNextPage;
+    protected final PaginationDTO pagination;
 
     /**
      * @param source the iterable source of T
@@ -59,46 +40,34 @@ public abstract class PaginatedIterable<T, S>{
         if(countLimit < 0){
             throw new IllegalArgumentException("countLimit must be >= 0");
         }
+
         this.source = source;
-        this.page = page;
-        this.pageSize = pageSize;
-        this.total = total;
-        this.countLimit = countLimit;
-
-        // There is a next page if the current offset is inferior to the total number of element
-        this.hasNextPage = (page + 1) * pageSize < total;
-    }
-
-    /**
-     * @see #PaginatedIterable(Object, long, long, long, long)
-     */
-    protected PaginatedIterable(S source, long page, long pageSize, long total) {
-        this(source, page, pageSize, total, 0);
+        this.pagination = new PaginationDTO(pageSize, page, total, countLimit);
     }
 
     protected PaginatedIterable(S source, long page, long pageSize, boolean hasNextPage) {
         this.source = source;
-        this.page = page;
-        this.pageSize = pageSize;
-        this.total = 0;
-        this.countLimit = 0;
-        this.hasNextPage = hasNextPage;
+        this.pagination = new PaginationDTO(pageSize, page, hasNextPage);
     }
 
     public long getTotal() {
-        return total;
+        return pagination.getTotalCount();
     }
 
     public long getPage() {
-        return page;
+        return pagination.getCurrentPage();
     }
 
     public long getPageSize() {
-        return pageSize;
+        return pagination.getPageSize();
     }
 
-    public long getCountLimit() {
-        return countLimit;
+    public long getLimitCount() {
+        return pagination.getLimitCount();
+    }
+
+    public PaginationDTO getPagination() {
+        return pagination;
     }
 
     public abstract void forEach(Consumer<T> action);

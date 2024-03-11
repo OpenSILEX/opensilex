@@ -260,6 +260,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   selectedItems: Array<T> = [];
   selectedItem;
+  hasResults: boolean = true;
 
   @Watch("currentPage")
   definePath(){
@@ -618,6 +619,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
           // totalPages = le total de pages
           console.log("searchMethod response :", http.response)
           console.log("searchMethod this.totalRow : ", this.totalRow)
+
+          if (http.response.result[0]) {
+            this.hasResults = true
+          } else {
+            this.hasResults = false
+          }
+
           this.pageSize = http.response.metadata.pagination.pageSize;
           this.isSearching = false;
           this.$opensilex.enableLoader();
@@ -634,7 +642,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
   getCurrentItemLimit() : number {
-    return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 ? 0  :  (this.pageSize * (this.currentPage -1))+1 )
+    return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 || !this.hasResults ? 0  :  (this.pageSize * (this.currentPage -1))+1 )
   }
 
   loadAll(){

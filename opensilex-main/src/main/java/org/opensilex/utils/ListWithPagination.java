@@ -25,20 +25,17 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
         this(list, 0, 0, list.size());
     }
 
-    public ListWithPagination(List<T> list, int page, int pageSize, int total) {
+    public ListWithPagination(List<T> list, long page, long pageSize, long total) {
         this(list, page, pageSize, total, 0);
     }
 
-    public ListWithPagination(List<T> list, Integer page, Integer pageSize, int total) {
-        this(list,
-                page == null || page < 0 ? 0 : page,
-                pageSize == null || pageSize < 0 ? 0 : pageSize,
-                total);
+    public ListWithPagination(List<T> list,long page, long pageSize, long total, long countLimit) {
+        super(list, page, pageSize, total, countLimit);
+    }
+    public ListWithPagination(List<T> list,long page, long pageSize, boolean hasNextElement) {
+        super(list,page, pageSize, hasNextElement);
     }
 
-    public ListWithPagination(List<T> list,int page, int pageSize, int total, int countLimit) {
-        super(list, total, page, pageSize, countLimit);
-    }
 
     /**
      * Get list of elements for current page.
@@ -63,7 +60,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
                 .map(converter)
                 .collect(Collectors.toList());
 
-        return new ListWithPagination<>(resultList, this.page, this.pageSize, this.total);
+        return new ListWithPagination<>(resultList, this.getPage(), this.getPageSize(), this.getTotal());
     }
 
     @Override

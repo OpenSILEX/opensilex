@@ -18,19 +18,16 @@ public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
 
     /**
      * @param stream the Stream of objects
-     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} or {@link StreamWithPagination#StreamWithPagination()} instead
+     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} instead
      */
-    public StreamWithPagination(Stream<T> stream, int total, int page, int pageSize) throws IllegalArgumentException{
-        super(stream, total, page, pageSize);
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize,long total) throws IllegalArgumentException{
+        super(stream, total, page, pageSize, total);
     }
 
-    public StreamWithPagination(Stream<T> stream, int total, int page, int pageSize, int countLimit) throws IllegalArgumentException{
-        super(stream, total, page, pageSize, countLimit);
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize) throws IllegalArgumentException{
+        super(stream, page, pageSize, 0);
     }
 
-    public StreamWithPagination(){
-        super(Stream.empty(),0,0,0,0);
-    }
     @Override
     public void forEach(Consumer<T> action) {
         getSource().forEach(action);

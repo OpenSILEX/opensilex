@@ -611,9 +611,15 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
         pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
       })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-          this.totalRow = http.response.metadata.pagination.totalCount;
+          // this.totalRow = http.response.metadata.pagination.totalCount;
+
           // this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1;
           // // +1 si booleen hasNext (page) est true. CurrentPage commence à 1 et non 0 donc aucun probleme à la premiere page
+          if(http.response.metadata.pagination.hasNextPage){
+              this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1
+          }else{
+              this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)
+          }
 
           // totalCount = le total de datas
           // totalPages = le total de pages

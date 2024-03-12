@@ -44,7 +44,7 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
                 .skip(paginatedStream.getPageSize()+1)
                 .collect(Collectors.toList());
 
-        if(! paginatedStream.isHasNextPageBeenChecked()){
+        if(! paginatedStream.hasNextPageBeenChecked()){
 
             // There is at least one more element after the asked page
             if(streamResults.size() == paginatedStream.getPageSize()){

@@ -1,7 +1,5 @@
 package org.opensilex.utils.pagination;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -57,7 +55,7 @@ public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
         hasNextPageBeenChecked = false;
     }
 
-    public boolean isHasNextPageBeenChecked() {
+    public boolean hasNextPageBeenChecked() {
         return hasNextPageBeenChecked;
     }
 

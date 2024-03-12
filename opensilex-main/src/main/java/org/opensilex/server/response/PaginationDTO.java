@@ -82,7 +82,8 @@ public class PaginationDTO {
         }
         this.limitCount = limitCount;
 
-        setHasNextPage();
+        // there is a next page if the last page is not reached
+        this.hasNextPage = totalPages > currentPage;
     }
 
     public PaginationDTO(long pageSize, long currentPage, boolean hasNextPage) {
@@ -136,11 +137,6 @@ public class PaginationDTO {
 
     public boolean getHasNextPage() {
         return hasNextPage;
-    }
-
-    public void setHasNextPage(){
-        // there is a next page if the last page is not reached
-        this.hasNextPage = totalPages > currentPage;
     }
 
     public void setHasNextPage(boolean hasNextPage) {

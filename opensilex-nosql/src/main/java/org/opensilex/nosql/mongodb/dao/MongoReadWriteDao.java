@@ -25,7 +25,7 @@ import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
 import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
 
-import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_COUNT_STRATEGY.*;
+import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
 import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
 
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -405,7 +405,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      */
     @Override
     public final long count(@NotNull F filter) throws MongoException {
-        return count(null, filter, null);
+        // by default, use an empty count option with allow an exact count without limit
+        return count(null, filter, new CountOptions());
     }
 
     /**
@@ -472,7 +473,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         int limit = filter.getPageSize();
 
         // just ask the database for one more element in order to check if there are other result after the current page
-        if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+        if(query.getCountStrategy() == HAS_NEXT_PAGE){
             limit++;
         }
 
@@ -514,7 +515,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         List<T_CONVERTED> results;
         ListWithPagination<T_CONVERTED> paginatedList;
 
-        if (query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS) {
+        if (query.getCountStrategy() == HAS_NEXT_PAGE) {
             results = new ArrayList<>(filter.getPageSize());
         } else {
             // run count query
@@ -540,7 +541,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             }
 
             // Return the list and just indicate if there exists one document on the next page
-            if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+            if(query.getCountStrategy() == HAS_NEXT_PAGE){
                 paginatedList = new ListWithPagination<>(results, filter.getPage(), filter.getPageSize(), dbResultsIt.hasNext());
             }else{
                 // return the list with information about counted element and the used limit
@@ -582,7 +583,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         FindIterable<T> dbResults = getFindIterable(query);
         results = StreamSupport.stream(dbResults.spliterator(), false);
 
-        if(query.getCountStrategy() == CHECK_IF_NEXT_PAGE_EXISTS){
+        if(query.getCountStrategy() == HAS_NEXT_PAGE){
             paginatedStream = new StreamWithPagination<>(results, filter.getPage(), filter.getPageSize(), 0);
         }else{
             // return the list with information about counted element and the used limit

@@ -90,6 +90,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @param countOptions The custom {@link CountOptions} to use
      * @return The number of models matching the filter.
      * @throws MongoException If a MongoDB error occurs.
+     *
      */
     long count(ClientSession session, @NotNull F filter, CountOptions countOptions) throws MongoException;
 

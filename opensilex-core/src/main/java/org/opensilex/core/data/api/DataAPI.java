@@ -21,6 +21,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
@@ -55,6 +56,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -285,6 +287,38 @@ public class DataAPI {
         return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
     }
 
+    private Set<URI> targetByGermplasmFilter(List<URI> targets , URI germplasmGroup, List<URI> germplasmUris, List<URI> experiments) throws Exception {
+
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        //Or/And scientific objects associated with passed germplasms
+
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        Set<URI> finalTargetsFilter = new HashSet<>(targets);
+
+        //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        List<URI> xpForTargetSearch = experiments;
+
+        if (CollectionUtils.isEmpty(experiments)) {
+
+            ExperimentSearchFilter xpFilter = new ExperimentSearchFilter();
+            xpFilter.setUser(user);
+            int xpQuantity = experimentDAO.count();
+            xpFilter.setPage(0);
+            xpFilter.setPageSize(xpQuantity);
+
+            xpForTargetSearch = experimentDAO.search(xpFilter)
+                    .getList()
+                    .stream()
+                    .map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList());
+        }
+
+        List<URI> germplasmGroupTargets = scientificObjectDAO.getScientificObjectUrisAssociatedWithGermplasmGroup(xpForTargetSearch, germplasmGroup, germplasmUris);
+        finalTargetsFilter.addAll(germplasmGroupTargets);
+        return finalTargetsFilter;
+    }
+
     @POST
     @Path("by_targets")
     @ApiOperation("Search data for a large list of targets")
@@ -299,6 +333,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -310,41 +345,9 @@ public class DataAPI {
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
-        if (targets == null) {
-            targets = new ArrayList<>();
-        }
-        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        //Or/And scientific objects associated with passed germplasms
-        if(germplasmGroup!=null || !CollectionUtils.isEmpty(germplasmUris)){
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-            Set<URI> finalTargetsFilter = new HashSet<>(targets);
-            //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-            List<URI> includedExperimentsForTargetsSearch = experiments;
-            if(CollectionUtils.isEmpty(experiments)){
-                ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
-                experimentSearchFilter.setUser(user);
-                int xpQuantity = experimentDAO.count();
-                experimentSearchFilter.setPage(0);
-                experimentSearchFilter.setPageSize(xpQuantity);
-                includedExperimentsForTargetsSearch = experimentDAO.search(experimentSearchFilter).getList().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-            }
-
-            List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
-                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, germplasmUris);
-            finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
-            targets = new ArrayList<>(finalTargetsFilter);
-            //if targets is still empty when a group was passed then we don't want any data to be returned
-            if(targets.isEmpty()){
-                ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<DataGetDTO>(new ArrayList<>());
-                return new PaginatedListResponse<>(resultDTOList).getResponse();
-            }
-        }
-
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
     }
 
     @GET
@@ -353,7 +356,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
     })
     public Response searchDataList(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
@@ -372,7 +375,7 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
     }
 
     private Response getDataList(
@@ -388,137 +391,145 @@ public class DataAPI {
             List<URI> provenances,
             String metadata,
             List<URI> operators,
+            URI germplasmGroup,
+            List<URI> germplasmUris,
             List<OrderBy> orderByList,
             int page,
             int pageSize) throws Exception{
 
-        // #TODO use a DAO which inherit from MongoReadWriteDao
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataSearchFilter filter;
+
+        try{
+            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
+            if(filter == null){
+                return new PaginatedListResponse<>(new ListWithPagination<>(page, pageSize)).getResponse();
+            }
+        }catch (DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }catch (JsonParseException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
+        }
+
+        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
+
+        ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
+                new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
+                        .setFilter(filter)
+                        .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, null))
+                        .setCountStrategy(MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.HAS_NEXT_PAGE)
+        );
+
+        return new PaginatedListResponse<>(results).getResponse();
+    }
+
+    private DataSearchFilter getSearchFilter(String startDate,
+                                             String endDate,
+                                             String timezone,
+                                             List<URI> experiments,
+                                             List<URI> targets,
+                                             List<URI> variables,
+                                             List<URI> devices,
+                                             Float confidenceMin,
+                                             Float confidenceMax,
+                                             List<URI> provenances,
+                                             String metadata,
+                                             List<URI> operators,
+                                             URI germplasmGroup,
+                                             List<URI> germplasmUris,
+                                             List<OrderBy> orderByList,
+                                             int page,
+                                             int pageSize) throws Exception {
 
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
 
         if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+            startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
         }
-
         if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+            endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
         }
-
         Document metadataFilter = null;
         if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
+            metadataFilter = Document.parse(metadata);
         }
 
-        // #TODO use a DAO which inherit from MongoReadWriteDao
-        // Pass a custom projection and a convert function directly to the Dao in order to avoid useless converts
-        ListWithPagination<DataModel> resultList = dao.search(
-                user,
-                experiments,
-                targets,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators,
-                orderByList,
-                page,
-                pageSize
-        );
-        ListWithPagination<DataGetSearchDTO> resultDTOList = dao.modelListToDTO(resultList);
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        DataSearchFilter filter = new DataSearchFilter()
+                .setUser(user)
+                .setExperiments(experiments)
+                .setVariables(variables)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setConfidenceMin(confidenceMin)
+                .setConfidenceMax(confidenceMax)
+                .setMetadata(metadataFilter)
+                .setOperators(operators);
+
+        filter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
+
+        Collection<URI> finalTargets = targets;
+
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        //Or/And scientific objects associated with passed germplasms
+        if (germplasmGroup != null || !CollectionUtils.isEmpty(germplasmUris)) {
+            finalTargets = targetByGermplasmFilter(targets, germplasmGroup, germplasmUris, experiments);
+
+            //if targets is still empty when a group was passed then we don't want any data to be returned
+            if(finalTargets.isEmpty()){
+               return null;
+            }
+        }
+        filter.setTargets(finalTargets);
+        return filter;
     }
 
 
 
-    @GET
+    @POST
     @Path("/count")
     @ApiOperation("Count data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of data ", response = Integer.class)
+            @ApiResponse(code = 200, message = "Return the number of data ", response = Long.class)
     })
     public Response countData(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by target uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
-    ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            ) throws Exception {
 
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
+        DataSearchFilter filter;
 
-        if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
+        try{
+            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            if(filter == null){
+                return new SingleObjectResponse<>(0).getResponse();
             }
+        }catch (DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }catch (JsonParseException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
         }
 
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
-        }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
-        }
-
-        int count = dao.count(
-                user,
-                experiments,
-                objects,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators
-        );
+        long count = new DataDaoV2(sparql, nosql).count(filter);
         return new SingleObjectResponse<>(count).getResponse();
     }
 

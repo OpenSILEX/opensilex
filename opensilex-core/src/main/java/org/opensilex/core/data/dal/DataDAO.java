@@ -310,7 +310,7 @@ public class DataDAO {
         return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
     }
 
-    public Document getSelectedAgents(List<URI> agents){
+    public Document getSelectedAgents(List< URI> agents){
 
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs

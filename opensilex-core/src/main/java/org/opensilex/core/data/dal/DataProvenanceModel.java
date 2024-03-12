@@ -31,16 +31,23 @@ public class DataProvenanceModel {
     @ApiModelProperty(value = "experiments uris on which the data has been produced")
     List<URI> experiments;
 
+    public static final String EXPERIMENT_FIELD = "experiments";
+
     @Valid
     @JsonProperty("prov_used")
     @ApiModelProperty(value = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
 
+    public static final String PROV_USED_FIELD = "provUsed";
+
     @Valid
     @JsonProperty("prov_was_associated_with")
     @ApiModelProperty(value = "allow an activity to be linked to an agent")
     List<ProvEntityModel> provWasAssociatedWith;
-    
+
+    public static final String PROV_WAS_ASSOCIATED_WITH_FIELD = "provWasAssociatedWith";
+
+
     @ApiModelProperty(value = "a key-value system to store specific information")
     Document settings; 
 

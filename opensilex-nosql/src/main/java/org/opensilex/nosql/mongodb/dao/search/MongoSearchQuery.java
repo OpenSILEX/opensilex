@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_COUNT_STRATEGY.*;
+import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
 
 /**
  * A parameter object used to group the different options when running a read/search query
@@ -33,12 +33,12 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
     /**
      * Define the strategy to use for counting element before running the search
      */
-    public enum PAGINATED_SEARCH_COUNT_STRATEGY {
+    public enum PAGINATED_SEARCH_STRATEGY {
 
         /**
          * Only check if there exists a next page during the search
          */
-        CHECK_IF_NEXT_PAGE_EXISTS,
+        HAS_NEXT_PAGE,
 
         /**
          * Run a count query before the search
@@ -64,7 +64,7 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
     private Function<T, T_RESULT> convertFunction;
 
     // The count strategy for paginated search
-    private PAGINATED_SEARCH_COUNT_STRATEGY countStrategy;
+    private PAGINATED_SEARCH_STRATEGY countStrategy;
 
 
     // Custom CountOptions to use during count before the search with pagination
@@ -137,11 +137,11 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
         return filterBsonStr;
     }
 
-    public PAGINATED_SEARCH_COUNT_STRATEGY getCountStrategy() {
+    public PAGINATED_SEARCH_STRATEGY getCountStrategy() {
         return countStrategy;
     }
 
-    public MongoSearchQuery<T, F, T_RESULT> setCountStrategy(PAGINATED_SEARCH_COUNT_STRATEGY countStrategy) {
+    public MongoSearchQuery<T, F, T_RESULT> setCountStrategy(PAGINATED_SEARCH_STRATEGY countStrategy) {
         this.countStrategy = countStrategy;
         return this;
     }

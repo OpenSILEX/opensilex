@@ -1,8 +1,9 @@
 <template>
     <div>
-        <opensilex-TableAsyncView
+        <opensilex-DataTableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
+            :countMethod="countDataList"
             :fields="fields"
             defaultSortBy="date"
             :defaultSortDesc="true"
@@ -49,7 +50,7 @@
                 </b-button-group>
             </template>
 
-        </opensilex-TableAsyncView>
+        </opensilex-DataTableAsyncView>
 
         <opensilex-DataProvenanceModalView
             ref="dataProvenanceModalView"
@@ -217,6 +218,41 @@ export default class DataList extends Vue {
     devices = {};
     facilities = {};
     operators = {};
+
+
+
+   countDataList(options) {
+        let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+        if (provUris != undefined) {
+            provUris = [provUris];
+        }
+
+    console.log("filter : ", this.filter)
+    
+    return this.dataService.countData(
+            this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
+            this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
+            undefined, // timezone,
+            this.filter.experiments, // experiments
+            this.filter.targets, //targets
+            this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
+            this.$opensilex.prepareGetParameter(this.filter.devices), // devices
+            undefined, // min_confidence
+            undefined, // max_confidence
+            provUris, // provenance
+            undefined, // metadata
+            this.$opensilex.prepareGetParameter(this.filter.operators)
+            // ,
+            // [].concat(
+            //     this.filter.facilities, 
+            //     this.filter.scientificObjects, 
+            //     this.filter.germplasm,
+            //     this.filter.germplasm_group
+            // )
+
+        )
+    }
+
 
     searchDataList(options) {
         let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);

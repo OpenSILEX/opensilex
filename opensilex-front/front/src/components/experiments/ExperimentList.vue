@@ -1,12 +1,12 @@
 <template>
   <div>
-    <opensilex-PageContent
-      class="pagecontent"
-    >
-      <!-- Toggle Sidebar--> 
-      <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
+    <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div
+        class="searchMenuContainer"
+        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
@@ -58,14 +58,14 @@
               <div>
                 <opensilex-FilterField>
                   <opensilex-FactorCategorySelector
-                  ref="factorCategorySelector"
-                  label="ExperimentList.filter-factors-categories"
-                  placeholder="ExperimentList.filter-factors-categories-placeholder"
-                  helpMessage="component.factor.name-help"
-                  :multiple="true" 
-                  :category.sync="filter.factorCategories"
-                  class="searchFilter"
-                ></opensilex-FactorCategorySelector> 
+                    ref="factorCategorySelector"
+                    label="ExperimentList.filter-factors-categories"
+                    placeholder="ExperimentList.filter-factors-categories-placeholder"
+                    helpMessage="component.factor.name-help"
+                    :multiple="true"
+                    :category.sync="filter.factorCategories"
+                    class="searchFilter"
+                  ></opensilex-FactorCategorySelector>
                 </opensilex-FilterField>
               </div>
 
@@ -73,12 +73,12 @@
               <div>
                 <opensilex-FilterField>
                   <opensilex-SelectForm
-                      label="ExperimentList.filter-facilities"
-                      placeholder="ExperimentList.filter-facilities-placeholder"
-                      :multiple="true"
-                      :selected.sync="filter.facilities"
-                      :options="facilities"
-                      class="searchFilter"
+                    label="ExperimentList.filter-facilities"
+                    placeholder="ExperimentList.filter-facilities-placeholder"
+                    :multiple="true"
+                    :selected.sync="filter.facilities"
+                    :options="facilities"
+                    class="searchFilter"
                   ></opensilex-SelectForm>
                 </opensilex-FilterField>
               </div>
@@ -93,8 +93,8 @@
                     type="number"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-StringFilter>
-                </opensilex-FilterField><br>
+                  ></opensilex-StringFilter> </opensilex-FilterField
+                ><br />
               </div>
             </template>
 
@@ -138,133 +138,132 @@
         </div>
       </Transition>
 
-    <opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchExperiments"
-      :fields="fields"
-      :isSelectable="true"
-      @refreshed="onRefreshed"
-      labelNumberOfSelectedRow="ExperimentList.selected"
-      iconNumberOfSelectedRow="ik#ik-layers"
-    >
+      <opensilex-TableAsyncView
+        ref="tableRef"
+        :searchMethod="searchExperiments"
+        :fields="fields"
+        :isSelectable="true"
+        @refreshed="onRefreshed"
+        labelNumberOfSelectedRow="ExperimentList.selected"
+        iconNumberOfSelectedRow="ik#ik-layers"
+      >
+        <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+          <b-dropdown
+            dropright
+            class="mb-2 mr-2"
+            :small="true"
+            :text="$t('VariableList.display')"
+          >
+            <b-dropdown-item-button @click="clickOnlySelected()">{{
+              onlySelected
+                ? $t("ExperimentList.selected-all")
+                : $t("component.common.selected-only")
+            }}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="resetSelected()">{{
+              $t("component.common.resetSelected")
+            }}</b-dropdown-item-button>
+          </b-dropdown>
 
-      <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-
-        <b-dropdown
-          dropright
-          class="mb-2 mr-2"
-          :small="true"
-          :text="$t('VariableList.display')">
-
-          <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ExperimentList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
-        </b-dropdown>
-
-        <b-dropdown
-          dropright
-          class="mb-2 mr-2"
-          :small="true"
-          :disabled="numberOfSelectedRows == 0"
-          text=actions
-          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-        >
+          <b-dropdown
+            dropright
+            class="mb-2 mr-2"
+            :small="true"
+            :disabled="numberOfSelectedRows == 0"
+            text="actions"
+            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+          >
             <b-dropdown-item-button
-                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="createDocument()"
-            >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-        </b-dropdown>
-      </template>
-      <template v-slot:cell(name)="{ data }">
-        <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.name"
-          :to="{
-            path: '/experiment/details/' + encodeURIComponent(data.item.uri),
-          }"
-        ></opensilex-UriLink>
-      </template>
+              >{{ $t("component.common.addDocument") }}</b-dropdown-item-button
+            >
+          </b-dropdown>
+        </template>
+        <template v-slot:cell(name)="{ data }">
+          <opensilex-UriLink
+            :uri="data.item.uri"
+            :value="data.item.name"
+            :to="{
+              path: '/experiment/details/' + encodeURIComponent(data.item.uri),
+            }"
+          ></opensilex-UriLink>
+        </template>
 
-      <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
-        <span class="species-list" v-if="data.item.species.length > 0">
-          <span :key="index" v-for="(uri, index) in data.item.species">
-            <span :title="uri">{{ getSpeciesName(uri) }}</span>
-            <span v-if="index + 1 < data.item.species.length">, </span>
+        <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
+          <span class="species-list" v-if="data.item.species.length > 0">
+            <span :key="index" v-for="(uri, index) in data.item.species">
+              <span :title="uri">{{ getSpeciesName(uri) }}</span>
+              <span v-if="index + 1 < data.item.species.length">, </span>
+            </span>
           </span>
-        </span>
-        <span v-else></span>
-      </template>
+          <span v-else></span>
+        </template>
 
-      <template v-slot:cell(start_date)="{ data }">
-        <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
-      </template>
-      <template v-slot:cell(end_date)="{ data }">
-        <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
-      </template>
+        <template v-slot:cell(start_date)="{ data }">
+          <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
+        </template>
+        <template v-slot:cell(end_date)="{ data }">
+          <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
+        </template>
 
-      <template v-slot:cell(state)="{ data }">
-        <i
-          v-if="!isEnded(data.item)"
-          class="ik ik-activity badge-icon badge-info-opensilex"
-          :title="$t('component.experiment.common.status.in-progress')"
-        ></i>
-        <i
-          v-else
-          class="ik ik-archive badge-icon badge-light"
-          :title="$t('component.experiment.common.status.finished')"
-        ></i>
-        <i
-          v-if="data.item.is_public"
-          class="ik ik-users badge-icon badge-info"
-          :title="$t('component.experiment.common.status.public')"
-        ></i>
-      </template>
+        <template v-slot:cell(state)="{ data }">
+          <i
+            v-if="!isEnded(data.item)"
+            class="ik ik-activity badge-icon badge-info-opensilex"
+            :title="$t('component.experiment.common.status.in-progress')"
+          ></i>
+          <i
+            v-else
+            class="ik ik-archive badge-icon badge-light"
+            :title="$t('component.experiment.common.status.finished')"
+          ></i>
+          <i
+            v-if="data.item.is_public"
+            class="ik ik-users badge-icon badge-info"
+            :title="$t('component.experiment.common.status.public')"
+          ></i>
+        </template>
 
-      <template v-slot:cell(actions)="{ data }">
-        <b-button-group size="sm">
-          <opensilex-EditButton
-            v-if="
-              user.hasCredential(
-                credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-              )
-            "
-            @click="$emit('onEdit', data.item.uri)"
-            label="component.experiment.update"
-            :small="true"
-          ></opensilex-EditButton>
-          <opensilex-DeleteButton
-            v-if="
-              user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)
-            "
-            @click="deleteExperiment(data.item.uri)"
-            label="component.experiment.delete"
-            :small="true"
-          ></opensilex-DeleteButton>
-        </b-button-group>
-      </template>
-    </opensilex-TableAsyncView>
-    <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-      ref="documentForm"
-      component="opensilex-DocumentForm"
-      createTitle="component.common.addDocument"
-      modalSize="lg"
-      :initForm="initForm"
-      icon="ik#ik-file-text"
-    ></opensilex-ModalForm>
-      </opensilex-PageContent>
+        <template v-slot:cell(actions)="{ data }">
+          <b-button-group size="sm">
+            <opensilex-EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+              @click="$emit('onEdit', data.item.uri)"
+              label="component.experiment.update"
+              :small="true"
+            ></opensilex-EditButton>
+            <opensilex-DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+              @click="deleteExperiment(data.item.uri)"
+              label="component.experiment.delete"
+              :small="true"
+            ></opensilex-DeleteButton>
+          </b-button-group>
+        </template>
+      </opensilex-TableAsyncView>
+      <opensilex-ModalForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+        ref="documentForm"
+        component="opensilex-DocumentForm"
+        createTitle="component.common.addDocument"
+        modalSize="lg"
+        :initForm="initForm"
+        icon="ik#ik-file-text"
+      ></opensilex-ModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {SpeciesDTO, SpeciesService} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {User} from "../../models/User";
-import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {FacilityGetDTO} from "opensilex-core/index";
+import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import { User } from "../../models/User";
+import { OrganizationsService } from "opensilex-core/api/organizations.service";
+import { FacilityGetDTO } from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import { ExperimentsService } from "opensilex-core/api/experiments.service";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -272,7 +271,7 @@ export default class ExperimentList extends Vue {
   $i18n: any;
   $store: any;
   SearchFiltersToggle: boolean = false;
-  
+
   @Ref("documentForm") readonly documentForm!: any;
 
   @Prop({
@@ -284,7 +283,6 @@ export default class ExperimentList extends Vue {
     default: false,
   })
   noActions;
-
 
   get onlySelected() {
     return this.tableRef.onlySelected;
@@ -319,7 +317,6 @@ export default class ExperimentList extends Vue {
   refresh() {
     this.updateSelectedExperiment();
     this.tableRef.changeCurrentPage(1);
-    
   }
 
   filter = {
@@ -332,7 +329,6 @@ export default class ExperimentList extends Vue {
     facilities: [],
   };
 
-
   reset() {
     this.filter = {
       name: "",
@@ -342,7 +338,7 @@ export default class ExperimentList extends Vue {
       yearFilter: undefined,
       state: "",
       facilities: [],
-    };   
+    };
     this.refresh();
   }
 
@@ -355,13 +351,12 @@ export default class ExperimentList extends Vue {
   }
 
   refreshProjectSelector() {
-   
     this.projectSelector.refreshModalSearch();
   }
 
-  updateSelectedExperiment(){
+  updateSelectedExperiment() {
     this.$opensilex.updateURLParameters(this.filter);
-    if(this.tableRef.onlySelected) {
+    if (this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
     }
   }
@@ -421,12 +416,15 @@ export default class ExperimentList extends Vue {
   }
 
   onRefreshed() {
-      let that = this;
-      setTimeout(function() {
-        if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
-          that.tableRef.selectAll = false;
-        } 
-      }, 1);
+    let that = this;
+    setTimeout(function () {
+      if (
+        that.tableRef.selectAll === true &&
+        that.tableRef.selectedItems.length !== that.tableRef.totalRow
+      ) {
+        that.tableRef.selectAll = false;
+      }
+    }, 1);
   }
 
   beforeDestroy() {
@@ -451,9 +449,7 @@ export default class ExperimentList extends Vue {
   }
 
   loadSpecies() {
-    let service: SpeciesService = this.$opensilex.getService(
-      "opensilex.SpeciesService"
-    );
+    let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
     service
       .getAllSpecies()
       .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
@@ -474,20 +470,20 @@ export default class ExperimentList extends Vue {
 
   loadFacilities() {
     let service: OrganizationsService = this.$opensilex.getService(
-        "opensilex.OrganizationsService"
+      "opensilex.OrganizationsService"
     );
     service
-        .getAllFacilities()
-        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
-          this.facilities = [];
-          for (let i = 0; i < http.response.result.length; i++) {
-            this.facilities.push({
-              id: http.response.result[i].uri,
-              label: http.response.result[i].name,
-            });
-          }
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getAllFacilities()
+      .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+        this.facilities = [];
+        for (let i = 0; i < http.response.result.length; i++) {
+          this.facilities.push({
+            id: http.response.result[i].uri,
+            label: http.response.result[i].name,
+          });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   getSpeciesName(uri: string): String {
@@ -502,7 +498,7 @@ export default class ExperimentList extends Vue {
   }
 
   get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+    return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   get fields() {
@@ -548,7 +544,12 @@ export default class ExperimentList extends Vue {
       .deleteExperiment(uri)
       .then(() => {
         this.refresh();
-        let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        let message =
+          this.$i18n.t("ExperimentList.name") +
+          " " +
+          uri +
+          " " +
+          this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
@@ -576,28 +577,27 @@ export default class ExperimentList extends Vue {
         authors: undefined,
         language: undefined,
         deprecated: undefined,
-        keywords: undefined
+        keywords: undefined,
       },
-      file: undefined
-    }
+      file: undefined,
+    };
   }
 
   soGetDTOToSelectNode(dto) {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.name
+        label: dto.name,
       };
     }
     return null;
   }
 
   searchFiltersPannel() {
-    return  this.$t("searchfilter.label")
+    return this.$t("searchfilter.label");
   }
 }
 </script>
-
 
 <style scoped lang="scss">
 .species-list {

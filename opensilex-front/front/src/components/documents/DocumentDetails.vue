@@ -1,5 +1,6 @@
 <template>
   <div class="container-fluid">
+  
     <opensilex-PageHeader
       icon="ik#ik-file-text"
       :title="document.title"
@@ -28,12 +29,12 @@
               @click="update"
               label="DocumentDetails.update"
             ></opensilex-EditButton>
-            <!-- <opensilex-DeleteButton
+            <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_DELETE_ID)"
               @click="deleteDocument(document.uri)"
               label="DocumentDetails.delete"
               :small="true"
-            ></opensilex-DeleteButton> -->
+            ></opensilex-DeleteButton>
           </template>
             <template v-slot:body>
               <opensilex-UriView :uri="document.uri"></opensilex-UriView>

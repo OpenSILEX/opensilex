@@ -1,5 +1,6 @@
 <template>
   <div class="container-fluid">
+
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-DocumentList

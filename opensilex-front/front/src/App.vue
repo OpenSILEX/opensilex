@@ -13,6 +13,7 @@
 
         <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
           <div id="main-content">
+
             <main class="main-content">
               <router-view :key="$route.fullPath" />
             </main>

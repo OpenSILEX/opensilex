@@ -1,0 +1,192 @@
+{
+  "uri": "string",
+  "rdf_type": "string",
+  "rdf_type_name": "string",
+  "publisher": {
+    "uri": "http://opensilex.dev/users#jean.michel.inrae",
+    "email": "jean.michel@example.com",
+    "language": "en",
+    "admin": false,
+    "first_name": "Jean",
+    "last_name": "Michel",
+    "linked_person": "http://opensilex.dev/person#Jean.Michel.mistea",
+    "enable": true,
+    "favorites": "test"
+  },
+  "publication_date": "2024-02-22T09:07:01.970Z",
+  "last_updated_date": "2024-02-22T09:07:01.970Z",
+  "name": "string",
+  "parents": [],
+  "children": [],
+  "groups": [],
+  "facilities": [
+    {
+      "uri": "dev:id/organization/facility.la_gaillarde",
+      "publisher": {
+        "uri": "dev:id/user/account.adminopensilexorg",
+        "email": "admin@opensilex.org",
+        "language": "en",
+        "admin": true,
+        "first_name": null,
+        "last_name": null,
+        "linked_person": null,
+        "enable": true,
+        "favorites": null
+      },
+      "publication_date": "2024-02-15T16:14:52.067381+01:00",
+      "last_updated_date": "2024-02-21T09:35:14.308412+01:00",
+      "rdf_type": "vocabulary:AgriculturalField",
+      "rdf_type_name": "field",
+      "name": "La Gaillarde",
+      "address": null,
+      "variableGroups": [],
+      "geometry": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              3.851309,
+              43.62
+            ],
+            [
+              3.854978,
+              43.620124
+            ],
+            [
+              3.857939,
+              43.620574
+            ],
+            [
+              3.858798,
+              43.619736
+            ],
+            [
+              3.858604,
+              43.618726
+            ],
+            [
+              3.8656,
+              43.613941
+            ],
+            [
+              3.86045,
+              43.615091
+            ],
+            [
+              3.854463,
+              43.617266
+            ],
+            [
+              3.851588,
+              43.620031
+            ]
+          ]
+        }
+      },
+      "relations": []
+    },
+    {
+      "uri": "dev:id/organization/facility.lyon",
+      "publisher": {
+        "uri": "dev:id/user/account.adminopensilexorg",
+        "email": "admin@opensilex.org",
+        "language": "en",
+        "admin": true,
+        "first_name": null,
+        "last_name": null,
+        "linked_person": null,
+        "enable": true,
+        "favorites": null
+      },
+      "publication_date": "2024-02-19T14:09:38.774285+01:00",
+      "last_updated_date": null,
+      "rdf_type": "vocabulary:AgriculturalField",
+      "rdf_type_name": "field",
+      "name": "Lyon",
+      "geometry": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              4.748085,
+              45.711736
+            ],
+            [
+              4.757827,
+              45.709759
+            ],
+            [
+              4.76132,
+              45.702129
+            ],
+            [
+              4.754883,
+              45.70195
+            ],
+            [
+              4.746643,
+              45.710341
+            ],
+            [
+              4.74814,
+              45.71174
+            ]
+          ]
+        }
+      },
+      "relations": []
+    }
+  ],
+  "sites": [
+    {
+      "uri": "dev:id/organization/institut_agro",
+      "name": "Institut agro",
+      "organizations": [
+        "dev:id/organization/inrae"
+      ],
+      "rdf_type": "org:Site",
+      "rdf_type_name": "Site",
+      "publication_date": "2024-02-22T14:28:39.681264+01:00",
+      "last_updated_date": null
+    }
+  ],
+  "documents": [
+    {
+      "uri": "dev:id/document/doc_test_1",
+      "publisher": {
+        "uri": "dev:id/user/account.adminopensilexorg",
+        "email": "admin@opensilex.org",
+        "language": "en",
+        "admin": true,
+        "first_name": null,
+        "last_name": null,
+        "linked_person": null,
+        "enable": true,
+        "favorites": null
+      },
+      "publication_date": "2024-02-16T09:17:33.083378+01:00",
+      "last_updated_date": "2024-02-21T13:58:17.927437+01:00",
+      "identifier": null,
+      "rdf_type": "vocabulary:Dataset",
+      "rdf_type_name": "Dataset",
+      "title": "DOC TEST   1",
+      "date": "2024-02-14",
+      "description": null,
+      "targets": [
+        "http://aims.fao.org/aos/agrovoc/c_4555",
+        "dev:id/device/camera",
+        "dev:id/area/test3"
+      ],
+      "authors": [],
+      "language": null,
+      "format": "n3",
+      "keywords": [],
+      "deprecated": false,
+      "source": null
+    }
+  ]
+}

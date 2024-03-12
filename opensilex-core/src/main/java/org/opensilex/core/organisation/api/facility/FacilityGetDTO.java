@@ -94,18 +94,21 @@ public class FacilityGetDTO extends FacilityDTO {
         super.fromModel(model);
 
         if (model.getOrganizations() != null) {
-            setOrganizations(model.getOrganizations()
-                    .stream()
-                    .map(organizationModel ->
-                            (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(organizationModel))
-                    .collect(Collectors.toList()));
+            var list = new ArrayList<NamedResourceDTO<OrganizationModel>>(model.getOrganizations().size());
+            for (var organizationModel : model.getOrganizations()) {
+                var dtoFromModel = (NamedResourceDTO<OrganizationModel>) NamedResourceDTO.getDTOFromModel(organizationModel);
+                list.add(dtoFromModel);
+            }
+            setOrganizations(list);
         }
 
         if (model.getSites() != null) {
-            setSites(model.getSites().stream()
-                    .map(siteModel ->
-                            (NamedResourceDTO<SiteModel>)NamedResourceDTO.getDTOFromModel(siteModel))
-                    .collect(Collectors.toList()));
+            var list = new ArrayList<NamedResourceDTO<SiteModel>>(model.getSites().size());
+            for (var siteModel : model.getSites()) {
+                var dtoFromModel = (NamedResourceDTO<SiteModel>) NamedResourceDTO.getDTOFromModel(siteModel);
+                list.add(dtoFromModel);
+            }
+            setSites(list);
         }
 
         if (model.getVariableGroups() != null) {

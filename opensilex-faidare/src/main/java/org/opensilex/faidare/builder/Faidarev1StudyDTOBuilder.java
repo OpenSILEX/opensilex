@@ -1,31 +1,59 @@
 package org.opensilex.faidare.builder;
 
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.faidare.model.Faidarev1ContactDTO;
 import org.opensilex.faidare.model.Faidarev1LastUpdateDTO;
 import org.opensilex.faidare.model.Faidarev1StudyDTO;
+import org.opensilex.front.FrontConfig;
+import org.opensilex.front.FrontModule;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.service.SPARQLResult;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class Faidarev1StudyDTOBuilder {
     private final String SCIENTIFIC_SUPERVISOR = "ScientificSupervisor";
     private final String TECHNICAL_SUPERVISOR = "TechnicalSupervisor";
 
-    public Faidarev1StudyDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
+    public static final Logger LOGGER = LoggerFactory.getLogger(Faidarev1StudyDTOBuilder.class);
+
+    private final DataDAO dataDAO;
+    private final AccountModel currentAccount;
+    private final SPARQLService sparql;
+    private final String experimentDetailsPath;
+
+
+    public Faidarev1StudyDTOBuilder(DataDAO dataDAO, AccountModel currentAccount, SPARQLService sparql, String experimentDetailsPath) {
+        this.dataDAO = dataDAO;
+        this.currentAccount = currentAccount;
+        this.sparql = sparql;
+        this.experimentDetailsPath = experimentDetailsPath;
     }
 
-    public Faidarev1StudyDTO fromModel(ExperimentModel model, AccountModel currentAccount) {
+    public Faidarev1StudyDTO fromModel(ExperimentModel model) throws Exception {
         Faidarev1StudyDTO dto = new Faidarev1StudyDTO();
 
         dto.setStudyDbId(model.getUri().toString())
@@ -86,6 +114,56 @@ public class Faidarev1StudyDTOBuilder {
                     .collect(Collectors.toList()));
         }
         dto.setContacts(studyContacts);
+
+        Set<URI> variablesSet = this.dataDAO.getUsedVariablesByExpeSoDevice(
+                currentAccount,
+                Collections.singletonList(model.getUri()),
+                null,
+                null
+        );
+        if (!variablesSet.isEmpty()) {
+            dto.setObservationVariableDbIds(variablesSet.stream().map(URI::toString).collect(Collectors.toList()));
+        }
+
+
+        // SPARQL request to get experiment accessions
+        // select {
+        //     graph <experimentUri> {
+        //         ?scientificObject a ?rdfType ;
+        //         vocabulary:hasGermplasm ?germplasm;
+        //     }
+        //     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
+        //     ?germplasm a/rdfs:subClassOf* vocabulary:Accession .
+        // }
+
+        // Vars
+        Var scientificObjectVar = makeVar("scientificObject");
+        Var germplasmVar = makeVar("germplasm");
+        Var rdfTypeVar = makeVar("rdfType");
+
+        // Uris
+        Node experimentGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ExperimentModel.class));
+        Node experimentUriNode = SPARQLDeserializers.nodeURI(model.getUri());
+
+        WhereBuilder whereInExperiment = new WhereBuilder();
+        whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
+        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+        SelectBuilder accessionSelect = new SelectBuilder()
+                .addGraph(experimentUriNode, whereInExperiment)
+                .addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode())
+                .addWhere(germplasmVar, Ontology.typeSubClassAny, Oeso.Accession.asNode());
+
+        try {
+            List<SPARQLResult> selectedAccessions = sparql.executeSelectQuery(accessionSelect);
+
+            if (!selectedAccessions.isEmpty()) {
+                dto.setGermplasmDbIds(new ArrayList<>(selectedAccessions.stream().map(accession -> accession.getStringValue("germplasm")).collect(Collectors.toSet())));
+            }
+        } catch (SPARQLException e) {
+            LOGGER.error("Error while fetching the accessions of study " + dto.getStudyDbId(), e);
+        }
+
+        dto.setDocumentationURL(experimentDetailsPath.replace(":uri", URLEncoder.encode(dto.getStudyDbId(), StandardCharsets.UTF_8)));
 
         return dto;
 

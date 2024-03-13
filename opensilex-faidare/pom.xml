@@ -32,6 +32,12 @@
             <artifactId>opensilex-brapi</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
    
 </project>

@@ -9,6 +9,7 @@ import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.person.api.PersonDTO;
 
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,12 @@ public class StudiesAPITest extends FaidareAPITest {
                 .executeCallAndDeserialize(new TypeReference<BrapiPaginatedListResponse<JsonNode>>(){})
                 .getDeserializedResponse();
 
+
+        Response searchResult = new UserCallBuilder(search)
+                .addParam("studyDbId", experimentCreationDTO1.getUri())
+                .buildAdmin()
+                .executeCall();
+
         assertEquals(1, deserializedSearchResult.getResult().getData().size());
 
         // Check first level mapping
@@ -90,6 +97,8 @@ public class StudiesAPITest extends FaidareAPITest {
         assertEquals(fullName, actualContact.get("name").asText());
         assertEquals("ScientificSupervisor", actualContact.get("type").asText());
         assertEquals("TechnicalSupervisor", actual.get("contacts").get(1).get("type").asText());
+
+
 
     }
 

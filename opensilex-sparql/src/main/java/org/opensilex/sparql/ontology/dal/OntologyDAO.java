@@ -37,6 +37,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
@@ -277,7 +278,7 @@ public final class OntologyDAO {
         }
 
         if (model == null) {
-            throw new SPARQLInvalidUriListException("URI not found ", Collections.singletonList(rdfClass));
+            throw new SPARQLInvalidURIException("URI not found ", rdfClass);
         }
 
         try {

@@ -8,19 +8,31 @@ package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.faidare.builder.Faidarev1StudyDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1StudyDTO;
 import org.opensilex.faidare.responses.Faidarev1StudyListResponse;
+import org.opensilex.front.FrontConfig;
+import org.opensilex.front.FrontModule;
+import org.opensilex.front.api.FrontConfigDTO;
+import org.opensilex.front.api.RouteDTO;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.server.ServerModule;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -33,6 +45,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -47,6 +60,15 @@ public class StudiesAPI extends FaidareCall {
 
     @Inject
     private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
+
+    @Inject
+    private FrontModule frontModule;
+
+    @Inject
+    private ServerModule serverModule;
 
     @CurrentUser
     AccountModel currentUser;
@@ -92,9 +114,22 @@ public class StudiesAPI extends FaidareCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
-        Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(facilityDAO, organizationDAO);
+        String experimentPathExtention = "";
+        List<RouteDTO> routeDTOS = frontModule.getConfigDTO(currentUser, sparql).getRoutes();
+        for (RouteDTO routeDTO : routeDTOS) {
+            if (SPARQLDeserializers.compareURIs(routeDTO.getRdfType(), Oeso.Experiment.toString())) {
+                experimentPathExtention = routeDTO.getPath().substring(1);
+                break;
+            }
+        }
+        String baseUrl = serverModule.getBaseURL();
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        Faidarev1StudyDTOBuilder studyDTOBuilder = new Faidarev1StudyDTOBuilder(
+                dataDAO,
+                currentUser,
+                sparql,
+                baseUrl + experimentPathExtention
+        );
         ListWithPagination<ExperimentModel> resultList;
         if (studyDbId != null) {
             ExperimentModel model = xpDao.get(studyDbId, currentUser);
@@ -118,14 +153,15 @@ public class StudiesAPI extends FaidareCall {
                 Faidarev1StudyDTO.class,
                 experimentModel -> {
                     try {
-                        return studyDTOBuilder.fromModel(
-                                experimentModel,
-                                currentUser);
+                        return studyDTOBuilder.fromModel(experimentModel);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
         );
-        return new Faidarev1StudyListResponse(resultDTOList).getResponse();
+
+        Faidarev1StudyListResponse response = new Faidarev1StudyListResponse(resultDTOList);
+        BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(response);
+        return response.getResponse();
     }
 }

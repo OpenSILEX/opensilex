@@ -142,7 +142,6 @@ public class Faidarev1StudyDTOBuilder {
         Var rdfTypeVar = makeVar("rdfType");
 
         // Uris
-        Node experimentGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ExperimentModel.class));
         Node experimentUriNode = SPARQLDeserializers.nodeURI(model.getUri());
 
         WhereBuilder whereInExperiment = new WhereBuilder();

@@ -16,7 +16,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>

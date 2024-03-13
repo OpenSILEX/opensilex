@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import org.apache.commons.collections.SetUtils;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
@@ -14,7 +13,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.utils.ListWithPagination;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;

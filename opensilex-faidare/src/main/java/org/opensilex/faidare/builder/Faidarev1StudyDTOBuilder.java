@@ -12,8 +12,6 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.faidare.model.Faidarev1ContactDTO;
 import org.opensilex.faidare.model.Faidarev1LastUpdateDTO;
 import org.opensilex.faidare.model.Faidarev1StudyDTO;
-import org.opensilex.front.FrontConfig;
-import org.opensilex.front.FrontModule;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

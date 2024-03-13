@@ -1,7 +1,6 @@
 package org.opensilex.brapi.responses;
 
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.NoSQLModule;
 import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.StatusDTO;
 import org.opensilex.server.response.StatusLevel;
@@ -31,18 +30,6 @@ public class BrAPIv1AccessionWarning {
 
     public static void setAccessionWarningIfNeeded(JsonResponse responseClass) throws SPARQLException {
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
-        /*try {
-            if (!ontologyStore.classExist(
-                    ACCESSION_URI,
-                    GERMPLASM_URI
-            )) {
-                LOGGER.warn(WARNING.getMessage());
-                responseClass.addMetadataStatus(WARNING);
-            }
-        } catch (SPARQLException e) {
-            LOGGER.warn(WARNING.getMessage());
-            responseClass.addMetadataStatus(WARNING);
-        }*/
         if (!ontologyStore.classExist(
                 ACCESSION_URI,
                 GERMPLASM_URI

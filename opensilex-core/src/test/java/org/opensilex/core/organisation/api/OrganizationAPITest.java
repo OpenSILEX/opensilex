@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -22,7 +21,10 @@ import org.opensilex.sparql.response.ResourceDagDTO;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static junit.framework.TestCase.*;
 

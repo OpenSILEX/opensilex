@@ -7,15 +7,16 @@ package org.opensilex.core.project.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.rest.validation.Required;
+
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.rest.validation.Required;
 
 /**
  * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}

@@ -3,11 +3,9 @@ package org.opensilex.faidare.builder;
 import org.apache.jena.vocabulary.XSD;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.faidare.model.Faidarev1ScaleDTO;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
-import java.util.Objects;
 
 public class Faidarev1ScaleDTOBuilder {
 

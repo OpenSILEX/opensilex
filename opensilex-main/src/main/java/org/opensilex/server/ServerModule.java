@@ -6,10 +6,11 @@
 //******************************************************************************
 package org.opensilex.server;
 
-import java.util.List;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
+
+import java.util.List;
 
 /**
  * Tomcat Server integration module for OpenSilex.

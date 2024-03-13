@@ -15,7 +15,6 @@ import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonModel;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

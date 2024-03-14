@@ -29,7 +29,9 @@ import Vue from "vue";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
-import { RDFObjectRelationDTO } from 'opensilex-core/index';
+import {PropertiesByDomainDTO, RDFObjectRelationDTO } from 'opensilex-core/index';
+import { createUriListFromGetPropertiesResult, sortProperties } from './OntologyTools';
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 /**
@@ -39,6 +41,7 @@ export default class OntologyRelationsForm extends Vue {
 
     $opensilex: OpenSilexVuePlugin;
     vueOntologyService: VueJsOntologyExtensionService;
+    ontologyService: OntologyService;
 
     /**
      * Initial relations, multi-valued are decomposed into multiple mono-valued relation.
@@ -83,6 +86,8 @@ export default class OntologyRelationsForm extends Vue {
      */
     typeModel: VueRDFTypeDTO = null;
 
+    propertiesByDomainHierarchy: PropertiesByDomainDTO[] = [];
+
     /**
      * The model graph/context. Can be passed in some custom component has a "context" property
      */
@@ -115,6 +120,7 @@ export default class OntologyRelationsForm extends Vue {
 
     created() {
         this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+        this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
         this.internalRelations = [];
     }
 
@@ -141,7 +147,24 @@ export default class OntologyRelationsForm extends Vue {
             .concat(this.typeModel.object_properties)
             .filter(property => ! shortExcludedProperties.has(this.$opensilex.getShortUri(property.uri)));
 
-        return this.sortProperties(properties);
+        //If no order has ever been set then use the default one (ordered by properties from basest type first)
+        if(! this.typeModel.properties_order || this.typeModel.properties_order.length === 0){
+          let newPropertyOrder: Array<VueRDFTypePropertyDTO> = [];
+          for(let propertiesByDomainDTO of this.propertiesByDomainHierarchy){
+            let propsOfDomainsUris: Array<string> = createUriListFromGetPropertiesResult(propertiesByDomainDTO.properties, this.$opensilex);
+            propsOfDomainsUris.forEach(propertyUri => {
+              let filteredByCurrentProperty = properties.filter(e => this.$opensilex.checkURIs(e.uri, propertyUri));
+              if(filteredByCurrentProperty.length === 1){
+                newPropertyOrder.push(filteredByCurrentProperty[0]);
+              }
+            });
+          }
+          //Add any properties that weren't returned by propsOfDomainsUris
+          let visitedPropsUris = newPropertyOrder.map(property => this.$opensilex.getShortUri(property.uri));
+          newPropertyOrder.push(...properties.filter(property => !visitedPropsUris.includes(this.$opensilex.getShortUri(property.uri))));
+          return newPropertyOrder;
+        }
+        return sortProperties(properties, this.typeModel, this.$opensilex);
     }
 
     /**
@@ -170,83 +193,40 @@ export default class OntologyRelationsForm extends Vue {
      * @param initialLoad if true, then {@link internalRelations} are initialized according {@link relations}
      *
      */
-    typeSwitch(type: string, initialLoad: boolean) {
-
+    async typeSwitch(type: string, initialLoad: boolean) {
         // only in create mode, since in update mode, the type can't be changed
         if (!type || type.length == 0) {
             return;
         }
+        try{
+          //Call service to work out which properties come from where
+          let propertiesByDomainHttpResponse = await this.ontologyService.getPropertiesByDomainHierarchyUsingRestrictions(this.baseType, [type]);
+          this.propertiesByDomainHierarchy = propertiesByDomainHttpResponse.response.result;
 
-        return this.vueOntologyService
-            .getRDFTypeProperties(type, this.baseType)
-            .then(http => {
-                this.typeModel = http.response.result;
-                this.internalRelations.splice(0);
+          let vueRdfTypeResponse = await this.vueOntologyService.getRDFTypeProperties(type, this.baseType);
+          this.typeModel = vueRdfTypeResponse.response.result;
 
-                if (initialLoad) {
-                    this.internalRelations.push(...this.toMultiValuedRelations(this.relations));
-                } else {
-                    this.internalRelations.push(...this.getHandledProperties().map(property => {
-                        return {
-                            property: property,
-                            value: property.is_list ? [] : undefined
-                        }
-                    }));
-                }
+          this.internalRelations.splice(0);
 
-                if (this.initHandler) {
-                    this.internalRelations.forEach(relation => {
-                        this.initHandler.apply(this, [relation]);
-                    });
-                }
+          if (initialLoad) {
+            this.internalRelations.push(...this.toMultiValuedRelations(this.relations));
+          } else {
+            this.internalRelations.push(...this.getHandledProperties().map(property => {
+              return {
+                property: property,
+                value: property.is_list ? [] : undefined
+              }
+            }));
+          }
 
-
-                // #TODO sort properties according typeModel order
-            }).catch(this.$opensilex.errorHandler);
-    }
-
-    /**
-     * @param properties properties to sort according {@link typeModel} {@link VueRDFTypeDTO#properties_order}
-     * @return sorted properties if {@link typeModel} has a non null or empty {@link VueRDFTypeDTO#properties_order}, return properties else
-     */
-    sortProperties(properties: Array<VueRDFTypePropertyDTO>): Array<VueRDFTypePropertyDTO>{
-
-        if(! this.typeModel.properties_order || this.typeModel.properties_order.length == 0){
-            return properties;
+          if (this.initHandler) {
+            this.internalRelations.forEach(relation => {
+              this.initHandler.apply(this, [relation]);
+            });
+          }
+        }catch(e){
+          this.$opensilex.errorHandler(e);
         }
-
-        return properties.sort((propModel1, propModel2) => {
-            let property1 = propModel1.uri;
-            let property2 = propModel2.uri;
-            if (property1 == property2) {
-                return 0;
-            }
-
-            // always put name (rdfs:label) in first
-            if (this.$opensilex.checkURIs(property1, this.$opensilex.Rdfs.LABEL)) {
-                return -1;
-            }
-
-            if (this.$opensilex.checkURIs(property2, this.$opensilex.Rdfs.LABEL)) {
-                return 1;
-            }
-
-            let aIndex = this.typeModel.properties_order.indexOf(property1);
-            let bIndex = this.typeModel.properties_order.indexOf(property2);
-            if (aIndex == -1) {
-                if (bIndex == -1) {
-                    return property1.localeCompare(property2);
-                } else {
-                    return -1;
-                }
-            } else {
-                if (bIndex == -1) {
-                    return 1;
-                } else {
-                    return aIndex - bIndex;
-                }
-            }
-        });
     }
 
     /**

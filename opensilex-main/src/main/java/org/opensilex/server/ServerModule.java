@@ -6,10 +6,12 @@
 //******************************************************************************
 package org.opensilex.server;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 
+import javax.ws.rs.core.UriBuilder;
 import java.util.List;
 
 /**
@@ -43,7 +45,7 @@ public class ServerModule extends OpenSilexModule implements APIExtension, JCSAp
     public String getBaseURL(){
         ServerConfig cfg =(ServerConfig) this.getConfig();
    
-        String redirectUrl = ((ServerConfig) this.getConfig()).publicURI();
+        /*String redirectUrl = ((ServerConfig) this.getConfig()).publicURI();
         if(!org.apache.commons.lang3.StringUtils.isEmpty(cfg.pathPrefix() )){
             if (redirectUrl.endsWith("/")) {
                 redirectUrl = redirectUrl.substring(0, redirectUrl.length() - 1);
@@ -54,7 +56,14 @@ public class ServerModule extends OpenSilexModule implements APIExtension, JCSAp
                 redirectUrl = redirectUrl + "/";
             }
         }
-        return redirectUrl;
+        return redirectUrl;*/
+        UriBuilder baseUrlBuilder = UriBuilder.fromUri(((ServerConfig) this.getConfig()).publicURI());
+
+        if(!StringUtils.isEmpty(cfg.pathPrefix())){
+            baseUrlBuilder.path(cfg.pathPrefix());
+        }
+        return baseUrlBuilder.build() + "/";
+
     }
 
     public String getAppUrl() {

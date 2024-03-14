@@ -275,11 +275,11 @@ public class BrAPIv1ObservationVariableDTO {
 
             URI dataTypeUri = variableModel.getDataType();
             if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.decimal.getURI()))
-                    | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.integer.getURI()))){
+                    || SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.integer.getURI()))){
                 variableScale.setDataType("Numerical");
             }
             if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.date.getURI()))
-                    | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
+                    || SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
                 variableScale.setDataType("Date");
             }
             if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.xstring.getURI()))){

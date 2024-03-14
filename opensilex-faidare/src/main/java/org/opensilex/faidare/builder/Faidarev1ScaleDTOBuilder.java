@@ -25,11 +25,11 @@ public class Faidarev1ScaleDTOBuilder {
         Faidarev1ScaleDTO dto = this.fromModel(unitModel);
 
         if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.decimal.getURI()))
-                | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.integer.getURI()))){
+                || SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.integer.getURI()))){
             dto.setDataType("Numerical");
         }
         if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.date.getURI()))
-                | SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
+                || SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.dateTime.getURI()))){
             dto.setDataType("Date");
         }
         if (SPARQLDeserializers.compareURIs(dataTypeUri, URI.create(XSD.xstring.getURI()))){

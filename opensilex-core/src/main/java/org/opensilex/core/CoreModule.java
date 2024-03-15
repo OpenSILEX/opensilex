@@ -164,12 +164,7 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
                 Lang.RDFXML,
                 "peco"
         ));
- /*      list.add(new OntologyFileDefinition(
-                OA.NS,
-                ONTOLOGIES_DIRECTORY + "/oa.rdf",
-                Lang.RDFXML,
-                "oa"
-        )); */
+
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY + "/oeso-core.owl",
@@ -178,32 +173,7 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
                 null,
                 true
         ));
-        list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeev#",
-                ONTOLOGIES_DIRECTORY + "/oeev.owl",
-                Lang.RDFXML,
-                "oeev",
-                null,
-                true
-        ));
-        list.add(new OntologyFileDefinition(
-                OWL.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/owl2.ttl",
-                Lang.TURTLE,
-                OWL.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                Time.NS,
-                ONTOLOGIES_DIRECTORY + "/time.ttl",
-                Lang.TURTLE,
-                Time.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                DCTERMS.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/dublin_core_terms.ttl",
-                Lang.TTL,
-                DCTERMS.PREFIX
-        ));
+
         return list;
     }
 

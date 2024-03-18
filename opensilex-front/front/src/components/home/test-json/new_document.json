@@ -1,0 +1,995 @@
+{
+    "documents": [
+        {
+            "sample_density": 185293,
+            "variable_type": [
+                "copper_concentration",
+                "pH_level",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_AC0126",
+            "creation_date": "2015-03-22T13:07:23.7140Z",
+            "expiration_date": "2023-02-13T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 76656,
+            "variable_type": [
+                "calcium_concentration",
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2023-01-16T13:07:23.7140Z",
+            "expiration_date": "2025-01-29T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 484869,
+            "variable_type": [
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2012-04-16T13:07:23.7140Z",
+            "expiration_date": "2013-12-05T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 212465,
+            "variable_type": [
+                "nitrogen_level"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2013-02-03T13:07:23.7140Z",
+            "expiration_date": "2019-10-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 260631,
+            "variable_type": [
+                "sodium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1183",
+            "creation_date": "2005-07-01T13:07:23.7140Z",
+            "expiration_date": "2022-08-02T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 221029,
+            "variable_type": [
+                "soil_type",
+                "iron_concentration",
+                "nitrogen_level"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2010-04-08T13:07:23.7140Z",
+            "expiration_date": "2010-12-08T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 329677,
+            "variable_type": [
+                "wind_speed",
+                "calcium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2005-05-27T13:07:23.7140Z",
+            "expiration_date": "2005-06-25T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 134122,
+            "variable_type": [
+                "humidity",
+                "sun_exposure"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2005-01-22T13:07:23.7140Z",
+            "expiration_date": "2005-02-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 173699,
+            "variable_type": [
+                "zinc_concentration",
+                "magnesium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2010-05-24T13:07:23.7140Z",
+            "expiration_date": "2027-05-21T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 242673,
+            "variable_type": [
+                "nitrogen_level",
+                "soil_type",
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2011-07-26T13:07:23.7140Z",
+            "expiration_date": "2025-07-04T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 446209,
+            "variable_type": [
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2006-01-14T13:07:23.7140Z",
+            "expiration_date": "2007-06-03T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 362876,
+            "variable_type": [
+                "height"
+            ],
+            "location": "dev:id/organization/bou_AT0270",
+            "creation_date": "2019-06-16T13:07:23.7140Z",
+            "expiration_date": "2026-10-10T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 146923,
+            "variable_type": [
+                "sodium_concentration"
+            ],
+            "location": "dev:id/organization/bou_AD0010",
+            "creation_date": "2019-04-30T13:07:23.7140Z",
+            "expiration_date": "2022-05-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 288041,
+            "variable_type": [
+                "magnesium_concentration",
+                "moisture",
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2005-07-11T13:07:23.7140Z",
+            "expiration_date": "2005-10-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 116690,
+            "variable_type": [
+                "iron_concentration",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1703",
+            "creation_date": "2005-04-30T13:07:23.7140Z",
+            "expiration_date": "2014-11-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 1048,
+            "variable_type": [
+                "pH_level",
+                "magnesium_concentration",
+                "sodium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0251",
+            "creation_date": "2008-11-11T13:07:23.7140Z",
+            "expiration_date": "2020-12-19T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 83535,
+            "variable_type": [
+                "magnesium_concentration",
+                "sun_exposure",
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_0G0234",
+            "creation_date": "2005-04-03T13:07:23.7140Z",
+            "expiration_date": "2007-12-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 431587,
+            "variable_type": [
+                "potassium_level",
+                "wind_speed",
+                "chloride_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1183",
+            "creation_date": "2005-04-10T13:07:23.7140Z",
+            "expiration_date": "2016-01-03T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 241799,
+            "variable_type": [
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2005-03-25T13:07:23.7140Z",
+            "expiration_date": "2011-06-24T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 485453,
+            "variable_type": [
+                "salt_concentration",
+                "nitrogen_level",
+                "chloride_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2011-08-13T13:07:23.7140Z",
+            "expiration_date": "2022-12-10T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 100246,
+            "variable_type": [
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_AT0270",
+            "creation_date": "2006-12-15T13:07:23.7140Z",
+            "expiration_date": "2009-09-09T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 15010,
+            "variable_type": [
+                "manganese_concentration",
+                "nitrogen_level",
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G1183",
+            "creation_date": "2009-07-06T13:07:23.7140Z",
+            "expiration_date": "2020-06-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 462944,
+            "variable_type": [
+                "magnesium_concentration",
+                "sun_exposure"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2007-05-25T13:07:23.7140Z",
+            "expiration_date": "2008-03-23T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 468613,
+            "variable_type": [
+                "moisture",
+                "manganese_concentration",
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_0G1785",
+            "creation_date": "2005-08-10T13:07:23.7140Z",
+            "expiration_date": "2011-06-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 252311,
+            "variable_type": [
+                "salt_concentration"
+            ],
+            "location": "dev:id/organization/bou_AB0228",
+            "creation_date": "2016-05-03T13:07:23.7140Z",
+            "expiration_date": "2016-06-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 265456,
+            "variable_type": [
+                "wind_speed",
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2020-04-13T13:07:23.7140Z",
+            "expiration_date": "2026-04-25T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 28506,
+            "variable_type": [
+                "copper_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1592",
+            "creation_date": "2014-01-03T13:07:23.7140Z",
+            "expiration_date": "2021-02-10T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 152629,
+            "variable_type": [
+                "humidity",
+                "copper_concentration"
+            ],
+            "location": "dev:id/organization/bou_AD0102",
+            "creation_date": "2022-01-29T13:07:23.7140Z",
+            "expiration_date": "2022-07-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 492109,
+            "variable_type": [
+                "sodium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0181",
+            "creation_date": "2008-12-18T13:07:23.7140Z",
+            "expiration_date": "2010-07-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 487489,
+            "variable_type": [
+                "phosphorus_level"
+            ],
+            "location": "dev:id/organization/bou_AD0010",
+            "creation_date": "2006-04-23T13:07:23.7140Z",
+            "expiration_date": "2022-01-28T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 363470,
+            "variable_type": [
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_0G0234",
+            "creation_date": "2010-12-08T13:07:23.7140Z",
+            "expiration_date": "2012-06-01T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 325897,
+            "variable_type": [
+                "sun_exposure",
+                "height"
+            ],
+            "location": "dev:id/organization/bou_AD0102",
+            "creation_date": "2013-08-03T13:07:23.7140Z",
+            "expiration_date": "2020-01-29T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 285483,
+            "variable_type": [
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2005-10-15T13:07:23.7140Z",
+            "expiration_date": "2007-09-23T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 366298,
+            "variable_type": [
+                "copper_concentration",
+                "sodium_concentration",
+                "soil_type"
+            ],
+            "location": "dev:id/organization/bou_AD0010",
+            "creation_date": "2009-11-11T13:07:23.7140Z",
+            "expiration_date": "2020-06-11T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 301442,
+            "variable_type": [
+                "magnesium_concentration",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_AD0256",
+            "creation_date": "2010-09-08T13:07:23.7140Z",
+            "expiration_date": "2016-02-28T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 385553,
+            "variable_type": [
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G1592",
+            "creation_date": "2017-07-04T13:07:23.7140Z",
+            "expiration_date": "2024-02-01T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 472376,
+            "variable_type": [
+                "copper_concentration",
+                "phosphorus_level",
+                "nitrogen_level"
+            ],
+            "location": "dev:id/organization/bou_AD0256",
+            "creation_date": "2010-08-20T13:07:23.7140Z",
+            "expiration_date": "2017-10-19T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 238244,
+            "variable_type": [
+                "soil_type",
+                "phosphorus_level",
+                "manganese_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2010-08-27T13:07:23.7140Z",
+            "expiration_date": "2017-05-19T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 425806,
+            "variable_type": [
+                "moisture",
+                "sun_exposure"
+            ],
+            "location": "dev:id/organization/bou_0G0234",
+            "creation_date": "2006-07-11T13:07:23.7140Z",
+            "expiration_date": "2007-07-19T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 177736,
+            "variable_type": [
+                "phosphorus_level",
+                "magnesium_concentration",
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2008-05-27T13:07:23.7140Z",
+            "expiration_date": "2016-09-26T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 283016,
+            "variable_type": [
+                "manganese_concentration",
+                "chloride_concentration",
+                "phosphorus_level"
+            ],
+            "location": "dev:id/organization/bou_AC0146",
+            "creation_date": "2008-04-24T13:07:23.7140Z",
+            "expiration_date": "2015-01-28T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 382298,
+            "variable_type": [
+                "wind_speed",
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0251",
+            "creation_date": "2007-05-23T13:07:23.7140Z",
+            "expiration_date": "2008-11-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 325854,
+            "variable_type": [
+                "copper_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2006-10-11T13:07:23.7140Z",
+            "expiration_date": "2006-11-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 99520,
+            "variable_type": [
+                "potassium_level",
+                "humidity",
+                "calcium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2005-09-11T13:07:23.7140Z",
+            "expiration_date": "2015-04-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 416419,
+            "variable_type": [
+                "manganese_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2013-11-24T13:07:23.7140Z",
+            "expiration_date": "2019-06-15T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 205093,
+            "variable_type": [
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_AT0270",
+            "creation_date": "2008-12-15T13:07:23.7140Z",
+            "expiration_date": "2017-08-16T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 281005,
+            "variable_type": [
+                "iron_concentration",
+                "phosphorus_level",
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_AC0126",
+            "creation_date": "2006-09-12T13:07:23.7140Z",
+            "expiration_date": "2011-06-01T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 233008,
+            "variable_type": [
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2008-06-23T13:07:23.7140Z",
+            "expiration_date": "2024-09-22T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 455898,
+            "variable_type": [
+                "temperature",
+                "height"
+            ],
+            "location": "dev:id/organization/bou_0G0181",
+            "creation_date": "2020-11-13T13:07:23.7140Z",
+            "expiration_date": "2027-08-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 420247,
+            "variable_type": [
+                "salinity"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2005-07-06T13:07:23.7140Z",
+            "expiration_date": "2006-08-12T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 348403,
+            "variable_type": [
+                "moisture"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2010-03-20T13:07:23.7140Z",
+            "expiration_date": "2020-10-19T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 404061,
+            "variable_type": [
+                "humidity",
+                "sodium_concentration",
+                "manganese_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1592",
+            "creation_date": "2009-09-09T13:07:23.7140Z",
+            "expiration_date": "2013-11-11T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 435177,
+            "variable_type": [
+                "phosphorus_level",
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2005-12-03T13:07:23.7140Z",
+            "expiration_date": "2006-02-04T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 423528,
+            "variable_type": [
+                "copper_concentration",
+                "soil_type",
+                "sodium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2012-07-26T13:07:23.7140Z",
+            "expiration_date": "2022-06-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 219759,
+            "variable_type": [
+                "wind_speed",
+                "phosphorus_level",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2016-08-08T13:07:23.7140Z",
+            "expiration_date": "2020-02-21T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 171168,
+            "variable_type": [
+                "sodium_concentration",
+                "humidity",
+                "height"
+            ],
+            "location": "dev:id/organization/bou_AB0228",
+            "creation_date": "2005-03-01T13:07:23.7140Z",
+            "expiration_date": "2005-06-24T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 113601,
+            "variable_type": [
+                "potassium_level",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_0G1285",
+            "creation_date": "2013-06-21T13:07:23.7140Z",
+            "expiration_date": "2015-02-11T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 434856,
+            "variable_type": [
+                "phosphorus_level"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2005-01-15T13:07:23.7140Z",
+            "expiration_date": "2005-01-28T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 204259,
+            "variable_type": [
+                "copper_concentration",
+                "soil_type",
+                "calcium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2006-06-15T13:07:23.7140Z",
+            "expiration_date": "2022-08-01T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 299247,
+            "variable_type": [
+                "humidity",
+                "height",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_AD0256",
+            "creation_date": "2015-07-18T13:07:23.7140Z",
+            "expiration_date": "2017-09-13T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 356477,
+            "variable_type": [
+                "chloride_concentration",
+                "sodium_concentration",
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_AT0270",
+            "creation_date": "2006-06-07T13:07:23.7140Z",
+            "expiration_date": "2018-05-03T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 91414,
+            "variable_type": [
+                "soil_type",
+                "zinc_concentration",
+                "potassium_level"
+            ],
+            "location": "dev:id/organization/bou_0G0181",
+            "creation_date": "2009-09-15T13:07:23.7140Z",
+            "expiration_date": "2010-01-09T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 352277,
+            "variable_type": [
+                "copper_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0251",
+            "creation_date": "2005-10-09T13:07:23.7140Z",
+            "expiration_date": "2010-11-26T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 388036,
+            "variable_type": [
+                "iron_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1183",
+            "creation_date": "2005-03-28T13:07:23.7140Z",
+            "expiration_date": "2005-06-02T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 9599,
+            "variable_type": [
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_AB0228",
+            "creation_date": "2009-07-30T13:07:23.7140Z",
+            "expiration_date": "2015-02-22T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 100982,
+            "variable_type": [
+                "phosphorus_level"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2005-05-02T13:07:23.7140Z",
+            "expiration_date": "2006-02-23T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 391930,
+            "variable_type": [
+                "height",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1703",
+            "creation_date": "2011-02-19T13:07:23.7140Z",
+            "expiration_date": "2022-09-26T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 384579,
+            "variable_type": [
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2009-12-11T13:07:23.7140Z",
+            "expiration_date": "2014-07-07T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 251023,
+            "variable_type": [
+                "phosphorus_level",
+                "salinity"
+            ],
+            "location": "dev:id/organization/bou_0G1703",
+            "creation_date": "2012-10-18T13:07:23.7140Z",
+            "expiration_date": "2022-12-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 3882,
+            "variable_type": [
+                "salt_concentration",
+                "sodium_concentration",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1285",
+            "creation_date": "2014-04-27T13:07:23.7140Z",
+            "expiration_date": "2021-04-18T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 426471,
+            "variable_type": [
+                "humidity",
+                "sun_exposure"
+            ],
+            "location": "dev:id/organization/bou_0G0234",
+            "creation_date": "2007-02-15T13:07:23.7140Z",
+            "expiration_date": "2010-03-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 357685,
+            "variable_type": [
+                "salinity",
+                "humidity"
+            ],
+            "location": "dev:id/organization/bou_AD0256",
+            "creation_date": "2006-05-26T13:07:23.7140Z",
+            "expiration_date": "2007-01-25T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 153076,
+            "variable_type": [
+                "manganese_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2009-03-31T13:07:23.7140Z",
+            "expiration_date": "2014-09-24T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 139351,
+            "variable_type": [
+                "pH_level"
+            ],
+            "location": "dev:id/organization/bou_0G0175",
+            "creation_date": "2008-10-16T13:07:23.7140Z",
+            "expiration_date": "2009-02-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 70351,
+            "variable_type": [
+                "magnesium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2007-01-31T13:07:23.7140Z",
+            "expiration_date": "2007-04-11T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 121716,
+            "variable_type": [
+                "potassium_level"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2008-11-08T13:07:23.7140Z",
+            "expiration_date": "2011-04-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 152754,
+            "variable_type": [
+                "moisture",
+                "zinc_concentration",
+                "magnesium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0253",
+            "creation_date": "2020-02-04T13:07:23.7140Z",
+            "expiration_date": "2020-12-07T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 232405,
+            "variable_type": [
+                "salt_concentration"
+            ],
+            "location": "dev:id/organization/bou_AD0102",
+            "creation_date": "2005-03-06T13:07:23.7140Z",
+            "expiration_date": "2005-03-27T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 76046,
+            "variable_type": [
+                "iron_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0181",
+            "creation_date": "2014-11-01T13:07:23.7140Z",
+            "expiration_date": "2017-06-04T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 464699,
+            "variable_type": [
+                "salinity",
+                "magnesium_concentration"
+            ],
+            "location": "dev:id/organization/bou_AC0126",
+            "creation_date": "2022-05-24T13:07:23.7140Z",
+            "expiration_date": "2026-03-14T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 149243,
+            "variable_type": [
+                "calcium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2009-01-09T13:07:23.7140Z",
+            "expiration_date": "2016-05-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 219241,
+            "variable_type": [
+                "zinc_concentration",
+                "potassium_level",
+                "chloride_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1285",
+            "creation_date": "2011-08-11T13:07:23.7140Z",
+            "expiration_date": "2025-02-15T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 267179,
+            "variable_type": [
+                "salt_concentration",
+                "wind_speed",
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G1785",
+            "creation_date": "2024-05-28T13:07:23.7140Z",
+            "expiration_date": "2027-07-27T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 350593,
+            "variable_type": [
+                "salinity"
+            ],
+            "location": "dev:id/organization/bou_0G0181",
+            "creation_date": "2005-07-15T13:07:23.7140Z",
+            "expiration_date": "2005-07-15T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 438374,
+            "variable_type": [
+                "temperature"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2007-09-20T13:07:23.7140Z",
+            "expiration_date": "2008-11-18T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 52078,
+            "variable_type": [
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_AC0126",
+            "creation_date": "2009-08-21T13:07:23.7140Z",
+            "expiration_date": "2018-03-26T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 289021,
+            "variable_type": [
+                "manganese_concentration",
+                "soil_type"
+            ],
+            "location": "dev:id/organization/bou_0G0263",
+            "creation_date": "2017-04-28T13:07:23.7140Z",
+            "expiration_date": "2026-09-20T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 98880,
+            "variable_type": [
+                "salinity",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_AB0228",
+            "creation_date": "2005-10-11T13:07:23.7140Z",
+            "expiration_date": "2007-03-30T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 295668,
+            "variable_type": [
+                "potassium_level",
+                "zinc_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0234",
+            "creation_date": "2014-08-19T13:07:23.7140Z",
+            "expiration_date": "2020-12-21T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 423934,
+            "variable_type": [
+                "wind_speed",
+                "phosphorus_level"
+            ],
+            "location": "dev:id/organization/bou_0G1785",
+            "creation_date": "2009-02-28T13:07:23.7140Z",
+            "expiration_date": "2009-08-04T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 420579,
+            "variable_type": [
+                "humidity",
+                "copper_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0251",
+            "creation_date": "2005-01-19T13:07:23.7140Z",
+            "expiration_date": "2005-01-25T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 275394,
+            "variable_type": [
+                "humidity",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_0G0191",
+            "creation_date": "2005-11-01T13:07:23.7140Z",
+            "expiration_date": "2009-09-02T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 201138,
+            "variable_type": [
+                "manganese_concentration",
+                "height"
+            ],
+            "location": "dev:id/organization/bou_0G1785",
+            "creation_date": "2013-11-11T13:07:23.7140Z",
+            "expiration_date": "2017-06-23T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 481870,
+            "variable_type": [
+                "moisture",
+                "phosphorus_level",
+                "wind_speed"
+            ],
+            "location": "dev:id/organization/bou_AT0270",
+            "creation_date": "2005-09-08T13:07:23.7140Z",
+            "expiration_date": "2007-03-01T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 84839,
+            "variable_type": [
+                "chloride_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G1183",
+            "creation_date": "2015-01-27T13:07:23.7140Z",
+            "expiration_date": "2023-10-24T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 306579,
+            "variable_type": [
+                "calcium_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2010-11-19T13:07:23.7140Z",
+            "expiration_date": "2011-03-18T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 304551,
+            "variable_type": [
+                "humidity",
+                "soil_type"
+            ],
+            "location": "dev:id/organization/bou_AD0256",
+            "creation_date": "2008-04-13T13:07:23.7140Z",
+            "expiration_date": "2027-09-17T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 91624,
+            "variable_type": [
+                "manganese_concentration",
+                "chloride_concentration"
+            ],
+            "location": "dev:id/organization/bou_0G0201",
+            "creation_date": "2005-05-04T13:07:23.7140Z",
+            "expiration_date": "2013-12-21T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 209372,
+            "variable_type": [
+                "manganese_concentration"
+            ],
+            "location": "dev:id/organization/bou_AB0228",
+            "creation_date": "2005-11-29T13:07:23.7140Z",
+            "expiration_date": "2005-12-28T13:07:23.7140Z"
+        },
+        {
+            "sample_density": 304173,
+            "variable_type": [
+                "iron_concentration",
+                "moisture",
+                "soil_type"
+            ],
+            "location": "dev:id/organization/bou_0G0251",
+            "creation_date": "2014-03-13T13:07:23.7140Z",
+            "expiration_date": "2018-08-27T13:07:23.7140Z"
+        }
+    ]
+}

@@ -21,11 +21,9 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
 
-import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
+import static org.opensilex.nosql.mongodb.dao.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
 import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
 
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -44,6 +42,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -78,18 +77,17 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     protected final MongoDBConfig mongoDBConfig;
 
     protected final MongoCollection<T> collection;
-    protected static final Bson EMPTY_PROJECTION = Projections.fields(Projections.include(MongoModel.MONGO_ID_FIELD));
-
+    protected final Class<T> modelClass;
     protected final boolean checkUriGeneration;
     protected final boolean checkUriExistence;
     protected final String createPrefix;
+
+    protected final MongoLogger mongoLogger;
     protected final Logger logger;
-    protected final Class<T> modelClass;
 
     protected static final OrderBy DEFAULT_ORDER_BY = new OrderBy(MongoModel.URI_FIELD, Order.ASCENDING);
-    protected final MongoLogger mongoLogger;
+    protected static final Bson EMPTY_PROJECTION = Projections.fields(Projections.include(MongoModel.MONGO_ID_FIELD));
 
-    protected final Bson statCommand;
 
     /**
      * @param mongodb            The MongoDB service object
@@ -124,7 +122,6 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         this.logger = LoggerFactory.getLogger(getClass());
         this.mongoLogger = new MongoLogger(collectionName, logger);
-        this.statCommand = new BsonDocument("collStats", new BsonString(collectionName));
     }
 
     /**
@@ -386,7 +383,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         if (CollectionUtils.isEmpty(bsonFilters)) {
             throw new IllegalArgumentException("You can't provide an empty filter when deleting documents inside a collection");
         }
-        return buildFinalBsonFilter(bsonFilters, deleteFilter.isLogicalAnd());
+        return getBsonFilter(bsonFilters, deleteFilter.isLogicalAnd());
     }
 
     @Override
@@ -418,19 +415,27 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      *      The greater this limit is, the more MongoDB has to read document from collection or index, which can affect performance,
      *      especially if the collection has more millions of document to read.
      *      </li>
-     *      <li>{@link CountOptions#skip(int)} : Set according {@code filter.getPage() * filter.getPageSize()}</li>
+     *      <li>{@link CountOptions#maxTime(long, TimeUnit)}} : Set according {@link MongoDBConfig#readTimeoutMs()} value </li>
      *      <li>{@link CountOptions#hintString(String)} : No index hint is provided. It could be improved into specialized implementation according search filter options</li>
      * </ul>
      */
     protected CountOptions getDefaultCountOptions(F filter) {
-        CountOptions countOptions = new CountOptions();
+        return new CountOptions()
+                .maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS);
+
+    }
+
+    protected CountOptions getDefaultLimitedCountOptions(F filter) {
+
+        CountOptions countOptions = new CountOptions()
+                .maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS);
 
         // No pageSize specified, limit by default
         if (filter.getPageSize() == 0) {
             return countOptions.limit(mongoDBConfig.maxCountLimit());
         }
 
-        // case 1 : Large page and need to display several pages
+        // case 1 : Need to display several pages
         // case 2 : Query asked for explicit large page : allow it. Ideally, should be only allowed for internal query (not from user directly)
         return filter.getPageSize() < mongoDBConfig.maxCountLimit() ?
                 countOptions.limit(filter.getPageSize() * mongoDBConfig.maxPageCountLimit()) :
@@ -440,52 +445,70 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     /**
      * Count models based on the provided filter within a client session.
      *
-     * @param session    The MongoDB client session.
-     * @param bsonFilter The BSON document passed for document filtering
+     * @param session The MongoDB client session.
+     * @param query   The search query
      * @return The number of models matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
-    protected long count(ClientSession session, Bson bsonFilter, CountOptions countOptions) throws MongoException {
+    private long countDocuments(ClientSession session, F query, CountOptions countOptions) throws MongoException {
 
-        String bsonFilterStr = bsonFilter.toString();
-        Instant operationStart = mongoLogger.logOperationStart(COUNT, FILTER, bsonFilterStr);
+        List<Bson> filters = query.getFilterList();
+
+        // no filter : rely on server stats document count
+        if (filters.isEmpty()) {
+            return collection.estimatedDocumentCount(
+                    new EstimatedDocumentCountOptions().maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS)
+            );
+        }
+
+        Instant operationStart = mongoLogger.logOperationStart(COUNT, FILTER, query.getFilterBsonStr());
         long count = session == null ?
-                collection.countDocuments(bsonFilter, countOptions) :
-                collection.countDocuments(session, bsonFilter, countOptions);
+                collection.countDocuments(query.getFilterBson(), countOptions) :
+                collection.countDocuments(session, query.getFilterBson(), countOptions);
 
-        mongoLogger.logOperationOk(COUNT, operationStart, FILTER, bsonFilterStr, COUNT_RESULT, count);
+        mongoLogger.logOperationOk(COUNT, operationStart, FILTER, query.getFilterBsonStr(), COUNT_RESULT, count);
         return count;
     }
 
     /**
      * @apiNote This implementation use {@link CountOptions} returned by the {@link #getDefaultCountOptions(F)} method if {@code countOptions == null}
-     * @see #count(ClientSession, Bson, CountOptions)
+     * @see #countDocuments(ClientSession, MongoSearchFilter, CountOptions)
      */
     @Override
-    public long count(ClientSession session, @NotNull F filter, CountOptions countOptions) throws MongoException {
+    public final long count(ClientSession session, @NotNull F filter, CountOptions countOptions) throws MongoException {
         Objects.requireNonNull(filter);
-        return count(session, filterToBson(filter), countOptions == null ? getDefaultCountOptions(filter) : countOptions);
+        initializeSearchFilter(filter);
+        return countDocuments(session, filter, countOptions == null ? getDefaultCountOptions(filter) : countOptions);
     }
 
-    protected <T_CONVERTED>  FindIterable<T> getFindIterable(MongoSearchQuery<T, F, T_CONVERTED> query){
+    private void initializeSearchFilter(F filter){
+        List<Bson> bsonFilters = getBsonFilters(filter);
+        filter.setFilterList(bsonFilters);
+        Bson bsonFilter = getBsonFilter(bsonFilters, filter.isLogicalAnd());
+        filter.setFilterBson(bsonFilter);
+        filter.setFilterBsonStr(bsonFilter.toString());
+    }
+
+    private <T_CONVERTED> FindIterable<T> getFindIterable(MongoSearchQuery<T, F, T_CONVERTED> query) {
 
         F filter = query.getFilter();
         int limit = filter.getPageSize();
 
         // just ask the database for one more element in order to check if there are other result after the current page
-        if(query.getCountStrategy() == HAS_NEXT_PAGE){
+        if (query.getCountStrategy() == HAS_NEXT_PAGE) {
             limit++;
         }
 
         // search with filter and session
         FindIterable<T> queryResult = query.getSession() == null ?
-                collection.find(query.getFilterBson()) :
-                collection.find(query.getSession(), query.getFilterBson());
+                collection.find(query.getFilter().getFilterBson()) :
+                collection.find(query.getSession(), query.getFilter().getFilterBson());
 
         // apply sort and pagination
         queryResult.sort(buildSort(filter.getOrderByList()))
                 .skip(filter.getPage() * filter.getPageSize())
-                .limit(limit);
+                .limit(limit)
+                .maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS);
 
         // apply projection
         if (query.getProjection() != null) {
@@ -497,33 +520,34 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     @Override
     public final ListWithPagination<T> searchWithPagination(@NotNull F filter) throws MongoException {
-        return searchWithPagination(new MongoSearchQuery<T, F, T>().setFilter(filter));
+        return searchWithPagination(new MongoSearchQuery<T, F, T>()
+                .setFilter(filter)
+                .setConvertFunction(Function.identity())
+        );
     }
 
     @Override
-    public <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) throws MongoException {
-
+    public final <T_CONVERTED> ListWithPagination<T_CONVERTED> searchWithPagination(MongoSearchQuery<T, F, T_CONVERTED> query) throws MongoException {
 
         // compute Bson filter filter
         F filter = query.getFilter();
-        Bson bsonFilter = filterToBson(query.getFilter());
-        query.setFilterBson(bsonFilter);
-        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, query.getFilterBsonStr());
+        initializeSearchFilter(filter);
+
+        Instant operationStart = mongoLogger.logOperationStart(SEARCH, FILTER, filter.getFilterBsonStr());
 
         long totalCount = 0;
         int countLimit = 0;
         List<T_CONVERTED> results;
-        ListWithPagination<T_CONVERTED> paginatedList;
 
         if (query.getCountStrategy() == HAS_NEXT_PAGE) {
             results = new ArrayList<>(filter.getPageSize());
         } else {
             // run count query
-            CountOptions countOptions  = query.getCountOptions() == null ? getDefaultCountOptions(filter) : query.getCountOptions();
-            totalCount = count(query.getSession(), query.getFilterBson(), countOptions);
+            CountOptions countOptions = query.getCountOptions() == null ? getDefaultLimitedCountOptions(filter) : query.getCountOptions();
+            totalCount = countDocuments(query.getSession(), filter, countOptions);
 
             // return empty list, keep information about the pagination used
-            if(totalCount == 0){
+            if (totalCount == 0) {
                 return new ListWithPagination<>(filter.getPage(), filter.getPageSize());
             }
             results = new ArrayList<>((int) (Math.min(totalCount, filter.getPageSize())));
@@ -531,8 +555,10 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
 
         // Run the search query and get cursor/iterable over database results
+        ListWithPagination<T_CONVERTED> paginatedList;
         FindIterable<T> dbResults = getFindIterable(query);
-        try(MongoCursor<T> dbResultsIt = dbResults.iterator()){
+
+        try (MongoCursor<T> dbResultsIt = dbResults.iterator()) {
 
             // Iterate over MongoDB result and convert result on the fly before collect them inside a List
             // if !dbResultsIt.hasNext() -> less result that the specified page size
@@ -541,56 +567,65 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             }
 
             // Return the list and just indicate if there exists one document on the next page
-            if(query.getCountStrategy() == HAS_NEXT_PAGE){
+            if (query.getCountStrategy() == HAS_NEXT_PAGE) {
                 paginatedList = new ListWithPagination<>(results, filter.getPage(), filter.getPageSize(), dbResultsIt.hasNext());
-            }else{
+            } else {
                 // return the list with information about counted element and the used limit
                 paginatedList = new ListWithPagination<>(results, filter.getPage(), filter.getPageSize(), totalCount, countLimit);
             }
         }
 
-        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, results.size());
+        mongoLogger.logOperationOk(SEARCH, operationStart, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, results.size());
         return paginatedList;
     }
 
     @Override
-    public StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> query) throws MongoException {
+    public final StreamWithPagination<T> searchAsStreamWithPagination(F filter) throws MongoException {
+        return searchAsStreamWithPagination(new MongoSearchQuery<T, F, T>()
+                .setFilter(filter)
+                .setConvertFunction(Function.identity())
+        );
+    }
 
-        // compute Bson filter filter
+    @Override
+    public final <T_RESULT> StreamWithPagination<T_RESULT> searchAsStreamWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException {
+
+        // compute Bson filter filter+
         F filter = query.getFilter();
-        Bson bsonFilter = filterToBson(query.getFilter());
-        query.setFilterBson(bsonFilter);
-        Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, query.getFilterBsonStr());
+        initializeSearchFilter(filter);
+
+        Instant operationStart = mongoLogger.logOperationStart(SEARCH_STREAM, FILTER, filter.getFilterBsonStr());
 
         long totalCount = 0;
         int countLimit = 0;
-        Stream<T> results;
-        StreamWithPagination<T> paginatedStream;
-
         if (query.getCountStrategy() == COUNT_QUERY_BEFORE_SEARCH) {
             // run count query
-            CountOptions countOptions  = query.getCountOptions() == null ? getDefaultCountOptions(filter) : query.getCountOptions();
-            totalCount = count(query.getSession(), query.getFilterBson(), countOptions);
+            CountOptions countOptions = query.getCountOptions() == null ? getDefaultLimitedCountOptions(filter) : query.getCountOptions();
+            totalCount = countDocuments(query.getSession(), filter, countOptions);
 
             // return empty Stream, keep information about the pagination used
-            if(totalCount == 0){
+            if (totalCount == 0) {
                 return new StreamWithPagination<>(filter.getPage(), filter.getPageSize());
             }
             countLimit = countOptions.getLimit();
         }
 
         // Run the search query and get cursor/iterable over database results
+        StreamWithPagination<T_RESULT> paginatedStream;
         FindIterable<T> dbResults = getFindIterable(query);
-        results = StreamSupport.stream(dbResults.spliterator(), false);
 
-        if(query.getCountStrategy() == HAS_NEXT_PAGE){
+        Stream<T_RESULT> results = StreamSupport
+                .stream(dbResults.spliterator(), false)
+                .map(result -> query.getConvertFunction().apply(result));
+
+        if (query.getCountStrategy() == HAS_NEXT_PAGE) {
             paginatedStream = new StreamWithPagination<>(results, filter.getPage(), filter.getPageSize(), 0);
-        }else{
+        } else {
             // return the list with information about counted element and the used limit
             paginatedStream = new StreamWithPagination<>(results, filter.getPage(), filter.getPageSize(), totalCount, countLimit);
         }
 
-        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, query.getFilterBsonStr(), RESULT_COUNT, totalCount);
+        mongoLogger.logOperationOk(SEARCH_STREAM, operationStart, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, totalCount);
         return paginatedStream;
     }
 
@@ -648,19 +683,19 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     private @NotNull Bson filterToBson(@NotNull F searchFilter) {
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
-        return buildFinalBsonFilter(bsonFilters, searchFilter.isLogicalAnd());
+        return getBsonFilter(bsonFilters, searchFilter.isLogicalAnd());
     }
 
     /**
      * @param bsonFilters the list of {@link Bson} filter
      * @param logicalAnd  if true, apply a logical AND between each  {@link Bson} filter, else a logical OR
      * @return <ul>
-     *     <li>if {@code bsonFilters} is empty, an empty {@link Bson}</li>
-     *     <li>If {@code bsonFilters} has only one filter, this unique filter </li>
-     *     <li>Else a logical AND or a logical OR between each filters</li>
+     * <li>if {@code bsonFilters} is empty, an empty {@link Bson}</li>
+     * <li>If {@code bsonFilters} has only one filter, this unique filter </li>
+     * <li>Else a logical AND or a logical OR between each filters</li>
      * </ul>
      */
-    protected Bson buildFinalBsonFilter(List<Bson> bsonFilters, boolean logicalAnd) {
+    private Bson getBsonFilter(List<Bson> bsonFilters, boolean logicalAnd) {
         if (bsonFilters.isEmpty()) {
             return Filters.empty();
         } else if (bsonFilters.size() == 1) {
@@ -861,17 +896,5 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return sort;
     }
 
-    protected Document getCollectionStats() {
-        Instant operationStart = mongoLogger.logOperationStart("mongo_collection_stats");
-        Document stats = mongodb.getDatabase().runCommand(statCommand);
-        mongoLogger.logOperationOk("mongo_collection_stats", operationStart);
-        return stats;
-    }
-
-    @Override
-    public long collectionDocumentCount() {
-        Document stats = getCollectionStats();
-        return stats.get("count", Long.class);
-    }
 }
 

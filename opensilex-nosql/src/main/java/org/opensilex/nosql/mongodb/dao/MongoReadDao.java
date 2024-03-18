@@ -6,8 +6,6 @@ import com.mongodb.client.model.CountOptions;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 
@@ -129,6 +127,16 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      */
     <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
 
+
+    /**
+     * Search for models based on the provided filter.
+     *
+     * @param filter The filter to apply.
+     * @return Stream of models matching the filter with pagination information.
+     * @throws MongoException If a MongoDB error occurs.
+     */
+    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(F filter) throws MongoException;
+
     /**
      * Search for models based on the provided query
      *
@@ -143,7 +151,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      *     <li>{@link MongoSearchQuery#getProjection()}} : The projection to apply on search results..</li>
      * </ul>
      */
-    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(MongoSearchQuery<T, F, ?> query) throws MongoException;
+    <T_RESULT> @NotNull StreamWithPagination<T_RESULT> searchAsStreamWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter within a client session.
@@ -233,10 +241,5 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
             @NotNull Class<T_JOINED> lookupClass,
             @NotNull Function<T_JOINED, T_RESULT> convertFunction
     );
-
-    /**
-     * @return the total number of Document inside the collection
-     */
-    long collectionDocumentCount();
 
 }

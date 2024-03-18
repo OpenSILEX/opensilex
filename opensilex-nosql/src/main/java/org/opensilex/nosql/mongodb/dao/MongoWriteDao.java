@@ -9,7 +9,6 @@ import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;

@@ -1,14 +1,16 @@
 package org.opensilex.core.data.dal;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
-import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -17,30 +19,51 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A Dao for handling {@link DataModel} by extending {@link MongoReadWriteDao}
+ *
+ * @author rcolin
+ */
 public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
+
 
     protected static final String COLLECTION_NAME = "data";
 
     protected final SPARQLService sparql;
-    protected final MongoDBService mongodb;
+    protected final MongoDBService mongoDBService;
 
     // Provenance empty filters and fields
     protected static final String PROVENANCE_URI_FIELD = DataModel.PROVENANCE_FIELD + "." + MongoModel.URI_FIELD;
     protected static final String PROVENANCE_EXPERIMENT_FIELD = DataModel.PROVENANCE_FIELD + "." + DataProvenanceModel.EXPERIMENT_FIELD;
     protected static final Bson NO_EXPERIMENT_FILTER = Filters.eq(PROVENANCE_EXPERIMENT_FIELD, null);
 
-
-    protected static final String PROVENANCE_PROV_USED_FIELD = DataModel.PROVENANCE_FIELD + "." + DataProvenanceModel.PROV_USED_FIELD;
-
     protected static final String PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD = DataModel.PROVENANCE_FIELD + "." + DataProvenanceModel.PROV_WAS_ASSOCIATED_WITH_FIELD;
     protected static final Bson NO_PROV_WAS_ASSOCIATED_WITH_FILTER = Filters.eq(PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD, null);
 
 
+    static {
+        MongoDBServiceV2.registerIndexes(
+                COLLECTION_NAME,
+                Map.of(
+                        Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true),
+                        Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), new IndexOptions().unique(true),
 
-    public DataDaoV2(SPARQLService sparql, MongoDBService mongodb) {
-        super(mongodb.getServiceV2(), DataModel.class, COLLECTION_NAME, "data");
+                        Indexes.descending(DataModel.DATE_FIELD), new IndexOptions(),
+                        Indexes.descending(DataModel.TARGET_FIELD), new IndexOptions(),
+
+                        Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.DATE_FIELD), new IndexOptions(),
+                        Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), new IndexOptions(),
+
+                        Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD), new IndexOptions(),
+                        Indexes.ascending(PROVENANCE_URI_FIELD), new IndexOptions()
+                )
+        );
+    }
+
+    public DataDaoV2(SPARQLService sparql, MongoDBService mongoDBService) {
+        super(mongoDBService.getServiceV2(), DataModel.class, COLLECTION_NAME, "data");
         this.sparql = sparql;
-        this.mongodb = mongodb;
+        this.mongoDBService = mongoDBService;
     }
 
     @Override
@@ -77,9 +100,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         }
 
         if (filter.getMetadata() != null) {
-            filter.getMetadata().forEach((metadataKey, metadataValue) -> {
-                bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + metadataKey, metadataValue));
-            });
+            filter.getMetadata().forEach((metadataKey, metadataValue) -> bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + metadataKey, metadataValue)));
         }
 
         addProvenanceAgentFilter(bsonFilters, filter);
@@ -90,8 +111,11 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     protected void addExperimentFilter(List<Bson> bsonFilters, DataSearchFilter filter) {
 
         AccountModel user = filter.getUser();
+        if(user == null){
+            throw new IllegalStateException("Internal error. The current AccountModel must be provided to the search");
+        }
 
-        if (user.isAdmin()) {
+        if (Boolean.TRUE.equals(user.isAdmin())) {
             if (!CollectionUtils.isEmpty(filter.getExperiments())) {
                 bsonFilters.add(Filters.in(PROVENANCE_EXPERIMENT_FIELD, filter.getExperiments()));
             }
@@ -100,11 +124,10 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         Set<URI> userExperiments;
         try{
-            userExperiments =  new ExperimentDAO(sparql, mongodb).getUserExperiments(user);
+            userExperiments =  new ExperimentDAO(sparql, mongoDBService).getUserExperiments(user);
         }catch (Exception e){
-            throw new RuntimeException("Unexpected error during data filter building ", e);
+            throw new RuntimeException("Unexpected error when retrieving user experiments during data filter building", e);
         }
-
 
         if (CollectionUtils.isEmpty(filter.getExperiments())) {
 
@@ -142,7 +165,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         Set<URI> agentProvenances = agents.isEmpty() ?
                 Collections.emptySet() :
-                new ProvenanceDAO(mongodb, sparql).getProvenancesURIsByAgents(agents);
+                new ProvenanceDAO(mongoDBService, sparql).getProvenancesURIsByAgents(agents);
 
         Bson dataProvenanceFilter = Filters.in(PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD, agents);
         Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, agentProvenances);

@@ -7,7 +7,7 @@
  * ************************************************************************************
  */
 
-package org.opensilex.nosql.mongodb.dao.search;
+package org.opensilex.nosql.mongodb.dao;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.CountOptions;
@@ -18,10 +18,20 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
+import static org.opensilex.nosql.mongodb.dao.MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.*;
 
 /**
  * A parameter object used to group the different options when running a read/search query
+ * The following settings are available
+ * <ul>
+ *  <li>{@link #setFilter(MongoSearchFilter)} : The search filter to use</li>
+ *  <li>{@link #setConvertFunction(Function)} : Use a function for mapping result from database cursor into another object. (Required) Use {@link Function#identity()} if no conversion is needed</li>
+ *  <li>{@link #setProjection(Bson)} : Select the fields to include/exclude from database</li>
+ *  <li>{@link #setSession(ClientSession)} : Use a given {@link ClientSession}. Useful when you want to read/search on documents which are not yet committed</li>
+ *  <li> {@link #setCountStrategy(PAGINATED_SEARCH_STRATEGY)} : Determine how to compute the pagination information associated with the search </li>
+ *  <li> {@link #setCountOptions(CountOptions)} : Use a custom {@link CountOptions} when performing the count. Only relevant if {@code getCountStrategy() == COUNT_QUERY_BEFORE_SEARCH}  </li>
+ * </ul>
+ *
  * @param <T> The type of the MongoDB model.
  * @param <F> The kind of filter specific to this DAO.
  * @param <T_RESULT> The Type of object after model conversion (optional)
@@ -51,12 +61,6 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
 
     // The filter to apply
     private F filter;
-
-    // Only used in order to store effective Bson without recomputing it from F filter (ex : for logging or count+find)
-    private Bson filterBson;
-
-    // Only used in order to store effective Bson without recomputing it from F filter (ex: when use it for logging
-    private String filterBsonStr;
 
     private Bson projection;
 
@@ -106,6 +110,7 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
     }
 
     public MongoSearchQuery<T, F, T_RESULT> setProjection(Bson projection) {
+        Objects.requireNonNull(projection);
         this.projection = projection;
         return this;
     }
@@ -118,23 +123,6 @@ public class MongoSearchQuery<T extends MongoModel, F extends MongoSearchFilter,
 
     public void setCountOptions(CountOptions countOptions) {
         this.countOptions = countOptions;
-    }
-
-    public MongoSearchQuery<T, F, T_RESULT> setFilterBson(Bson filterBson) {
-        Objects.requireNonNull(filterBson);
-        this.filterBson = filterBson;
-        return this;
-    }
-
-    public Bson getFilterBson() {
-        return filterBson;
-    }
-
-    public String getFilterBsonStr() {
-        if(filterBsonStr == null){
-            filterBsonStr = filterBson.toString();
-        }
-        return filterBsonStr;
     }
 
     public PAGINATED_SEARCH_STRATEGY getCountStrategy() {

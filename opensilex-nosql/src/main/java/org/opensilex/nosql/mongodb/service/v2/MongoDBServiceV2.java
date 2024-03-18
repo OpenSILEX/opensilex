@@ -76,6 +76,11 @@ public class MongoDBServiceV2 extends BaseService {
         mongoLogger = new MongoLogger(null, LOGGER);
     }
 
+    public static void registerIndexes(String collectionName, Map<Bson,IndexOptions> indexes){
+        Objects.requireNonNull(indexes);
+        indexes.forEach((indexKeys, indexOptions) -> registerIndex(collectionName, indexKeys, indexOptions));
+    }
+
     /**
      * Register the creation of some MongoDB index
      * @param collectionName Name of the MongoDB collection on which create index (required)
@@ -125,12 +130,12 @@ public class MongoDBServiceV2 extends BaseService {
         try {
             if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
                 checkConnection(getImplementedConfig());
+                createIndexes();
             }
         } catch (MongoTimeoutException | MongoSecurityException e) {
             mongoClient.close();
             throw e;
         }
-        createIndexes();
     }
 
     public void createIndexes(){

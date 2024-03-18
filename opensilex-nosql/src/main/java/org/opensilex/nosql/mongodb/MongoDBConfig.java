@@ -80,7 +80,7 @@ public interface MongoDBConfig extends ServiceConfig {
      */
     @ConfigDescription(
             value = "Max socket read timeout",
-            defaultInt = 30000
+            defaultInt = 60000
     )
     int readTimeoutMs();
 
@@ -100,7 +100,7 @@ public interface MongoDBConfig extends ServiceConfig {
      */
     @ConfigDescription(
             value = "Maximum number of page to count when using countDocument() before a paginated search",
-            defaultInt = 10
+            defaultInt = 5
     )
     int maxPageCountLimit();
 

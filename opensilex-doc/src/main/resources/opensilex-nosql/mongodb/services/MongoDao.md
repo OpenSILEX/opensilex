@@ -97,7 +97,9 @@ filter.
 
 See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods
 
-### Pagination handling
+## Pagination handling
+
+![MongoPagination.png](uml/MongoPagination.png)
 
 The `MongoReadWriteDao` handle pagination when using `searchWithPagination()` and `searchAsStreamWithPagination()`.
 These method return a `ListWithPagination` and `StreamWithPagination` which store the following information:
@@ -105,9 +107,11 @@ These method return a `ListWithPagination` and `StreamWithPagination` which stor
 - `total` : The total number of element counted for this search with a count query
 - `page` : The page number (passed to the `MongoSearchFilter` filter)
 - `pageSize` : The page size (passed to the `MongoSearchFilter` filter)
-- `countLimit` : The maximum number of counted element
+- `totalPages` : The total number of pages available (total / pageSize)
+- `limitCount` : The maximum number of counted element
+- `hasNextPage`: Indicate if there exist a next page after the current page
 
-#### Count limiting
+### Count limiting
 
 - The `countLimit` information is returned in order to know if the `MongoReadWriteDao` has limited the number of element to count, 
 in order to prevent performance issues when the MongoDB server has to iterate over a large number of document.

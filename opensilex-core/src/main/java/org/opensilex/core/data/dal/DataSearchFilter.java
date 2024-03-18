@@ -1,13 +1,12 @@
 package org.opensilex.core.data.dal;
 
 import org.bson.Document;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
+import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.security.account.dal.AccountModel;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 
 public class DataSearchFilter extends MongoSearchFilter {
 

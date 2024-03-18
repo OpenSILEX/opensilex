@@ -25,8 +25,6 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchFilter;
-import org.opensilex.nosql.mongodb.dao.search.MongoSearchQuery;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.model.SparqlMongoTestModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -167,7 +165,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoTestModel model = new MongoTestModel();
         model.setKey(RANDOM.nextInt());
         model.setName(RandomStringUtils.random(16));
-        model.setUri(URI.create(TEST_DATASET_BASE_URI + RandomStringUtils.random(16)));
+        model.setUri(URI.create(TEST_DATASET_BASE_URI + RandomStringUtils.randomAlphanumeric(16)));
         return model;
     }
 
@@ -231,24 +229,21 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
             Consumer<MongoTestModel> modelAssertion
     ) {
 
-        Bson projection = useProjection ? DEFAULT_PROJECTION : null;
         try (ClientSession session = useSession ? mongoDBv2.startSession() : null) {
             PaginatedIterable<MongoTestModel, ?> results;
 
             MongoSearchQuery<MongoTestModel, MongoSearchFilter, MongoTestModel> query = new MongoSearchQuery<>();
             query.setSession(session);
             query.setFilter(filter);
-            query.setProjection(projection);
-            query.setConvertFunction(DEFAULT_CONVERSION);
+            if(useProjection){
+                query.setProjection(DEFAULT_PROJECTION);
+            }
+            query.setConvertFunction(useConversion ? DEFAULT_CONVERSION : Function.identity());
 
             // Run search query with/without projection/conversion
-            if (useConversion) {
-                results = searchDao.searchWithPagination(query);
-            } else {
-                results = useStream ?
-                        searchDao.searchAsStreamWithPagination(query) :
-                        searchDao.searchWithPagination(query);
-            }
+            results = useStream ?
+                    searchDao.searchAsStreamWithPagination(query) :
+                    searchDao.searchWithPagination(query);
 
             // Run assertion on results and on each item from results
             assertNotNull(results);

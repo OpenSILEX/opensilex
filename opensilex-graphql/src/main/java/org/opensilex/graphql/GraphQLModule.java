@@ -8,9 +8,7 @@
  ******************************************************************************/
 package org.opensilex.graphql;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.graphql.staple.StapleApiUtils;
 import org.opensilex.server.extensions.APIExtension;
 
 /**

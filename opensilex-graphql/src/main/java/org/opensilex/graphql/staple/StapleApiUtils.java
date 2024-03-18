@@ -16,6 +16,7 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.jvnet.hk2.annotations.Service;
 import org.opensilex.OpenSilex;
+import org.opensilex.service.reflection.SelfBound;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * @author Valentin Rigolle
  */
 @Service
+@SelfBound
 public class StapleApiUtils {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(StapleApiUtils.class);

@@ -19,8 +19,5 @@ import org.opensilex.server.extensions.APIExtension;
  * @author Valentin Rigolle
  */
 public class GraphQLModule extends OpenSilexModule implements APIExtension {
-    @Override
-    public void bindServices(AbstractBinder binder) {
-        binder.bindAsContract(StapleApiUtils.class);
-    }
+
 }

@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.server.response.ObjectUriResponse;
 
 /**
@@ -148,6 +149,10 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     protected static MongoDBService getMongoDBService(){
         return getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+    }
+
+    protected static MongoDBServiceV2 getMongoDBServiceV2(){
+        return getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
     }
 
 

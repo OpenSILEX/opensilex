@@ -410,12 +410,13 @@ public class DataAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
         }
 
+        Set<URI> dateVariables = new DataDAO(nosql, sparql, fs).getAllDateVariables();
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
 
         ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
                 new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
                         .setFilter(filter)
-                        .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, null))
+                        .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
                         .setCountStrategy(MongoSearchQuery.PAGINATED_SEARCH_STRATEGY.HAS_NEXT_PAGE)
         );
 

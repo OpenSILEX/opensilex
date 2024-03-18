@@ -8,6 +8,7 @@
  ******************************************************************************/
 package org.opensilex.core.observation.dal.model;
 
+import org.bson.BsonValue;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.net.URI;
@@ -16,23 +17,23 @@ import java.util.UUID;
 /**
  * @author Valentin Rigolle
  */
-public class ObservationDalModel extends MongoModel {
-    private URI variable;
-    private String value;
+public class ObservationModel extends MongoModel {
+    private URI datatype;
+    private BsonValue value;
 
-    public URI getVariable() {
-        return variable;
+    public URI getDatatype() {
+        return datatype;
     }
 
-    public void setVariable(URI variable) {
-        this.variable = variable;
+    public void setDatatype(URI datatype) {
+        this.datatype = datatype;
     }
 
-    public String getValue() {
+    public BsonValue getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(BsonValue value) {
         this.value = value;
     }
 

@@ -13,5 +13,5 @@ import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 /**
  * @author Valentin Rigolle
  */
-public class ObservationDalSearchFilter extends MongoSearchFilter {
+public class ObservationSearchFilter extends MongoSearchFilter {
 }

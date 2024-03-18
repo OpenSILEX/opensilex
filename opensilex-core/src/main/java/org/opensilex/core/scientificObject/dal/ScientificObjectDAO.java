@@ -538,7 +538,7 @@ public class ScientificObjectDAO {
 
         }
 
-        // Add facility filter
+        // Add facility filter  -- TODO : doesn't work
         if (searchFilter.getFacility() != null) {
             Node facilityNode = SPARQLDeserializers.nodeURI(searchFilter.getFacility());
             Var directFacility = makeVar("__directFacility");

@@ -201,25 +201,20 @@
         <vl-overlay id="detailItem" :position="overlayCoordinate">
           <template v-slot="scope">
             <div class="panel-content">
+              <!-- <opensilex-DisplayInformationAboutItem
+                v-if="showPopup"
+                :details-s-o="detailsSO"
+                :experiment="experiment"
+                :item="selectedFeatures"
+                :showName="true"
+                :withBasicProperties="true"
+              /> -->
               <circular-graph
                 v-if="showPopup"
                 :data="generateGraphData()"
                 :title="'Sample Density'"
               >
               </circular-graph>
-              <bar-graph
-                v-if="showPopup"
-                :data="generateBarGraphData()"
-                :title="' '"
-              ></bar-graph>
-
-              <!-- <opensilex-DisplayInformationAboutItem
-                :details-s-o="detailsSO"
-                :experiment="experiment"
-                :item="selectedFeatures[0]"
-                :showName="true"
-                :withBasicProperties="true"
-              /> -->
             </div>
           </template>
         </vl-overlay>
@@ -309,8 +304,8 @@
           <vl-layer-vector render-mode="image">
             <vl-source-vector :features="facilitiesData" :wrap-x="true">
               <vl-style-box>
-                <vl-style-stroke color="blue" :width="2"></vl-style-stroke>
-                <vl-style-fill color="rgba(0,   0,   255,   0.1)"></vl-style-fill>
+                <vl-style-stroke color="red" :width="5"></vl-style-stroke>
+                <vl-style-fill color="rgba(0,   255,   255,   1)"></vl-style-fill>
               </vl-style-box>
             </vl-source-vector>
           </vl-layer-vector>
@@ -368,7 +363,7 @@
             >
               <!-- features style-->
               <vl-style-box>
-                <vl-style-stroke color="blue"></vl-style-stroke>
+                <vl-style-stroke color="green"></vl-style-stroke>
                 <vl-style-fill color="rgba(255,255,255,0.5)"></vl-style-fill>
               </vl-style-box>
             </vl-interaction-draw>
@@ -384,6 +379,7 @@
         />
       </vl-map>
     </div>
+    <bar-graph :data="generateBarGraphData()" :title="' '"></bar-graph>
 
     <!--------------------- EVENT SIDEBAR ----------------------------->
     <b-sidebar
@@ -1033,30 +1029,61 @@ export default class MapView extends Vue {
   }
 
   generateBarGraphData() {
-    const categories = this.selectedFeatures.map((feature) => feature.properties.name);
-    const allVariableTypes = this.selectedFeatures.flatMap(
-      (feature) => feature.properties.document.variable_type
-    );
-
-    // Create a unique set of variable types to ensure no duplication
-    const uniqueVariableTypes = [...new Set(allVariableTypes)];
-
-    // Map the unique variable types to the series data structure
-    const series = uniqueVariableTypes.map((variableType) => ({
-      name: variableType,
-      type: "bar",
-      stack: "total",
-      barWidth: "60%",
-      label: {
-        show: true,
-        formatter: (params) => Math.round(params.value * 1000) / 10 + "%",
-      },
-      data: this.selectedFeatures.map((feature) =>
-        feature.properties.document.variable_type.includes(variableType) ? 1 : 0
-      ),
-    }));
-
-    return { categories, series };
+    return {
+      date: [
+        "1990-01-01",
+        "1991-01-01",
+        "1992-01-01",
+        "1993-01-01",
+        "1994-01-01",
+        "1995-01-01",
+        "1996-01-01",
+        "1997-01-01",
+        "1998-01-01",
+        "1999-01-01",
+        "2000-01-01",
+        "2001-01-01",
+        "2002-01-01",
+        "2003-01-01",
+        "2004-01-01",
+        "2005-01-01",
+        "2006-01-01",
+        "2007-01-01",
+        "2008-01-01",
+        "2009-01-01",
+        "2010-01-01",
+        "2011-01-01",
+        "2012-01-01",
+        "2013-01-01",
+        "2014-01-01",
+        "2015-01-01",
+        "2016-01-01",
+        "2017-01-01",
+        "2018-01-01",
+        "2019-01-01",
+        "2020-01-01",
+        "2021-01-01",
+        "2022-01-01",
+        "2023-01-01",
+        "2024-01-01",
+        "2025-01-01",
+        "2026-01-01",
+        "2027-01-01",
+        "2028-01-01",
+        "2029-01-01",
+        "2030-01-01",
+        "2031-01-01",
+        "2032-01-01",
+        "2033-01-01",
+        "2034-01-01",
+        "2035-01-01",
+        "2036-01-01",
+        "2037-01-01",
+        "2038-01-01",
+        "2039-01-01",
+        "2040-01-01",
+      ],
+    };
   }
 
   calculateTopRightCorner() {
@@ -1252,14 +1279,8 @@ export default class MapView extends Vue {
   updateSelectionFeatures(features) {
     this.selectedOS = [];
     this.soWithLabels = [];
-    console.log("FEATURE : ", features);
     if (features.length && features[0]) {
       this.selectedFeatures = features;
-      const http = this.scientificObjectsService.getScientificObjectDetail(
-        features[0].id
-      );
-      features.properties = http.catch;
-      console.log("RESPONSE : ", http);
       features.forEach((feature) => {
         if (feature.properties.nature === "ScientificObjects") {
           this.selectedOS.push(feature.properties.uri);
@@ -1304,7 +1325,6 @@ export default class MapView extends Vue {
       (coordinateExtent[0] + coordinateExtent[2]) / 2,
       (coordinateExtent[1] + coordinateExtent[3]) / 2,
     ];
-    console.log("CENTER MAP: ", this.centerMap);
   }
 
   //Show areas and devices only under zoom 9 and get the current map expansion
@@ -1651,6 +1671,7 @@ export default class MapView extends Vue {
               this.detailsSO = true;
             }
           });
+          console.log("SCIENTIFIC OBJECT: ", http.response.result);
         })
         .catch(this.$opensilex.errorHandler)
         .finally(() => {

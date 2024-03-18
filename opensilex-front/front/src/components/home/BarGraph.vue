@@ -1,14 +1,13 @@
-// BarGraph.vue
 <template>
-  <div ref="chart" style="width: 100%; height: 300px"></div>
+  <div ref="chart" style="width: 100%; height: 100px"></div>
 </template>
 
 <script>
 import * as echarts from "echarts";
 
 export default {
-  name: "BarGraph",
-  props: ["data", "title"],
+  name: "LargeAreaChart",
+  props: ["data"],
   mounted() {
     this.chart = echarts.init(this.$refs.chart);
     this.updateChart();
@@ -24,37 +23,59 @@ export default {
   methods: {
     updateChart() {
       const option = {
-        title: {
-          text: this.title,
-          left: "center",
-          top: "10%",
-          textStyle: {
-            fontSize: 15,
-          },
-        },
         tooltip: {
           trigger: "axis",
-          axisPointer: {
-            type: "shadow",
+          position: function (pt) {
+            return [pt[1], "10%"];
           },
         },
-        legend: {
-          data: this.data.series.map((s) => s.name),
-        },
-        grid: {
-          left: "3%",
-          right: "4%",
-          bottom: "3%",
-          containLabel: true,
+        toolbox: {
+          feature: {},
         },
         xAxis: {
           type: "category",
-          data: this.data.categories,
+          boundaryGap: false,
+          data: this.data.date,
+          show: false, // This line hides the x-axis
         },
         yAxis: {
           type: "value",
+          boundaryGap: [0, "100%"],
         },
-        series: this.data.series,
+        dataZoom: [
+          {
+            type: "slider",
+            start: 1990,
+            end: 2040,
+          },
+          {
+            start: 1990,
+            end: 2040,
+          },
+        ],
+        series: [
+          {
+            name: "Fake Data",
+            type: "line",
+            symbol: "none",
+            sampling: "lttb",
+            itemStyle: {
+              color: "rgb(255, 70, 131)",
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                  offset: 0,
+                  color: "rgb(255, 158, 68)",
+                },
+                {
+                  offset: 1,
+                  color: "rgb(255, 70, 131)",
+                },
+              ]),
+            },
+          },
+        ],
       };
       this.chart.setOption(option);
     },

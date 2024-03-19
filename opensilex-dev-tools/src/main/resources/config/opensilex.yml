@@ -1,11 +1,11 @@
 ontologies:
-    baseURI: http://opensilex.dev/
+    baseURI: http://www.phenome-fppn.fr/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://138.102.159.37:8080/rdf4j-server/
+            repository: phis-test-sarra
 
 file-system:
     fs:
@@ -32,9 +32,9 @@ file-system:
 big-data:
     mongodb:
         config:
-            host: localhost
-            port: 8668
-            database: opensilex
+            host: 138.102.159.37
+            port: 27017
+            database: phis-test-sarra
     #            timezone: Europe/Paris
 
 phisws:
@@ -75,6 +75,7 @@ system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
+
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
 #     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
@@ -85,3 +86,5 @@ system:
 #     datasetMetadataLanguages:
 #         - en
 #         - fr
+front:
+    connectAsGuest: true

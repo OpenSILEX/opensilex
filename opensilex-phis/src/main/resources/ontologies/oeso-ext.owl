@@ -146,34 +146,6 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#hasContact -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasContact"/>
-    
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasDocument -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDocument">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding">
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="fr">financement</rdfs:label>
-        <rdfs:label xml:lang="en">financial funding</rdfs:label>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-    </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasLens -->
@@ -440,17 +412,6 @@
     </owl:DatatypeProperty>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasReplication -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasReplication">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="en">In statistics, replication is the repetition of the conditions of an experiment, so that the variability associated with the phenomenon can be estimated.</rdfs:comment>
-        <rdfs:label xml:lang="en">replication</rdfs:label>
-        <rdfs:label xml:lang="fr">réplication</rdfs:label>
-    </owl:DatatypeProperty>
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasShape -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasShape">
@@ -494,17 +455,6 @@
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
-
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Accession</rdfs:label>
-        <rdfs:label xml:lang="fr">Accession</rdfs:label>
-    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#AgriculturalField -->
@@ -682,16 +632,6 @@
         <rdfs:label xml:lang="en">field robot</rdfs:label>
         <rdfs:label xml:lang="fr">phenomobile</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#FinancialFunding -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FinancialFunding">
-        <rdfs:label xml:lang="en">financial funding</rdfs:label>
-        <rdfs:label xml:lang="fr">support financier</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Gantry -->
@@ -1076,7 +1016,15 @@
         <rdfs:label xml:lang="en">RGB camera</rdfs:label>
         <rdfs:label xml:lang="fr">caméra RGB</rdfs:label>
     </owl:Class>
-    
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
+       <rdfs:label xml:lang="en">Scientific object</rdfs:label>
+       <rdfs:label xml:lang="fr">Objet scientifique</rdfs:label>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#RadiometricTarget -->
@@ -1119,27 +1067,7 @@
         <rdfs:label xml:lang="fr">Lot de Porte-greffe</rdfs:label>
         <rdfs:label xml:lang="en">Rootstock Lot</rdfs:label>
     </owl:Class>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasReplication"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Scion -->
@@ -1446,15 +1374,6 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Variety</rdfs:label>
-        <rdfs:label xml:lang="fr">Variété</rdfs:label>
-    </owl:Class>
-
     <!-- http://www.opensilex.org/vocabulary/oeso#VignettingDocument -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VignettingDocument">
@@ -1492,28 +1411,6 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#anrsupport -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#anrsupport">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>ANR</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#europeanfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#europeanfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">European</rdfs:label>
-        <rdfs:label xml:lang="fr">Européen</rdfs:label>
-    </owl:NamedIndividual>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
@@ -1533,26 +1430,6 @@
     </owl:NamedIndividual>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>INRA</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#internationalfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#internationalfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">International</rdfs:label>
-        <rdfs:label xml:lang="fr">International</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#plantEOI -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plantEOI">
@@ -1570,17 +1447,6 @@
         <rdfs:label xml:lang="fr">parcelle</rdfs:label>
         <rdfs:label xml:lang="en">plot</rdfs:label>
     </owl:NamedIndividual>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#researchunitfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#researchunitfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">Research Unit</rdfs:label>
-        <rdfs:label xml:lang="fr">Unité de recherche</rdfs:label>
-    </owl:NamedIndividual>
-    
 
 
     <!-- 

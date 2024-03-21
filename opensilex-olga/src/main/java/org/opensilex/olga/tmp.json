@@ -1,0 +1,3794 @@
+{
+  "metadata": {
+    "datafiles": [],
+    "pagination": {
+      "currentPage": 0,
+      "pageSize": 1000,
+      "totalCount": 95,
+      "totalPages": 1
+    },
+    "status": {
+      "message": "Request accepted, response successful",
+      "messageType": "INFO"
+    }
+  },
+  "result": {
+    "data": [
+      {
+        "accessionNumber": "PT-MA-00002",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Alphonse Hawa\u00efl",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "85",
+        "germplasmName": "Alphonse Hawa\u00efl",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Alphonse Hawa\u00efl",
+        "synonyms": [
+          {
+            "synonym": "ma102;F10",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00003",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Rose",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "86",
+        "germplasmName": "Rose",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Rose",
+        "synonyms": [
+          {
+            "synonym": "ma103;O3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00004",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Starch",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "87",
+        "germplasmName": "Starch",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Starch",
+        "synonyms": [
+          {
+            "synonym": "ma104;P1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00005",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Tommy atkins",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "88",
+        "germplasmName": "Tommy atkins",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Tommy atkins",
+        "synonyms": [
+          {
+            "synonym": "ma106;R2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00006",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Nimrod",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "89",
+        "germplasmName": "Nimrod",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Nimrod",
+        "synonyms": [
+          {
+            "synonym": "ma107;R6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00007",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Irwin",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "90",
+        "germplasmName": "Irwin",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Irwin",
+        "synonyms": [
+          {
+            "synonym": "ma108;S1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00059",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Gom\u00e9ra 3",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "91",
+        "germplasmName": "Gom\u00e9ra 3",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Gom\u00e9ra 3",
+        "synonyms": [
+          {
+            "synonym": "ma61;B1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00008",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Adams",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "92",
+        "germplasmName": "Adams",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Adams",
+        "synonyms": [
+          {
+            "synonym": "ma110;T1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00009",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Kensington",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "93",
+        "germplasmName": "Kensington",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Kensington",
+        "synonyms": [
+          {
+            "synonym": "ma111;T3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00010",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "T6 Sensation",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "94",
+        "germplasmName": "T6 Sensation",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. T6 Sensation",
+        "synonyms": [
+          {
+            "synonym": "ma112;T6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00011",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Paris",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "95",
+        "germplasmName": "Paris",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Paris",
+        "synonyms": [
+          {
+            "synonym": "ma114;U2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00012",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Egypte C",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "96",
+        "germplasmName": "Egypte C",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Egypte C",
+        "synonyms": [
+          {
+            "synonym": "ma117;V4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00013",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Smith",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "97",
+        "germplasmName": "Smith",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Smith",
+        "synonyms": [
+          {
+            "synonym": "ma118;V7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00014",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Crazou",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "98",
+        "germplasmName": "Crazou",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Crazou",
+        "synonyms": [
+          {
+            "synonym": "ma119;W1\/W2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00015",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Broocks",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "99",
+        "germplasmName": "Broocks",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Broocks",
+        "synonyms": [
+          {
+            "synonym": "ma121;W6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00016",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Haden",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "100",
+        "germplasmName": "Haden",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Haden",
+        "synonyms": [
+          {
+            "synonym": "ma122;W9",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00017",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "D'or",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "101",
+        "germplasmName": "D'or",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. D'or",
+        "synonyms": [
+          {
+            "synonym": "ma123;X1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00018",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Eldon",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "102",
+        "germplasmName": "Eldon",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Eldon",
+        "synonyms": [
+          {
+            "synonym": "ma125;X9",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00019",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Mechouang",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "103",
+        "germplasmName": "Mechouang",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mechouang",
+        "synonyms": [
+          {
+            "synonym": "ma126;AF3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00020",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Julie",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "104",
+        "germplasmName": "Julie",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Julie",
+        "synonyms": [
+          {
+            "synonym": "ma127;AD7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00021",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Cambodiana",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "105",
+        "germplasmName": "Cambodiana",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Cambodiana",
+        "synonyms": [
+          {
+            "synonym": "ma128;AE8",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00022",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Saber",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "106",
+        "germplasmName": "Saber",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Saber",
+        "synonyms": [
+          {
+            "synonym": "ma130;AF11",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00024",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Mangotine",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "108",
+        "germplasmName": "Mangotine",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mangotine",
+        "synonyms": [
+          {
+            "synonym": "ma132;AE3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00025",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "IDN",
+        "defaultDisplayName": "Mangifera laurina",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "109",
+        "germplasmName": "Mangifera laurina",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mangifera laurina",
+        "synonyms": [
+          {
+            "synonym": "ma134;AG1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00080",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "ESP",
+        "defaultDisplayName": "Philippino",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "110",
+        "germplasmName": "Philippino",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Philippino",
+        "synonyms": [
+          {
+            "synonym": "ma90;AA2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00026",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Sabre",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "111",
+        "germplasmName": "Sabre",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Sabre",
+        "synonyms": [
+          {
+            "synonym": "ma135;AB3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00027",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Mulgo Round",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "112",
+        "germplasmName": "Mulgo Round",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mulgo Round",
+        "synonyms": [
+          {
+            "synonym": "ma139;AF5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00028",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "AUS",
+        "defaultDisplayName": "Nam Doc Ma\u00ef",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "113",
+        "germplasmName": "Nam Doc Ma\u00ef",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Nam Doc Mai",
+        "synonyms": [
+          {
+            "synonym": "ma14;",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00029",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Palmer",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "114",
+        "germplasmName": "Palmer",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Palmer",
+        "synonyms": [
+          {
+            "synonym": "ma141;U3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00030",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Bombay",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "115",
+        "germplasmName": "Bombay",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Bombay",
+        "synonyms": [
+          {
+            "synonym": "ma143;V6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00031",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Zill",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "116",
+        "germplasmName": "Zill",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Zill",
+        "synonyms": [
+          {
+            "synonym": "ma148;AC5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00032",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Haden Carabao",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "117",
+        "germplasmName": "Haden Carabao",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Haden Carabao",
+        "synonyms": [
+          {
+            "synonym": "ma149;AC12",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00033",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "ESP",
+        "defaultDisplayName": "Glenn",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "118",
+        "germplasmName": "Glenn",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Glenn",
+        "synonyms": [
+          {
+            "synonym": "ma15;J2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00034",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "ESP",
+        "defaultDisplayName": "Valencia Pride",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "119",
+        "germplasmName": "Valencia Pride",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Valencia Pride",
+        "synonyms": [
+          {
+            "synonym": "ma151;AD10",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00036",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Paheri",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "121",
+        "germplasmName": "Paheri",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Paheri",
+        "synonyms": [
+          {
+            "synonym": "ma157;AD13",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00037",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Am\u00e9\u00e9ri",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "122",
+        "germplasmName": "Am\u00e9\u00e9ri",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Am\u00e9\u00e9ri",
+        "synonyms": [
+          {
+            "synonym": "ma158;AD6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00038",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Florigon",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "123",
+        "germplasmName": "Florigon",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Florigon",
+        "synonyms": [
+          {
+            "synonym": "ma17;H1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00039",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Fascell",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "124",
+        "germplasmName": "Fascell",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Fascell",
+        "synonyms": [
+          {
+            "synonym": "ma21;D4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00040",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "REU",
+        "defaultDisplayName": "Maison rouge",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "125",
+        "germplasmName": "Maison rouge",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Maison rouge",
+        "synonyms": [
+          {
+            "synonym": "ma23;B3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00041",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Gabriel",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "126",
+        "germplasmName": "Gabriel",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Gabriel",
+        "synonyms": [
+          {
+            "synonym": "ma24;C6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00042",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Mango vert",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "127",
+        "germplasmName": "Mango vert",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mango vert",
+        "synonyms": [
+          {
+            "synonym": "ma25;C10",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00043",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Van Dyke",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "128",
+        "germplasmName": "Van Dyke",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Van Dyke",
+        "synonyms": [
+          {
+            "synonym": "ma26;B6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00044",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Jacqueline",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "129",
+        "germplasmName": "Jacqueline",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Jacqueline",
+        "synonyms": [
+          {
+            "synonym": "ma29;D8",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00045",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Eldon Ferke",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "130",
+        "germplasmName": "Eldon Ferke",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Eldon Ferke",
+        "synonyms": [
+          {
+            "synonym": "ma30;D5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00047",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Egypte D",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "132",
+        "germplasmName": "Egypte D",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Egypte D",
+        "synonyms": [
+          {
+            "synonym": "ma34;G7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00048",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Egypte A",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "133",
+        "germplasmName": "Egypte A",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Egypte A",
+        "synonyms": [
+          {
+            "synonym": "ma35;F3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00049",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Fraissinette",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "134",
+        "germplasmName": "Fraissinette",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Fraissinette",
+        "synonyms": [
+          {
+            "synonym": "ma39;Z1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00050",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Sabot",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "135",
+        "germplasmName": "Sabot",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Sabot",
+        "synonyms": [
+          {
+            "synonym": "ma42;Z4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00051",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Divine",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "136",
+        "germplasmName": "Divine",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Divine",
+        "synonyms": [
+          {
+            "synonym": "ma44;Y9",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00052",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Am\u00e9lie",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "137",
+        "germplasmName": "Am\u00e9lie",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Am\u00e9lie",
+        "synonyms": [
+          {
+            "synonym": "ma46;Y5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00053",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "AUS",
+        "defaultDisplayName": "R2E2",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "138",
+        "germplasmName": "R2E2",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. R2E2",
+        "synonyms": [
+          {
+            "synonym": "ma51;J3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00054",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "COL",
+        "defaultDisplayName": "Chancleto",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "139",
+        "germplasmName": "Chancleto",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Chancleto",
+        "synonyms": [
+          {
+            "synonym": "ma54;L3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00055",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "COL",
+        "defaultDisplayName": "Azucar",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "140",
+        "germplasmName": "Azucar",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Azucar",
+        "synonyms": [
+          {
+            "synonym": "ma55;M1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00056",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Linzolo",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "141",
+        "germplasmName": "Linzolo",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Linzolo",
+        "synonyms": [
+          {
+            "synonym": "ma58;D2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00057",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Keitt",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "142",
+        "germplasmName": "Keitt",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Keitt",
+        "synonyms": [
+          {
+            "synonym": "ma59;D3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00058",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "G\u00e9dong",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "143",
+        "germplasmName": "G\u00e9dong",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. G\u00e9dong",
+        "synonyms": [
+          {
+            "synonym": "ma60;A4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00060",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Cyl\u00e9on",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "144",
+        "germplasmName": "Cyl\u00e9on",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Cyl\u00e9on",
+        "synonyms": [
+          {
+            "synonym": "ma67;N2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00061",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Sandersha",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "145",
+        "germplasmName": "Sandersha",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Sandersha",
+        "synonyms": [
+          {
+            "synonym": "ma68;N3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00062",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Candaha.",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "146",
+        "germplasmName": "Candaha.",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Candaha.",
+        "synonyms": [
+          {
+            "synonym": "ma69;O1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00063",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "TTO",
+        "defaultDisplayName": "Doux Doux",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "147",
+        "germplasmName": "Doux Doux",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Doux Doux.",
+        "synonyms": [
+          {
+            "synonym": "ma71;P4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00064",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "ESP",
+        "defaultDisplayName": "Pope",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "148",
+        "germplasmName": "Pope",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Pope",
+        "synonyms": [
+          {
+            "synonym": "ma72;AA3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00065",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Sybil",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "149",
+        "germplasmName": "Sybil",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Sybil",
+        "synonyms": [
+          {
+            "synonym": "ma73;AA6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00066",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Torbet",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "150",
+        "germplasmName": "Torbet",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Torbet",
+        "synonyms": [
+          {
+            "synonym": "ma74;AB5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00067",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Am\u00e9lie Guin\u00e9",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "151",
+        "germplasmName": "Am\u00e9lie Guin\u00e9",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Am\u00e9lie Guin\u00e9",
+        "synonyms": [
+          {
+            "synonym": "ma75;AB13",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00068",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Galerie",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "152",
+        "germplasmName": "Galerie",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Galerie",
+        "synonyms": [
+          {
+            "synonym": "ma76;AG3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00069",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Longo Di\u00e9go",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "153",
+        "germplasmName": "Longo Di\u00e9go",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Longo Di\u00e9go",
+        "synonyms": [
+          {
+            "synonym": "ma77;AF9",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00070",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Passy Hative",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "154",
+        "germplasmName": "Passy Hative",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Passy Hative",
+        "synonyms": [
+          {
+            "synonym": "ma78;AD3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00071",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Springfield",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "155",
+        "germplasmName": "Springfield",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Springfels",
+        "synonyms": [
+          {
+            "synonym": "ma81;Q1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00072",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Alphonse de Goa",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "156",
+        "germplasmName": "Alphonse de Goa",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Alphonse de Goa",
+        "synonyms": [
+          {
+            "synonym": "ma82;R4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00074",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Am\u00e9lior\u00e9 du Cameroun",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "158",
+        "germplasmName": "Am\u00e9lior\u00e9 du Cameroun",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Am\u00e9lior\u00e9 du Cameroun",
+        "synonyms": [
+          {
+            "synonym": "ma84;Y7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00075",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "IDN",
+        "defaultDisplayName": "Pelipisan",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "159",
+        "germplasmName": "Pelipisan",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "applanata",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Pelipisan",
+        "synonyms": [
+          {
+            "synonym": "ma85;Z9",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00076",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Miami Late",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "160",
+        "germplasmName": "Miami Late",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Miami Late",
+        "synonyms": [
+          {
+            "synonym": "ma86;Z7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00077",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Kent",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "161",
+        "germplasmName": "Kent",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Kent",
+        "synonyms": [
+          {
+            "synonym": "ma87;Z6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00079",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Ruby",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "163",
+        "germplasmName": "Ruby",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Ruby",
+        "synonyms": [
+          {
+            "synonym": "ma89;X5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00081",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Wooten",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "164",
+        "germplasmName": "Wooten",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Wooten",
+        "synonyms": [
+          {
+            "synonym": "ma91;AB1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00083",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Mabroka",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "165",
+        "germplasmName": "Mabroka",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mabroka",
+        "synonyms": [
+          {
+            "synonym": "ma94;AC3",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00082",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Romania",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "166",
+        "germplasmName": "Romania",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Romania",
+        "synonyms": [
+          {
+            "synonym": "ma93;AC1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00084",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Martin",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "167",
+        "germplasmName": "Martin",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Martin",
+        "synonyms": [
+          {
+            "synonym": "ma95;AD11",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00085",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Lippens",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "168",
+        "germplasmName": "Lippens",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Lippens",
+        "synonyms": [
+          {
+            "synonym": "ma96;AE5",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00086",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CMR",
+        "defaultDisplayName": "Grosse rouge",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "169",
+        "germplasmName": "Grosse rouge",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Grosse rouge",
+        "synonyms": [
+          {
+            "synonym": "ma97;AE10",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00087",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Odette",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "170",
+        "germplasmName": "Odette",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Odette",
+        "synonyms": [
+          {
+            "synonym": "ma98;AF8",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00088",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "GIN",
+        "defaultDisplayName": "Pettigrew",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "171",
+        "germplasmName": "Pettigrew",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Pettigrew",
+        "synonyms": [
+          {
+            "synonym": "ma145;AA8",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00089",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLT",
+        "defaultDisplayName": "Rachel",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "172",
+        "germplasmName": "Rachel",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Rachel",
+        "synonyms": [
+          {
+            "synonym": "ma155;AB10",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00090",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "A\u00e9romanis",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "173",
+        "germplasmName": "A\u00e9romanis",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. A\u00e9romanis",
+        "synonyms": [
+          {
+            "synonym": "ma138;AE1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00091",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Man",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "174",
+        "germplasmName": "Man",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": "ma216;AI1",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00092",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Harumanis",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "175",
+        "germplasmName": "Harumanis",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": "ma214;AJ2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00093",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "MLI",
+        "defaultDisplayName": "Davis Haden",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "176",
+        "germplasmName": "Davis Haden",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": "ma212;AK2",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00094",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Beverly",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "177",
+        "germplasmName": "Beverly",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": "ma213;AK7",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00095",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Julie Lataha",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "178",
+        "germplasmName": "Julie Lataha",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Julie Lataha",
+        "synonyms": [
+          {
+            "synonym": "ma57;E6",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00096",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "CIV",
+        "defaultDisplayName": "Mabrouk",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "179",
+        "germplasmName": "Mabrouk",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          [
+            {
+              "code": "1",
+              "description": "Au champ"
+            }
+          ]
+        ],
+        "subtaxa": "var. Mabrouk",
+        "synonyms": [
+          {
+            "synonym": "ma142;S4",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00097",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Taymour",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "12066",
+        "germplasmName": "Taymour",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          []
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": null,
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00098",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Early Gold",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "58310",
+        "germplasmName": "Early Gold",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          []
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": null,
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00099",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Carrie",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "58311",
+        "germplasmName": "Carrie",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          []
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": "ma33",
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00100",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Dixon",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "58312",
+        "germplasmName": "Dixon",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          []
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": null,
+            "type": "Nom interne 2"
+          }
+        ]
+      },
+      {
+        "accessionNumber": "PT-MA-00101",
+        "additionalInfo": {
+          "autre caract\u00e9ristique": ""
+        },
+        "biologicalStatusOfAccessionCode": "500",
+        "biologicalStatusOfAccessionDescription": "Advanced or improved cultivar (conventional breeding methods",
+        "collection": "77",
+        "commonCropName": "Manguier",
+        "countryOfOriginCode": "",
+        "defaultDisplayName": "Bambaroo",
+        "externalReferences": [
+          {
+            "referenceId": null,
+            "referenceSource": "DOI"
+          }
+        ],
+        "genus": "Mangifera",
+        "germplasmDbId": "58313",
+        "germplasmName": "Bambaroo",
+        "instituteCode": "1",
+        "instituteName": "CRB Plantes Tropicales",
+        "pedigree": "",
+        "species": "indica",
+        "storageTypes": [
+          []
+        ],
+        "subtaxa": "",
+        "synonyms": [
+          {
+            "synonym": null,
+            "type": "Nom interne 2"
+          }
+        ]
+      }
+    ]
+  }
+}

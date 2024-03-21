@@ -35,6 +35,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;

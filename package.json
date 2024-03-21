@@ -25,6 +25,7 @@
         "jquery": "^3.7.1",
         "node-fetch": "^2.6.0",
         "ol": "^6.15.1",
+        "ol-ext": "^4.0.17",
         "reflect-metadata": "0.1.13",
         "terraformer-wkt-parser": "^1.2.1",
         "vee-validate": "3.4.3",

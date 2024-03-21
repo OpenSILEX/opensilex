@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.organisation.api.facility;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -150,6 +151,43 @@ public class FacilityAPI {
         List<NamedResourceDTO> dtoList = facilities.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("all_facilities_with_geometry")
+    @ApiOperation("Get all facilities with geometry")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Facilities retrieved", response = FacilityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Facilities URI not found", response = ErrorResponse.class)
+    })
+    public Response getAllFacilitiesWithGeometry() throws Exception {
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilitySearchFilter searchFilter = new FacilitySearchFilter();
+        searchFilter.setPageSize(0);
+        List<FacilityGetDTO> facilities = facilityDAO.search(searchFilter
+                        .setUser(currentUser))
+                .getList().stream().map(
+                        facilityModel -> {
+                            FacilityGetDTO facilityGetDTO = FacilityGetDTO.getDTOFromModel(
+                                    facilityModel,
+                                    true
+                            );
+
+                            try {
+                                facilityGetDTO.fromGeospatialModel(facilityDAO.getFacilityGeospatialModel(facilityGetDTO.getUri()));
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                            return facilityGetDTO;
+                        }
+                ).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(facilities).getResponse();
     }
 
     @GET

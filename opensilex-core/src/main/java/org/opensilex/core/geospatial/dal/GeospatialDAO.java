@@ -193,13 +193,13 @@ public class GeospatialDAO {
         return new ListWithPagination<>(geospatialListWithPagination, page, pageSize, total);
     }
 
-    public HashMap<String, Geometry> getGeometryByUris(URI experimentURI, List<URI> objectsURI) {
+    public HashMap<String, Geometry> getGeometryByUris(URI graph, List<URI> uriList) {
         Document filter = new Document();
-        if (experimentURI != null) {
-            filter = new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI));
+        if (graph != null) {
+            filter = new Document("graph", SPARQLDeserializers.getExpandedURI(graph));
         }
 
-        FindIterable<GeospatialModel> modelList = geometryCollection.find(filter).filter(Filters.in("uri", objectsURI));
+        FindIterable<GeospatialModel> modelList = geometryCollection.find(filter).filter(Filters.in("uri", uriList));
 
         return createGeometryMap(modelList);
     }

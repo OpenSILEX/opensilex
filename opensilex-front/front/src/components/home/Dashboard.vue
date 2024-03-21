@@ -378,8 +378,8 @@
           @update:features="updateSelectionFeatures"
         />
       </vl-map>
+      <bar-graph :data="generateBarGraphData"></bar-graph>
     </div>
-    <bar-graph :data="generateBarGraphData()" :title="' '"></bar-graph>
 
     <!--------------------- EVENT SIDEBAR ----------------------------->
     <b-sidebar
@@ -773,6 +773,9 @@ import CircularGraph from "./CircularGraph.vue";
 import BarGraph from "./BarGraph.vue";
 import HeatMap from "./HeatMap.vue";
 import NewDocument from "./test-json/new_document.json";
+import Timeline from "ol-ext/control/Timeline";
+import Select from "ol-ext/control/Select";
+import "ol-ext/dist/ol-ext.css";
 
 interface feature {
   type: string;
@@ -923,6 +926,10 @@ export default class MapView extends Vue {
   graphData: [];
   showPopup: boolean = false;
 
+  startDate: any = null;
+  endDate: any = null;
+  selectingStartDate: boolean = false;
+
   ///////////// BASE METHODS ////////////
   get user() {
     return this.$store.state.user;
@@ -999,6 +1006,81 @@ export default class MapView extends Vue {
       existenceDate: undefined,
       creationDate: undefined,
     };
+  }
+
+  setMapViewToDate(map, date) {
+    // Example: Set the map's view to the selected date
+    // This is a placeholder and needs to be implemented based on your map's setup
+    console.log("Setting map view to date:", date);
+  }
+
+  addTimeline(olMap) {
+    // Define the timeline configuration
+    const timelineConfig = {
+      graduation: "year",
+      minDate: new Date(1990, 0, 1),
+      maxDate: new Date(2040, 11, 31),
+      zoomMin: 1000 * 60 * 60 * 24 * 30,
+    };
+
+    const timeline = new Timeline(timelineConfig);
+
+    timeline.on("click", this.onTimelineClick);
+    // Add the timeline to the OpenLayers map
+    olMap.addControl(timeline);
+  }
+
+  onTimelineClick(event) {
+    // Calculate the date from the click position
+    const clickedDate = this.calculateDateFromPosition(event.pixel);
+
+    if (this.selectingStartDate) {
+      this.startDate = clickedDate;
+      this.selectingStartDate = false; // Next click will set the end date
+    } else {
+      if (clickedDate >= this.startDate) {
+        this.endDate = clickedDate;
+      } else {
+        // If the clicked date is before the start date, reset both
+        this.startDate = clickedDate;
+        this.endDate = null;
+      }
+      this.selectingStartDate = true; // Reset for next selection
+    }
+
+    // Update your application state/display based on the new start/end dates
+    this.updateDateRangeDisplay();
+  }
+
+  calculateDateFromPosition(pixel) {
+    // Placeholder function: Calculate the date based on click position
+    // This will depend on how your timeline is set up and scaled
+    return new Date(); // Replace with actual calculation
+  }
+
+  updateDateRangeDisplay() {
+    // Update the display or perform actions based on the selected date range
+    console.log(`Selected range: ${this.startDate} to ${this.endDate}`);
+  }
+
+  addSelect(olMap) {
+    const selectConfig = {
+      hitTolerance: 5,
+    };
+
+    const select = new Select(selectConfig);
+
+    select.on("select", function (e) {
+      // Get the selected date
+      const selectedDate = e.selected[0];
+      console.log("SELECTED : ", selectedDate);
+
+      // Center the map on the selected date
+      // Assuming you have a method to set the map's view to a specific date
+      // This is a placeholder for your actual implementation
+      this.setMapViewToDate(this.map, selectedDate);
+    });
+    olMap.addInteraction(select);
   }
 
   generateGraphData() {
@@ -1252,6 +1334,8 @@ export default class MapView extends Vue {
 
   mapCreated(map) {
     this.multiSelect(map);
+    this.addTimeline(map.$map);
+    // this.addSelect(map.$map);
   }
 
   //Focus on map vectors
@@ -1279,6 +1363,8 @@ export default class MapView extends Vue {
   updateSelectionFeatures(features) {
     this.selectedOS = [];
     this.soWithLabels = [];
+    console.log("Features : ", features);
+
     if (features.length && features[0]) {
       this.selectedFeatures = features;
       features.forEach((feature) => {

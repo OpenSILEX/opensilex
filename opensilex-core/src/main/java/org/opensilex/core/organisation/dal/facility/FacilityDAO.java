@@ -16,7 +16,6 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -32,7 +31,6 @@ import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -49,13 +47,8 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -289,6 +282,10 @@ public class FacilityDAO {
      */
     public GeospatialModel getFacilityGeospatialModel(URI facilityUri) {
         return geospatialDAO.getGeometryByURI(facilityUri, geometryGraphUri);
+    }
+
+    public Map<String, Geometry> getFacilityGeospatialModelList(List<URI> facilityUriList) {
+        return geospatialDAO.getGeometryByUris(geometryGraphUri, facilityUriList);
     }
 
     private void deleteFacilityGeospatialModel(URI facilityUri) {

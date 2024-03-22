@@ -16,6 +16,7 @@
         "@fortawesome/free-regular-svg-icons": "^6.4.0",
         "@fortawesome/free-solid-svg-icons": "^6.4.0",
         "@fortawesome/vue-fontawesome": "^2.0.10",
+        "@syncfusion/ej2-vue-inputs": "^25.1.35",
         "@vue/composition-api": "^1.7.2",
         "core-js": "3.6.5",
         "csv-parser": "^3.0.0",

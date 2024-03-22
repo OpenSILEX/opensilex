@@ -1350,6 +1350,67 @@
   "resolved" "https://registry.npmjs.org/@soda/get-current-script/-/get-current-script-1.0.2.tgz"
   "version" "1.0.2"
 
+"@syncfusion/ej2-base@~25.1.35":
+  "integrity" "sha512-eH/zLft7j5jhbNquVNcKoDmlx+ZU/77mHAJwpG9Ad4+C/+7UcWlIi/RDORJ0QreosZM4gMyCYzxDAZ5QOI3txw=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-base/-/ej2-base-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-icons" "~25.1.35"
+
+"@syncfusion/ej2-buttons@~25.1.35":
+  "integrity" "sha512-4a3+OAkHdaJTxRd/QJln7PglxDeRa9yGpnuFUDOUaA0sf7gvBKumBg5JP1llSpblKaK7JSRs42QOL/EG/d075g=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-buttons/-/ej2-buttons-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+
+"@syncfusion/ej2-icons@~25.1.35":
+  "integrity" "sha512-E8ypbeB9ISTsaj8Q29w3Ysh6HG35GOdTjfaU6JTCaZ9wP30q04B4WfN9lqcd42Q198qhynFAXd3lJyYev68aGw=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-icons/-/ej2-icons-25.1.35.tgz"
+  "version" "25.1.35"
+
+"@syncfusion/ej2-inputs@25.1.35":
+  "integrity" "sha512-vVU55vBalmNKI1kon3F2IM/yzatC/2IU+Hso2fp1pFO5OzNfySCOtnWkMypVYc/9+pAG6qxuPIg7GyqjsrsWRg=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-inputs/-/ej2-inputs-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+    "@syncfusion/ej2-buttons" "~25.1.35"
+    "@syncfusion/ej2-popups" "~25.1.35"
+    "@syncfusion/ej2-splitbuttons" "~25.1.35"
+
+"@syncfusion/ej2-popups@~25.1.35":
+  "integrity" "sha512-tuo2YpcnCWFZntR77Cy/8rrWWAgLgxiGQC2ffXD2fnwuw5+Sp04MagefyoriAOMglXQHvNh2e+9//pVDA0NcmA=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-popups/-/ej2-popups-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+    "@syncfusion/ej2-buttons" "~25.1.35"
+
+"@syncfusion/ej2-splitbuttons@~25.1.35":
+  "integrity" "sha512-S/MhCWHB59e8bm8ZRL896XxtQtNcyNNVcpclus8tsuN9sCiM7Dsg/HPtoZ04hZRgRs7nNJmyA0u+Z8E7HkaQHg=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-splitbuttons/-/ej2-splitbuttons-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+    "@syncfusion/ej2-popups" "~25.1.35"
+
+"@syncfusion/ej2-vue-base@~25.1.35":
+  "integrity" "sha512-S42jts0X4E3IsrndtUY7yjziF2hSeLodTa7kOQiypLxP1yRkjLpFggzZzfqModz6BTBYoS5kTu4wWT29flqKkQ=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-vue-base/-/ej2-vue-base-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+
+"@syncfusion/ej2-vue-inputs@^25.1.35":
+  "integrity" "sha512-jphDXsX1zq5Qcp2tvDkpaLVYfGKB2FZ2jPigh3htYR9tRIx98/czXUbXfFmdEdXNJkClaiQu+7kE3ylYg/A5CQ=="
+  "resolved" "https://registry.npmjs.org/@syncfusion/ej2-vue-inputs/-/ej2-vue-inputs-25.1.35.tgz"
+  "version" "25.1.35"
+  dependencies:
+    "@syncfusion/ej2-base" "~25.1.35"
+    "@syncfusion/ej2-inputs" "25.1.35"
+    "@syncfusion/ej2-vue-base" "~25.1.35"
+
 "@turf/bbox@^5.1.5":
   "integrity" "sha512-sYQU4fqsOYYJoD8UndC1n2hy8hV/lGIAmMLKWuzwmPUWqWOuSKWUcoRWDi9mGB0GvQQe/ow2IxZr8UaVaGz3sQ=="
   "resolved" "https://registry.npmjs.org/@turf/bbox/-/bbox-5.1.5.tgz"

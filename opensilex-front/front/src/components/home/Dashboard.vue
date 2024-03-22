@@ -132,6 +132,30 @@
           :disabled="selectedOS.length === 0 || selectedOS.length > 15 ? true : false"
         ></opensilex-Button>
         <div>
+          <opensilex-FilterField>
+            <opensilex-DateTimeForm
+              :value.sync="filter.start_date"
+              label="component.common.begin"
+              name="startDate"
+              :max-date="filter.end_date ? filter.end_date : undefined"
+              class="searchFilter"
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
+        </div>
+        <div>
+          <opensilex-FilterField>
+            <opensilex-DateTimeForm
+              :value.sync="filter.end_date"
+              label="component.common.end"
+              name="endDate"
+              :min-date="filter.start_date ? filter.start_date : undefined"
+              :minDate="filter.start_date"
+              :maxDate="filter.end_date"
+              class="searchFilter"
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
+        </div>
+        <div>
           <br />
           <b-alert v-model="showInstructionMap" dismissible>
             <p v-html="$t('MapView.Instruction')"></p>
@@ -268,7 +292,7 @@
               </vl-style-box>
             </div>
           </vl-layer-vector>
-          <!-- OS features -->
+          <!-- OS features featuresOS-->
           <vl-layer-vector :visible="checkZoom" render-mode="image" :z-index="1">
             <vl-source-cluster :distance="25">
               <vl-source-vector ref="clusterSource"></vl-source-vector>
@@ -277,16 +301,22 @@
           </vl-layer-vector>
           <vl-layer-vector
             :opacity="opacityOS"
-            v-for="layerSO in featuresOS"
-            :key="layerSO.id"
+            v-for="layerFacility in featuresFacilities"
+            :key="layerFacility.id"
             :z-index="0"
           >
             <vl-source-vector
               ref="vectorSource"
-              :features="layerSO"
+              :features="layerFacility"
               @mounted="defineCenter"
             ></vl-source-vector>
           </vl-layer-vector>
+          <vl-layer-vector
+            :opacity="opacityOS"
+            v-for="layerOS in featuresOS"
+            :key="layerOS.id"
+            :z-index="0"
+          ></vl-layer-vector>
           <!-- Devices features -->
           <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
             <vl-source-vector
@@ -378,7 +408,6 @@
           @update:features="updateSelectionFeatures"
         />
       </vl-map>
-      <bar-graph :data="generateBarGraphData"></bar-graph>
     </div>
 
     <!--------------------- EVENT SIDEBAR ----------------------------->
@@ -447,6 +476,41 @@
           </div>
         </div>
         <b-tabs content-class="mt-3">
+          <!-- Facilities -->
+          <opensilex-TreeView :nodes.sync="facilities">
+            <template v-slot:node="{ node }">
+              <span class="item-icon"> </span>&nbsp;
+              <span v-if="node.title === 'Facilities'"
+                >{{ $t("MapView.mapPanelFacilities") }} ({{
+                  featuresFacilities.flat().length
+                }})</span
+              >
+              <span v-else
+                >{{ nameType(node.title) }} ({{
+                  getNumberByType(node.title, featuresFacilities)
+                }})</span
+              >
+            </template>
+
+            <template v-slot:buttons="{ node }">
+              <opensilex-CheckboxForm
+                :value.sync="displayFacility"
+                class="col-lg-2"
+                v-if="node.title === 'Facilities'"
+                :small="true"
+                @update:value="updateVisibility(node)"
+              ></opensilex-CheckboxForm>
+
+              <opensilex-CheckboxForm
+                :value="true"
+                :disabled="!displayFacility"
+                v-if="node.title !== 'Facilities'"
+                class="col-lg-2"
+                :small="true"
+                @update:value="updateVisibility(node)"
+              ></opensilex-CheckboxForm>
+            </template>
+          </opensilex-TreeView>
           <!-- SO -->
           <opensilex-TreeView :nodes.sync="scientificObjects">
             <template v-slot:node="{ node }">
@@ -748,6 +812,7 @@ import {
   ScientificObjectsService,
   EventsService,
   ExperimentGetDTO,
+  FacilityGetDTO,
   AreaService,
   ResourceTreeDTO,
   ScientificObjectDetailDTO,
@@ -773,9 +838,6 @@ import CircularGraph from "./CircularGraph.vue";
 import BarGraph from "./BarGraph.vue";
 import HeatMap from "./HeatMap.vue";
 import NewDocument from "./test-json/new_document.json";
-import Timeline from "ol-ext/control/Timeline";
-import Select from "ol-ext/control/Select";
-import "ol-ext/dist/ol-ext.css";
 
 interface feature {
   type: string;
@@ -787,7 +849,12 @@ interface feature {
 }
 
 @Component({
-  components: { ExperimentDataVisualisation, CircularGraph, BarGraph, HeatMap },
+  components: {
+    ExperimentDataVisualisation,
+    CircularGraph,
+    BarGraph,
+    HeatMap,
+  },
 })
 export default class MapView extends Vue {
   @Ref("JqxRangeSelector") readonly rangeSelector: any;
@@ -833,7 +900,9 @@ export default class MapView extends Vue {
   ///////////// MAP PANEL ////////////
   isDisabled: boolean = true;
   private scientificObjects: any = [];
+  private facilities: any = [];
   private displaySO: boolean = true;
+  private displayFacility: boolean = true;
   private subDisplaySO: string[] = [];
   private areas: any = this.initAreas();
   private displayAreas: boolean = true;
@@ -857,8 +926,12 @@ export default class MapView extends Vue {
   private endReceipt: boolean = false;
   //OS
   featuresOS: GeoJSONFeature[][] = [];
+  featuresFacilities: GeoJSONFeature[][] = [];
   private callSO: boolean = false;
+  private callFacility: boolean = false;
   private scientificObjectURI: string;
+  private facilityURI: string;
+
   checkZoom: boolean = true;
   opacityOS: number = 0;
   //AREAS
@@ -897,6 +970,7 @@ export default class MapView extends Vue {
     },
   ];
   private detailsSO: boolean = false;
+  private detailsFacility: boolean = false;
 
   ///////////// TOOLS BUTTONS ////////////
   showInstructionMap: boolean = false;
@@ -925,10 +999,7 @@ export default class MapView extends Vue {
   facilitiesData: feature[] = [];
   graphData: [];
   showPopup: boolean = false;
-
-  startDate: any = null;
-  endDate: any = null;
-  selectingStartDate: boolean = false;
+  showSOs: boolean = false;
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -942,6 +1013,7 @@ export default class MapView extends Vue {
   get isMapHasLayer() {
     return (
       this.featuresOS.length > 0 ||
+      this.featuresFacilities.length > 0 ||
       this.featuresArea.length > 0 ||
       this.featuresDevice.length > 0
     );
@@ -988,15 +1060,12 @@ export default class MapView extends Vue {
       .getExperiment(this.experiment)
       .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
         this.experimentData = http.response.result;
-        console.log(
-          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAh",
-          http.response.result
-        );
       })
       .catch(this.$opensilex.errorHandler);
 
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
+    this.recoveryFacilities();
     this.soFilter = {
       name: "",
       experiment: this.experiment,
@@ -1008,80 +1077,10 @@ export default class MapView extends Vue {
     };
   }
 
-  setMapViewToDate(map, date) {
-    // Example: Set the map's view to the selected date
-    // This is a placeholder and needs to be implemented based on your map's setup
-    console.log("Setting map view to date:", date);
-  }
-
-  addTimeline(olMap) {
-    // Define the timeline configuration
-    const timelineConfig = {
-      graduation: "year",
-      minDate: new Date(1990, 0, 1),
-      maxDate: new Date(2040, 11, 31),
-      zoomMin: 1000 * 60 * 60 * 24 * 30,
-    };
-
-    const timeline = new Timeline(timelineConfig);
-
-    timeline.on("click", this.onTimelineClick);
-    // Add the timeline to the OpenLayers map
-    olMap.addControl(timeline);
-  }
-
-  onTimelineClick(event) {
-    // Calculate the date from the click position
-    const clickedDate = this.calculateDateFromPosition(event.pixel);
-
-    if (this.selectingStartDate) {
-      this.startDate = clickedDate;
-      this.selectingStartDate = false; // Next click will set the end date
-    } else {
-      if (clickedDate >= this.startDate) {
-        this.endDate = clickedDate;
-      } else {
-        // If the clicked date is before the start date, reset both
-        this.startDate = clickedDate;
-        this.endDate = null;
-      }
-      this.selectingStartDate = true; // Reset for next selection
-    }
-
-    // Update your application state/display based on the new start/end dates
-    this.updateDateRangeDisplay();
-  }
-
-  calculateDateFromPosition(pixel) {
-    // Placeholder function: Calculate the date based on click position
-    // This will depend on how your timeline is set up and scaled
-    return new Date(); // Replace with actual calculation
-  }
-
-  updateDateRangeDisplay() {
-    // Update the display or perform actions based on the selected date range
-    console.log(`Selected range: ${this.startDate} to ${this.endDate}`);
-  }
-
-  addSelect(olMap) {
-    const selectConfig = {
-      hitTolerance: 5,
-    };
-
-    const select = new Select(selectConfig);
-
-    select.on("select", function (e) {
-      // Get the selected date
-      const selectedDate = e.selected[0];
-      console.log("SELECTED : ", selectedDate);
-
-      // Center the map on the selected date
-      // Assuming you have a method to set the map's view to a specific date
-      // This is a placeholder for your actual implementation
-      this.setMapViewToDate(this.map, selectedDate);
-    });
-    olMap.addInteraction(select);
-  }
+  filter = {
+    start_date: undefined,
+    end_date: undefined,
+  };
 
   generateGraphData() {
     return this.selectedFeatures.map((feature) => ({
@@ -1334,13 +1333,12 @@ export default class MapView extends Vue {
 
   mapCreated(map) {
     this.multiSelect(map);
-    this.addTimeline(map.$map);
-    // this.addSelect(map.$map);
   }
 
   //Focus on map vectors
   defineCenter() {
-    if (this.featuresOS.length > 0 && this.vectorSource[0].$source) {
+    // this.featuresOS
+    if (this.featuresFacilities.length > 0 && this.vectorSource[0].$source) {
       let extent = olExtent.createEmpty();
       setTimeout(() => {
         this.vectorSource.forEach((v) => {
@@ -1371,9 +1369,12 @@ export default class MapView extends Vue {
         if (feature.properties.nature === "ScientificObjects") {
           this.selectedOS.push(feature.properties.uri);
           this.soWithLabels.push(feature.properties);
+          this.showPopup = true; // Show the graph when a feature is selected
+        } else if (feature.properties.nature === "Facilites") {
+          // display all SO
+          console.log("SELECTED : ", feature);
         }
       });
-      this.showPopup = true; // Show the graph when a feature is selected
     } else {
       this.showPopup = false; // Hide the graph when no feature is selected
     }
@@ -1424,7 +1425,7 @@ export default class MapView extends Vue {
       this.checkZoom = true;
       this.opacityOS = 0;
     } else {
-      if (this.mapView.$view.getZoom() < 15) {
+      if (this.mapView.$view.getZoom() < 13) {
         this.checkZoom = true;
         this.opacityOS = 0;
       } else {
@@ -1511,7 +1512,8 @@ export default class MapView extends Vue {
         vector && vector.getFeatures() && vector.getFeatures().length > 0;
 
       if (
-        this.vectorSource.length === this.featuresOS.length &&
+        // featuresOS
+        this.vectorSource.length === this.featuresFacilities.length &&
         this.vectorSource.every(isVectorSourceMounted)
       ) {
         this.vectorSource.forEach((vector) => {
@@ -1544,7 +1546,6 @@ export default class MapView extends Vue {
             points.push(point.getCoordinates());
           }
         });
-
         this.mapView.$view.fit(olExtent.boundingExtent(points), { maxZoom: 17 });
       }
     });
@@ -1555,6 +1556,7 @@ export default class MapView extends Vue {
     const styleCache = {};
 
     return function __clusterStyleFunc(feature) {
+      //console.log("CLUSTER FEATURE: ", feature);
       const size = feature.get("features").length;
       let style = styleCache[size];
       if (!style) {
@@ -1565,7 +1567,7 @@ export default class MapView extends Vue {
               color: "#fff",
             }),
             fill: new Fill({
-              color: "#00a38d",
+              color: "red",
             }),
           }),
           text: new Text({
@@ -1648,7 +1650,7 @@ export default class MapView extends Vue {
 
   ///////////// SO METHODS ////////////
 
-  //update SO
+  //update SO // MODIFIER LE CODE POUR QU'IL FASSE UN APPEL A L'ECHELLE DE LA FACILITY
   callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
@@ -1688,6 +1690,56 @@ export default class MapView extends Vue {
               });
               if (!inserted) {
                 this.featuresOS.push([element]);
+              }
+            });
+            this.selectedFeatures.push(result.geometry);
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  callFacilitiesUpdate() {
+    if (this.callFacility) {
+      this.callFacility = false;
+      this.removeFromFeatures(this.facilityURI, this.selectedFeatures);
+      this.organizationsService
+        .getFacility(this.facilityURI)
+        .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+          const result = http.response.result as any;
+          if (result.geometry !== null) {
+            result.geometry.properties = {
+              uri: result.uri,
+              name: result.name,
+              type: result.rdf_type,
+              nature: "Facility",
+              creation_date: result.creation_date,
+              destruction_date: result.destruction_date,
+              rdf_type_name: result.rdf_type_name,
+              organizations: result.organizations,
+              sites: result.sites,
+            };
+            let flatFeatures = this.featuresFacilities.flat();
+            //Replace the updated feature
+            flatFeatures.splice(
+              flatFeatures.findIndex(
+                (feature) => feature.properties.uri === result.geometry.properties.uri
+              ),
+              1,
+              result.geometry
+            );
+            //Feature formatting for efficient display of vectors
+            this.featuresFacilities = [];
+            flatFeatures.forEach((element) => {
+              let inserted = false;
+              this.featuresFacilities.forEach((item) => {
+                if (item[0].properties.type === element.properties.type) {
+                  item.push(element);
+                  inserted = true;
+                }
+              });
+              if (!inserted) {
+                this.featuresFacilities.push([element]);
               }
             });
             this.selectedFeatures.push(result.geometry);
@@ -1743,6 +1795,49 @@ export default class MapView extends Vue {
       });
   }
 
+  private recoveryFacilities(startDate?, endDate?) {
+    this.callFacility = false;
+    this.featuresFacilities = [];
+    this.organizationsService
+      .getAllFacilitiesWithGeometry()
+      .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+        const res = http.response.result as any;
+        res.forEach((element) => {
+          if (element.geometry !== null) {
+            element.geometry.properties = {
+              creation_date: element.creation_date,
+              destruction_date: element.destruction_date,
+              uri: element.uri,
+              name: element.name,
+              type: element.rdf_type,
+              rdf_type_name: element.rdf_type_name,
+              nature: "Facilities",
+            };
+            let inserted = false;
+            this.featuresFacilities.forEach((item) => {
+              if (item[0].properties.type === element.rdf_type) {
+                item.push(element.geometry);
+                inserted = true;
+              }
+            });
+            if (!inserted) {
+              this.featuresFacilities.push([element.geometry]);
+            }
+          }
+        });
+        if (res.length !== 0) {
+          this.endReceipt = true;
+        }
+      })
+      .catch((e) => {
+        this.$opensilex.errorHandler(e);
+        this.$opensilex.hideLoader();
+      })
+      .finally(() => {
+        this.initFacilities();
+      });
+  }
+
   private scientificObjectsDetails(scientificObjectUri: any) {
     if (scientificObjectUri != undefined) {
       this.detailsSO = false;
@@ -1758,6 +1853,29 @@ export default class MapView extends Vue {
             }
           });
           console.log("SCIENTIFIC OBJECT: ", http.response.result);
+        })
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.enableLoader();
+        });
+    }
+  }
+
+  private facilitiesDetails(facilityUri: any) {
+    if (facilityUri != undefined) {
+      this.detailsSO = false;
+      this.$opensilex.disableLoader();
+      this.organizationsService
+        .getFacility(facilityUri)
+        .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+          let result = http.response.result;
+          this.selectedFeatures.forEach((item) => {
+            if (item.properties.uri === result.uri) {
+              item.properties.facility = result;
+              this.detailsFacility = true;
+            }
+          });
+          console.log("Facility: ", http.response.result);
         })
         .catch(this.$opensilex.errorHandler)
         .finally(() => {
@@ -2272,6 +2390,11 @@ export default class MapView extends Vue {
 
     switch (data.item.properties.nature) {
       default:
+        option.serviceRequest = this.organizationsService.deleteFacility(uri);
+        option.title = "Facility.title";
+        option.updateFeatures = this.featuresFacilities;
+        break;
+      case "ScientificObject":
         option.serviceRequest = this.scientificObjectsService.deleteScientificObject(
           uri,
           this.experiment
@@ -2317,6 +2440,9 @@ export default class MapView extends Vue {
         });
         switch (data.item.properties.nature) {
           default:
+            this.featuresFacilities = newFeatures;
+            break;
+          case "ScientificObject":
             this.featuresOS = newFeatures;
             break;
           case "Area":
@@ -2584,6 +2710,45 @@ export default class MapView extends Vue {
     this.scientificObjects.push(scientificObject);
   }
 
+  initFacilities() {
+    let facilities: any = {
+      title: "Facilities",
+      isLeaf: false,
+      children: [],
+      isExpanded: true,
+      isSelected: null,
+      isDraggable: false,
+      isSelectable: false,
+      isCheckable: true,
+    };
+
+    this.featuresFacilities.forEach((facility) => {
+      // Check if already exists
+      let bool = true;
+      for (let children of facilities.children) {
+        if (children.title === facility[0].properties.type) {
+          bool = false;
+        }
+      }
+      if (bool) {
+        //formatting devices for the panel map
+        let children = {
+          title: facility[0].properties.type,
+          children: [],
+          isLeaf: true,
+          isSelectable: false,
+          isDraggable: false,
+          isCheckable: true,
+          isExpanded: false,
+          isSelected: null,
+        };
+        facilities.children.push(children);
+      }
+    });
+    this.facilities = [];
+    this.facilities.push(facilities);
+  }
+
   ///////////// DATE RANGE METHODS ////////////
   onChangeDateRange(event) {
     this.range = { from: event.args.from, to: event.args.to };
@@ -2779,6 +2944,14 @@ export default class MapView extends Vue {
 <style lang="scss" scoped>
 @import "~jqwidgets-scripts/jqwidgets/styles/jqx.base.css";
 @import "~jqwidgets-scripts/jqwidgets/styles/jqx.dark.css";
+
+.wrap {
+  box-sizing: border-box;
+  height: 260px;
+  margin: 0 auto;
+  padding: 30px 10px;
+  width: 100%; /* Adjust width as needed */
+}
 
 p {
   font-size: 115%;

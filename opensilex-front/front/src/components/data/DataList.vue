@@ -255,7 +255,7 @@ export default class DataList extends Vue {
         }
 
         return new Promise((resolve, reject) => {
-            this.dataService.getDataListByTargets(
+            this.dataService.searchDataListByTargets(
                 this.$opensilex.prepareGetParameter(this.filter.start_date),
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,

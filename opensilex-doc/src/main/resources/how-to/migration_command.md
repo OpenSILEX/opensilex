@@ -27,6 +27,8 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Description](#description-4)
   * [org.opensilex.migration.AddAccountCredentialsToProfilWithUserCredential](#orgopensilexmigrationaddaccountcredentialstoprofilwithusercredential)
     * [Description](#description-5)
+  * [org.opensilex.migration.RemoveExternalOntologiesContexts](#orgopensilexmigrationremoveexternalontologiescontexts)
+    * [Description](#description-6)
 * [Create an update command (For developers)](#create-an-update-command-for-developers)
       * [Example](#example)
 <!-- TOC -->
@@ -73,6 +75,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
 | 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
+| 2024/03/20 | <b> org.opensilex.migration.RemoveExternalOntologiesContexts </b>          | 1.3.0        |           |
 
 # Descriptions
 
@@ -163,6 +166,23 @@ following predicates are concerned :
 This migration make a list of all profiles that has a credential on user. Then, it adds the same credential (show, add/update or delete) but for the accounts.
 This migration was done because Users credentials was replaced by account credentials in the web Interface, so it is necessary to migrate credentials, otherwise some people may have the suprise to not be able to reach the "account menu' anymore after the last deployment of OpenSilex 1.2.
 
+## org.opensilex.migration.RemoveExternalOntologiesContexts
+
+### Description
+
+For this version, the migration process removes contexts representing external ontologies from the triple store. However, the concepts used from the external ontologies have been integrated into our core ontology, while the external ontologies themselves have been removed.
+
+The migration script `RemoveExternalOntologiesContexts` removes the following external ontology contexts:
+
+- `http://www.opensilex.org/security`
+- `http://www.w3.org/ns/org`
+- `http://xmlns.com/foaf/0.1/`
+- `http://www.w3.org/2006/vcard/ns`
+- `http://www.w3.org/ns/oa`
+- `http://www.opensilex.org/vocabulary/oeev`
+- `http://www.w3.org/2002/07/owl`
+- `http://www.w3.org/2006/time`
+- `http://purl.org/dc/terms/`
 
 # Create an update command (For developers)
 

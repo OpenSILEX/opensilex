@@ -54,7 +54,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 Lang.RDFXML,
                 OesoExt.PREFIX,
                 null,
-                false
+                true
         ));
 
         list.add(new OntologyFileDefinition(
@@ -63,7 +63,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                 Lang.RDFXML,
                 OeevPhis.PREFIX,
                 null,
-                false
+                true
         ));
         return list;
     }

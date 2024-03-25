@@ -160,7 +160,10 @@ OESO</rdfs:label>
 
     <!-- http://www.opensilex.org/security#hasProfile -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasProfile"/>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasProfile">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/security#GroupUserProfile"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/security#Profile"/>
+    </owl:ObjectProperty>
     
 
 
@@ -168,13 +171,18 @@ OESO</rdfs:label>
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasUser">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/security#GroupUserProfile"/>
+        <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.opensilex.org/security#hasUserProfile -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasUserProfile"/>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasUserProfile">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/security#Group"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/security#GroupUserProfile"/>
+    </owl:ObjectProperty>
     
 
 
@@ -216,6 +224,7 @@ OESO</rdfs:label>
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#from">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Move"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <owl:propertyDisjointWith rdf:resource="http://www.opensilex.org/vocabulary/oeev#to"/>
         <rdfs:label xml:lang="fr">Depuis</rdfs:label>
@@ -228,6 +237,7 @@ OESO</rdfs:label>
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#to">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Move"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <rdfs:label xml:lang="en">to</rdfs:label>
         <rdfs:label xml:lang="fr">vers</rdfs:label>
@@ -669,6 +679,7 @@ OESO</rdfs:label>
     <!-- http://xmlns.com/foaf/0.1/account -->
 
     <owl:ObjectProperty rdf:about="http://xmlns.com/foaf/0.1/account">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
     </owl:ObjectProperty>
     
@@ -827,10 +838,6 @@ OESO</rdfs:label>
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#concerns">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
-         <rdfs:label xml:lang="en">Concerns</rdfs:label>
-         <rdfs:label xml:lang="fr">Concerne</rdfs:label>
-         <rdfs:comment xml:lang="en">Object concerned by the event</rdfs:comment>
-         <rdfs:comment xml:lang="fr">Objet concerné par l'évènement</rdfs:comment>
     </owl:DatatypeProperty>
     
 
@@ -841,10 +848,6 @@ OESO</rdfs:label>
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:label xml:lang="en">Is instant</rdfs:label>
-        <rdfs:label xml:lang="fr">Est instantané</rdfs:label>
-        <rdfs:comment xml:lang="en">Indicate if the event is instantaneous or not</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Indique si l'évenement est instantané ou non</rdfs:comment>
     </owl:DatatypeProperty>
     
 
@@ -963,6 +966,7 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="en">financial funding</rdfs:label>
         <rdfs:label xml:lang="fr">support financier</rdfs:label>
     </owl:DatatypeProperty>
+    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasGeometry -->
@@ -1620,9 +1624,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Checking">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Servicing"/>
-        <rdfs:comment>Révision</rdfs:comment>
-        <rdfs:label xml:lang="en">Checking</rdfs:label>
-        <rdfs:label xml:lang="fr">Révision</rdfs:label>
     </owl:Class>
     
 
@@ -1660,10 +1661,6 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
-        <rdfs:comment xml:lang="fr">Événement lié a un objet</rdfs:comment>
-        <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
-        <rdfs:label xml:lang="en">Event</rdfs:label>
-        <rdfs:label xml:lang="fr">Événement</rdfs:label>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2006/time#hasBeginning"/>
@@ -1724,9 +1721,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#FacilityManagement">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
-        <rdfs:comment xml:lang="en">Refers to the set of actions related to the management and maintenance infrastructure and supporting equipment.</rdfs:comment>
-        <rdfs:label xml:lang="en">Facility management</rdfs:label>
-        <rdfs:label xml:lang="fr">Gestion d&apos;équipement</rdfs:label>
     </owl:Class>
     
 
@@ -1735,10 +1729,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Incident">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
-        <rdfs:comment xml:lang="fr">Agit sur un objet scientifique</rdfs:comment>
-        <rdfs:comment xml:lang="en">Concerns a scientific object</rdfs:comment>
-        <rdfs:label xml:lang="en">Incident</rdfs:label>
-        <rdfs:label xml:lang="fr">Incident</rdfs:label>
     </owl:Class>
     
 
@@ -1787,10 +1777,6 @@ OESO</rdfs:label>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:comment xml:lang="en">Event describing the displacement in time and space of the different objects participating in experiments. For instance, plants are often transferred, during a single experiment, between installations or compartments with different environmental conditions. Similarly, sensors can be replaced or moved to different positions in the field or greenhouse.</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Evénement de déplacement général objet scientifique, équipement, etc.</rdfs:comment>
-        <rdfs:label xml:lang="fr">Déplacement</rdfs:label>
-        <rdfs:label xml:lang="en">Move</rdfs:label>
     </owl:Class>
     
 
@@ -1839,9 +1825,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Servicing">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Operability"/>
-        <rdfs:comment>Entretien révision...</rdfs:comment>
-        <rdfs:label xml:lang="fr">Entretien</rdfs:label>
-        <rdfs:label xml:lang="en">Servicing</rdfs:label>
     </owl:Class>
     
 
@@ -3906,7 +3889,6 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeev#Servicing -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#Servicing"/>
-
     
 
 
@@ -4949,8 +4931,8 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="fr">Groupe</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/security#hasCredential">
-        <rdfs:label xml:lang="en">has credential</rdfs:label>
         <rdfs:label xml:lang="fr">a compétence</rdfs:label>
+        <rdfs:label xml:lang="en">has credential</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Checking">
         <rdfs:label xml:lang="fr">Révision</rdfs:label>
@@ -4986,10 +4968,14 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="en">Servicing</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#concerns">
+        <rdfs:label xml:lang="en">Concerns</rdfs:label>
         <rdfs:comment xml:lang="fr">Objet concerné par l&apos;évènement</rdfs:comment>
         <rdfs:comment xml:lang="en">Object concerned by the event</rdfs:comment>
+        <rdfs:label xml:lang="fr">Concerne</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#isInstant">
+        <rdfs:label xml:lang="en">Is instant</rdfs:label>
+        <rdfs:label xml:lang="fr">Est instantané</rdfs:label>
         <rdfs:comment xml:lang="fr">Indique si l&apos;évenement est instantané ou non</rdfs:comment>
         <rdfs:comment xml:lang="en">Indicate if the event is instantaneous or not</rdfs:comment>
     </rdf:Description>
@@ -5041,8 +5027,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile">
         <rdfs:comment xml:lang="en">Datafile is a type of data, group in a file, like HDF5 archive or images.</rdfs:comment>
-        <rdfs:label xml:lang="en">Datafile</rdfs:label>
         <rdfs:label xml:lang="fr">Fichier de données</rdfs:label>
+        <rdfs:label xml:lang="en">Datafile</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Dataset">
         <rdfs:label xml:lang="fr">Jeu de données</rdfs:label>
@@ -5076,8 +5062,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-        <rdfs:label xml:lang="en">experiment</rdfs:label>
         <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
+        <rdfs:label xml:lang="en">experiment</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
         <rdfs:label xml:lang="en">experimental context</rdfs:label>
@@ -5372,8 +5358,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Germplasm</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel">
-        <rdfs:comment xml:lang="fr">Modèle constructeur de l&apos;appareil</rdfs:comment>
         <rdfs:comment xml:lang="en">Constructor model of the device</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Modèle constructeur de l&apos;appareil</rdfs:comment>
         <rdfs:label xml:lang="en">Model</rdfs:label>
         <rdfs:label xml:lang="fr">Modèle</rdfs:label>
     </rdf:Description>
@@ -5404,8 +5390,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">acronyme</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasVariablesGroup">
-        <rdfs:comment xml:lang="fr">Indique les groupes de variable environnementale associés à une installation</rdfs:comment>
         <rdfs:label xml:lang="fr">a un groupe de variables</rdfs:label>
+        <rdfs:comment xml:lang="fr">Indique les groupes de variable environnementale associés à une installation</rdfs:comment>
         <rdfs:label xml:lang="en">has variable group</rdfs:label>
         <rdfs:comment xml:lang="en">Indicates environmental variable groups associated with a facility</rdfs:comment>
     </rdf:Description>
@@ -5473,8 +5459,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">nombre de pixels en colonne (pixels)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#withinSite">
-        <rdfs:seeAlso xml:lang="fr">Similaire à &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
         <rdfs:label xml:lang="fr">Est situé à l&apos;intérieur du site</rdfs:label>
+        <rdfs:seeAlso xml:lang="fr">Similaire à &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
         <rdfs:comment xml:lang="fr">Indique le site dans lequel l&apos;installation environnementale est située</rdfs:comment>
         <rdfs:label xml:lang="en">Is located within site</rdfs:label>
         <rdfs:seeAlso xml:lang="en">Similar to &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>

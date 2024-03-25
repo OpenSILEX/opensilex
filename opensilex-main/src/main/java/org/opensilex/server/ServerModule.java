@@ -49,7 +49,7 @@ public class ServerModule extends OpenSilexModule implements APIExtension, JCSAp
         if(!StringUtils.isEmpty(cfg.pathPrefix())){
             baseUrlBuilder.path(cfg.pathPrefix());
         }
-        return baseUrlBuilder.build() + "/";
+        return baseUrlBuilder.build().toString();
     }
 
     public String getAppUrl() {

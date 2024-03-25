@@ -136,7 +136,7 @@ public class StudiesAPI extends FaidareCall {
             if (Objects.isNull(model)) {
                 throw new NotFoundURIException(studyDbId);
             } else {
-                resultList = new ListWithPagination<>(Collections.singletonList(model), 0, 0, 0);
+                resultList = new ListWithPagination<>(Collections.singletonList(model), 0, 0, 1);
             }
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()

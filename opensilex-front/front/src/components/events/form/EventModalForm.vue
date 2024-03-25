@@ -137,7 +137,11 @@
             }).catch((error) => {
                 if (error.status == 409) {
                     this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
-                } else {
+                } else if(error.status == 400 && isMove){
+                  let message = this.$i18n.t("validations.containsPoint") ;
+                  this.$opensilex.showErrorToast(message);
+                }
+                else {
                     this.$opensilex.errorHandler(error,error.response.result.message);
                 }
             });

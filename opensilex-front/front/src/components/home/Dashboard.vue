@@ -299,24 +299,35 @@
               <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
             </vl-source-cluster>
           </vl-layer-vector>
-          <vl-layer-vector
-            :opacity="opacityOS"
-            v-for="layerFacility in featuresFacilities"
-            :key="layerFacility.id"
-            :z-index="0"
-          >
-            <vl-source-vector
-              ref="vectorSource"
-              :features="layerFacility"
-              @mounted="defineCenter"
-            ></vl-source-vector>
-          </vl-layer-vector>
-          <vl-layer-vector
-            :opacity="opacityOS"
-            v-for="layerOS in featuresOS"
-            :key="layerOS.id"
-            :z-index="0"
-          ></vl-layer-vector>
+          <div v-if="!showNextLevel">
+            <vl-layer-vector
+              :opacity="opacityOS"
+              v-for="layerFacility in featuresFacilities"
+              :key="layerFacility.id"
+              :z-index="0"
+            >
+              <vl-source-vector
+                ref="vectorSource"
+                :features="layerFacility"
+                @mounted="defineCenter"
+              ></vl-source-vector>
+            </vl-layer-vector>
+          </div>
+          <div v-if="showNextLevel">
+            <vl-layer-vector
+              :opacity="opacityOS"
+              v-for="layerOS in featuresOS"
+              :key="layerOS.id"
+              :z-index="0"
+            >
+              <vl-source-vector
+                ref="vectorSource"
+                :features="layerOS"
+                @mounted="defineCenter"
+              >
+              </vl-source-vector>
+            </vl-layer-vector>
+          </div>
           <!-- Devices features -->
           <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
             <vl-source-vector
@@ -926,9 +937,11 @@ export default class MapView extends Vue {
   private endReceipt: boolean = false;
   //OS
   featuresOS: GeoJSONFeature[][] = [];
+  featuresOSfromSelectedFacility: GeoJSONFeature[][] = []; // all the OS related to a selected facility
   featuresFacilities: GeoJSONFeature[][] = [];
   private callSO: boolean = false;
   private callFacility: boolean = false;
+  private showNextLevel: boolean = false;
   private scientificObjectURI: string;
   private facilityURI: string;
 
@@ -1066,6 +1079,7 @@ export default class MapView extends Vue {
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
     this.recoveryFacilities();
+    console.log("OS : ", this.featuresOS);
     this.soFilter = {
       name: "",
       experiment: this.experiment,
@@ -1357,11 +1371,20 @@ export default class MapView extends Vue {
   select(value) {
     this.$emit("select", value);
   }
+
+  // retrieve all SO in the selected facility
+  getSOfromFacility(facility) {
+    this.featuresOS.forEach((os) => {
+      //if (os.properties.)
+    });
+  }
+
   //Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
     this.selectedOS = [];
     this.soWithLabels = [];
-    console.log("Features : ", features);
+    this.featuresOSfromSelectedFacility = [];
+    console.log("Features : ", this.featuresOS);
 
     if (features.length && features[0]) {
       this.selectedFeatures = features;
@@ -1668,6 +1691,7 @@ export default class MapView extends Vue {
               creation_date: result.creation_date,
               destruction_date: result.destruction_date,
               rdf_type_name: result.rdf_type_name,
+              relations: result.relations,
             };
             let flatFeatures = this.featuresOS.flat();
             //Replace the updated feature
@@ -1846,6 +1870,8 @@ export default class MapView extends Vue {
         .getScientificObjectDetail(scientificObjectUri, this.experiment)
         .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
           let result = http.response.result;
+          console.log("RESPONSE : ", result);
+
           this.selectedFeatures.forEach((item) => {
             if (item.properties.uri === result.uri) {
               item.properties.OS = result;

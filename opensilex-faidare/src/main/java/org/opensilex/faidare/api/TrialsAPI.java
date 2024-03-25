@@ -16,6 +16,7 @@ import org.opensilex.faidare.responses.Faidarev1TrialListResponse;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
@@ -30,8 +31,12 @@ import javax.ws.rs.core.Response;
 /**
  * @author Gabriel Besombes
  */
-@Api("faidare")
+@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
+@ApiCredentialGroup(
+        groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
+        groupLabelKey = CallsAPI.CREDENTIAL_CALLS_GROUP_LABEL_KEY
+)
 public class TrialsAPI extends FaidareCall {
     
     @Inject

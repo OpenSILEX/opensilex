@@ -30,7 +30,7 @@ import java.util.List;
         groupLabelKey = CallsAPI.CREDENTIAL_CALLS_GROUP_LABEL_KEY
 )
 public class CallsAPI extends FaidareCall {
-    public static final String CREDENTIAL_CALLS_GROUP_ID = "faidare";
+    public static final String CREDENTIAL_CALLS_GROUP_ID = "Faidare";
     public static final String CREDENTIAL_CALLS_GROUP_LABEL_KEY = "credential-group-faidare-calls";
 
     @GET

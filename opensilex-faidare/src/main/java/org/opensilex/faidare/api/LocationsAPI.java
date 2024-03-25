@@ -11,6 +11,7 @@ import org.opensilex.faidare.model.Faidarev1LocationDTO;
 import org.opensilex.faidare.responses.Faidarev1LocationListResponse;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
@@ -30,8 +31,12 @@ import java.util.Collections;
 /**
  * @author Gabriel Besombes
  */
-@Api("faidare")
+@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
+@ApiCredentialGroup(
+        groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
+        groupLabelKey = CallsAPI.CREDENTIAL_CALLS_GROUP_LABEL_KEY
+)
 public class LocationsAPI extends FaidareCall {
 
     @Inject

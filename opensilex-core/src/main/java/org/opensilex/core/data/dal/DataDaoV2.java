@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * A Dao for handling {@link DataModel} by extending {@link MongoReadWriteDao}
+ * #todo : handle write operations and other custom search methods
  *
  * @author rcolin
  */
@@ -30,6 +31,8 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     protected static final String COLLECTION_NAME = "data";
 
     protected final SPARQLService sparql;
+
+    // Use the old MongoDBService since We need ExperimentDao and ProvenanceDao which requires this service
     protected final MongoDBService mongoDBService;
 
     // Provenance empty filters and fields
@@ -41,6 +44,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     protected static final Bson NO_PROV_WAS_ASSOCIATED_WITH_FILTER = Filters.eq(PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD, null);
 
 
+    // Register indexes for collection
     static {
         MongoDBServiceV2.registerIndexes(
                 COLLECTION_NAME,
@@ -69,6 +73,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     @Override
     public List<Bson> getBsonFilters(DataSearchFilter filter) {
 
+        // #todo : Handle business logic (call to Experiment and provenance DAO) in a dedicated business class
         List<Bson> bsonFilters = super.getBsonFilters(filter);
 
         addExperimentFilter(bsonFilters, filter);
@@ -129,7 +134,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             throw new RuntimeException("Unexpected error when retrieving user experiments during data filter building", e);
         }
 
-        if (CollectionUtils.isEmpty(filter.getExperiments())) {
+        if (! CollectionUtils.isEmpty(filter.getExperiments())) {
 
             // Keep only the provided experiment which belongs to the allowed user experiment set
             Set<URI> allowedExperiments = filter.getExperiments()
@@ -159,26 +164,32 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataSearchFilter filter){
 
-        List<URI> agents = new LinkedList<>();
-        agents.addAll(Optional.ofNullable(filter.getDevices()).orElse(Collections.emptyList()));
-        agents.addAll(Optional.ofNullable(filter.getOperators()).orElse(Collections.emptyList()));
+        // Filter on agent from devices or operator inside data provenance
+        List<URI> dataProvenanceAgents = new LinkedList<>();
+        dataProvenanceAgents.addAll(Optional.ofNullable(filter.getDevices()).orElse(Collections.emptyList()));
+        dataProvenanceAgents.addAll(Optional.ofNullable(filter.getOperators()).orElse(Collections.emptyList()));
 
-        Set<URI> agentProvenances = agents.isEmpty() ?
+        Bson dataProvenanceFilter = Filters.in(PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD, dataProvenanceAgents);
+
+        // Filter on agents from global provenances
+        Set<URI> globalProvenanceAgents = dataProvenanceAgents.isEmpty() ?
                 Collections.emptySet() :
-                new ProvenanceDAO(mongoDBService, sparql).getProvenancesURIsByAgents(agents);
+                new ProvenanceDAO(mongoDBService, sparql).getProvenancesURIsByAgents(dataProvenanceAgents);
 
-        Bson dataProvenanceFilter = Filters.in(PROVENANCE_PROV_WAS_ASSOCIATED_WITH_FIELD, agents);
-        Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, agentProvenances);
+        Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, globalProvenanceAgents);
         Bson globalProvenanceOrEmptyFilter = Filters.or(globalProvenanceFilter, NO_PROV_WAS_ASSOCIATED_WITH_FILTER);
 
-        if (agents.isEmpty()) {
-            if (!agentProvenances.isEmpty()) {
-                bsonFilters.add(globalProvenanceOrEmptyFilter); // only match global provenance
+        // Try to simplify the query : avoid a complex OR query with empty array
+        if (dataProvenanceAgents.isEmpty()) {
+            if (!globalProvenanceAgents.isEmpty()) { // only match global provenance
+                bsonFilters.add(globalProvenanceOrEmptyFilter);
             }
-        } else if (!agentProvenances.isEmpty()) {
-            bsonFilters.add(Filters.or(dataProvenanceFilter, globalProvenanceOrEmptyFilter));  // match agents from data provenance or from global provenance
         } else {
-            bsonFilters.add(dataProvenanceFilter);  // only match data provenance
+            if (globalProvenanceAgents.isEmpty()) {  // only match data provenance
+                bsonFilters.add(dataProvenanceFilter);
+            } else {
+                bsonFilters.add(Filters.or(dataProvenanceFilter, globalProvenanceOrEmptyFilter));  // match agents from data provenance or from global provenance
+            }
         }
     }
 }

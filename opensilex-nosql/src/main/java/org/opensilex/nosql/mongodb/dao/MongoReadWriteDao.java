@@ -12,8 +12,6 @@ import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
@@ -411,10 +409,6 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @return the {@link CountOptions} to use when calling {@link MongoCollection#countDocuments(ClientSession, Bson, CountOptions)}
      * @apiNote The following  settings are set inside the default implementation :
      * <ul>
-     *     <li>{@link CountOptions#limit(int)} : A maximum limit equals to {@link MongoDBConfig#maxCountLimit()}, for better count performance.
-     *      The greater this limit is, the more MongoDB has to read document from collection or index, which can affect performance,
-     *      especially if the collection has more millions of document to read.
-     *      </li>
      *      <li>{@link CountOptions#maxTime(long, TimeUnit)}} : Set according {@link MongoDBConfig#readTimeoutMs()} value </li>
      *      <li>{@link CountOptions#hintString(String)} : No index hint is provided. It could be improved into specialized implementation according search filter options</li>
      * </ul>
@@ -425,7 +419,21 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     }
 
-    protected CountOptions getDefaultLimitedCountOptions(F filter) {
+
+    /**
+     * @param filter the search filter
+     * @return the {@link CountOptions} to use when calling {@link MongoCollection#countDocuments(ClientSession, Bson, CountOptions)}
+     * @apiNote The following  settings are set inside the default implementation :
+     * <ul>
+     *     <li>{@link CountOptions#limit(int)} : A maximum limit equals to {@link MongoDBConfig#maxCountLimit()}, for better count performance.
+     *      The greater this limit is, the more MongoDB has to read document from collection or index, which can affect performance,
+     *      especially if the collection has more millions of document to read.
+     *      </li>
+     *      <li>{@link CountOptions#maxTime(long, TimeUnit)}} : Set according {@link MongoDBConfig#readTimeoutMs()} value </li>
+     *      <li>{@link CountOptions#hintString(String)} : No index hint is provided. It could be improved into specialized implementation according search filter options</li>
+     * </ul>
+     */
+    protected CountOptions getDefaultSearchCountOptions(F filter) {
 
         CountOptions countOptions = new CountOptions()
                 .maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS);
@@ -543,7 +551,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             results = new ArrayList<>(filter.getPageSize());
         } else {
             // run count query
-            CountOptions countOptions = query.getCountOptions() == null ? getDefaultLimitedCountOptions(filter) : query.getCountOptions();
+            CountOptions countOptions = query.getCountOptions() == null ? getDefaultSearchCountOptions(filter) : query.getCountOptions();
             totalCount = countDocuments(query.getSession(), filter, countOptions);
 
             // return empty list, keep information about the pagination used
@@ -600,7 +608,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         int countLimit = 0;
         if (query.getCountStrategy() == COUNT_QUERY_BEFORE_SEARCH) {
             // run count query
-            CountOptions countOptions = query.getCountOptions() == null ? getDefaultLimitedCountOptions(filter) : query.getCountOptions();
+            CountOptions countOptions = query.getCountOptions() == null ? getDefaultSearchCountOptions(filter) : query.getCountOptions();
             totalCount = countDocuments(query.getSession(), filter, countOptions);
 
             // return empty Stream, keep information about the pagination used

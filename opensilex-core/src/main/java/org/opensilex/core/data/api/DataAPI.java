@@ -413,6 +413,7 @@ public class DataAPI {
         Set<URI> dateVariables = new DataDAO(nosql, sparql, fs).getAllDateVariables();
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
 
+        // Paginated search : direct convert from model -> dto, no count of data
         ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
                 new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
                         .setFilter(filter)

@@ -75,7 +75,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
 | 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
-| 2024/03/20 | <b> org.opensilex.migration.RemoveExternalOntologiesContexts </b>          | 1.3.0        |           |
+| 2024/03/20 | <b> org.opensilex.migration.RemoveExternalOntologiesContexts </b>          | 1.3.0        | 2e4f0cbe  |
 
 # Descriptions
 

@@ -161,13 +161,7 @@ public class DataDAO {
             Integer pageSize) throws Exception {
 
         Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        MongoDBConfig config = nosql.getImplementedConfig();
-        int countLimit = config.maxCountLimit();
-        if (pageSize != null && pageSize > 0) {
-            countLimit = Math.min(pageSize * config.maxPageCountLimit(), config.maxCountLimit());
-        }
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize, countLimit);
+        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
     
      public int count(

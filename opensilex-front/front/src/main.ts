@@ -360,6 +360,13 @@ extend("wkt", {
   }
 });
 
+extend("containsPoint",{
+  validate: value =>{
+    const regex= /^point/i;
+    return regex.test(value);
+  }
+})
+
 // created on 09-26-2023 for the vue-tel-input component in the personForm.
 // used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)
 extend('falsy', {

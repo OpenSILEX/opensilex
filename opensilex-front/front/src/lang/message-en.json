@@ -778,6 +778,7 @@
         "emailOrUrl": "The {_field_} field must be a valid URL or email address",
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
+        "containsPoint": "Coordinates must be 'POINT' type geometry",
         "dateDiff" : "The {_field_} must not be before the start date",
         "nameFiltered" : "The {_field_} must not contain -,+,=,<,>,=,?,/,*,&",
         "existingProperty" : "This {_field_} already exists",

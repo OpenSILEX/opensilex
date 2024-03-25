@@ -13,11 +13,13 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.*;
+import org.apache.jena.sparql.expr.aggregate.AggMax;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_OneOrMore1;
+import org.apache.jena.sparql.path.P_Seq;
+import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -30,9 +32,10 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.Time;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
@@ -42,7 +45,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -539,30 +541,63 @@ public class ScientificObjectDAO {
         }
 
         // Add facility filter
-        if (searchFilter.getFacility() != null) {
-            Node facilityNode = SPARQLDeserializers.nodeURI(searchFilter.getFacility());
-            Var directFacility = makeVar("__directFacility");
-            Var parentLinkURI = makeVar("__parentLinkURI");
-            Var parentFacility = makeVar("__parentFacility");
-            Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
-            if (searchFilter.getExperiment() != null) {
-                WhereBuilder graphQuery = new WhereBuilder();
-                graphQuery.addGraph(contextNode, uriVar, Oeso.isHosted, directFacility);
-                graphQuery.addGraph(contextNode, uriVar, subPartOf, parentLinkURI);
-                graphQuery.addGraph(contextNode, parentLinkURI, Oeso.isHosted, parentFacility);
-                builder.addOptional(graphQuery);
-            } else {
-                WhereBuilder graphQuery = new WhereBuilder();
-                graphQuery.addWhere(uriVar, Oeso.isHosted, directFacility);
-                graphQuery.addWhere(uriVar, subPartOf, parentLinkURI);
-                graphQuery.addWhere(parentLinkURI, Oeso.isHosted, parentFacility);
-                builder.addOptional(graphQuery);
+        /*
+        //TODO only works on RDF4J ; for GraphDB swap the "optional" to a regular triple statement.
+        //This also works on RDF4J but is painfully slow for some reason
+        SELECT  (?so AS ?uri)
+          WHERE
+            { ?move rdf:type/(rdfs:subClassOf)* oeev:Move .
+              ?move  oeev:concerns  ?so ;
+                     oeev:to        <http://opensilex.dev/id/organization/facility.bourdic>
+              OPTIONAL
+                { ?move time:hasEnd/time:inXSDDateTimeStamp ?t}
+              { SELECT  ?so (MAX(?endTime) AS ?t)
+                WHERE
+                  { ?so rdf:type/(rdfs:subClassOf)* vocabulary:ScientificObject .
+                    ?move rdf:type/(rdfs:subClassOf)* oeev:Move .
+                    ?move  oeev:concerns  ?so ;
+                           oeev:to        ?facility .
+                    ?move time:hasEnd/time:inXSDDateTimeStamp ?endTime}
+                GROUP BY ?so
+              }
             }
+          }
+         */
+        if (searchFilter.getFacility() != null) {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            var hasEndHasDateTimeStamp = new P_Seq(new P_Link(Time.hasEnd.asNode()), new P_Link(Time.inXSDDateTimeStamp.asNode()));
 
-            builder.addFilter(SPARQLQueryHelper.or(
-                    SPARQLQueryHelper.eq("__directFacility", facilityNode),
-                    SPARQLQueryHelper.eq("__parentFacility", facilityNode)
-            ));
+            var nestedSubSelect = new SelectBuilder();
+
+            var soVar = makeVar("_so");
+            var moveVar = makeVar("_move");
+            var facilityVar = makeVar("_facility");
+            var endTimeVar = makeVar("_endTime");
+            var lastMoveEndTimeVar = makeVar("_lastMoveEndTime");
+
+            nestedSubSelect.addVar(soVar);
+            nestedSubSelect.addVar(new AggMax(exprFactory.asExpr(endTimeVar)).toString(), lastMoveEndTimeVar);
+
+            nestedSubSelect.addWhere(soVar, Ontology.typeSubClassAny, Oeso.ScientificObject.asNode());
+            nestedSubSelect.addWhere(moveVar, Ontology.typeSubClassAny, Oeev.Move.asNode());
+            nestedSubSelect.addWhere(moveVar, Oeev.concerns.asNode(), soVar);
+            nestedSubSelect.addWhere(moveVar, Oeev.to.asNode(), facilityVar);
+            nestedSubSelect.addWhere(moveVar, hasEndHasDateTimeStamp, endTimeVar);
+
+            nestedSubSelect.addGroupBy(soVar);
+
+            var nestedSelect = new SelectBuilder();
+
+            nestedSelect.addVar(exprFactory.asExpr(soVar), uriVar);
+
+            nestedSelect.addWhere(moveVar, Ontology.typeSubClassAny, Oeev.Move.asNode());
+            nestedSelect.addWhere(moveVar, Oeev.concerns.asNode(), soVar);
+            nestedSelect.addWhere(moveVar, Oeev.to.asNode(), SPARQLDeserializers.nodeURI(searchFilter.getFacility()));
+            nestedSelect.addOptional(moveVar, hasEndHasDateTimeStamp, lastMoveEndTimeVar);
+
+            nestedSelect.addSubQuery(nestedSubSelect);
+
+            builder.addSubQuery(nestedSelect);
         }
 
         // Add filter to check if object exists at given date

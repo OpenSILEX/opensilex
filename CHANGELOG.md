@@ -1,7 +1,5 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[Next]]
-    * prévenir les utilisateurs que les services deprecated seront supprimés dans la version suivante
   * [[1.2.1]](#121)
     * [Fixed](#fixed)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)

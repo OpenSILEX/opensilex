@@ -542,43 +542,49 @@ public class ScientificObjectDAO {
 
         }
 
-        // Add facility filter  -- TODO : doesn't work
+        // Add facility filter
         /*
-        select ?so as ?uri {
-          ?move a/rdfs:subClassOf* oeev:Move ;
-             oeev:concerns ?so ;
-             oeev:to <http://opensilex.dev/id/organization/facility.bourdic> .
-          ?move time:hasEnd/time:inXSDDateTimeStamp ?t .
-        {
-        select ?so (max(?endTime) as ?t) where {
-          ?so a/(rdfs:subClassOf)* vocabulary:ScientificObject .
-          ?move a/rdfs:subClassOf* oeev:Move ;
-             oeev:concerns ?so ;
-             oeev:to ?facility .
-          ?move time:hasEnd/time:inXSDDateTimeStamp ?endTime .
-        } group by ?so
-        }
-      }
+        //TODO only works on RDF4J ; for GraphDB swap the "optional" to a regular triple statement.
+        //This also works on RDF4J but is painfully slow for some reason
+        SELECT  (?so AS ?uri)
+          WHERE
+            { ?move rdf:type/(rdfs:subClassOf)* oeev:Move .
+              ?move  oeev:concerns  ?so ;
+                     oeev:to        <http://opensilex.dev/id/organization/facility.bourdic>
+              OPTIONAL
+                { ?move time:hasEnd/time:inXSDDateTimeStamp ?t}
+              { SELECT  ?so (MAX(?endTime) AS ?t)
+                WHERE
+                  { ?so rdf:type/(rdfs:subClassOf)* vocabulary:ScientificObject .
+                    ?move rdf:type/(rdfs:subClassOf)* oeev:Move .
+                    ?move  oeev:concerns  ?so ;
+                           oeev:to        ?facility .
+                    ?move time:hasEnd/time:inXSDDateTimeStamp ?endTime}
+                GROUP BY ?so
+              }
+            }
+          }
          */
         if (searchFilter.getFacility() != null) {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            var hasEndHasDateTimeStamp = new P_Seq(new P_Link(Time.hasEnd.asNode()), new P_Link(Time.inXSDDateTimeStamp.asNode()));
+
             var nestedSubSelect = new SelectBuilder();
 
-            var soVar = makeVar("so");
-            var moveVar = makeVar("move");
-            var facilityVar = makeVar("facility");
-            var endTimeVar = makeVar("endTime");
-            var tVar = makeVar("t");
-
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            var soVar = makeVar("_so");
+            var moveVar = makeVar("_move");
+            var facilityVar = makeVar("_facility");
+            var endTimeVar = makeVar("_endTime");
+            var lastMoveEndTimeVar = makeVar("_lastMoveEndTime");
 
             nestedSubSelect.addVar(soVar);
-            nestedSubSelect.addVar(new AggMax(exprFactory.asExpr(endTimeVar)).toString(), tVar);
+            nestedSubSelect.addVar(new AggMax(exprFactory.asExpr(endTimeVar)).toString(), lastMoveEndTimeVar);
 
             nestedSubSelect.addWhere(soVar, Ontology.typeSubClassAny, Oeso.ScientificObject.asNode());
             nestedSubSelect.addWhere(moveVar, Ontology.typeSubClassAny, Oeev.Move.asNode());
             nestedSubSelect.addWhere(moveVar, Oeev.concerns.asNode(), soVar);
             nestedSubSelect.addWhere(moveVar, Oeev.to.asNode(), facilityVar);
-            nestedSubSelect.addWhere(moveVar, new P_Seq(new P_Link(Time.hasEnd.asNode()), new P_Link(Time.inXSDDateTimeStamp.asNode())), endTimeVar);
+            nestedSubSelect.addWhere(moveVar, hasEndHasDateTimeStamp, endTimeVar);
 
             nestedSubSelect.addGroupBy(soVar);
 
@@ -589,7 +595,7 @@ public class ScientificObjectDAO {
             nestedSelect.addWhere(moveVar, Ontology.typeSubClassAny, Oeev.Move.asNode());
             nestedSelect.addWhere(moveVar, Oeev.concerns.asNode(), soVar);
             nestedSelect.addWhere(moveVar, Oeev.to.asNode(), SPARQLDeserializers.nodeURI(searchFilter.getFacility()));
-            nestedSelect.addWhere(moveVar, new P_Seq(new P_Link(Time.hasEnd.asNode()), new P_Link(Time.inXSDDateTimeStamp.asNode())), tVar);
+            nestedSelect.addOptional(moveVar, hasEndHasDateTimeStamp, lastMoveEndTimeVar);
 
             nestedSelect.addSubQuery(nestedSubSelect);
 

@@ -69,7 +69,7 @@
 
         <!-- Facilities -->
         <div>
-            <opensilex-SelectForm
+            <opensilex-FormSelector
                 label="DeviceList.filter.facility"
                 placeholder="DeviceList.filter.facility-placeholder"
                 :multiple="false"
@@ -77,7 +77,7 @@
                 :options="facilities"
                 class="searchFilter"
                 @handlingEnterKey="refresh()"
-            ></opensilex-SelectForm>
+            ></opensilex-FormSelector>
         </div>
 
         <!-- Brand --> 

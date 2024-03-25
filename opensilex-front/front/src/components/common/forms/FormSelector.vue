@@ -87,7 +87,6 @@
 
       </b-input-group>
 
-
     </template>
     <!-------------------------------------------------------------------->
   </opensilex-FormField>
@@ -124,16 +123,14 @@ export default class FormSelector extends Vue {
   test() {
     console.log("formSelector - watcher selection  :", this.selection)
   }
-  
 
-
+  // @provide props 
   isMultiple: boolean = false;
   hadShowCount: boolean = false;
   isClearable: boolean = true;
   isDisabled: boolean = false;
   hadDisableBranchNodes: boolean = false;
   hadSearchNested: boolean = false;
-
 
   private hadPlaceholder: string = "";
   private hadSearchPromptText: string = 'component.common.search-prompt-text';
@@ -142,11 +139,6 @@ export default class FormSelector extends Vue {
   hadLimit: number = 1;
   private selectedValuesData: any = null;
   
-  @Prop()
-  searchMethod;
-
-  @Prop()
-  async;
   
 
   setSearchMethod(value: any){
@@ -155,7 +147,7 @@ export default class FormSelector extends Vue {
 
 
   // @Provide() treeselectProps = {
-  //   multiple: this.isMultiple,
+    //   multiple: this.isMultiple,
   //   showCount: this.hadShowCount,
   //   disabled: this.isDisabled,
   //   disableBranchNodes: this.hadDisableBranchNodes,
@@ -179,7 +171,13 @@ export default class FormSelector extends Vue {
   @Prop({default: null})
   selectedInJsonFormat;
 
- @Prop()
+  @Prop()
+  searchMethod;
+
+  @Prop()
+  async;
+
+  @Prop()
   multiple;
 
   @Prop()

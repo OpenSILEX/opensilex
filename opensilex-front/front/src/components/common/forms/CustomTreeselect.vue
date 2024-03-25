@@ -446,7 +446,7 @@ onSelectionChange() {
       if (values.length == 0) {
         console.log("clearIf 1er ifselection av", this.selection)
         this.selection.splice(0, this.selection.length);
-                console.log("clearIf  1ier if selection ap", this.selection)
+        console.log("clearIf  1ier if selection ap", this.selection)
         this.$emit("clear");
         return;
       }

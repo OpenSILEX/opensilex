@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :helpMessage="helpMessage"
     :selected.sync="usersURI"
@@ -14,7 +14,7 @@
     @deselect="deselect"
     @keyup.enter.native="onEnter"
     @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -22,7 +22,7 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService } from "opensilex-security/index";
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 
 @Component
 export default class AccountSelector extends Vue {
@@ -42,7 +42,7 @@ export default class AccountSelector extends Vue {
   @Prop()
   helpMessage: string;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
   
   loadAccounts(accountsURIs) {
     return this.$opensilex
@@ -83,10 +83,10 @@ export default class AccountSelector extends Vue {
 
   loadMoreItems(){
     this.pageSize = 0;
-    let selectForm: any = this.$refs.selectForm;
-    selectForm.refresh();
+    let formSelector: any = this.$refs.formSelector;
+    formSelector.refresh();
     this.$nextTick(() => {
-      selectForm.openTreeselect();
+      formSelector.openTreeselect();
     })
   }
 }

@@ -1,12 +1,12 @@
 <template>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :label="label"
         :selected.sync="dataTypeURI"
         :options="datatypesNodes"
         :itemLoadingMethod="loadDataType"
         placeholder="VariableForm.datatype-placeholder"
         @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

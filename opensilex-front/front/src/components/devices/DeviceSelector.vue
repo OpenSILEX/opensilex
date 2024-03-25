@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm v-if="renderComponent"
+  <opensilex-FormSelector v-if="renderComponent"
     ref="deviceSelector"
     :label="label"
     placeholder="DeviceSelector.placeholder"
@@ -17,7 +17,7 @@
     :showCount="true"
     @keyup.enter.native="onEnter"
     @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

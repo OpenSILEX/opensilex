@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -34,17 +35,20 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -158,6 +162,7 @@ public class FacilityDAO {
                 .collect(Collectors.toList());
 
         return sparql.searchWithPagination(
+                sparql.getDefaultGraph(FacilityModel.class),
                 FacilityModel.class,
                 filter.getUser().getLanguage(),
                 (select -> {
@@ -182,11 +187,32 @@ public class FacilityDAO {
                         select.addFilter(SPARQLQueryHelper.regexFilter(SiteModel.NAME_FIELD, filter.getPattern()));
                     }
                 }),
+                Collections.emptyMap(),
+                (result -> fromResult(result, filter.getLang(), new FacilityModel())),
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
         );
 
+    }
+
+    public FacilityModel fromResult(SPARQLResult result, String lang, FacilityModel model) throws Exception {
+        SPARQLDeserializer<OffsetDateTime> dateDeserializer = SPARQLDeserializers.getForClass(OffsetDateTime.class);
+
+        model.setUri(new URI(SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD))));
+        model.setType(new URI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
+        SPARQLLabel typeLabel = new SPARQLLabel();
+        typeLabel.setDefaultLang(StringUtils.isEmpty(lang) ? OpenSilex.DEFAULT_LANGUAGE : lang);
+        typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+        model.setTypeLabel(typeLabel);
+
+        model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+
+        model.setPublisher(new URI(result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD)));
+        model.setPublicationDate(dateDeserializer.fromString(result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD)));
+
+        return model;
     }
 
 
@@ -256,6 +282,10 @@ public class FacilityDAO {
      */
     public GeospatialModel getFacilityGeospatialModel(URI facilityUri) {
         return geospatialDAO.getGeometryByURI(facilityUri, geometryGraphUri);
+    }
+
+    public Map<String, Geometry> getFacilityGeospatialModelList(List<URI> facilityUriList) {
+        return geospatialDAO.getGeometryByUris(geometryGraphUri, facilityUriList);
     }
 
     private void deleteFacilityGeospatialModel(URI facilityUri) {

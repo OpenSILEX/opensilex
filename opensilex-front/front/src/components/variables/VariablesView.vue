@@ -447,14 +447,15 @@ export default class VariablesView extends Vue {
         }
     }
 
-    getCountDataPromise(uri){
+    getCountDataPromise(variable: string){
+      // Check if there exist at least one data linked to the variable
       return this.dataService.countData(
           undefined,
           undefined,
           undefined,
           undefined,
+          [variable],
           undefined,
-          [uri],
           undefined,
           undefined,
           undefined,

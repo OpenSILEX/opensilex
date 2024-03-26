@@ -227,6 +227,7 @@ export default class DataList extends Vue {
        }
 
        return this.dataService.countData(
+           // Count data, set limit to  since here we want the exact/total data count according the current filter
            this.$opensilex.prepareGetParameter(this.filter.start_date),
            this.$opensilex.prepareGetParameter(this.filter.end_date),
            undefined,

@@ -41,12 +41,13 @@
                         :active="isDataTab()"
                         :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.data") }}
-                    <span
-                        v-if="!dataCountIsLoading && data > 0"
-                        class ="tabWithElements"
-                    >
-                        {{$opensilex.$numberFormatter.formateResponse(data)}}
-                    </span>
+<!-- Disable count of data for performance reasons        -->
+<!--                    <span-->
+<!--                        v-if="!dataCountIsLoading && data > 0"-->
+<!--                        class ="tabWithElements"-->
+<!--                    >-->
+<!--                        {{$opensilex.$numberFormatter.formateResponse(data)}}-->
+<!--                    </span>-->
                 </b-nav-item
                 >
                 <b-nav-item
@@ -168,7 +169,7 @@
         $AnnotationsService: AnnotationsService
         $DocumentsService: DocumentsService
         $FactorsService: FactorsService
-        $DataService: DataService
+        // $DataService: DataService
         $ScientificObjectsService: ScientificObjectsService
 
         annotations: number;
@@ -201,12 +202,12 @@
             }
             this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
             this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
-            this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
+            // this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
             this.$FactorsService = this.$opensilex.getService<FactorsService>("opensilex.FactorsService");
             this.$ScientificObjectsService = this.$opensilex.getService<ScientificObjectsService>("opensilex.ScientificObjectsService");
             this.searchAnnotations();
             this.searchDocuments();
-            this.searchData();
+            // this.searchData();
             this.searchFactors();
             this.searchScientificObjects();
         }
@@ -282,27 +283,27 @@
             }).catch(this.$opensilex.errorHandler);
         }
 
-        searchData(){
-            return this.$DataService
-            .countData(
-                undefined,
-                undefined,
-                undefined,
-                [this.uri],
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined
-            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
-                if (http && http.response){
-                    this.data = http.response.result as number;
-                    this.dataCountIsLoading = false;
-                    return this.data
-                }
-            }).catch(this.$opensilex.errorHandler);
-        }
+        // searchData(){
+        //     return this.$DataService
+        //     .countData(
+        //         undefined,
+        //         undefined,
+        //         undefined,
+        //         [this.uri],
+        //         undefined,
+        //         undefined,
+        //         undefined,
+        //         undefined,
+        //         undefined,
+        //         undefined
+        //     ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        //         if (http && http.response){
+        //             this.data = http.response.result as number;
+        //             this.dataCountIsLoading = false;
+        //             return this.data
+        //         }
+        //     }).catch(this.$opensilex.errorHandler);
+        // }
         
         searchFactors(){
             return this.$FactorsService

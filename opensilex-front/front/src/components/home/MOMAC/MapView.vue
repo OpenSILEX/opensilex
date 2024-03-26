@@ -710,14 +710,14 @@ import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, Scienti
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
 import { defaults, ScaleLine } from "ol/control";
-import Oeso from "../../ontologies/Oeso";
-import Oeev from "../../ontologies/Oeev";
+import Oeso from "../../../ontologies/Oeso";
+import Oeev from "../../../ontologies/Oeev";
 import * as turf from "@turf/turf";
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
 import { Store } from 'vuex';
 import VueI18n from "vue-i18n";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
 @Component({

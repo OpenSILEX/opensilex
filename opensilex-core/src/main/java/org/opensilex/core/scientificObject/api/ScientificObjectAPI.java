@@ -268,6 +268,57 @@ public class ScientificObjectAPI {
         }
     }
 
+//    @GET
+//    @Path("by_facility")
+//    @ApiOperation("Get scientific objet list with geometry of a given facility URI")
+//    @ApiProtected
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given facility URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+//    })
+//    public Response searchScientificObjectsWithGeometryListByFacility(
+//            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("facility") @NotNull URI facilityURI,
+//            @ApiParam(value = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
+//            @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
+//    ) throws Exception {
+//
+//        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+//        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+//        List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+//        List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
+//        int lengthMapGeo = 0;
+//
+//        // Get SO with geometry for the experiment
+//        //validateContextAccess(facilityURI);
+//
+//        Instant test_start = Instant.now();
+//        FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(facilityURI);
+//        Instant test_end = Instant.now();
+//
+//        // Filter OS by date and get OS details ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date)
+//        for (GeospatialModel geospatialModel : mapGeo) {
+//            dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
+//            lengthMapGeo++;
+//        }
+//
+//        LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
+//
+//        if(lengthMapGeo == 0){
+//            return new PaginatedListResponse<>(dtoList).getResponse();
+//        } else {
+//            dtoList = soDAO.getScientificObjectsByDate(facilityURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
+//            //Use a temporary list to delete objects already found and reduce the size of the list to be iterated.
+//            List<ScientificObjectNodeDTO> dtoMapGeoTmp = new ArrayList<>(dtoMapGeo);
+//            // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
+//            for(ScientificObjectNodeDTO dto : dtoList){
+//                dto.setGeometry(dtoMapGeoTmp.stream().filter(o -> SPARQLDeserializers.compareURIs(o.getUri(),dto.getUri())).findAny().orElseThrow(NullPointerException::new).getGeometry());
+//                dtoMapGeoTmp.removeIf(g -> SPARQLDeserializers.compareURIs(g.getUri(),dto.getUri()));
+//            }
+//            return new PaginatedListResponse<>(dtoList).getResponse();
+//        }
+//    }
+
     @GET
     @Path("children")
     @ApiOperation("Get list of scientific object children")

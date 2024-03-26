@@ -132,30 +132,6 @@
           :disabled="selectedOS.length === 0 || selectedOS.length > 15 ? true : false"
         ></opensilex-Button>
         <div>
-          <opensilex-FilterField>
-            <opensilex-DateTimeForm
-              :value.sync="filter.start_date"
-              label="component.common.begin"
-              name="startDate"
-              :max-date="filter.end_date ? filter.end_date : undefined"
-              class="searchFilter"
-            ></opensilex-DateTimeForm>
-          </opensilex-FilterField>
-        </div>
-        <div>
-          <opensilex-FilterField>
-            <opensilex-DateTimeForm
-              :value.sync="filter.end_date"
-              label="component.common.end"
-              name="endDate"
-              :min-date="filter.start_date ? filter.start_date : undefined"
-              :minDate="filter.start_date"
-              :maxDate="filter.end_date"
-              class="searchFilter"
-            ></opensilex-DateTimeForm>
-          </opensilex-FilterField>
-        </div>
-        <div>
           <br />
           <b-alert v-model="showInstructionMap" dismissible>
             <p v-html="$t('MapView.Instruction')"></p>
@@ -299,7 +275,7 @@
               <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
             </vl-source-cluster>
           </vl-layer-vector>
-          <div v-if="!showNextLevel">
+          <div v-if="showNextLevel">
             <vl-layer-vector
               :opacity="opacityOS"
               v-for="layerFacility in featuresFacilities"
@@ -313,7 +289,7 @@
               ></vl-source-vector>
             </vl-layer-vector>
           </div>
-          <div v-if="showNextLevel">
+          <div v-if="!showNextLevel">
             <vl-layer-vector
               :opacity="opacityOS"
               v-for="layerOS in featuresOS"
@@ -707,6 +683,30 @@
             label="MapView.create-filter"
             @click="filterForm.showCreateForm()"
           ></opensilex-CreateButton>
+          <div>
+            <opensilex-FilterField>
+              <opensilex-DateTimeForm
+                :value.sync="filter.start_date"
+                label="component.common.begin"
+                name="startDate"
+                :max-date="filter.end_date ? filter.end_date : undefined"
+                class="searchFilter"
+              ></opensilex-DateTimeForm>
+            </opensilex-FilterField>
+          </div>
+          <div>
+            <opensilex-FilterField>
+              <opensilex-DateTimeForm
+                :value.sync="filter.end_date"
+                label="component.common.end"
+                name="endDate"
+                :min-date="filter.start_date ? filter.start_date : undefined"
+                :minDate="filter.start_date"
+                :maxDate="filter.end_date"
+                class="searchFilter"
+              ></opensilex-DateTimeForm>
+            </opensilex-FilterField>
+          </div>
         </b-tabs>
       </template>
     </b-sidebar>
@@ -1374,9 +1374,27 @@ export default class MapView extends Vue {
 
   // retrieve all SO in the selected facility
   getSOfromFacility(facility) {
-    this.featuresOS.forEach((os) => {
-      //if (os.properties.)
-    });
+    this.scientificObjectsService
+      .searchScientificObjects(
+        undefined, // exp
+        undefined, // rdf_type
+        undefined, // name
+        undefined, // parent
+        undefined, // germplasm
+        undefined, // factor levels
+        facility,
+        undefined, // variables
+        undefined, // device
+        undefined, // existence date
+        undefined, // creation date
+        undefined, // criteria
+        undefined, // order by
+        0, // page
+        0 // page size
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
+        const result = http.response.result as any;
+      });
   }
 
   //Check selected features and make different actions depending on the number of feature
@@ -1384,7 +1402,7 @@ export default class MapView extends Vue {
     this.selectedOS = [];
     this.soWithLabels = [];
     this.featuresOSfromSelectedFacility = [];
-    console.log("Features : ", this.featuresOS);
+    //console.log("Features : ", this.featuresOS);
 
     if (features.length && features[0]) {
       this.selectedFeatures = features;
@@ -1392,14 +1410,16 @@ export default class MapView extends Vue {
         if (feature.properties.nature === "ScientificObjects") {
           this.selectedOS.push(feature.properties.uri);
           this.soWithLabels.push(feature.properties);
-          this.showPopup = true; // Show the graph when a feature is selected
         } else if (feature.properties.nature === "Facilites") {
           // display all SO
-          console.log("SELECTED : ", feature);
         }
       });
-    } else {
-      this.showPopup = false; // Hide the graph when no feature is selected
+      if (features[0].properties.nature === "ScientificObjects") {
+        console.log("SELECTED : ", features[0]);
+        this.showPopup = true;
+      } else {
+        this.showPopup = false; // Hide the graph when no feature is selected
+      }
     }
 
     return this.selectedFeatures.length === 1
@@ -1870,7 +1890,7 @@ export default class MapView extends Vue {
         .getScientificObjectDetail(scientificObjectUri, this.experiment)
         .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
           let result = http.response.result;
-          console.log("RESPONSE : ", result);
+          // console.log("RESPONSE : ", result);
 
           this.selectedFeatures.forEach((item) => {
             if (item.properties.uri === result.uri) {
@@ -1878,7 +1898,7 @@ export default class MapView extends Vue {
               this.detailsSO = true;
             }
           });
-          console.log("SCIENTIFIC OBJECT: ", http.response.result);
+          // console.log("SCIENTIFIC OBJECT: ", http.response.result);
         })
         .catch(this.$opensilex.errorHandler)
         .finally(() => {

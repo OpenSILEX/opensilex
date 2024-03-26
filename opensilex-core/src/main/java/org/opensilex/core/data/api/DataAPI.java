@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -618,7 +619,8 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
             ) throws Exception {
 
@@ -635,7 +637,8 @@ public class DataAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
         }
 
-        long count = new DataDaoV2(sparql, nosql).count(filter);
+        CountOptions countOptions = new CountOptions().limit(countLimit);
+        long count = new DataDaoV2(sparql, nosql).count(null, filter, countOptions);
         return new SingleObjectResponse<>(count).getResponse();
     }
 

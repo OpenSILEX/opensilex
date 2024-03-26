@@ -261,7 +261,13 @@ export default class VariableDetails extends Vue {
         undefined,
         undefined,
         undefined,
-        undefined);
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        1,
+        undefined,
+    );
   }
 
   getPath(elementType: string, uri: string) {

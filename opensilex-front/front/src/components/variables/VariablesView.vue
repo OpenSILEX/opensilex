@@ -458,7 +458,13 @@ export default class VariablesView extends Vue {
           undefined,
           undefined,
           undefined,
-          undefined);
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1,
+          undefined,
+      );
     }
 
     showVariableEditForm(uri: string) {

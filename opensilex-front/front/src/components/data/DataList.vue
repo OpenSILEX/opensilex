@@ -240,6 +240,7 @@ export default class DataList extends Vue {
            this.$opensilex.prepareGetParameter(this.filter.operators),
            this.filter.germplasm_group,
            this.filter.germplasm,
+           0,
            [].concat(
                this.filter.scientificObjects,
                this.filter.facilities,

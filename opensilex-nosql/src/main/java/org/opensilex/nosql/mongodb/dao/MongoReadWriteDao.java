@@ -463,7 +463,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         List<Bson> filters = query.getFilterList();
 
         // no filter : rely on server stats document count
-        if (filters.isEmpty()) {
+        // if a specific count limit was specified, then don't rely on estimatedDocumentCount which will return the full collection length
+        if (filters.isEmpty() && countOptions.getLimit() == 0) {
             return collection.estimatedDocumentCount(
                     new EstimatedDocumentCountOptions().maxTime(mongoDBConfig.readTimeoutMs(), TimeUnit.MILLISECONDS)
             );

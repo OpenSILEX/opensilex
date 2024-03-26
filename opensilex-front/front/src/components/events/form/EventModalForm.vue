@@ -1,4 +1,4 @@
-    <template>
+<template>
         <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID) && renderModalForm"
             ref="modalForm"
@@ -241,7 +241,9 @@
 
                 let position = move.targets_positions[0].position;
 
-                if (EventModalForm.isPositionValid(position)) {
+                if (EventModalForm.isPositionEmpty(position)) {
+                    move.targets_positions = [];
+                } else if (EventModalForm.isPositionValid(position)) {
 
                     // one position on one target
                     if (move.targets.length == 1) {
@@ -274,6 +276,14 @@
             return !allPropertiesUndefined;
         }
 
+        static isPositionEmpty(position: PositionCreationDTO): boolean {
+            for (const prop in position) {
+                if (Object.prototype.hasOwnProperty.call(position, prop)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
     }
 

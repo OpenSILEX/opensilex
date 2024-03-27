@@ -116,12 +116,6 @@ import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 Vue.use(VueFormWizard)
 console.debug("VueFormWizard plugin initialized !");
 
-// Initialize Vue Tabulator
-require('tabulator-tables');
-import VueTabulator from 'vue-tabulator';
-Vue.use(VueTabulator);
-console.debug("VueTabulator plugin initialized !");
-
 // Initialize Vue Country flag
 import CountryFlag from 'vue-country-flag'
 Vue.component('country-flag', CountryFlag);

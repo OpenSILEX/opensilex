@@ -13,8 +13,6 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
@@ -30,7 +28,6 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -42,7 +39,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -589,7 +585,7 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<URI> getScientificObjectUrisAssociatedWithGermplasmGroup(
+    public List<URI> getScientificObjectUrisAssociatedWithGermplasms(
             List<URI> experiments,
             URI germplasmGroupUri,
             List<URI> passedGermplasms

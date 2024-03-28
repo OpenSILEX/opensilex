@@ -68,8 +68,10 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
-    private static final String EXPERIMENT_LIST_JWT_CLAIM = "experiments_list";
+    public static final String EXPERIMENT_LIST_JWT_CLAIM = "experiments_list";
 
+    public static final String EXPERIMENTS_EXCEED_LIMIT_CLAIM = "experiments_exceed_limit";
+    public static final int MAX_EXPERIMENTS = 100;
 
     @Override
     public Class<?> getConfigClass() {
@@ -322,7 +324,15 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
                 .toArray(String[]::new);
 
         // Add list of experiments to the Authentication token
-        tokenBuilder.withArrayClaim(EXPERIMENT_LIST_JWT_CLAIM, accessExperimentsList);
+        if (accessExperimentsList.length <= MAX_EXPERIMENTS) {
+            // If the number of experiments is less than or equal to the max limit,
+            // add the list to the EXPERIMENT_LIST_JWT_CLAIM claim
+            tokenBuilder.withArrayClaim(EXPERIMENT_LIST_JWT_CLAIM, accessExperimentsList);
+        } else {
+            // If the number of experiments is greater than the max limit,
+            // add a flag to indicate that the number of experiments exceeds the limit
+            tokenBuilder.withClaim(EXPERIMENTS_EXCEED_LIMIT_CLAIM, true);
+        }
     }
 
     @Override

@@ -80,7 +80,7 @@ export default class TypeForm extends Vue {
    * If we want to make some types hidden from the possible choices
    */
   @Prop({
-    default: []
+    default: () => { return []}
   })
   unselectableTypes: Array<string>;
 

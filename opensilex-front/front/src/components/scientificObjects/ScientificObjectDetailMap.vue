@@ -101,10 +101,6 @@ ol, ul, dl {
   cursor: pointer;
 }
 
-.field-view-title {
-  min-width: 120px;
-}
-
 #vl-overlay-detailItem > div > div > div > div > div > span.static-field-line {
   display: block !important;
 }

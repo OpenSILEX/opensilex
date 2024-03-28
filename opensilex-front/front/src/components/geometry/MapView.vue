@@ -2366,7 +2366,6 @@ p {
   box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
   border-radius: 5px;
   text-indent: 2px;
-  max-width: 75%;
 }
 
 ::v-deep .b-table-details .card {

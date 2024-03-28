@@ -8,7 +8,7 @@
           class="detail-element-header"
       ></opensilex-PageHeader>
 
-      <opensilex-PageActions :returnButton="true" :tabs="true">
+      <opensilex-PageActions :returnButton="false" :tabs="true">
         <template v-slot>
           <b-nav-item
               :active="isDetailsTab()"
@@ -32,7 +32,7 @@
 
       <opensilex-PageContent>
         <b-row v-if="isDetailsTab()">
-          <b-col sm="5">
+          <b-col sm="6">
             <opensilex-Card label="component.common.description">
               <template v-slot:rightHeader>
                 <div class="ml-3">
@@ -63,11 +63,11 @@
                     :value="nameType()"
                     label="component.area.details.rdfType"
                 ></opensilex-StringView>
-                <opensilex-StringView
+                <opensilex-TextView
                     v-if="area.description"
                     :value="area.description"
                     label="component.area.details.description"
-                ></opensilex-StringView>
+                ></opensilex-TextView>
                 <opensilex-GeometryCopy
                     :value="area.geometry"
                 ></opensilex-GeometryCopy>
@@ -113,7 +113,7 @@
       ></opensilex-ModalForm>
     </div>
   </div>
-  <div v-else>
+  <div v-else class="detail-pop-up">
     <!-- Name -->
     <template v-if="showName">
       {{ area.uri === uri ? "" : loadArea(uri) }}
@@ -331,14 +331,11 @@ export default class AreaDetails extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.details-actions-row {
-  margin-top: -35px;
-  margin-left: -15px;
-  margin-right: 15px;
-}
 
-::v-deep .capitalize-first-letter {
-  display: block;
+.detail-pop-up{
+  padding-top: 2%;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 #show {
@@ -351,6 +348,8 @@ en:
   component:
     area:
       title: Area
+      add: Description of the area
+      update: Update Area
       delete: Delete area
       details:
         uri: URI
@@ -363,6 +362,8 @@ fr:
   component:
     area:
       title: Zone
+      add: Description de la zone
+      update: Mise à jour de la zone
       delete: Supprimer la zone
       details:
         uri: URI

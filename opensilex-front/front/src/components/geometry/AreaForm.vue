@@ -53,6 +53,7 @@
         helpMessage="AreaForm.description-help"
         label="AreaForm.description"
         placeholder="AreaForm.description-placeholder"
+        @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
   </b-form>
 </template>

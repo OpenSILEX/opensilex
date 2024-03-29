@@ -33,6 +33,9 @@ public class DocumentCreationDTO extends DocumentDTO {
         model.setSubject(getSubject());
         model.setDeprecated(Boolean.toString(getDeprecated()));
         model.setSource(getSource());
+        model.setHasVariables(getHasVariables());
+        model.setFirstElementDate(getFirstElementDate());
+        model.setLastElementDate(getLastElementDate());
         return model;
     }
 

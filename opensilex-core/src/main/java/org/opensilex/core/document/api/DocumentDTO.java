@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +61,42 @@ public abstract class DocumentDTO {
     protected String description;
 
     protected URI source;
+    protected List<URI> hasVariables;
+
+    @JsonProperty("first_element_date")
+    protected LocalDate firstElementDate;
+
+    @JsonProperty("last_element_date")
+    protected LocalDate lastElementDate;
 
     @JsonProperty("keywords")
     protected List<String> subject = new ArrayList<>();
     
-    protected boolean deprecated;  
+    protected boolean deprecated;
+
+    public List<URI> getHasVariables() {
+        return hasVariables;
+    }
+
+    public void setHasVariables(List<URI> hasVariables) {
+        this.hasVariables = hasVariables;
+    }
+
+    public LocalDate getFirstElementDate() {
+        return firstElementDate;
+    }
+
+    public void setFirstElementDate(LocalDate firstElementDate) {
+        this.firstElementDate = firstElementDate;
+    }
+
+    public LocalDate getLastElementDate() {
+        return lastElementDate;
+    }
+
+    public void setLastElementDate(LocalDate lastElementDate) {
+        this.lastElementDate = lastElementDate;
+    }
     
     @ApiModelProperty(example = "http://opensilex.dev/set/documents#ProtocolExperimental")
     public URI getUri() {

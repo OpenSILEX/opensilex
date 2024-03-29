@@ -16,6 +16,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -112,6 +113,54 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     URI source;
     public static final String SOURCE_FIELD = "source";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasVariable"
+    )
+    List<URI> hasVariables;
+
+    public static final String HASVARIABLE_FIELD = "hasVariable";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "firstElementDate",
+            required = true
+    )
+    LocalDate firstElementDate;
+    public static final String FIRST_ELEMENT_DATE_FIELD = "firstElementDate";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "lastElementDate"
+    )
+    LocalDate lastElementDate;
+
+    public static final String LAST_ELEMENT_DATE_FIELD = "lastElementDate";
+
+
+    public List<URI> getHasVariables() {
+        return hasVariables;
+    }
+
+    public void setHasVariables(List<URI> hasVariables) {
+        this.hasVariables = hasVariables;
+    }
+
+    public LocalDate getFirstElementDate() {
+        return firstElementDate;
+    }
+
+    public void setFirstElementDate(LocalDate firstElementDate) {
+        this.firstElementDate = firstElementDate;
+    }
+
+    public LocalDate getLastElementDate() {
+        return lastElementDate;
+    }
+
+    public void setLastElementDate(LocalDate lastElementDate) {
+        this.lastElementDate = lastElementDate;
+    }
     public List<URI> getTargets() {
         return targets;
     }

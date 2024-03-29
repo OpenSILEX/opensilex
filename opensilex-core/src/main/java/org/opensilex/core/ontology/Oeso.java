@@ -176,7 +176,14 @@ public class Oeso {
     public static final Resource Document = Ontology.resource(NS, "Document");
     public static final Property hasAuthor = Ontology.property(NS, "hasAuthor");
     public static final Resource Datafile = Ontology.resource(NS, "Datafile");
-    
+
+    public static final Property hasVariable = Ontology.property(NS, "hasVariable");
+
+    public static final Property firstElementDate = Ontology.property(NS, "firstElementDate");
+
+    public static final Property lastElementDate = Ontology.property(NS, "lastElementDate");
+
+
      // ---- DEVICES ----
     public static final Resource Device = Ontology.resource(NS, "Device");
     public static final Property hasBrand = Ontology.property(NS, "hasBrand");

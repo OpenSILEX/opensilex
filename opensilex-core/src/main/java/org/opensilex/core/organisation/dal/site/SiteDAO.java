@@ -201,7 +201,7 @@ public class SiteDAO {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception If any other problem occurs
      */
-    public SiteModel create(SiteModel siteModel, AccountModel user) throws Exception {
+    public SiteModel create(SiteModel siteModel, Geometry geometry, AccountModel user) throws Exception {
         validateSiteFacilityAddress(siteModel, user);
 
         if (!user.isAdmin()) {
@@ -227,7 +227,7 @@ public class SiteDAO {
         siteModel.setOrganizations(organizations);
         sparql.create(siteModel);
 
-        createSiteGeospatialModel(siteModel);
+        createSiteGeospatialModel(siteModel, geometry);
 
         return siteModel;
     }
@@ -242,7 +242,7 @@ public class SiteDAO {
      * @return The site
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public SiteModel update(SiteModel siteModel, AccountModel accountModel) throws Exception {
+    public SiteModel update(SiteModel siteModel, Geometry geometry, AccountModel accountModel) throws Exception {
         validateSiteAccess(siteModel.getUri(), accountModel);
         validateSiteFacilityAddress(siteModel, accountModel);
 
@@ -258,8 +258,8 @@ public class SiteDAO {
             throw new NotFoundException("Site URI not found : " + siteModel.getUri());
         }
 
-        deleteSiteGeospatialModel(existingModel);
-        createSiteGeospatialModel(siteModel);
+        deleteSiteGeospatialModel(existingModel.getUri());
+        createSiteGeospatialModel(siteModel, geometry);
 
         sparql.deleteByURI(sparql.getDefaultGraph(SiteModel.class), existingModel.getUri());
         sparql.create(siteModel);
@@ -279,38 +279,30 @@ public class SiteDAO {
 
         SiteModel siteModel = sparql.getByURI(SiteModel.class, uri, account.getLanguage());
 
-        deleteSiteGeospatialModel(siteModel);
+        deleteSiteGeospatialModel(siteModel.getUri());
 
         sparql.delete(SiteModel.class, uri);
     }
 
-    protected void deleteSiteGeospatialModel(SiteModel siteModel) throws Exception {
-        if (siteModel.getAddress() == null) {
-            return;
+    protected void deleteSiteGeospatialModel(URI siteURI) {
+        if (this.geospatialDAO.getGeometryByURI(siteURI, addressGraphURI) != null) {
+            this.geospatialDAO.delete(siteURI, addressGraphURI);
         }
-
-        if (this.geospatialDAO.getGeometryByURI(siteModel.getUri(), addressGraphURI) != null) {
-            this.geospatialDAO.delete(siteModel.getUri(), addressGraphURI);
-        }
-
-        sparql.delete(SiteAddressModel.class, siteModel.getAddress().getUri());
     }
 
-    protected void createSiteGeospatialModel(SiteModel site) {
-        if (site.getAddress() == null) {
+    protected void createSiteGeospatialModel(SiteModel site, Geometry geometry) {
+        if (site.getAddress() == null && Objects.isNull(geometry)) {
+            deleteSiteGeospatialModel(site.getUri());
             return;
         }
+        if (Objects.isNull(geometry)) {
+            SiteAddressDTO addressDto = new SiteAddressDTO();
+            addressDto.fromModel(site.getAddress());
 
-        SiteAddressDTO addressDto = new SiteAddressDTO();
-        addressDto.fromModel(site.getAddress());
-
-        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
-
-        if (geom == null) {
-            return;
+            geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
         }
 
-        this.geospatialDAO.create(new GeospatialModel(site, addressGraphURI, geom));
+        this.geospatialDAO.create(new GeospatialModel(site, addressGraphURI, geometry));
     }
 
     /**

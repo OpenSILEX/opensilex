@@ -1,6 +1,8 @@
 package org.opensilex.core.organisation.api.site;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.organisation.api.OrganizationAPI;
 import org.opensilex.core.organisation.dal.site.SiteDAO;
@@ -103,6 +105,51 @@ public class SiteAPI {
     }
 
     @GET
+    @Path("search_sites_with_geometry")
+    @ApiOperation("Search all sites with geometry")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetListDTO.class, responseContainer = "List")
+    })
+    public Response searchSitesWithGeometry(
+            @ApiParam(value = "Regex pattern for filtering sites by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of organizations of the sites to filter") @QueryParam("organizations") List<URI> organizations,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number") @QueryParam("page") int page,
+            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+    ) throws Exception {
+        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
+
+        SiteSearchFilter filter = (SiteSearchFilter) new SiteSearchFilter()
+                .setNamePattern(pattern)
+                .setUser(currentUser)
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        ListWithPagination<SiteModel> siteModels = siteDAO.search(filter);
+
+        List<SiteGetListDTO> siteDtos = siteModels.getList().stream()
+                .map(siteModel -> {
+                    SiteGetListDTO siteDto = new SiteGetListDTO();
+                    siteDto.fromModel(siteModel);
+                    try {
+                        siteDto.fromGeospatialModel(siteDAO.getSiteGeospatialModel(siteDto.getUri()));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    return siteDto;
+                }).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(siteDtos).getResponse();
+    }
+
+    @GET
     @Path("{uri}")
     @ApiOperation("Get a site")
     @ApiProtected
@@ -174,7 +221,10 @@ public class SiteAPI {
 
             SiteModel created = siteCreationDto.newModel();
             created.setPublisher(currentUser.getUri());
-            created = siteDAO.create(created, currentUser);
+            created = siteDAO.create(
+                    created,
+                    Objects.isNull(siteCreationDto.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(siteCreationDto.getGeometry()),
+                    currentUser);
 
             return new CreatedUriResponse(created.getUri()).getResponse();
 
@@ -208,7 +258,10 @@ public class SiteAPI {
 
         SiteModel siteModel = siteUpdateDTO.newModel();
 
-        SiteModel updated = siteDAO.update(siteModel, currentUser);
+        SiteModel updated = siteDAO.update(
+                siteModel,
+                Objects.isNull(siteUpdateDTO.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(siteUpdateDTO.getGeometry()),
+                currentUser);
 
         return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
     }

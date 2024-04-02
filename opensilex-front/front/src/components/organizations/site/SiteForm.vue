@@ -2,71 +2,77 @@
   <b-form>
     <!-- URI -->
     <opensilex-UriForm
-        :uri.sync="form.uri"
-        label="OntologyObjectForm.uri-label"
-        helpMessage="component.common.uri-help-message"
-        :editMode="editMode"
-        :generated.sync="uriGenerated"
+      :uri.sync="form.uri"
+      label="OntologyObjectForm.uri-label"
+      helpMessage="component.common.uri-help-message"
+      :editMode="editMode"
+      :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
     <!-- Name -->
     <opensilex-InputForm
-        :value.sync="form.name"
-        label="component.common.name"
-        type="text"
-        :required="true"
-        placeholder="OntologyObjectForm.form-name-placeholder"
+      :value.sync="form.name"
+      label="component.common.name"
+      type="text"
+      :required="true"
+      placeholder="OntologyObjectForm.form-name-placeholder"
     ></opensilex-InputForm>
 
     <!-- Organizations -->
     <opensilex-OrganizationSelector
-        ref="organizationSelector"
-        label="SiteForm.organizations"
-        :organizations.sync="form.organizations"
-        :multiple="true"
-        :required="true"
+      ref="organizationSelector"
+      label="SiteForm.organizations"
+      :organizations.sync="form.organizations"
+      :multiple="true"
+      :required="true"
     ></opensilex-OrganizationSelector>
 
     <!-- Facilities -->
     <opensilex-FacilitySelector
-        label="SiteForm.facilities"
-        :facilities.sync="form.facilities"
-        :multiple="true"
+      label="SiteForm.facilities"
+      :facilities.sync="form.facilities"
+      :multiple="true"
     ></opensilex-FacilitySelector>
 
     <!-- Groups -->
     <opensilex-GroupSelector
-        label="SiteForm.groups"
-        :groups.sync="form.groups"
-        :multiple="true"
+      label="SiteForm.groups"
+      :groups.sync="form.groups"
+      :multiple="true"
     ></opensilex-GroupSelector>
+
+    <!-- Geometry -->
+    <opensilex-GeometryForm
+      :value.sync="form.geometry"
+      label="component.common.geometry"
+      helpMessage="component.common.geometry-help"
+    >
+    </opensilex-GeometryForm>
 
     <!-- Address toggle -->
     <b-form-checkbox
-        v-model="hasAddress"
-        :value="true"
-        :unchecked-value="false"
-        @change="onAddressToggled"
-        switches
-    >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
+      v-model="hasAddress"
+      :value="true"
+      :unchecked-value="false"
+      @change="onAddressToggled"
+      switches
+      >{{ $t("FacilityForm.toggleAddress") }}</b-form-checkbox
+    >
 
     <!-- Address -->
-    <opensilex-AddressForm
-        :address.sync="form.address"
-    >
-    </opensilex-AddressForm>
+    <opensilex-AddressForm :address.sync="form.address"> </opensilex-AddressForm>
   </b-form>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import OrganizationSelector from "../OrganizationSelector.vue";
-import {SiteCreationDTO} from 'opensilex-core/index';
+import { SiteCreationDTO } from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
+import { OrganizationsService } from "opensilex-core/api/organizations.service";
+import { SiteUpdateDTO } from "opensilex-core/model/siteUpdateDTO";
 
 @Component
 export default class SiteForm extends Vue {
@@ -75,11 +81,11 @@ export default class SiteForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
   uriGenerated = true;
 
-  @Prop({default: false})
+  @Prop({ default: false })
   editMode: boolean;
 
   @Prop({
-    default: SiteForm.getEmptyForm()
+    default: SiteForm.getEmptyForm(),
   })
   form: SiteCreationDTO;
   hasAddress: boolean;
@@ -96,9 +102,10 @@ export default class SiteForm extends Vue {
       uri: undefined,
       rdf_type: undefined,
       name: undefined,
+      geometry: undefined,
       address: undefined,
       organizations: [],
-      groups: []
+      groups: [],
     };
   }
 
@@ -117,52 +124,45 @@ export default class SiteForm extends Vue {
   }
 
   onAddressToggled() {
-    this.form.address = this.hasAddress
-        ? {}
-        : undefined;
+    this.form.address = this.hasAddress ? {} : undefined;
   }
 
   create(form: SiteCreationDTO) {
     return this.$opensilex
-        .getService<OrganizationsService>("opensilex.OrganizationsService")
-        .createSite(form)
-        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          let uri = http.response.result;
-          console.debug("Site facility created", uri);
-          form.uri = uri;
-          return form;
-        })
-        .catch((error) => {
-          if (error.status == 409) {
-            console.error("Site already exists", error);
-            this.$opensilex.errorHandler(
-                error,
-                this.$t("SiteForm.siteAlreadyExists")
-            );
-          } else {
-            this.$opensilex.errorHandler(error);
-          }
-        });
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .createSite(form)
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+        let uri = http.response.result;
+        console.debug("Site facility created", uri);
+        form.uri = uri;
+        return form;
+      })
+      .catch((error) => {
+        if (error.status == 409) {
+          console.error("Site already exists", error);
+          this.$opensilex.errorHandler(error, this.$t("SiteForm.siteAlreadyExists"));
+        } else {
+          this.$opensilex.errorHandler(error);
+        }
+      });
   }
 
   update(form: SiteUpdateDTO) {
     delete form.rdf_type_name;
     console.log(form);
     return this.$opensilex
-        .getService<OrganizationsService>("opensilex.OrganizationsService")
-        .updateSite(form)
-        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          let uri = http.response.result;
-          console.debug("Site updated", uri);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .updateSite(form)
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+        let uri = http.response.result;
+        console.debug("Site updated", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
 
 <i18n>
 en:

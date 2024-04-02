@@ -8,6 +8,10 @@
  ******************************************************************************/
 package org.opensilex.core.organisation.api.site;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.geojson.GeoJsonObject;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -25,12 +29,23 @@ import java.util.stream.Collectors;
 public class SiteGetListDTO extends SiteDTO {
     protected List<URI> organizations;
 
+    protected GeoJsonObject geometry;
+
+
     public List<URI> getOrganizations() {
         return organizations;
     }
 
     public void setOrganizations(List<URI> organizations) {
         this.organizations = organizations;
+    }
+
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     @Override
@@ -42,6 +57,12 @@ public class SiteGetListDTO extends SiteDTO {
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList())
             );
+        }
+    }
+
+    public void fromGeospatialModel(GeospatialModel geospatialModel) throws JsonProcessingException {
+        if (geospatialModel != null) {
+            setGeometry(GeospatialDAO.geometryToGeoJson(geospatialModel.getGeometry()));
         }
     }
 }

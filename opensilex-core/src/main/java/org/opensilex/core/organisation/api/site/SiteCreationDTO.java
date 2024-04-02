@@ -1,7 +1,9 @@
 package org.opensilex.core.organisation.api.site;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
@@ -28,6 +30,9 @@ public class SiteCreationDTO extends SiteDTO {
 
     protected List<URI> groups;
 
+    @JsonProperty("geometry")
+    protected GeoJsonObject geometry;
+
     public SiteAddressDTO getAddress() {
         return address;
     }
@@ -50,6 +55,14 @@ public class SiteCreationDTO extends SiteDTO {
 
     public void setFacilities(List<URI> facilities) {
         this.facilities = facilities;
+    }
+
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     public List<URI> getGroups() {

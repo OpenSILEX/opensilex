@@ -69,6 +69,9 @@ export default class CSVInputFile extends Vue {
     this.inputFile.$el.childNodes[0].click();
   }
   fileUpdated(file): any {
+    if (!file) {
+      return;
+    }
     this.$opensilex.showLoader();
     this.$nextTick(() => {
       this.readUploadedFileAsText(file).then((text) => {

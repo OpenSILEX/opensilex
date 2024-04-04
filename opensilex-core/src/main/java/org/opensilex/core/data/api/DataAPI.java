@@ -310,7 +310,6 @@ public class DataAPI {
         //Or/And scientific objects associated with passed germplasms
         if(germplasmGroup!=null || !CollectionUtils.isEmpty(germplasmUris)){
             ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-            Set<URI> finalTargetsFilter = new HashSet<>(targets);
             //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
             ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
             List<URI> includedExperimentsForTargetsSearch = experiments;
@@ -323,9 +322,12 @@ public class DataAPI {
                 includedExperimentsForTargetsSearch = experimentDAO.search(experimentSearchFilter).getList().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             }
 
-            List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
-                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, germplasmUris);
-            finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
+            List<URI> targetsAssociatedWithGermplasms = scientificObjectDAO
+                    .getScientificObjectUrisAssociatedWithGermplasms(includedExperimentsForTargetsSearch, germplasmGroup, germplasmUris);
+            Set<URI> finalTargetsFilter = new HashSet<>(targetsAssociatedWithGermplasms);
+            if(!targets.isEmpty()){
+                finalTargetsFilter.retainAll(targets);
+            }
             targets = new ArrayList<>(finalTargetsFilter);
             //if targets is still empty when a group was passed then we don't want any data to be returned
             if(targets.isEmpty()){

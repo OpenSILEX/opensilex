@@ -48,7 +48,6 @@ export default class GermplasmCreate extends Vue {
   selectedType: string = null;
   tabulatorRefresh = 0;
 
-  @Ref("germplasmTable") readonly germplasmTable!: any;
   @Ref("helpModal") readonly helpModal!: any;
 
   get user() {
@@ -110,10 +109,7 @@ export default class GermplasmCreate extends Vue {
   }
 
   refreshTable() {
-    let germplasmTable: any = this.germplasmTable;
-    console.log(this.selectedType);    
     this.tabulatorRefresh++;
-    germplasmTable.updateColumns();
   }
   
   hide() {

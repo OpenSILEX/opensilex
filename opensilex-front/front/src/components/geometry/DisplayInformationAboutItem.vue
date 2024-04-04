@@ -1,6 +1,6 @@
 <template>
   <div v-if="item">
-    <div v-if="item.properties.nature === 'Area'">
+    <div v-if="item.properties.nature === 'Areas'">
       <opensilex-AreaDetails
           :showName="showName"
           :experiment="experiment"
@@ -8,13 +8,13 @@
           :withBasicProperties="false"
       />
     </div>
-    <div v-if="item.properties.nature === 'Device'">
+    <div v-if="item.properties.nature === 'Devices'">
       <opensilex-DeviceDetailsMap
           :selected="item.properties"
           :showName="showName"
       />
     </div>
-    <div v-if="(item.properties.nature === 'ScientificObjects') && detailsSO">
+    <div v-if="(item.properties.nature === 'Scientific Objects') && detailsSO">
       <template v-if="withBasicProperties">
         <opensilex-ScientificObjectDetailMap
             v-if="item.properties.OS"
@@ -65,4 +65,10 @@ p {
   font-size: 115%;
   margin-top: 1em;
 }
+
+::v-deep .field-view-title{
+  min-width: auto;
+  padding-right: 1rem;
+}
+
 </style>

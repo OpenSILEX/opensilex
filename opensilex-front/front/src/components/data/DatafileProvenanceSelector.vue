@@ -76,7 +76,7 @@ export default class DatafileProvenanceSelector extends Vue {
   viewHandlerDetailsVisible: boolean;
 
   refresh() {
-    this.selectForm.refresh();
+    this.formSelector.refresh();
   }
 
   select(value) {

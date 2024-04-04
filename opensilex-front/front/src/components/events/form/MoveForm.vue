@@ -128,8 +128,8 @@
         }
 
         handleSubmitError(){
-            if(!this.form.to && (Object.values(this.form.targets_positions[0].position).every(value => !value))){
-                  this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString()); 
+            if(!this.form.to && !this.form.targets_positions[0]){
+                this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString()); 
             }
         }
     }

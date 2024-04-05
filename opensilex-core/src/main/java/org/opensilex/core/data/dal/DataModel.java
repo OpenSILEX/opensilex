@@ -29,7 +29,11 @@ public class DataModel extends MongoModel {
     
     private DataProvenanceModel provenance;
 
+    public static final String PROVENANCE_FIELD = "provenance";
+
     private Instant date;
+
+    public static final String DATE_FIELD = "date";
     
     private Boolean isDateTime;
     
@@ -42,9 +46,14 @@ public class DataModel extends MongoModel {
     
     private List<Object> rawData;
     
-    private Float confidence = null;
+    private Float confidence;
+
+    public static final String CONFIDENCE_FIELD = "confidence";
+
 
     private Document metadata;
+
+    public static final String METADATA_FIELD = "metadata";
 
     public URI getTarget() {
         return target;

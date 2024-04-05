@@ -51,6 +51,9 @@ public class MongoLogger {
     public static final String TIMEOUT_MS = "timeout_ms";
 
     public static final String MONGO_CREATE_INDEX_LOG_MSG = "create_index";
+    public static final String COMMAND_TYPE = "server_command";
+    public static final String COMMAND_NAME_FIELD = "command_name";
+
 
 
 
@@ -218,12 +221,32 @@ public class MongoLogger {
      * @param value value to write inside log entry
      */
     public void logOperationError(String type, String message, String key, Object value){
-
         if(key != null){
-            logger.info(DEFAULT_MESSAGE_FORMAT,  kv(LOG_TYPE_KEY, type), STATUS_ERROR_LOG_ARG, kv(LOG_ERROR_MESSAGE_KEY, message), kv(key, value));
+            logger.error(DEFAULT_MESSAGE_FORMAT,  kv(LOG_TYPE_KEY, type), STATUS_ERROR_LOG_ARG, kv(LOG_ERROR_MESSAGE_KEY, message), kv(key, value));
         }else{
-            logger.info(DEFAULT_MESSAGE_FORMAT,  kv(LOG_TYPE_KEY, type), STATUS_ERROR_LOG_ARG, kv(LOG_ERROR_MESSAGE_KEY, message));
-
+            logger.error(DEFAULT_MESSAGE_FORMAT,  kv(LOG_TYPE_KEY, type), STATUS_ERROR_LOG_ARG, kv(LOG_ERROR_MESSAGE_KEY, message));
         }
     }
+
+    /**
+     * Write a log entry with ERROR level with the following key/value :
+     * <ul>
+     *     <li>type: the value of {@code type} param </li>
+     *     <li>status: ERROR</li>
+     *     <li>message: {@code message}
+     *     <li>{@code key}: {@code value}</li>
+     * </ul>
+     * @param type the type of the operation
+     * @param message the error message
+     * @param key key to write inside log entry
+     * @param value value to write inside log entry
+     */
+    public void logOperationError(String type,String key, Object value, String key2, Object value2) {
+        if(collectionLogArgument != null){
+            logger.error(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(key, value), kv(key2, value2));
+        }else{
+            logger.error(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(key, value), kv(key2, value2));
+        }
+    }
+
 }

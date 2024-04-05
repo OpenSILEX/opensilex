@@ -8,7 +8,7 @@
 		    min-width: 30px;
 		    text-align: center;
 		    height: 30px;
-		    padding: 6px 0px;
+		    padding: 6px 6px;
 		    border: none;
 		    background-color: #eaeaea;
 		    color: #3e5569;
@@ -24,5 +24,11 @@
 				color: $white;
 			}
 		}
+	}
+
+	.page-link:hover {
+		background-color: #018371;
+		color: $white;
+		transition: all .2s ease-in-out;
 	}
 }

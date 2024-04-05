@@ -47,7 +47,7 @@ import static org.opensilex.utils.LogFilter.*;
  * with the following features :
  * <ul>
  *     <li>Initialization of the {@link MongoClient} according the provided {@link MongoDBConfig}</li>
- *     <li>Mongo Index management with {@link #registerIndex(String, Bson, IndexOptions)} and {@link #createIndexes()} methods </li>
+ *     <li>Mongo Index management with {@link #createIndex(String, Bson, IndexOptions)} and {@link #create()} methods </li>
  *     <li>Transaction management with {@link #computeTransaction(Function)}, {@link #runTransaction(Consumer)}, {@link #runThrowingTransaction(ThrowingConsumer)} and {@link #computeThrowingTransaction(ThrowingFunction)}</li>
  * </ul>
  *
@@ -67,27 +67,10 @@ public class MongoDBServiceV2 extends BaseService {
     private MongoDatabase db;
     private URI generationPrefixURI;
 
-    // Register each index which must be created by collection
-    private static final Map<String, Map<Bson,IndexOptions>> INDEXES_BY_COLLECTION = new HashMap<>();
-
     public MongoDBServiceV2(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         mongoLogger = new MongoLogger(null, LOGGER);
-    }
-
-    /**
-     * Register the creation of some MongoDB index
-     * @param collectionName Name of the MongoDB collection on which create index (required)
-     * @param indexKeys The index key (created with {@link com.mongodb.client.model.Indexes} (required)
-     * @param indexOptions Specific Index option (Can be null)
-     * @see com.mongodb.client.model.Indexes
-     * @see IndexOptions
-     */
-    public static void registerIndex(String collectionName, Bson indexKeys, IndexOptions indexOptions){
-        Objects.requireNonNull(collectionName);
-        Objects.requireNonNull(indexKeys);
-        INDEXES_BY_COLLECTION.computeIfAbsent(collectionName, newKey -> new HashMap<>()).put(indexKeys, indexOptions);
     }
 
     @Override
@@ -130,24 +113,6 @@ public class MongoDBServiceV2 extends BaseService {
             mongoClient.close();
             throw e;
         }
-        createIndexes();
-    }
-
-    public void createIndexes(){
-        INDEXES_BY_COLLECTION.forEach((collectionName, indexes) -> {
-            MongoCollection<?> collection = db.getCollection(collectionName);
-            indexes.forEach((indexKeys, indexOption) -> {
-
-                Instant operationStart = mongoLogger.logOperationStart(MONGO_CREATE_INDEX_LOG_MSG, COLLECTION, collection, INDEX, indexKeys);
-                if(indexOption != null){
-                    collection.createIndex(indexKeys, indexOption);
-                }else{
-                    collection.createIndex(indexKeys);
-                }
-                mongoLogger.logOperationOk(MONGO_CREATE_INDEX_LOG_MSG, operationStart, COLLECTION, collection, INDEX, indexKeys);
-            });
-        });
-
     }
 
     /**
@@ -291,5 +256,45 @@ public class MongoDBServiceV2 extends BaseService {
             clientBuilder.credential(mongoCredentials);
         }
         return MongoClients.create(clientBuilder.build());
+    }
+
+
+    public void createIndexes(String collectionName, Map<Bson,IndexOptions> indexes){
+        Objects.requireNonNull(indexes);
+        indexes.forEach((indexKeys, indexOptions) -> createIndex(collectionName, indexKeys, indexOptions));
+    }
+
+    /**
+     * Register the creation of some MongoDB index
+     * @param collectionName Name of the MongoDB collection on which create index (required)
+     * @param indexKeys The index key (created with {@link com.mongodb.client.model.Indexes} (required)
+     * @param indexOptions Specific Index option (Can be null)
+     * @see com.mongodb.client.model.Indexes
+     * @see IndexOptions
+     * @throws MongoCommandException if an error occurs during index creation. If the index already exists
+     */
+    public void createIndex(String collectionName, Bson indexKeys, IndexOptions indexOptions) throws MongoCommandException{
+
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(indexKeys);
+        MongoCollection<?> collection = db.getCollection(collectionName);
+
+        Instant operationStart = mongoLogger.logOperationStart(MONGO_CREATE_INDEX_LOG_MSG, COLLECTION, collection, INDEX, indexKeys);
+        try {
+            // Ensure index is build on background in order to preserve server availability
+            if(indexOptions != null){
+                collection.createIndex(indexKeys, indexOptions.background(true));
+            }else{
+                collection.createIndex(indexKeys, new IndexOptions().background(true));
+            }
+            mongoLogger.logOperationOk(MONGO_CREATE_INDEX_LOG_MSG, operationStart, COLLECTION, collection, INDEX, indexKeys);
+        }catch (MongoCommandException e){
+
+            // It's OK if index already exists -> https://www.mongodb.com/docs/manual/reference/error-codes/ : 86 IndexKeySpecsConflict
+            if(e.getErrorCode() != 86){
+                mongoLogger.logOperationError(MONGO_CREATE_INDEX_LOG_MSG, COLLECTION, collection, INDEX, indexKeys);
+                throw e;
+            }
+        }
     }
 }

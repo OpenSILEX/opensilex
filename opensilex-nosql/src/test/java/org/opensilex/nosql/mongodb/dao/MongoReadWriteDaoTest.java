@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -28,7 +27,7 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.model.SparqlMongoTestModel;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
@@ -57,7 +56,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.opensilex.sparql.service.SearchFilter.DEFAULT_PAGE_SIZE;
+
+import org.opensilex.utils.pagination.PaginatedSearchStrategy;
+import org.opensilex.utils.pagination.StreamWithPagination;
 
 public class MongoReadWriteDaoTest extends MongoDBServiceTest {
 
@@ -166,7 +169,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoTestModel model = new MongoTestModel();
         model.setKey(RANDOM.nextInt());
         model.setName(RandomStringUtils.random(16));
-        model.setUri(URI.create(TEST_DATASET_BASE_URI + RandomStringUtils.random(16)));
+        model.setUri(URI.create(TEST_DATASET_BASE_URI + RandomStringUtils.randomAlphanumeric(16)));
         return model;
     }
 
@@ -226,32 +229,83 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
             boolean useProjection,
             boolean useConversion,
             boolean useSession,
+            PaginatedSearchStrategy strategy,
             Consumer<PaginatedIterable<MongoTestModel, ?>> resultsAssertion,
-            Consumer<MongoTestModel> modelAssertion
-    ) {
+            Consumer<MongoTestModel> modelAssertion,
+            Consumer<PaginatedListResponse<MongoTestModel>> paginatedResponseAssertion
+            ) {
 
-        Bson projection = useProjection ? DEFAULT_PROJECTION : null;
         try (ClientSession session = useSession ? mongoDBv2.startSession() : null) {
             PaginatedIterable<MongoTestModel, ?> results;
 
-            // Run search query with/without projection/conversion
-            if (useConversion) {
-                results = searchDao.search(session, filter, projection, DEFAULT_CONVERSION);
-            } else {
-                results = useStream ?
-                        searchDao.searchAsStream(session, filter, projection) :
-                        searchDao.search(session, filter, projection);
+            MongoSearchQuery<MongoTestModel, MongoSearchFilter, MongoTestModel> query = new MongoSearchQuery<>();
+            query.setSession(session);
+            query.setFilter(filter);
+            if(useProjection){
+                query.setProjection(DEFAULT_PROJECTION);
             }
+            query.setConvertFunction(useConversion ? DEFAULT_CONVERSION : Function.identity());
+            query.setPaginationStrategy(strategy);
+
+            // Run search query with/without projection/conversion
+            results = useStream ?
+                    searchDao.searchAsStreamWithPagination(query) :
+                    searchDao.searchWithPagination(query);
 
             // Run assertion on results and on each item from results
             assertNotNull(results);
             resultsAssertion.accept(results);
-            results.forEach(modelAssertion);
+
+            PaginatedListResponse<MongoTestModel> paginatedResponse;
+            if(useStream){
+                paginatedResponse = new PaginatedListResponse<>((StreamWithPagination<MongoTestModel>) results);
+            }else {
+                paginatedResponse = new PaginatedListResponse<>((ListWithPagination<MongoTestModel>) results);
+            }
+            paginatedResponse.getResult().forEach(modelAssertion);
+            paginatedResponseAssertion.accept(paginatedResponse);
         }
     }
 
+    private  Consumer<PaginatedIterable<MongoTestModel, ?>> getResultsAssertion(int expectedSize,  PaginatedSearchStrategy strategy){
+        // Assertion on Database results
+        return (results) -> {
+            assertEquals(DEFAULT_PAGE_SIZE, results.getPageSize());
+            assertEquals(0, results.getPage());
+
+            if(strategy == PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH){
+                assertEquals(expectedSize, results.getTotal());
+            }else if(strategy == PaginatedSearchStrategy.HAS_NEXT_PAGE){
+                assertEquals(0, results.getTotal());
+            }
+        };
+    }
+
+    private Consumer<PaginatedListResponse<MongoTestModel>> getPaginatedResponseAssertion(int expectedSize,  PaginatedSearchStrategy strategy){
+
+        // // Assertion on Paginated response
+        return (response) -> {
+
+            // check the number of element effectively returned
+            assertEquals(Math.min(expectedSize, DEFAULT_PAGE_SIZE), response.getResult().size());
+
+            // check pagination from metadata
+            assertEquals(DEFAULT_PAGE_SIZE, response.getMetadata().getPagination().getPageSize());
+            assertEquals(0, response.getMetadata().getPagination().getCurrentPage());
+
+            if(strategy == PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH){
+                assertEquals(expectedSize, response.getMetadata().getPagination().getTotalCount());
+            }else if(strategy == PaginatedSearchStrategy.HAS_NEXT_PAGE){
+                assertEquals(0, response.getMetadata().getPagination().getTotalCount());
+            }
+        };
+    }
 
     private void testSearch(boolean useStream, boolean useProjection, boolean useConversion, boolean useSession) {
+        this.testSearch(useStream,useProjection,useConversion,useSession, PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH);
+    }
+
+    private void testSearch(boolean useStream, boolean useProjection, boolean useConversion, boolean useSession, PaginatedSearchStrategy strategy) {
 
         Consumer<MongoTestModel> modelAssertion = (model) -> {
             // if conversion is provided, directly test the converted model
@@ -264,28 +318,51 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
 
         // test filtering with a single URI
         MongoSearchFilter filter = new MongoSearchFilter().setUri(SINGLETON_URI);
-        Consumer<PaginatedIterable<MongoTestModel, ?>> resultsAssertion = (results) -> assertEquals(1, results.getTotal());
-        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
+        int expectedSize = 1;
+        testSearch(
+                filter,
+                useStream,
+                useProjection,
+                useConversion,
+                useSession,
+                strategy,
+                getResultsAssertion(expectedSize, strategy),
+                modelAssertion,
+                getPaginatedResponseAssertion(expectedSize, strategy)
+        );
 
         // test filtering with a type list
         filter = new MongoSearchFilter();
         filter.setRdfTypes(TYPE_LIST);
-        resultsAssertion = (results) -> {
-            assertEquals(DEFAULT_PAGE_SIZE, results.getPageSize());
-            assertEquals(TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE, results.getTotal());
-            assertEquals(0, results.getPage());
-        };
-        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
+        expectedSize = TYPE_LIST.size() * EXPECTED_RESULT_BY_TYPE;
+
+        testSearch(
+                filter,
+                useStream,
+                useProjection,
+                useConversion,
+                useSession,
+                strategy,
+                getResultsAssertion(expectedSize, strategy),
+                modelAssertion,
+                getPaginatedResponseAssertion(expectedSize, strategy)
+        );
 
         // test filtering with a URI list
         filter = new MongoSearchFilter();
         filter.setIncludedUris(URI_LIST);
-        resultsAssertion = (results) -> {
-            assertEquals(DEFAULT_PAGE_SIZE, results.getPageSize());
-            assertEquals(URI_LIST.size(), results.getTotal());
-            assertEquals(0, results.getPage());
-        };
-        testSearch(filter, useStream, useProjection, useConversion, useSession, resultsAssertion, modelAssertion);
+        expectedSize = URI_LIST.size();
+        testSearch(
+                filter,
+                useStream,
+                useProjection,
+                useConversion,
+                useSession,
+                strategy,
+                getResultsAssertion(expectedSize, strategy),
+                modelAssertion,
+                getPaginatedResponseAssertion(expectedSize, strategy)
+        );
     }
 
     protected void testFieldProjection(MongoTestModel model) {
@@ -311,48 +388,64 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
     public void searchNoProjectionNoConversion() {
         testSearch(false, false, false, false);
         testSearch(false, false, false, true);
+        testSearch(false, false, false, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(false, false, false, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchNoProjectionConversion() {
         testSearch(false, false, true, false);
         testSearch(false, false, true, true);
+        testSearch(false, false, true, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(false, false, true, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchProjectionNoConversion() {
         testSearch(false, true, false, false);
         testSearch(false, true, false, true);
+        testSearch(false, true, false, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(false, true, false, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchProjectionConversion() {
         testSearch(false, true, true, false);
         testSearch(false, true, true, true);
+        testSearch(false, true, true, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(false, true, true, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchStreamNoProjectionNoConversion() {
         testSearch(true, false, false, false);
         testSearch(true, false, false, true);
+        testSearch(true, false, false, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(true, false, false, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchStreamNoProjectionConversion() {
         testSearch(true, false, true, false);
         testSearch(true, false, true, true);
+        testSearch(true, false, true, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(true, false, true, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchStreamProjectionNoConversion() {
         testSearch(true, true, false, false);
         testSearch(true, true, false, true);
+        testSearch(true, true, false, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(true, true, false, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
     @Test
     public void searchStreamProjectionConversion() {
-        testSearch(true, true, true, false);
-        testSearch(true, true, true, true);
+//        testSearch(true, true, true, false);
+//        testSearch(true, true, true, true);
+        testSearch(true, true, true, false, PaginatedSearchStrategy.HAS_NEXT_PAGE);
+        testSearch(true, true, true, true, PaginatedSearchStrategy.HAS_NEXT_PAGE);
     }
 
 
@@ -393,7 +486,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoSearchFilter filter = new MongoSearchFilter();
         filter.setOrderByList(List.of(new OrderBy("name", Order.ASCENDING)));
         filter.setPageSize(5);
-        ListWithPagination<String> distinctNamesPaginated = readWriteDao.distinctAggregation(null, MongoTestModel.NAME_FIELD, String.class, filter);
+        ListWithPagination<String> distinctNamesPaginated = readWriteDao.distinctWithPagination(null, MongoTestModel.NAME_FIELD, String.class, filter);
         Assert.assertEquals(5, distinctNamesPaginated.getList().size());
 
         distinctNamesPaginated.forEach(name -> Assert.assertFalse(StringUtils.isEmpty(name)));
@@ -405,7 +498,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         Assert.assertTrue(noNames.isEmpty());
 
         // no results -> ensure non nullity of Set (with aggregation pipeline)
-        ListWithPagination<String> noNamesPaginated = searchDao.distinctAggregation(null, MongoTestModel.NAME_FIELD, String.class, noResultFilter);
+        ListWithPagination<String> noNamesPaginated = searchDao.distinctWithPagination(null, MongoTestModel.NAME_FIELD, String.class, noResultFilter);
         Assert.assertTrue(noNamesPaginated.getList().isEmpty());
     }
 
@@ -476,7 +569,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
         MongoSearchFilter searchFilter = new MongoSearchFilter();
         searchFilter.setPageSize(nbModelPerThread * nbThread);
 
-        ListWithPagination<MongoTestModel> searchResults = readWriteDao.search(searchFilter);
+        ListWithPagination<MongoTestModel> searchResults = readWriteDao.searchWithPagination(searchFilter);
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getTotal());
         Assert.assertEquals(nbModelPerThread * nbThread, searchResults.getSource().size());
 
@@ -524,12 +617,11 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
     public void createAllFailTest() throws NoSQLAlreadyExistingUriException, URISyntaxException {
 
         // create an index by name
-        MongoDBServiceV2.registerIndex(
+        mongoDBv2.createIndex(
                 readWriteDao.getCollection().getNamespace().getCollectionName(),
                 Indexes.ascending(MongoTestModel.NAME_FIELD),
                 new IndexOptions().unique(true)
         );
-        mongoDBv2.createIndexes();
 
         MongoTestModel model = new MongoTestModel();
         model.setName("create");

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.ListWithPagination;
@@ -28,9 +27,6 @@ import java.util.Set;
  * @author sammy
  */
 public class DataGetDTO extends DataCreationDTO {
-
-    @JsonProperty("publisher")
-    private UserGetDTO publisher;
 
     @JsonProperty("issued")
     private OffsetDateTime publicationDate;
@@ -50,14 +46,6 @@ public class DataGetDTO extends DataCreationDTO {
     @Override
     public String getTimezone() {
         return timezone;
-    }
-
-    public UserGetDTO getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(UserGetDTO publisher) {
-        this.publisher = publisher;
     }
 
     public OffsetDateTime getPublicationDate() {
@@ -98,7 +86,7 @@ public class DataGetDTO extends DataCreationDTO {
      *     a {@link LocalDate} to be displayed correctly.
      * </p>
      * <p>
-     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToGetDTO(DataModel)},
      *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
      * </p>
      *
@@ -140,7 +128,7 @@ public class DataGetDTO extends DataCreationDTO {
      *     a {@link LocalDate} to be displayed correctly.
      * </p>
      * <p>
-     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToGetDTO(DataModel)},
      *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
      * </p>
      *

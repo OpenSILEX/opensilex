@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ import java.util.Objects;
  */
 @JsonPropertyOrder({"uri", "prov_used", "prov_was_associated_with", "settings"})
 public class DataProvenanceModel {
+
     @NotNull
     @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
     URI uri;
@@ -31,16 +33,26 @@ public class DataProvenanceModel {
     @ApiModelProperty(value = "experiments uris on which the data has been produced")
     List<URI> experiments;
 
+    public static final String EXPERIMENT_FIELD = "experiments";
+
     @Valid
     @JsonProperty("prov_used")
     @ApiModelProperty(value = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
 
+    public static final String PROV_USED_FIELD = "provUsed";
+
     @Valid
     @JsonProperty("prov_was_associated_with")
     @ApiModelProperty(value = "allow an activity to be linked to an agent")
     List<ProvEntityModel> provWasAssociatedWith;
-    
+
+    public static final String PROV_WAS_ASSOCIATED_WITH_FIELD = "provWasAssociatedWith";
+
+    protected static final String PROVENANCE_URI_FIELD = DataModel.PROVENANCE_FIELD + "." + MongoModel.URI_FIELD;
+    protected static final String PROVENANCE_EXPERIMENT_FIELD = DataModel.PROVENANCE_FIELD + "." + EXPERIMENT_FIELD;
+    protected static final String PROVENANCE_AGENTS_URI_FIELD = DataModel.PROVENANCE_FIELD + "." + PROV_WAS_ASSOCIATED_WITH_FIELD + "." + ProvEntityModel.URI_FIELD;
+
     @ApiModelProperty(value = "a key-value system to store specific information")
     Document settings; 
 

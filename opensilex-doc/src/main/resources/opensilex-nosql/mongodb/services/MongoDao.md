@@ -8,13 +8,6 @@ tags:
 
 # Specifications : MongoDB DAOs and Service
 
-**Document history (please add a line when you edit the document)**
-
-| Date       | Editor(s)    | OpenSILEX version | Comment           |
-|------------|--------------|-------------------|-------------------|
-| 15/12/2023 | Renaud COLIN |                   | Document creation |
-
-
 # Table of contents
 
 <!-- TOC -->
@@ -26,9 +19,10 @@ tags:
     * [Performance and reliability](#performance-and-reliability)
       * [SLA (service-level-agreement)](#sla-service-level-agreement)
 * [Solution](#solution)
-  * [Technical specifications](#technical-specifications)
-    * [Dao](#dao)
-    * [MongoDBServiceV2](#mongodbservicev2)
+  * [MongoReadWriteDao](#mongoreadwritedao)
+    * [Pagination handling](#pagination-handling)
+      * [Count limiting](#count-limiting)
+  * [MongoDBServiceV2](#mongodbservicev2)
     * [Indexes generation](#indexes-generation)
 <!-- TOC -->
 
@@ -85,10 +79,7 @@ but for these basic operations on very-small data the P99 latency should keep th
 
 # Solution
 
-
-## Technical specifications
-
-### Dao
+## MongoReadWriteDao
 
 The class diagram below describes the methods available for any MongoDB based DAO
 
@@ -106,8 +97,90 @@ filter.
 
 See [MongoDaoTutorial.md](MongoDaoTutorial.md) for example of use of Dao methods
 
+## Pagination handling
 
-### MongoDBServiceV2
+![MongoPagination.png](uml/MongoPagination.png)
+
+The `MongoReadWriteDao` handle pagination when using `searchWithPagination()` and `searchAsStreamWithPagination()`.
+These method return a `PaginatedIterable` object.
+
+- This object has a nested object which can be iterated (a `List` for `ListWithPagination`, a `Stream` for `StreamWithPagination`).
+- It also includes a `PaginationDTO` object which store the following information about pagination :
+  - `total` : The total number of element counted for this search with a count query
+  - `page` : The page number (passed to the `MongoSearchFilter` filter)
+  - `pageSize` : The page size (passed to the `MongoSearchFilter` filter)
+  - `totalPages` : The total number of pages available (total / pageSize)
+  - `limitCount` : The maximum number of counted element
+  - `hasNextPage`: Indicate if there exist a next page after the current page
+
+### Count limiting
+
+Performance issues can be encountered when the MongoDB server has to iterate over a large number of document (when using `countDocument()`)
+To deal with this, several strategy are available
+
+#### Limited Count
+
+The maximum number of counted document can be limited by providing a `CountOptions` which include a custom limit to the MongoDB `countDocuments() `method.
+To handle this, the `MongoReadDao` interface allow to specify a `CountOptions` for the following methods : 
+
+> Count
+
+```java
+long count(ClientSession session, @NotNull F filter, CountOptions countOptions) throws MongoException;
+```
+
+> Search
+
+For search methods, you just have to use `MongoSearchQuery.setCountOptions(CountOptions options)` method and to pass the `MongoSearchQuery` to the following methods : 
+
+```java
+<T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
+<T_RESULT> @NotNull StreamWithPagination<T_RESULT> searchAsStreamWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
+```
+
+#### No count
+
+You can also disable the computing of counted element, and just check if a next page exist.
+To do this you just have to use the following setter method with `PAGINATED_SEARCH_STRATEGY.HAS_NEXT_PAGE` : 
+
+```java
+MongoSearchQuery.setCountStrategy(PAGINATED_SEARCH_STRATEGY.HAS_NEXT_PAGE);
+```
+
+- By doing this, you indicate to the search method to only check if a next page exist during the request
+
+### Default behavior and how to override them
+
+#### Count
+
+- `MongoReadDao.count(F filter)` : Perform a full count of document that match the filter
+- `MongoReadDao.count(F filter, CountOptions options)` : Perform a full count of document that match the filter and use the given `CountOptions`
+
+> Redefine custom count options
+
+- Just pass a custom `CountOptions` inside the `count(session, filter, countOptions)` method
+- Override the `MongoReadWriteDao.getDefaultCountOptions(F)` method
+
+#### Search
+
+If no `CountOptions` is provided during the call to `searchWithPagination(MongoSearchQuery)` and `searchAsStreamWithPagination(MongoSearchQuery)`
+then, a default `CountOptions` is used (returned by `MongoReadWriteDao.getDefaultSearchCountOptions(F)` method).
+
+The behavior is the following :
+
+- If no `pageSize` was provided (`pageSize` == 0), then a default count limit (from MongoDB config `maxCountLimit` setting) is applied with `CountOptions.limit(limit)`
+- If the `pageSize` is inferior to the MongoDB config count limit : set a limit equals to k `pageSize`, with k equals to MongoDB config `maxPageCountLimit` setting
+  - This allows to provide a count sufficient for the desired page number 
+- Else just use the `pageSize` as count limit 
+  - This is useful in case of explicit call with a large page, e.g: for internal queries
+
+> Redefine custom count options
+
+If this semantic don't match with your requirement you can : 
+- Just pass a custom `CountOptions` inside the `MongoSearchQuery` for `searchWithPagination(MongoSearchQuery)` and `searchAsStreamWithPagination(MongoSearchQuery)`
+- Override the `MongoReadWriteDao.getDefaultSearchCountOptions(F)` method
+
+## MongoDBServiceV2
 
 ![MongoDBServiceV2.png](uml/MongoDBServiceV2.png)
 
@@ -143,5 +216,3 @@ public class DataDao extends MongoReadWriteDao<DataModel,DataSearchFilter> {
     }
 }
 ```
-
-

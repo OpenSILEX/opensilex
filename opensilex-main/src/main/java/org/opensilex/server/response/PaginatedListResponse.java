@@ -8,9 +8,12 @@ package org.opensilex.server.response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.pagination.PaginatedSearchStrategy;
+import org.opensilex.utils.pagination.StreamWithPagination;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -28,14 +31,35 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
 
     /**
      * Constructor.
-     *
-     * @param paginatedList
      */
     public PaginatedListResponse(ListWithPagination<T> paginatedList) {
         this(Status.OK, paginatedList);
     }
 
-    /**
+    public PaginatedListResponse(StreamWithPagination<T> paginatedStream){
+        super(Status.OK);
+
+        this.metadata = new MetadataDTO(paginatedStream.getPagination());
+
+        List<T> resultList = paginatedStream.getSource()
+                .collect(Collectors.toList());
+
+        if(paginatedStream.getPaginationStrategy() == PaginatedSearchStrategy.HAS_NEXT_PAGE){
+
+            // Page size limit reached, delete an element
+            if(resultList.size() > paginatedStream.getPageSize()){
+                this.result = resultList.subList(0, resultList.size() - 1);
+                this.metadata.getPagination().setHasNextPage(true);
+            }else{
+                this.result = resultList;
+                this.metadata.getPagination().setHasNextPage(false);
+            }
+        }else{
+            this.result = resultList;
+        }
+    }
+
+                                 /**
      * Constructor with specific status.
      *
      * @param status
@@ -44,8 +68,9 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
     public PaginatedListResponse(Status status, ListWithPagination<T> paginatedList) {
         super(status);
         this.result = paginatedList.getList();
-        this.metadata = new MetadataDTO(new PaginationDTO(paginatedList.getPageSize(), paginatedList.getPage(), paginatedList.getTotal()));
+        this.metadata = new MetadataDTO(paginatedList.getPagination());
     }
+
 
     /**
      * Constructor for an empty list.

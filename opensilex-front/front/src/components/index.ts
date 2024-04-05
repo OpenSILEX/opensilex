@@ -256,6 +256,8 @@ import TableView from './common/views/TableView.vue'
 components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
+import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
+components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
 import ModalListBuilder from './common/views/ModalListBuilder.vue'

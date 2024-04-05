@@ -23,7 +23,6 @@ import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
@@ -40,8 +39,6 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.person.dal.PersonDAO;
-import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -627,7 +624,7 @@ public class DeviceDAO {
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
-            LinkedHashMap<MoveModel, PositionModel> positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveDAO.getPositionsHistory(
                     deviceURI,
                     null,
                     null,
@@ -637,9 +634,9 @@ public class DeviceDAO {
                     0
             );
 
-            positionHistory.forEach((move, position) -> {
+            positionHistory.forEach((move) -> {
                 try {
-                    resultDTOList.add(new PositionGetDTO(move, position));
+                    resultDTOList.add(new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition()));
                 } catch (JsonProcessingException ex) {
                     throw new RuntimeException(ex);
                 }

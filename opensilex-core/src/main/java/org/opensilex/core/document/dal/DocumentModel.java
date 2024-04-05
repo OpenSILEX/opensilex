@@ -115,11 +115,11 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasVariable"
+            property = "hasVariables"
     )
     List<URI> hasVariables;
 
-    public static final String HASVARIABLE_FIELD = "hasVariable";
+    public static final String HASVARIABLE_FIELD = "hasVariables";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -136,6 +136,14 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     LocalDate lastElementDate;
 
     public static final String LAST_ELEMENT_DATE_FIELD = "lastElementDate";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "numberOfElements"
+    )
+    String numberOfElements;
+
+    public static final String NUMBER_OF_ELEMENTS_FIELD = "numberOfElements";
 
 
     public List<URI> getHasVariables() {
@@ -160,6 +168,14 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
 
     public void setLastElementDate(LocalDate lastElementDate) {
         this.lastElementDate = lastElementDate;
+    }
+
+    public String getNumberOfElements() {
+        return numberOfElements;
+    }
+
+    public void setNumberOfElements(String numberOfElements) {
+        this.numberOfElements = numberOfElements;
     }
     public List<URI> getTargets() {
         return targets;

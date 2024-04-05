@@ -1,202 +1,205 @@
 <template>
   <div>
     <opensilex-PageActions
-      v-if="
-      user.hasCredential(
-        credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)
-        ">
-        <opensilex-CreateButton
+      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+    >
+      <opensilex-CreateButton
         @click="documentForm.showCreateForm()"
         label="DocumentView.add"
         class="createButton"
-        ></opensilex-CreateButton>
+      ></opensilex-CreateButton>
     </opensilex-PageActions>
 
-    <opensilex-PageContent
-      class="pagecontent"
-    >
-     <!-- Toggle Sidebar--> 
-      <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
+    <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div
+        class="searchMenuContainer"
+        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
       </div>
 
-    <!-- Filters -->
-    <Transition>
-      <div v-show="SearchFiltersToggle">
-    <opensilex-SearchFilterField
-      @search="refresh()"
-      @clear="resetFilters()"
-      withButton="false"
-      :showAdvancedSearch="true"
-      class="searchFilterField"
-    >
-      <template v-slot:filters>
-        <!-- title and keyword -->
-      <br><br>
-        <div>
-          <opensilex-StringFilter
-            :filter.sync="filter.multiple"
-            placeholder="DocumentList.filter.searchAll-placeholder"
-            class="searchFilter"
-            @handlingEnterKey="refresh()"
-          ></opensilex-StringFilter><br>
+      <!-- Filters -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+          <opensilex-SearchFilterField
+            @search="refresh()"
+            @clear="resetFilters()"
+            withButton="false"
+            :showAdvancedSearch="true"
+            class="searchFilterField"
+          >
+            <template v-slot:filters>
+              <!-- title and keyword -->
+              <br /><br />
+              <div>
+                <opensilex-StringFilter
+                  :filter.sync="filter.multiple"
+                  placeholder="DocumentList.filter.searchAll-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-StringFilter
+                ><br />
+              </div>
+            </template>
+
+            <template v-slot:advancedSearch>
+              <!-- type -->
+              <div>
+                <opensilex-TypeForm
+                  :type.sync="filter.rdf_type"
+                  :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
+                  placeholder="DocumentList.filter.type-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-TypeForm>
+              </div>
+
+              <!-- title -->
+              <div>
+                <label>{{ $t("DocumentList.filter.title") }}</label>
+                <opensilex-StringFilter
+                  :filter.sync="filter.title"
+                  placeholder="DocumentList.filter.title-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-StringFilter
+                ><br />
+              </div>
+
+              <!-- date -->
+              <div>
+                <label>{{ $t("DocumentList.filter.date") }}</label>
+                <opensilex-StringFilter
+                  :filter.sync="filter.date"
+                  placeholder="DocumentList.filter.date-placeholder"
+                  type="number"
+                  min="1900"
+                  max="2900"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-StringFilter
+                ><br />
+              </div>
+
+              <!-- targets -->
+              <div>
+                <label>{{ $t("DocumentList.filter.targets") }}</label>
+                <opensilex-StringFilter
+                  :filter.sync="filter.targets"
+                  placeholder="DocumentList.filter.targets-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-StringFilter
+                ><br />
+              </div>
+
+              <!-- author -->
+              <div>
+                <label>{{ $t("DocumentList.filter.author") }}</label>
+                <opensilex-InputForm
+                  :value.sync="filter.authors"
+                  placeholder="DocumentList.filter.author-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-InputForm>
+              </div>
+
+              <!-- keywords -->
+              <div>
+                <label>{{ $t("DocumentList.filter.keywords") }}</label>
+                <opensilex-InputForm
+                  :value.sync="filter.keywords"
+                  placeholder="DocumentList.filter.keywords-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-InputForm>
+              </div>
+
+              <!-- deprecated -->
+              <div>
+                <opensilex-CheckboxForm
+                  label="DocumentList.filter.deprecated"
+                  :value.sync="filter.deprecated"
+                  class="searchFilter"
+                ></opensilex-CheckboxForm>
+              </div>
+            </template>
+          </opensilex-SearchFilterField>
         </div>
-      </template>
+      </Transition>
+      <opensilex-TableAsyncView
+        ref="tableRef"
+        :searchMethod="searchDocuments"
+        :fields="fields"
+        defaultSortBy="label"
+      >
+        <template v-slot:cell(uri)="{ data }">
+          <opensilex-UriLink
+            :uri="data.item.uri"
+            :value="data.item.title"
+            :to="{ path: '/document/details/' + encodeURIComponent(data.item.uri) }"
+          ></opensilex-UriLink>
+        </template>
 
-      <template v-slot:advancedSearch>
-        <!-- type -->
-        <div>
-          <opensilex-TypeForm
-            :type.sync="filter.rdf_type"
-            :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
-            placeholder="DocumentList.filter.type-placeholder"
-            class="searchFilter"
-            @handlingEnterKey="refresh()"
-          ></opensilex-TypeForm>
-        </div>
+        <template v-slot:cell(authors)="{ data }">
+          <span v-if="data.item.authors">
+            <span :key="index" v-for="(author, index) in data.item.authors">
+              <span :title="author">{{ author }}</span>
+              <span v-if="index + 1 < data.item.authors.length"> - </span>
+            </span>
+          </span>
+        </template>
 
-        <!-- title -->
-        <div>
-          <label>{{$t('DocumentList.filter.title')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="filter.title"
-            placeholder="DocumentList.filter.title-placeholder"
-            class="searchFilter"
-            @handlingEnterKey="refresh()"
-          ></opensilex-StringFilter><br>
-        </div>
-
-        <!-- date -->   
-        <div>
-          <label>{{$t('DocumentList.filter.date')}}</label>
-            <opensilex-StringFilter
-              :filter.sync="filter.date"
-              placeholder="DocumentList.filter.date-placeholder"
-              type="number"
-              min= "1900"
-              max= "2900"
-              class="searchFilter"
-              @handlingEnterKey="refresh()"
-            ></opensilex-StringFilter><br>
-        </div>
-
-        <!-- targets -->
-        <div>
-          <label>{{$t('DocumentList.filter.targets')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="filter.targets"
-            placeholder="DocumentList.filter.targets-placeholder"
-            class="searchFilter"
-            @handlingEnterKey="refresh()"
-          ></opensilex-StringFilter><br>
-        </div>
-
-        <!-- author -->
-        <div>
-          <label>{{$t('DocumentList.filter.author')}}</label>
-            <opensilex-InputForm
-              :value.sync="filter.authors"
-              placeholder="DocumentList.filter.author-placeholder"
-              class="searchFilter"
-              @handlingEnterKey="refresh()"
-            ></opensilex-InputForm>
-        </div>
-
-        <!-- keywords -->
-        <div>
-          <label>{{$t('DocumentList.filter.keywords')}}</label>
-          <opensilex-InputForm
-            :value.sync="filter.keywords"
-            placeholder="DocumentList.filter.keywords-placeholder"
-            class="searchFilter"
-            @handlingEnterKey="refresh()"
-          ></opensilex-InputForm>
-        </div>  
-        
-        <!-- deprecated -->
-        <div>
-          <opensilex-CheckboxForm
-            label="DocumentList.filter.deprecated"
-            :value.sync="filter.deprecated"
-            class="searchFilter"
-          ></opensilex-CheckboxForm>
-        </div>
-      </template>
-    </opensilex-SearchFilterField>
-      </div>
-    </Transition>
-    <opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchDocuments"
-      :fields="fields"
-      defaultSortBy="label"
-    >
-      <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"
-        :value="data.item.title"
-        :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
-        ></opensilex-UriLink>
-      </template>
-
-     <template v-slot:cell(authors)="{data}">
-       <span v-if="data.item.authors">
-       <span :key="index" v-for="(author, index) in data.item.authors">
-          <span :title="author">{{ author }}</span>
-          <span v-if="index + 1 < data.item.authors.length"> - </span>
-        </span>   
-        </span>  
-     </template>
-
-      <template v-slot:cell(actions)="{data}">
-        <b-button-group size="sm">
-          <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-            @click="editDocument(data.item.uri)"
-            label="DocumentList.update"
-            :small="true"
-          ></opensilex-EditButton>
-          <opensilex-DeprecatedButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-            @click="deprecatedDocument(data.item.uri)"
-            :small="true"
-            :deprecated="data.item.deprecated"
-          ></opensilex-DeprecatedButton>
-          <opensilex-Button
+        <template v-slot:cell(actions)="{ data }">
+          <b-button-group size="sm">
+            <opensilex-EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              @click="editDocument(data.item.uri)"
+              label="DocumentList.update"
+              :small="true"
+            ></opensilex-EditButton>
+            <opensilex-DeprecatedButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              @click="deprecatedDocument(data.item.uri)"
+              :small="true"
+              :deprecated="data.item.deprecated"
+            ></opensilex-DeprecatedButton>
+            <opensilex-Button
               v-if="!data.item.source"
-           component="opensilex-DocumentDetails"
-            @click="loadFile(data.item.uri, data.item.title, data.item.format)"
-            label="DocumentList.download"
-            :small="true"
-            icon= "ik#ik-download"
-            variant="outline-info"
-          ></opensilex-Button>
-          <opensilex-Button
-            v-if="data.item.source"
-            @click="browseSource(data.item.source)"
-            label="DocumentList.browseSource"
-            :small="true"
-            icon="ik#ik-link"
-            variant="outline-info"
-          ></opensilex-Button>
-        </b-button-group>
-      </template>
-    </opensilex-TableAsyncView>
-    <opensilex-ModalForm
-      ref="documentForm"
-      component="opensilex-DocumentForm"
-      editTitle="DocumentList.update"
-      createTitle="DocumentList.add"
-      icon="ik#ik-file-text"
-      modalSize="lg"
-      @onCreate="refreshOrRedirectAfterCreation"
-      @onUpdate="updateSelectedDocument()"
-    >
-    </opensilex-ModalForm>
-        </opensilex-PageContent>
+              component="opensilex-DocumentDetails"
+              @click="loadFile(data.item.uri, data.item.title, data.item.format)"
+              label="DocumentList.download"
+              :small="true"
+              icon="ik#ik-download"
+              variant="outline-info"
+            ></opensilex-Button>
+            <opensilex-Button
+              v-if="data.item.source"
+              @click="browseSource(data.item.source)"
+              label="DocumentList.browseSource"
+              :small="true"
+              icon="ik#ik-link"
+              variant="outline-info"
+            ></opensilex-Button>
+          </b-button-group>
+        </template>
+      </opensilex-TableAsyncView>
+      <opensilex-ModalForm
+        ref="documentForm"
+        component="opensilex-DocumentForm"
+        editTitle="DocumentList.update"
+        createTitle="DocumentList.add"
+        icon="ik#ik-file-text"
+        modalSize="lg"
+        @onCreate="refreshOrRedirectAfterCreation"
+        @onUpdate="updateSelectedDocument()"
+      >
+      </opensilex-ModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -218,7 +221,7 @@ export default class DocumentList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop({
-    default: false
+    default: false,
   })
   redirectAfterCreation;
 
@@ -230,17 +233,17 @@ export default class DocumentList extends Vue {
   refreshOrRedirectAfterCreation(document) {
     if (document !== undefined && this.redirectAfterCreation) {
       this.$router.push({
-        path: '/document/details/' + encodeURIComponent(document.uri)
-      })
+        path: "/document/details/" + encodeURIComponent(document.uri),
+      });
     } else {
       this.refresh();
     }
   }
 
-  updateSelectedDocument(){
+  updateSelectedDocument() {
     this.$opensilex.updateURLParameters(this.filter);
   }
-  
+
   get user() {
     return this.$store.state.user;
   }
@@ -254,10 +257,13 @@ export default class DocumentList extends Vue {
     title: undefined,
     date: undefined,
     targets: undefined,
+    has_variables: undefined,
     authors: undefined,
     keywords: undefined,
     multiple: undefined,
-    deprecated: false
+    deprecated: false,
+    first_element_date: undefined,
+    last_element_date: undefined,
   };
 
   resetFilters() {
@@ -266,10 +272,13 @@ export default class DocumentList extends Vue {
       title: undefined,
       date: undefined,
       targets: undefined,
+      has_variables: undefined,
       authors: undefined,
       keywords: undefined,
       multiple: undefined,
-      deprecated: false
+      deprecated: false,
+      first_element_date: undefined,
+      last_element_date: undefined,
     };
     this.refresh();
   }
@@ -279,32 +288,32 @@ export default class DocumentList extends Vue {
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
 
-    data(){
+  data() {
     return {
-      SearchFiltersToggle : false,
-    }
+      SearchFiltersToggle: false,
+    };
   }
 
   fields = [
     {
       key: "uri",
       label: "DocumentList.title",
-      sortable: true
+      sortable: true,
     },
     {
       key: "rdf_type_name",
       label: "DocumentList.type",
-      sortable: true
+      sortable: true,
     },
     {
       key: "authors",
       label: "DocumentList.author",
-      sortable: false
+      sortable: false,
     },
     {
       key: "actions",
-      label: "component.common.actions"
-    }
+      label: "component.common.actions",
+    },
   ];
 
   searchDocuments(options) {
@@ -313,10 +322,13 @@ export default class DocumentList extends Vue {
       this.filter.title, //title filter
       this.filter.date, // date filter
       this.filter.targets, // targets filter
+      this.filter.has_variables,
       this.filter.authors, // user filter
       this.filter.keywords, // keywords filter
       this.filter.multiple, // multiple filter
       this.filter.deprecated.toString(), // deprecated filter
+      this.filter.first_element_date,
+      this.filter.last_element_date,
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -346,23 +358,27 @@ export default class DocumentList extends Vue {
             rdf_type: document.rdf_type,
             title: document.title,
             date: document.date,
+            first_element_date: document.first_element_date,
+            last_element_date: document.last_element_date,
             description: document.description,
             targets: document.targets,
+            has_variables: document.has_variables,
             authors: document.authors,
             language: document.language,
             format: document.format,
-            deprecated: document.deprecated,
+            deprecated: !document.deprecated,
             keywords: document.keywords,
-            source: document.source
-          }
+            source: document.source,
+            number_of_element: document.number_of_elements,
+          },
         };
         this.documentForm.showEditForm(form);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
-  deprecatedDocument(uri: string){
-   this.service
+  deprecatedDocument(uri: string) {
+    this.service
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
         let document = http.response.result;
@@ -373,25 +389,29 @@ export default class DocumentList extends Vue {
             rdf_type: document.rdf_type,
             title: document.title,
             date: document.date,
+            first_element_date: document.first_element_date,
+            last_element_date: document.last_element_date,
             description: document.description,
             targets: document.targets,
+            has_variables: document.has_variables,
             authors: document.authors,
             language: document.language,
             format: document.format,
             deprecated: !document.deprecated,
             keywords: document.keywords,
-            source: document.source
-          }
+            source: document.source,
+            number_of_element: document.number_of_elements,
+          },
         };
-      this.updateForDeprecated(form);
+        this.updateForDeprecated(form);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
   updateForDeprecated(form) {
     return this.$opensilex
-     .uploadFileToService("/core/documents", form, null, true)
-     .then((http: OpenSilexResponse<any>) => {
+      .uploadFileToService("/core/documents", form, null, true)
+      .then((http: OpenSilexResponse<any>) => {
         let uri = http.result;
         this.$emit("onUpdate", form);
         this.refresh();
@@ -401,24 +421,21 @@ export default class DocumentList extends Vue {
 
   loadFile(uri: string, title: string, format: string) {
     let path = "/core/documents/" + encodeURIComponent(uri);
-    this.$opensilex
-     .downloadFilefromService(path, title, format);
+    this.$opensilex.downloadFilefromService(path, title, format);
   }
 
   browseSource(source: string) {
     window.open(source);
   }
-  
-  searchFiltersPannel() {
-    return  this.$t("searchfilter.label")
-  }
 
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label");
+  }
 }
 </script>
 
 <style scoped lang="scss">
-
-.createButton{
+.createButton {
   margin-bottom: 10px;
   margin-top: -15px;
   margin-left: 0;

@@ -275,10 +275,10 @@
               <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
             </vl-source-cluster>
           </vl-layer-vector>
-          <div v-if="showNextLevel">
+          <div v-if="!showNextLevel">
             <vl-layer-vector
               :opacity="opacityOS"
-              v-for="layerFacility in featuresFacilities"
+              v-for="layerFacility in featuresSites"
               :key="layerFacility.id"
               :z-index="0"
             >
@@ -289,7 +289,7 @@
               ></vl-source-vector>
             </vl-layer-vector>
           </div>
-          <div v-if="!showNextLevel">
+          <div v-if="showNextLevel">
             <vl-layer-vector
               :opacity="opacityOS"
               v-for="layerOS in featuresOS"
@@ -469,12 +469,12 @@
               <span class="item-icon"> </span>&nbsp;
               <span v-if="node.title === 'Facilities'"
                 >{{ $t("MapView.mapPanelFacilities") }} ({{
-                  featuresFacilities.flat().length
+                  featuresSites.flat().length
                 }})</span
               >
               <span v-else
                 >{{ nameType(node.title) }} ({{
-                  getNumberByType(node.title, featuresFacilities)
+                  getNumberByType(node.title, featuresSites)
                 }})</span
               >
             </template>
@@ -807,7 +807,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { Circle as CircleStyle, Fill, Stroke, Style, Text } from "ol/style";
+import { Circle as CircleStyle, Fill, Stroke, Style, Text, Icon } from "ol/style";
 import { DragBox } from "ol/interaction";
 import * as olExtent from "ol/extent";
 import Point from "ol/geom/Point";
@@ -832,6 +832,7 @@ import {
   OntologyService,
   DataService,
   TargetPositionCreationDTO,
+  SiteGetListDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
@@ -938,9 +939,9 @@ export default class MapView extends Vue {
   //OS
   featuresOS: GeoJSONFeature[][] = [];
   featuresOSfromSelectedFacility: GeoJSONFeature[][] = []; // all the OS related to a selected facility
-  featuresFacilities: GeoJSONFeature[][] = [];
+  featuresSites: GeoJSONFeature[][] = [];
   private callSO: boolean = false;
-  private callFacility: boolean = false;
+  private callSites: boolean = false;
   private showNextLevel: boolean = false;
   private scientificObjectURI: string;
   private facilityURI: string;
@@ -1026,7 +1027,7 @@ export default class MapView extends Vue {
   get isMapHasLayer() {
     return (
       this.featuresOS.length > 0 ||
-      this.featuresFacilities.length > 0 ||
+      this.featuresSites.length > 0 ||
       this.featuresArea.length > 0 ||
       this.featuresDevice.length > 0
     );
@@ -1078,8 +1079,8 @@ export default class MapView extends Vue {
 
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
-    this.recoveryFacilities();
-    console.log("OS : ", this.featuresOS);
+    this.recoverySites();
+    // console.log("OS : ", this.featuresOS);
     this.soFilter = {
       name: "",
       experiment: this.experiment,
@@ -1352,7 +1353,7 @@ export default class MapView extends Vue {
   //Focus on map vectors
   defineCenter() {
     // this.featuresOS
-    if (this.featuresFacilities.length > 0 && this.vectorSource[0].$source) {
+    if (this.featuresSites.length > 0 && this.vectorSource[0].$source) {
       let extent = olExtent.createEmpty();
       setTimeout(() => {
         this.vectorSource.forEach((v) => {
@@ -1469,9 +1470,11 @@ export default class MapView extends Vue {
       this.opacityOS = 0;
     } else {
       if (this.mapView.$view.getZoom() < 13) {
+        this.showNextLevel = false;
         this.checkZoom = true;
         this.opacityOS = 0;
       } else {
+        this.showNextLevel = true;
         this.checkZoom = false;
         this.opacityOS = 1;
       }
@@ -1516,10 +1519,10 @@ export default class MapView extends Vue {
           maxDate = this.maxDate;
         }
         minDate = this.$opensilex.prepareGetParameter(minDate);
-        console.debug("minDate", minDate, this.minDate, this.range.from);
+        //console.debug("minDate", minDate, this.minDate, this.range.from);
 
         maxDate = this.$opensilex.prepareGetParameter(maxDate);
-        console.debug("maxDate", maxDate, this.maxDate, this.range.to);
+        //console.debug("maxDate", maxDate, this.maxDate, this.range.to);
 
         let minDateString: string = undefined;
         let maxDateString: string = undefined;
@@ -1556,7 +1559,7 @@ export default class MapView extends Vue {
 
       if (
         // featuresOS
-        this.vectorSource.length === this.featuresFacilities.length &&
+        this.vectorSource.length === this.featuresSites.length &&
         this.vectorSource.every(isVectorSourceMounted)
       ) {
         this.vectorSource.forEach((vector) => {
@@ -1589,7 +1592,7 @@ export default class MapView extends Vue {
             points.push(point.getCoordinates());
           }
         });
-        this.mapView.$view.fit(olExtent.boundingExtent(points), { maxZoom: 17 });
+        this.mapView.$view.fit(olExtent.boundingExtent(points), { maxZoom: 14 });
       }
     });
   }
@@ -1599,10 +1602,11 @@ export default class MapView extends Vue {
     const styleCache = {};
 
     return function __clusterStyleFunc(feature) {
-      //console.log("CLUSTER FEATURE: ", feature);
+      console.log("STYLE : ", feature.get("name"));
       const size = feature.get("features").length;
       let style = styleCache[size];
       if (!style) {
+        // Use an image for the map pin
         style = new Style({
           image: new CircleStyle({
             radius: 10,
@@ -1610,13 +1614,13 @@ export default class MapView extends Vue {
               color: "#fff",
             }),
             fill: new Fill({
-              color: "red",
+              color: "#ADD8E6",
             }),
           }),
           text: new Text({
-            text: size.toString(),
+            text: feature.get("features")[0].get("name"),
             fill: new Fill({
-              color: "#fff",
+              color: "black",
             }),
           }),
         });
@@ -1744,8 +1748,8 @@ export default class MapView extends Vue {
   }
 
   callFacilitiesUpdate() {
-    if (this.callFacility) {
-      this.callFacility = false;
+    if (this.callSites) {
+      this.callSites = false;
       this.removeFromFeatures(this.facilityURI, this.selectedFeatures);
       this.organizationsService
         .getFacility(this.facilityURI)
@@ -1763,7 +1767,7 @@ export default class MapView extends Vue {
               organizations: result.organizations,
               sites: result.sites,
             };
-            let flatFeatures = this.featuresFacilities.flat();
+            let flatFeatures = this.featuresSites.flat();
             //Replace the updated feature
             flatFeatures.splice(
               flatFeatures.findIndex(
@@ -1773,17 +1777,17 @@ export default class MapView extends Vue {
               result.geometry
             );
             //Feature formatting for efficient display of vectors
-            this.featuresFacilities = [];
+            this.featuresSites = [];
             flatFeatures.forEach((element) => {
               let inserted = false;
-              this.featuresFacilities.forEach((item) => {
+              this.featuresSites.forEach((item) => {
                 if (item[0].properties.type === element.properties.type) {
                   item.push(element);
                   inserted = true;
                 }
               });
               if (!inserted) {
-                this.featuresFacilities.push([element]);
+                this.featuresSites.push([element]);
               }
             });
             this.selectedFeatures.push(result.geometry);
@@ -1839,12 +1843,12 @@ export default class MapView extends Vue {
       });
   }
 
-  private recoveryFacilities(startDate?, endDate?) {
-    this.callFacility = false;
-    this.featuresFacilities = [];
+  private recoverySites(startDate?, endDate?) {
+    this.callSites = false;
+    this.featuresSites = [];
     this.organizationsService
-      .getAllFacilitiesWithGeometry()
-      .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+      .searchSitesWithGeometry()
+      .then((http: HttpResponse<OpenSilexResponse<Array<SiteGetListDTO>>>) => {
         const res = http.response.result as any;
         res.forEach((element) => {
           if (element.geometry !== null) {
@@ -1855,17 +1859,17 @@ export default class MapView extends Vue {
               name: element.name,
               type: element.rdf_type,
               rdf_type_name: element.rdf_type_name,
-              nature: "Facilities",
+              nature: "Sites",
             };
             let inserted = false;
-            this.featuresFacilities.forEach((item) => {
+            this.featuresSites.forEach((item) => {
               if (item[0].properties.type === element.rdf_type) {
                 item.push(element.geometry);
                 inserted = true;
               }
             });
             if (!inserted) {
-              this.featuresFacilities.push([element.geometry]);
+              this.featuresSites.push([element.geometry]);
             }
           }
         });
@@ -1921,7 +1925,7 @@ export default class MapView extends Vue {
               this.detailsFacility = true;
             }
           });
-          console.log("Facility: ", http.response.result);
+          // console.log("Facility: ", http.response.result);
         })
         .catch(this.$opensilex.errorHandler)
         .finally(() => {
@@ -2438,7 +2442,7 @@ export default class MapView extends Vue {
       default:
         option.serviceRequest = this.organizationsService.deleteFacility(uri);
         option.title = "Facility.title";
-        option.updateFeatures = this.featuresFacilities;
+        option.updateFeatures = this.featuresSites;
         break;
       case "ScientificObject":
         option.serviceRequest = this.scientificObjectsService.deleteScientificObject(
@@ -2486,7 +2490,7 @@ export default class MapView extends Vue {
         });
         switch (data.item.properties.nature) {
           default:
-            this.featuresFacilities = newFeatures;
+            this.featuresSites = newFeatures;
             break;
           case "ScientificObject":
             this.featuresOS = newFeatures;
@@ -2768,7 +2772,7 @@ export default class MapView extends Vue {
       isCheckable: true,
     };
 
-    this.featuresFacilities.forEach((facility) => {
+    this.featuresSites.forEach((facility) => {
       // Check if already exists
       let bool = true;
       for (let children of facilities.children) {

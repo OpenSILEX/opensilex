@@ -152,6 +152,19 @@ OESO</rdfs:label>
     
 
 
+    <!-- http://purl.org/dc/terms/SizeOrDuration#SizeOrDuration -->
+
+    <owl:ObjectProperty rdf:about="http://purl.org/dc/terms/SizeOrDuration#SizeOrDuration">
+        <rdfs:comment xml:lang="en">A dimension or extent, or a time taken to play or execute.
+Examples include a number of pages, a specification of length, width, and breadth, or a period in hours, minutes, and seconds.</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Une dimension ou une étendue, ou un temps nécessaire à la lecture ou à l&apos;exécution.
+Les exemples incluent un nombre de pages, une spécification de longueur, de largeur et de largeur, ou une période en heures, minutes et secondes.</rdfs:comment>
+        <rdfs:label xml:lang="en">Size or Duration</rdfs:label>
+        <rdfs:label xml:lang="fr">Taille ou Durée</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.opensilex.org/security#hasGroup -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/security#hasGroup"/>
@@ -478,13 +491,13 @@ OESO</rdfs:label>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasVariable -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasVariables -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasVariable">
-        <rdfs:comment xml:lang="en">a variable observed in a document</rdfs:comment>
-        <rdfs:comment xml:lang="fr">une variable qui est observée au sein d&apos;un document</rdfs:comment>
-        <rdfs:label xml:lang="fr">a une variable</rdfs:label>
-        <rdfs:label xml:lang="en">has a variable</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasVariables">
+        <rdfs:comment xml:lang="fr">des variables qui sont observées au sein d&apos;un document</rdfs:comment>
+        <rdfs:comment xml:lang="en">variables observed in a document</rdfs:comment>
+        <rdfs:label xml:lang="fr">a des variables</rdfs:label>
+        <rdfs:label xml:lang="en">has variables</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -547,6 +560,18 @@ OESO</rdfs:label>
         <rdfs:comment xml:lang="fr">Variable mesurée par l&apos;appareil</rdfs:comment>
         <rdfs:label xml:lang="en">measures</rdfs:label>
         <rdfs:label xml:lang="fr">mesure</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#numberOfElements -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#numberOfElements">
+        <rdfs:subPropertyOf rdf:resource="http://purl.org/dc/terms/SizeOrDuration#SizeOrDuration"/>
+        <rdfs:comment xml:lang="fr">Nombre d&apos;éléments mesurés dans un document</rdfs:comment>
+        <rdfs:comment xml:lang="en">Number of elements measured in a documente</rdfs:comment>
+        <rdfs:label xml:lang="fr">Nombre d&apos;éléments</rdfs:label>
+        <rdfs:label xml:lang="en">Number of elements</rdfs:label>
     </owl:ObjectProperty>
     
 

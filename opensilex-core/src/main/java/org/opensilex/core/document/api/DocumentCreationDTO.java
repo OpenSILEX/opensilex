@@ -36,6 +36,7 @@ public class DocumentCreationDTO extends DocumentDTO {
         model.setHasVariables(getHasVariables());
         model.setFirstElementDate(getFirstElementDate());
         model.setLastElementDate(getLastElementDate());
+        model.setNumberOfElements(getNumberOfElements());
         return model;
     }
 

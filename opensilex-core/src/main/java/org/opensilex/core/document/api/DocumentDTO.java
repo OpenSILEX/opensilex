@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Fernandez Emilie 
  */
 
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keywords", "deprecated", "source" })
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "identifier", "rdf_type", "rdf_type_name", "title", "date", "first_element_date", "last_element_date", "description", "targets", "has_variables", "authors", "language", "format", "keywords", "deprecated", "source" })
 public abstract class DocumentDTO {
 
     protected URI uri;
@@ -61,6 +61,8 @@ public abstract class DocumentDTO {
     protected String description;
 
     protected URI source;
+
+    @JsonProperty("has_variables")
     protected List<URI> hasVariables;
 
     @JsonProperty("first_element_date")
@@ -68,6 +70,9 @@ public abstract class DocumentDTO {
 
     @JsonProperty("last_element_date")
     protected LocalDate lastElementDate;
+
+    @JsonProperty("number_of_elements")
+    protected String numberOfElements;
 
     @JsonProperty("keywords")
     protected List<String> subject = new ArrayList<>();
@@ -78,24 +83,36 @@ public abstract class DocumentDTO {
         return hasVariables;
     }
 
-    public void setHasVariables(List<URI> hasVariables) {
+    public DocumentDTO setHasVariables(List<URI> hasVariables) {
         this.hasVariables = hasVariables;
+        return this;
     }
 
     public LocalDate getFirstElementDate() {
         return firstElementDate;
     }
 
-    public void setFirstElementDate(LocalDate firstElementDate) {
+    public DocumentDTO setFirstElementDate(LocalDate firstElementDate) {
         this.firstElementDate = firstElementDate;
+        return this;
     }
 
     public LocalDate getLastElementDate() {
         return lastElementDate;
     }
 
-    public void setLastElementDate(LocalDate lastElementDate) {
+    public DocumentDTO setLastElementDate(LocalDate lastElementDate) {
         this.lastElementDate = lastElementDate;
+        return this;
+    }
+
+    public String getNumberOfElements() {
+        return numberOfElements;
+    }
+
+    public DocumentDTO setNumberOfElements(String numberOfElements) {
+        this.numberOfElements = numberOfElements;
+        return this;
     }
     
     @ApiModelProperty(example = "http://opensilex.dev/set/documents#ProtocolExperimental")

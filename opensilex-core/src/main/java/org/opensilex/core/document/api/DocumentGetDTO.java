@@ -34,7 +34,12 @@ public class DocumentGetDTO extends DocumentDTO {
                 .setDescription(model.getDescription())
                 .setSubject(model.getSubject())
                 .setDeprecated(Boolean.parseBoolean(model.getDeprecated()))
-                .setSource(model.getSource());
+                .setSource(model.getSource())
+                .setHasVariables(model.getHasVariables())
+                .setFirstElementDate(model.getFirstElementDate())
+                .setLastElementDate(model.getLastElementDate())
+                .setNumberOfElements(model.getNumberOfElements());
+
 
         if (Objects.nonNull(model.getPublicationDate())) {
             dto.setPublicationDate(model.getPublicationDate());

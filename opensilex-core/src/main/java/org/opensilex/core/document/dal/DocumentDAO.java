@@ -168,17 +168,20 @@ public class DocumentDAO {
      * @param title
      * @param date
      * @param targets
+     * @param hasVariables
      * @param authors
      * @param subject Filters by keyword.
      * @param multiple Filters by title OR keyword. Useful for a quick search.
      * @param deprecated
+     * @param firstElementDate
+     * @param lastElementDate
      * @param orderByList
      * @param page
      * @param pageSize
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, URI hasVariables, String authors, String subject, String multiple, String deprecated, String firstElementDate, String lastElementDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -191,7 +194,10 @@ public class DocumentDAO {
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
+                appendDateFilter(select, firstElementDate);
+                appendDateFilter(select, lastElementDate);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
+                appendTargetsFilter(multipleGraphGroupElem, hasVariables);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
                 // If either the subject or the "multiple" (ie. title or subject) fields is present, then the "subject"
                 // clause must be added in the query (because it is not present by default)

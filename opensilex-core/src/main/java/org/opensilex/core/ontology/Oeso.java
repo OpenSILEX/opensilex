@@ -177,11 +177,13 @@ public class Oeso {
     public static final Property hasAuthor = Ontology.property(NS, "hasAuthor");
     public static final Resource Datafile = Ontology.resource(NS, "Datafile");
 
-    public static final Property hasVariable = Ontology.property(NS, "hasVariable");
+    public static final Property hasVariables = Ontology.property(NS, "hasVariables");
 
     public static final Property firstElementDate = Ontology.property(NS, "firstElementDate");
 
     public static final Property lastElementDate = Ontology.property(NS, "lastElementDate");
+    public static final Property numberOfElements = Ontology.property(NS, "numberOfElements");
+
 
 
      // ---- DEVICES ----

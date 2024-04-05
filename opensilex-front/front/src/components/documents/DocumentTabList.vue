@@ -1,105 +1,103 @@
 <template>
   <div>
-      <div class="pageActionsBtns">
-        <opensilex-CreateButton
-          v-if="user.hasCredential(modificationCredentialId)"
-          @click="createDocument()"
-          label="DocumentTabList.add"
-          class="createButton"
-        ></opensilex-CreateButton>
-      </div>
+    <div class="pageActionsBtns">
+      <opensilex-CreateButton
+        v-if="user.hasCredential(modificationCredentialId)"
+        @click="createDocument()"
+        label="DocumentTabList.add"
+        class="createButton"
+      ></opensilex-CreateButton>
+    </div>
 
-      <opensilex-StringFilter
-          v-if="search"
-          :filter.sync="filter.title"
-          @update="updateFilters()"
-          :debounce="300"
-          :lazy="false"
-          placeholder="DocumentList.filter.title-placeholder"
-      ></opensilex-StringFilter>
+    <opensilex-StringFilter
+      v-if="search"
+      :filter.sync="filter.title"
+      @update="updateFilters()"
+      :debounce="300"
+      :lazy="false"
+      placeholder="DocumentList.filter.title-placeholder"
+    ></opensilex-StringFilter>
 
-        <div class="card">
-    <div class="card-body">
-      <opensilex-PageContent
-          v-if="renderComponent">
+    <div class="card">
+      <div class="card-body">
+        <opensilex-PageContent v-if="renderComponent">
           <template v-slot>
             <opensilex-TableAsyncView
-                  ref="tableRef"
-                  :searchMethod="searchDocuments"
-                  :fields="fields"
-                  defaultSortBy="name"
-                >
-                  <template v-slot:cell(uri)="{data}">
-                    <opensilex-UriLink :uri="data.item.uri"
-                    :value="data.item.title"
-                    :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
-                    ></opensilex-UriLink>
-                  </template>
+              ref="tableRef"
+              :searchMethod="searchDocuments"
+              :fields="fields"
+              defaultSortBy="name"
+            >
+              <template v-slot:cell(uri)="{ data }">
+                <opensilex-UriLink
+                  :uri="data.item.uri"
+                  :value="data.item.title"
+                  :to="{ path: '/document/details/' + encodeURIComponent(data.item.uri) }"
+                ></opensilex-UriLink>
+              </template>
 
-                  <template v-slot:row-details>
-                  </template>
+              <template v-slot:row-details> </template>
 
-                    <template v-slot:cell(authors)="{data}">
-                    <span v-if="data.item.authors">
-                    <span :key="index" v-for="(author, index) in data.item.authors">
-                        <span :title="author">{{ author }}</span>
-                        <span v-if="index + 1 < data.item.authors.length"> - </span>
-                    </span>   
-                    </span>  
-                  </template>
+              <template v-slot:cell(authors)="{ data }">
+                <span v-if="data.item.authors">
+                  <span :key="index" v-for="(author, index) in data.item.authors">
+                    <span :title="author">{{ author }}</span>
+                    <span v-if="index + 1 < data.item.authors.length"> - </span>
+                  </span>
+                </span>
+              </template>
 
-                  <template v-slot:cell(actions)="{data}">
-                    <b-button-group size="sm">
-                      <opensilex-EditButton
-                        v-if="user.hasCredential(modificationCredentialId)"
-                        @click="editDocument(data.item.uri)"
-                        label="DocumentTabList.update"
-                        :small="true"
-                      ></opensilex-EditButton>
-                      <opensilex-DeprecatedButton
-                        v-if="user.hasCredential(modificationCredentialId)"
-                        :deprecated="data.item.deprecated"
-                        @click="deprecatedDocument(data.item.uri)"
-                        :small="true"
-                      ></opensilex-DeprecatedButton>
-                      <opensilex-Button
-                          v-if="!data.item.source"
-                        component="opensilex-DocumentDetails"
-                        @click="loadFile(data.item.uri, data.item.title, data.item.format)"
-                        label="DocumentList.download"
-                        :small="true"
-                        icon= "ik#ik-download"
-                        variant="outline-info"
-                      ></opensilex-Button>
-                      <opensilex-Button
-                          v-if="data.item.source"
-                          @click="browseSource(data.item.source)"
-                          label="DocumentList.browseSource"
-                          :small="true"
-                          icon="ik#ik-link"
-                          variant="outline-info"
-                      ></opensilex-Button>
-                    </b-button-group>
-                  </template>
-
-                </opensilex-TableAsyncView>
+              <template v-slot:cell(actions)="{ data }">
+                <b-button-group size="sm">
+                  <opensilex-EditButton
+                    v-if="user.hasCredential(modificationCredentialId)"
+                    @click="editDocument(data.item.uri)"
+                    label="DocumentTabList.update"
+                    :small="true"
+                  ></opensilex-EditButton>
+                  <opensilex-DeprecatedButton
+                    v-if="user.hasCredential(modificationCredentialId)"
+                    :deprecated="data.item.deprecated"
+                    @click="deprecatedDocument(data.item.uri)"
+                    :small="true"
+                  ></opensilex-DeprecatedButton>
+                  <opensilex-Button
+                    v-if="!data.item.source"
+                    component="opensilex-DocumentDetails"
+                    @click="loadFile(data.item.uri, data.item.title, data.item.format)"
+                    label="DocumentList.download"
+                    :small="true"
+                    icon="ik#ik-download"
+                    variant="outline-info"
+                  ></opensilex-Button>
+                  <opensilex-Button
+                    v-if="data.item.source"
+                    @click="browseSource(data.item.source)"
+                    label="DocumentList.browseSource"
+                    :small="true"
+                    icon="ik#ik-link"
+                    variant="outline-info"
+                  ></opensilex-Button>
+                </b-button-group>
+              </template>
+            </opensilex-TableAsyncView>
           </template>
-      </opensilex-PageContent>
+        </opensilex-PageContent>
+      </div>
     </div>
-        </div>
 
-      <opensilex-ModalForm
-        v-if="user.hasCredential(modificationCredentialId)"
-        ref="documentForm"
-        component="opensilex-DocumentForm"
-        createTitle="DocumentTabList.add"
-        editTitle="DocumentTabList.update"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="ik#ik-file-text"
-        @onCreate="refresh()"
-        @onUpdate="refresh()"
-      ></opensilex-ModalForm>
+    <opensilex-ModalForm
+      v-if="user.hasCredential(modificationCredentialId)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="DocumentTabList.add"
+      editTitle="DocumentTabList.update"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-file-text"
+      @onCreate="refresh()"
+      @onUpdate="refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -125,20 +123,20 @@ export default class DocumentTabList extends Vue {
 
   @Prop()
   modificationCredentialId;
-  
+
   @Prop({
-    default: true
+    default: true,
   })
   search: boolean;
 
   @Watch("uri")
   onTargetChange() {
-      this.renderComponent = false;
+    this.renderComponent = false;
 
-      this.$nextTick(() => {
+    this.$nextTick(() => {
       // Add the component back in
       this.renderComponent = true;
-      });
+    });
   }
 
   get user() {
@@ -149,29 +147,29 @@ export default class DocumentTabList extends Vue {
     {
       key: "uri",
       label: "DocumentTabList.title",
-      sortable: true
+      sortable: true,
     },
     {
       key: "authors",
       label: "DocumentTabList.author",
-      sortable: true
+      sortable: true,
     },
     {
       key: "date",
       label: "DocumentTabList.date",
-      sortable: true
+      sortable: true,
     },
     {
       key: "rdf_type_name",
       label: "DocumentTabList.type",
-      sortable: true
+      sortable: true,
     },
     {
       key: "actions",
-      label: "component.common.actions"
-    }
+      label: "component.common.actions",
+    },
   ];
-  
+
   filter = {
     title: undefined,
     deprecated: "false",
@@ -180,7 +178,7 @@ export default class DocumentTabList extends Vue {
     authors: undefined,
     keywords: undefined,
     targets: undefined,
-    multiple: undefined
+    multiple: undefined,
   };
 
   resetFilters() {
@@ -192,15 +190,13 @@ export default class DocumentTabList extends Vue {
       authors: undefined,
       keywords: undefined,
       targets: undefined,
-      multiple: undefined
+      multiple: undefined,
     };
     this.refresh();
   }
 
-  searchDocuments(options) {  
-    return this.$opensilex
-      .getService("opensilex.DocumentsService")
-      .searchDocuments(
+  searchDocuments(options) {
+    return this.$opensilex.getService("opensilex.DocumentsService").searchDocuments(
       undefined, // type filter
       this.filter.title, //title filter
       undefined, // date filter
@@ -209,9 +205,12 @@ export default class DocumentTabList extends Vue {
       undefined, //keywords filter
       undefined, // multiple filter
       false, // deprecated filter
+      undefined,
+      undefined,
       options.orderBy,
       options.currentPage,
-      options.pageSize);
+      options.pageSize
+    );
   }
 
   refresh() {
@@ -225,29 +224,29 @@ export default class DocumentTabList extends Vue {
   }
 
   initForm() {
-    if(this.uri){
+    if (this.uri) {
       return {
-      description: {
-        uri: undefined,
-        identifier: undefined,
-        rdf_type: undefined,
-        title: undefined,
-        date: undefined,
-        description: undefined,
-        targets: decodeURIComponent(this.uri),
-        authors: undefined,
-        language: undefined,
-        deprecated: undefined,
-        keywords: undefined
-      },
-      file: undefined
-      }
+        description: {
+          uri: undefined,
+          identifier: undefined,
+          rdf_type: undefined,
+          title: undefined,
+          date: undefined,
+          description: undefined,
+          targets: decodeURIComponent(this.uri),
+          authors: undefined,
+          language: undefined,
+          deprecated: undefined,
+          keywords: undefined,
+        },
+        file: undefined,
+      };
     }
   }
 
   deprecatedDocument(uri: string) {
     this.$opensilex
-      .getService("opensilex.DocumentsService") 
+      .getService("opensilex.DocumentsService")
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
         let document = http.response.result;
@@ -258,24 +257,28 @@ export default class DocumentTabList extends Vue {
             rdf_type: document.rdf_type,
             title: document.title,
             date: document.date,
+            first_element_date: document.first_element_date,
+            last_element_date: document.last_element_date,
             description: document.description,
             targets: document.targets,
+            has_variables: document.has_variables,
             authors: document.authors,
             language: document.language,
             format: document.format,
-            deprecated: true,
-            keywords: document.keywords
-          }
+            deprecated: document.deprecated,
+            keywords: document.keywords,
+            number_of_elements: document.number_of_elements,
+          },
         };
-      this.updateForDeprecated(form);
+        this.updateForDeprecated(form);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
   updateForDeprecated(form) {
     return this.$opensilex
-     .uploadFileToService("/core/documents", form, null, true)
-     .then((http: OpenSilexResponse<any>) => {
+      .uploadFileToService("/core/documents", form, null, true)
+      .then((http: OpenSilexResponse<any>) => {
         let uri = http.result;
         this.$emit("onUpdate", form);
         this.refresh();
@@ -286,7 +289,7 @@ export default class DocumentTabList extends Vue {
   editDocument(uri: string) {
     console.debug("editDocument" + uri);
     this.$opensilex
-      .getService("opensilex.DocumentsService")  
+      .getService("opensilex.DocumentsService")
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
         let document = http.response.result;
@@ -297,14 +300,18 @@ export default class DocumentTabList extends Vue {
             rdf_type: document.rdf_type,
             title: document.title,
             date: document.date,
+            first_element_date: document.first_element_date,
+            last_element_date: document.last_element_date,
             description: document.description,
             targets: document.targets,
+            has_variables: document.has_variables,
             authors: document.authors,
             language: document.language,
             format: document.format,
             deprecated: document.deprecated,
-            keywords: document.keywords
-          }
+            keywords: document.keywords,
+            number_of_elements: document.number_of_elements,
+          },
         };
         this.documentForm.showEditForm(form);
       })
@@ -313,8 +320,7 @@ export default class DocumentTabList extends Vue {
 
   loadFile(uri: string, title: string, format: string) {
     let path = "/core/documents/" + encodeURIComponent(uri);
-    this.$opensilex
-     .downloadFilefromService(path, title, format);
+    this.$opensilex.downloadFilefromService(path, title, format);
   }
 
   updateFilters() {
@@ -331,15 +337,13 @@ export default class DocumentTabList extends Vue {
   browseSource(source: string) {
     window.open(source);
   }
-
 }
 </script>
 
 <style scoped lang="scss">
-
 .pageActionsBtns {
-    margin-left: 10px;
-    margin-bottom: 10px
+  margin-left: 10px;
+  margin-bottom: 10px;
 }
 </style>
 
@@ -370,4 +374,3 @@ fr:
         delete: Supprimer le Document
         deprecated: Obsolète
 </i18n>
-

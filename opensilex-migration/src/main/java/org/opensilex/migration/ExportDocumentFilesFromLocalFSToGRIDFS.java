@@ -132,7 +132,7 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
             AccountModel accountModel = new AccountModel();
             accountModel.setAdmin(Boolean.TRUE);
 
-            ListWithPagination<DocumentModel> search = documentDAO.search(accountModel, null, null, null, null, null, null, null, null, null, 0, 10000);
+            ListWithPagination<DocumentModel> search = documentDAO.search(accountModel, null, null, null, null, null, null, null, null, null, null, null, null, 0, 10000);
 
             LOGGER.info("Number of documents");
 

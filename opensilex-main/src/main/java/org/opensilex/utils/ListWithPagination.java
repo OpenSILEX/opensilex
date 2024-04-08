@@ -7,11 +7,13 @@ package org.opensilex.utils;
 
 import org.opensilex.utils.pagination.PaginatedIterable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper class to define a paginated list.
@@ -22,26 +24,38 @@ import java.util.stream.Collectors;
 public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
 
     /**
-     * List content for current page.
+     * Constructor for an empty list. Just keep the information about the provided pagination
      */
-    private final List<T> list;
+    public ListWithPagination(long page, long pageSize){
+        super(Collections.emptyList(),page, pageSize,0,0);
+    }
 
     public ListWithPagination(List<T> list) {
         this(list, 0, 0, list.size());
     }
 
-    public ListWithPagination(List<T> list, int page, int pageSize, int total) {
-        super(total, page, pageSize);
-        Objects.requireNonNull(list);
-        this.list = list;
+    /**
+     * Constructor for a non-empty list, with information about provided pagination and the counted element number
+     */
+    public ListWithPagination(List<T> list, long page, long pageSize, long total) {
+        this(list, page, pageSize, total, 0);
     }
 
-    public ListWithPagination(List<T> list, Integer page, Integer pageSize, int total) {
-        this(list,
-                page == null || page < 0 ? 0 : page,
-                pageSize == null || pageSize < 0 ? 0 : pageSize,
-                total);
+    /**
+     * Constructor for a non-empty list, with information about provided pagination, the counted element number and the count limit
+     * which has applied
+     */
+    public ListWithPagination(List<T> list,long page, long pageSize, long total, long countLimit) {
+        super(list, page, pageSize, total, countLimit);
     }
+
+    /**
+     * Constructor for a non-empty list, with information about provided pagination, and a flag about
+     */
+    public ListWithPagination(List<T> list,long page, long pageSize, boolean hasNextElement) {
+        super(list,page, pageSize, hasNextElement);
+    }
+
 
     /**
      * Get list of elements for current page.
@@ -49,7 +63,7 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
      * @return list of elements
      */
     public List<T> getList() {
-        return list;
+        return getSource();
     }
 
     /**
@@ -62,20 +76,16 @@ public class ListWithPagination<T> extends PaginatedIterable<T, List<T>> {
      */
     public <U> ListWithPagination<U> convert(Class<U> resultClass, Function<T, U> converter) {
 
-        List<U> resultList = list.stream()
+        List<U> resultList = getSource().stream()
                 .map(converter)
                 .collect(Collectors.toList());
 
-        return new ListWithPagination<>(resultList, this.page, this.pageSize, this.total);
+        return new ListWithPagination<>(resultList, this.getPage(), this.getPageSize(), this.getTotal());
     }
 
     @Override
     public void forEach(Consumer<T> action) {
-        list.forEach(action);
+        getSource().forEach(action);
     }
 
-    @Override
-    public List<T> getSource() {
-        return getList();
-    }
 }

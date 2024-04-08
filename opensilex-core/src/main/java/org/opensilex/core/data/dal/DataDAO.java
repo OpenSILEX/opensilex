@@ -17,11 +17,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.data.api.DataComputedGetDTO;
-import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.DataExportDTO;
-import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
+import org.opensilex.core.data.api.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.DataValidateUtils;
@@ -37,10 +33,9 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -166,7 +161,6 @@ public class DataDAO {
             Integer pageSize) throws Exception {
 
         Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
         return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
     
@@ -310,7 +304,7 @@ public class DataDAO {
         return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
     }
 
-    public Document getSelectedAgents(List<URI> agents){
+    public Document getSelectedAgents(List< URI> agents){
 
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
@@ -1503,7 +1497,7 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    private Set<URI> getAllDateVariables() throws Exception {
+    public Set<URI> getAllDateVariables() throws Exception {
         return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
             Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
             selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
@@ -1519,13 +1513,13 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    public DataGetDTO modelToDTO(DataModel model) throws Exception {
+    public DataGetDTO modelToGetDTO(DataModel model) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
         return DataGetDTO.getDtoFromModel(model, dateVariables);
     }
 
     /**
-     * Converts a list of {@link DataModel} to a lislt of {@link DataGetDTO}, with the correct conversion if the value is of
+     * Converts a list of {@link DataModel} to a list of {@link DataGetDTO}, with the correct conversion if the value is of
      * type xsd:date. This method should be called as few times as possible (ideally only once), as it performs
      * a SPARQL query.
      *
@@ -1533,21 +1527,15 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DataGetDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
+    public ListWithPagination<DataGetSearchDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
-        List<DataGetDTO> dtoList = new ArrayList<>();
-        modelList.getList().forEach(dataModel -> {
-            DataGetDTO dto = DataGetDTO.getDtoFromModel(dataModel, dateVariables);
-            if (Objects.nonNull(dataModel.getPublisher())) {
-                try {
-                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataModel.getPublisher())));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            dtoList.add(dto);
-        });
-        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
+
+        List<DataGetSearchDTO> dtoList = modelList.getList()
+                .stream()
+                .map(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
+                .collect(Collectors.toList());
+
+        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal(), modelList.getLimitCount());
     }
 
     /**

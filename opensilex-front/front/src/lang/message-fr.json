@@ -145,12 +145,18 @@
                 },
                 "pagination" : {
                     "nbEntries" : " Affiche {limit} à {offset} des {totalRow} éléments",
+                    "nbEntriesNoTotal" : " Affiche {limit} à {offset}",
+                    "totalEntries" : " des {totalRow} éléments",
+                    "showTotalCount" : "Afficher le total des élements",
                     "noEntries" : "Aucun élément trouvé",
                     "numberOfElementsPerPageSelector": "Sélectionner le nombre d'éléments à afficher",
                     "tenElements": "10 éléments",
                     "twentyElements": "20 éléments",
                     "fiftyElements": "50 éléments",
-                    "hundredElements": "100 éléments"
+                    "hundredElements": "100 éléments",
+                    "first": "Première",
+                    "prev": "Précédente",
+                    "next": "Suivante"
                 }
             },
             "addDocument": "Ajouter un document",

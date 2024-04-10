@@ -2,6 +2,7 @@ package org.opensilex.faidare.builder;
 
 import org.opensilex.faidare.model.Faidarev1ContactDTO;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ public class Faidarev1ContactDTOBuilder {
         Faidarev1ContactDTO dto = new Faidarev1ContactDTO();
 
         dto.setEmail(Objects.toString(personModel.getEmail(), null))
-                .setContactDbId(personModel.getUri().toString())
+                .setContactDbId(SPARQLDeserializers.getExpandedURI(personModel.getUri()))
                 .setName(
                         personModel.getLastName().toUpperCase()
                                 + " "

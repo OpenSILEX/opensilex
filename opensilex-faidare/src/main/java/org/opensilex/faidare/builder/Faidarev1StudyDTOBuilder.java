@@ -54,7 +54,7 @@ public class Faidarev1StudyDTOBuilder {
     public Faidarev1StudyDTO fromModel(ExperimentModel model) throws Exception {
         Faidarev1StudyDTO dto = new Faidarev1StudyDTO();
 
-        dto.setStudyDbId(model.getUri().toString())
+        dto.setStudyDbId(SPARQLDeserializers.getExpandedURI(model.getUri()))
                 .setStudyName(model.getName())
                 .setName(model.getName())
                 .setStartDate(Objects.toString(model.getStartDate(), null))
@@ -87,13 +87,14 @@ public class Faidarev1StudyDTOBuilder {
         }
 
         if (!model.getProjects().isEmpty()) {
-            dto.setTrialDbIds(model.getProjects().stream().map(projectModel -> projectModel.getUri().toString()).collect(Collectors.toList()));
+            dto.setTrialDbIds(model.getProjects().stream().map(projectModel -> SPARQLDeserializers.getExpandedURI(projectModel.getUri()))
+                    .collect(Collectors.toList()));
         }
 
         List<FacilityModel> facilitiesList = model.getFacilities();
         if (!facilitiesList.isEmpty()){
             FacilityModel facility = facilitiesList.get(0);
-            dto.setLocationDbId(facility.getUri().toString())
+            dto.setLocationDbId(SPARQLDeserializers.getExpandedURI(facility.getUri()))
                     .setLocationName(facility.getName());
         }
 
@@ -120,7 +121,7 @@ public class Faidarev1StudyDTOBuilder {
                 null
         );
         if (!variablesSet.isEmpty()) {
-            dto.setObservationVariableDbIds(variablesSet.stream().map(URI::toString).collect(Collectors.toList()));
+            dto.setObservationVariableDbIds(variablesSet.stream().map(SPARQLDeserializers::getExpandedURI).collect(Collectors.toList()));
         }
 
 
@@ -154,7 +155,9 @@ public class Faidarev1StudyDTOBuilder {
             List<SPARQLResult> selectedAccessions = sparql.executeSelectQuery(accessionSelect);
 
             if (!selectedAccessions.isEmpty()) {
-                dto.setGermplasmDbIds(new ArrayList<>(selectedAccessions.stream().map(accession -> accession.getStringValue("germplasm")).collect(Collectors.toSet())));
+                dto.setGermplasmDbIds(new ArrayList<>(selectedAccessions
+                        .stream().map(accession -> SPARQLDeserializers.getExpandedURI(accession.getStringValue("germplasm")))
+                        .collect(Collectors.toSet())));
             }
         } catch (SPARQLException e) {
             LOGGER.error("Error while fetching the accessions of study " + dto.getStudyDbId(), e);

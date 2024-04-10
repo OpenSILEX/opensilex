@@ -3,6 +3,7 @@ package org.opensilex.faidare.builder;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.faidare.model.Faidarev1ObservationVariableDTO;
 import org.opensilex.faidare.model.Faidarev1TraitDTO;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,22 +20,9 @@ public class Faidarev1ObservationVariableDTOBuilder {
 
         Faidarev1MethodDTOBuilder methodDTOBuilder = new Faidarev1MethodDTOBuilder();
         Faidarev1ScaleDTOBuilder scaleDTOBuilder = new Faidarev1ScaleDTOBuilder();
-        dto.setObservationVariableDbId(variableModel.getUri().toString())
+        dto.setObservationVariableDbId(SPARQLDeserializers.getExpandedURI(variableModel.getUri()))
                 .setName(variableModel.getName())
                 .setDate(Objects.toString(variableModel.getPublicationDate(), null))
-                .setTrait(
-                        new Faidarev1TraitDTO()
-                                .setName(
-                                        Optional.ofNullable(variableModel.getTraitName())
-                                                .orElse(String.format("%s_%s",
-                                                        variableModel.getEntity().getName(),
-                                                        variableModel.getCharacteristic().getName())
-                                                )
-                                )
-                                .setTraitDbId(Objects.toString(variableModel.getTraitUri(), null))
-                                .setAttribute(Objects.toString(variableModel.getCharacteristic().getName(), null))
-                                .setEntity(Objects.toString(variableModel.getEntity().getName(), null))
-                )
                 .setMethod(methodDTOBuilder.fromModel(variableModel.getMethod()))
                 .setScale(scaleDTOBuilder.fromModel(variableModel.getUnit(), variableModel.getDataType()))
                 .setCrop(
@@ -47,9 +35,24 @@ public class Faidarev1ObservationVariableDTOBuilder {
                 .setXref(
                         Optional.ofNullable(variableModel.getExactMatch())
                                 .filter(list -> list.size() == 1)
-                                .map(list -> list.get(0).toString())
+                                .map(list -> SPARQLDeserializers.getExpandedURI(list.get(0)))
                                 .orElse(null)
                 );
+
+        Faidarev1TraitDTO traitDTO = new Faidarev1TraitDTO()
+                .setName(
+                        Optional.ofNullable(variableModel.getTraitName())
+                                .orElse(String.format("%s_%s",
+                                        variableModel.getEntity().getName(),
+                                        variableModel.getCharacteristic().getName())
+                                )
+                )
+                .setAttribute(Objects.toString(variableModel.getCharacteristic().getName(), null))
+                .setEntity(Objects.toString(variableModel.getEntity().getName(), null));
+        if (Objects.nonNull(variableModel.getTraitUri())) {
+            traitDTO.setTraitDbId(SPARQLDeserializers.getExpandedURI(variableModel.getTraitUri()));
+        }
+        dto.setTrait(traitDTO);
 
         return dto;
     }

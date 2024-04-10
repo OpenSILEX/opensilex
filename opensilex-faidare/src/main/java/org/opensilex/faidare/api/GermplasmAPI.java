@@ -7,11 +7,11 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.builder.Faidarev1GermplasmDTOBuilder;
+import org.opensilex.faidare.dal.Faidarev1GermplasmDAO;
 import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
+import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -70,7 +70,6 @@ public class GermplasmAPI extends FaidareCall {
             @ApiParam(value = "Search by germplasmDbId") @QueryParam("germplasmDbId") URI uri,
             @ApiParam(value = "Search by germplasmPUI") @QueryParam("germplasmPUI") URI germplasmPUI,
             @ApiParam(value = "Search by germplasmName") @QueryParam("germplasmName") String germplasmName,
-            @ApiParam(value = "Search by commonCropName") @QueryParam("commonCropName") String commonCropName,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -87,23 +86,37 @@ public class GermplasmAPI extends FaidareCall {
             return response.getResponse();
         }
 
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-
         if (germplasmPUI != null && uri == null) {
             uri = germplasmPUI;
         }
 
-        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
+        /*GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+
+        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO, ontologyDAO);
 
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
                 currentUser,
                 uri,
                 germplasmName,
-                commonCropName,
+                "",
                 page,
                 pageSize
         );
-        
+
+        TimeUnit.MILLISECONDS.sleep(10000);*/
+
+        Faidarev1GermplasmDAO germplasmDAO = new Faidarev1GermplasmDAO(sparql, nosql);
+
+        ListWithPagination<Faidarev1GermplasmModel> resultList = germplasmDAO.faidareSearch(
+                currentUser,
+                uri,
+                germplasmName,
+                page,
+                pageSize
+        );
+
+        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
+
         // Convert paginated list to DTO
         ListWithPagination<Faidarev1GermplasmDTO> resultDTOList = resultList.convert(
                 Faidarev1GermplasmDTO.class,

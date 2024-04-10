@@ -15,7 +15,7 @@ public class Faidarev1ScaleDTOBuilder {
     public Faidarev1ScaleDTO fromModel(UnitModel unitModel){
         Faidarev1ScaleDTO dto = new Faidarev1ScaleDTO();
 
-        dto.setScaleDbId(unitModel.getUri().toString())
+        dto.setScaleDbId(SPARQLDeserializers.getExpandedURI(unitModel.getUri()))
                 .setName(unitModel.getName());
 
         return dto;

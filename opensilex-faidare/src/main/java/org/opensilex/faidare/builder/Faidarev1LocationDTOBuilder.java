@@ -11,6 +11,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.faidare.model.Faidarev1LocationDTO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,10 +27,10 @@ public class Faidarev1LocationDTOBuilder {
 
     public Faidarev1LocationDTO fromModel(FacilityModel model, AccountModel currentAccount) throws Exception {
         Faidarev1LocationDTO dto = new Faidarev1LocationDTO();
-        dto.setLocationDbId(model.getUri().toString())
+        dto.setLocationDbId(SPARQLDeserializers.getExpandedURI(model.getUri()))
                 .setLocationName(model.getName())
                 .setName(model.getName())
-                .setLocationType(model.getType().toString());
+                .setLocationType(SPARQLDeserializers.getExpandedURI(model.getType()));
 
 
         if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){

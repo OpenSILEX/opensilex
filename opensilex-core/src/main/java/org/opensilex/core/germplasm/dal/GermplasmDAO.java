@@ -362,19 +362,19 @@ public class GermplasmDAO {
         }
     }
 
-    private void appendUriFilter(SelectBuilder select, URI uri) {
+    protected void appendUriFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
             select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()))));
         }
     }
 
-    private void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
+    protected void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
         if (rdfType != null) {
             select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
         }
     }
 
-    private void appendRegexLabelFilter(SelectBuilder select, String label) {
+    protected void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_FIELD, label));
         }

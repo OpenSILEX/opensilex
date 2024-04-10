@@ -6,6 +6,7 @@ import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.faidare.model.Faidarev1TrialAdditionalInfoDTO;
 import org.opensilex.faidare.model.Faidarev1TrialDTO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -27,7 +28,6 @@ public class Faidarev1TrialDTOBuilder {
                 .setEndDate(Objects.toString(projectModel.getEndDate(), null))
                 .setStartDate(Objects.toString(projectModel.getStartDate(), null))
                 .setTrialName(Objects.toString(projectModel.getName(), null))
-                .setTrialDbId(Objects.toString(projectModel.getUri(), null))
                 .setTrialType(Objects.toString(projectModel.getObjective(), null))
                 .setStudies(
                         this.experimentDAO.search(
@@ -51,13 +51,17 @@ public class Faidarev1TrialDTOBuilder {
                                 projectModel.getDescription(),
                                 projectModel.getFinancialFunding(),
                                 projectModel.getRelatedProjects()
-                                        .stream().map(projectModel1 -> projectModel1.getUri().toString())
+                                        .stream().map(projectModel1 -> SPARQLDeserializers.getExpandedURI(projectModel1.getUri()))
                                         .collect(Collectors.toList()),
                                 projectModel.getCoordinators()
                                         .stream().map(person -> contactDTOBuilder.fromModel(person, null))
                                         .collect(Collectors.toList())
                         )
                 );
+
+        if (Objects.nonNull(projectModel.getUri())) {
+            dto.setTrialDbId(SPARQLDeserializers.getExpandedURI(projectModel.getUri()));
+        }
 
         return dto;
     }

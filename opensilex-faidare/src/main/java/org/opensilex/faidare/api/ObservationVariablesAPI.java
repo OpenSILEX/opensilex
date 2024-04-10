@@ -17,8 +17,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -77,7 +77,7 @@ public class ObservationVariablesAPI extends FaidareCall {
                 throw new NotFoundURIException(observationVariableDbId);
             }            
         } else {
-            variables = varDAO.search(null, null, page, pageSize,currentUser.getLanguage());
+            variables = varDAO.search(null, null, page, pageSize, currentUser.getLanguage());
         }
 
         Faidarev1ObservationVariableDTOBuilder observationVariableDTOBuilder = new Faidarev1ObservationVariableDTOBuilder();

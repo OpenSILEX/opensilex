@@ -172,6 +172,7 @@ export default class DeviceForm extends Vue {
 
     reset() {
         this.uriGenerated = true;
+        this.attTable.resetTable();
     }
 
     create(form: DeviceCreationDTO){
@@ -192,7 +193,7 @@ export default class DeviceForm extends Vue {
     attributesArray = [];
 
     readAttributes(metadata: { [key: string]: string; }) {
-        AttributesTable.readAttributes(metadata,this.attributesArray);
+        this.attributesArray = AttributesTable.readAttributes(metadata);
     }
 
     typeSwitch(type: string, initialLoad: boolean) {

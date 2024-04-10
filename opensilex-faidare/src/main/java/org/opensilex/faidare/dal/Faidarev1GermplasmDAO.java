@@ -10,6 +10,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -39,6 +40,12 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
     public ListWithPagination<Faidarev1GermplasmModel> faidareSearch(AccountModel user, URI germplasmDbId, String germplasmName, int page, int pageSize) throws Exception {
 
+        /* Count the number of accessions
+
+        SELECT  (count(distinct *) AS ?count)
+        WHERE
+        { ?uri  rdf:type  vocabulary:Accession}*/
+
         SelectBuilder accessionsCount = new SelectBuilder();
 
         Var uriVar = makeVar("uri");
@@ -57,10 +64,73 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
             throw new SPARQLException("Invalid count query");
         }
 
+        /* Get the user's experimentations
+
+        SELECT DISTINCT  ?uri ?rdfType ?rdfTypeName ?endDate ?lastUpdateDate ?name ?description ?publisher ?isPublic ?publicationDate ?startDate ?objective
+        WHERE
+        { ?rdfType (rdfs:subClassOf)* vocabulary:Experiment
+                OPTIONAL
+            { ?rdfType  rdfs:label  ?rdfTypeName
+                FILTER langMatches(lang(?rdfTypeName), "en")
+            }
+            OPTIONAL
+            { ?rdfType  rdfs:label  ?rdfTypeName
+                FILTER langMatches(lang(?rdfTypeName), "")
+            }
+            GRAPH <http://opensilex.test/set/experiment>
+            { ?uri  rdf:type              ?rdfType ;
+                vocabulary:startDate  ?startDate ;
+                vocabulary:hasObjective  ?objective
+                OPTIONAL
+                { ?uri  vocabulary:endDate  ?endDate}
+                OPTIONAL
+                { ?uri  dc:modified  ?lastUpdateDate}
+                OPTIONAL
+                { ?uri  rdfs:label  ?name}
+                OPTIONAL
+                { ?uri  rdfs:comment  ?description}
+                OPTIONAL
+                { ?uri  dc:publisher  ?publisher}
+                OPTIONAL
+                { ?uri  vocabulary:isPublic  ?isPublic}
+                OPTIONAL
+                { ?uri  dc:issued  ?publicationDate}
+            }
+            FILTER ( ! isBlank(?uri) )
+        }*/
+
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
 
-        final Node germplasmGraph = sparql.getDefaultGraph(Faidarev1GermplasmModel.class);
+        /* Get the accessions with the experimentations the user has access to that they are used in
+
+        SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
+        WHERE
+        { ?uri  rdf:type  vocabulary:Accession
+            GRAPH <http://opensilex.test/set/germplasm>
+            { OPTIONAL
+                { ?uri  foaf:homepage  ?website}
+                OPTIONAL
+                { ?uri  vocabulary:hasId  ?code}
+                OPTIONAL
+                { ?uri  vocabulary:fromInstitute  ?institute}
+                OPTIONAL
+                { ?uri  vocabulary:fromSpecies  ?species}
+                OPTIONAL
+                { ?uri  vocabulary:fromVariety  ?variety}
+                OPTIONAL
+                { ?variety  rdfs:label  ?variety_name}
+            }
+            GRAPH ?experiment_uri
+            { OPTIONAL
+                { ?so  vocabulary:hasGermplasm  ?uri}}
+            GRAPH <http://opensilex.test/set/germplasm>
+            { ?uri  rdfs:label  ?label}
+            VALUES ?experiment_uri { opensilex-test:experiment_uri_10 opensilex-test:experiment_uri_9 opensilex-test:experiment_uri_8 opensilex-test:experiment_uri_7 opensilex-test:experiment_uri_6 opensilex-test:experiment_uri_5 opensilex-test:experiment_uri_4 opensilex-test:experiment_uri_3 opensilex-test:experiment_uri_2 opensilex-test:experiment_uri_1 }
+        }
+        GROUP BY ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name*/
+
+        final Node germplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
         SelectBuilder accessions = new SelectBuilder();
 
         accessions.addVar(uriVar);

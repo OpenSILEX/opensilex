@@ -10,12 +10,6 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 import java.net.URI;
 import java.util.List;
 
-@SPARQLResource(
-        ontology = Oeso.class,
-        resource = "Germplasm",
-        graph = GermplasmModel.GRAPH,
-        prefix = "germplasm"
-)
 public class Faidarev1GermplasmModel extends SPARQLNamedResourceModel<Faidarev1GermplasmModel> implements ClassURIGenerator<Faidarev1GermplasmModel> {
 
     public static final String GRAPH = "germplasm";

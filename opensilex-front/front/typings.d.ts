@@ -4,6 +4,3 @@ declare module '*.md' {
     export default Vue
 }
 
-declare module "tabulator-tables" {
-    export default Tabulator;
-}

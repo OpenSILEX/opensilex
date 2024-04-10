@@ -3,7 +3,7 @@
     <opensilex-PageActions>
       <opensilex-CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
-        @click="dataForm.showCreateForm()"
+        @click="showImportForm()"
         label="OntologyCsvImporter.import"
         class="greenThemeColor createButton"
       ></opensilex-CreateButton>
@@ -25,7 +25,7 @@
       <opensilex-PageContent class="pagecontent">
         <!-- Toggle Sidebar--> 
         <div class="searchMenuContainer"
-          v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+          v-on:click="toggleFilter()"
           :title="searchFiltersPannel()">
           <div class="searchMenuIcon">
             <i class="icon ik ik-search"></i>
@@ -34,9 +34,9 @@
 
         <!-- FILTERS -->
         <Transition>
-          <div v-show="SearchFiltersToggle">
+          <div v-show="toggleSearchFilters">
 
-            <opensilex-SearchFilterField
+            <opensilex-SearchFilterField v-if="loadSearchFilters"
               ref="searchField"
               :withButton="true"
               label="DataView.filter.label"
@@ -182,8 +182,8 @@
       </opensilex-PageContent>
     </template>
 
-    <opensilex-ModalForm
-      ref="dataForm"
+    <opensilex-ModalForm v-if="renderImportForm"
+      ref="modalDataForm"
       :initForm="initFormData"
       createTitle="DataImportForm.create"
       editTitle="DataImportForm.update"
@@ -244,6 +244,10 @@ export default class ExperimentData extends Vue {
     creationDate: undefined,
   };
 
+  toggleSearchFilters: boolean = false;
+  loadSearchFilters: boolean = false;
+  renderImportForm: boolean = false;
+
   data(){
     return {
       SearchFiltersToggle : false,
@@ -251,7 +255,7 @@ export default class ExperimentData extends Vue {
   }
 
   @Ref("dataList") readonly dataList!: any;
-  @Ref("dataForm") readonly dataForm!: any;
+  @Ref("modalDataForm") readonly modalDataForm!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
@@ -301,6 +305,27 @@ export default class ExperimentData extends Vue {
       operators: []
     };
     // Only if search and reset button are use in list
+  }
+
+  /**
+   * Show or hide the search filter (v-show) on the filter div
+   * Trigger render of search filters selector (v-if).
+   * This ensures that API methods corresponding with the selector are not executed
+   * at the render of this component but only at the first toggle of the filter
+   *
+   */
+  toggleFilter() {
+    this.toggleSearchFilters = !this.toggleSearchFilters;
+    if (!this.loadSearchFilters) {
+      this.loadSearchFilters = true;
+    }
+  }
+
+  showImportForm(){
+    this.renderImportForm = true;
+    this.$nextTick(() => {
+      this.modalDataForm.showCreateForm();
+    });
   }
 
   refreshSoSelector() {

@@ -409,6 +409,16 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
     }
 
+    @Test
+    public void testDeleteReturn404ResponseIfUriDoesntExists() throws Exception {
+        String unexistantUri = "http://fake/uri";
+        Response response = getDeleteByUriResponse(target(deletePath), unexistantUri);
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+
+
+
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(

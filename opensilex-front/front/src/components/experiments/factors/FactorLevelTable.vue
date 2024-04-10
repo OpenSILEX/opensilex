@@ -60,13 +60,10 @@
             >
               {{ $t(errors[0]) }}
             </div>
-            <VueTabulator
-              ref="tabulatorRef"
-              class="table-light table-bordered"
-              v-model="internalFactorLevels"
-              :options="options"
-              @cell-click="cellActions"
-            />
+            <v-slot v-model="internalFactorLevels"/>
+<!--            tabulator -->
+            <div ref="table" class="tab"> </div>
+
           </ValidationProvider>
         </b-col>
       </b-row>
@@ -77,12 +74,14 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
+import {Component, Prop, Ref, PropSync, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { FactorsService } from "opensilex-core/index";
 import { extend } from "vee-validate";
 import HttpResponse from "../../../lib/HttpResponse";
+import {ColumnDefinition, TabulatorFull as Tabulator} from "tabulator-tables";
+import {FactorLevelGetDTO} from "opensilex-core/model/factorLevelGetDTO";
 
 extend("requiredTabulator", (value) => {
   let valid = true;
@@ -136,12 +135,6 @@ export default class FactorLevelTable extends Vue {
   service: FactorsService;
   langs: any = {
     fr: {
-      //French language definition
-      columns: {
-        name: "Nom",
-        description: "Description",
-        actions: "Supprimer",
-      },
       pagination: {
         first: "Premier",
         first_title: "Premier Page",
@@ -154,11 +147,6 @@ export default class FactorLevelTable extends Vue {
       },
     },
     en: {
-      columns: {
-        name: "Name", //replace the title of column name with the value "Name"
-        description: "Description",
-        actions: "Delete",
-      },
       pagination: {
         first: "First", //text for the first page button
         first_title: "First Page", //tooltip text for the first page button
@@ -172,9 +160,10 @@ export default class FactorLevelTable extends Vue {
     },
   };
 
-  @Ref("tabulatorRef") readonly tabulatorRef!: any;
-
   @Ref("validationProvider") readonly validationProvider!: any;
+
+  @Ref("table") readonly table!: any;
+
 
   @Prop({ default: false })
   editMode: boolean;
@@ -184,34 +173,31 @@ export default class FactorLevelTable extends Vue {
       return [];
     },
   })
-  internalFactorLevels: any[];
-
-  get tableColumns(): any[] {
+  internalFactorLevels: Array<FactorLevelGetDTO>;
+  
+  get tableColumns(): ColumnDefinition[] {
     return [
       {
         title: "Generated Uri",
         field: "uri",
-        formater: "string",
         widthGrow: 0.5,
         visible: this.editMode,
       },
       {
-        title: 'Name<span class="required">*</span>',
+        title: this.$t("component.factorLevel.name")+' <span class="required">*</span>',
         field: "name",
-        formater: "string",
         editor: "input",
         validator: ["required", "unique"],
         widthGrow: 0.5,
       },
       {
-        title: "description",
+        title: this.$t("component.factorLevel.description").toString(),
         field: "description",
-        formater: "string",
         editor: "input",
         widthGrow: 1,
       },
       {
-        title: "Delete",
+        title: this.$t("component.factorLevel.delete").toString(),
         field: "actions",
         headerSort: false,
         widthGrow: 0.2,
@@ -220,6 +206,13 @@ export default class FactorLevelTable extends Vue {
         },
       },
     ];
+  }
+
+  private tabulator: Tabulator= null;
+
+  @Watch("internalFactorLevels")
+  newData(value: Array<FactorLevelGetDTO>) {
+    this.tabulator.replaceData(value);
   }
 
   created() {
@@ -231,9 +224,11 @@ export default class FactorLevelTable extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       (lang) => {
-        this.changeTableLang(lang);
+        //change columns translation on lang change
+        this.instanciateTabulator();
       }
     );
+    this.instanciateTabulator()
   }
 
   beforeDestroy() {
@@ -414,7 +409,7 @@ export default class FactorLevelTable extends Vue {
   addEmptyRow() : void  {
     console.debug("Add row", "empty row", this.hasEmptyValue());
     if (!this.hasEmptyValue()) {
-      Vue.set(this.internalFactorLevels, this.internalFactorLevels.length, {
+      this.internalFactorLevels = this.internalFactorLevels.concat({
         uri: null,
         name: null,
         description: null,
@@ -428,18 +423,28 @@ export default class FactorLevelTable extends Vue {
   addRow(row): void  {
     console.debug("Add row", row, "empty row", this.hasEmptyValue());
     if (row.name != undefined && row.name != null && row.name != "") {
-      Vue.set(this.internalFactorLevels, this.internalFactorLevels.length, row);
+      this.internalFactorLevels = this.internalFactorLevels.concat(row);
     }
-  }
-
-  changeTableLang(lang: string): void  {
-    let tabulatorInstance = this.tabulatorRef.getInstance();
-    tabulatorInstance.setLocale(lang);
   }
 
   csvExport(): void {
     let arrData = [{ name: "", description: "" }];
     this.$papa.download(this.$papa.unparse(arrData), "factorLevelTemplate");
+  }
+
+  private instanciateTabulator() {
+    this.tabulator = new Tabulator(this.table, {
+      data: this.internalFactorLevels, //link data to table
+      reactiveData: true, //enable data reactivity
+      columns: this.tableColumns, //define table columns
+      layout: "fitColumns",
+      layoutColumnsOnNewData: true,
+      index: "uri",
+    });
+
+    this.tabulator.on("cellClick", (e, cell) => {
+      this.cellActions(e, cell);
+    });
   }
 }
 </script>
@@ -474,6 +479,7 @@ en:
         factor-badname-levels: Must not contains -,+,=,<,>,=,?,/,*,&
         associated-factor-level : You can't remove a factor level which is associated to a scientific object 
         minimum-factor-level : You must have one factor level a least
+      delete: delete
 fr:
   component:
     factorLevel:
@@ -500,6 +506,7 @@ fr:
         factor-badname-levels: Ne doit pas contenir -,+,=,<,>,=,?,/,*,&
         associated-factor-level : Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
         minimum-factor-level : Vous devez au moins avoir un niveau de facteur
+      delete: supprimer
         
 
 </i18n>

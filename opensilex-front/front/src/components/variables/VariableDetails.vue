@@ -250,18 +250,25 @@ export default class VariableDetails extends Vue {
         });
   }
 
-  getCountDataPromise(uri) {
+  getCountDataPromise(variable: string) {
+    // Check if there exist at least one data linked to the variable
     return this.dataService.countData(
         undefined,
         undefined,
         undefined,
         undefined,
-        undefined,
-        [uri],
-        undefined,
+        [variable],
         undefined,
         undefined,
-        undefined);
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        1,
+        undefined,
+    );
   }
 
   getPath(elementType: string, uri: string) {

@@ -8,6 +8,8 @@ package org.opensilex.nosql.mongodb;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import com.mongodb.client.model.CountOptions;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.service.ServiceConfig;
@@ -71,15 +73,35 @@ public interface MongoDBConfig extends ServiceConfig {
             value = "Max MongoDB server selection timeout",
             defaultInt = 10000
     )
-    int serverSelectionTimeout();
+    int serverSelectionTimeoutMs();
 
     /**
      * @see com.mongodb.connection.SocketSettings#getReadTimeout(TimeUnit)
      */
     @ConfigDescription(
             value = "Max socket read timeout",
-            defaultInt = 30000
+            defaultInt = 120000
     )
     int readTimeoutMs();
+
+    /**
+     * @see CountOptions#getLimit()
+     * @see <a href=https://www.mongodb.com/docs/manual/reference/method/db.collection.count/#syntax>Mongo count options</a>
+     */
+    @ConfigDescription(
+            value = "Maximum number of document to count when using countDocument() before a paginated search",
+            defaultInt = 10000
+    )
+    int maxCountLimit();
+
+    /**
+     * @see CountOptions#getLimit()
+     * @see <a href=https://www.mongodb.com/docs/manual/reference/method/db.collection.count/#syntax>Mongo count options</a>
+     */
+    @ConfigDescription(
+            value = "Maximum number of page to count when using countDocument() before a paginated search",
+            defaultInt = 5
+    )
+    int maxPageCountLimit();
 
 }

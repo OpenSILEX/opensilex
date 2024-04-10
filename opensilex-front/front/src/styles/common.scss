@@ -129,8 +129,8 @@ label::first-letter {
 @import "~icon-kit/dist/css/iconkit.min.css";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-vue/src/index.scss";
-$textSize: 12; 
-@import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4.scss";
+$textSize: 12;
+@import "~tabulator-tables/dist/css/tabulator_bootstrap4.min.css";
 
 @media (max-width: 768px) {
   .hidden-phone {

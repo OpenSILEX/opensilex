@@ -8,9 +8,8 @@
  ******************************************************************************/
 package org.opensilex.core.organisation.dal.site;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +20,7 @@ import java.util.Objects;
 /**
  * @author Valentin Rigolle
  */
-public class SiteSearchFilter extends SparqlSearchFilter {
+public class SiteSearchFilter extends SearchFilter {
     private String namePattern;
     private List<URI> sites;
     private List<URI> organizations;

@@ -9,22 +9,23 @@
 
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>
-                <b-nav-item
-                    :active="isOverviewTab()"
-                    :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
-                > {{ $t("FacilityView.overview") }}
-                  <img
-                       v-bind:src="$opensilex.getResourceURI('images/construction.png')"
-                       class="wip-icon"
-                       alt="work in progress"
-                  >
-                </b-nav-item>
 
                 <b-nav-item
                         :active="isDetailsTab()"
                         :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
                 >{{ $t("FacilityView.details") }}
                 </b-nav-item>
+
+              <b-nav-item
+                  :active="isOverviewTab()"
+                  :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
+              > {{ $t("FacilityView.overview") }}
+                <img
+                    v-bind:src="$opensilex.getResourceURI('images/construction.png')"
+                    class="wip-icon"
+                    alt="work in progress"
+                >
+              </b-nav-item>
 
                 <b-nav-item
                         :active="isAnnotationTab()"
@@ -42,15 +43,16 @@
 
         <opensilex-PageContent>
             <template v-slot>
-                <opensilex-FacilityMonitoringView
-                    v-if="isOverviewTab()"
-                    :uri="uri"
-                ></opensilex-FacilityMonitoringView>
 
                 <opensilex-FacilityDetails
                     v-if="isDetailsTab()"
                     :uri="uri"
                 ></opensilex-FacilityDetails>
+
+              <opensilex-FacilityMonitoringView
+                  v-if="isOverviewTab()"
+                  :uri="uri"
+              ></opensilex-FacilityMonitoringView>
 
                 <opensilex-DocumentTabList
                         v-else-if="isDocumentTab()"

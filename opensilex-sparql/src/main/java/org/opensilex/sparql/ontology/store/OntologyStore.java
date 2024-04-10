@@ -15,6 +15,7 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiPredicate;
@@ -96,6 +97,14 @@ public interface OntologyStore {
         }
         return properties;
     }
+
+    /**
+     *
+     * @param classURI URI of a {@link ClassModel}
+     * @param ancestorUri URI of a {@link ClassModel} that is an ancestor of classURI
+     * @return an ordered set containing all ancestors of classURI, going from ones that are highest in the hierarchy to ones that are lowest
+     */
+    LinkedHashSet<String> getAncestorHierarchy(URI classURI, URI ancestorUri);
 
     /**
      * @param classURI URI of a {@link ClassModel} (required)

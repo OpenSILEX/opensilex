@@ -76,6 +76,14 @@ export default class TypeForm extends Vue {
   })
   ignoreRoot: boolean;
 
+  /**
+   * If we want to make some types hidden from the possible choices
+   */
+  @Prop({
+    default: () => { return []}
+  })
+  unselectableTypes: Array<string>;
+
   typesOptions = null;
 
   id: string;
@@ -110,7 +118,12 @@ export default class TypeForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         this.$opensilex.enableLoader();
         this.typesOptions = this.$opensilex.buildTreeListOptions(
-          http.response.result
+          http.response.result,
+          {
+            expanded: null,
+            disableSubTree: null,
+            nodesToIgnoreList: this.unselectableTypes.map(e => this.$opensilex.getLongUri(e))
+          }
         );
         if (callback) {
           callback();

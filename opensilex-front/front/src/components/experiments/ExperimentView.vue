@@ -42,10 +42,10 @@
                         :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.data") }}
                     <span
-                        v-if="!dataCountIsLoading && data > 0"
+                        v-if="!dataCountIsLoading && dataCount > 0"
                         class ="tabWithElements"
                     >
-                        {{$opensilex.$numberFormatter.formateResponse(data)}}
+                        {{$opensilex.$numberFormatter.formateResponse(dataCount)}}
                     </span>
                 </b-nav-item
                 >
@@ -174,7 +174,7 @@
         annotations: number;
         documents: number;
         factors: number;
-        data: number;
+        dataCount: number;
         scientificObjects: number;
 
         annotationsCountIsLoading: boolean = true;
@@ -282,8 +282,10 @@
             }).catch(this.$opensilex.errorHandler);
         }
 
-        searchData(){
-            return this.$DataService
+      searchData() {
+        // Limit count of data for performance reasons        -->
+
+        return this.$DataService
             .countData(
                 undefined,
                 undefined,
@@ -294,15 +296,20 @@
                 undefined,
                 undefined,
                 undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                1000,
                 undefined
             ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
-                if (http && http.response){
-                    this.data = http.response.result as number;
-                    this.dataCountIsLoading = false;
-                    return this.data
-                }
+              if (http && http.response) {
+                this.dataCount = http.response.result as number;
+                this.dataCountIsLoading = false;
+                return this.dataCount
+              }
             }).catch(this.$opensilex.errorHandler);
-        }
+      }
         
         searchFactors(){
             return this.$FactorsService

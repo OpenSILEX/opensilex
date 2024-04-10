@@ -9,7 +9,7 @@
 package org.opensilex.core.organisation.dal.facility;
 
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * @author Valentin Rigolle
  */
-public class FacilitySearchFilter extends SparqlSearchFilter {
+public class FacilitySearchFilter extends SearchFilter {
     private AccountModel user;
     private String pattern;
     private List<URI> facilities;

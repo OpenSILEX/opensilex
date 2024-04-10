@@ -1,10 +1,10 @@
 <template>
   <b-button v-if="href"
-            :title="$t(label)"
-            :disabled="disabled"
-            :href="href"
-            variant="outline-primary"
-            target="_blank"
+    :title="$t(label)"
+    :disabled="disabled"
+    :href="href"
+    variant="outline-primary"
+    target="_blank"
   >
     <slot name="icon">
       <opensilex-Icon icon="fa#external-link-alt"/>
@@ -13,10 +13,10 @@
   </b-button>
 
   <b-button v-else
-            @click.prevent="$emit('click')"
-            :title="$t(label)"
-            :variant="variant"
-            :disabled="disabled"
+    @click.prevent="$emit('click')"
+    :title="$t(label)"
+    :variant="variant"
+    :disabled="disabled"
   >
     <slot name="icon">
       <opensilex-Icon :icon="icon"/>

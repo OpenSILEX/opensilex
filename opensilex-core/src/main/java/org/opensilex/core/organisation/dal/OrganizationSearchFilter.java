@@ -1,12 +1,12 @@
 package org.opensilex.core.organisation.dal;
 
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.util.List;
 
-public class OrganizationSearchFilter extends SparqlSearchFilter {
+public class OrganizationSearchFilter extends SearchFilter {
 
     private String nameFilter;
     private List<URI> restrictedOrganizations;

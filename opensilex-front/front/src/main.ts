@@ -116,12 +116,6 @@ import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 Vue.use(VueFormWizard)
 console.debug("VueFormWizard plugin initialized !");
 
-// Initialize Vue Tabulator
-require('tabulator-tables');
-import VueTabulator from 'vue-tabulator';
-Vue.use(VueTabulator);
-console.debug("VueTabulator plugin initialized !");
-
 // Initialize Vue Country flag
 import CountryFlag from 'vue-country-flag'
 Vue.component('country-flag', CountryFlag);
@@ -359,6 +353,13 @@ extend("wkt", {
     return parse(value) != null;
   }
 });
+
+extend("containsPoint",{
+  validate: value =>{
+    const regex= /^point/i;
+    return regex.test(value);
+  }
+})
 
 // created on 09-26-2023 for the vue-tel-input component in the personForm.
 // used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)

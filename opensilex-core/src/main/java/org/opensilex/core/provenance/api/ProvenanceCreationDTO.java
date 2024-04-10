@@ -8,13 +8,6 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
-import java.text.ParseException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
@@ -22,8 +15,15 @@ import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
+
+import java.net.URI;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Provenance Creation DTO
@@ -67,10 +67,10 @@ public class ProvenanceCreationDTO {
     protected UserGetDTO publisher;
 
     @JsonProperty("issued")
-    protected Instant publicationDate;
+    protected OffsetDateTime publicationDate;
 
     @JsonProperty("modified")
-    protected Instant lastUpdatedDate;
+    protected OffsetDateTime lastUpdatedDate;
 
     public URI getUri() {
         return uri;
@@ -120,19 +120,19 @@ public class ProvenanceCreationDTO {
         this.publisher = publisher;
     }
 
-    public Instant getPublicationDate() {
+    public OffsetDateTime getPublicationDate() {
         return publicationDate;
     }
 
-    public void setPublicationDate(Instant publicationDate) {
+    public void setPublicationDate(OffsetDateTime publicationDate) {
         this.publicationDate = publicationDate;
     }
 
-    public Instant getLastUpdatedDate() {
+    public OffsetDateTime getLastUpdatedDate() {
         return lastUpdatedDate;
     }
 
-    public void setLastUpdatedDate(Instant lastUpdatedDate) {
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
@@ -145,7 +145,7 @@ public class ProvenanceCreationDTO {
             model.setPublisher(publisher.getUri());
         }
         if (Objects.nonNull(publicationDate)) {
-            model.setPublicationDate(publicationDate);
+            model.setPublicationDate(publicationDate.toInstant());
         }
         if (activity != null) {
             List<ActivityModel> activities = new ArrayList<>();

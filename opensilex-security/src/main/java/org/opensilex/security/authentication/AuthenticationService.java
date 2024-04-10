@@ -195,8 +195,6 @@ public class AuthenticationService extends BaseService implements Service {
      * Forgot password thread map by users
      */
     private ConcurrentHashMap<URI, Thread> schedulerForgotUserPasswordRegistry = new ConcurrentHashMap<>();
-
-    public static final String DEFAULT_SUPER_ADMIN_EMAIL = "admin@opensilex.org";
     
     /**
      * RSA encryption algorithm for JWT token generation
@@ -225,7 +223,7 @@ public class AuthenticationService extends BaseService implements Service {
     }
 
     /**
-     * Generate password has with bcrypt
+     * Generate password hash with bcrypt
      *
      * @param password Password to hash
      * @return Hashed password

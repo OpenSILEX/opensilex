@@ -11,6 +11,7 @@ package org.opensilex.sparql.owl;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.util.DateTimeStruct;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -19,6 +20,8 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -27,6 +30,8 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -150,6 +155,14 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
      * @param context error context
      */
     public void addInvalidURIError(T context){
+        this.nbError++;
+    }
+
+    /**
+     * Define how to handle an error about an incorrect Date
+     * @param context error context
+     */
+    public void addInvalidDateError(T context){
         this.nbError++;
     }
 
@@ -299,6 +312,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     /**
      * Check a single model relation with an object-type value
+     * Handles relations that are of type Instant separately as the normal way tries to parse as URI
      * @param graph model graph
      * @param model the model for which we validate the relation
      * @param property property of the relation to validate
@@ -310,9 +324,13 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
      * @see #batchValidation()
      */
     protected void validateObjectPropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> validationContextSupplier) {
-
         // check if URI is valid and absolute
         try {
+            if (SPARQLDeserializers.compareURIs(Time.InstantURI, restriction.getOnClass())){
+                OffsetDateTime.parse(value);
+                model.addRelation(graph, property, InstantModel.class, value);
+                return;
+            }
             URI uri = new URI(value);
             if(! uri.isAbsolute()){
                 addInvalidURIError(getValidationContext(validationContextSupplier, property, value, "Not a valid and absolute URI"));
@@ -321,6 +339,10 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         } catch (URISyntaxException e) {
             T validationContext = getValidationContext(validationContextSupplier,property,value,e.getMessage());
             addInvalidURIError(validationContext);
+            return;
+        } catch (DateTimeParseException e){
+            T validationContext = getValidationContext(validationContextSupplier,property,value,e.getMessage());
+            addInvalidDatatypeError(validationContext, restriction.getOnDataRange());
             return;
         }
 

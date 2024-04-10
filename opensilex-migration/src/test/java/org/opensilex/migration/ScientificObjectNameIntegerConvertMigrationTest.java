@@ -72,7 +72,7 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
             models.add(model);
         }
         dao.create(models,experiment.getUri());
-        dao.copyIntoGlobalGraph(models); // good copy method
+        dao.copyIntoGlobalGraph(models.stream()); // good copy method
 
         // create Object affected by the bug
         models.clear();

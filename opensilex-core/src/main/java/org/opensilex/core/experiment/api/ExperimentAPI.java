@@ -20,6 +20,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -56,7 +57,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
@@ -539,7 +540,7 @@ public class ExperimentAPI {
                 pageSize
         );
 
-        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
+        ListWithPagination<DataGetSearchDTO> resultDTOList = dao.modelListToDTO(resultList);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

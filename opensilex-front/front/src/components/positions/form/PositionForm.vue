@@ -6,6 +6,7 @@
                 <opensilex-GeometryForm
                         :value.sync="form.point"
                         label="Position.coordinates"
+                        :isMove="true"
                         helpMessage="Position.coordinates-help"
                         placeholder="Position.coordinates-placeholder"
                 ></opensilex-GeometryForm>

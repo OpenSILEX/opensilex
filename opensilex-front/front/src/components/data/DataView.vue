@@ -4,7 +4,7 @@
       <opensilex-CreateButton
           v-if="user.hasCredential(
               credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
-          @click="modalDataForm.showCreateForm()"
+          @click="showImportForm()"
           label="OntologyCsvImporter.import"
           class="createButton greenThemeColor"
       >
@@ -23,8 +23,10 @@
         :filter="filter"
     ></opensilex-DataExportModal>
 
+      <!-- Toggle Sidebar-->
 
     <opensilex-ModalForm
+        v-if="renderImportForm"
         ref="modalDataForm"
         createTitle="DataImportForm.create"
         editTitle="DataImportForm.update"
@@ -41,7 +43,7 @@
 
         <!-- Toggle Sidebar-->
         <div class="searchMenuContainer"
-             v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+             v-on:click="toggleFilter()"
              :title="searchFiltersPannel()">
           <div class="searchMenuIcon">
             <i class="icon ik ik-search"></i>
@@ -49,9 +51,9 @@
         </div>
         <!-- FILTERS -->
         <Transition>
-          <div v-show="SearchFiltersToggle">
+          <div v-show="toggleSearchFilters">
 
-            <opensilex-SearchFilterField
+            <opensilex-SearchFilterField v-if="loadSearchFilters"
                 ref="searchField"
                 @search="refresh()"
                 @clear="reset()"
@@ -338,11 +340,23 @@ export default class DataView extends Vue {
     criteriaDto: {criteria_list:[]}
   };
 
-  data() {
-    return {
-      SearchFiltersToggle: false,
+  toggleSearchFilters: boolean = false;
+  loadSearchFilters: boolean = false;
+  renderImportForm: boolean = false;
+
+    /**
+     * Show or hide the search filter (v-show) on the filter div
+     * Trigger render of search filters selector (v-if).
+     * This ensures that API methods corresponding with the selector are not executed
+     * at the render of this component but only at the first toggle of the filter
+     *
+     */
+    toggleFilter(){
+        this.toggleSearchFilters = ! this.toggleSearchFilters;
+        if(! this.loadSearchFilters){
+            this.loadSearchFilters = true;
+        }
     }
-  }
 
   refreshSoSelector() {
 
@@ -404,8 +418,8 @@ export default class DataView extends Vue {
     }
   }
 
-  getProvenance(uri) {
-    if (uri != undefined && uri != null) {
+  getProvenance(uri: string) {
+    if (uri != undefined) {
       this.dataService
           .getProvenance(uri)
           .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
@@ -415,7 +429,7 @@ export default class DataView extends Vue {
   }
 
   loadProvenance(selectedValue) {
-    if (selectedValue != undefined && selectedValue != null) {
+    if (selectedValue != undefined) {
       this.getProvenance(selectedValue.id);
     }
   }
@@ -487,6 +501,13 @@ export default class DataView extends Vue {
       if(! this.loadAdvancedSearchFilters){
           this.loadAdvancedSearchFilters = true;
       }
+  }
+
+  showImportForm(){
+      this.renderImportForm = true;
+      this.$nextTick(() => {
+          this.modalDataForm.showCreateForm();
+      });
   }
 }
 </script>

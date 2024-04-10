@@ -22,6 +22,8 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
+
 public class AddAccountCredentialsToProfilWithUserCredentialTest extends AbstractSecurityIntegrationTest {
 
     private static ProfileDAO profileDAO;
@@ -37,7 +39,7 @@ public class AddAccountCredentialsToProfilWithUserCredentialTest extends Abstrac
         migration.setOpensilex(opensilex);
         profileDAO = new ProfileDAO(sparql);
         createAdmin();
-        adminURI = new AccountDAO(sparql).getByEmail(new InternetAddress("admin@opensilex.org")).getUri();
+        adminURI = new AccountDAO(sparql).getByEmail(new InternetAddress(DEFAULT_SUPER_ADMIN_EMAIL)).getUri();
     }
 
     private static List<String> getUserCredentials() {

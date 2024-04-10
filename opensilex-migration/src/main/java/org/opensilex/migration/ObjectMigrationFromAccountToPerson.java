@@ -118,7 +118,7 @@ public class ObjectMigrationFromAccountToPerson implements OpenSilexModuleUpdate
             //provenance
             ProvenanceDAO provenanceDAO = new ProvenanceDAO(mongodb, sparql);
             List<ProvenanceModel> provenances = mongodb.search(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new Document(), null);
-            List<AccountModel> accountList = new AccountDAO(sparql).search(".*", null, null, null).getList();
+            List<AccountModel> accountList = new AccountDAO(sparql).search(".*", null, 0, 0).getList();
             Map<URI, AccountModel> accounts = accountList.stream().collect(Collectors.toMap(AccountModel::getUri, Function.identity()));
             String operatorURI = URIDeserializer.getExpandedURI(Oeso.Operator.getURI());
             for (ProvenanceModel provenance : provenances) {

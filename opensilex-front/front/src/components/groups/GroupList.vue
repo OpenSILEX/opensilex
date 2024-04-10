@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -120,7 +120,8 @@ export default class GroupList extends Vue {
   }
 
   updateSelectedGroup(){
-    this.$opensilex.updateURLParameters(this.filter);
+    this.$opensilex.updateURLParameters(this.filter)
+    this.refresh()
   }
 
   searchGroups(options) {

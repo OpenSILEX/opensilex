@@ -1,7 +1,14 @@
+---
+changelog: # Remplir cette section en anglais selon les recommandations d'écriture du changelog
+ignore-changelog: false # Passer cette valeur à "true" si le changelog n'est pas pertinent pour cette MR
+---
+
 - [ ] Relecture MR
 - [ ] Tests écrits et OK
 - [ ] Documentation
 - [ ] Testé
+- [ ] Remplir l'entrée changelog ou la marquer comme ignorée
+  ([comment ?](https://forgemia.inra.fr/OpenSILEX/opensilex-dev-tools/-/blob/master/docs/workflow/conventions/mr_redaction.md?ref_type=heads#description))
 
 # Contexte
 
@@ -33,7 +40,7 @@ Description plus précise d'un changement, qui nécessite plus de contexte/d'inf
 
 ## Liens
 
-Liens vers des pages lié à cette correction
+Liens vers des pages liées à cette correction
 
 - [Vue JS nextick](https://vuejs.org/api/general.html#nexttick)
 - [Lien stack overflow sans qui rien ne serait possible](https://stackoverflow.com/questions/tagged/rdf4j)

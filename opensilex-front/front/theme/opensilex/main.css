@@ -586,7 +586,7 @@ a.external-url-link:hover {
     background-color: #018371;
     border-color:#018371;
 }
-.createButton:focus{
+.createButton:focus, .totalCountDetailButton:focus{
     background-color: #007969;
 }
 
@@ -605,7 +605,7 @@ a.external-url-link:hover {
     height: 20px
 }
 
-.downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon{
+.downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon {
     color: #00A38D;
     border-color: #00A38D;
 }

@@ -1,47 +1,53 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.2.1]](#121)
-    * [Fixed](#fixed)
-  * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
+  * [[1.2.3]](#123)
     * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.2.2]](#122)
+    * [Fixed](#fixed)
+  * [[1.2.1]](#121)
+    * [Fixed](#fixed-1)
+  * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
+    * [Highlight](#highlight-1)
+    * [Changes and new features](#changes-and-new-features-1)
+    * [Fixed or optimized](#fixed-or-optimized-1)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-1)
-  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Changes and new features](#changes-and-new-features-2)
     * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Fixed or optimized](#fixed-or-optimized-3)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-3)
+    * [Fixed or optimized](#fixed-or-optimized-4)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-4)
-  * [[1.0.0-rc+6]](#100-rc6)
     * [Fixed or optimized](#fixed-or-optimized-5)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-6)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-6)
-  * [[1.0.0-rc+5.1]](#100-rc51)
     * [Fixed or optimized](#fixed-or-optimized-7)
+  * [[1.0.0-rc+5.1]](#100-rc51)
+    * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-9)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
-    * [Fixed](#fixed-1)
+    * [Fixed](#fixed-2)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
     * [Added or changed](#added-or-changed-2)
-    * [Fixed](#fixed-2)
+    * [Fixed](#fixed-3)
   * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
     * [Added or changed](#added-or-changed-3)
-    * [Fixed](#fixed-3)
+    * [Fixed](#fixed-4)
   * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
     * [Added](#added)
     * [Added in pre-production](#added-in-pre-production)
@@ -49,23 +55,23 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-9)
+    * [Fixed or optimized](#fixed-or-optimized-10)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-10)
+    * [Fixed or optimized](#fixed-or-optimized-11)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
     * [Added](#added-3)
-    * [Fixed](#fixed-4)
+    * [Fixed](#fixed-5)
   * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
     * [Added](#added-4)
     * [Changed](#changed-1)
   * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
-    * [Fixed](#fixed-5)
+    * [Fixed](#fixed-6)
   * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
     * [Added](#added-5)
-    * [Fixed](#fixed-6)
+    * [Fixed](#fixed-7)
   * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
     * [Added](#added-6)
 <!-- TOC -->
@@ -76,6 +82,64 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.3]
+
+>  ⚠️ WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.2.3.md).
+
+### Highlight
+
+- Some data-related pages and services have been **greatly optimized**, especially for OpenSILEX instances where a 
+  lot of data are declared (> 10M).
+- You can now configure a **custom notification banner** that will be displayed at the top of the web interface. This 
+  can be used to inform your users of maintenances, changes, etc. See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/notification-pannel.md).
+
+### Changes and new features
+
+- (!1167) Changed type of publication date and last modification date from `Integer` to `Date` when it wasn't already the case. This improves  
+  uniformity and client support.
+  - Concerned services :
+    - Data
+    - Provenance
+    - Datafile
+- (!1168) Improvement on the "move" type event declaration.
+  - Additional information for the user in the form.
+  - Dynamic attribute `required` for location fields.
+  - An error message is now returned if the move is incorrectly declared, even though nothing was indicated and nothing happened before.
+- (!1175) Added a message notification system to users.
+  - Message can be translated into different languages.
+  - Possibility of adding HTML tags in the message.
+  - Several color themes available.
+  - Possibility of defining an end date for display.
+  - See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/notification-pannel.md).
+- (!1178) You can no longer select an end date that is earlier than the start date during Event creation. The target 
+  column of the Event list now redirects to the resource in question upon click.
+- (!1180) The Event import system now works the same way as ScientificObjects and Devices, the headers of columns are now short uris instead of labels.
+- (!1185) Replaced simple germplasm selector in the ScientificObjects tab of Experiments with a pop-up one.
+- (!1186) Creation of a new default order for ontology properties : properties from higher up in the hierarchy get shown first, all the way down to properties from the lowest domain in the hierarchy. Within the sublist of properties from a single domain, they are ordered alphabetically (by name).
+  - Usage of this new order, if no order has ever been defined for CSV template generation.
+  - Usage of this new order, if no order has ever been defined for Ontology based forms.
+- (!1195) Germplasm and Germplasm Group filter no longer treated as a logical OR with the targets filter
+- (!1203) The details tab is now the first and default tab for facilities instead of monitoring
+
+### Fixed or optimized
+
+- (!1166) Fix concerning the dates of an event.
+  - If the event is instantaneous, the end date is now required.
+  - If it is on a time interval, at least one of the two fields (start / end) is required.
+- (!1169) Fix concerning the data import. If the standard provenance is not created, it is no longer possible to insert data by selecting it, a specific error message is returned to the user in this scenario.
+- (!1183) Visibility of areas and devices on the map is now stable
+- (!1190) Data and datafile table pages now render correctly when every data or datafile in the table has an undefined target
+- (!1194) In the create germplasm view, when loading a heavy CSV file, the table is now filled in less than 2 seconds
+  and is showing a loader.
+- (!1197) Optimisation of data search.
+  - A new optimized `searchDataListByTargets` service is available. This service no longer compute the `totalCount` of data and just indicate if a next page exists.
+  - All data search service no longer return detailed information about data publisher (only the publisher URI is returned).
+  - Two new MongoDB indexes are created on data experiment and data provenance URI.
+- (!1198) fixed a bug that prevented Move from being declared if no position information was provided
+- (!1207) Inserting scientific objects in an experiment, when they were already present in another experiment,
+  using an import file now works correctly again.
 
 ## [1.2.2]
 

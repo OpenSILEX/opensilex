@@ -83,6 +83,7 @@
                 "unauthorized-error": "Your session expired, please login again.",
                 "form-step-errors": "Some field are required in order to go to the next step",
                 "uri-already-exists": "This URI already exists.",
+                "not-a-valid-uri": "This URI format is not valid.",
                 "regex": {
                     "invalid-regex" : "Invalid regex : {__regex__}. The following characters are forbidden : {__forbidden_characters__}"
                 }
@@ -145,12 +146,18 @@
                 },
                 "pagination" : {
                     "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
+                    "nbEntriesNoTotal" : "Showing {limit} to {offset}",
+                    "totalEntries" : " of {totalRow} entries",
+                    "showTotalCount" : "Show total count",
                     "noEntries" : "No entries found",
                     "numberOfElementsPerPageSelector": "Select number of entries to display",
                     "tenElements": "10 entries",
                     "twentyElements": "20 entries",
                     "fiftyElements": "50 entries",
-                    "hundredElements": "100 entries"
+                    "hundredElements": "100 entries",
+                    "first": "First",
+                    "prev": "Prev",
+                    "next": "Next"
                 }
             },
             "addDocument": "Add document",
@@ -180,7 +187,8 @@
             "version-label": {
                 "develop": "Develop",
                 "release": "Release"
-            }
+            },
+            "bad-notification-end-date": "The end date format set for the notification is incorrect."
         },
         "menu": {
             "dashboard": "Dashboard",
@@ -776,6 +784,7 @@
         "emailOrUrl": "The {_field_} field must be a valid URL or email address",
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
+        "containsPoint": "Coordinates must be 'POINT' type geometry",
         "dateDiff" : "The {_field_} must not be before the start date",
         "nameFiltered" : "The {_field_} must not contain -,+,=,<,>,=,?,/,*,&",
         "existingProperty" : "This {_field_} already exists",

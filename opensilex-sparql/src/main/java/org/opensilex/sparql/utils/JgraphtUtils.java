@@ -37,7 +37,7 @@ public class JgraphtUtils {
      *
      * @see AllDirectedPaths#getAllPaths(Object, Object, boolean, Integer)
      */
-    public static <V, E> Set<V> getVertexesFromAncestor(Graph<V,E> graph, V ancestor, V descendant, int maxPathLength) {
+    public static <V, E> LinkedHashSet<V> getVertexesFromAncestor(Graph<V,E> graph, V ancestor, V descendant, int maxPathLength) {
 
         Objects.requireNonNull(graph);
         Objects.requireNonNull(ancestor);
@@ -48,17 +48,17 @@ public class JgraphtUtils {
         }
 
         if(! graph.containsVertex(descendant) || ! graph.containsVertex(ancestor)){
-            return Collections.emptySet();
+            return new LinkedHashSet<V>(0);
         }
 
         AllDirectedPaths<V, E> allPaths = new AllDirectedPaths<>(graph);
         List<GraphPath<V, E>> pathList = allPaths.getAllPaths(ancestor, descendant, true, maxPathLength);
 
         if (pathList.isEmpty()) {
-            return Collections.emptySet();
+            return new LinkedHashSet<V>(0);
         }
 
-        Set<V> ancestors = new HashSet<>();
+        LinkedHashSet<V> ancestors = new LinkedHashSet<V>();
         for (GraphPath<V, E> path : pathList) {
             ancestors.addAll(path.getVertexList());
         }

@@ -1318,7 +1318,7 @@ public class ScientificObjectDAO {
      * @param models
      * @throws SPARQLException
      */
-    public void copyIntoGlobalGraph(Collection<ScientificObjectModel> models) throws SPARQLException {
+    public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
 
         Objects.requireNonNull(models);
 
@@ -1329,25 +1329,29 @@ public class ScientificObjectDAO {
             // use serializer in order to ensure that name is well serialized as a String
             SPARQLDeserializer<String> stringDeserializer = SPARQLDeserializers.getForClass(String.class);
 
-            for(ScientificObjectModel object : models){
+            models.forEach(object -> {
                 Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
 
-                // write type and name triple
-                update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
-                      .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+                try {
+                    // write type and name triple
+                    update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
+                            .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
 
-                if (Objects.nonNull(object.getPublisher())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
-                }
-                if (Objects.nonNull(object.getPublicationDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
-                }
-                if (Objects.nonNull(object.getLastUpdateDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
-                }
-            }
+                    if (Objects.nonNull(object.getPublisher())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
+                    }
+                    if (Objects.nonNull(object.getPublicationDate())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
+                    }
+                    if (Objects.nonNull(object.getLastUpdateDate())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
+                    }
 
-            sparql.executeUpdateQuery(update);
+                    sparql.executeUpdateQuery(update);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }catch (Exception e){
             throw new SPARQLException(e);
         }

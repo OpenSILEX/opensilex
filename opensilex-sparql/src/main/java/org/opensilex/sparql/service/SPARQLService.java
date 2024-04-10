@@ -1747,19 +1747,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * @param objectClass the models class
-     * @param uris        the URIs to check
-     * @param checkExist  indicates if we check the existence or the non-existence of the given URI collection
+     * @param objectClass The model class to check
+     * @param uris The collection of URIs to check
+     * @param checkExist If true, checks the existence of the given URIs. If false, checks the absence of the given
+     *                   URIs.
+     * @param graph The graph to look for URIs (can be null to check in all graphs)
      * @param <T>         the SPARQLResourceModel type
      * @return the Set of unknown or existing URI from the given URI collection
      */
-    public <T extends SPARQLResourceModel> Set<URI> getExistingUris(Class<T> objectClass, Collection<URI> uris, boolean checkExist) throws Exception {
-
-        if (CollectionUtils.isEmpty(uris)) {
+    public <T extends SPARQLResourceModel> Set<URI> getExistingUriStream(Class<T> objectClass, Stream<URI> uris,
+                                                                         int size,
+                                                                         boolean checkExist, Node graph) throws Exception {
+        if (size == 0) {
             return Collections.emptySet();
         }
 
-        SelectBuilder selectQuery = getUnknownUrisQuery(objectClass, uris, checkExist);
+        SelectBuilder selectQuery = getUnknownUrisQuery(objectClass, uris, size, checkExist, graph);
 
         return executeSelectQueryAsStream(selectQuery).map(result -> {
             try {
@@ -1769,6 +1772,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         }).collect(Collectors.toSet());
 
+    }
+
+    /**
+     * Checks the existence or absence of a collection of URIs in any graph. Short-hand for
+     * {@link SPARQLService#getExistingUriStream(Class, Stream, int, boolean, Node)}, using the `stream` method of the
+     * collection and passing `null` as the graph parameter.
+     *
+     * @param objectClass The model class to check
+     * @param uris The collection of URIs to check
+     * @param checkExist If true, checks the existence of the given URIs. If false, checks the absence of the given
+     *                   URIs.
+     * @param <T>         the SPARQLResourceModel type
+     */
+    public <T extends SPARQLResourceModel> Set<URI> getExistingUris(Class<T> objectClass, Collection<URI> uris,
+                                                                    boolean checkExist) throws Exception {
+        return getExistingUriStream(objectClass, uris.stream(), uris.size(), checkExist, null);
     }
 
     public <T extends SPARQLResourceModel> boolean uriListExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
@@ -1911,15 +1930,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param <T>         the SPARQLResourceModel type
      * @return the query which return the set of existing/non-existing URIS
      */
-    public <T extends SPARQLResourceModel> SelectBuilder getUnknownUrisQuery(Class<T> objectClass, Collection<URI> uris, boolean checkExist) throws Exception {
+    public <T extends SPARQLResourceModel> SelectBuilder getUnknownUrisQuery(Class<T> objectClass,
+                                                                             Stream<URI> uris,
+                                                                             int size, boolean checkExist,
+                                                                             Node graph) throws Exception {
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), uris, size);
 
-        WhereBuilder where = new WhereBuilder()
-                .addWhere(uriVar, makeVar("p"), makeVar("o"));
+        WhereBuilder where = new WhereBuilder();
+
+        if (graph != null) {
+            where.addGraph(graph, uriVar, makeVar("p"), makeVar("o"));
+        } else {
+            where.addWhere(uriVar, makeVar("p"), makeVar("o"));
+        }
 
         if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);

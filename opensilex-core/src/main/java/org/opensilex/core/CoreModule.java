@@ -222,10 +222,13 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     @Override
     public void startup() throws Exception {
+
+        MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+        mongoDBServiceV2.registerIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
+
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
-            MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
-            mongoDBServiceV2.createIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
+            mongoDBServiceV2.createIndexes();
         }
 
     }

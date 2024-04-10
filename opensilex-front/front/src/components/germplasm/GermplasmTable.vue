@@ -319,7 +319,6 @@ export default class GermplasmTable extends Vue {
   private onAddRowBtnClick() {
     let size = this.tabulator.getData().length;
     this.tabulator.addRow({ rowNumber: size + 1 });
-    console.log(this.tabulator.getData().length);
   }
 
   private onCheckBtnClick() {

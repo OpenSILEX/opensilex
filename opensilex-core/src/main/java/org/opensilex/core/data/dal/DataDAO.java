@@ -90,15 +90,6 @@ public class DataDAO {
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection<DataModel> dataCollection = nosql.getDatabase()
-                .getCollection(DATA_COLLECTION_NAME, DataModel.class);
-        dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, "provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, "date"));
-        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending("date"))));
-        dataCollection.createIndex(Indexes.ascending("date"));
-        dataCollection.createIndex(Indexes.descending("date"));
-
         MongoCollection<DataFileModel> fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);

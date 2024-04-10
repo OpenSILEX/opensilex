@@ -50,7 +50,10 @@ public class MongoLogger {
     public static final String CHECK_MONGO_SERVER_CONNECTION = "mongo_server_check_connection";
     public static final String TIMEOUT_MS = "timeout_ms";
 
-    public static final String MONGO_CREATE_INDEX_LOG_MSG = "create_index";
+    public static final String MONGO_CREATE_INDEX = "create_index";
+
+    public static final String MONGO_DELETE_INDEX = "create_index";
+
     public static final String COMMAND_TYPE = "server_command";
     public static final String COMMAND_NAME_FIELD = "command_name";
 

@@ -279,7 +279,7 @@ export default class GermplasmForm extends Vue {
   }
   
   readAttributes(metadata: { [key: string]: string; }) {
-    AttributesTable.readAttributes(metadata,this.attributesArray);
+    this.attributesArray = AttributesTable.readAttributes(metadata);
   }
 
 }

@@ -90,21 +90,6 @@ public class GermplasmAPI extends FaidareCall {
             uri = germplasmPUI;
         }
 
-        /*GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-
-        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO, ontologyDAO);
-
-        ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
-                currentUser,
-                uri,
-                germplasmName,
-                "",
-                page,
-                pageSize
-        );
-
-        TimeUnit.MILLISECONDS.sleep(10000);*/
-
         Faidarev1GermplasmDAO germplasmDAO = new Faidarev1GermplasmDAO(sparql, nosql);
 
         ListWithPagination<Faidarev1GermplasmModel> resultList = germplasmDAO.faidareSearch(
@@ -115,14 +100,14 @@ public class GermplasmAPI extends FaidareCall {
                 pageSize
         );
 
-        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder(germplasmDAO);
+        Faidarev1GermplasmDTOBuilder germplasmDTOBuilder = new Faidarev1GermplasmDTOBuilder();
 
         // Convert paginated list to DTO
         ListWithPagination<Faidarev1GermplasmDTO> resultDTOList = resultList.convert(
                 Faidarev1GermplasmDTO.class,
                 germplasmModel -> {
                     try {
-                        return germplasmDTOBuilder.fromModel(germplasmModel, currentUser);
+                        return germplasmDTOBuilder.fromModel(germplasmModel);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

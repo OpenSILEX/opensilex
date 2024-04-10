@@ -12,8 +12,7 @@ public class GermplasmAPITest extends FaidareAPITest {
     static {
         try {
             search = new ServiceDescription(
-                    GermplasmAPI.class.getMethod(
-                            "getGermplasmsBySearch", URI.class, URI.class, String.class, String.class, int.class, int.class),
+                    GermplasmAPI.class.getMethod("getGermplasmsBySearch", URI.class, URI.class, String.class, int.class, int.class),
                     "/faidare/v1/germplasm"
             );
         } catch (NoSuchMethodException e) {

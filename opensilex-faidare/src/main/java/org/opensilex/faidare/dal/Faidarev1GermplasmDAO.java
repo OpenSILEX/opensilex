@@ -4,6 +4,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.aggregate.AggCountDistinct;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -13,8 +14,10 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -25,6 +28,10 @@ import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
+/**
+ * @author Gabriel Besombes
+ * This class was added to answer specific optimization issues with FAIDARE services
+ */
 public class Faidarev1GermplasmDAO extends GermplasmDAO {
     public Faidarev1GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
         super(sparql, nosql);
@@ -32,32 +39,30 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
     public ListWithPagination<Faidarev1GermplasmModel> faidareSearch(AccountModel user, URI germplasmDbId, String germplasmName, int page, int pageSize) throws Exception {
 
-        /*SparqlNoProxyFetcher<Faidarev1GermplasmModel> customFetcher = new SparqlNoProxyFetcher<>(Faidarev1GermplasmModel.class, sparql);
+        SelectBuilder accessionsCount = new SelectBuilder();
 
-        ListWithPagination<Faidarev1GermplasmModel> models = sparql.searchWithPagination(
-                sparql.getDefaultGraph(Faidarev1GermplasmModel.class),
-                Faidarev1GermplasmModel.class,
-                user.getLanguage(),
-                (SelectBuilder select) -> {
-                    appendRdfTypeFilter(select, new URI(Oeso.Accession.toString()));
-                    appendUriFilter(select, germplasmDbId);
-                    appendRegexLabelFilter(select, germplasmName);
-                },
-                Collections.emptyMap(),
-                result -> customFetcher.getInstance(result, user.getLanguage()),
-                null,
-                page,
-                pageSize
-        );*/
+        Var uriVar = makeVar("uri");
+        Var countVar = makeVar("count");
+
+        accessionsCount.addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode());
+
+        accessionsCount.addVar(new AggCountDistinct().toString(), countVar);
+
+        List<SPARQLResult> resultSet = sparql.executeSelectQuery(accessionsCount);
+
+        int numberOfAccessions;
+        if (resultSet.size() == 1) {
+            numberOfAccessions = Integer.parseInt(resultSet.get(0).getStringValue("count"));
+        } else {
+            throw new SPARQLException("Invalid count query");
+        }
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
 
         final Node germplasmGraph = sparql.getDefaultGraph(Faidarev1GermplasmModel.class);
         SelectBuilder accessions = new SelectBuilder();
 
-        Var uriVar = makeVar("uri");
         accessions.addVar(uriVar);
         Var labelVar = makeVar("label");
         accessions.addVar(labelVar);
@@ -153,6 +158,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                 }
         ).collect(Collectors.toList());
 
-        return new ListWithPagination<>(searchResults, page, pageSize, true); // TODO : change "true"
+        return new ListWithPagination<>(searchResults, page, pageSize, numberOfAccessions);
     }
 }

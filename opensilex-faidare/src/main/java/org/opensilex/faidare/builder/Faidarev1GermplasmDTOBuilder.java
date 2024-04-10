@@ -11,13 +11,11 @@ import java.util.stream.Collectors;
 
 public class Faidarev1GermplasmDTOBuilder {
 
-    private final GermplasmDAO germplasmDAO;
+    public Faidarev1GermplasmDTOBuilder() {
 
-    public Faidarev1GermplasmDTOBuilder(GermplasmDAO germplasmDAO) {
-        this.germplasmDAO = germplasmDAO;
     }
 
-    public Faidarev1GermplasmDTO fromModel(Faidarev1GermplasmModel model, AccountModel accountModel) throws Exception {
+    public Faidarev1GermplasmDTO fromModel(Faidarev1GermplasmModel model) {
         Faidarev1GermplasmDTO dto = new Faidarev1GermplasmDTO();
         dto.setGermplasmDbId(SPARQLDeserializers.getExpandedURI(model.getUri()))
                 .setGermplasmPUI(SPARQLDeserializers.getExpandedURI(model.getUri()))

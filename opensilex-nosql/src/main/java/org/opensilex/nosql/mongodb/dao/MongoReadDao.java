@@ -222,6 +222,24 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     Stream<T> aggregateAsStream(List<Bson> aggregationPipeline);
 
     /**
+     * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
+     *
+     * @param aggregationPipeline The list of aggregation arguments
+     * @param <T_RESULT>          The type of elements returned
+     * @return List<T_RESULT>           The set of results after aggregation
+     */
+    <T_RESULT> List<T_RESULT> aggregate(List<Bson> aggregationPipeline, @NotNull Class<T_RESULT> resultClass);
+
+    /**
+     * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
+     *
+     * @param aggregationPipeline The list of aggregation arguments
+     * @param <T_RESULT>          The type of elements returned
+     * @return Stream<T_RESULT>         The Stream of results after aggregation
+     */
+    <T_RESULT> Stream<T_RESULT> aggregateAsStream(List<Bson> aggregationPipeline, @NotNull Class<T_RESULT> resultClass);
+
+    /**
      * Perform a lookup aggregation to join collections and apply a conversion function.
      *
      * @param <T_RESULT>           The result type after conversion.

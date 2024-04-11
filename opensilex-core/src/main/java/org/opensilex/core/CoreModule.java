@@ -16,6 +16,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -226,6 +227,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
             MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
             mongoDBServiceV2.createIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
+            mongoDBServiceV2.createIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
         }
 
     }

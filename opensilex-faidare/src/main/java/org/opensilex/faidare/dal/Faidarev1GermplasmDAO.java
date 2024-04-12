@@ -157,8 +157,11 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                 .addOptional(uriVar, Oeso.hasId.asNode(), codeVar)
                 .addOptional(uriVar, Oeso.fromInstitute.asNode(), instituteVar)
                 .addOptional(uriVar, Oeso.fromSpecies.asNode(), speciesVar)
-                .addOptional(uriVar, Oeso.fromVariety.asNode(), varietyVar)
-                .addOptional(varietyVar, RDFS.label.asNode(), varietyNameVar)
+                .addOptional(
+                        new WhereBuilder()
+                                .addWhere(uriVar, Oeso.fromVariety.asNode(), varietyVar)
+                                .addWhere(varietyVar, RDFS.label.asNode(), varietyNameVar)
+                )
         );
 
         accessions.addGraph(experimentUriVar, new WhereBuilder().addOptional(soVar, Oeso.hasGermplasm.asNode(), uriVar));

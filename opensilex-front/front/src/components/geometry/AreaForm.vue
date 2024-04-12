@@ -32,6 +32,7 @@
     <!-- rdf type structural area-->
     <opensilex-TypeForm
         v-if ="toggleAreaType === true"
+        :required="true"
         :baseType="$opensilex.Oeso.STRUCTURAL_AREA_TYPE_URI"
         :placeholder="$t('AreaForm.form-rdfType-placeholder')"
         :ignoreRoot="false"

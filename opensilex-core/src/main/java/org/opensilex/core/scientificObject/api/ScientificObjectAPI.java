@@ -85,6 +85,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Julien BONNEFONT
@@ -548,7 +549,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                dao.copyIntoGlobalGraph(Collections.singletonList(model));
+                dao.copyIntoGlobalGraph(Stream.of(model));
             }
 
             if (descriptionDto.getGeometry() != null) {

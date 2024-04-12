@@ -184,20 +184,20 @@ export default class FactorLevelTable extends Vue {
         visible: this.editMode,
       },
       {
-        title: this.$t("FactorLevelTable.name")+'Name<span class="required">*</span>',
+        title: this.$t("component.factorLevel.name")+' <span class="required">*</span>',
         field: "name",
         editor: "input",
         validator: ["required", "unique"],
         widthGrow: 0.5,
       },
       {
-        title: this.$t("FactorLevelTable.description").toString(),
+        title: this.$t("component.factorLevel.description").toString(),
         field: "description",
         editor: "input",
         widthGrow: 1,
       },
       {
-        title: this.$t("FactorLevelTable.delete").toString(),
+        title: this.$t("component.factorLevel.delete").toString(),
         field: "actions",
         headerSort: false,
         widthGrow: 0.2,

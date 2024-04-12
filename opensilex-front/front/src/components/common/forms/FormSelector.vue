@@ -28,8 +28,10 @@
           :selected.sync="selection"
           :placeholder="placeholder"
           :optionsLoadingMethod="optionsLoadingMethod"
+          :options="options || internalOption"
           :viewHandler="viewHandler"
           :itemLoadingMethod="itemLoadingMethod"
+          :conversionMethod="conversionMethod"
         >
           <!-- @deselect="deselect"
           @select="select"

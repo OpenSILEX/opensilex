@@ -49,6 +49,9 @@
 
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
+
+        <!-- BRAPI v2 module-->
+        <module>opensilex-brapi-v2</module>
         
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
@@ -132,10 +135,10 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- BRAPI dependency --> 
+        <!-- BRAPI v2 dependency -->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-brapi</artifactId>
+            <artifactId>opensilex-brapi-v2</artifactId>
             <version>${revision}</version>
         </dependency>
         

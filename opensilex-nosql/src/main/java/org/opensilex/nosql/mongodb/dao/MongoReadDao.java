@@ -12,7 +12,6 @@ import org.opensilex.utils.pagination.StreamWithPagination;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -89,6 +88,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @param countOptions The custom {@link CountOptions} to use
      * @return The number of models matching the filter.
      * @throws MongoException If a MongoDB error occurs.
+     *
      */
     long count(ClientSession session, @NotNull F filter, CountOptions countOptions) throws MongoException;
 
@@ -99,49 +99,34 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return List of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull ListWithPagination<T> search(@NotNull F filter) throws MongoException;
-
-    /**
-     * Search for models based on the provided filter within a client session.
-     *
-     * @param session    The MongoDB client session.
-     * @param filter     The filter to apply.
-     * @param projection The projection to apply on search results.
-     * @return List of models matching the filter with pagination information.
-     * @throws MongoException If a MongoDB error occurs.
-     */
-    @NotNull ListWithPagination<T> search(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
-
-    /**
-     * Search for models based on the provided filter and apply a conversion function.
-     *
-     * @param filter          The filter to apply.
-     * @param convertFunction The function to convert models to another type.
-     * @param <T_RESULT>      The result type after conversion.
-     * @return List of converted models matching the filter with pagination information.
-     * @throws MongoException If a MongoDB error occurs.
-     */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(@NotNull F filter, Function<T, T_RESULT> convertFunction) throws MongoException;
+    @NotNull ListWithPagination<T> searchWithPagination(@NotNull F filter) throws MongoException;
 
     /**
      * Search for models based on the provided filter within a client session and apply a conversion function.
      *
-     * @param session         The MongoDB client session.
-     * @param filter          The filter to apply.
-     * @param projection      The projection to apply on search results.
-     * @param convertFunction The function to convert models to another type.
-     * @param <T_RESULT>      The result type after conversion.
+     * @param <T_RESULT>       The result type after conversion.
+     * @param query The search query
      * @return List of converted models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
-     * @apiNote <ul>
+     * @apiNote
+     * <ul>
      * <li>
      * For performance and memory usage optimization,
      * it's strongly advised to avoid the materialization of the full list of T result and then to create a new List of T_RESULT.
      * Instead it's preferable to iterate over database results and perform T -> T_RESULT convert on-the-fly.
      * </li>
      * </ul>
+     *
+    * Use the following fields from {@code mongoSearchQuery} :
+     * <ul>
+     *     <li>{@link MongoSearchQuery#getSession()} : The MongoDB client session.</li>
+     *     <li>{@link MongoSearchQuery#getFilter()} : The filter to apply.</li>
+     *     <li>{@link MongoSearchQuery#getProjection()}} : The projection to apply on search results..</li>
+     *     <li>{@link MongoSearchQuery#getConvertFunction()} : The document convert function.</li>
+     * </ul>
      */
-    <T_RESULT> @NotNull ListWithPagination<T_RESULT> search(ClientSession session, @NotNull F filter, Bson projection, @NotNull Function<T, T_RESULT> convertFunction) throws MongoException;
+    <T_RESULT> @NotNull ListWithPagination<T_RESULT> searchWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
+
 
     /**
      * Search for models based on the provided filter.
@@ -150,25 +135,30 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
      */
-    @NotNull StreamWithPagination<T> searchAsStream(@NotNull F filter) throws MongoException;
+    @NotNull StreamWithPagination<T> searchAsStreamWithPagination(F filter) throws MongoException;
 
     /**
-     * Search for models based on the provided filter within a client session.
+     * Search for models based on the provided query
      *
-     * @param session    The MongoDB client session.
-     * @param filter     The filter to apply.
-     * @param projection The projection to apply on search results.
+     * @param query The Mongo search query object parameter
      * @return Stream of models matching the filter with pagination information.
      * @throws MongoException If a MongoDB error occurs.
+     *
+     * @apiNote Use the following fields from {@code mongoSearchQuery} :
+     * <ul>
+     *     <li>{@link MongoSearchQuery#getSession()} : The MongoDB client session.</li>
+     *     <li>{@link MongoSearchQuery#getFilter()} : The filter to apply.</li>
+     *     <li>{@link MongoSearchQuery#getProjection()}} : The projection to apply on search results..</li>
+     * </ul>
      */
-    @NotNull StreamWithPagination<T> searchAsStream(ClientSession session, @NotNull F filter, Bson projection) throws MongoException;
+    <T_RESULT> @NotNull StreamWithPagination<T_RESULT> searchAsStreamWithPagination(MongoSearchQuery<T, F, T_RESULT> query) throws MongoException;
 
     /**
      * Get distinct URIs of models based on the provided filter within a client session.
      *
      * @param session The MongoDB client session.
      * @param filter  The filter to apply.
-     * @return Set of distinct URIs matching the filter.
+     * @return List of distinct URIs matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
     List<URI> distinctUris(ClientSession session, @NotNull F filter) throws MongoException;
@@ -177,7 +167,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * Get distinct URIs of models based on the provided filter
      *
      * @param filter The filter to apply.
-     * @return Set of distinct URIs matching the filter.
+     * @return List of distinct URIs matching the filter.
      * @throws MongoException If a MongoDB error occurs.
      */
     List<URI> distinctUris(@NotNull F filter) throws MongoException;
@@ -190,8 +180,11 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @param field       The field for which to get distinct values.
      * @param resultClass The class of the result type.
      * @param filter      The filter to apply.
-     * @return Set of distinct values for the specified field.
-     */
+     * @return List of distinct values for the specified field.
+     *
+     * @apiNote With this method, the page and pageSize specified in {@link MongoSearchFilter#getPage()} and  {@link MongoSearchFilter#getPageSize()}
+     * are not used. Use the {@link #distinctWithPagination(ClientSession, String, Class, MongoSearchFilter)} method in case you want to apply pagination
+      */
     <T_RESULT> List<T_RESULT> distinct(ClientSession session, @NotNull String field, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
 
     /**
@@ -210,7 +203,7 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * </ul>
      *
      */
-    <T_RESULT> ListWithPagination<T_RESULT> distinctAggregation(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
+    <T_RESULT> ListWithPagination<T_RESULT> distinctWithPagination(ClientSession session, @NotNull String distinctField, @NotNull Class<T_RESULT> resultClass, @NotNull F filter);
 
     /**
      * Performs an aggregation operation on the specified collection using the provided aggregation arguments.

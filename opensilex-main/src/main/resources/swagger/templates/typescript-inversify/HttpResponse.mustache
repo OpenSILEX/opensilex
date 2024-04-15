@@ -11,7 +11,7 @@ export default HttpResponse
 
 export class PaginationDTO {
 
-    constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number) {
+    constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number, public limitCount: number, public hasNextPage: boolean) {
     }
 }
 

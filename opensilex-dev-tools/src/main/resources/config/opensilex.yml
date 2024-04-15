@@ -1,41 +1,28 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://vegetalunit.inrae.fr/vigne/
+    baseURIAlias: sixtine-vigne
     sparql:
-        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://iado.mistea.inrae.fr:8080/rdf4j-server/
+            repository: sixtine-iado-preprod
+
 
 file-system:
     fs:
         config:
-            defaultFS: local
-            connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
-                    config:
-                        basePath: ../../opensilex-data
-                #     irods:
-                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-                #         config:
-                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-                gridfs:
-                    implementation: org.opensilex.fs.gridfs.GridFSConnection
-                    config:
-                        host: localhost
-                        port: 8668
-                        database: opensilex
-            # customPath:
-            #     datafile/: irods
+            basePath: /home/opensilex/opensilex-instances/data/sixtine-vigne/iado/preprod
+
 
 big-data:
     mongodb:
         config:
-            host: localhost
-            port: 8668
-            database: opensilex
-    #            timezone: Europe/Paris
+            # MongoDB main host (String)
+            host: iado.mistea.inrae.fr
+            # MongoDB main host port (int)
+            port: 27017
+            # MongoDB database (String)
+            database: sixtine-iado-preprod
+
 
 phisws:
     infrastructure: opensilex
@@ -73,15 +60,9 @@ phisws:
 
 system:
     ignoredModules:
-        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+        org.opensilex.phis.PhisWsModule: opensilex-phis.jar
+    defaultLanguage: fr
 
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr
+
+
+

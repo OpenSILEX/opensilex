@@ -56,6 +56,9 @@
         <!-- Dataverse module -->
 <!--        <module>opensilex-dataverse</module>-->
 
+        <!-- iado module -->
+        <module>opensilex-iado</module>
+
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
         
@@ -148,6 +151,11 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-iado</artifactId>
+            <version>1.1.0</version>
+        </dependency>
         
         <!--Other extension modules must be declared as dependencies-->
 <!--    <dependency>

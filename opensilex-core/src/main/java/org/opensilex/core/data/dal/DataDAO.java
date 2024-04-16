@@ -953,8 +953,8 @@ public class DataDAO {
 
     public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
         Document filter = searchFilter(user, experiments, null, variables, null, devices, null, null, null, null, null, null);
-        Set<URI> targetURIs = nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter);
-        return new ArrayList<>(targetURIs);
+        return nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter)
+                .stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {

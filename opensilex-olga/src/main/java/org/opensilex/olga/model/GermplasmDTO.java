@@ -1,5 +1,7 @@
 package org.opensilex.olga.model;
 
+import org.brapi.v2.model.germ.BrAPIGermplasm;
+
 public class GermplasmDTO {
 
     private String germplasmDbId;
@@ -21,5 +23,11 @@ public class GermplasmDTO {
     public GermplasmDTO setGermplasmName(String germplasmName) {
         this.germplasmName = germplasmName;
         return this;
+    }
+
+    public static GermplasmDTO fromBrapiGermplasm(BrAPIGermplasm brAPIGermplasm) {
+        return new GermplasmDTO()
+                .setGermplasmDbId(brAPIGermplasm.getGermplasmDbId())
+                .setGermplasmName(brAPIGermplasm.getGermplasmName());
     }
 }

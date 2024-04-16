@@ -1,10 +1,13 @@
 package org.opensilex.olga.api;
 
 import io.swagger.annotations.*;
+import org.brapi.client.v2.model.exceptions.ApiException;
+import org.brapi.client.v2.model.queryParams.germplasm.GermplasmQueryParams;
 import org.brapi.client.v2.modules.germplasm.GermplasmApi;
 import org.brapi.v2.model.BrAPIPagination;
 import org.brapi.v2.model.BrAPIStatus;
 import org.brapi.v2.model.germ.BrAPIGermplasm;
+import org.brapi.v2.model.germ.response.BrAPIGermplasmListResponse;
 import org.brapi.v2.model.germ.response.BrAPIGermplasmSingleResponse;
 import org.opensilex.olga.OlgaModule;
 import org.opensilex.olga.bll.GermplasmLogic;
@@ -20,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.opensilex.olga.bll.GermplasmLogic.brapiResponseToSingleObjectResponse;
 import static org.opensilex.olga.bll.GermplasmLogic.updateGermplasms;
@@ -64,6 +68,8 @@ public class GermplasmAPI {
     public Response getGermplasmByDbId(
             @ApiParam(value = GERMPLASM_DBID, example = GERMPLASM_EXAMPLE_DBID, required = true) @PathParam("germplasmDbId") @NotNull String germplasmDbId
     ) throws Exception {
+
+        // Should some of this be in the business layer?
         GermplasmApi germplasmApi = getAuthenticatedGarmplasmAPIClient();
         org.brapi.client.v2.ApiResponse<BrAPIGermplasmSingleResponse> germplasmDetail = germplasmApi.germplasmGermplasmDbIdGet(germplasmDbId);
         germplasmDetail.getBody().getResult().setAdditionalInfo(null);
@@ -91,9 +97,25 @@ public class GermplasmAPI {
     }
 
     // Service to force germplasm harvest for admins
+    @GET
+    @Path("forceHarvest")
+    @ApiOperation("Force harvest of olga germplasms")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Harvest olga germplasms")
+    })
+    public void forceHarvestGermplasms() throws Exception {
+        harvestOlgaGermplasms();
+    }
 
-    private void harvestOlgaGermplasms() {
-        updateGermplasms(new ArrayList<>());
+    private void harvestOlgaGermplasms() throws ApiException {
+        GermplasmApi germplasmApi = getAuthenticatedGarmplasmAPIClient();
+        org.brapi.client.v2.ApiResponse<BrAPIGermplasmListResponse> germplasms = germplasmApi.germplasmGet(new GermplasmQueryParams());
+        updateGermplasms(
+                germplasms.getBody().getResult().getData().stream().map(GermplasmDTO::fromBrapiGermplasm).collect(Collectors.toList())
+        );
     }
 
     // Mechanism to automate germplasm harvest every night. Should it be in BLL rather than API?

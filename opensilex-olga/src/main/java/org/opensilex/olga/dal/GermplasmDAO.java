@@ -6,6 +6,7 @@ import java.util.List;
 public class GermplasmDAO {
 
     public void updateGermplasms(List<GermplasmModel> germplasmModels) {
+        assert true;
         // update olga germplasms in mongo here
     }
 

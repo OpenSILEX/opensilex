@@ -1,32 +1,28 @@
 package org.opensilex.olga.api;
 
 import io.swagger.annotations.*;
-import org.brapi.client.v2.BrAPIClient;
-import org.brapi.client.v2.auth.Authentication;
-import org.brapi.client.v2.auth.OAuth;
 import org.brapi.client.v2.modules.germplasm.GermplasmApi;
 import org.brapi.v2.model.BrAPIPagination;
 import org.brapi.v2.model.BrAPIStatus;
 import org.brapi.v2.model.germ.BrAPIGermplasm;
 import org.brapi.v2.model.germ.response.BrAPIGermplasmSingleResponse;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.olga.BrAPIResponseSerialiser;
-import org.opensilex.olga.OlgaConfig;
 import org.opensilex.olga.OlgaModule;
-import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.olga.bll.GermplasmLogic;
+import org.opensilex.olga.model.GermplasmDTO;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.*;
-import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.server.response.PaginatedListResponse;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.opensilex.olga.bll.GermplasmLogic.brapiResponseToSingleObjectResponse;
+import static org.opensilex.olga.bll.GermplasmLogic.updateGermplasms;
 
 /**
  * @author Gabriel Besombes
@@ -46,17 +42,8 @@ public class GermplasmAPI {
     public static final String GERMPLASM_EXAMPLE_DBID = "germplasm1";
     public static final String GERMPLASM_DBID = GERMPLASM_EXAMPLE_DBID;
 
-    @CurrentUser
-    AccountModel currentUser;
-
-    @Inject
-    private SPARQLService sparql;
-
-    @Inject
-    private MongoDBService nosql;
-
-    @Inject
-    private FileStorageService fs;
+    public static final String GERMPLASM_EXAMPLE_NAME = "germplasm1Name";
+    public static final String GERMPLASM_NAME = GERMPLASM_EXAMPLE_DBID;
 
     @Inject
     private OlgaModule olgaModule;
@@ -85,10 +72,29 @@ public class GermplasmAPI {
         BrAPIPagination responsePagintation = germplasmDetail.getBody().getMetadata().getPagination();
         List<BrAPIStatus> responseStatus = germplasmDetail.getBody().getMetadata().getStatus();
 
-        return BrAPIResponseSerialiser.singleObjectResponseSerialiser(responseObject, responsePagintation, responseStatus).getResponse();
+        return brapiResponseToSingleObjectResponse(responseObject, responsePagintation, responseStatus).getResponse();
     }
+
+    @GET
+    @Path("")
+    @ApiOperation("Search germplasms")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return matching germplasms", response = GermplasmDTO.class, responseContainer = "List")
+    })
+    public Response searchGermplasms(
+            @ApiParam(value = GERMPLASM_NAME, example = GERMPLASM_EXAMPLE_NAME) String germplasmName
+    ) throws Exception {
+        return new PaginatedListResponse<>(GermplasmLogic.searchGermplasm(germplasmName)).getResponse();
+    }
+
+    // Service to force germplasm harvest for admins
 
     private void harvestOlgaGermplasms() {
-
+        updateGermplasms(new ArrayList<>());
     }
+
+    // Mechanism to automate germplasm harvest every night. Should it be in BLL rather than API?
 }

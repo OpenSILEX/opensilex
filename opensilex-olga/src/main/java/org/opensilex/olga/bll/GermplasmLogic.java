@@ -1,17 +1,50 @@
-package org.opensilex.olga;
+package org.opensilex.olga.bll;
 
-import org.brapi.client.v2.ApiResponse;
 import org.brapi.v2.model.BrAPIPagination;
-import org.brapi.v2.model.BrAPIResponse;
 import org.brapi.v2.model.BrAPIStatus;
-import org.brapi.v2.model.germ.BrAPIGermplasm;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.olga.dal.GermplasmDAO;
+import org.opensilex.olga.dal.GermplasmModel;
+import org.opensilex.olga.model.GermplasmDTO;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.*;
+import org.opensilex.sparql.service.SPARQLService;
 
+import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class BrAPIResponseSerialiser {
+public class GermplasmLogic {
 
-    public static <T> SingleObjectResponse<T> singleObjectResponseSerialiser(
+    @CurrentUser
+    AccountModel currentUser;
+
+    @Inject
+    private SPARQLService sparql;
+
+    @Inject
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
+
+
+    public static void updateGermplasms(List<GermplasmDTO> germplasmDTOs) {
+        List<GermplasmModel> germplasmModels = germplasmDTOs.stream().map(GermplasmModel::fromDTO).collect(Collectors.toList());
+
+        GermplasmDAO germplasmDAO = new GermplasmDAO();
+
+        germplasmDAO.updateGermplasms(germplasmModels);
+    }
+
+    public static List<GermplasmDTO> searchGermplasm(String germplasmName) {
+        GermplasmDAO germplasmDAO = new GermplasmDAO();
+        return germplasmDAO.searchGermplasms(germplasmName).stream().map(GermplasmModel::toDTO).collect(Collectors.toList());
+    }
+
+    public static <T> SingleObjectResponse<T> brapiResponseToSingleObjectResponse(
             T responseObject, BrAPIPagination responsePagination, List<BrAPIStatus> responseStatus
     ) {
 

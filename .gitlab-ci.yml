@@ -720,7 +720,7 @@ test:valentin:deploy:
   <<: *deploy_opensilex_template
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/valentin"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    INSTANCE_CONFIGURATION_FILE_NAME: "valentin.opensilex.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4096
     OPENSILEX_JAR_PORT: 8096
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"

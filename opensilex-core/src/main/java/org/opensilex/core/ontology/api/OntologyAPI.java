@@ -15,6 +15,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
@@ -423,6 +424,73 @@ public class OntologyAPI {
         });
 
         return new ResourceTreeResponse(properties).getResponse();
+    }
+
+    @GET
+    @Path("/domain_hierarchy_restrictions")
+    @ApiOperation("Get restrictions from some super-class domain to one lower down in the hierarchy, ordered by what domain they first appear in.")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of objects containing domain source and list of property trees", response = PropertiesByDomainDTO.class, responseContainer = "List")
+    })
+    public Response getPropertiesByDomainHierarchyUsingRestrictions(
+            @ApiParam(value = "Domain ancestor URI") @QueryParam("ancestor") @NotNull @ValidURI URI ancestorURI,
+            @ApiParam(value = "Domain uris from types that have ancestor as an ancestor") @NotEmpty @NotNull @ValidURI @QueryParam("children") List<URI> childrenDomains
+    ) throws Exception {
+
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        List<PropertiesByDomainDTO> propertiesByDomainDTOList = new ArrayList<>();
+        List<URI> encounteredRdfTypeUris = new ArrayList<>();
+
+        if(childrenDomains.size()==1 && SPARQLDeserializers.compareURIs(childrenDomains.get(0), ancestorURI)){
+            encounteredRdfTypeUris = Collections.singletonList(ancestorURI);
+        }else{
+            //Loop over children then fusion common rdf types after
+            for(URI currentChild : childrenDomains){
+                LinkedHashSet<String> encounteredRdfTypesFromChildAsStrings = ontologyStore.getAncestorHierarchy(currentChild, ancestorURI);
+                if(encounteredRdfTypesFromChildAsStrings.isEmpty()){
+                    throw new BadRequestException("The ancestor uri was never encountered from one of the domainUris and up.");
+                }
+                List<URI> encounteredRdfTypesFromChild = new ArrayList<>();
+                for(String typeUriString : encounteredRdfTypesFromChildAsStrings){
+                    encounteredRdfTypesFromChild.add(new URI(typeUriString));
+                }
+                encounteredRdfTypesFromChild.removeAll(encounteredRdfTypeUris);
+                encounteredRdfTypeUris.addAll(encounteredRdfTypesFromChild);
+            }
+            encounteredRdfTypeUris.addAll(childrenDomains);
+        }
+
+        //Part 2 : now that we have the hierarchy of classes, get the properties from the ancestor, and at each level until domainUri
+        //Get by restrictions ad return trees only that match the restrictions
+        Set<String> restrictionPropertiesFromSuperClassAndUnder = ontologyStore.getOwlRestrictionsUris(ancestorURI, true);
+
+        Set<URI> visitedProperties = new HashSet<>();
+        BiPredicate<DatatypePropertyModel, ClassModel> dataPropFilter = ((property, classModel) ->
+                property.getRangeURI() != null &&
+                restrictionPropertiesFromSuperClassAndUnder.contains(SPARQLDeserializers.getShortURI(property.getUri())));
+        BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) ->
+                property.getRangeURI() != null &&
+                restrictionPropertiesFromSuperClassAndUnder.contains(SPARQLDeserializers.getShortURI(property.getUri())));
+        for(int i = 0 ; i<encounteredRdfTypeUris.size() ; i++){
+            URI currentRdfType = encounteredRdfTypeUris.get(i);
+            List<ResourceTreeDTO> propertiesForCurrentRdfType = ResourceTreeDTO.fromResourceTree(Arrays.asList(
+                    ontologyStore.searchDataProperties(currentRdfType, null, currentUser.getLanguage(), false, dataPropFilter),
+                    ontologyStore.searchObjectProperties(currentRdfType, null, currentUser.getLanguage(), false, objectPropFilter)));
+            Set<ResourceTreeDTO> nonVisitedPropertiesForCurrentRdfType = new HashSet<>();
+            for(ResourceTreeDTO nextResourceTreeDTO : propertiesForCurrentRdfType){
+                if(nextResourceTreeDTO.allMatch(tree -> visitedProperties.contains(tree.getUri()))){
+                    continue;
+                }
+                nextResourceTreeDTO.visit((e -> visitedProperties.add(e.getUri())), true);
+                nonVisitedPropertiesForCurrentRdfType.add(nextResourceTreeDTO);
+            }
+            propertiesByDomainDTOList.add(new PropertiesByDomainDTO(currentRdfType, new ArrayList<>(nonVisitedPropertiesForCurrentRdfType)));
+        }
+
+        return new PaginatedListResponse<>(propertiesByDomainDTOList).getResponse();
     }
 
     @GET

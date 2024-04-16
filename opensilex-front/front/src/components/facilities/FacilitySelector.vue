@@ -12,6 +12,8 @@
                 noResultsText="FacilitySelector.no-result"
                 @select="select"
                 @deselect="deselect"
+                @clear="clear"
+                :required="required"
         ></opensilex-SelectForm>
     </div>
 
@@ -45,6 +47,9 @@
 
         @Prop({default: "FacilitySelector.placeholder"})
         placeholder;
+
+        @Prop({ default: false })
+          required: boolean;      
 
         created() {
             this.$service = this.$opensilex.getService("opensilex.OrganizationsService");
@@ -91,6 +96,10 @@
 
         deselect(value) {
             this.$emit("deselect", value);
+        }
+
+        clear(){
+            this.$emit("clear");
         }
     }
 </script>

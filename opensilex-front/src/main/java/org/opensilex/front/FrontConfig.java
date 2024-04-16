@@ -10,6 +10,7 @@ import org.opensilex.front.config.CustomMenuItem;
 import org.opensilex.front.config.MatomoConfig;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -101,6 +102,21 @@ public interface FrontConfig {
             value = "Matomo configuration"
     )
     MatomoConfig matomo();
+
+    @ConfigDescription(
+            value = "Notification message for the instance"
+    )
+    Map<String, String> notificationMessage();
+
+    @ConfigDescription(
+            value = "Color theme for the notification message"
+    )
+    String notificationColorTheme();
+
+    @ConfigDescription(
+        value = "Date until which to send the notification"
+    )
+    String notificationEndDate();
 
     @ConfigDescription(
             value = "Agroportal component"

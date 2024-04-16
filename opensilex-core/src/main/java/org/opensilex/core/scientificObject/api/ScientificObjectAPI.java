@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
@@ -22,7 +20,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -46,9 +43,11 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -64,6 +63,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -85,6 +85,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Julien BONNEFONT
@@ -235,6 +236,7 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+        List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
         int lengthMapGeo = 0;
 
         // Get SO with geometry for the experiment
@@ -250,16 +252,21 @@ public class ScientificObjectAPI {
             lengthMapGeo++;
         }
 
-        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
-
-        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
-        for(ScientificObjectNodeDTO dto : dtoList){
-            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElseThrow(NullPointerException::new).getGeometry());
-        }
-
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
 
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        if(lengthMapGeo == 0){
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        } else {
+            dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
+            //Use a temporary list to delete objects already found and reduce the size of the list to be iterated.
+            List<ScientificObjectNodeDTO> dtoMapGeoTmp = new ArrayList<>(dtoMapGeo);
+            // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
+            for(ScientificObjectNodeDTO dto : dtoList){
+                dto.setGeometry(dtoMapGeoTmp.stream().filter(o -> SPARQLDeserializers.compareURIs(o.getUri(),dto.getUri())).findAny().orElseThrow(NullPointerException::new).getGeometry());
+                dtoMapGeoTmp.removeIf(g -> SPARQLDeserializers.compareURIs(g.getUri(),dto.getUri()));
+            }
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        }
     }
 
     @GET
@@ -351,10 +358,14 @@ public class ScientificObjectAPI {
         if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
             VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            List<URI> criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
             if(criteriaFilteredObjects != null){
-                searchFilter.setUris(criteriaFilteredObjects);
-                applyNonCriteriaFilters = !criteriaFilteredObjects.isEmpty();
+                if(criteriaFilteredObjects.excludeResults){
+                    searchFilter.setExcludedUris(criteriaFilteredObjects.result);
+                }else{
+                    searchFilter.setUris(criteriaFilteredObjects.result);
+                    applyNonCriteriaFilters = !criteriaFilteredObjects.result.isEmpty();
+                }
             }
         }
 
@@ -373,9 +384,10 @@ public class ScientificObjectAPI {
                     .setExistenceDate(existenceDate)
                     .setCreationDate(creationDate);
 
+            //TODO this crushes the result of criteria search, how should this be handled?
         if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables));
+            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
         }
 
             searchFilter.setPage(page)
@@ -537,7 +549,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                dao.copyIntoGlobalGraph(Collections.singletonList(model));
+                dao.copyIntoGlobalGraph(Stream.of(model));
             }
 
             if (descriptionDto.getGeometry() != null) {
@@ -640,7 +652,7 @@ public class ScientificObjectAPI {
             }
             throw mongoException;
         }catch (DuplicateNameException e){
-            throw new IllegalArgumentException(e.getMessage());
+            throw new BadRequestException(e.getMessage());
         }
         catch (Exception ex) {
             sparql.rollbackTransaction();

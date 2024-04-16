@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
@@ -16,14 +17,9 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.data.api.DataComputedGetDTO;
-import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.DataExportDTO;
-import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
+import org.opensilex.core.data.api.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -37,10 +33,9 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -48,6 +43,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -93,15 +89,6 @@ public class DataDAO {
 
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
-
-        MongoCollection<DataModel> dataCollection = nosql.getDatabase()
-                .getCollection(DATA_COLLECTION_NAME, DataModel.class);
-        dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, "provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, "date"));
-        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending("date"))));
-        dataCollection.createIndex(Indexes.ascending("date"));
-        dataCollection.createIndex(Indexes.descending("date"));
 
         MongoCollection<DataFileModel> fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
@@ -165,7 +152,6 @@ public class DataDAO {
             Integer pageSize) throws Exception {
 
         Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
         return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
     
@@ -309,7 +295,7 @@ public class DataDAO {
         return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
     }
 
-    public Document getSelectedAgents(List<URI> agents){
+    public Document getSelectedAgents(List< URI> agents){
 
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
@@ -329,41 +315,67 @@ public class DataDAO {
         return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
+
     /**
      *
      * @param criteriaDTO
      * @param variableDAO so we know how to fetch datatype of each variable
-     * @return Null if criteria dto had no valid criteria, empty list if valid criteria but no results,
-     * and a list of object uris if criteria were valid and results were found
+     * @return Null if criteria dto had no valid criteria, Object containing empty list if valid criteria but no results,
+     * or a list of object uris if criteria were valid and results were found
+     * The return object also contains a boolean to say if we need to keep only elements in the the list, or exclude them
      */
-    public List<URI> getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user ,VariableDAO variableDAO) throws Exception {
-        List<Bson> aggregationDocs= this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
-        Set<DataTargetAggregateModel> criteriaSearchedResult;
+    public ExcludableUriList getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user , VariableDAO variableDAO) throws Exception {
 
-        //If aggregationDocs is null then it means there was a contradiction
-        if(aggregationDocs == null){
-            return Collections.emptyList();
-        }
+        //Verify if that there is at least one complete line and if every line is a "NotMeasured"
+        boolean atLeastOneCompleteSingle = criteriaDTO.getCriteriaList().stream().anyMatch(dto ->
+                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || StringUtils.isNotBlank(dto.getValue())));
+        boolean everyLineIsNotMeausured =
+                criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
 
-        //If all lines were not completed then we treat it as if there was no filter on the data.
-        if(aggregationDocs.isEmpty()){
+        if(!atLeastOneCompleteSingle){
             return null;
         }
 
-        criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
+        //If every line is "NotMeausured" then we perform a different operation
+        //We simply get all the objects that are measured and return that we need to exclude them
+        if(everyLineIsNotMeausured){
+            return new ExcludableUriList(
+                    true,
+                    getUsedTargets(
+                            user,
+                            null,
+                            criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
+                            (experiment == null ? null : Collections.singletonList(experiment))
+                    ).stream().filter(Objects::nonNull).collect(Collectors.toList())
+            );
+        }
+        //If every line wasn't "NotMeasured" :
+        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+
+        //If aggregationDocs is null then it means there was a contradiction
+        if(aggregationDocs == null){
+            return new ExcludableUriList(false, Collections.emptyList());
+        }
+
+        Set<DataTargetAggregateModel> criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
         //If result is empty return an empty list otherwise take first and only element's targets value because of the
         // mongo request always returns a single Document with a list of targets validating the criteria
 
         if(criteriaSearchedResult.isEmpty()){
-            return Collections.emptyList();
+            return new ExcludableUriList(false, Collections.emptyList());
         } else if (criteriaSearchedResult.size() > 1) {
             throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
         }
 
         // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
-        return criteriaSearchedResult.stream().findAny()
+        return new ExcludableUriList(
+                false,
+                criteriaSearchedResult.stream().findAny()
                 .get()
-                .getTargets();
+                .getTargets()
+                .stream().filter(Objects::nonNull)
+                .collect(Collectors.toList())
+        );
     }
 
     /**
@@ -371,7 +383,7 @@ public class DataDAO {
      * Translates the dto into a search filter permitting the acquisition of data needed to get the right objects.
      * Or creates error lists if there are errors in the request.
      *
-     * @return List of Bson for the aggregation, empty list if all lines were invalid, or null if a contradiction was identified
+     * @return List of Bson for the aggregation, or null if a contradiction was identified
      * </p>
      *
      * <p>
@@ -436,15 +448,8 @@ public class DataDAO {
      *
      */
     private List<Bson> createCriteriaSearchAggregation(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
-        final List<Bson> aggregationDocuments = new ArrayList<>();
         GetScientificObjectsByDataCriteriaRequestErrors errors = new GetScientificObjectsByDataCriteriaRequestErrors();
-        //A boolean to not run pointless code if all single criteria were incomplete (A couple of incomplete criteria shouldn't throw an error)
-        boolean atLeastOneCompleteSingle = false;
-        //Some strings used to create the request :
-        final String variables = "variables";
 
-        //Data search filter
-        Document dataSearchFilter = new Document();
         List<Document> criteriaDocuments = new ArrayList<>();
         Map<String, List<Document>> criteriaDocumentPerVariable = new HashMap<>();
         //List to remember which vars we are testing to be not measured so that we can identify impossible request if we try to compare this var with a value
@@ -457,7 +462,6 @@ public class DataDAO {
             String valueString = singleCriteriaDTO.getValue();
             //If line is complete
             if(currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())){
-                atLeastOneCompleteSingle = true;
                 URI varDataTypeUri = null;
                 //Create variable filter and a new list of filters if this is the first time we've crossed this variable, add to existing list otherwise
                 String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
@@ -526,9 +530,7 @@ public class DataDAO {
                 }
             }
         }//End of criteria list for loop
-        if(!atLeastOneCompleteSingle){
-            return Collections.emptyList();
-        }else if (errors.hasErrors()){
+        if (errors.hasErrors()){
             throw new IllegalArgumentException(errors.generateErrorMessage());
         }
 
@@ -539,6 +541,11 @@ public class DataDAO {
                 criteriaDocuments.add(new Document("$and", varDocs));
             }
         }
+        final List<Bson> aggregationDocuments = new ArrayList<>();
+        //Data search filter
+        Document dataSearchFilter = new Document();
+        //Some strings used to create the request :
+        final String variables = "variables";
         dataSearchFilter.put("$or", criteriaDocuments);
         if(experiment == null){
             aggregationDocuments.add(new Document("$match", dataSearchFilter));
@@ -562,6 +569,7 @@ public class DataDAO {
         groupByTargetDoc.put(variables, groupByVarListDoc);
         aggregationDocuments.add(new Document("$group", groupByTargetDoc));
 
+
         //Keep only the ones that have every tested variable present but not the ones that need to not be measured
         Document sizeExpr = new Document("$size", "$" + variables);
         Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariable.size() - varsWhereWeWantNoData.size()));
@@ -570,6 +578,7 @@ public class DataDAO {
         Document notInNotMeasuredVarsListDoc = new Document("$not", Collections.singletonList(new Document("$or", inNotMeasuredVarsListDocs)));
         Document correctSizeAndNoNotMeasuredVars = new Document("$and", Arrays.asList(sizeCondition, notInNotMeasuredVarsListDoc));
         aggregationDocuments.add(new Document("$match", new Document("$expr", correctSizeAndNoNotMeasuredVars)));
+
 
         //group by nothing and create a list of targets that validate the criteria
         Document targetListCreator = new Document();
@@ -942,8 +951,8 @@ public class DataDAO {
     }
 
 
-    public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables) throws Exception {
-        Document filter = searchFilter(user, null, null, variables, null, devices, null, null, null, null, null, null);
+    public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
+        Document filter = searchFilter(user, experiments, null, variables, null, devices, null, null, null, null, null, null);
         Set<URI> targetURIs = nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter);
         return new ArrayList<>(targetURIs);
     }
@@ -1479,7 +1488,7 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    private Set<URI> getAllDateVariables() throws Exception {
+    public Set<URI> getAllDateVariables() throws Exception {
         return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
             Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
             selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
@@ -1495,13 +1504,13 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    public DataGetDTO modelToDTO(DataModel model) throws Exception {
+    public DataGetDTO modelToGetDTO(DataModel model) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
         return DataGetDTO.getDtoFromModel(model, dateVariables);
     }
 
     /**
-     * Converts a list of {@link DataModel} to a lislt of {@link DataGetDTO}, with the correct conversion if the value is of
+     * Converts a list of {@link DataModel} to a list of {@link DataGetDTO}, with the correct conversion if the value is of
      * type xsd:date. This method should be called as few times as possible (ideally only once), as it performs
      * a SPARQL query.
      *
@@ -1509,21 +1518,15 @@ public class DataDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DataGetDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
+    public ListWithPagination<DataGetSearchDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
-        List<DataGetDTO> dtoList = new ArrayList<>();
-        modelList.getList().forEach(dataModel -> {
-            DataGetDTO dto = DataGetDTO.getDtoFromModel(dataModel, dateVariables);
-            if (Objects.nonNull(dataModel.getPublisher())) {
-                try {
-                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataModel.getPublisher())));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            dtoList.add(dto);
-        });
-        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
+
+        List<DataGetSearchDTO> dtoList = modelList.getList()
+                .stream()
+                .map(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
+                .collect(Collectors.toList());
+
+        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal(), modelList.getLimitCount());
     }
 
     /**

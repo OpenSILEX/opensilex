@@ -214,7 +214,7 @@ public class DataverseAPI {
     public Response availableDatasetLanguages() throws InvalidConfigException {
         HashMap<String, String> availableLanguages = new HashMap<>();
         for (String lang : dataverseModule.getConfig(OpensilexDataverseConfig.class).dataverseLanguages()){
-            Locale langLocale = OpenSilexLocale.getLocaleFromString(lang)
+            Locale langLocale = OpenSilexLocale.getLocaleFromLanguageString(lang)
                     .orElseThrow(() -> new InvalidConfigException("String '" + lang + "' from instance configuration couldn't be matched with a known language"));
             availableLanguages.put(langLocale.getLanguage(), langLocale.getDisplayLanguage(currentAccount.getLocale()));
         }
@@ -245,7 +245,7 @@ public class DataverseAPI {
     public Response availableDatasetMetadataLanguages() throws InvalidConfigException {
         HashMap<String, String> availableDatasteMetadataLanguages = new HashMap<>();
         for (String lang : dataverseModule.getConfig(OpensilexDataverseConfig.class).datasetMetadataLanguages()){
-            Locale langLocale = OpenSilexLocale.getLocaleFromString(lang)
+            Locale langLocale = OpenSilexLocale.getLocaleFromLanguageString(lang)
                     .orElseThrow(() -> new InvalidConfigException("String '" + lang + "' from instance configuration couldn't be matched with a known language"));
             availableDatasteMetadataLanguages.put(langLocale.getLanguage(), langLocale.getDisplayLanguage(currentAccount.getLocale()));
         }

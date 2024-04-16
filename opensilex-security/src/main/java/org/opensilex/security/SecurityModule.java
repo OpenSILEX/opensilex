@@ -53,7 +53,24 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     public final static String REST_AUTHENTICATION_API_ID = "Authentication";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityModule.class);
-    public static final String GUEST_OPENSILEX_ORG = "guest@opensilex.org";
+
+    public static final String DEFAULT_GUEST_EMAIL = "guest@opensilex.org";
+    public static final String DEFAULT_GUEST_PASSWORD = "guest";
+    public static final String DEFAULT_GUEST_LANGUAGE = "en";
+
+    public final static String GUEST_PROFILE_URI = "http://www.opensilex.org/profiles/guest-profile";
+    private final static String GUEST_PROFILE_NAME = "Guest profile";
+
+    public final static String GUEST_GROUP_URI = "http://www.opensilex.org/groups/guest";
+    private final static String GUEST_GROUP_NAME = "Guest group";
+    private final static String GUEST_GROUP_DESCRIPTION = "Manage guest group persons";
+
+    public static final String DEFAULT_SUPER_ADMIN_EMAIL = "admin@opensilex.org";
+    public static final String DEFAULT_SUPER_ADMIN_PASSWORD = "admin";
+    public static final String DEFAULT_SUPER_ADMIN_LANGUAGE = "en";
+
+    private final static String DEFAULT_PROFILE_URI = "http://www.opensilex.org/profiles/default-profile";
+    private final static String DEFAULT_PROFILE_NAME = "Default profile";
 
     @Override
     public Class<?> getConfigClass() {
@@ -86,17 +103,6 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         LOGGER.info("Create default profile");
         createDefaultProfile();
     }
-
-    private final static String DEFAULT_PROFILE_URI = "http://www.opensilex.org/profiles/default-profile";
-    private final static String DEFAULT_PROFILE_NAME = "Default profile";
-
-    public final static String GUEST_PROFILE_URI = "http://www.opensilex.org/profiles/guest-profile";
-    private final static String GUEST_PROFILE_NAME = "Guest profile";
-    
-    public final static String GUEST_GROUP_URI = "http://www.opensilex.org/groups/guest";
-    private final static String GUEST_GROUP_NAME = "Guest group";
-    private final static String GUEST_GROUP_DESCRIPTION = "Manage guest group persons";
-
     
     public void createDefaultProfile() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
@@ -165,10 +171,17 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
 
     public void createDefaultGuestUser(SPARQLService sparql, AuthenticationService authentication) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
-        InternetAddress email = new InternetAddress(GUEST_OPENSILEX_ORG);
+        InternetAddress email = new InternetAddress(DEFAULT_GUEST_EMAIL);
 
         if (!accountDAO.accountEmailExists(email)) {
-            accountDAO.create(null, email, false, authentication.getPasswordHash("guest"), "en", null, null);
+            accountDAO.create(
+                    null,
+                    email,
+                    false,
+                    authentication.getPasswordHash(DEFAULT_GUEST_PASSWORD),
+                    DEFAULT_GUEST_LANGUAGE,
+                    null,
+                    null);
         }
     }
 
@@ -191,7 +204,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
             ProfileModel guestProfilModel = profileDAO.get(new URI(GUEST_PROFILE_URI));
             groupUserProfileModel.setProfile(guestProfilModel);
 
-            InternetAddress email = new InternetAddress(GUEST_OPENSILEX_ORG);
+            InternetAddress email = new InternetAddress(DEFAULT_GUEST_EMAIL);
             AccountDAO accountDAO = new AccountDAO(sparql);
             AccountModel guestUserModel = accountDAO.getByEmail(email);
             groupUserProfileModel.setUser(guestUserModel);
@@ -216,10 +229,18 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
 
     public static void createDefaultSuperAdmin(SPARQLService sparql, AuthenticationService authentication) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
-        InternetAddress email = new InternetAddress("admin@opensilex.org");
+        InternetAddress email = new InternetAddress(DEFAULT_SUPER_ADMIN_EMAIL);
 
         if (!accountDAO.accountEmailExists(email)) {
-            accountDAO.create(null, email, true, authentication.getPasswordHash("admin"), "en", null, null);
+            accountDAO.create(
+                    null,
+                    email,
+                    true,
+                    authentication.getPasswordHash(DEFAULT_SUPER_ADMIN_PASSWORD),
+                    DEFAULT_SUPER_ADMIN_LANGUAGE,
+                    null,
+                    null
+            );
         }
     }
 

@@ -70,12 +70,12 @@
 
         <div>
           <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
-            <opensilex-AccountSelector
-              :users.sync="filter.agent"
-              label="ProvenanceForm.agent"
-              class="searchFilter"
-              @handlingEnterKey="refresh()"
-            ></opensilex-AccountSelector>
+            <opensilex-PersonSelector
+                :persons.sync="filter.agent"
+                label="ProvenanceForm.agent"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></opensilex-PersonSelector>
           </opensilex-FilterField>
 
           <opensilex-FilterField v-else-if="filter.agent_type">
@@ -100,6 +100,7 @@
       ref="tableRef"
       :searchMethod="searchProvenance"
       :fields="fields"
+      :fieldKeyToSortableModelLabelMap="fieldKeyToModelFieldMap"
       :isSelectable="true"
       @refreshed="onRefreshed"
       defaultSortBy="name"
@@ -220,6 +221,12 @@ export default class ProvenanceList extends Vue {
   selectedProvenance: any = null;
   agentTypes: any[] = [];
   SearchFiltersToggle: boolean = false;
+
+  fieldKeyToModelFieldMap = {
+    'activity_type' : "activity.rdfType",
+    'activity_start_date' : "activity.startDate",
+    'activity_end_date' : "activity.endDate",
+  };
 
   get user() {
     return this.$store.state.user;

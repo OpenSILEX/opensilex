@@ -283,7 +283,9 @@ export default class ProvenanceDetailsPage extends Vue {
               promiseAgent = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
               .getPerson(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-                prov.prov_agent[i]["operator"] = http.response.result
+                let userDto = http.response.result;
+                prov.prov_agent[i]["operator"] = userDto;
+                prov.prov_agent[i]["name"] = userDto.first_name + userDto.last_name;
               })
               .catch(this.$opensilex.errorHandler);
             } else {

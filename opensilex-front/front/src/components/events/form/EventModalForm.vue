@@ -1,4 +1,4 @@
-    <template>
+<template>
         <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID) && renderModalForm"
             ref="modalForm"
@@ -137,7 +137,8 @@
             }).catch((error) => {
                 if (error.status == 409) {
                     this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
-                } else {
+                }         
+                else {
                     this.$opensilex.errorHandler(error,error.response.result.message);
                 }
             });
@@ -237,7 +238,9 @@
 
                 let position = move.targets_positions[0].position;
 
-                if (EventModalForm.isPositionValid(position)) {
+                if (EventModalForm.isPositionEmpty(position)) {
+                    move.targets_positions = [];
+                } else if (EventModalForm.isPositionValid(position)) {
 
                     // one position on one target
                     if (move.targets.length == 1) {
@@ -249,8 +252,6 @@
                             position: position
                         }));
                     }
-                } else {
-                    move.targets_positions = undefined;
                 }
             }
         }
@@ -272,6 +273,14 @@
             return !allPropertiesUndefined;
         }
 
+        static isPositionEmpty(position: PositionCreationDTO): boolean {
+            for (const prop in position) {
+                if (Object.prototype.hasOwnProperty.call(position, prop)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
     }
 

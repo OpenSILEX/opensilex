@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.opensilex.nosql.mongodb.dao.MongoReadWriteDao</OriginalElement>
+  <nodes>
+    <node x="-557.227040395713" y="619.7848309975268">org.opensilex.nosql.mongodb.dao.AbstractMongoReadWriteDao</node>
+    <node x="-1366.9474031327286" y="1088.7917559769166">org.opensilex.nosql.mongodb.dao.MongoReadDao</node>
+    <node x="241.41896125309154" y="1108.9273701566362">org.opensilex.nosql.mongodb.dao.MongoReadWriteDao</node>
+    <node x="-1358.860181368508" y="638.3431162407255">org.opensilex.nosql.mongodb.dao.MongoWriteDao</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.opensilex.nosql.mongodb.dao.AbstractMongoReadWriteDao" target="org.opensilex.nosql.mongodb.dao.MongoWriteDao" relationship="REALIZATION">
+      <point x="0.0" y="-512.0" />
+      <point x="-224.22704039571295" y="746.2900247320694" />
+      <point x="-1170.360181368508" y="746.2900247320694" />
+      <point x="0.0" y="-148.0" />
+    </edge>
+    <edge source="org.opensilex.nosql.mongodb.dao.MongoReadWriteDao" target="org.opensilex.nosql.mongodb.dao.AbstractMongoReadWriteDao" relationship="GENERALIZATION">
+      <point x="-134.0" y="-0.0" />
+      <point x="469.0" y="1123.4273701566362" />
+      <point x="469.0" y="1131.7848309975268" />
+      <point x="333.0" y="-0.0" />
+    </edge>
+    <edge source="org.opensilex.nosql.mongodb.dao.AbstractMongoReadWriteDao" target="org.opensilex.nosql.mongodb.dao.MongoReadDao" relationship="REALIZATION">
+      <point x="-333.0" y="-0.0" />
+      <point x="-247.0" y="1131.7848309975268" />
+      <point x="-247.0" y="1313.7917559769166" />
+      <point x="300.0" y="-0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="1.0768821022727273" showDependencies="false" x="-258.5" y="1150.0" />
+  <SelectedNodes>
+    <node>org.opensilex.nosql.mongodb.dao.MongoReadDao</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

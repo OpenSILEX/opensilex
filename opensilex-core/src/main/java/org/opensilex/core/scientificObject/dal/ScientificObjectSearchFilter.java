@@ -3,13 +3,13 @@ package org.opensilex.core.scientificObject.dal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ScientificObjectSearchFilter extends SparqlSearchFilter {
+public class ScientificObjectSearchFilter extends SearchFilter {
 
     @ValidURI
     @JsonProperty("uris")

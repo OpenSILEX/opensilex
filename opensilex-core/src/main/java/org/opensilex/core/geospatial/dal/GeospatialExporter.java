@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.jena.vocabulary.RDFS;
+import org.geojson.Feature;
+import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -55,7 +57,7 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
     public static final Class<Polygon> POLY = Polygon.class;
     public static final Class<LineString> LINE = LineString.class;
     public static final Class<Point> POINT = Point.class;
-
+    public static final List<Class<? extends Geometry>> typeList = Arrays.asList(POLY,LINE,POINT);
     public static final URI COMMENT= URI.create(SPARQLDeserializers.getShortURI(RDFS.comment.getURI()));
     private static final Logger LOGGER = LoggerFactory.getLogger(GeospatialExporter.class);
 
@@ -82,7 +84,7 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         } else if (Objects.equals(format, GeospatialFormat.GEOJSON.getLabel())){
             //Convert to geojson
             fileByte = gjsonExport(selectedProps, objDetailList, selectedObjectsMap);
-            fileName = "exportGeoJSon_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".geojson" ;
+            fileName = "exportGeoJSon_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
         } else {
             throw new NotFoundException("Unknown format");
         }
@@ -106,9 +108,7 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         String title = objDetailList.get(0).getClass().getSimpleName();
 
         // Create feature type - Define features type (shapefile columns) according to the selected props- and collection matching to listed geometry
-        List<Class<? extends Geometry>> typeList = Arrays.asList(POLY,LINE,POINT);
         Map<SimpleFeatureType, DefaultFeatureCollection> typeCollectionMap = new HashMap<>();
-
         typeList.forEach(type -> typeCollectionMap.put(createType(type,selectedProps,title),new DefaultFeatureCollection()));
 
         //Writing collections with the corresponding TYPE
@@ -321,29 +321,44 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
      * @param objDetailList list of objects with details of their properties
      * @param selectedObjectsMap long URI list of objects with geometry from map
      */
-    private byte[] gjsonExport(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap){
+    private byte[] gjsonExport(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        byte[] featureCollectionByte = new byte[0];
 
         //Build features : ["type": "Feature", "properties": {}, "geometry" : { "type" : "", "coordinates" : []}]
-        List<Map<String, Object>> features = buildFeatures(selectedProps, objDetailList, selectedObjectsMap);
+        Map<String, List<Feature>> featuresMap = buildFeatures(selectedProps, objDetailList, selectedObjectsMap);
+        //Build featureCollection and save in zipped file
+        ByteArrayOutputStream outByte = new ByteArrayOutputStream();
+        ZipOutputStream outZip = new ZipOutputStream(outByte);
 
-        //Build featureCollection : {"type": "FeatureCollection", "features": []}
-        Map<String, Object> featureCollection = new HashMap<>();
-        featureCollection.put("type", "FeatureCollection");
-        featureCollection.put("features", features);
-
-        try {
-            featureCollectionByte = mapper.writeValueAsBytes(featureCollection);
-        } catch (JsonProcessingException ex) {
-            LOGGER.error("Error writing collection to file", ex);
-        }
-        return featureCollectionByte;
+        featuresMap.forEach((geometryType,featureList) -> {
+            if(!featureList.isEmpty()){
+                //Build featureCollection : {"type": "FeatureCollection", "features": []}
+                FeatureCollection featureCollection = new FeatureCollection();
+                featureCollection.setFeatures(featureList);
+                // Add a new file to zip
+                try {
+                    ZipEntry entry =  new ZipEntry(objDetailList.get(0).getClass().getSimpleName()+ "_" + geometryType + "_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".geojson");
+                    outZip.putNextEntry(entry);
+                    // Write the content of the added file
+                    outZip.write(mapper.writeValueAsBytes(featureCollection));
+                    outZip.closeEntry();
+                } catch (JsonProcessingException | FileNotFoundException ex) {
+                    LOGGER.error("Error writing collection to file", ex);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        outZip.finish();
+        outZip.close();
+        return outByte.toByteArray();
     }
 
-    private List<Map<String, Object>> buildFeatures(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap){
+    private  Map<String, List<Feature>> buildFeatures(List<URI> selectedProps, List<T> objDetailList, Map<URI, GeoJsonObject> selectedObjectsMap){
         ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, Object>> features = new ArrayList<>();
+        //create Map geometry - features list
+        Map<String, List<Feature>> geomFeaturesMap = new HashMap<>();
+        typeList.forEach(t -> geomFeaturesMap.put(t.getSimpleName(), new ArrayList<>()));
 
         objDetailList.forEach(el -> {
             // Basic props
@@ -358,17 +373,21 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
             }
 
             // Geometry
-            Map<String, Object> geometry = mapper.convertValue(selectedObjectsMap.get(el.getUri()),Map.class);
+            GeoJsonObject geometry = selectedObjectsMap.get(URI.create(SPARQLDeserializers.getExpandedURI(el.getUri())));
 
             //Build feature : { "type": "Feature","properties": {},"geometry": {}}}
-            Map<String, Object> feature = new HashMap<>();
-            feature.put("type", "Feature");
-            feature.put("properties",properties);
-            feature.put("geometry",geometry);
+            Feature feature = new Feature();
+            feature.setGeometry(geometry);
+            feature.setProperties(properties);
 
-            features.add(feature);
+            //Get geometry type
+            String geomType = geometry.getClass().getSimpleName();
+
+            //For each type of geometry, add to different list
+            geomFeaturesMap.get(geomType).add(feature);
+
         });
-        return features;
+        return geomFeaturesMap;
     }
 
     /**

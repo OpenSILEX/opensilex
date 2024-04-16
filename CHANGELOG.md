@@ -1,40 +1,55 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.1.2] Next Release](#112-next-release)
-    * [Versions changes](#versions-changes)
-    * [Updated Dependencies](#updated-dependencies)
+  * [[1.2.4]](#124)
+    * * [Fixed or optimized](#fixed-or-optimized) 
+  * [[1.2.3]](#123)
+    * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
-  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+  * [[1.2.2]](#122)
+    * [Fixed](#fixed)
+  * [[1.2.1]](#121)
+    * [Fixed](#fixed-1)
+  * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
+    * [Highlight](#highlight-1)
+    * [Changes and new features](#changes-and-new-features-1)
     * [Fixed or optimized](#fixed-or-optimized-1)
+    * [Versions changes](#versions-changes)
+    * [Technical changes](#technical-changes)
+      * [Updated Dependencies](#updated-dependencies)
+  * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
+    * [Changes and new features](#changes-and-new-features-2)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Fixed or optimized](#fixed-or-optimized-3)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-2)
+    * [Fixed or optimized](#fixed-or-optimized-4)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-3)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.0.0-rc+6]](#100-rc6)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Fixed or optimized](#fixed-or-optimized-6)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Fixed or optimized](#fixed-or-optimized-7)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-7)
+    * [Fixed or optimized](#fixed-or-optimized-9)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
-    * [Fixed](#fixed)
+    * [Fixed](#fixed-2)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
     * [Added or changed](#added-or-changed-2)
-    * [Fixed](#fixed-1)
+    * [Fixed](#fixed-3)
   * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
     * [Added or changed](#added-or-changed-3)
-    * [Fixed](#fixed-2)
+    * [Fixed](#fixed-4)
   * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
     * [Added](#added)
     * [Added in pre-production](#added-in-pre-production)
@@ -42,23 +57,23 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-10)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-9)
+    * [Fixed or optimized](#fixed-or-optimized-11)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
     * [Added](#added-3)
-    * [Fixed](#fixed-3)
+    * [Fixed](#fixed-5)
   * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
     * [Added](#added-4)
     * [Changed](#changed-1)
   * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
-    * [Fixed](#fixed-4)
+    * [Fixed](#fixed-6)
   * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
     * [Added](#added-5)
-    * [Fixed](#fixed-5)
+    * [Fixed](#fixed-7)
   * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
     * [Added](#added-6)
 <!-- TOC -->
@@ -70,7 +85,133 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.2] Next Release
+## [1.2.4]
+
+### Fixed or optimized
+
+- (!1212) Device filter no longer ignored during data export.
+
+## [1.2.3]
+
+>  ⚠️ WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.2.3.md).
+
+### Highlight
+
+- Some data-related pages and services have been **greatly optimized**, especially for OpenSILEX instances where a 
+  lot of data are declared (> 10M).
+- You can now configure a **custom notification banner** that will be displayed at the top of the web interface. This 
+  can be used to inform your users of maintenances, changes, etc. See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/notification-pannel.md).
+
+### Changes and new features
+
+- (!1167) Changed type of publication date and last modification date from `Integer` to `Date` when it wasn't already the case. This improves  
+  uniformity and client support.
+  - Concerned services :
+    - Data
+    - Provenance
+    - Datafile
+- (!1168) Improvement on the "move" type event declaration.
+  - Additional information for the user in the form.
+  - Dynamic attribute `required` for location fields.
+  - An error message is now returned if the move is incorrectly declared, even though nothing was indicated and nothing happened before.
+- (!1175) Added a message notification system to users.
+  - Message can be translated into different languages.
+  - Possibility of adding HTML tags in the message.
+  - Several color themes available.
+  - Possibility of defining an end date for display.
+  - See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/notification-pannel.md).
+- (!1178) You can no longer select an end date that is earlier than the start date during Event creation. The target 
+  column of the Event list now redirects to the resource in question upon click.
+- (!1180) The Event import system now works the same way as ScientificObjects and Devices, the headers of columns are now short uris instead of labels.
+- (!1185) Replaced simple germplasm selector in the ScientificObjects tab of Experiments with a pop-up one.
+- (!1186) Creation of a new default order for ontology properties : properties from higher up in the hierarchy get shown first, all the way down to properties from the lowest domain in the hierarchy. Within the sublist of properties from a single domain, they are ordered alphabetically (by name).
+  - Usage of this new order, if no order has ever been defined for CSV template generation.
+  - Usage of this new order, if no order has ever been defined for Ontology based forms.
+- (!1195) Germplasm and Germplasm Group filter no longer treated as a logical OR with the targets filter
+- (!1203) The details tab is now the first and default tab for facilities instead of monitoring
+
+### Fixed or optimized
+
+- (!1166) Fix concerning the dates of an event.
+  - If the event is instantaneous, the end date is now required.
+  - If it is on a time interval, at least one of the two fields (start / end) is required.
+- (!1169) Fix concerning the data import. If the standard provenance is not created, it is no longer possible to insert data by selecting it, a specific error message is returned to the user in this scenario.
+- (!1183) Visibility of areas and devices on the map is now stable
+- (!1190) Data and datafile table pages now render correctly when every data or datafile in the table has an undefined target
+- (!1194) In the create germplasm view, when loading a heavy CSV file, the table is now filled in less than 2 seconds
+  and is showing a loader.
+- (!1197) Optimisation of data search.
+  - A new optimized `searchDataListByTargets` service is available. This service no longer compute the `totalCount` of data and just indicate if a next page exists.
+  - All data search service no longer return detailed information about data publisher (only the publisher URI is returned).
+  - Two new MongoDB indexes are created on data experiment and data provenance URI.
+- (!1198) fixed a bug that prevented Move from being declared if no position information was provided
+- (!1207) Inserting scientific objects in an experiment, when they were already present in another experiment,
+  using an import file now works correctly again.
+
+## [1.2.2]
+
+### Fixed
+
+- [Doc] Changelog and versioning notes was changed to avoid deployment and configuration issues
+
+## [1.2.1]
+
+### Fixed
+
+- [Map] When we open the "map" module, the focus is now on the correct extent of the scientific objects of the experiment.
+- [Experiment] Scientific objects are now displayed in a hierarchy again by default, instead of a flat table.
+  Flatten display will now only trigger when searching using certain filters, such as data criteria.
+
+## [1.2.0] - Caramelized Crystal
+
+> WARNING : upgrading to this new version requires manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.2.0.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.2.0.md).
+
+### Highlight
+
+- [General] Every resource now has associated metadata linking to its creator (account), its date of creation and its 
+  last update date. This metadata is usually displayed in the detailed view of a resource. -> bf721199
+- [Scientific Object] You can now search scientific objects by applying mathematical filters on their associated 
+  data. For example, you can search "all scientific objects with recorded data for the variable 'air_temperature' where
+  the value is between 10°C and 20°C". -> b4d06f44
+- [Person] You can now create a person based on an existing ORCID account. All relevant data will be automatically 
+  fetched to fill the person's info. -> 3361a1c8
+- [RGPD] You can now display your RGPD file as a PDF in the web interface. See [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/GDPR_config.md) -> cc2a416b
+
+### Changes and new features
+
+- [Person] Enhanced the ergonomy of the "phone number" field for the person form. -> c9238820
+- [Data] You can now search data by the germplasm group of their target. -> 500c2f9e
+- [Ergonomy] You can now choose the number of results displayed in search result tables. -> 26158449
+- [Ergonomy] In selectors, you can now expand the displayed results that were previously capped at 10 items. -> 3ccabae5
+- [Security] There are now credentials to manage accounts. -> 0865dd7c
+- [Device] You can now filter the data in the device graphs by target. -> 22462def
+- [Graphs] The default visualization date for data has been adjusted. -> 89c02765
+  - For devices, variables or scientific objects graphs, the default beginning date is now 15 days before the current 
+    date.
+  - In the case of a finished experiment, the default dates are those of the experiment.
+- [Analytics] You can now configure an OpenSILEX instance to send analytics data to a Matomo server. -> 90177a11
+- [Germplasm] The germplasm model now supports 3 additional properties, `has_parent`, `has_parent_m` and 
+  `has_parent_f`. You can also search germplasms using these properties as filters. -> 1f107ee0
+- [Dashboard] You can now configure your dashboard to display a custom title to your graph. See [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/dashboard.md#configuration-of-additional-information-for-the-data-visualization) -> a1e37f00
+- [Map] You can now export elements from the map in the GeoJSON format. -> da13f442
+- [Documentation] The installation documentation was updated. -> 9368839e
+
+### Fixed or optimized
+
+- [Ergonomy] When going back to a previously visited list, the pagination is kept. -> 62a6fb26
+- [Metrics] The metrics service now returns correctly the variable names. -> 4ab1fa1a
+- [Variable group] The "variable group" selector now works correctly for multiple selection. -> 40dfd0fc
+- [BrAPI] Missing mappings for BrAPI 1.3 were added, and other mappings that returned an incorrect format were fixed.
+  -> 3721ad9f
+- [Table list] In table lists where items can be selected, the selection count is now correct even when a selected 
+  item is deleted. -> a45111a7
+- [Germplasm] You can now correctly import multiple germplasms with the same name using a CSV file. -> 16228e14
+- [Data] Importing data when the target column is the last column now works correctly. -> fded1f4d
+- [Site] The link to a hosted organization from a site now redirects correctly. -> b2c8ef07
+- [Account] You can no longer delete an account while it is associated to other data. -> 3abe2506
 
 ### Versions changes
 
@@ -90,7 +231,11 @@ if your need more information or contact our team for support.
 - See the
   dockerfile :  [mongo-with-transactions.docker](opensilex-dev-tools/src/main/resources/docker/mongo-with-transactions.docker)
 
-### Updated Dependencies
+### Technical changes
+
+- [GraphQL] A service wa added to generate a Staple API configuration file. -> 73b2d8ad
+
+#### Updated Dependencies
 
 > Maven plugins
 
@@ -136,35 +281,36 @@ if your need more information or contact our team for support.
 |----------------------------------------------------------------------------------------------------------------|------|
 | [medeia-validator-jackson](https://mvnrepository.com/artifact/com.worldturner.medeia/medeia-validator-jackson) |      |
 
-> WARNING : upgrading to this new version require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.2.md).
-> Also available [locally](opensilex-doc/src/main/resources/release/1.1.2.md).
+## [1.1.0] - Blazing Basalt
+
+>  ⚠️ WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
 
 ### Changes and new features
 
-- [**GDPR**] New page to show a pdf about GDPR and/or privacy policy. To set up PDFs files, follow instructions in  [rgpd_config.md](opensilex-doc/src/main/resources/installation/configuration/GDPR_config.md) -> cc2a416b6
-- [**Credentials**] Account credentials and Users credentials are now separate. Account credentials are used in the web interface while Users credentials are only used to directly call the User API endpoints (or via the Swagger interface) -> 0865dd7ca
+- [Map] You can now visualize data in a chart by selecting an object in the map view
+- [Person] You can now search persons by their ORCID
+- [User] The User API is now deprecated
+- [Account] The form for creating accounts has been simplified
+- [Experiment] Associated facilities are now part of the available facilities for scientific objects of the experiments
+- [Experiment] The "Visualization" tab of a scientific object in an experiment has been removed
+- [Experiment] Scientific object count is now displayed on the scientific objects tab
+- [Germplasm group] Added documentation that you can read by hovering the question mark
 
 ### Fixed or optimized
 
-- [**Scientific Object search**] Small Criteria search changes -> e0534d35b
-- [**UI**] Possibility of displaying all results on selectors locked to 10 elements -> 3ccabae51
-- [**Devices Visualisation**] Ajout filtre d'OS / modification service searchScientificObjects -> 22462defa
-- Define graphic dates filters to defined period or manip start and end dates -> 89c027650
-- [**Fix**] pagination in tabs remains page 1 -> be399edc9
-- [**BrAPI**] V1.3 fix -> 3721ad9f2
-- [**Dataverse**] Changes to dataverse docs -> 9a4e44235
-- [**Front**] Possibility to choose number of results displayed -> 26158449d
-- [**GraphQL**] added service for generating a Staple API config file -> 73b2d8adf
-- [**TabularData, Germplasms**] Possibility to search data by germplasms -> 500c2f9ec
-- [**Person**] new component for phone number -> c9238820d
-- [**BugFix**] Variable group selector -> 40dfd0fcb
-- [**Metrics**] Fix variable name in metrics -> 4ab1fa1a2
-- [**ORCID**] pré-remplissage du formulaire des personnes via ORCID -> 3361a1c8f
-- [**Map**] Fix filterMap -> 8f5facd17
-- [**Metadata**] Add metadata on all opensilex model -> bf7211997
-
-
+- [Front] Minor visual fixes
+- [Experiment] On the "Data" page of an experiment, targets are now always correctly displayed
+- [Data] Importing multiple variables in one CSV no longer duplicates devices in provenance
+- [Data] Adding annotation during data import now uses the correct date and time
+- [Map] Fixed some issues with the zoom
+- [Organization] Fixed an issue where you had to click twice on "create organization" or "create site" to perform the action
+- [Facility] Tweaked the "Monitoring" page of a facility for better ergonomy
+- [Charts] Tweaked the display of graphs with multi-scale axis for better ergonomy
+- [Charts] Fixed a bug where data with the value 0 where sometimes displayed as undefined
+- [Charts] Charts no longer aggregate data points
+- [PHIS] PHIS logo is now displayed if the dashboard chart is not configured
 
 ## [1.0.1] - Ambitious Amber
 
@@ -181,11 +327,9 @@ if your need more information or contact our team for support.
 
 ## [1.0.0] - Ambitious Amber
 
-> WARNING : upgrading to this new version require manual operations. Please
-> see
->
-the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
-> Also available [here](opensilex-doc/src/main/resources/release/1.0.0.md)
+> WARNING : upgrading to this new version require manual operations. Please.
+> See the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
+> Also available [here](opensilex-doc/src/main/resources/release/1.0.0.md).
 
 ### New features
 
@@ -246,9 +390,7 @@ the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensi
 ## [1.0.0-rc+7]
 
 > WARNING : upgrading to this new version require manual operations. Please
-> see
->
-the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
 > Also available [here](opensilex-doc/src/main/resources/release/1.0.0-rc%2B7.md)
 
 ### New features
@@ -359,9 +501,7 @@ Fix OpenSILEX commands initialization and append test scripts -> cd19dd5
 ## [1.0.0-rc+5]
 
 > Warning : upgrading to this new version may require manual operations. Please
-> see
->
-the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
 
 > Warning: since version 1.0.0-rc+2, if you have created scientific objects with the same name in different experiments
 > (with automatic URI generation), their URI would end up being the same. That may cause problems if you intended to
@@ -458,8 +598,8 @@ New installations don't need further action.
 - In an experiment or in the global context, data can now be filtered by target uris
 - Documents can now reference an external resource by URL instead of uploading a file
 - Species can now be updated like any other germplasm
-- Documents can now be stored using the GridFS Mongo Connector (
-  see [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md))
+- Documents can now be stored using the GridFS Mongo Connector 
+  (see [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md))
 - Events and annotations can now be added on a device
 - Facilities are now part of their own menu entry
 - A new document type "Archive" was added to represent a compressed set of files, where each can be described as a

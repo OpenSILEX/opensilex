@@ -170,7 +170,13 @@
 
                     <template v-slot:cell(targets)="{data}">
                         <span :key="index" v-for="(uri, index) in data.item.targets">
-                                <opensilex-TextView :value="uri"></opensilex-TextView>
+                                <opensilex-UriLink
+                                    :uri="uri"
+                                    :value="objectsLabels[uri]"
+                                    :to="{
+                                            path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
+                                          }"
+                                ></opensilex-UriLink>
                             <span v-if="data.item.targets.length > 1 && index < 2"> </span>
                             <span v-if="index >= 2"> ... </span>
                         </span>
@@ -261,6 +267,9 @@ import EventModalView from "../view/EventModalView.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import EventModalForm from "../form/EventModalForm.vue";
 import EventCsvForm from "../form/csv/EventCsvForm.vue";
+import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
+import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class EventList extends Vue {
@@ -310,8 +319,6 @@ export default class EventList extends Vue {
     @Prop({default: false})
     maximizeFilterSize;
 
-    selectedEvent = {};
-
     @Prop({default: EventList.newFilter})
     filter;
 
@@ -325,6 +332,18 @@ export default class EventList extends Vue {
 
     renderComponent = true;
 
+    selectedEvent = {};
+
+    objectsPath : {[key : string] : string} = {};
+
+    objectsLabels : {[key : string] : string} = {};
+
+    ontologyService: OntologyService;
+
+    renderModalForm = false;
+    renderCsvForm = false;
+    renderMoveCsvForm = false;
+
     @Watch("target")
     onTargetChange() {
         this.renderComponent = false;
@@ -334,10 +353,6 @@ export default class EventList extends Vue {
             this.renderComponent = true;
         });
     }
-
-    renderModalForm = false;
-    renderCsvForm = false;
-    renderMoveCsvForm = false;
 
     data(){
     return {
@@ -368,6 +383,7 @@ export default class EventList extends Vue {
 
     created() {
         this.$service = this.$opensilex.getService("opensilex.EventsService");
+        this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
         this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
         this.$opensilex.updateFiltersFromURL(this.$route.query, EventList.newFilter());
     }
@@ -431,17 +447,33 @@ export default class EventList extends Vue {
 
         this.cleanFilter();
 
-        return this.$service
-            .searchEvents(
-                this.filter.type,
-                this.filter.start,
-                this.filter.end,
-                this.filter.target,
-                this.filter.description,
-                options.orderBy,
-                options.currentPage,
-                options.pageSize
-            );
+        /*return new Promise((resolve, reject) => {*/
+          return this.$service
+              .searchEvents(
+                  this.filter.type,
+                  this.filter.start,
+                  this.filter.end,
+                  this.filter.target,
+                  this.filter.description,
+                  options.orderBy,
+                  options.currentPage,
+                  options.pageSize
+              ).then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+                let targetUris: Array<string> = Array.from(new Set(http.response.result.flatMap(event => event.targets)));
+                //Set the target paths
+                this.ontologyService
+                    .getURITypes(targetUris)
+                    .then((httpObj) => {
+                      for (let obj of httpObj.response.result) {
+                        this.objectsPath[obj.uri] =
+                            this.$opensilex.getPathFromUriTypes(obj.rdf_types);
+                      }
+                    });
+                //Set the target labels
+                this.$opensilex.loadOntologyLabelsWithType(targetUris, this.context, this.objectsLabels, this.ontologyService);
+                return http;
+              })
+        /*} );*/
     }
 
     get fields() {

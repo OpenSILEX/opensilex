@@ -110,7 +110,7 @@ public class GermplasmAPI {
         harvestOlgaGermplasms();
     }
 
-    private void harvestOlgaGermplasms() throws ApiException {
+    private void harvestOlgaGermplasms() throws Exception {
         GermplasmApi germplasmApi = getAuthenticatedGarmplasmAPIClient();
         org.brapi.client.v2.ApiResponse<BrAPIGermplasmListResponse> germplasms = germplasmApi.germplasmGet(new GermplasmQueryParams());
         updateGermplasms(

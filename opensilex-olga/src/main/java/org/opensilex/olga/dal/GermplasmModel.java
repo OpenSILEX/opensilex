@@ -1,8 +1,9 @@
 package org.opensilex.olga.dal;
 
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.olga.model.GermplasmDTO;
 
-public class GermplasmModel {
+public class GermplasmModel extends MongoModel {
 
     private String germplasmDbId;
     private String germplasmName;

@@ -31,7 +31,7 @@ public class GermplasmLogic {
     private FileStorageService fs;
 
 
-    public static void updateGermplasms(List<GermplasmDTO> germplasmDTOs) {
+    public static void updateGermplasms(List<GermplasmDTO> germplasmDTOs) throws Exception {
         List<GermplasmModel> germplasmModels = germplasmDTOs.stream().map(GermplasmModel::fromDTO).collect(Collectors.toList());
 
         GermplasmDAO germplasmDAO = new GermplasmDAO();

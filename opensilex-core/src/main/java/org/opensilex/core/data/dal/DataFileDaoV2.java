@@ -6,9 +6,6 @@ import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
-import org.opensilex.sparql.service.SPARQLService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +21,8 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         super(mongoDBService.getServiceV2(), DataFileModel.class, COLLECTION_NAME, COLLECTION_NAME);
         this.mongodb = mongoDBService;
     }
+
+    //TODO is there a search, add getBsonFilters if so
 
     public static Map<Bson, IndexOptions> getIndexes() {
 

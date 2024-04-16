@@ -207,7 +207,6 @@ public class DataAPI {
                 dataList.add(model);
             }
 
-            //TODO check validData
             dataList = validData(dataList);
 
             dao.create(dataList);
@@ -231,19 +230,6 @@ public class DataAPI {
                     ex.getMessage()).getResponse();
 
         }catch (MongoDbUniqueIndexConstraintViolation duplicateError){
-            //TODO check with renaud, the mongoReadWriteDao seperrates this specific case in MongoDbUniqueIndexConstraintViolation ? (this code used to be in MongoBulkWriteException catch)
-            //TODO but now we cant access getWriteErrors
-            /*List<DataCreationDTO> datas = new ArrayList();
-            List<BulkWriteError> errors = duplicateError..getWriteErrors();
-            for (int i = 0; i < errors.size(); i++) {
-                int index = errors.get(i).getIndex();
-                datas.add(dtoList.get(index));
-            }
-            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-            String json = mapper.writeValueAsString(datas);*/
-
-            /*return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
-                    .getResponse();*/
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
                     .getResponse();
         }
@@ -264,11 +250,7 @@ public class DataAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "URI_SYNTAX_ERROR", uriSyntaxException.getMessage())
                     .getResponse();
         }
-        //HERE was old stuff
-        /*catch (MongoCommandException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
-                    .getResponse();
-        }*/ catch (DateValidationException e) {
+        catch (DateValidationException e) {
             return new DateMappingExceptionResponse().toResponse(e);
         } catch (DataTypeException | NoVariableDataTypeException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR", e.getMessage())
@@ -741,7 +723,6 @@ public class DataAPI {
     ) throws Exception {
 
         DataDaoV2 dao = new DataDaoV2(sparql, nosql);
-//TODO Exceptions different?
         try {
             DataModel model = dto.newModel();
             validData(Collections.singletonList(model));
@@ -1202,7 +1183,6 @@ public class DataAPI {
     public Response exportData(
             @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
     ) throws Exception {
-        //TODO this may be broken, make sure pageSize = 0 is correct to get everything returned by filter
         try{
             return prepareCSVExportResponse(
                     dto.getStartDate(),
@@ -1842,15 +1822,13 @@ public class DataAPI {
             List<URI> devices) throws Exception {
 
         DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
-        //Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, targets, variables, devices);
-        //TODO delete old commented way if all works
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
         filter.setExperiments(experiments);
         filter.setTargets(targets);
         filter.setVariables(variables);
         filter.setDevices(devices);
-        List<URI> provenanceURIs = dataDAO.distinctUris(filter);
+        List<URI> provenanceURIs = dataDAO.distinct(null, "provenance.uri", URI.class, filter);
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(provenanceURIs);

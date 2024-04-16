@@ -1829,7 +1829,7 @@ export default class MapView extends Vue {
   }
 
   downloadFeatures(values) {
-    
+
       this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
 
       if(this.exportedOS.length> 0){

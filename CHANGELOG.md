@@ -140,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1198) fixed a bug that prevented Move from being declared if no position information was provided
 - (!1207) Inserting scientific objects in an experiment, when they were already present in another experiment,
   using an import file now works correctly again.
+- (!1212) Device filter no longer ignored during data export.
 
 ## [1.2.2]
 

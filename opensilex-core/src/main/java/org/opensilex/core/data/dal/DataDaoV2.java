@@ -399,10 +399,105 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         aggregations.add(projectMiddleSum);
         aggregations.add(projectFinal);
 
-        Set<DataComputedModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
+        return aggregate(aggregations, DataComputedModel.class);
+    }
 
-        lookupAggregation()
-        return results.stream().collect(Collectors.toList());
+    /**
+     * Compute the daily average from data
+     * @param user
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
+    public List<DataComputedModel> computeAllMeanPerDay(AccountModel user,
+                                                        URI target,
+                                                        URI variable,
+                                                        Instant startDate,
+                                                        Instant endDate) throws Exception {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        //$match
+        //{
+        //	variable: "http://opensilex.dev/id/variable/air_temprature_degree_celsius",
+        //	target: "http://opensilex.dev/id/organization/facility.phenoarch",
+        //  date:
+        //	{
+        //		"$gte": ISODate("2022-05-31T11:26:16.856Z"),
+        //		"$lt": ISODate("2023-05-31T11:26:16.856Z")
+        //	}
+        //}
+        Document filter = new Document();
+        filter.put(DataModel.VARIABLE_FIELD, URIDeserializer.getExpandedURI(variable));
+        filter.put(DataModel.TARGET_FIELD, URIDeserializer.getExpandedURI(target));
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {
+                dateFilter.put("$gte", startDate);
+            }
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+            }
+            filter.put("date", dateFilter);
+        }
+        Bson match = Aggregates.match(filter);
+
+        //$project
+        //{
+        //  "y":{"$year":"$date"},
+        //  "m":{"$month":"$date"},
+        //  "d":{"$dayOfMonth":"$date"},
+        //  "date": "$date",
+        //  "value": "$value"
+        //}
+        Document splitDateProj = new Document();
+        splitDateProj.put("y", new Document("$year", "$date"));
+        splitDateProj.put("m", new Document("$month", "$date"));
+        splitDateProj.put("d", new Document("$dayOfMonth", "$date"));
+        splitDateProj.put("date", "$date");
+        splitDateProj.put("value", "$value");
+        Bson projectSplitDate = Aggregates.project(splitDateProj);
+
+        //$group
+        //{
+        //  _id: {"year":"$y","month":"$m","day":"$d"},
+        //  dates: {
+        //    $push: "$date"
+        //  },
+        //  value: {
+        //    $avg: "$value"
+        //  }
+        //}
+        Document groupDateAndProvId = new Document();
+        groupDateAndProvId.put("year", "$y");
+        groupDateAndProvId.put("month", "$m");
+        groupDateAndProvId.put("day", "$d");
+        BsonField datesAcc = new BsonField("dates", new Document("$push", "$date"));
+        BsonField avgAcc = new BsonField("value", new Document("$avg", "$value"));
+        Bson groupDateAndProv = Aggregates.group(groupDateAndProvId, datesAcc, avgAcc);
+
+        //$project
+        //{
+        //  _id: 0,
+        //  date: { "$arrayElemAt": ["$dates", 0]},
+        //  value: 1
+        //}
+        Document finalProj = new Document();
+        finalProj.put("_id", 0);
+        finalProj.put("date", new Document("$arrayElemAt", Arrays.asList("$dates", 0)));
+        finalProj.put("value", 1);
+        Bson projectFinal = Aggregates.project(finalProj);
+
+
+        aggregations.add(match);
+        aggregations.add(projectSplitDate);
+        aggregations.add(groupDateAndProv);
+        aggregations.add(projectFinal);
+
+        return aggregate(aggregations, DataComputedModel.class);
     }
 
     @Override

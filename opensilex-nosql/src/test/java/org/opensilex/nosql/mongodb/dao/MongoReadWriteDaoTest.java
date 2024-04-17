@@ -618,7 +618,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
 
         // create an index by name
         mongoDBv2.createIndex(
-                readWriteDao.getCollection().getNamespace().getCollectionName(),
+                readWriteDao.getCollection(),
                 Indexes.ascending(MongoTestModel.NAME_FIELD),
                 new IndexOptions().unique(true)
         );

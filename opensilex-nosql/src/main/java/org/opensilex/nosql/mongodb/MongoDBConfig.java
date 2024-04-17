@@ -80,7 +80,7 @@ public interface MongoDBConfig extends ServiceConfig {
      */
     @ConfigDescription(
             value = "Max socket read timeout",
-            defaultInt = 60000
+            defaultInt = 120000
     )
     int readTimeoutMs();
 

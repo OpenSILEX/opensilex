@@ -10,6 +10,7 @@ import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.codecs.configuration.CodecRegistries;
@@ -47,7 +48,7 @@ import static org.opensilex.utils.LogFilter.*;
  * with the following features :
  * <ul>
  *     <li>Initialization of the {@link MongoClient} according the provided {@link MongoDBConfig}</li>
- *     <li>Mongo Index management with {@link #createIndex(String, Bson, IndexOptions)} and {@link #create()} methods </li>
+ *     <li>Mongo Index management with {@link #createIndex(MongoCollection, Bson, IndexOptions)} and {@link #dropIndex(MongoCollection, Bson)}</li>
  *     <li>Transaction management with {@link #computeTransaction(Function)}, {@link #runTransaction(Consumer)}, {@link #runThrowingTransaction(ThrowingConsumer)} and {@link #computeThrowingTransaction(ThrowingFunction)}</li>
  * </ul>
  *
@@ -67,10 +68,16 @@ public class MongoDBServiceV2 extends BaseService {
     private MongoDatabase db;
     private URI generationPrefixURI;
 
+    /**
+     * Register for each collection name, the Set of (index name, index options)
+     */
+    private final Map<String,Map<Bson,IndexOptions> > indexRegister;
+
     public MongoDBServiceV2(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         mongoLogger = new MongoLogger(null, LOGGER);
+        indexRegister = new HashMap<>();
     }
 
     @Override
@@ -258,43 +265,65 @@ public class MongoDBServiceV2 extends BaseService {
         return MongoClients.create(clientBuilder.build());
     }
 
-
-    public void createIndexes(String collectionName, Map<Bson,IndexOptions> indexes){
+    public void registerIndexes(String collectionName, Map<Bson,IndexOptions> indexes){
         Objects.requireNonNull(indexes);
-        indexes.forEach((indexKeys, indexOptions) -> createIndex(collectionName, indexKeys, indexOptions));
+        if(StringUtils.isEmpty(collectionName)){
+            throw new IllegalArgumentException("collectionName is null or empty");
+        }
+        // Register index
+        indexes.forEach((indexKeys, indexOptions) -> indexRegister.computeIfAbsent(collectionName, (newKey) -> new HashMap<>()).putIfAbsent(indexKeys, indexOptions));
+    }
+
+    public void createIndexes(){
+
+        indexRegister.forEach((collectionName, indexes) -> {
+            MongoCollection<?> collection = getDatabase().getCollection(collectionName);
+            indexes.forEach((indexKeys, indexOptions) -> createIndex(collection, indexKeys, indexOptions));
+        });
     }
 
     /**
      * Register the creation of some MongoDB index
-     * @param collectionName Name of the MongoDB collection on which create index (required)
+     * @param collection MongoDB's collection on which create index (required)
      * @param indexKeys The index key (created with {@link com.mongodb.client.model.Indexes} (required)
      * @param indexOptions Specific Index option (Can be null)
      * @see com.mongodb.client.model.Indexes
      * @see IndexOptions
      * @throws MongoCommandException if an error occurs during index creation. If the index already exists
      */
-    public void createIndex(String collectionName, Bson indexKeys, IndexOptions indexOptions) throws MongoCommandException{
+    public void createIndex(MongoCollection<?> collection, Bson indexKeys, IndexOptions indexOptions) throws MongoCommandException{
 
-        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(collection);
         Objects.requireNonNull(indexKeys);
-        MongoCollection<?> collection = db.getCollection(collectionName);
 
-        Instant operationStart = mongoLogger.logOperationStart(MONGO_CREATE_INDEX_LOG_MSG, COLLECTION, collection, INDEX, indexKeys);
+        Instant operationStart = mongoLogger.logOperationStart(MONGO_CREATE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
         try {
             // Ensure index is build on background in order to preserve server availability
-            if(indexOptions != null){
-                collection.createIndex(indexKeys, indexOptions.background(true));
-            }else{
-                collection.createIndex(indexKeys, new IndexOptions().background(true));
-            }
-            mongoLogger.logOperationOk(MONGO_CREATE_INDEX_LOG_MSG, operationStart, COLLECTION, collection, INDEX, indexKeys);
+            indexOptions = Objects.requireNonNullElseGet(indexOptions, () -> new IndexOptions().background(true));
+            collection.createIndex(indexKeys, indexOptions);
+            mongoLogger.logOperationOk(MONGO_CREATE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+
         }catch (MongoCommandException e){
 
             // It's OK if index already exists -> https://www.mongodb.com/docs/manual/reference/error-codes/ : 86 IndexKeySpecsConflict
             if(e.getErrorCode() != 86){
-                mongoLogger.logOperationError(MONGO_CREATE_INDEX_LOG_MSG, COLLECTION, collection, INDEX, indexKeys);
+                mongoLogger.logOperationError(MONGO_CREATE_INDEX, COLLECTION, collection, INDEX, indexKeys);
                 throw e;
             }
         }
+    }
+
+    public void dropIndex(MongoCollection<?> collection, Bson indexKeys) throws MongoCommandException{
+
+        Objects.requireNonNull(collection);
+        Objects.requireNonNull(indexKeys);
+
+        Instant operationStart = mongoLogger.logOperationStart(MONGO_DELETE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+        collection.dropIndex(indexKeys);
+        mongoLogger.logOperationOk(MONGO_DELETE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+    }
+
+    public Map<String, Map<Bson, IndexOptions>> getIndexRegister() {
+        return Collections.unmodifiableMap(indexRegister);
     }
 }

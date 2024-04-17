@@ -11,6 +11,13 @@ import java.util.regex.Pattern;
 
 public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, ProvenanceSearchFilter> {
 
+    public static final String PROVENANCE_COLLECTION_NAME = "provenance";
+    public static final String PROVENANCE_PREFIX = "provenance";
+
+    public ProvenanceDaoV2(MongoDBServiceV2 mongodb) {
+        super(mongodb, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, PROVENANCE_PREFIX);
+    }
+
     @Override
     public List<Bson> getBsonFilters(ProvenanceSearchFilter filter) {
         List<Bson> result = new ArrayList<>();
@@ -51,7 +58,4 @@ public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, Provenan
         return result;
     }
 
-    public ProvenanceDaoV2(MongoDBServiceV2 mongodb, Class<ProvenanceModel> modelClass, String collectionName, String createUriPath) {
-        super(mongodb, modelClass, collectionName, createUriPath);
-    }
 }

@@ -51,6 +51,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -800,7 +801,7 @@ public class DataAPI {
 
      * @throws Exception
      */
-    private void variablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
+    private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         URI provenanceURI = data.getProvenance().getUri();
@@ -867,7 +868,7 @@ public class DataAPI {
      * @param data
      * @throws Exception
      */
-    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
+    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDaoV2 provDAO, DataModel data) throws Exception {
 
        ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
 
@@ -1052,10 +1053,10 @@ public class DataAPI {
             }
 
             //check provenance uri and variables device association
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
+                if (!provDAO.exists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } 
             }
@@ -1411,8 +1412,8 @@ public class DataAPI {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> listByURIs = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
@@ -1634,8 +1635,8 @@ public class DataAPI {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> listByURIs = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
@@ -1830,8 +1831,8 @@ public class DataAPI {
         filter.setDevices(devices);
         List<URI> provenanceURIs = dataDAO.distinct(null, "provenance.uri", URI.class, filter);
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(provenanceURIs);
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> resultList = provenanceDao.findByUris(provenanceURIs.parallelStream(), provenanceURIs.size());
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
 
         resultList.forEach(result -> {
@@ -1894,7 +1895,7 @@ public class DataAPI {
 
         // test prov
         ProvenanceModel provenanceModel = null;
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql); 
+        ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1988,7 +1989,7 @@ public class DataAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -2768,8 +2769,8 @@ public class DataAPI {
             dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
         }
         else {
-            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-            ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
+            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
+            ProvenanceModel provModel = provDAO.get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());
         }

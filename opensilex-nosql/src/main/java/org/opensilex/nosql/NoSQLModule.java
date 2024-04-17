@@ -46,12 +46,10 @@ public class NoSQLModule extends OpenSilexModule {
         registerNewMongoDBService();
     }
 
-    private void registerNewMongoDBService() throws Exception {
+    private void registerNewMongoDBService() {
         MongoDBConfig mongoDBConfig = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH,MongoDBConfig.class);
         MongoDBServiceV2 mongoDBServiceV2 = new MongoDBServiceV2(mongoDBConfig);
         mongoDBServiceV2.setOpenSilex(getOpenSilex());
-        mongoDBServiceV2.setup();
-        mongoDBServiceV2.startup();
         ServiceManager serviceManager = getOpenSilex().getServiceManager();
         serviceManager.register(MongoDBServiceV2.class,MongoDBServiceV2.DEFAULT_SERVICE,mongoDBServiceV2);
     }

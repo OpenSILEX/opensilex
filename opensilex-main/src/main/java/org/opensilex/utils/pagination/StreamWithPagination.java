@@ -1,6 +1,5 @@
 package org.opensilex.utils.pagination;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -16,30 +15,47 @@ import java.util.stream.Stream;
  */
 public class StreamWithPagination<T> extends PaginatedIterable<T, Stream<T>> {
 
-    private final Stream<T> stream;
+    /**
+     * Constructor for an empty stream. Just keep the information about the provided pagination
+     */
+    public StreamWithPagination(long page, long pageSize){
+        super(Stream.empty(), page, pageSize, 0, 0);
+    }
 
     /**
+     /**
+     * Constructor for a non-empty list, with information about provided pagination and the counted element number
+     *
      * @param stream the Stream of objects
-     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} or {@link StreamWithPagination#StreamWithPagination()} instead
+     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} instead
      */
-    public StreamWithPagination(Stream<T> stream, int total, int page, int pageSize) throws IllegalArgumentException{
-        super(total, page, pageSize);
-        Objects.requireNonNull(stream);
-        this.stream = stream;
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize, long total) throws IllegalArgumentException {
+       this(stream, page, pageSize, total, 0);
     }
 
-    public StreamWithPagination(){
-        super(0,0,0);
-        stream = Stream.empty();
+    /**
+     * Constructor for a non-empty stream, with information about provided pagination, the counted element number and the count limit
+     * which has applied
+     */
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize, long total, long countLimit) {
+        super(stream, page, pageSize, total, countLimit);
     }
+
+    /**
+     /**
+     * Constructor for a non-empty list, with information about provided pagination and the counted element number
+     *
+     * @param stream the Stream of objects
+     * @throws IllegalArgumentException if stream is null (Use {@link Stream#empty()} instead
+     */
+    public StreamWithPagination(Stream<T> stream, long page, long pageSize) throws IllegalArgumentException {
+        super(stream, page, pageSize, false);
+    }
+
     @Override
     public void forEach(Consumer<T> action) {
-        stream.forEach(action);
+        getSource().forEach(action);
     }
 
-    @Override
-    public Stream<T> getSource() {
-        return stream;
-    }
 
 }

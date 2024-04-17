@@ -24,11 +24,13 @@ import org.opensilex.sparql.csv.validation.CustomCsvValidation;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -344,7 +346,15 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
         // Global OS copy and species update inside xp
         if (withinExperiment()) {
-            scientificObjectDAO.copyIntoGlobalGraph(models);
+            var soToCreateUriSet = sparql.getExistingUriStream(
+                    ScientificObjectModel.class,
+                    models.stream().map(SPARQLResourceModel::getUri),
+                    models.size(),
+                    false,
+                    sparql.getDefaultGraph(ScientificObjectModel.class));
+            if (!soToCreateUriSet.isEmpty()) {
+                scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> soToCreateUriSet.contains(model.getUri())));
+            }
             experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
         }
 

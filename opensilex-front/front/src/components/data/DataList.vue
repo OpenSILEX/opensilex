@@ -1,8 +1,9 @@
 <template>
     <div>
-        <opensilex-TableAsyncView
+        <opensilex-DataTableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
+            :countMethod="countDataList"
             :fields="fields"
             defaultSortBy="date"
             :defaultSortDesc="true"
@@ -49,7 +50,7 @@
                 </b-button-group>
             </template>
 
-        </opensilex-TableAsyncView>
+        </opensilex-DataTableAsyncView>
 
         <opensilex-DataProvenanceModalView
             ref="dataProvenanceModalView"
@@ -66,7 +67,6 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 
 @Component
 export default class DataList extends Vue {
@@ -180,7 +180,7 @@ export default class DataList extends Vue {
     }
 
     getProvenance(uri) {
-        if (uri != undefined && uri != null) {
+        if (uri != undefined) {
             return this.dataService
                 .getProvenance(uri)
                 .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
@@ -190,7 +190,7 @@ export default class DataList extends Vue {
     }
 
     loadProvenance(selectedValue) {
-        if (selectedValue != undefined && selectedValue != null) {
+        if (selectedValue != undefined) {
             this.getProvenance(selectedValue.id).then((prov) => {
                 this.selectedProvenance = prov;
             });
@@ -218,6 +218,38 @@ export default class DataList extends Vue {
     facilities = {};
     operators = {};
 
+
+
+   countDataList(options) {
+       let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+       if (provUris != undefined) {
+           provUris = [provUris];
+       }
+
+       return this.dataService.countData(
+           // Count data, set limit to  since here we want the exact/total data count according the current filter
+           this.$opensilex.prepareGetParameter(this.filter.start_date),
+           this.$opensilex.prepareGetParameter(this.filter.end_date),
+           undefined,
+           this.filter.experiments,
+           this.$opensilex.prepareGetParameter(this.filter.variables),
+           this.$opensilex.prepareGetParameter(this.filter.devices),
+           undefined,
+           undefined,
+           provUris,
+           undefined,
+           this.$opensilex.prepareGetParameter(this.filter.operators),
+           this.filter.germplasm_group,
+           this.filter.germplasm,
+           0,
+           [].concat(
+               this.filter.scientificObjects,
+               this.filter.facilities,
+               this.filter.targets) // targets & os & facilities
+       )
+    }
+
+
     searchDataList(options) {
         let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
         if (provUris != undefined) {
@@ -225,21 +257,21 @@ export default class DataList extends Vue {
         }
 
         return new Promise((resolve, reject) => {
-            this.dataService.getDataListByTargets(
-                this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
-                this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
-                undefined, // timezone,
-                this.filter.experiments, // experiments
-                this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
-                this.$opensilex.prepareGetParameter(this.filter.devices), // devices
-                undefined, // min_confidence
-                undefined, // max_confidence
-                provUris, // provenance
-                undefined, // metadata
-                this.filter.germplasm_group, //Group of germs
+            this.dataService.searchDataListByTargets(
+                this.$opensilex.prepareGetParameter(this.filter.start_date),
+                this.$opensilex.prepareGetParameter(this.filter.end_date),
+                undefined,
+                this.filter.experiments,
+                this.$opensilex.prepareGetParameter(this.filter.variables),
+                this.$opensilex.prepareGetParameter(this.filter.devices),
+                undefined,
+                undefined,
+                provUris,
+                undefined,
+                this.filter.germplasm_group,
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 this.filter.germplasm,
-                options.orderBy, // order_by
+                options.orderBy,
                 options.currentPage,
                 options.pageSize,
                 [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
@@ -272,24 +304,6 @@ export default class DataList extends Vue {
                         if (objectsToLoad.length > 0) {
                             promiseArray.push(this.$opensilex.loadOntologyLabelsWithType(objectsToLoad, this.contextUri, this.objects, this.ontologyService));
                         }
-
-                        let promiseFacility = this.dataService
-                            .searchDataList(
-                                undefined,
-                                undefined,
-                                undefined,
-                                undefined,
-                                [this.filter.facilities]
-                            ).then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-                                if (http && http.response){
-                                    for (let j in http.response.result){
-                                        let facility = http.response.result[j];
-                                        this.facilities[facility.uri] = facility.uri;
-                                    } }
-                            })
-                            .catch(reject);
-                            promiseArray.push(promiseFacility)
-
 
                         if (variablesToLoad.length > 0) {
                             let promiseVariable = this.variablesService

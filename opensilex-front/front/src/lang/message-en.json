@@ -146,12 +146,18 @@
                 },
                 "pagination" : {
                     "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
+                    "nbEntriesNoTotal" : "Showing {limit} to {offset}",
+                    "totalEntries" : " of {totalRow} entries",
+                    "showTotalCount" : "Show total count",
                     "noEntries" : "No entries found",
                     "numberOfElementsPerPageSelector": "Select number of entries to display",
                     "tenElements": "10 entries",
                     "twentyElements": "20 entries",
                     "fiftyElements": "50 entries",
-                    "hundredElements": "100 entries"
+                    "hundredElements": "100 entries",
+                    "first": "First",
+                    "prev": "Prev",
+                    "next": "Next"
                 }
             },
             "addDocument": "Add document",

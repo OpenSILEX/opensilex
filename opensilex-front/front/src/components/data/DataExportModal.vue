@@ -59,6 +59,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Prop, Ref } from "vue-property-decorator";
+import {DataSearchDTO} from "opensilex-core/model/dataSearchDTO";
 
 @Component
 export default class DataExportModal extends Vue {
@@ -99,10 +100,11 @@ export default class DataExportModal extends Vue {
       String(today.getMonth() + 1).padStart(2, "0") +
       String(today.getDate()).padStart(2, "0");
 
-    let exportDto = {
+    let exportDto: DataSearchDTO = {
       start_date: this.filter.start_date,
       end_date: this.filter.end_date,
       targets: this.filter.scientificObjects,
+      devices: this.filter.devices,
       experiments: this.filter.experiments,
       variables: this.filter.variables,
       provenances: this.filter.provenance ? [this.filter.provenance] : null,

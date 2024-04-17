@@ -28,6 +28,9 @@ public class ProvEntityModel {
     @NotNull
     URI uri;
 
+    public static final String URI_FIELD = "uri";
+    public static final String TYPE_FIELD = "rdfType";
+
     public URI getType() {
         return type;
     }

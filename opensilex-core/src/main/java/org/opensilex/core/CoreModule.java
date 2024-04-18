@@ -226,7 +226,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
         mongoDBServiceV2.registerIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
-        mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
+        //mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
 
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {

@@ -49,57 +49,24 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     public static Map<Bson, IndexOptions> getIndexes() {
 
-        Bson idIndex = Indexes.ascending(MongoModel.MONGO_ID_FIELD);
-        Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
         Bson variableAscIndex = Indexes.ascending(DataModel.VARIABLE_FIELD);
+        Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
         Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
 
-        //Get DataFile indexes to start as they are all the same then add the ones that concern variables
         Map<Bson, IndexOptions> indexes = DataFileDaoV2.getIndexes();
 
         // Index of field, sorted by date : (experiment, provenance, variable, target, provenance agent)
-        indexes.put(Indexes.compoundIndex(variableAscIndex, dateDescIndex), defaultOptions);
-
-        // Multi-fields indexes : Access by experiment and (variable, target, provenance agent). Add date to ensure index usage in case of sorting by date
-        indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetDescIndex, dateDescIndex), defaultOptions);
-
-        // Compound index : ensure unicity #TODO delete this index (index on whole field,too big and not well used in query)
-        indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetDescIndex, dateDescIndex), new IndexOptions().unique(true));
-
-        return indexes;
-        /*IndexOptions defaultOptions = new IndexOptions();
-
-        Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
-        Bson variableAscIndex = Indexes.ascending(DataModel.VARIABLE_FIELD);
-        Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
-        Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
-        Bson agentAscIndex = Indexes.ascending(PROVENANCE_AGENTS_URI_FIELD);
-        Bson provenanceUriAscIndex = Indexes.ascending(PROVENANCE_URI_FIELD);
-
-        Map<Bson, IndexOptions> indexes = new HashMap<>();
-
-        // index on field : _id, URI and date
-        indexes.put(idIndex, new IndexOptions().background(false)); // background building can't be specified for the _id field
-        indexes.put(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
-        indexes.put(dateDescIndex, null);
-
-        // Index of field, sorted by date : (experiment, provenance, variable, target, provenance agent)
-        indexes.put(Indexes.compoundIndex(experimentAscIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, dateDescIndex), null);
         indexes.put(Indexes.compoundIndex(variableAscIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(targetDescIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(agentAscIndex, dateDescIndex), null);
 
         // Multi-fields indexes : Access by experiment and (variable, target, provenance agent). Add date to ensure index usage in case of sorting by date
         indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetDescIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(agentAscIndex, targetDescIndex, dateDescIndex), null);
         indexes.put(Indexes.compoundIndex(variableAscIndex, targetDescIndex, dateDescIndex), null);
 
         // Compound index : ensure unicity #TODO delete this index (index on whole field,too big and not well used in query)
         indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetDescIndex, dateDescIndex), new IndexOptions().unique(true));
 
-        return indexes;*/
+        return indexes;
     }
 
     public DataDaoV2(SPARQLService sparql, MongoDBService mongoDBService) {

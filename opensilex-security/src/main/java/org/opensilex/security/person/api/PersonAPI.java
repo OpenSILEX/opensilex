@@ -16,6 +16,9 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -151,6 +154,56 @@ public class PersonAPI {
         );
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * Search persons
+     *
+     * @param pattern     Regex pattern for filtering list by names or email
+     * @param orderByList List of fields to sort as an array of fieldName=asc|desc
+     * @param page        Page number
+     * @param pageSize    Page size
+     * @return filtered, ordered and paginated list
+     * @see PersonDAO
+     */
+    @GET
+    @Path("bygroups")
+    @ApiOperation("Search persons that are linked to an account that is in at least one of the groups")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return persons", response = PersonDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchPersonsLinkedWithGroups(
+            @ApiParam(value = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        Set<PersonDTO> resultSet = new HashSet<>();
+
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> groupModels = dao.getList(uris);
+
+        if (!groupModels.isEmpty()) {
+            groupModels.forEach(groupModel -> {
+                groupModel.getUserProfiles().forEach(userProfile -> {
+                    resultSet.add(PersonDTO.fromModel(userProfile.getUser().getLinkedPerson()));
+                });
+            });
+
+            return new PaginatedListResponse<>(new ArrayList<>(resultSet)).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Groups not found",
+                    "Unknown group URIs"
+            ).getResponse();
+        }
     }
 
     /**

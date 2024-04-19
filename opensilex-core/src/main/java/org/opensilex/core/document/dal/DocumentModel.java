@@ -117,7 +117,7 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
             ontology = Oeso.class,
             property = "hasVariables"
     )
-    List<URI> hasVariables;
+    List<String> hasVariables;
 
     public static final String HASVARIABLE_FIELD = "hasVariables";
 
@@ -146,11 +146,11 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     public static final String NUMBER_OF_ELEMENTS_FIELD = "numberOfElements";
 
 
-    public List<URI> getHasVariables() {
+    public List<String> getHasVariables() {
         return hasVariables;
     }
 
-    public void setHasVariables(List<URI> hasVariables) {
+    public void setHasVariables(List<String> hasVariables) {
         this.hasVariables = hasVariables;
     }
 

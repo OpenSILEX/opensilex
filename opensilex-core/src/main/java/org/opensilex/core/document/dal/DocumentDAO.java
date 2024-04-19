@@ -138,21 +138,20 @@ public class DocumentDAO {
         return instance;
     }
 
+
     public void delete(URI uri, AccountModel user) throws Exception {
-
-        if(! fs.exist(FS_DOCUMENT_PREFIX,uri)){
-            throw new NotFoundURIException(uri);
-        }
-
         sparql.startTransaction();
         sparql.delete(DocumentModel.class, uri);
         try {
-            fs.delete(FS_DOCUMENT_PREFIX, uri);
+            if (fs.exist(FS_DOCUMENT_PREFIX,uri)) {
+                fs.delete(FS_DOCUMENT_PREFIX, uri);
+            }
             sparql.commitTransaction();
         }catch (IOException e){
             sparql.rollbackTransaction(e);
         }
     }
+
 
     public boolean isDocumentType(URI type) throws SPARQLException {
         return sparql.executeAskQuery(new AskBuilder()

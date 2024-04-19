@@ -169,7 +169,7 @@
         @created="mapCreated"
         @pointermove="onMapPointerMove"
         @moveend="zoomRestriction"
-        @click="manageCluster"
+        @click="updateSelectionFeatures"
       >
         <!-- Zoom and position-->
         <vl-view
@@ -271,25 +271,25 @@
           <!-- OS features featuresOS-->
           <vl-layer-vector :visible="checkZoom" render-mode="image" :z-index="1">
             <vl-source-cluster :distance="25">
-              <vl-source-vector ref="clusterSource"></vl-source-vector>
+              <vl-source-vector ref="clusterSourceSite"></vl-source-vector>
               <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
             </vl-source-cluster>
           </vl-layer-vector>
-          <div v-if="!showNextLevel">
-            <vl-layer-vector
-              :opacity="opacityOS"
-              v-for="layerFacility in featuresSites"
-              :key="layerFacility.id"
-              :z-index="0"
-            >
-              <vl-source-vector
-                ref="vectorSource"
-                :features="layerFacility"
-                @mounted="defineCenter"
-              ></vl-source-vector>
-            </vl-layer-vector>
-          </div>
-          <div v-if="showNextLevel">
+          <vl-layer-vector :opacity="opacityOS" render-mode="image" :z-index="0">
+            <vl-source-vector
+              ref="vectorSourceSite"
+              :features="featuresSites"
+              @mounted="defineCenter"
+            ></vl-source-vector>
+            <vl-style-box>
+              <vl-style-circle :radius="5">
+                <vl-style-stroke color="blue"></vl-style-stroke>
+                <vl-style-fill color="red"></vl-style-fill>
+              </vl-style-circle>
+            </vl-style-box>
+          </vl-layer-vector>
+
+          <!-- <div v-if="!showNextLevel">
             <vl-layer-vector
               :opacity="opacityOS"
               v-for="layerOS in featuresOS"
@@ -303,19 +303,14 @@
               >
               </vl-source-vector>
             </vl-layer-vector>
-          </div>
-          <!-- Devices features -->
-          <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
+          </div> -->
+          <!-- Sites features -->
+          <vl-layer-vector render-mode="image">
             <vl-source-vector
-              ref="vectorSourceDevice"
-              :features="layerDevice"
+              ref="vectorSourceSite"
+              :features="featuresSites"
             ></vl-source-vector>
-            <vl-style-box>
-              <vl-style-circle :radius="5">
-                <vl-style-stroke color="yellow"></vl-style-stroke>
-                <vl-style-fill color="orange"></vl-style-fill>
-              </vl-style-circle>
-            </vl-style-box>
+            <vl-style-func :factory="createStyleFunction"></vl-style-func>
           </vl-layer-vector>
           <!-- Facilities -->
           <vl-layer-vector render-mode="image">
@@ -821,6 +816,7 @@ import {
   ExperimentsService,
   OrganizationsService,
   ScientificObjectsService,
+  DocumentsService,
   EventsService,
   ExperimentGetDTO,
   FacilityGetDTO,
@@ -833,6 +829,8 @@ import {
   DataService,
   TargetPositionCreationDTO,
   SiteGetListDTO,
+  SiteGetDTO,
+  DocumentGetDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
@@ -894,6 +892,7 @@ export default class MapView extends Vue {
   };
   private experiment: string = "";
   private experimentService: ExperimentsService;
+  private documentsService: DocumentsService;
   private ontologyService: OntologyService;
   private scientificObjectsService: ScientificObjectsService;
   private areaService: AreaService;
@@ -939,9 +938,10 @@ export default class MapView extends Vue {
   //OS
   featuresOS: GeoJSONFeature[][] = [];
   featuresOSfromSelectedFacility: GeoJSONFeature[][] = []; // all the OS related to a selected facility
-  featuresSites: GeoJSONFeature[][] = [];
+  featuresSites: GeoJSONFeature[] = [];
   private callSO: boolean = false;
   private callSites: boolean = false;
+  private callDocuments: boolean = false;
   private showNextLevel: boolean = false;
   private scientificObjectURI: string;
   private facilityURI: string;
@@ -1013,7 +1013,9 @@ export default class MapView extends Vue {
   facilitiesData: feature[] = [];
   graphData: [];
   showPopup: boolean = false;
-  showSOs: boolean = false;
+  documents: DocumentGetDTO[] = [];
+  tempDocuments: DocumentGetDTO[] = [];
+  documentFromSites: [String, DocumentGetDTO[]][] = [];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1057,6 +1059,7 @@ export default class MapView extends Vue {
     this.scientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
+    this.documentsService = this.$opensilex.getService("opensilex.DocumentsService");
     this.areaService = this.$opensilex.getService("opensilex.AreaService");
     this.positionService = this.$opensilex.getService("opensilex.PositionsService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
@@ -1080,7 +1083,7 @@ export default class MapView extends Vue {
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
     this.recoverySites();
-    // console.log("OS : ", this.featuresOS);
+    this.recoverDocuments();
     this.soFilter = {
       name: "",
       experiment: this.experiment,
@@ -1097,10 +1100,36 @@ export default class MapView extends Vue {
     end_date: undefined,
   };
 
+  createStyleFunction() {
+    return function (feature) {
+      // Create a style for each feature
+      const style = new Style({
+        image: new CircleStyle({
+          radius: 5,
+          stroke: new Stroke({
+            color: "yellow",
+          }),
+          fill: new Fill({
+            color: "orange",
+          }),
+        }),
+        text: new Text({
+          text: feature.get("name") || "", // Access the 'name' property of the feature
+          offsetY: -15,
+          fill: new Fill({
+            color: "black",
+          }),
+        }),
+      });
+
+      return style;
+    };
+  }
+
   generateGraphData() {
     return this.selectedFeatures.map((feature) => ({
       name: feature.properties.name,
-      value: feature.properties.document.sample_density,
+      value: 29304,
     }));
   }
 
@@ -1122,64 +1151,6 @@ export default class MapView extends Vue {
     });
 
     return { categories, uniqueVariableTypes, data };
-  }
-
-  generateBarGraphData() {
-    return {
-      date: [
-        "1990-01-01",
-        "1991-01-01",
-        "1992-01-01",
-        "1993-01-01",
-        "1994-01-01",
-        "1995-01-01",
-        "1996-01-01",
-        "1997-01-01",
-        "1998-01-01",
-        "1999-01-01",
-        "2000-01-01",
-        "2001-01-01",
-        "2002-01-01",
-        "2003-01-01",
-        "2004-01-01",
-        "2005-01-01",
-        "2006-01-01",
-        "2007-01-01",
-        "2008-01-01",
-        "2009-01-01",
-        "2010-01-01",
-        "2011-01-01",
-        "2012-01-01",
-        "2013-01-01",
-        "2014-01-01",
-        "2015-01-01",
-        "2016-01-01",
-        "2017-01-01",
-        "2018-01-01",
-        "2019-01-01",
-        "2020-01-01",
-        "2021-01-01",
-        "2022-01-01",
-        "2023-01-01",
-        "2024-01-01",
-        "2025-01-01",
-        "2026-01-01",
-        "2027-01-01",
-        "2028-01-01",
-        "2029-01-01",
-        "2030-01-01",
-        "2031-01-01",
-        "2032-01-01",
-        "2033-01-01",
-        "2034-01-01",
-        "2035-01-01",
-        "2036-01-01",
-        "2037-01-01",
-        "2038-01-01",
-        "2039-01-01",
-        "2040-01-01",
-      ],
-    };
   }
 
   calculateTopRightCorner() {
@@ -1282,7 +1253,6 @@ export default class MapView extends Vue {
   }
   // Used to display details on the map and in the table
   showDetails(data, isMap = false) {
-    console.log("details: ", data);
     if (isMap) {
       let uriResult = data.properties.uri;
       if (data.properties.nature === "ScientificObjects") {
@@ -1375,6 +1345,7 @@ export default class MapView extends Vue {
 
   // retrieve all SO in the selected facility
   getSOfromFacility(facility) {
+    let result;
     this.scientificObjectsService
       .searchScientificObjects(
         undefined, // exp
@@ -1394,8 +1365,37 @@ export default class MapView extends Vue {
         0 // page size
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-        const result = http.response.result as any;
+        result = http.response.result as any;
       });
+    return result;
+  }
+
+  filterDocuments(uri) {
+    this.documents.forEach((document) => {
+      if (document.targets[0] === uri) {
+        console.log("FIRST TARGET :", document.targets[0]);
+        this.tempDocuments.push(document);
+      }
+    });
+    this.documentFromSites.push([uri, this.tempDocuments]);
+    this.tempDocuments = [];
+  }
+
+  selectSites(features) {
+    let uris: Array<String> = [];
+    let index = 0;
+    features.forEach((feature) => {
+      this.organizationsService
+        .getSite(feature.properties.uri)
+        .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
+          uris[index] = http.response.result.uri;
+          this.filterDocuments(uris[index]);
+          index++;
+        })
+        .catch(this.$opensilex.errorHandler);
+    });
+    console.log("SELECTED DOCUMENTS :", this.documentFromSites);
+    this.showPopup = true;
   }
 
   //Check selected features and make different actions depending on the number of feature
@@ -1403,21 +1403,17 @@ export default class MapView extends Vue {
     this.selectedOS = [];
     this.soWithLabels = [];
     this.featuresOSfromSelectedFacility = [];
-    //console.log("Features : ", this.featuresOS);
+    this.documentFromSites = [];
 
     if (features.length && features[0]) {
       this.selectedFeatures = features;
-      features.forEach((feature) => {
-        if (feature.properties.nature === "ScientificObjects") {
-          this.selectedOS.push(feature.properties.uri);
-          this.soWithLabels.push(feature.properties);
-        } else if (feature.properties.nature === "Facilites") {
-          // display all SO
-        }
-      });
-      if (features[0].properties.nature === "ScientificObjects") {
-        console.log("SELECTED : ", features[0]);
-        this.showPopup = true;
+      // features.forEach((feature) => {
+      //   if (feature.properties.nature === "ScientificObjects") {
+      //   } else if (feature.properties.nature === "Facilites") {
+      //   }
+      // });
+      if (features[0].properties.nature === "Sites") {
+        this.selectSites(features);
       } else {
         this.showPopup = false; // Hide the graph when no feature is selected
       }
@@ -1580,7 +1576,6 @@ export default class MapView extends Vue {
       if (feature.get("features")) {
         let points = [];
         let features = feature.get("features");
-
         features.forEach((feat) => {
           let geom = feat.getGeometry();
           if (geom.getType() == "Point") {
@@ -1602,7 +1597,6 @@ export default class MapView extends Vue {
     const styleCache = {};
 
     return function __clusterStyleFunc(feature) {
-      console.log("STYLE : ", feature.get("name"));
       const size = feature.get("features").length;
       let style = styleCache[size];
       if (!style) {
@@ -1618,7 +1612,7 @@ export default class MapView extends Vue {
             }),
           }),
           text: new Text({
-            text: feature.get("features")[0].get("name"),
+            text: size.toString(),
             fill: new Fill({
               color: "black",
             }),
@@ -1843,6 +1837,44 @@ export default class MapView extends Vue {
       });
   }
 
+  private recoverDocuments() {
+    this.documentsService
+      .searchDocuments(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        0,
+        undefined
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<DocumentGetDTO>>>) => {
+        const res = http.response.result as any;
+        console.log("RES: ", res);
+        res.forEach((element) => {
+          this.documents.push(element);
+        });
+        if (res.length !== 0) {
+          this.endReceipt = true;
+        }
+      })
+      .catch((e) => {
+        this.$opensilex.errorHandler(e);
+        this.$opensilex.hideLoader();
+      })
+      .finally(() => {
+        this.initFacilities();
+      });
+  }
+
   private recoverySites(startDate?, endDate?) {
     this.callSites = false;
     this.featuresSites = [];
@@ -1861,16 +1893,8 @@ export default class MapView extends Vue {
               rdf_type_name: element.rdf_type_name,
               nature: "Sites",
             };
-            let inserted = false;
-            this.featuresSites.forEach((item) => {
-              if (item[0].properties.type === element.rdf_type) {
-                item.push(element.geometry);
-                inserted = true;
-              }
-            });
-            if (!inserted) {
-              this.featuresSites.push([element.geometry]);
-            }
+
+            this.featuresSites.push(element.geometry);
           }
         });
         if (res.length !== 0) {
@@ -2404,7 +2428,7 @@ export default class MapView extends Vue {
     let uri = data.item.properties.uri;
     switch (data.item.properties.nature) {
       default:
-        return { path: "/scientific-objects/details/" + encodeURIComponent(uri) };
+        return { path: "/organization/site/details/" + encodeURIComponent(uri) };
       case "Area":
         return {
           path: "/area/details/" + encodeURIComponent(uri),

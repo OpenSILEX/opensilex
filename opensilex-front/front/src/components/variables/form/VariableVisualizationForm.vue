@@ -20,6 +20,7 @@
                     ref="devSelector"
                     :devices.sync="filter.device"
                     :variable="[variable]"
+                    :required="true"
                     label="VariableVisualizationForm.devicesSelector"
                     :multiple="true"
                     :showURI="false"

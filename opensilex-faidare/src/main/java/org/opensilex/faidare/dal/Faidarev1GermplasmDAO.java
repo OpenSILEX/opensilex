@@ -1,5 +1,16 @@
+/*
+ * *****************************************************************************
+ *                         Faidarev1GermplasmDAO.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 19/04/2024 12:04
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.dal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -106,29 +117,28 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
         WHERE
-        { ?uri  rdf:type  vocabulary:Accession
-            GRAPH <http://opensilex.test/set/germplasm>
-            { OPTIONAL
-                { ?uri  foaf:homepage  ?website}
+          { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
+              { ?uri  rdf:type  vocabulary:Accession
                 OPTIONAL
-                { ?uri  vocabulary:hasId  ?code}
+                  { ?uri  foaf:homepage  ?website}
                 OPTIONAL
-                { ?uri  vocabulary:fromInstitute  ?institute}
+                  { ?uri  vocabulary:hasId  ?code}
                 OPTIONAL
-                { ?uri  vocabulary:fromSpecies  ?species}
+                  { ?uri  vocabulary:fromInstitute  ?institute}
                 OPTIONAL
-                { ?uri  vocabulary:fromVariety  ?variety}
+                  { ?uri  vocabulary:fromSpecies  ?species}
                 OPTIONAL
-                { ?variety  rdfs:label  ?variety_name}
-            }
-            GRAPH ?experiment_uri
-            { OPTIONAL
-                { ?so  vocabulary:hasGermplasm  ?uri}}
-            GRAPH <http://opensilex.test/set/germplasm>
-            { ?uri  rdfs:label  ?label}
-            VALUES ?experiment_uri { opensilex-test:experiment_uri_10 opensilex-test:experiment_uri_9 opensilex-test:experiment_uri_8 opensilex-test:experiment_uri_7 opensilex-test:experiment_uri_6 opensilex-test:experiment_uri_5 opensilex-test:experiment_uri_4 opensilex-test:experiment_uri_3 opensilex-test:experiment_uri_2 opensilex-test:experiment_uri_1 }
-        }
-        GROUP BY ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name*/
+                  { ?uri      vocabulary:fromVariety  ?variety .
+                    ?variety  rdfs:label            ?variety_name}
+                OPTIONAL
+                  { GRAPH ?experiment_uri
+                      { ?so  vocabulary:hasGermplasm  ?uri}}
+                OPTIONAL
+                  { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
+                      { ?uri  rdfs:label  ?label}}
+              }}
+        GROUP BY ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name
+        */
 
         final Node germplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
         SelectBuilder accessions = new SelectBuilder();
@@ -151,8 +161,11 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         Var experimentUriVar = makeVar("experiment_uri");
         Var soVar = makeVar("so");
 
-        accessions.addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode());
+        WhereBuilder experimentsWhere = new WhereBuilder().addGraph(experimentUriVar, soVar, Oeso.hasGermplasm.asNode(), uriVar);
+        SPARQLQueryHelper.addWhereUriValues(experimentsWhere, experimentUriVar.getVarName(), userExperiments);
+
         accessions.addGraph(germplasmGraph, new WhereBuilder()
+                .addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode())
                 .addOptional(uriVar, FOAF.homepage.asNode(), websiteVar)
                 .addOptional(uriVar, Oeso.hasId.asNode(), codeVar)
                 .addOptional(uriVar, Oeso.fromInstitute.asNode(), instituteVar)
@@ -162,13 +175,14 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                                 .addWhere(uriVar, Oeso.fromVariety.asNode(), varietyVar)
                                 .addWhere(varietyVar, RDFS.label.asNode(), varietyNameVar)
                 )
+                .addOptional(
+                        experimentsWhere
+                )
+                .addOptional(
+                        new WhereBuilder().addGraph(germplasmGraph, uriVar, RDFS.label.asNode(), labelVar)
+                )
         );
 
-        accessions.addGraph(experimentUriVar, new WhereBuilder().addOptional(soVar, Oeso.hasGermplasm.asNode(), uriVar));
-
-        accessions.addGraph(germplasmGraph, uriVar, RDFS.label.asNode(), labelVar);
-
-        SPARQLQueryHelper.addWhereUriValues(accessions, experimentUriVar.getVarName(), userExperiments);
         SPARQLQueryHelper.appendGroupConcatAggregator(accessions, experimentUriVar, true);
 
         accessions.addGroupBy(uriVar)
@@ -215,15 +229,19 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
                         // get experiments where accession is used
                         String joiningColumn = row.getStringValue(SPARQLQueryHelper.getConcatVarName(experimentUriVar.getVarName()));
-                        String[] experiments = joiningColumn.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
+                        if (StringUtils.isNotEmpty(joiningColumn)) {
+                            String[] experiments = joiningColumn.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
 
-                        model.setExperiments(Arrays.stream(experiments).map(xp -> {
-                            try {
-                                return new URI(xp);
-                            } catch (URISyntaxException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }).collect(Collectors.toList()));
+                            model.setExperiments(Arrays.stream(experiments).map(xp -> {
+                                try {
+                                    return new URI(xp);
+                                } catch (URISyntaxException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }).collect(Collectors.toList()));
+                        } else {
+                            model.setExperiments(new ArrayList<>());
+                        }
                         return model;
                     } catch (URISyntaxException e) {
                         throw new RuntimeException(e);

@@ -13,7 +13,6 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
   ></opensilex-FormSelector>
 </template>
 
@@ -31,6 +30,7 @@ import FormSelector from "../../common/forms/FormSelector.vue";
 export default class EntitySelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
+  page = 0;
 
   @PropSync("entity")
   entityURI;
@@ -69,9 +69,9 @@ export default class EntitySelector extends Vue {
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
+  searchEntities(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchEntities(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .searchEntities(name, ["name=asc"], page, pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });
@@ -89,13 +89,6 @@ export default class EntitySelector extends Vue {
     this.$emit("handlingEnterKey")
   }
 
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.formSelector.refresh();
-    this.$nextTick(() => {
-      this.formSelector.openTreeselect();
-    })
-  }
 }
 </script>
 

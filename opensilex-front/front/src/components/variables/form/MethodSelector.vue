@@ -13,7 +13,6 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
   ></opensilex-FormSelector>
 </template>
 
@@ -30,6 +29,7 @@ import FormSelector from "../../common/forms/FormSelector.vue";
 export default class MethodSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
+  page = 0;
 
   @PropSync("method")
   methodURI;
@@ -68,9 +68,9 @@ export default class MethodSelector extends Vue {
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchMethods(name): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
+  searchMethods(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchMethods(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .searchMethods(name, ["name=asc"], page, pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });
@@ -86,14 +86,6 @@ export default class MethodSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
-  }
-
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.formSelector.refresh();
-    this.$nextTick(() => {
-      this.formSelector.openTreeselect();
-    })
   }
 }
 </script>

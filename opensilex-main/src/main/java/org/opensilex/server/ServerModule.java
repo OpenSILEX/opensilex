@@ -1,9 +1,12 @@
-//******************************************************************************
-//                          ServerModule.java
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * *****************************************************************************
+ *                         ServerModule.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 19/04/2024 11:55
+ * Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
 package org.opensilex.server;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +56,6 @@ public class ServerModule extends OpenSilexModule implements APIExtension, JCSAp
     }
 
     public String getAppUrl() {
-        return getBaseURL() + "app/";
+        return UriBuilder.fromPath(getBaseURL()).path("/app/").build().toString();
     }
 }

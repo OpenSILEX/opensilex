@@ -1,28 +1,9 @@
 <template>
   <opensilex-DefaultLoginComponent>
     <template v-slot:loginMedia>
-        <!-- <img
-            v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.jpg')"
-        /> -->
-      <img class="bottom"
-           v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.png')"
-      />
+       <img
 
-
-      <img class="top"
-           v-bind:src="$opensilex.getResourceURI('images/arenaSetup_LartigueEtAl2021.jpeg')"
-      />
-
-      <img class="top"
-           v-bind:src="$opensilex.getResourceURI('images/armoiseMultiObjectTrakcingStillFrame.jpeg')"
-      />
-
-      <img class="top"
-           v-bind:src="$opensilex.getResourceURI('images/ExperimentalSet-up2StudySpatialPpropagation.jpeg')"
-      />
-
-      <img class="top"
-           v-bind:src="$opensilex.getResourceURI('images/Trichogramma_dendrolimi.jpg')"
+           v-bind:src="$opensilex.getResourceURI('images/T.brassicae_E.kuehniella-1.jpg')"
       />
 
 
@@ -37,19 +18,25 @@
         />
     </template>
 
-    <slot name="loginFooter">
+    <template v-slot:loginFooter>
       <p>
+        OpenSILEX insect
+        <br />
+        {{ $t("LoginComponent.copyright.2", {
+        version: getInsectModuleVersion()
+      }) }}
+        <br />
         {{ $t("LoginComponent.copyright.3", {
-        version: this.versionInfo.version
+        version: versionInfo.version
       }) }}
         <br />
         {{
-          $t("component.login.copyright.4", {
-            version: this.versionInfo.version
+          $t("LoginComponent.copyright.4", {
+            version: versionInfo.version
           })
         }}
       </p>
-    </slot>
+    </template>
   </opensilex-DefaultLoginComponent>
   
 </template>

@@ -385,10 +385,14 @@ public class ScientificObjectAPI {
                     .setCreationDate(creationDate);
 
             //TODO this crushes the result of criteria search, how should this be handled?
-        if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
-        }
+            if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+                DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+                var targets = dataDAO.getUsedTargets(currentUser, devices, variables, null);
+                if (targets.isEmpty()) {
+                    return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+                }
+                searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
+            }
 
             searchFilter.setPage(page)
                     .setPageSize(pageSize)

@@ -45,12 +45,12 @@
         
 
         <!-- PHIS legacy module-->
-        <module>opensilex-phis</module>
+     <!-- desactivateNEW   <module>opensilex-phis</module> -->
 
         <!-- BRAPI module-->
-        <module>opensilex-brapi</module>
+        <!-- desactivateNEW     <module>opensilex-brapi</module> -->
 
-        <!-- INSECT module-->
+           <!-- INSECT module-->
         <module>opensilex-insect</module>
 
 
@@ -126,18 +126,21 @@
         </dependency>
         
         <!--PHIS legacy dependency-->
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-phis</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
-        <!-- BRAPI dependency -->
+        <!-- desactivateNEW
+             <dependency>
+                 <groupId>org.opensilex</groupId>
+                 <artifactId>opensilex-phis</artifactId>
+                 <version>${revision}</version>
+             </dependency>
+     -->
+             <!-- BRAPI dependency -->
+        <!-- desactivateNEW
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
             <version>${revision}</version>
         </dependency>
+        -->
 
         <!-- Insect dependency -->
         <dependency>

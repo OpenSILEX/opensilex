@@ -152,14 +152,6 @@ OESO</rdfs:label>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#fromAccession -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromAccession">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-    </owl:ObjectProperty>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#fromInstitute -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromInstitute">
@@ -996,16 +988,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#ClayeyArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ClayeyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
-        <rdfs:label xml:lang="en">Clayey area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone argileuse</rdfs:label>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Compartment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Compartment">
@@ -1022,28 +1004,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Activity"/>
         <rdfs:label xml:lang="fr">Calcul</rdfs:label>
         <rdfs:label xml:lang="en">Computation</rdfs:label>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ControlLaw -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ControlLaw">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">Control law</rdfs:label>
-        <rdfs:label xml:lang="fr">Loi de commande</rdfs:label>
     </owl:Class>
 
 
@@ -1253,41 +1213,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">humidity sensor</rdfs:label>
     </owl:Class>
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindSensor -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">anémomètre</rdfs:label>
-        <rdfs:label xml:lang="en">wind sensor</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RadiationSensor -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RadiationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de rayonnement</rdfs:label>
-        <rdfs:label xml:lang="en">radiation sensor</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de précipitation</rdfs:label>
-        <rdfs:label xml:lang="en">precipitation sensor</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">Capteur d&apos;air</rdfs:label>
-        <rdfs:label xml:lang="en">Gas sensor</rdfs:label>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WeighingScale -->
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">balance</rdfs:label>
-        <rdfs:label xml:lang="en">weighing scale</rdfs:label>
-    </owl:Class>
-
+    
     <!-- http://www.opensilex.org/vocabulary/oeso#Camera -->
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Camera">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
@@ -1466,16 +1392,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#FloodableArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodableArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
-        <rdfs:label xml:lang="en">Floodable area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
@@ -1540,16 +1456,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <dc:source>http://purl.org/dc/dcmitype/InteractiveResource</dc:source>
         <rdfs:label xml:lang="en">Interactive Resource</rdfs:label>
         <rdfs:label xml:lang="fr">Ressource interactive</rdfs:label>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
-        <rdfs:label xml:lang="en">Limestone area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone calcaire</rdfs:label>
     </owl:Class>
 
 
@@ -1775,15 +1681,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#SoilArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoilArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
-        <rdfs:label xml:lang="en">Soil area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone de sol</rdfs:label>
-    </owl:Class>
-
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
@@ -1802,19 +1699,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Station</rdfs:label>
         <rdfs:label xml:lang="fr">Station</rdfs:label>
     </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#StructuralArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#StructuralArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
-        <rdfs:comment xml:lang="fr">durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:comment>
-        <rdfs:comment xml:lang="en">lifetime, building, cadastral, floodable, etc.</rdfs:comment>
-        <rdfs:label xml:lang="en">Structural area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone structurelle</rdfs:label>
-    </owl:Class>
-
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#TechnicalDocument -->
@@ -1992,17 +1876,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         </owl:Class>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:label xml:lang="fr">Vecteur</rdfs:label>
-        <rdfs:label xml:lang="en">Vector</rdfs:label>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#WebSite -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WebSite">
@@ -2011,15 +1884,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Web Site</rdfs:label>
     </owl:Class>
 
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
-        <rdfs:label xml:lang="en">Windy area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone venteuse</rdfs:label>
-    </owl:Class>
 
 
 
@@ -2408,27 +2272,11 @@ Used in OpenSILEX for group things</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot"/>
-
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot"/>
 
 
 
@@ -2444,9 +2292,6 @@ Used in OpenSILEX for group things</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant"/>
 
 
 
@@ -2604,14 +2449,6 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="fr">Niveau de facteur</rdfs:label>
         <rdfs:label xml:lang="en">Factor level</rdfs:label>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
-        <rdfs:label xml:lang="en">Flood area</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
-        <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
-        <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
         <rdfs:label xml:lang="fr">projet</rdfs:label>

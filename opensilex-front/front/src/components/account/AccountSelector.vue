@@ -13,7 +13,6 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
   ></opensilex-FormSelector>
 </template>
 
@@ -29,6 +28,7 @@ export default class AccountSelector extends Vue {
   $opensilex: any;
   service: SecurityService;
   pageSize = 10;
+  page= 0;
 
   @PropSync("users")
   usersURI;
@@ -57,7 +57,7 @@ export default class AccountSelector extends Vue {
   searchAccounts(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchAccounts(searchQuery, undefined, page, this.pageSize);
+      .searchAccounts(searchQuery, undefined, page, pageSize);
   }
 
   userToSelectNode(dto: AccountGetDTO) {
@@ -79,15 +79,6 @@ export default class AccountSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
-  }
-
-  loadMoreItems(){
-    this.pageSize = 0;
-    let formSelector: any = this.$refs.formSelector;
-    formSelector.refresh();
-    this.$nextTick(() => {
-      formSelector.openTreeselect();
-    })
   }
 }
 </script>

@@ -11,6 +11,7 @@ export default {
   mounted() {
     this.chart = echarts.init(this.$refs.chart);
     this.updateChart();
+    console.log("DATA: ", this.data);
   },
   watch: {
     data: {

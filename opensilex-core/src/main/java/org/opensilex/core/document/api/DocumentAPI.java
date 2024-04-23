@@ -42,8 +42,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * @author Fernandez Emilie
@@ -349,6 +349,80 @@ public class DocumentAPI {
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
+    @GET
+    @Path("/metadata")
+    @ApiOperation("Fetch metadata by targets and dates")
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMetadataByTargetsAndDates(
+            @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
+            @ApiParam(value = "Regex pattern for filtering list by the first element date", example = "2020") @QueryParam("first_element_date") String firstElementDate,
+            @ApiParam(value = "Regex pattern for filtering list by the last element date", example = "2020") @QueryParam("last_element_date") String lastElementDate,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+        ListWithPagination<DocumentModel> resultList = documentDAO.search(
+                currentUser,
+                null,
+                null,
+                null,
+                targets,
+                null,
+                null,
+                null,
+                null,
+                null,
+                firstElementDate,
+                lastElementDate,
+                null,
+                page,
+                pageSize
+        );
+
+        // Convert paginated list to DTO
+        ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
+
+        // Initialize the aggregated object
+        Map<String, Integer> variables = new HashMap<>();
+        Set<String> uniqueKeywords = new LinkedHashSet<>();
+        LocalDate localFirstElementDate = null;
+        LocalDate localLastElementDate = null;
+
+        // Iterate over each DTO to aggregate data
+        for (DocumentGetDTO dto : resultDTOList.getList()) {
+            // Aggregate variables
+            for (String variable : dto.getHasVariables()) {
+                int count = Integer.parseInt(dto.getNumberOfElements()); // This is a conceptual method, adjust based on your actual implementation
+                variables.put(variable, variables.getOrDefault(variable, 0) + count);
+            }
+
+            // Aggregate keywords
+            uniqueKeywords.addAll(dto.getSubject());
+
+            // Update first and last element dates
+            if (localFirstElementDate == null || dto.getFirstElementDate().isBefore(localFirstElementDate)) {
+                localFirstElementDate = dto.getFirstElementDate();
+            }
+            if (localLastElementDate == null || dto.getLastElementDate().isAfter(localLastElementDate)) {
+                localLastElementDate = dto.getLastElementDate();
+            }
+        }
+
+        List<String> keywords = new ArrayList<>(uniqueKeywords);
+
+        // Create the final aggregated object
+        Map<String, Object> aggregatedObject = new HashMap<>();
+        aggregatedObject.put("variables", variables);
+        aggregatedObject.put("keywords", keywords);
+        aggregatedObject.put("first_element_date", localFirstElementDate);
+        aggregatedObject.put("last_element_date", localLastElementDate);
+
+        // Return the aggregated object as a SingleObjectResponse
+        return Response.ok(aggregatedObject).build();
+    }
+
 
     @GET
     @Path("count")

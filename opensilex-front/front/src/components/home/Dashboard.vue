@@ -202,13 +202,13 @@
           <template v-slot="scope">
             <div class="panel-content">
               <!-- <opensilex-DisplayInformationAboutItem
-                v-if="showPopup"
-                :details-s-o="detailsSO"
-                :experiment="experiment"
-                :item="selectedFeatures"
-                :showName="true"
-                :withBasicProperties="true"
-              /> -->
+        v-if="showPopup"
+        :details-s-o="detailsSO"
+        :experiment="experiment"
+        :item="selectedFeatures"
+        :showName="true"
+        :withBasicProperties="true"
+      /> -->
               <circular-graph
                 v-if="showPopup"
                 :data="generateGraphData()"
@@ -1127,10 +1127,14 @@ export default class MapView extends Vue {
   }
 
   generateGraphData() {
-    return this.selectedFeatures.map((feature) => ({
-      name: feature.properties.name,
-      value: 29304,
-    }));
+    // Use Array.prototype.flatMap to flatten the array of arrays into a single array
+    return this.documentFromSites.flatMap((site) => {
+      // Return the mapped array for each site
+      return site[1].map((document) => ({
+        name: document.title,
+        value: document.number_of_elements,
+      }));
+    });
   }
 
   generateHeatmapData() {
@@ -1373,7 +1377,6 @@ export default class MapView extends Vue {
   filterDocuments(uri) {
     this.documents.forEach((document) => {
       if (document.targets[0] === uri) {
-        console.log("FIRST TARGET :", document.targets[0]);
         this.tempDocuments.push(document);
       }
     });
@@ -1394,7 +1397,6 @@ export default class MapView extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     });
-    console.log("SELECTED DOCUMENTS :", this.documentFromSites);
     this.showPopup = true;
   }
 
@@ -1869,9 +1871,6 @@ export default class MapView extends Vue {
       .catch((e) => {
         this.$opensilex.errorHandler(e);
         this.$opensilex.hideLoader();
-      })
-      .finally(() => {
-        this.initFacilities();
       });
   }
 
@@ -1904,9 +1903,6 @@ export default class MapView extends Vue {
       .catch((e) => {
         this.$opensilex.errorHandler(e);
         this.$opensilex.hideLoader();
-      })
-      .finally(() => {
-        this.initFacilities();
       });
   }
 
@@ -2782,45 +2778,6 @@ export default class MapView extends Vue {
     });
     this.scientificObjects = [];
     this.scientificObjects.push(scientificObject);
-  }
-
-  initFacilities() {
-    let facilities: any = {
-      title: "Facilities",
-      isLeaf: false,
-      children: [],
-      isExpanded: true,
-      isSelected: null,
-      isDraggable: false,
-      isSelectable: false,
-      isCheckable: true,
-    };
-
-    this.featuresSites.forEach((facility) => {
-      // Check if already exists
-      let bool = true;
-      for (let children of facilities.children) {
-        if (children.title === facility[0].properties.type) {
-          bool = false;
-        }
-      }
-      if (bool) {
-        //formatting devices for the panel map
-        let children = {
-          title: facility[0].properties.type,
-          children: [],
-          isLeaf: true,
-          isSelectable: false,
-          isDraggable: false,
-          isCheckable: true,
-          isExpanded: false,
-          isSelected: null,
-        };
-        facilities.children.push(children);
-      }
-    });
-    this.facilities = [];
-    this.facilities.push(facilities);
   }
 
   ///////////// DATE RANGE METHODS ////////////

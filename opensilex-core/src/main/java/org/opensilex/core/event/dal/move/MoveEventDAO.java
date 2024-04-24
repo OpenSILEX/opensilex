@@ -438,7 +438,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         locationHistory.forEach(move -> {
             var targetPosition = new TargetPositionModel();
             targetPosition.setTarget(target);
-            targetPosition.setPosition(positionsByUri.get(target));
+            targetPosition.setPosition(positionsByUri.get(move.getUri()));
             var noSqlModel = new MoveEventNoSqlModel();
             noSqlModel.setTargetPositions(Collections.singletonList(targetPosition));
             move.setNoSqlModel(noSqlModel);

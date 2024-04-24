@@ -1,7 +1,7 @@
 package org.opensilex.core.variable.dal;
 
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
  * Object which group all filters (can be null/empty) which can apply for a {@link VariableModel} search
  * @author rcolin
  */
-public class VariableSearchFilter extends SparqlSearchFilter {
+public class VariableSearchFilter extends SearchFilter {
 
     private String namePattern;
     private URI entity;

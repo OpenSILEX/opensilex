@@ -89,6 +89,7 @@ export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
   tutorial?: () => void;
   setSelectorsToFirstTimeOpenAndSetLabels?: (objectsWithLabels : Array<any>) => void;
   onShowEditForm?: () => void;
+  handleSubmitError?: (error) => void;
 }
 
 /**
@@ -217,7 +218,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
                   }
                 });
               })
-              .catch(console.error);
+              .catch((error) => {
+                this.getFormRef().handleSubmitError?.(error)
+              });
         }
       });
     }
@@ -338,3 +341,12 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 }
 
 </style>;
+
+<i18n>
+en:
+    Move:
+        fieldRequired: Location or position field required
+fr:
+    Move:
+        fieldRequired: Veuillez saisir les informations de localisation ou de position
+</i18n>

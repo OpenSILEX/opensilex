@@ -394,6 +394,7 @@ routes:
     description: GermplasmCreate.description
   - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
+    rdfType: vocabulary:Germplasm
     credentials: [ ]
   - path: /germplasm/annotations/:uri
     component: opensilex-GermplasmDetails

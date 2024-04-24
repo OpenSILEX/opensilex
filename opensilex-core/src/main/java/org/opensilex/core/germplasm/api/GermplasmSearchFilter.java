@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.germplasmGroup.api.GermplasmGroupApi;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author rcolin
  * Object which contains all filters for a Germplasm search
  */
-public class GermplasmSearchFilter extends SparqlSearchFilter {
+public class GermplasmSearchFilter extends SearchFilter {
 
     private String uri;
 

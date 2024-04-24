@@ -1,8 +1,9 @@
 <template>
     <div>
-        <opensilex-TableAsyncView
+        <opensilex-DataTableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
+            :countMethod="countDataList"
             :fields="fields"
             defaultSortBy="date"
             :defaultSortDesc="true"
@@ -12,7 +13,7 @@
                     :uri="data.item.target"
                     :value="objects[data.item.target]"
                     :to="{
-            path: getTargetPath(data.item.target)
+            path: $opensilex.getTargetPath(data.item.target, contextUri, objectsPath[data.item.target])
           }"
                 ></opensilex-UriLink>
             </template>
@@ -49,7 +50,7 @@
                 </b-button-group>
             </template>
 
-        </opensilex-TableAsyncView>
+        </opensilex-DataTableAsyncView>
 
         <opensilex-DataProvenanceModalView
             ref="dataProvenanceModalView"
@@ -66,7 +67,6 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 
 @Component
 export default class DataList extends Vue {
@@ -180,7 +180,7 @@ export default class DataList extends Vue {
     }
 
     getProvenance(uri) {
-        if (uri != undefined && uri != null) {
+        if (uri != undefined) {
             return this.dataService
                 .getProvenance(uri)
                 .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
@@ -189,24 +189,8 @@ export default class DataList extends Vue {
         }
     }
 
-    getTargetPath(uri: string) {
-        let defaultOsPath: string = this.objectsPath[uri];
-        if(! defaultOsPath){
-            return "";
-        }
-
-        let osPath = defaultOsPath.replace(':uri', encodeURIComponent(uri))
-
-        // pass encoded experiment inside OS path URL
-        if(this.contextUri && this.contextUri.length > 0){
-            return osPath.replace(':experiment', encodeURIComponent(this.contextUri));
-        }else{ // no experiment passed
-            return osPath.replace(':experiment', "");
-        }
-    }
-
     loadProvenance(selectedValue) {
-        if (selectedValue != undefined && selectedValue != null) {
+        if (selectedValue != undefined) {
             this.getProvenance(selectedValue.id).then((prov) => {
                 this.selectedProvenance = prov;
             });
@@ -226,13 +210,45 @@ export default class DataList extends Vue {
             });
     }
 
-    objects = {};
-    objectsPath = {};
+    objects : {[key : string] : string} = {};
+    objectsPath : {[key : string] : string} = {};
     variableNames = {};
     provenances = {};
     devices = {};
     facilities = {};
     operators = {};
+
+
+
+   countDataList(options) {
+       let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+       if (provUris != undefined) {
+           provUris = [provUris];
+       }
+
+       return this.dataService.countData(
+           // Count data, set limit to  since here we want the exact/total data count according the current filter
+           this.$opensilex.prepareGetParameter(this.filter.start_date),
+           this.$opensilex.prepareGetParameter(this.filter.end_date),
+           undefined,
+           this.filter.experiments,
+           this.$opensilex.prepareGetParameter(this.filter.variables),
+           this.$opensilex.prepareGetParameter(this.filter.devices),
+           undefined,
+           undefined,
+           provUris,
+           undefined,
+           this.$opensilex.prepareGetParameter(this.filter.operators),
+           this.filter.germplasm_group,
+           this.filter.germplasm,
+           0,
+           [].concat(
+               this.filter.scientificObjects,
+               this.filter.facilities,
+               this.filter.targets) // targets & os & facilities
+       )
+    }
+
 
     searchDataList(options) {
         let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
@@ -241,21 +257,21 @@ export default class DataList extends Vue {
         }
 
         return new Promise((resolve, reject) => {
-            this.dataService.getDataListByTargets(
-                this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
-                this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
-                undefined, // timezone,
-                this.filter.experiments, // experiments
-                this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
-                this.$opensilex.prepareGetParameter(this.filter.devices), // devices
-                undefined, // min_confidence
-                undefined, // max_confidence
-                provUris, // provenance
-                undefined, // metadata
-                this.filter.germplasm_group, //Group of germs
+            this.dataService.searchDataListByTargets(
+                this.$opensilex.prepareGetParameter(this.filter.start_date),
+                this.$opensilex.prepareGetParameter(this.filter.end_date),
+                undefined,
+                this.filter.experiments,
+                this.$opensilex.prepareGetParameter(this.filter.variables),
+                this.$opensilex.prepareGetParameter(this.filter.devices),
+                undefined,
+                undefined,
+                provUris,
+                undefined,
+                this.filter.germplasm_group,
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 this.filter.germplasm,
-                options.orderBy, // order_by
+                options.orderBy,
                 options.currentPage,
                 options.pageSize,
                 [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
@@ -286,36 +302,8 @@ export default class DataList extends Vue {
                         }
 
                         if (objectsToLoad.length > 0) {
-                            let promiseObject = this.ontologyService
-                                .getURILabelsList(objectsToLoad, this.contextUri, true)
-                                .then((httpObj) => {
-                                    for (let j in httpObj.response.result) {
-                                        let obj = httpObj.response.result[j];
-                                        this.objects[obj.uri] =
-                                            obj.name + " (" + obj.rdf_type_name + ")";
-                                    }
-                                })
-                                .catch(reject);
-                            promiseArray.push(promiseObject);
+                            promiseArray.push(this.$opensilex.loadOntologyLabelsWithType(objectsToLoad, this.contextUri, this.objects, this.ontologyService));
                         }
-
-                        let promiseFacility = this.dataService
-                            .searchDataList(
-                                undefined,
-                                undefined,
-                                undefined,
-                                undefined,
-                                [this.filter.facilities]
-                            ).then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-                                if (http && http.response){
-                                    for (let j in http.response.result){
-                                        let facility = http.response.result[j];
-                                        this.facilities[facility.uri] = facility.uri;
-                                    } }
-                            })
-                            .catch(reject);
-                            promiseArray.push(promiseFacility)
-
 
                         if (variablesToLoad.length > 0) {
                             let promiseVariable = this.variablesService
@@ -360,12 +348,12 @@ export default class DataList extends Vue {
     /**
      * Construct paths for each target's UriLink components according to their type.
      */
-    loadObjectsPath() {
+    private loadObjectsPath(): Promise<unknown> {
 
         // ensure that at least one object has been loaded (in case where all data in the page have no target)
         let objectURIs = Object.keys(this.objects);
         if (!objectURIs || objectURIs.length == 0) {
-            return;
+            return Promise.resolve();
         }
 
         return this.ontologyService

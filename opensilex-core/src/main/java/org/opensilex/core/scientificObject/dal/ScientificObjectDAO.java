@@ -13,8 +13,6 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
@@ -30,7 +28,6 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -42,7 +39,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -262,10 +258,10 @@ public class ScientificObjectDAO {
             });
         }
 
-        if (searchFilter.getPage() == null || searchFilter.getPage()  < 0) {
+        if (searchFilter.getPage()  < 0) {
             searchFilter.setPage(0);
         }
-        if (searchFilter.getPageSize() != null && searchFilter.getPageSize() > 0) {
+        if (searchFilter.getPageSize() > 0) {
             select.setOffset(searchFilter.getPage() * searchFilter.getPageSize());
             select.setLimit(searchFilter.getPageSize());
         }
@@ -589,7 +585,7 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<URI> getScientificObjectUrisAssociatedWithGermplasmGroup(
+    public List<URI> getScientificObjectUrisAssociatedWithGermplasms(
             List<URI> experiments,
             URI germplasmGroupUri,
             List<URI> passedGermplasms
@@ -1322,7 +1318,7 @@ public class ScientificObjectDAO {
      * @param models
      * @throws SPARQLException
      */
-    public void copyIntoGlobalGraph(Collection<ScientificObjectModel> models) throws SPARQLException {
+    public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
 
         Objects.requireNonNull(models);
 
@@ -1333,25 +1329,29 @@ public class ScientificObjectDAO {
             // use serializer in order to ensure that name is well serialized as a String
             SPARQLDeserializer<String> stringDeserializer = SPARQLDeserializers.getForClass(String.class);
 
-            for(ScientificObjectModel object : models){
+            models.forEach(object -> {
                 Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
 
-                // write type and name triple
-                update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
-                      .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+                try {
+                    // write type and name triple
+                    update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
+                            .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
 
-                if (Objects.nonNull(object.getPublisher())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
-                }
-                if (Objects.nonNull(object.getPublicationDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
-                }
-                if (Objects.nonNull(object.getLastUpdateDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
-                }
-            }
+                    if (Objects.nonNull(object.getPublisher())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
+                    }
+                    if (Objects.nonNull(object.getPublicationDate())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
+                    }
+                    if (Objects.nonNull(object.getLastUpdateDate())) {
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
+                    }
 
-            sparql.executeUpdateQuery(update);
+                    sparql.executeUpdateQuery(update);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }catch (Exception e){
             throw new SPARQLException(e);
         }

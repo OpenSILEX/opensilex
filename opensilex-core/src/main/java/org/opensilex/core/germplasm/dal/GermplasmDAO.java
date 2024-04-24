@@ -343,10 +343,7 @@ public class GermplasmDAO {
         if (!CollectionUtils.isEmpty(parentUris)) {
             Var predicateVar = makeVar("hasParent");
             select.addWhere(makeVar(GermplasmModel.URI_FIELD), predicateVar, makeVar(GermplasmModel.PARENT_VAR));
-            select.addUnion(new WhereBuilder()
-                    .addWhere(predicateVar, RDFS.subPropertyOf, Oeso.hasParentGermplasm)
-                    .addWhere(predicateVar, RDF.type, Oeso.hasParentGermplasm)
-            );
+            select.addWhere(predicateVar, Ontology.subPropertyAny, Oeso.hasParentGermplasm);
             select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_VAR, parentUris));
         }
     }

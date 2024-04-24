@@ -27,8 +27,6 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Description](#description-4)
   * [org.opensilex.migration.AddAccountCredentialsToProfilWithUserCredential](#orgopensilexmigrationaddaccountcredentialstoprofilwithusercredential)
     * [Description](#description-5)
-  * [org.opensilex.migration.RemoveExternalOntologiesContexts](#orgopensilexmigrationremoveexternalontologiescontexts)
-    * [Description](#description-6)
 * [Create an update command (For developers)](#create-an-update-command-for-developers)
       * [Example](#example)
 <!-- TOC -->
@@ -75,7 +73,6 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
 | 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
-| 2024/03/20 | <b> org.opensilex.migration.RemoveExternalOntologiesContexts </b>          | 1.3.0        | 2e4f0cbe  |
 
 # Descriptions
 
@@ -164,7 +161,16 @@ following predicates are concerned :
 ### Description
 
 This migration make a list of all profiles that has a credential on user. Then, it adds the same credential (show, add/update or delete) but for the accounts.
-This migration was done because Users credentials was replaced by account credentials in the web Interface, so it is necessary to migrate credentials, otherwise some people may have the suprise to not be able to reach the "account menu' anymore after the last deployment of OpenSilex 1.2.
+This migration was done because Users credentials was replaced by account credentials in the web Interface, so it is necessary to migrate credentials, otherwise some people may have the surprise to not be able to reach the "account menu' anymore after the last deployment of OpenSilex 1.2.
+
+
+## org.opensilex.migration.MongoDbIndexesMigration
+
+### Description
+
+- This migration ensures that the database has the indexes specified by OpenSILEX
+- **Note**: Executing this migration cause the deletion of indexes which are not registered by OpenSILEX
+
 
 ## org.opensilex.migration.RemoveExternalOntologiesContexts
 

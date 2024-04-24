@@ -85,6 +85,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Julien BONNEFONT
@@ -235,6 +236,7 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+        List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
         int lengthMapGeo = 0;
 
         // Get SO with geometry for the experiment
@@ -250,16 +252,21 @@ public class ScientificObjectAPI {
             lengthMapGeo++;
         }
 
-        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
-
-        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
-        for(ScientificObjectNodeDTO dto : dtoList){
-            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElseThrow(NullPointerException::new).getGeometry());
-        }
-
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
 
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        if(lengthMapGeo == 0){
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        } else {
+            dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
+            //Use a temporary list to delete objects already found and reduce the size of the list to be iterated.
+            List<ScientificObjectNodeDTO> dtoMapGeoTmp = new ArrayList<>(dtoMapGeo);
+            // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
+            for(ScientificObjectNodeDTO dto : dtoList){
+                dto.setGeometry(dtoMapGeoTmp.stream().filter(o -> SPARQLDeserializers.compareURIs(o.getUri(),dto.getUri())).findAny().orElseThrow(NullPointerException::new).getGeometry());
+                dtoMapGeoTmp.removeIf(g -> SPARQLDeserializers.compareURIs(g.getUri(),dto.getUri()));
+            }
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        }
     }
 
     @GET
@@ -378,10 +385,14 @@ public class ScientificObjectAPI {
                     .setCreationDate(creationDate);
 
             //TODO this crushes the result of criteria search, how should this be handled?
-        if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
-        }
+            if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+                DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+                var targets = dataDAO.getUsedTargets(currentUser, devices, variables, null);
+                if (targets.isEmpty()) {
+                    return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+                }
+                searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
+            }
 
             searchFilter.setPage(page)
                     .setPageSize(pageSize)
@@ -542,7 +553,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                dao.copyIntoGlobalGraph(Collections.singletonList(model));
+                dao.copyIntoGlobalGraph(Stream.of(model));
             }
 
             if (descriptionDto.getGeometry() != null) {

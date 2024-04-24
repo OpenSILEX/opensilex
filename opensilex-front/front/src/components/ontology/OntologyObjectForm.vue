@@ -134,9 +134,9 @@ export default class OntologyObjectForm extends Vue {
 
     baseType = null;
 
-    typeSwitch(type: string, initialLoad: boolean) {
+    async typeSwitch(type: string, initialLoad: boolean) {
         if(this.ontologyRelationsForm){
-            this.ontologyRelationsForm.typeSwitch(type, initialLoad);
+          await this.ontologyRelationsForm.typeSwitch(type, initialLoad);
         }
     }
 

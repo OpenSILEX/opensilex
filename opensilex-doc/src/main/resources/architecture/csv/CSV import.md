@@ -126,9 +126,9 @@ The definition of a custom validation is done by calling `AbstractCsvImporter.ad
 Following the same principle as the custom validation handling, abstract import allow implementation
 to define validation(s) to apply that a chunk has been processed by the abstract importer.
 
-It is useful when some validation must be evaluated on multiple model/row in order to be efficient.  <br>
-Ex: Evaluate a SPARQL query to known if values for some properties are unique, this query can be performed 
-on a batch of model.
+It is useful when some validation must be evaluated on multiple models/rows in order to be efficient.  <br>
+Ex: Evaluate a SPARQL query to check if values for some properties are unique, this query can be performed 
+on a batch of models.
 
 The definition of custom batch validation is done by calling `AbstractCsvImporter.customBatchValidation(CsvOwlRestrictionValidator, List<T>,int)` method.
 
@@ -140,7 +140,7 @@ Implementation can also define how to validate the URI uniqueness in case of gen
 **Generated**
 
 The process of checking if all generated URI are unique is performed inside  `AbstractCsvImporter.checkGeneratedUrisUniqueness` method. <br>
-This method rely on  `AbstractCsvImporter.getCheckGeneratedUrisUniquenessQuery` in order to know which SPARQL query execute, for 
+This method rely on  `AbstractCsvImporter.getCheckGeneratedUrisUniquenessQuery` in order to know which SPARQL query to execute for 
 URI validation.
 
 Implementation can define a custom SPARQL query in the case of a custom graph or logic must be applied for URI generation.

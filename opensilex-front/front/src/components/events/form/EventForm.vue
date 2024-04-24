@@ -33,6 +33,7 @@
 
         <div class="row">
             <div class="col" v-if="!linkedToAreaForm">
+                <!-- Target -->
                 <opensilex-TagInputForm
                     :value.sync="form.targets"
                     :baseType="this.$opensilex.Oeev.CONCERNS"
@@ -46,7 +47,7 @@
 
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
-          <!-- Comment -->
+          <!-- Description -->
           <opensilex-TextAreaForm
               :value.sync="form.description"
               label="component.common.description"
@@ -60,6 +61,7 @@
 
         <div class="row">
             <div class="col">
+                <!--Is instant-->
                 <opensilex-FormField
                     :required="true"
                     label="Event.is-instant"
@@ -80,7 +82,7 @@
                     :value.sync="form.start"
                     label="Event.start"
                     :maxDate="form.end"
-                    :required="startRequired"        
+                    :required="startRequired"
                     helpMessage="Event.start-help"
                     @input="updateRequiredProps('startDateSelector')"
                     @clear="updateRequiredProps('startDateSelector')"
@@ -92,7 +94,9 @@
                     ref="endDateSelector"
                     :value.sync="form.end"
                     label="Event.end"
-                    :required="endRequired"               
+                    :minDate="form.start"
+                    :required="endRequired"
+                    @update:value="updateRequiredProps"
                     helpMessage="Event.end-help"
                     @input="updateRequiredProps('endDateSelector')"
                     @clear="updateRequiredProps('endDateSelector')"
@@ -115,7 +119,7 @@
         ></opensilex-OntologyRelationsForm>
 
         <div>
-            <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
+            <opensilex-MoveForm v-if="isMove()" :form.sync="form" ref="moveForm"></opensilex-MoveForm>
         </div>
 
     </ValidationObserver>
@@ -131,11 +135,13 @@ import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';
 import TypeForm from "../../common/forms/TypeForm.vue";
+import EventModalForm from "./EventModalForm.vue";
 
 @Component
 export default class EventForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("moveForm") readonly moveForm!: MoveForm;
 
     $opensilex: OpenSilexVuePlugin;
     ontologyService: OntologyService;
@@ -210,11 +216,11 @@ export default class EventForm extends Vue {
     setContext(context) {
         this.context = context;
     }
- 
+
     updateIsInstantFilter(ref){
         this.$emit('change');
         this.updateRequiredProps(ref)
-    } 
+    }
 
     updateRequiredProps(ref){
         if (this.form.end === "") {
@@ -226,10 +232,10 @@ export default class EventForm extends Vue {
 
         if (this.form.is_instant) {
             this.endRequired = true;
-        } else {           
+        } else {
             if(this.form.start == undefined && this.form.end == undefined) {
                 this.startRequired = true;
-                this.endRequired = true; 
+                this.endRequired = true;
             } else {
                 this.startRequired = !!this.form.start;
                 this.endRequired = !!this.form.end;
@@ -279,5 +285,25 @@ export default class EventForm extends Vue {
         move.isDisabled = true;
       }
     }
+
+    handleSubmitError(){
+        let targetsPosition = this.form.targets_positions[0];
+        if(this.moveForm && !this.form.to && (!targetsPosition || EventModalForm.isPositionEmpty(targetsPosition.position))){
+            this.moveForm.handleSubmitError()
+        }else{
+            this.$opensilex.showErrorToast(this.$i18n.t("EventForm.targets-error").toString());
+        }
+
+    }
 }
 </script>
+
+<i18n>
+en:
+  EventForm:
+      targets-error: URI of one or more targets is not valid
+
+fr:
+  EventForm:
+      targets-error: L'URI d'un ou plusieurs objets concernés n'est pas valide
+</i18n>

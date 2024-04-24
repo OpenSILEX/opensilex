@@ -13,6 +13,8 @@ import org.bson.Document;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.service.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,13 +41,17 @@ public class NoSQLModule extends OpenSilexModule {
         initMongo(reset);
     }
 
-    /**
-     * @see http://www.datanucleus.org/products/accessplatform/jdo/enhancer.html#api
-     * @see https://github.com/datanucleus/tests/blob/master/jdo/general/src/test/org/datanucleus/tests/DynamicEnhanceSchemaToolTest.java
-     * @throws Exception
-     */
     @Override
     public void setup() throws Exception {
+        registerNewMongoDBService();
+    }
+
+    private void registerNewMongoDBService() {
+        MongoDBConfig mongoDBConfig = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH,MongoDBConfig.class);
+        MongoDBServiceV2 mongoDBServiceV2 = new MongoDBServiceV2(mongoDBConfig);
+        mongoDBServiceV2.setOpenSilex(getOpenSilex());
+        ServiceManager serviceManager = getOpenSilex().getServiceManager();
+        serviceManager.register(MongoDBServiceV2.class,MongoDBServiceV2.DEFAULT_SERVICE,mongoDBServiceV2);
     }
 
     @Override
@@ -98,7 +104,13 @@ public class NoSQLModule extends OpenSilexModule {
                 }
             }
         }
-
     }
-    
+
+    @Override
+    public void shutdown() throws Exception {
+        MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+        if(mongoDBServiceV2 != null){
+            mongoDBServiceV2.shutdown();
+        }
+    }
 }

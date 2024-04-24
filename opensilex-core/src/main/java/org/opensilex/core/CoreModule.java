@@ -17,6 +17,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -35,6 +36,7 @@ import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.extensions.LoginExtension;
@@ -200,6 +202,14 @@ public class CoreModule extends OpenSilexModule implements LoginExtension, APIEx
 
     @Override
     public void startup() throws Exception {
+
+        MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+        mongoDBServiceV2.registerIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
+
+        // Ensure index creation on application start (only in production)
+        if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
+            mongoDBServiceV2.createIndexes();
+        }
 
     }
 

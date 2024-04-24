@@ -115,6 +115,7 @@ public class MongoDBServiceV2 extends BaseService {
         try {
             if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
                 checkConnection(getImplementedConfig());
+                createIndexes();
             }
         } catch (MongoTimeoutException | MongoSecurityException e) {
             mongoClient.close();

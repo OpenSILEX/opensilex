@@ -9,6 +9,7 @@ import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -324,11 +325,42 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         update(null, instance);
     }
 
+    /**
+     * Update an existing model instance in the database if it exists,
+     * otherwise insert it.
+     *
+     * @param model new model to upsert
+     * @param filter   additional BSON filter
+     * @param session  current session
+     * @throws NoSQLInvalidURIException if no previous corresponding model was found in the collection
+     */
+    protected void upsert(T model, Bson filter, ClientSession session) {
+        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().upsert(true).projection( // don't fetch the full old document
+                Projections.include(MongoModel.URI_FIELD) // only retrieve id
+        );
+
+        Instant operationStart = mongoLogger.logOperationStart(UPSERT_ONE, URI_KEY, model.getUri());
+        T updatedModel = session == null ?
+                collection.findOneAndReplace(filter, model, options) :
+                collection.findOneAndReplace(session, filter, model, options);
+
+        mongoLogger.logOperationOk(UPSERT_ONE, operationStart, URI_KEY, model.getUri());
+    }
+
+    @Override
+    public void upsert(ClientSession session, @NotNull T instance) throws MongoException{
+        upsert(instance, getUpdateFilter(instance), session);
+    }
+
+    @Override
+    public void upsert(@NotNull T instance) throws MongoException{
+        upsert(instance, getUpdateFilter(instance), null);
+    }
+
     @Override
     public final @NotNull DeleteResult delete(@NotNull URI uri) throws MongoException, NoSQLInvalidURIException {
         return delete(null, uri);
     }
-
 
     @Override
     public @NotNull DeleteResult delete(ClientSession session, @NotNull URI uri) throws MongoException, NoSQLInvalidURIException {

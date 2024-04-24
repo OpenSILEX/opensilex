@@ -33,6 +33,7 @@ public class MongoLogger {
     public static final String INSERT_MANY = "insert_many_msg";
     public static final String INSERT_MANY_COUNT = "insert_many_count";
     public static final String UPDATE_ONE = "update_one";
+    public static final String UPSERT_ONE = "upsert_one";
     public static final String DELETE_MANY = "delete_many";
     public static final String DELETE_MANY_COUNT = "delete_many_count";
     public static final String DELETE_ONE = "delete_one";

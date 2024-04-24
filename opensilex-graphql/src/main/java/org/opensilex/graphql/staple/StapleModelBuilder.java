@@ -13,9 +13,11 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+import org.eclipse.rdf4j.model.vocabulary.PROV;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
@@ -28,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -47,12 +48,16 @@ public class StapleModelBuilder {
     private static final String SCHEMA_NAMESPACE = "http://schema.org/";
     private static final Property SCHEMA_DOMAIN_INCLUDES = ResourceFactory.createProperty("http://schema.org/domainIncludes");
     private static final Property SCHEMA_RANGE_INCLUDES = ResourceFactory.createProperty("http://schema.org/rangeIncludes");
-    private static final Set<URI> GRAPHQL_ALLOWED_DATATYPES = Stream.of(
+    private static final Set<URI> GRAPHQL_ALLOWED_DATATYPES = Set.of(
             URI.create(XSD.xstring.getURI()),
             URI.create(XSD.xboolean.getURI()),
             URI.create(XSD.decimal.getURI()),
             URI.create(XSD.integer.getURI())
-    ).collect(Collectors.toSet());
+    );
+    private static final Set<URI> EXCLUDED_RESOURCES = Set.of(
+            URI.create(PROV.PERSON.toString()),
+            URI.create(PROV.ENTITY.toString())
+    );
 
     // Parameters for build
     private final Set<URI> rootClassUris;
@@ -99,6 +104,11 @@ public class StapleModelBuilder {
      * </ol>
      *
      * <p>
+     *     Note : some of the ressources (classes and properties) are omitted. This behaviour is governed by the
+     *     {@link #isResourceExcluded(SPARQLResourceModel)} method.
+     * </p>
+     *
+     * <p>
      *     In reality, there is a bit more complexity induced by the fact that URIs are added to the
      *     set of URIs to analyze <b>during the analysis itself</b>. That is why the algorithm uses two loops and
      *     an intermediate variable called `currentLoopUriSet`.
@@ -124,6 +134,10 @@ public class StapleModelBuilder {
             for (URI rootUri : currentLoopUriSet) {
                 SPARQLTreeListModel<ClassModel> classTree = store.searchSubClasses(rootUri, null, null, false);
                 classTree.traverse(classModel -> {
+                    if (isResourceExcluded(classModel)) {
+                        return;
+                    }
+
                     Resource classResource = createBaseClassResource(classModel);
 
                     //RDF:type property. A class must have at least one property to be detected by the staple API
@@ -132,16 +146,25 @@ public class StapleModelBuilder {
 
                     for (Map.Entry<URI, DatatypePropertyModel> propertyEntry : classModel.getDatatypeProperties().entrySet()) {
                         DatatypePropertyModel propertyModel = propertyEntry.getValue();
+                        if (isResourceExcluded(propertyModel)) {
+                            continue;
+                        }
                         addDatatypeProperty(classResource, propertyModel);
                     }
 
                     for (Map.Entry<URI, ObjectPropertyModel> propertyEntry : classModel.getObjectProperties().entrySet()) {
                         ObjectPropertyModel propertyModel = propertyEntry.getValue();
+                        if (isResourceExcluded(propertyModel)) {
+                            continue;
+                        }
                         addObjectProperty(classResource, propertyModel);
                     }
 
                     for (Map.Entry<URI, OwlRestrictionModel> propertyEntry : classModel.getRestrictionsByProperties().entrySet()) {
                         OwlRestrictionModel restrictionModel = propertyEntry.getValue();
+                        if (isResourceExcluded(restrictionModel)) {
+                            continue;
+                        }
                         addPropertyFromRestriction(classResource, restrictionModel);
                     }
                 });
@@ -298,6 +321,17 @@ public class StapleModelBuilder {
     //endregion
 
     //region Helper methods
+
+    /**
+     * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
+     * the given resource to the {@link StapleModelBuilder#EXCLUDED_RESOURCES} set.
+     *
+     * @param model The resource model to check
+     * @return `true` if the model should be excluded form the Staple Model, `false` otherwise
+     */
+    private boolean isResourceExcluded(SPARQLResourceModel model) {
+        return EXCLUDED_RESOURCES.contains(URI.create(SPARQLDeserializers.getExpandedURI(model.getUri())));
+    }
 
     /**
      * <p>

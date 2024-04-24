@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -13,12 +14,14 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.api.TokenGetDTO;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.mail.internet.InternetAddress;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
@@ -40,6 +43,10 @@ public class CoreModuleTest extends AbstractMongoIntegrationTest {
         provenanceDAO = new ProvenanceDAO(getMongoDBService(), getSparqlService());
     }
 
+    @Override
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        return Collections.singletonList(ExperimentModel.class);
+    }
 
     @Test
     public void accountIsLinkedWithANosqlEntity_return_false_if_user_created_nothing() throws Exception {

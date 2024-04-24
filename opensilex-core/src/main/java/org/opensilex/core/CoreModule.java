@@ -17,6 +17,7 @@ import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -34,6 +35,7 @@ import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -225,6 +227,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
         mongoDBServiceV2.registerIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
+        mongoDBServiceV2.registerIndexes(DeviceAPI.METADATA_COLLECTION_NAME, MetaDataDaoV2.getIndexes());
 
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
@@ -355,7 +358,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<String> results = new ArrayList<>();
         results.add(DataDAO.DATA_COLLECTION_NAME);
         results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
-        results.add(DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
+        results.add(DeviceAPI.METADATA_COLLECTION_NAME);
         results.add(DataDAO.FILE_COLLECTION_NAME);
         results.add(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
         results.add(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);

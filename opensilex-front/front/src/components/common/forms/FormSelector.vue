@@ -33,6 +33,10 @@
           :itemLoadingMethod="itemLoadingMethod"
           :conversionMethod="conversionMethod"
         >
+          <!-- :disabled="disabled"
+          :disableBranchNodes="disableBranchNodes" -->
+
+          
           <!-- @deselect="deselect"
           @select="select"
           @input="clearIfNeeded"
@@ -274,6 +278,11 @@ export default class FormSelector extends Vue {
   })
   viewHandlerDetailsVisible
 
+  // @Prop({
+  //   default: false,
+  // })
+  // disableBranchNodes: boolean;
+
 
   resultLimit = 10;
 
@@ -285,11 +294,6 @@ export default class FormSelector extends Vue {
   onSelectionChange() {
     this.currentValue = null;
   }
-
-  @Prop({
-    default: false,
-  })
-  disableBranchNodes: boolean;
 
   @Prop({
     default: false,

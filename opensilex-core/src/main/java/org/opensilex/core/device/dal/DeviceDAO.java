@@ -19,7 +19,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
@@ -431,7 +430,7 @@ public class DeviceDAO {
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
-            LinkedHashMap<MoveModel, PositionModel> positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveDAO.getPositionsHistory(
                     deviceURI,
                     null,
                     null,
@@ -441,9 +440,9 @@ public class DeviceDAO {
                     0
             );
 
-            positionHistory.forEach((move, position) -> {
+            positionHistory.forEach((move) -> {
                 try {
-                    resultDTOList.add(new PositionGetDTO(move, position));
+                    resultDTOList.add(new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition()));
                 } catch (JsonProcessingException ex) {
                     throw new RuntimeException(ex);
                 }

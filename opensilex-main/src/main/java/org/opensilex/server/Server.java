@@ -88,12 +88,12 @@ public class Server extends Tomcat {
     /**
      * Threshold for thread lock check.
      */
-    private final static int THREAD_LOCK_THRESHOLD = -1;
+    private final static int THREAD_LOCK_THRESHOLD = 120;
 
     /**
      * Inactivity threshold for thread lock interuption.
      */
-    private final static int THREAD_LOCK_INTERRUPT_THRESHOLD = -1;
+    private final static int THREAD_LOCK_INTERRUPT_THRESHOLD = 30;
 
     /**
      * Construct OpenSilex server with host, port and adminPort adminPort is used to communicate with the running server by the cli.

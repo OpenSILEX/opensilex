@@ -74,7 +74,8 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-
+front:
+    connectAsGuest: true
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
 #     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"

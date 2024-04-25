@@ -63,7 +63,7 @@ public abstract class DocumentDTO {
     protected URI source;
 
     @JsonProperty("has_variables")
-    protected List<String> hasVariables;
+    protected List<URI> hasVariables;
 
     @JsonProperty("first_element_date")
     protected LocalDate firstElementDate;
@@ -79,11 +79,11 @@ public abstract class DocumentDTO {
     
     protected boolean deprecated;
 
-    public List<String> getHasVariables() {
+    public List<URI> getHasVariables() {
         return hasVariables;
     }
 
-    public DocumentDTO setHasVariables(List<String> hasVariables) {
+    public DocumentDTO setHasVariables(List<URI> hasVariables) {
         this.hasVariables = hasVariables;
         return this;
     }

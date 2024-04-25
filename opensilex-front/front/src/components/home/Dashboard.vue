@@ -215,6 +215,7 @@
                 :title="'Sample Density'"
               >
               </circular-graph>
+              <div class="panel-content">TEST</div>
             </div>
           </template>
         </vl-overlay>
@@ -1015,7 +1016,7 @@ export default class MapView extends Vue {
   showPopup: boolean = false;
   documents: DocumentGetDTO[] = [];
   tempDocuments: DocumentGetDTO[] = [];
-  documentFromSites: [String, DocumentGetDTO[]][] = [];
+  documentFromSites: [String, {}][] = [];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1083,7 +1084,6 @@ export default class MapView extends Vue {
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
     this.recoverySites();
-    this.recoverDocuments();
     this.soFilter = {
       name: "",
       experiment: this.experiment,
@@ -1128,12 +1128,20 @@ export default class MapView extends Vue {
 
   generateGraphData() {
     // Use Array.prototype.flatMap to flatten the array of arrays into a single array
-    return this.documentFromSites.flatMap((site) => {
+    console.log("DOCS: ", this.documentFromSites);
+    return this.documentFromSites.flatMap((data) => {
       // Return the mapped array for each site
-      return site[1].map((document) => ({
-        name: document.title,
-        value: document.number_of_elements,
-      }));
+      let result = [];
+      let index = 0;
+      for (const [key, value] of Object.entries(data[1].has_variables)) {
+        result[index] = {
+          name: key,
+          value: value,
+        };
+        if (index >= 10) break;
+        index += 1;
+      }
+      return result;
     });
   }
 
@@ -1374,26 +1382,19 @@ export default class MapView extends Vue {
     return result;
   }
 
-  filterDocuments(uri) {
-    this.documents.forEach((document) => {
-      if (document.targets[0] === uri) {
-        this.tempDocuments.push(document);
-      }
-    });
-    this.documentFromSites.push([uri, this.tempDocuments]);
-    this.tempDocuments = [];
-  }
-
   selectSites(features) {
-    let uris: Array<String> = [];
-    let index = 0;
     features.forEach((feature) => {
-      this.organizationsService
-        .getSite(feature.properties.uri)
-        .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
-          uris[index] = http.response.result.uri;
-          this.filterDocuments(uris[index]);
-          index++;
+      this.documentsService
+        .getMetadataByTargetsAndDates(feature.properties.uri)
+        .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
+          console.log("RESULT: ", http.response);
+          const result = {
+            first_element_date: http.response.result.first_element_date,
+            last_element_date: http.response.result.last_element_date,
+            has_variables: http.response.result.has_variables,
+            keywords: http.response.result.keywords,
+          };
+          this.documentFromSites.push([feature.properties.uri, result]);
         })
         .catch(this.$opensilex.errorHandler);
     });
@@ -1417,8 +1418,11 @@ export default class MapView extends Vue {
       if (features[0].properties.nature === "Sites") {
         this.selectSites(features);
       } else {
-        this.showPopup = false; // Hide the graph when no feature is selected
+        console.log("--");
       }
+    } else {
+      console.log("SHOWPOPUP FALSE");
+      this.showPopup = false; // Hide the graph when no feature is selected
     }
 
     return this.selectedFeatures.length === 1
@@ -1836,41 +1840,6 @@ export default class MapView extends Vue {
       })
       .finally(() => {
         this.initScientificObjects();
-      });
-  }
-
-  private recoverDocuments() {
-    this.documentsService
-      .searchDocuments(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        undefined
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DocumentGetDTO>>>) => {
-        const res = http.response.result as any;
-        console.log("RES: ", res);
-        res.forEach((element) => {
-          this.documents.push(element);
-        });
-        if (res.length !== 0) {
-          this.endReceipt = true;
-        }
-      })
-      .catch((e) => {
-        this.$opensilex.errorHandler(e);
-        this.$opensilex.hideLoader();
       });
   }
 

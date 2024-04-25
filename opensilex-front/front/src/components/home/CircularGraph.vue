@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 400px; height: 300px; margin-bottom: 0px"></div>
+  <div ref="chart" style="width: 50vh; height: 55vh; margin-bottom: 0px"></div>
 </template>
 
 <script>
@@ -11,7 +11,6 @@ export default {
   mounted() {
     this.chart = echarts.init(this.$refs.chart);
     this.updateChart();
-    console.log("DATA: ", this.data);
   },
   watch: {
     data: {
@@ -26,30 +25,48 @@ export default {
       const option = {
         title: {
           text: this.title, // Use the title prop here
-          x: "center", // Center the title
-          top: "20%",
-          textStyle: {
-            fontSize: 15, // Adjust the font size as needed
+          left: "center",
+          subtext: "Fake Data",
+        },
+        tooltip: {
+          trigger: "item",
+          formatter: "{a} <br/>{b} : {c} ({d}%)",
+        },
+        legend: {
+          left: "center",
+          top: "bottom",
+          data: this.data.map((item) => item.name), // Assuming each item in data has a 'name' property
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            restore: { show: true },
+            saveAsImage: { show: true },
           },
         },
         series: [
           {
+            name: "Data",
             type: "pie",
-            radius: "30%",
-            data: this.data,
+            radius: "50%", // Adjust the radius as needed
+            center: ["50%", "50%"], // Center the pie chart
+            data: this.data, // Use your data here
+            roseType: "radius", // This is optional and depends on your preference
+            itemStyle: {
+              borderRadius: 5,
+            },
+            label: {
+              show: false,
+            },
             emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: "rgba(0, 0, 0, 0.5)",
+              label: {
+                show: true,
               },
             },
           },
         ],
-        tooltip: {
-          trigger: "item",
-          formatter: "Sample Density <br/>{b} : {c} ({d}%)",
-        },
       };
       this.chart.setOption(option);
     },

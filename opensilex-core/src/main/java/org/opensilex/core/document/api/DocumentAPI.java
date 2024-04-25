@@ -279,7 +279,7 @@ public class DocumentAPI {
             credentialId = CREDENTIAL_DOCUMENT_DELETE_ID,
             credentialLabelKey = CREDENTIAL_DOCUMENT_DELETE_LABEL_KEY
     )
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
@@ -385,7 +385,7 @@ public class DocumentAPI {
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
 
         // Initialize the aggregated object
-        Map<String, Integer> variables = new HashMap<>();
+        Map<URI, Integer> variables = new HashMap<>();
         Set<String> uniqueKeywords = new LinkedHashSet<>();
         LocalDate localFirstElementDate = null;
         LocalDate localLastElementDate = null;
@@ -393,9 +393,9 @@ public class DocumentAPI {
         // Iterate over each DTO to aggregate data
         for (DocumentGetDTO dto : resultDTOList.getList()) {
             // Aggregate variables
-            for (String variable : dto.getHasVariables()) {
+            for (URI variableURI : dto.getHasVariables()) {
                 int count = Integer.parseInt(dto.getNumberOfElements()); // This is a conceptual method, adjust based on your actual implementation
-                variables.put(variable, variables.getOrDefault(variable, 0) + count);
+                variables.put(variableURI, variables.getOrDefault(variableURI, 0) + count);
             }
 
             // Aggregate keywords
@@ -414,13 +414,13 @@ public class DocumentAPI {
 
         // Create the final aggregated object
         Map<String, Object> aggregatedObject = new HashMap<>();
-        aggregatedObject.put("variables", variables);
+        aggregatedObject.put("has_variables", variables);
         aggregatedObject.put("keywords", keywords);
         aggregatedObject.put("first_element_date", localFirstElementDate);
         aggregatedObject.put("last_element_date", localLastElementDate);
 
         // Return the aggregated object as a SingleObjectResponse
-        return Response.ok(aggregatedObject).build();
+        return new SingleObjectResponse<>(aggregatedObject).getResponse();
     }
 
 

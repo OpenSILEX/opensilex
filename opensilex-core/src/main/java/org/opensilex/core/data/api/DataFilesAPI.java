@@ -26,8 +26,10 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
@@ -59,6 +61,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -82,7 +85,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.dal.DataDAO.FS_FILE_PREFIX;
+import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
 
 
 /**
@@ -140,7 +143,7 @@ public class DataFilesAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         try {
             validDataFileDescription(Arrays.asList(dto));
             DataFileModel model = dto.newModel();
@@ -211,7 +214,7 @@ public class DataFilesAPI {
             @Context HttpServletRequest context
     ) throws Exception {  
         
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
         try {
             if (dtoList.size()> DataAPI.SIZE_MAX) {
@@ -278,7 +281,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
         @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
 
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target);
         long countResult = dao.count(filter);
 
@@ -306,7 +309,7 @@ public class DataFilesAPI {
             @Context HttpServletResponse response
     ) throws NotFoundURIException, IOException, URISyntaxException {
         try {
-            DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
             DataFileModel description = dao.get(uri);
 
@@ -360,7 +363,7 @@ public class DataFilesAPI {
     public Response getDataFileDescription(
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -397,7 +400,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Thumbnail height") @QueryParam("scaled_height") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
             @Context HttpServletResponse response) throws Exception {
 
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -517,7 +520,7 @@ public class DataFilesAPI {
             int pageSize
 
     ) throws Exception {
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
         //convert dates
         Instant startInstant = null;
@@ -549,7 +552,6 @@ public class DataFilesAPI {
             }
         }
 
-        OntologyDAO ontoDao = new OntologyDAO(sparql);
         Set<URI> rdfTypes = new HashSet<>();
 
         if (rdfType != null) {
@@ -561,46 +563,37 @@ public class DataFilesAPI {
 
         DataFileSearchFilter filter = new DataFileSearchFilter()
                 .setUser(user)
-                //.setRdfTypes(rdfTypes)
                 .setExperiments(experiments)
                 .setTargets(targets)
                 .setProvenances(provenances)
                 .setDevices(devices)
                 .setStartDate(startInstant)
                 .setEndDate(endInstant)
-                //TODO check this metadata filter
                 .setMetadata(metadataFilter);
 
-        ListWithPagination<DataFileModel> resultList = dao.searchFiles(
-                user,
-                new ArrayList<>(rdfTypes),
-                experiments,
-                targets,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                metadataFilter,
-                orderByList,
-                page,
-                pageSize
+        filter.setRdfTypes(rdfTypes);
+        filter.setOrderByList(orderByList);
+        filter.setPage(page);
+        filter.setPageSize(pageSize);
+
+        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
+                new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
+                        .setFilter(filter)
+                        .setConvertFunction(model -> {
+                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
+                            if (Objects.nonNull(model.getPublisher())) {
+                                try {
+                                    next.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            return next;
+                        })
+                        .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
         );
 
-        List<DataFileGetDTO> dtoList = new ArrayList<>();
-        resultList.getList().forEach(dataFileModel -> {
-            DataFileGetDTO dto = DataFileGetDTO.fromModel(dataFileModel);
-            if (Objects.nonNull(dataFileModel.getPublisher())) {
-                try {
-                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataFileModel.getPublisher())));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            dtoList.add(dto);
-        });
-        ListWithPagination<DataFileGetDTO> resultDTOList = new ListWithPagination<>(dtoList, resultList.getPage(), resultList.getPageSize(), resultList.getTotal());
-
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(results).getResponse();
 
     }
 
@@ -715,18 +708,28 @@ public class DataFilesAPI {
             List<URI> experiments,
             List<URI> targets,
             List<URI> devices
-    ) throws Exception {
+    ){
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        Set<URI> provenanceURIs = dataDAO.getDatafileProvenances(user, experiments, targets, devices);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
+        DataFileSearchFilter filter = new DataFileSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(experiments);
+        filter.setTargets(targets);
+        filter.setDevices(devices);
+
+        List<URI> provenanceURIs = dao.distinct(null, "provenance.uri", URI.class, filter);
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
 
-        resultList.forEach(result -> {
-            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-        });
+        if(!provenanceURIs.isEmpty()){
+            ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+            List<ProvenanceModel> resultList = provenanceDao.findByUris(provenanceURIs.parallelStream(), provenanceURIs.size());
+
+
+            resultList.forEach(result -> {
+                resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+            });
+        }
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

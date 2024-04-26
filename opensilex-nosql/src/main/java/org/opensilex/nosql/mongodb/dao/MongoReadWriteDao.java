@@ -164,7 +164,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
 
         // Create filter from URIS and run query with pagination
-        Bson filter = Filters.in(idField(), uris.limit(size).iterator());
+        Bson filter = Filters.in(idField(), () -> uris.limit(size).iterator());
         FindIterable<T> queryResult = collection.find(filter).limit(size);
 
         List<T> instances = new ArrayList<>(size);

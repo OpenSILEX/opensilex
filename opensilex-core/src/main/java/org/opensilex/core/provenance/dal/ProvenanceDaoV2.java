@@ -1,13 +1,21 @@
 package org.opensilex.core.provenance.dal;
 
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import static org.opensilex.core.data.dal.DataProvenanceModel.*;
 
 public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, ProvenanceSearchFilter> {
 
@@ -16,6 +24,13 @@ public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, Provenan
 
     public ProvenanceDaoV2(MongoDBServiceV2 mongodb) {
         super(mongodb, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, PROVENANCE_PREFIX);
+    }
+
+    public static Map<Bson, IndexOptions> getIndexes() {
+
+        Map<Bson, IndexOptions> indexes = new HashMap<>();
+        indexes.put(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
+        return indexes;
     }
 
     @Override

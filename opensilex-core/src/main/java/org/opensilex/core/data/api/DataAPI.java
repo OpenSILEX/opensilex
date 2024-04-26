@@ -1829,15 +1829,19 @@ public class DataAPI {
         filter.setTargets(targets);
         filter.setVariables(variables);
         filter.setDevices(devices);
-        List<URI> provenanceURIs = dataDAO.distinct(null, "provenance.uri", URI.class, filter);
 
-        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
-        List<ProvenanceModel> resultList = provenanceDao.findByUris(provenanceURIs.parallelStream(), provenanceURIs.size());
+        List<URI> provenanceURIs = dataDAO.distinct(null, "provenance.uri", URI.class, filter);
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
 
-        resultList.forEach(result -> {
-            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-        });
+        if(!provenanceURIs.isEmpty()){
+            ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+            List<ProvenanceModel> resultList = provenanceDao.findByUris(provenanceURIs.stream(), provenanceURIs.size());
+
+            resultList.forEach(result -> {
+                resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+            });
+        }
+
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     

@@ -859,6 +859,13 @@ interface feature {
   };
 }
 
+interface siteData {
+  first_element_date: string;
+  last_element_date: string;
+  has_variables: string[];
+  keywords: string[];
+}
+
 @Component({
   components: {
     ExperimentDataVisualisation,
@@ -1016,7 +1023,7 @@ export default class MapView extends Vue {
   showPopup: boolean = false;
   documents: DocumentGetDTO[] = [];
   tempDocuments: DocumentGetDTO[] = [];
-  documentFromSites: [String, {}][] = [];
+  documentFromSites: [String, siteData][] = [];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1388,7 +1395,7 @@ export default class MapView extends Vue {
         .getMetadataByTargetsAndDates(feature.properties.uri)
         .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
           console.log("RESULT: ", http.response);
-          const result = {
+          const result: siteData = {
             first_element_date: http.response.result.first_element_date,
             last_element_date: http.response.result.last_element_date,
             has_variables: http.response.result.has_variables,

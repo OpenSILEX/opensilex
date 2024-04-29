@@ -37,38 +37,38 @@ public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, Provenan
     public List<Bson> getBsonFilters(ProvenanceSearchFilter filter) {
         List<Bson> result = new ArrayList<>();
 
-        if (filter.name != null) {
+        if (filter.getName() != null) {
             Document regexFilter = new Document();
-            regexFilter.put("$regex", ".*" + Pattern.quote(filter.name) + ".*" );
+            regexFilter.put("$regex", ".*" + Pattern.quote(filter.getName()) + ".*" );
             // Case ignore
             regexFilter.put("$options", "i" );
 
             result.add(new Document("name", regexFilter));
         }
 
-        if (filter.description != null) {
+        if (filter.getDescription() != null) {
             Document regexFilter = new Document();
-            regexFilter.put("$regex", ".*" + Pattern.quote(filter.description) + ".*" );
+            regexFilter.put("$regex", ".*" + Pattern.quote(filter.getDescription()) + ".*" );
             // Case ignore
             regexFilter.put("$options", "i" );
 
             result.add(new Document("description", regexFilter));
         }
 
-        if (filter.activityType != null) {
-            result.add(new Document("activity.rdfType", filter.activityType));
+        if (filter.getActivityType() != null) {
+            result.add(new Document("activity.rdfType", filter.getActivityType()));
         }
 
-        if (filter.activityUri != null) {
-            result.add(new Document("activity.uri", filter.activityUri));
+        if (filter.getActivityUri() != null) {
+            result.add(new Document("activity.uri", filter.getActivityUri()));
         }
 
-        if (filter.agentType != null) {
-            result.add(new Document("agents.rdfType", filter.agentType));
+        if (filter.getAgentType() != null) {
+            result.add(new Document("agents.rdfType", filter.getAgentType()));
         }
 
-        if (filter.agentURI != null) {
-            result.add(new Document("agents.uri", filter.agentURI));
+        if (filter.getAgentURI() != null) {
+            result.add(new Document("agents.uri", filter.getAgentURI()));
         }
         return result;
     }

@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 50vh; height: 55vh; margin-bottom: 0px"></div>
+  <div ref="chart" style="width: 50vh; height: 55vh; margin-bottom: 10px"></div>
 </template>
 
 <script>
@@ -26,7 +26,7 @@ export default {
         title: {
           text: this.title, // Use the title prop here
           left: "center",
-          subtext: "Fake Data",
+          subtext: "Densité de mesure par variable",
         },
         tooltip: {
           trigger: "item",
@@ -52,10 +52,11 @@ export default {
             type: "pie",
             radius: "50%", // Adjust the radius as needed
             center: ["50%", "50%"], // Center the pie chart
-            data: this.data, // Use your data here
+            data: this.data,
             roseType: "radius", // This is optional and depends on your preference
             itemStyle: {
               borderRadius: 5,
+              marginBottom: 20,
             },
             label: {
               show: false,

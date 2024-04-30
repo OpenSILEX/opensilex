@@ -1202,15 +1202,15 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#TemperatureSensor">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de température</rdfs:label>
-        <rdfs:label xml:lang="en">temperature sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">Capteur de température</rdfs:label>
+        <rdfs:label xml:lang="en">Temperature sensor</rdfs:label>
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#HumiditySensor -->
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HumiditySensor">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur d&apos;humidité</rdfs:label>
-        <rdfs:label xml:lang="en">humidity sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">Capteur d&apos;humidité</rdfs:label>
+        <rdfs:label xml:lang="en">Humidity sensor</rdfs:label>
     </owl:Class>
 
     
@@ -1236,7 +1236,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="en">Camera</rdfs:label>
-        <rdfs:label xml:lang="fr">Camera</rdfs:label>
+        <rdfs:label xml:lang="fr">Appareil photo</rdfs:label>
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#height -->

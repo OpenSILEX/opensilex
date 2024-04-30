@@ -25,14 +25,14 @@ Each child component is responsible for a single task, which should allow for be
 ## Technical specifications
 
 
-#### Library
+### Library
 
 
 - **vue-treeselect** : vue-treeselect is a multi-select component with nested options.
 We use this library for managing forms : [Link to library documentation](https://vue-treeselect.js.org/).
 <br><br>
 
-#### Used props
+### Used props
 
 - Details of some important `@props` sent to the library component from `customTreeSelect.vue` : <br><br>
 
@@ -73,7 +73,10 @@ For example to load user accounts, the prop will be linked to a function calling
 used to convert a Data Transfer Object (DTO) into an object that can be displayed in the selector component.
 In our case, this function takes an object of type NamedResourceDTO as input and returns an object of type SelectableItem. <br><br>
 
-#### Child Components
+### Child Components
+
+- `CustomTreeselect.vue` :
+  provides an encapsulation of the `vue-treeselect` library, it is responsible for displaying the item selector, provides custom options and handles the processing of selected values by asynchronous loading and conversion methods. <br><br>
 
 - `CustomTreeselectOptionLabel.vue` :
   allows to return the different node labels as selectable options for the filter used. <br><br>
@@ -86,4 +89,34 @@ In our case, this function takes an object of type NamedResourceDTO as input and
 
 - `DetailButton.vue` :
 Generic component with conditional rendering allowing you to view the details of an entity and/or to return to a creation form when clicked. 
-It is located against the filter with which it is associated.
+It is located against the filter with which it is associated.<br><br>
+
+
+### Explanation according to a use case
+
+More precise description of the technical process in the example of search and selection of values.
+
+
+- Loading options:
+
+By "options", the library means selectable search results.
+When the customTreeselect.vue component is mounted and needs to load options, the `loadOptions()` method is called.
+This defines the loading actions that must be done based on the `@Props()` passed.
+If an options loading method is passed (`optionsLoadingMethod`), this is used to load options from an external source (a parent component). Once the options are loaded, they are stored in an `internalOption` variable.
+
+
+- Asynchronous search:
+
+When an async search is initiated in `customTreeselect.vue`, the `debounceSearch()` method is called.
+When a certain time has elapsed since the user's last entry (300ms), this method then calls on the specific search method defined (exemple: `SearchProvenance` method of the associated service). This search method retrieves the query results and formats them, so they can be displayed. At the end of the formatting, the count displayed in the list and the total count of the results are transmitted using events.
+Error handling and a wait loader are also integrated.
+
+
+- Selection of an option: 
+
+On selection, the `select()` method of `CustomTreeselect.vue` is called, it receives the selected value as a parameter and informs the parent component of the selection by an event. Furthermore, the `"selection"` array linked to `@PropSync("selected")` receives the id of the value, which is then used in the management of the selected values.
+
+
+- Management of selected values:
+
+The `@AsyncComputedProp()` decorator is used to define an asynchronous computed property called `selectedValues`. It is executed when the component is initially mounted and then each time the selected values or component options change. It returns a promise that resolves with the current selected values. This `selectedValues` method retrieves these values and, just like when loading options, formats them using the specified conversion method `conversionMethod()`. Once the selected values are formatted, the promise is resolved with these values, and they can be used or passed to the parent component.

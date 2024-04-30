@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFWriter;
 import org.opensilex.graphql.staple.StapleApiUtils;
+import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -22,6 +23,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
+import java.util.Map;
 
 /**
  * Services useful only for the Staple GraphQL API
@@ -52,5 +55,14 @@ public class StapleAPI {
                 .output(baos);
 
         return Response.ok(baos.toByteArray(), new MediaType("application", "x-turtle")).build();
+    }
+
+    @GET
+    @Path("resource_graph")
+    @ApiOperation("Get all graphs associated with resources")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getResourceGraphs() throws Exception {
+        Map<URI, URI> result = stapleApiUtils.getResourceGraphMap();
+        return new SingleObjectResponse<>(result).getResponse();
     }
 }

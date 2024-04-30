@@ -160,6 +160,7 @@
       <!-- Map config - "mapControls" to display the scale -->
       <vl-map
         ref="map"
+        v-if="!comparationMode"
         :default-controls="mapControls"
         :load-tiles-while-animating="true"
         :load-tiles-while-interacting="true"
@@ -209,13 +210,12 @@
         :showName="true"
         :withBasicProperties="true"
       /> -->
-              <circular-graph
+              <!-- <circular-graph
                 v-if="showPopup"
                 :data="generateGraphData()"
                 :title="'Sample Density'"
               >
-              </circular-graph>
-              <div class="panel-content">TEST</div>
+              </circular-graph> -->
             </div>
           </template>
         </vl-overlay>
@@ -391,6 +391,23 @@
           @update:features="updateSelectionFeatures"
         />
       </vl-map>
+      <div v-if="comparationMode" class="mb-30">
+        <b-row class="justify-content-center">
+          <b-col v-for="(data, index) in documentFromSites" :key="index" cols="auto">
+            <circular-graph
+              class="justify-self-center"
+              :data="generateGraphData(data[1])"
+              :title="`${data[0]}`"
+            ></circular-graph>
+            <heat-map
+              class="justify-self-center"
+              :siteData="data[1]"
+              :title="`${data[0]}`"
+            >
+            </heat-map>
+          </b-col>
+        </b-row>
+      </div>
     </div>
 
     <!--------------------- EVENT SIDEBAR ----------------------------->
@@ -460,7 +477,7 @@
         </div>
         <b-tabs content-class="mt-3">
           <!-- Facilities -->
-          <opensilex-TreeView :nodes.sync="facilities">
+          <!-- <opensilex-TreeView :nodes.sync="facilities">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
               <span v-if="node.title === 'Facilities'"
@@ -493,9 +510,9 @@
                 @update:value="updateVisibility(node)"
               ></opensilex-CheckboxForm>
             </template>
-          </opensilex-TreeView>
+          </opensilex-TreeView> -->
           <!-- SO -->
-          <opensilex-TreeView :nodes.sync="scientificObjects">
+          <!-- <opensilex-TreeView :nodes.sync="scientificObjects">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
               <span v-if="node.title === 'Scientific Objects'"
@@ -528,15 +545,14 @@
                 @update:value="updateVisibility(node)"
               ></opensilex-CheckboxForm>
             </template>
-          </opensilex-TreeView>
+          </opensilex-TreeView> -->
           <!-- AREAS -->
-          <opensilex-TreeView
+          <!-- <opensilex-TreeView
             :nodes.sync="areas"
             :class="isDisabled ? 'disabledMenu' : ''"
           >
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>
-              <!-- flat() method creates a new array with all sub-array elements concatenated into it recursively up to the specified depth -->
               <span v-if="node.title === 'Areas'"
                 >{{ $t("MapView.mapPanelAreas") }} ({{
                   isDisabled
@@ -576,9 +592,9 @@
                 :small="true"
               ></opensilex-CheckboxForm>
             </template>
-          </opensilex-TreeView>
+          </opensilex-TreeView> -->
           <!-- DEVICES -->
-          <opensilex-TreeView
+          <!-- <opensilex-TreeView
             :nodes.sync="devices"
             :class="isDisabled ? 'disabledMenu' : ''"
           >
@@ -615,8 +631,14 @@
                 @update:value="updateVisibility(node)"
               ></opensilex-CheckboxForm>
             </template>
-          </opensilex-TreeView>
+          </opensilex-TreeView> -->
           <!-- FILTERS -->
+          <!-- Create filter button -->
+          <opensilex-CreateButton
+            class="ml-50 mt-10 mb-20"
+            label="MapView.create-filter"
+            @click="filterForm.showCreateForm()"
+          ></opensilex-CreateButton>
           <opensilex-TreeView :nodes.sync="filters">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
@@ -673,13 +695,7 @@
               </div>
             </template>
           </opensilex-TreeView>
-          <!-- Create filter button -->
-          <opensilex-CreateButton
-            class="ml-50 mt-10"
-            label="MapView.create-filter"
-            @click="filterForm.showCreateForm()"
-          ></opensilex-CreateButton>
-          <div>
+          <div class="mt-10 mb-10">
             <opensilex-FilterField>
               <opensilex-DateTimeForm
                 :value.sync="filter.start_date"
@@ -690,7 +706,7 @@
               ></opensilex-DateTimeForm>
             </opensilex-FilterField>
           </div>
-          <div>
+          <div class="mb-10">
             <opensilex-FilterField>
               <opensilex-DateTimeForm
                 :value.sync="filter.end_date"
@@ -703,17 +719,38 @@
               ></opensilex-DateTimeForm>
             </opensilex-FilterField>
           </div>
+          <div v-if="documentFromSites.length > 1">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Sites</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(site, index) in documentFromSites" :key="index">
+                  <td>{{ site[0] }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <opensilex-CreateButton
+              class="ml-50 mt-10"
+              :label="`${compareButtonText}`"
+              @click="compareSites"
+            ></opensilex-CreateButton>
+          </div>
         </b-tabs>
       </template>
     </b-sidebar>
 
     <!--------------------- LEGEND ----------------------------->
-    {{ $t("MapView.Legend") }}:
-    <span id="OS">{{ $t("MapView.LegendSO") }}</span>
-    &nbsp;-&nbsp;
-    <span id="StructuralArea">{{ $t("MapView.LegendStructuralArea") }}</span>
-    &nbsp;-&nbsp;
-    <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
+    <div v-if="!comparationMode">
+      {{ $t("MapView.Legend") }}:
+      <span id="OS">{{ $t("MapView.LegendSO") }}</span>
+      &nbsp;-&nbsp;
+      <span id="StructuralArea">{{ $t("MapView.LegendStructuralArea") }}</span>
+      &nbsp;-&nbsp;
+      <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
+    </div>
 
     <!--------------------- DATE RANGE ----------------------------->
     <div class="timeline-slider" v-if="displayDateRange">
@@ -859,10 +896,18 @@ interface feature {
   };
 }
 
-interface siteData {
-  first_element_date: string;
+interface variableDetails {
+  nb_of_elements: number;
   last_element_date: string;
-  has_variables: string[];
+  first_element_date: string;
+}
+
+interface siteData {
+  last_element_date: string;
+  first_element_date: string;
+  has_variables: {
+    [key: string]: variableDetails;
+  };
   keywords: string[];
 }
 
@@ -1024,6 +1069,8 @@ export default class MapView extends Vue {
   documents: DocumentGetDTO[] = [];
   tempDocuments: DocumentGetDTO[] = [];
   documentFromSites: [String, siteData][] = [];
+  comparationMode: boolean = false;
+  compareButtonText: String = "Compare sites";
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1107,6 +1154,12 @@ export default class MapView extends Vue {
     end_date: undefined,
   };
 
+  compareSites() {
+    this.comparationMode = !this.comparationMode;
+    if (this.comparationMode) this.compareButtonText = "Return to map";
+    if (!this.comparationMode) this.compareButtonText = "Compare sites";
+  }
+
   createStyleFunction() {
     return function (feature) {
       // Create a style for each feature
@@ -1133,43 +1186,19 @@ export default class MapView extends Vue {
     };
   }
 
-  generateGraphData() {
-    // Use Array.prototype.flatMap to flatten the array of arrays into a single array
-    console.log("DOCS: ", this.documentFromSites);
-    return this.documentFromSites.flatMap((data) => {
-      // Return the mapped array for each site
-      let result = [];
-      let index = 0;
-      for (const [key, value] of Object.entries(data[1].has_variables)) {
-        result[index] = {
-          name: key,
-          value: value,
-        };
-        if (index >= 10) break;
-        index += 1;
-      }
-      return result;
-    });
-  }
-
-  generateHeatmapData() {
-    const features = this.selectedFeatures;
-    const categories = features.map((feature) => feature.properties.name);
-    const allVariableTypes = features.flatMap(
-      (feature) => feature.properties.document.variable_types_array
-    );
-    const uniqueVariableTypes = [...new Set(allVariableTypes)];
-
-    // Initialize the heatmap data matrix
-    const data = features.map((feature) => {
-      return uniqueVariableTypes.map((variableType) => {
-        return feature.properties.document.variable_types_array.includes(variableType)
-          ? 1
-          : 0;
-      });
-    });
-
-    return { categories, uniqueVariableTypes, data };
+  generateGraphData(data: siteData) {
+    // Return the mapped array for each site
+    let result = [];
+    let index = 0;
+    for (const [key, value] of Object.entries(data.has_variables)) {
+      result[index] = {
+        name: key,
+        value: value.nb_of_elements,
+        dates: [data.first_element_date, data.last_element_date],
+      };
+      index++;
+    }
+    return result;
   }
 
   calculateTopRightCorner() {
@@ -1389,19 +1418,27 @@ export default class MapView extends Vue {
     return result;
   }
 
+  formatYear(dateString) {
+    const date = new Date(dateString);
+    return date.getFullYear().toString();
+  }
+
   selectSites(features) {
     features.forEach((feature) => {
       this.documentsService
-        .getMetadataByTargetsAndDates(feature.properties.uri)
+        .getMetadataByTargetsAndDates(
+          feature.properties.uri,
+          this.formatYear(this.filter.start_date) ? undefined : "",
+          this.formatYear(this.filter.end_date) ? undefined : ""
+        )
         .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
-          console.log("RESULT: ", http.response);
           const result: siteData = {
             first_element_date: http.response.result.first_element_date,
             last_element_date: http.response.result.last_element_date,
             has_variables: http.response.result.has_variables,
             keywords: http.response.result.keywords,
           };
-          this.documentFromSites.push([feature.properties.uri, result]);
+          this.documentFromSites.push([feature.properties.name, result]);
         })
         .catch(this.$opensilex.errorHandler);
     });
@@ -1410,9 +1447,6 @@ export default class MapView extends Vue {
 
   //Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
-    this.selectedOS = [];
-    this.soWithLabels = [];
-    this.featuresOSfromSelectedFacility = [];
     this.documentFromSites = [];
 
     if (features.length && features[0]) {
@@ -1428,7 +1462,6 @@ export default class MapView extends Vue {
         console.log("--");
       }
     } else {
-      console.log("SHOWPOPUP FALSE");
       this.showPopup = false; // Hide the graph when no feature is selected
     }
 

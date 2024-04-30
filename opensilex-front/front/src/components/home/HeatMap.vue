@@ -1,62 +1,90 @@
-// BarGraph.vue
 <template>
- <div ref="chart" style="width: 100%; height: 300px"></div>
+  <div ref="heatmapContainer" style="width: 100%; height: 500px; margin-top: 10%"></div>
 </template>
 
 <script>
 import * as echarts from "echarts";
 
 export default {
- name: "BarGraph",
- props: ["data", "title"],
- mounted() {
-    this.chart = echarts.init(this.$refs.chart);
-    this.updateChart();
- },
- watch: {
-    data: {
+  name: "Heatmap",
+  props: {
+    siteData: {
+      type: Object,
+      required: true,
+    },
+    title: String,
+  },
+  mounted() {
+    this.generateHeatMap();
+  },
+  watch: {
+    siteData: {
       handler() {
-        this.updateChart();
+        this.generateHeatMap();
       },
       deep: true,
     },
- },
- methods: {
-    updateChart() {
+  },
+  methods: {
+    generateHeatMap() {
+      const chartDom = this.$refs.heatmapContainer;
+      const myChart = echarts.init(chartDom);
       const option = {
         title: {
-          top: 30,
-          left: 'center',
-          text: this.title
+          top: 0,
+          left: "center",
+          text: this.title,
+          subtext:
+            "from " +
+            this.siteData.first_element_date +
+            " to " +
+            this.siteData.last_element_date,
         },
         tooltip: {},
         visualMap: {
           min: 0,
-          max: 10000,
-          type: 'piecewise',
-          orient: 'horizontal',
-          left: 'center',
-          top: 65
+          max: 50000,
+          type: "piecewise",
+          orient: "horizontal",
+          left: "center",
+          top: 65,
         },
         calendar: {
           top: 120,
           left: 30,
           right: 30,
-          cellSize: ['auto', 13],
-          range: '2016',
-          itemStyle: {
-            borderWidth: 0.5
-          },
-          yearLabel: { show: false }
+          cellSize: ["auto", 13],
+          range: [this.siteData.first_element_date, this.siteData.last_element_date],
+
+          yearLabel: { show: false },
         },
         series: {
-          type: 'heatmap',
-          coordinateSystem: 'calendar',
-          data: this.data // Assuming this.data is the result of getVirtualData('2016')
-        }
+          type: "heatmap",
+          coordinateSystem: "calendar",
+          data: this.transformSiteDataToHeatmapData(),
+        },
       };
-      this.chart.setOption(option);
+
+      myChart.setOption(option);
     },
- },
+
+    transformSiteDataToHeatmapData() {
+      const data = [];
+      Object.entries(this.siteData.has_variables).forEach(([key, value]) => {
+        const date = new Date(value.first_element_date);
+        const endDate = new Date(value.last_element_date);
+        while (date <= endDate) {
+          data.push([
+            echarts.time.format(date, "{yyyy}-{MM}-{dd}", false),
+            value.nb_of_elements,
+          ]);
+          date.setDate(date.getDate() + 1);
+        }
+      });
+      return data;
+    },
+  },
 };
 </script>
+
+<style scoped></style>

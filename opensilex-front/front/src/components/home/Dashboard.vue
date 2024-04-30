@@ -399,6 +399,12 @@
               :data="generateGraphData(data[1])"
               :title="`${data[0]}`"
             ></circular-graph>
+            <heat-map
+              class="justify-self-center"
+              :siteData="data[1]"
+              :title="`${data[0]}`"
+            >
+            </heat-map>
           </b-col>
         </b-row>
       </div>
@@ -890,10 +896,18 @@ interface feature {
   };
 }
 
-interface siteData {
-  first_element_date: string;
+interface variableDetails {
+  nb_of_elements: number;
   last_element_date: string;
-  has_variables: string[];
+  first_element_date: string;
+}
+
+interface siteData {
+  last_element_date: string;
+  first_element_date: string;
+  has_variables: {
+    [key: string]: variableDetails;
+  };
   keywords: string[];
 }
 
@@ -1173,38 +1187,18 @@ export default class MapView extends Vue {
   }
 
   generateGraphData(data: siteData) {
-    console.log("GENERATE :", data);
     // Return the mapped array for each site
     let result = [];
     let index = 0;
     for (const [key, value] of Object.entries(data.has_variables)) {
       result[index] = {
         name: key,
-        value: value,
+        value: value.nb_of_elements,
+        dates: [data.first_element_date, data.last_element_date],
       };
       index++;
     }
     return result;
-  }
-
-  generateHeatmapData() {
-    const features = this.selectedFeatures;
-    const categories = features.map((feature) => feature.properties.name);
-    const allVariableTypes = features.flatMap(
-      (feature) => feature.properties.document.variable_types_array
-    );
-    const uniqueVariableTypes = [...new Set(allVariableTypes)];
-
-    // Initialize the heatmap data matrix
-    const data = features.map((feature) => {
-      return uniqueVariableTypes.map((variableType) => {
-        return feature.properties.document.variable_types_array.includes(variableType)
-          ? 1
-          : 0;
-      });
-    });
-
-    return { categories, uniqueVariableTypes, data };
   }
 
   calculateTopRightCorner() {

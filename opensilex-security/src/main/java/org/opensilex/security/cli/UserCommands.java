@@ -122,9 +122,8 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
     public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{
             "user",
-            "add",
-            "--admin",
-            "--CONFIG_FILE=/home/vmigot/sources/opensilex/opensilex-dev-tools/src/main/resources/config/opensilex.yml"
+            "add-guest",
+            "--CONFIG_FILE=/home/hosotte/OpenSILEX/opensilex/opensilex-dev-tools/src/main/resources/config/opensilex.yml"
         });
     }
 

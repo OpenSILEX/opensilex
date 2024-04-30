@@ -385,23 +385,28 @@ public class DocumentAPI {
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
 
         // Initialize the aggregated object
-        Map<URI, Integer> variables = new HashMap<>();
+        Map<URI, Map<String, Object>> variables = new HashMap<>();
         Set<String> uniqueKeywords = new LinkedHashSet<>();
         LocalDate localFirstElementDate = null;
         LocalDate localLastElementDate = null;
 
-        // Iterate over each DTO to aggregate data
+// Iterate over each DTO to aggregate data
         for (DocumentGetDTO dto : resultDTOList.getList()) {
             // Aggregate variables
             for (URI variableURI : dto.getHasVariables()) {
-                int count = Integer.parseInt(dto.getNumberOfElements()); // This is a conceptual method, adjust based on your actual implementation
-                variables.put(variableURI, variables.getOrDefault(variableURI, 0) + count);
+                int count = Integer.parseInt(dto.getNumberOfElements()); // Adjust based on your actual implementation
+                Map<String, Object> variableData = new HashMap<>();
+                variableData.put("nb_of_elements", count);
+                variableData.put("last_element_date", dto.getLastElementDate());
+                variableData.put("first_element_date", dto.getFirstElementDate());
+
+                variables.put(variableURI, variableData);
             }
 
             // Aggregate keywords
             uniqueKeywords.addAll(dto.getSubject());
 
-            // Update first and last element dates
+            // Update the first and last element dates for the entire dataset
             if (localFirstElementDate == null || dto.getFirstElementDate().isBefore(localFirstElementDate)) {
                 localFirstElementDate = dto.getFirstElementDate();
             }
@@ -412,14 +417,14 @@ public class DocumentAPI {
 
         List<String> keywords = new ArrayList<>(uniqueKeywords);
 
-        // Create the final aggregated object
+// Create the final aggregated object
         Map<String, Object> aggregatedObject = new HashMap<>();
-        aggregatedObject.put("has_variables", variables);
         aggregatedObject.put("keywords", keywords);
+        aggregatedObject.put("has_variables", variables);
         aggregatedObject.put("first_element_date", localFirstElementDate);
         aggregatedObject.put("last_element_date", localLastElementDate);
 
-        // Return the aggregated object as a SingleObjectResponse
+// Return the aggregated object as a SingleObjectResponse
         return new SingleObjectResponse<>(aggregatedObject).getResponse();
     }
 

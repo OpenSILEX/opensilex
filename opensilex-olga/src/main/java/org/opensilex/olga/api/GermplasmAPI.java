@@ -1,32 +1,34 @@
+/*
+ * *****************************************************************************
+ *                         GermplasmAPI.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 02/05/2024 10:01
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.olga.api;
 
 import io.swagger.annotations.*;
-import org.brapi.client.v2.model.exceptions.ApiException;
-import org.brapi.client.v2.model.queryParams.germplasm.GermplasmQueryParams;
-import org.brapi.client.v2.modules.germplasm.GermplasmApi;
 import org.brapi.v2.model.BrAPIPagination;
 import org.brapi.v2.model.BrAPIStatus;
 import org.brapi.v2.model.germ.BrAPIGermplasm;
-import org.brapi.v2.model.germ.response.BrAPIGermplasmListResponse;
-import org.brapi.v2.model.germ.response.BrAPIGermplasmSingleResponse;
+import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.olga.OlgaModule;
 import org.opensilex.olga.bll.GermplasmLogic;
 import org.opensilex.olga.model.GermplasmDTO;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.*;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.opensilex.olga.bll.GermplasmLogic.brapiResponseToSingleObjectResponse;
-import static org.opensilex.olga.bll.GermplasmLogic.updateGermplasms;
 
 /**
  * @author Gabriel Besombes
@@ -52,10 +54,12 @@ public class GermplasmAPI {
     @Inject
     private OlgaModule olgaModule;
 
-    private GermplasmApi getAuthenticatedGarmplasmAPIClient() {
-        return new GermplasmApi(olgaModule.getAuthenticatedBrAPIClient());
-    }
+    @Inject
+    private MongoDBServiceV2 mongodb;
 
+    private final GermplasmLogic germplasmLogic = new GermplasmLogic(mongodb, olgaModule);
+
+    // Service to get germplasm detail from Olga
     @GET
     @Path("{germplasmDbId}")
     @ApiOperation("Get olga germplasm by germplasmDbId")
@@ -69,18 +73,16 @@ public class GermplasmAPI {
             @ApiParam(value = GERMPLASM_DBID, example = GERMPLASM_EXAMPLE_DBID, required = true) @PathParam("germplasmDbId") @NotNull String germplasmDbId
     ) throws Exception {
 
-        // Should some of this be in the business layer?
-        GermplasmApi germplasmApi = getAuthenticatedGarmplasmAPIClient();
-        org.brapi.client.v2.ApiResponse<BrAPIGermplasmSingleResponse> germplasmDetail = germplasmApi.germplasmGermplasmDbIdGet(germplasmDbId);
-        germplasmDetail.getBody().getResult().setAdditionalInfo(null);
+        var germplasmDetailResult = germplasmLogic.getOpensilexGermplasmDetail(germplasmDbId);
 
-        BrAPIGermplasm responseObject = germplasmDetail.getBody().getResult();
-        BrAPIPagination responsePagintation = germplasmDetail.getBody().getMetadata().getPagination();
-        List<BrAPIStatus> responseStatus = germplasmDetail.getBody().getMetadata().getStatus();
-
-        return brapiResponseToSingleObjectResponse(responseObject, responsePagintation, responseStatus).getResponse();
+        return brapiResponseToSingleObjectResponse(
+                GermplasmGetSingleDTO.fromModel(germplasmDetailResult.getGermplasmModel()),
+                germplasmDetailResult.getResponsePagination(),
+                germplasmDetailResult.getResponseStatus()
+        ).getResponse();
     }
 
+    // Service to search germplasms in local database
     @GET
     @Path("")
     @ApiOperation("Search germplasms")
@@ -92,8 +94,8 @@ public class GermplasmAPI {
     })
     public Response searchGermplasms(
             @ApiParam(value = GERMPLASM_NAME, example = GERMPLASM_EXAMPLE_NAME) String germplasmName
-    ) throws Exception {
-        return new PaginatedListResponse<>(GermplasmLogic.searchGermplasm(germplasmName)).getResponse();
+    ) {
+        return new PaginatedListResponse<>(germplasmLogic.searchGermplasm(germplasmName)).getResponse();
     }
 
     // Service to force germplasm harvest for admins
@@ -107,15 +109,41 @@ public class GermplasmAPI {
             @ApiResponse(code = 200, message = "Harvest olga germplasms")
     })
     public void forceHarvestGermplasms() throws Exception {
-        harvestOlgaGermplasms();
+        germplasmLogic.harvestOlgaGermplasms();
     }
 
-    private void harvestOlgaGermplasms() throws Exception {
-        GermplasmApi germplasmApi = getAuthenticatedGarmplasmAPIClient();
-        org.brapi.client.v2.ApiResponse<BrAPIGermplasmListResponse> germplasms = germplasmApi.germplasmGet(new GermplasmQueryParams());
-        updateGermplasms(
-                germplasms.getBody().getResult().getData().stream().map(GermplasmDTO::fromBrapiGermplasm).collect(Collectors.toList())
+    private <T> SingleObjectResponse<T> brapiResponseToSingleObjectResponse(
+            T responseObject, BrAPIPagination responsePagination, List<BrAPIStatus> responseStatus
+    ) {
+
+        PaginationDTO pagination = new PaginationDTO(
+                responsePagination.getPageSize(), responsePagination.getCurrentPage(), responsePagination.getTotalCount(), responsePagination.getTotalPages()
         );
+        MetadataDTO metadata = new MetadataDTO(pagination);
+
+        for (BrAPIStatus status: responseStatus) {
+            StatusLevel statusLevel = null;
+            BrAPIStatus.MessageTypeEnum messageType = status.getMessageType();
+            switch (messageType) {
+                case DEBUG:
+                    statusLevel = StatusLevel.DEBUG;
+                    break;
+                case ERROR:
+                    statusLevel = StatusLevel.ERROR;
+                    break;
+                case WARNING:
+                    statusLevel = StatusLevel.WARNING;
+                    break;
+                case INFO:
+                    statusLevel = StatusLevel.INFO;
+                    break;
+            }
+            metadata.addStatus(new StatusDTO(status.getMessage(), statusLevel));
+        }
+
+        SingleObjectResponse<T> response = new SingleObjectResponse<>(responseObject);
+        response.setMetadata(metadata);
+        return response;
     }
 
     // Mechanism to automate germplasm harvest every night. Should it be in BLL rather than API?

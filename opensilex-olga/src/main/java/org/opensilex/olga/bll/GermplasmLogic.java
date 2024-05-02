@@ -3,7 +3,7 @@
  *                         GermplasmLogic.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 30/04/2024 16:50
+ * Last Modification: 02/05/2024 10:31
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -42,7 +42,7 @@ public class GermplasmLogic {
     public void updateGermplasms(List<GermplasmDTO> germplasmDTOs) throws Exception {
         List<GermplasmModel> germplasmModels = germplasmDTOs.stream().map(GermplasmModel::fromDTO).collect(Collectors.toList());
 
-        germplasmDAO.updateGermplasms(germplasmModels);
+        germplasmDAO.create(germplasmModels);
     }
 
     public List<GermplasmDTO> searchGermplasm(String germplasmName) {

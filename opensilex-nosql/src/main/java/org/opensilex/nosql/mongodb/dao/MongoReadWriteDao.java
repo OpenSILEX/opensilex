@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         MongoReadWriteDao.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 30/04/2024 09:31
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.nosql.mongodb.dao;
 
 import com.mongodb.ErrorCategory;
@@ -156,6 +166,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return instance;
     }
 
+    // TODO : change this to findByIdField?, same for get, exists
     @Override
     public List<T> findByUris(@NotNull Stream<URI> uris, int size) {
         Objects.requireNonNull(uris);

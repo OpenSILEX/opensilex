@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 /**
@@ -355,6 +356,9 @@ public class DocumentAPI {
     @ApiOperation("Fetch metadata by targets and dates")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return Document list", response = DocumentMetadataGetDTO.class)
+    })
     public Response getMetadataByTargetsAndDates(
             @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
             @ApiParam(value = "Regex pattern for filtering list by the first element date", example = "2020") @QueryParam("first_element_date") String firstElementDate,
@@ -362,6 +366,8 @@ public class DocumentAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        // LocalDate.parse()
+        // start != null ? OffsetDateTime.parse(start) : null
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         ListWithPagination<DocumentModel> resultList = documentDAO.search(
                 currentUser,
@@ -390,7 +396,7 @@ public class DocumentAPI {
         LocalDate localFirstElementDate = null;
         LocalDate localLastElementDate = null;
 
-// Iterate over each DTO to aggregate data
+        // Iterate over each DTO to aggregate data
         for (DocumentGetDTO dto : resultDTOList.getList()) {
             // Aggregate variables
             for (URI variableURI : dto.getHasVariables()) {
@@ -417,15 +423,11 @@ public class DocumentAPI {
 
         List<String> keywords = new ArrayList<>(uniqueKeywords);
 
-// Create the final aggregated object
-        Map<String, Object> aggregatedObject = new HashMap<>();
-        aggregatedObject.put("keywords", keywords);
-        aggregatedObject.put("has_variables", variables);
-        aggregatedObject.put("first_element_date", localFirstElementDate);
-        aggregatedObject.put("last_element_date", localLastElementDate);
+        // Create the final DocumentMetadataGetDTO object
+        DocumentMetadataGetDTO metadataDTO = new DocumentMetadataGetDTO(variables, keywords, localFirstElementDate, localLastElementDate);
 
-// Return the aggregated object as a SingleObjectResponse
-        return new SingleObjectResponse<>(aggregatedObject).getResponse();
+        // Return the DocumentMetadataGetDTO object as a SingleObjectResponse
+        return new SingleObjectResponse<>(metadataDTO).getResponse();
     }
 
 

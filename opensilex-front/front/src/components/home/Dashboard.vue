@@ -849,6 +849,7 @@ import * as olExt from "vuelayers/lib/ol-ext";
 import GeoJSONFeature from "vuelayers/src/ol-ext/format";
 import {
   AreaGetDTO,
+  DocumentMetadataGetDTO,
   PositionsService,
   DevicesService,
   ExperimentsService,
@@ -906,9 +907,15 @@ interface siteData {
   last_element_date: string;
   first_element_date: string;
   has_variables: {
-    [key: string]: variableDetails;
+    [key: string]: {
+      [key: string]: any;
+    };
   };
   keywords: string[];
+}
+
+interface hasVariables {
+  [propName: string]: { variableDetails };
 }
 
 @Component({
@@ -1431,11 +1438,11 @@ export default class MapView extends Vue {
           this.formatYear(this.filter.start_date) ? undefined : "",
           this.formatYear(this.filter.end_date) ? undefined : ""
         )
-        .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<DocumentMetadataGetDTO>>) => {
           const result: siteData = {
-            first_element_date: http.response.result.first_element_date,
-            last_element_date: http.response.result.last_element_date,
-            has_variables: http.response.result.has_variables,
+            first_element_date: http.response.result.firstElementDate,
+            last_element_date: http.response.result.lastElementDate,
+            has_variables: http.response.result.variables,
             keywords: http.response.result.keywords,
           };
           this.documentFromSites.push([feature.properties.name, result]);

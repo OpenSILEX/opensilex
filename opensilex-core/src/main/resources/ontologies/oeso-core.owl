@@ -2905,6 +2905,13 @@ OESO</rdfs:label>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
@@ -3607,20 +3614,6 @@ OESO</rdfs:label>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://purl.org/dc/terms/modified"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://purl.org/dc/terms/publisher"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -3732,6 +3725,13 @@ OESO</rdfs:label>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasPart"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
                 <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#label"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -4954,8 +4954,8 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="fr">Groupe</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/security#hasCredential">
-        <rdfs:label xml:lang="fr">a compétence</rdfs:label>
         <rdfs:label xml:lang="en">has credential</rdfs:label>
+        <rdfs:label xml:lang="fr">a compétence</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Checking">
         <rdfs:label xml:lang="fr">Révision</rdfs:label>
@@ -4975,8 +4975,8 @@ OESO</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Incident">
         <rdfs:label xml:lang="en">Incident</rdfs:label>
-        <rdfs:label xml:lang="fr">Incident</rdfs:label>
         <rdfs:comment xml:lang="fr">Agit sur un objet scientifique</rdfs:comment>
+        <rdfs:label xml:lang="fr">Incident</rdfs:label>
         <rdfs:comment xml:lang="en">Concerns a scientific object</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Move">
@@ -5003,8 +5003,8 @@ OESO</rdfs:label>
         <rdfs:comment xml:lang="en">Indicate if the event is instantaneous or not</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator">
-        <rdfs:label xml:lang="fr">Actionneur</rdfs:label>
         <rdfs:label xml:lang="en">Actuator</rdfs:label>
+        <rdfs:label xml:lang="fr">Actionneur</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument">
         <rdfs:label xml:lang="fr">Document Administratif</rdfs:label>
@@ -5012,8 +5012,8 @@ OESO</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Archive">
         <rdfs:label xml:lang="fr">Archive</rdfs:label>
-        <rdfs:comment xml:lang="fr">Archive</rdfs:comment>
         <rdfs:label xml:lang="en">Archive</rdfs:label>
+        <rdfs:comment xml:lang="fr">Archive</rdfs:comment>
         <rdfs:comment xml:lang="en">Archive</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
@@ -5104,8 +5104,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility">
         <rdfs:label xml:lang="en">Facility</rdfs:label>
-        <rdfs:comment xml:lang="fr">Material facility like greenhouse, compartment, etc.</rdfs:comment>
         <rdfs:label xml:lang="fr">Installation environnementale</rdfs:label>
+        <rdfs:comment xml:lang="fr">Material facility like greenhouse, compartment, etc.</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
         <rdfs:comment xml:lang="fr">Un facteur d&apos;une expérience est une variable indépendante contrôlée; une variable dont les niveaux sont fixés par l&apos;expérimentateur.</rdfs:comment>
@@ -5116,8 +5116,8 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorCategory">
         <rdfs:comment xml:lang="fr">Terme structuré et contrôlé qui décrit les traitements, les conditions d&apos;étude et/ou les types d&apos;étude utilisés dans les expériences.</rdfs:comment>
         <rdfs:label xml:lang="en">Factor Category</rdfs:label>
-        <rdfs:label xml:lang="fr">Catégorie de facteur</rdfs:label>
         <rdfs:comment xml:lang="en">A structured term, controlled vocabulary which describes the treatments, study conditions, and/or study types used in experiments.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Catégorie de facteur</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorLevel">
         <rdfs:label xml:lang="fr">Niveau de facteur</rdfs:label>
@@ -5413,10 +5413,10 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">acronyme</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasVariablesGroup">
-        <rdfs:comment xml:lang="fr">Indique les groupes de variable environnementale associés à une installation</rdfs:comment>
         <rdfs:label xml:lang="fr">a un groupe de variables</rdfs:label>
-        <rdfs:label xml:lang="en">has variable group</rdfs:label>
+        <rdfs:comment xml:lang="fr">Indique les groupes de variable environnementale associés à une installation</rdfs:comment>
         <rdfs:comment xml:lang="en">Indicates environmental variable groups associated with a facility</rdfs:comment>
+        <rdfs:label xml:lang="en">has variable group</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#height">
         <rdfs:label xml:lang="fr">nombre de pixels en ligne (pixels)</rdfs:label>
@@ -5482,9 +5482,9 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">nombre de pixels en colonne (pixels)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#withinSite">
-        <rdfs:seeAlso xml:lang="fr">Similaire à &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
         <rdfs:label xml:lang="fr">Est situé à l&apos;intérieur du site</rdfs:label>
         <rdfs:comment xml:lang="fr">Indique le site dans lequel l&apos;installation environnementale est située</rdfs:comment>
+        <rdfs:seeAlso xml:lang="fr">Similaire à &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
         <rdfs:label xml:lang="en">Is located within site</rdfs:label>
         <rdfs:seeAlso xml:lang="en">Similar to &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
         <rdfs:comment xml:lang="en">Indicates the site in which the facility is located</rdfs:comment>
@@ -5561,8 +5561,8 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="fr">utilise</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.w3.org/ns/prov#wasGeneratedBy">
-        <rdfs:label xml:lang="fr">a été généré par</rdfs:label>
         <rdfs:label xml:lang="en">was generated by</rdfs:label>
+        <rdfs:label xml:lang="fr">a été généré par</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Organization">
         <rdfs:comment xml:lang="en">The Organization class represents a kind of Agent corresponding to social instititutions such as companies, societies etc.</rdfs:comment>

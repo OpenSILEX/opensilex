@@ -5,7 +5,7 @@
           v-bind:src="$opensilex.getResourceURI('images/smallLogo-insect.png')"
           class="header-brand-img"
           alt="lavalite"
-      />
+      /><br>
     </template>
   </opensilex-DefaultHeaderComponent>
 

@@ -25,6 +25,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -85,8 +86,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         this.dataDAO = new DataDaoV2(sparql, nosql, fs);
     }
 
-    public void delete(URI uri) throws Exception {
-        long linkedDataNb = getLinkedDataNb(uri);
+    public void delete(URI uri, AccountModel currentUser) throws Exception {
+        long linkedDataNb = getLinkedDataNb(uri, currentUser);
         if (linkedDataNb > 0) {
             throw new ForbiddenURIAccessException(uri, "Variable can't be deleted. " + linkedDataNb + " linked data");
         }
@@ -108,14 +109,15 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         sparql.executeDeleteQuery(delete);
     }
 
-    protected long getLinkedDataNb(URI uri) throws Exception {
+    protected long getLinkedDataNb(URI uri, AccountModel currentUser) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUri(uri);
+        dataSearchFilter.setUser(currentUser);
         return dataDAO.count(dataSearchFilter);
     }
 
     @Override
-    public VariableModel update(VariableModel instance) throws Exception {
+    public VariableModel update(VariableModel instance, AccountModel currentUser) throws Exception {
 
         VariableModel oldInstance = sparql.loadByURI(VariableModel.class, instance.getUri(), null, null);
         if (oldInstance == null) {
@@ -124,12 +126,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         // if the datatype has changed, check that they are no linked data
         if (!SPARQLDeserializers.compareURIs(oldInstance.getDataType(), instance.getDataType())) {
-            long linkedDataNb = getLinkedDataNb(instance.getUri());
+            long linkedDataNb = getLinkedDataNb(instance.getUri(), currentUser);
             if (linkedDataNb > 0) {
                 throw new ForbiddenURIAccessException(instance.getUri(), "Variable datatype can't be updated. " + linkedDataNb + " linked data");
             }
         }
-        return super.update(instance);
+        return super.update(instance, currentUser);
     }
 
     /*

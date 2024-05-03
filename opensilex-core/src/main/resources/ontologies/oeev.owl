@@ -336,6 +336,16 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Contamination"/>
+        <rdfs:label xml:lang="en">contaminant organisms</rdfs:label>
+        <rdfs:label xml:lang="fr">organismes contaminants</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeev#Contamination -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Contamination">
@@ -372,16 +382,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
         <rdfs:label xml:lang="en">Dysfunction</rdfs:label>
         <rdfs:label xml:lang="fr">Dysfunctionnement</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#Loss -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Loss">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
-        <rdfs:label xml:lang="en">Loss</rdfs:label>
-        <rdfs:label xml:lang="fr">Perte</rdfs:label>
     </owl:Class>
     
 
@@ -449,6 +449,17 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Installation">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
         <rdfs:label xml:lang="en">Installation of devices</rdfs:label>
+        <rdfs:label xml:lang="fr">Mise en place des appareils</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Loss -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Loss">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="en">Loss</rdfs:label>
+        <rdfs:label xml:lang="fr">Perte</rdfs:label>
     </owl:Class>
     
 
@@ -517,22 +528,14 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:label xml:lang="fr">Type de ravageur</rdfs:label>
     </owl:Class>
     
-    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeev#PestAttack -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PestAttack">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
         <rdfs:label xml:lang="fr">Attaque de ravageurs</rdfs:label>
         <rdfs:label xml:lang="en">Pest attack</rdfs:label>
-    </owl:Class>
-    
-    
-    <!-- http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Contamination"/>
-        <rdfs:label xml:lang="fr">organismes contaminants</rdfs:label>
-        <rdfs:label xml:lang="en">contaminant organisms</rdfs:label>
     </owl:Class>
     
 
@@ -542,6 +545,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PhenologyScoring">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
         <rdfs:label xml:lang="en">Observed phenology</rdfs:label>
+        <rdfs:label xml:lang="fr">Phénologie observée</rdfs:label>
     </owl:Class>
     
 

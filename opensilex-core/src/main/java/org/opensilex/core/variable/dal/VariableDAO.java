@@ -18,7 +18,8 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
@@ -76,15 +77,16 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         varsByVarName.put(unitLabelVar.getVarName(), unitLabelVar);
     }
 
-    protected final DataDAO dataDAO;
+    //TODO BLL, dont call other daos here
+    protected final DataDaoV2 dataDAO;
 
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         super(VariableModel.class, sparql);
-        this.dataDAO = new DataDAO(nosql, sparql, fs);
+        this.dataDAO = new DataDaoV2(sparql, nosql, fs);
     }
 
     public void delete(URI uri) throws Exception {
-        int linkedDataNb = getLinkedDataNb(uri);
+        long linkedDataNb = getLinkedDataNb(uri);
         if (linkedDataNb > 0) {
             throw new ForbiddenURIAccessException(uri, "Variable can't be deleted. " + linkedDataNb + " linked data");
         }
@@ -106,8 +108,10 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         sparql.executeDeleteQuery(delete);
     }
 
-    protected int getLinkedDataNb(URI uri) throws Exception {
-        return dataDAO.count(null, null, null, Collections.singletonList(uri), null, null, null, null, null, null, null, null);
+    protected long getLinkedDataNb(URI uri) throws Exception {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUri(uri);
+        return dataDAO.count(dataSearchFilter);
     }
 
     @Override
@@ -120,7 +124,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         // if the datatype has changed, check that they are no linked data
         if (!SPARQLDeserializers.compareURIs(oldInstance.getDataType(), instance.getDataType())) {
-            int linkedDataNb = getLinkedDataNb(instance.getUri());
+            long linkedDataNb = getLinkedDataNb(instance.getUri());
             if (linkedDataNb > 0) {
                 throw new ForbiddenURIAccessException(instance.getUri(), "Variable datatype can't be updated. " + linkedDataNb + " linked data");
             }

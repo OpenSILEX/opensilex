@@ -422,7 +422,7 @@ public class MetricDAO {
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
         }
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
 
         List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, experiments, null, null, null);
         Map<URI, VariableModel> tmpVariable = new HashMap<>();

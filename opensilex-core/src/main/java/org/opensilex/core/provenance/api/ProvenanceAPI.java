@@ -225,7 +225,7 @@ public class ProvenanceAPI {
         List<URI> provenances = new ArrayList<>();
         provenances.add(uri);
 
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
         DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(currentUser).setProvenances(provenances);

@@ -387,7 +387,7 @@ public class ScientificObjectAPI {
 
             //TODO this crushes the result of criteria search, how should this be handled?
             if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-                DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+                DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
                 var targets = dataDAO.getUsedTargets(currentUser, devices, variables, null);
                 if (targets.isEmpty()) {
                     return new PaginatedListResponse<>(Collections.emptyList()).getResponse();

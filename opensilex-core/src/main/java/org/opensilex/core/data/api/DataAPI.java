@@ -196,7 +196,7 @@ public class DataAPI {
     public Response addListData(
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         List<DataModel> dataList = new ArrayList<>();
         try {
             if (dtoList.size() > SIZE_MAX) {
@@ -274,7 +274,7 @@ public class DataAPI {
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
 
         try {
             DataModel model = dao.get(uri);
@@ -532,7 +532,7 @@ public class DataAPI {
         }
 
         Set<URI> dateVariables = getAllDateVariables();
-        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql, fs);
 
         // Paginated search : direct convert from model -> dto, no count of data
         ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
@@ -654,7 +654,7 @@ public class DataAPI {
         }
 
         CountOptions countOptions = new CountOptions().limit(countLimit);
-        long count = new DataDaoV2(sparql, nosql).count(null, filter, countOptions);
+        long count = new DataDaoV2(sparql, nosql, fs).count(null, filter, countOptions);
         return new SingleObjectResponse<>(count).getResponse();
     }
 
@@ -673,7 +673,7 @@ public class DataAPI {
             @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+            DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -697,7 +697,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         try {
             DataModel data = dao.get(uri);
             data.setConfidence(dto.getConfidence());
@@ -724,7 +724,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataUpdateDTO dto
     ) throws Exception {
 
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         try {
             DataModel model = dto.newModel();
             validData(Collections.singletonList(model));
@@ -760,7 +760,7 @@ public class DataAPI {
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
         filter.setExperiments(Collections.singletonList(experimentUri));
@@ -1233,7 +1233,7 @@ public class DataAPI {
             int page,
             int pageSize
     ) throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
 
         DataSearchFilter filter;
 
@@ -1823,7 +1823,7 @@ public class DataAPI {
             List<URI> variables,
             List<URI> devices) throws Exception {
 
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
         filter.setExperiments(experiments);
@@ -1861,7 +1861,7 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
         filter.setExperiments(experiments);
@@ -1895,7 +1895,7 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
@@ -2800,7 +2800,7 @@ public class DataAPI {
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
         Instant start, end;

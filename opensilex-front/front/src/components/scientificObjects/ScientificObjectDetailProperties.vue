@@ -84,6 +84,14 @@
         :ignoredProperties="[oeso.IS_HOSTED]"
         :additionalFieldProps="{ experiment }"
       ></opensilex-OntologyObjectProperties>
+
+      <!-- Metadata -->
+      <opensilex-MetadataView
+        v-if="selected.publisher && selected.publisher.uri"
+        :publisher="selected.publisher"
+        :publicationDate="selected.publication_date"
+        :lastUpdatedDate="selected.last_updated_date" 
+      ></opensilex-MetadataView>
     </b-card>
 
     <b-card v-for="(value, index) in objectByContext" :key="index">
@@ -120,6 +128,14 @@
               :ignoredProperties="[oeso.IS_HOSTED]"
               :additionalFieldProps="{ experiment: value.experiment }"
       ></opensilex-OntologyObjectProperties>
+
+      <!-- Metadata -->
+      <opensilex-MetadataView
+        v-if="value.publisher && value.publisher.uri"
+        :publisher="value.publisher"
+        :publicationDate="value.publication_date"
+        :lastUpdatedDate="value.last_updated_date" 
+      ></opensilex-MetadataView>
     </b-card>
   </div>
 </template>

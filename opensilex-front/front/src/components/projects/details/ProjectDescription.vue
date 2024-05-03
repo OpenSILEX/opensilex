@@ -68,6 +68,13 @@
             ></opensilex-UriListView>
             <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
             <opensilex-TextView label="component.project.description" :value="project.description"></opensilex-TextView>
+            <opensilex-MetadataView
+              v-if="project.publisher && project.publisher.uri"
+              :publisher="project.publisher"
+              :publicationDate="project.publication_date"
+              :lastUpdatedDate="project.last_updated_date" 
+            >
+            </opensilex-MetadataView>
           </template>
 
           <!--   <template v-slot:footer>
@@ -143,6 +150,7 @@ export default class ProjectDescription extends Vue {
   administrativeContactsList = [];
   relatedProjectsList = [];
   experimentName = "";
+  routeArr : string = this.$route.path.split('/');
   fields = [
     {
       key: "name",
@@ -170,6 +178,8 @@ export default class ProjectDescription extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    localStorage.setItem("tabPath", this.routeArr[2]);
+    localStorage.setItem("tabPage", "1");
     this.loadProject();
   }
 

@@ -19,10 +19,22 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
+
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
@@ -36,6 +48,15 @@ public class ExperimentGetDTO {
     
     @JsonProperty("uri")
     protected URI uri;
+
+    @JsonProperty("publisher")
+    private UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("name")
     protected String name;
@@ -82,16 +103,36 @@ public class ExperimentGetDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
-    @JsonProperty("record_author")
-    protected URI creator;
-    
-
     public URI getUri() {
         return uri;
     }
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     @Required
@@ -218,15 +259,6 @@ public class ExperimentGetDTO {
         this.factors = factors;
     }
 
-    @ApiModelProperty(value = "Experiment creator URI")
-    public URI getCreator() {
-        return creator;
-    }
-
-    public void setCreator(URI creator) {
-        this.creator = creator;
-    }
-
     protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
 
         if (models == null || models.isEmpty()) {
@@ -241,6 +273,12 @@ public class ExperimentGetDTO {
         ExperimentGetDTO dto = new ExperimentGetDTO();
 
         dto.setUri(model.getUri());
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
         dto.setName(model.getName());
         dto.setStartDate(model.getStartDate());
         dto.setObjective(model.getObjective());
@@ -257,7 +295,6 @@ public class ExperimentGetDTO {
         dto.setGroups(getUriList(model.getGroups()));
         dto.setSpecies(getUriList(model.getSpecies()));
         dto.setFactors(getUriList(model.getFactors()));
-        dto.setCreator(model.getCreator());
 
         List<NamedResourceDTO<OrganizationModel>> organizationsDTO = new ArrayList<>();
         model.getOrganizations().forEach((orga) -> {

@@ -60,7 +60,16 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :data="data" :disableValidation="disableValidation">
+        <component
+            ref="componentRef"
+            v-bind:is="component"
+            :editMode="editMode"
+            :form.sync="form"
+            :data="data"
+            :disableValidation="disableValidation"
+            @shownSelector="disableValidation=true"
+            @hideSelector="disableValidation=false"
+        >
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -79,6 +88,8 @@ export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
   reset?: () => void;
   tutorial?: () => void;
   setSelectorsToFirstTimeOpenAndSetLabels?: (objectsWithLabels : Array<any>) => void;
+  onShowEditForm?: () => void;
+  handleSubmitError?: (error) => void;
 }
 
 /**
@@ -94,6 +105,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("validatorRef") readonly validatorRef!: any;
+  @Ref("componentRef") readonly componentRef!: any;
 
   editMode = false;
 
@@ -170,44 +182,48 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   validate() {
-    this.validatorRef.validate().then(isValid => {
-      if (isValid) {
-        let submitMethod: any = this.getFormRef().create;
-        if (this.createAction) {
-          submitMethod = this.createAction;
-        }
-        let successEvent = "onCreate";
-        if (this.editMode) {
-          if (this.updateAction) {
-            submitMethod = this.updateAction;
-          } else {
-            submitMethod = this.getFormRef().update;
+    if(!this.disableValidation){
+      this.validatorRef.validate().then(isValid => {
+        if (isValid) {
+          let submitMethod: any = this.getFormRef().create;
+          if (this.createAction) {
+            submitMethod = this.createAction;
+          }
+          let successEvent = "onCreate";
+          if (this.editMode) {
+            if (this.updateAction) {
+              submitMethod = this.updateAction;
+            } else {
+              submitMethod = this.getFormRef().update;
+            }
+
+            successEvent = "onUpdate";
           }
 
-          successEvent = "onUpdate";
+          let submitResult: any = submitMethod(this.form);
+          if (!(submitResult instanceof Promise)) {
+            submitResult = Promise.resolve(submitResult);
+          }
+          submitResult
+              .then(result => {
+                if (result !== false && result !== undefined) {
+                  this.creationOrUpdateMessage();
+                }
+                this.$nextTick(() => {
+                  if (result !== false) {
+                    this.$emit(successEvent, result);
+                  }
+                  if (result !== false || !this.doNotHideOnError) {
+                    this.hide();
+                  }
+                });
+              })
+              .catch((error) => {
+                this.getFormRef().handleSubmitError?.(error)
+              });
         }
-
-        let submitResult: any = submitMethod(this.form);
-        if (!(submitResult instanceof Promise)) {
-          submitResult = Promise.resolve(submitResult);
-        }
-        submitResult
-          .then(result => {
-            if (result !== false && result !== undefined) {
-              this.creationOrUpdateMessage();
-            }
-            this.$nextTick(() => {
-              if (result !== false) {
-                this.$emit(successEvent, result);
-              }
-              if (result !== false || !this.doNotHideOnError) {
-                this.hide();
-              }
-            });
-          })
-          .catch(console.error);
-      }
-    });
+      });
+    }
   }
 
   creationOrUpdateMessage() {
@@ -278,6 +294,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
       if (this.getFormRef().reset) {
         this.getFormRef().reset();
       }
+      if(this.getFormRef().onShowEditForm){
+        this.getFormRef().onShowEditForm();
+      }
     });
   }
 
@@ -322,3 +341,12 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 }
 
 </style>;
+
+<i18n>
+en:
+    Move:
+        fieldRequired: Location or position field required
+fr:
+    Move:
+        fieldRequired: Veuillez saisir les informations de localisation ou de position
+</i18n>

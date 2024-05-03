@@ -1,9 +1,9 @@
 <template>
   <opensilex-FormField
-    :rules="rules"
-    :required="required"
+    :rules="isMove ? 'containsPoint|wkt' : 'wkt'"
     :label="label"
     :helpMessage="helpMessage"
+    :isMove="isMove"
     :vid="vid"
   >
     <template v-slot:field="field">
@@ -72,7 +72,8 @@ export default class GeometryForm extends Vue {
   @Prop()
   disabled: boolean;
 
-  rules = "wkt";
+  @Prop({ default: false })
+  isMove: boolean
 
   @Prop()
   vid;

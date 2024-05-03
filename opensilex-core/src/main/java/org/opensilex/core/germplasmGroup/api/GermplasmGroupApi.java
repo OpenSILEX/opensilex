@@ -12,9 +12,6 @@ import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupCreationDTO;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupGetDTO;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupUpdateDTO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -23,7 +20,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
@@ -62,6 +59,8 @@ import static org.opensilex.core.germplasmGroup.api.GermplasmGroupApi.PATH;
 public class GermplasmGroupApi {
     public static final String PATH = "/core/germplasm_group";
 
+    public static final String GROUP_EXAMPLE_URI = "opensilex-sandbox:id/germplasmGroup/test";
+
     @CurrentUser
     AccountModel currentUser;
 
@@ -88,7 +87,6 @@ public class GermplasmGroupApi {
         try {
             GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
             GermplasmGroupModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
             model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
@@ -227,7 +225,7 @@ public class GermplasmGroupApi {
                 .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.search(
-                filter,false
+                filter,false, false
         );
 
         // Convert paginated list to DTO

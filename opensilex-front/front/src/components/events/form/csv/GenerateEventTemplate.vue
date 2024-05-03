@@ -30,6 +30,7 @@
                             :required="false"
                             :baseType="isMove ? this.$opensilex.Oeev.MOVE_TYPE_URI : this.$opensilex.Oeev.EVENT_TYPE_URI"
                             :ignoreRoot="false"
+                            :unselectableTypes="isMove ? [] : [this.$opensilex.Oeev.MOVE_TYPE_URI]"
                             placeholder="Event.type-placeholder"
                         ></opensilex-TypeForm>
                     </b-col>
@@ -172,7 +173,17 @@ export default class GenerateEventTemplate extends Vue {
 
     generateCSV(typeModels) {
 
-      let headers = ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"];
+      let headers = (this.isMove ?
+        ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"] :
+        [
+          "uri",
+          "rdfType",
+          this.$opensilex.getShortUri(this.$opensilex.Oeev.IS_INSTANT),
+          this.$opensilex.getShortUri(this.$opensilex.Time.HAS_BEGINNING),
+          this.$opensilex.getShortUri(this.$opensilex.Time.HAS_END),
+          this.$opensilex.getShortUri(this.$opensilex.Oeev.CONCERNS),
+          this.$opensilex.getShortUri(this.$opensilex.Rdfs.COMMENT),
+        ]);
 
       // list of properties URI to exclude from custom properties
       let managedProperties = [

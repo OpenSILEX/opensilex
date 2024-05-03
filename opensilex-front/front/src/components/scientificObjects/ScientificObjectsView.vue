@@ -83,6 +83,7 @@
                   :experiments.sync="filter.experiment"
                   class="searchFilter"
                   @handlingEnterKey="soList.refresh()"
+                  :key="resetExperimentSelectorKey"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
               </div>
@@ -105,15 +106,11 @@
 
               <!-- Germplasm -->
               <div>
-              <opensilex-FilterField>
-                <opensilex-GermplasmSelector
-                  :multiple="false"
-                  :germplasm.sync="filter.germplasm"
-                  :experiment="filter.experiment"
-                  class="searchFilter"
-                  @handlingEnterKey="soList.refresh()"
-                ></opensilex-GermplasmSelector>
-              </opensilex-FilterField>
+                <opensilex-FilterField quarterWidth="false">
+                  <opensilex-GermplasmSelectorWithFilter
+                      :germplasmsUris.sync="filter.germplasm"
+                  ></opensilex-GermplasmSelectorWithFilter>
+                </opensilex-FilterField>
               </div>
 
               <!-- Factors levels -->
@@ -128,6 +125,7 @@
                     :factorLevels.sync="filter.factorLevels"
                     :multiple="true"
                     :required="false"
+                    :key="resetFactorLevelSelectorKey"
                     class="searchFilter"
                   ></opensilex-FactorLevelSelector>
                 </b-form-group>
@@ -154,6 +152,19 @@
                   class="searchFilter"
                 ></opensilex-DateForm>
               </opensilex-FilterField>
+              </div>
+
+              <!-- Criteria search -->
+              <div>
+                <opensilex-FilterField quarterWidth="false">
+                  <opensilex-CriteriaSearchModalCreator
+                      class="searchFilter"
+                      ref="criteriaSearchCreateModal"
+                      :criteria_dto.sync="filter.criteriaDto"
+                      :required="false"
+                      :requiredBlue="false"
+                  ></opensilex-CriteriaSearchModalCreator>
+                </opensilex-FilterField>
               </div>
             </template>
           </opensilex-SearchFilterField>
@@ -203,6 +214,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
+import CriteriaSearchModalCreator from "./CriteriaSearchModalCreator.vue";
 
 @Component
 export default class ScientificObjectsView extends Vue {
@@ -215,6 +227,7 @@ export default class ScientificObjectsView extends Vue {
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
   @Ref("soList") readonly soList!: any;
+  @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
 
   selectedUris: Array<string> = [];
 
@@ -228,12 +241,16 @@ export default class ScientificObjectsView extends Vue {
   filter = {
     name: "",
     experiment: undefined,
-    germplasm: undefined,
+    germplasm: [],
     factorLevels: [],
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
+    criteriaDto: {criteria_list:[]}
   };
+
+  resetExperimentSelectorKey = 0;
+  resetFactorLevelSelectorKey = 0;
 
   data(){
     return {
@@ -244,8 +261,6 @@ export default class ScientificObjectsView extends Vue {
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
   }
-
-
 
   redirectToDetail(http) {
     this.$router.push({
@@ -304,13 +319,17 @@ export default class ScientificObjectsView extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: undefined,
+      germplasm: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
+      criteriaDto: {criteria_list:[]}
     };
+    this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     this.soList.refresh();
+    this.resetExperimentSelectorKey++;
+    this.resetFactorLevelSelectorKey++;
   }
 }
 </script>

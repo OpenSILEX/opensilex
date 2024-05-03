@@ -1,47 +1,57 @@
 # Install OpenSILEX in production
 
-- [Install OpenSILEX in production](#install-opensilex-in-production)
-- [Pre-requesites](#pre-requesites)
-  - [Operating System](#operating-system)
-  - [Java](#java)
-  - [Set up MongoDB](#set-up-mongodb)
-  - [Set up a triplestore](#set-up-a-triplestore)
-    - [RDF4J](#rdf4j)
-    - [GraphDB](#graphdb)
-- [Installation](#installation)
-  - [Set up a user](#set-up-a-user)
-  - [Create directories](#create-directories)
-  - [Download \& extract OpenSILEX production release](#download--extract-opensilex-production-release)
-  - [Configuration](#configuration)
-    - [Create main configuration file](#create-main-configuration-file)
-    - [Configure logging](#configure-logging)
-  - [Initialize database and check configuration](#initialize-database-and-check-configuration)
-    - [Create a script to access instructions](#create-a-script-to-access-instructions)
-    - [Add an alias](#add-an-alias)
-    - [Initialize your triplestore](#initialize-your-triplestore)
-  - [Start openSilex](#start-opensilex)
-  - [Stop openSilex](#stop-opensilex)
-  - [Add a Reverse Proxy Nginx to redirect application on port 80](#add-a-reverse-proxy-nginx-to-redirect-application-on-port-80)
+<!-- TOC -->
+* [Install OpenSILEX in production](#install-opensilex-in-production)
+* [Using the ready to use Docker](#using-the-ready-to-use-docker)
+* [Pre-requisites](#pre-requisites)
+  * [Operating System](#operating-system)
+  * [Java](#java)
+  * [Set up MongoDB](#set-up-mongodb)
+  * [Set up a triplestore](#set-up-a-triplestore)
+    * [RDF4J](#rdf4j)
+    * [GraphDB](#graphdb)
+* [Installation](#installation)
+  * [Set up a user](#set-up-a-user)
+  * [Create directories](#create-directories)
+  * [Download & extract OpenSILEX production release](#download--extract-opensilex-production-release)
+  * [Configuration](#configuration)
+    * [Create main configuration file](#create-main-configuration-file)
+    * [Configure logging](#configure-logging)
+  * [Initialize database and check configuration](#initialize-database-and-check-configuration)
+    * [Create a script to access instructions](#create-a-script-to-access-instructions)
+    * [Add an alias](#add-an-alias)
+    * [Initialize your triplestore](#initialize-your-triplestore)
+  * [Start OpenSILEX](#start-opensilex)
+  * [Stop OpenSILEX](#stop-opensilex)
+  * [Add a Reverse Proxy Nginx to redirect application on port 80](#add-a-reverse-proxy-nginx-to-redirect-application-on-port-80)
+<!-- TOC -->
 
-# Pre-requesites
+# Using the ready to use Docker
+
+Before reading this document, you can check the [docker container for OpenSILEX ](https://github.com/OpenSILEX/opensilex-docker-compose)
+This docker container allows you to install and configure OpenSILEX and all required databases (RDF4J and MongoDB) within only a few steps.
+
+If you prefer a fine tuned control on the installed databases or if you prefer a custom installation, you are at the right place !
+
+# Pre-requisites
 
 ## Operating System
 
-OpenSILEX should work on any system where the required softwares are available but we recommend using Linux for production installation.
+OpenSILEX should work on any system where the required pieces of software are available, but we recommend using Linux for a production installation.
 
-Commands in this document should work on any Debian-like distribution (with sudo configured) but should be easily adapted for any Linux distributions
+The commands in this document should work on any Debian-like distribution (configured with sudo) but can be easily adapted for any Linux distribution.
 
 ## Java
 
-You need at least [Java JDK 8+](https://jdk.java.net/) installed on the server operating system.
+You need at least [Java JDK 11+](https://jdk.java.net/) installed on the server.
 
-You can install it on linux with the following command:
+You can install it on Linux with the following command:
 
 ```
-sudo apt install openjdk-11-jdk
+sudo apt install openjdk-11-jdk openjdk-11-jre
 ```
 
-You can check java installation and version with the following command:
+You can check Java installation and version with the following command:
 
 ```
 java --version
@@ -49,59 +59,68 @@ java --version
 
 ## Set up MongoDB
 
-Please follow MongoDB official install documentation for your operating system.
+Please follow MongoDB's official install documentation specific to your operating system.
 
 [Install MongoDB 4.2+](https://docs.mongodb.com/manual/installation/)
 
-/!\ CAUTION /!\
+/!\ **CAUTION** /!\
 
-You must start a MongoDB Replica Set to allow transaction usage with MongoDB.
+You must start a MongoDB Replica Set to allow transaction usage with MongoDB. This requires the use of a MongoDB server with a version >= 4.2.
+To do so you need to start the MongoDB daemon with the option `--replSet opensilex`. `opensilex` stands for your replica set name and can be modified at your own will.
+Look at this [documentation](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/#considerations-when-deploying-a-replica-set)
+for more information about replica set.
 
-So you need to start MongoDB daemon with option `--replSet opensilex`.
+We recommend the use of this [MongoDB Docker image](https://hub.docker.com/_/mongo). More
+documentation for this image [here](https://www.mongodb.com/compatibility/deploying-a-mongodb-cluster-with-docker)
 
-`opensilex` meaning the name of your replica set and it can be changed.
-
-Look to this [documentation](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/#considerations-when-deploying-a-replica-set) for more information about replica set.
-
-You can also use this docker image: [mongo](https://hub.docker.com/_/mongo)
-
-Linux example command:
+> Linux example command
 
 ```
-sudo docker run -d mongo:4.2.3-bionic --replSet opensilex
+docker network create mongoCluster
+docker run -d --rm -p 27017:27017 --name mongo_opensilex --network mongoCluster mongo:5 mongod --replSet opensilex --bind_ip localhost,mongo_opensilex
 ```
+
+- The MongoDB exposed port is `27017`
+- A replica set named `opensilex` is created
+- The docker container name is `mongo_opensilex`
+- The docker container uses a network called `mongoCluster`
 
 ## Set up a triplestore
 
 You can use [RDF4J](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
 
-You can find [here](https://db-engines.com/en/system/GraphDB%3BRDF4J) a quick comparison of both triplestores engine.
+You can find a quick comparison of both triplestore engines [here](https://db-engines.com/en/system/GraphDB%3BRDF4J).
 
 Please refer to their websites for more information.
 
 ### RDF4J
 
 For RDF4J you first need to set up and configure a Servlet Container server like [Tomcat](http://tomcat.apache.org/).
-
-And then follow their [documentation](https://rdf4j.org/documentation/server-workbench-console/) .
+And then follow [RDF4J's documentation](https://rdf4j.org/documentation/server-workbench-console/) .
 
 You can also use this docker image: [eclipse/rdf4j-workbench](https://hub.docker.com/r/eclipse/rdf4j-workbench)
 
-Linux example command:
+> Linux example command
 
 ```bash
-sudo docker run -d eclipse/rdf4j-workbench
+sudo docker run -d -p 8080:8080 -e JAVA_OPTS="-Xms4g -Xmx4g" \
+	-v data:/var/rdf4j -v logs:/usr/local/tomcat/logs eclipse/rdf4j-workbench:3.7.7
 ```
+
+- The RDF4J exposed port is `8080`
+- RDF4J data will be stored in `/var/rdf4j` in the docker host
+- Tomcat server logs in `/usr/local/tomcat/logs` in the docker host
+- `4GB` of RAM memory are allocated for the JVM's heap
 
 ### GraphDB
 
-Ontotext - GraphDB exists in a free version and can be used as an alternative for RDF4J.
+A free version of GraphDB is available and can be used as an alternative to RDF4J.
 
-Please follow their [documentation](http://graphdb.ontotext.com/documentation/free/installation.html) to install it.
+Please follow their [documentation](https://graphdb.ontotext.com/documentation/) to install it.
 
 You can also use this docker image: [ontotext/graphdb](https://hub.docker.com/r/ontotext/graphdb)
 
-Linux example command:
+> Linux example command:
 
 ```bash
 sudo docker run -d ontotext/graphdb
@@ -109,17 +128,17 @@ sudo docker run -d ontotext/graphdb
 
 # Installation
 
-All directories and user names in this installation procedure can be changed but you need to change the configuration accordingly to make it work.
+All directories and usernames in this installation procedure can be changed, but you need to change the configuration accordingly in order to make it work.
 
 ## Set up a user
 
-Create a user with it's home directory:
+Create a user with its home directory:
 
 ```
 sudo useradd -s /bin/bash -d /home/opensilex/ -m opensilex
 ```
 
-Set up a password to your new user:
+Set up a password for your new user:
 
 ```
 sudo passwd opensilex
@@ -131,7 +150,7 @@ Give sudo permissions to this user :
 sudo usermod -a -G sudo opensilex
 ```
 
-Connect with this user and the defined password:
+Connect with this username and the defined password:
 
 ```
 su - opensilex
@@ -163,29 +182,30 @@ Directory for OpenSILEX file logs:
 mkdir -p /home/opensilex/logs
 ```
 
-## Download & extract OpenSILEX production release
+## Download & extract the OpenSILEX production release
 
-Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases/latest)
-In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
-Extract the downloaded zip file into `/home/opensilex/bin`
+Please download the OpenSILEX latest release archive
+on [GitHub](https://github.com/OpenSILEX/opensilex/releases/latest).
 
-Linux example commands:
+In this paragraph, `<X.Y.Z>` corresponds to the specific OpenSILEX release version.
+Extract the downloaded ZIP file into `/home/opensilex/bin`
+
+> Linux example commands:
 
 ```
 cd /home/opensilex/bin
 wget https://github.com/OpenSILEX/opensilex/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
 unzip opensilex-X.Y.Z.zip
-
 ```
 
-For latest version - go to [Latest version](https://github.com/OpenSILEX/opensilex/releases/latest)
+For the latest version - go to [Latest version](https://github.com/OpenSILEX/opensilex/releases/latest)
 
-Exemple with 1.0.0-rc+7 version
+Example with version 1.1.1:
 
 ```bash
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex/releases/download/1.0.0-rc+7/opensilex-release-1.0.0-rc+7.zip
-unzip opensilex-release-1.0.0-rc+7.zip
+wget https://github.com/OpenSILEX/opensilex/releases/download/1.1.1/opensilex-release-1.1.1.zip
+unzip opensilex-release-1.1.1.zip
 ```
 
 You should get the following directory structure:
@@ -214,9 +234,9 @@ You should get the following directory structure:
 ### Create main configuration file
 
 Create a YML file in `/home/opensilex/config` named `opensilex.yml` for example.
-It could be any name you want if you want to work with multiple configurations.
+If you want to work with multiple configurations you can name this file differently.
 
-Here is a minimal example of configuration content, where all values must be adapted to your setup:
+Here is a minimal configuration example, containing all values which must be adapted to your setup:
 
 ```yml
 ontologies:
@@ -252,9 +272,9 @@ Set the path property to reflect your installation:
 <property name="log.path" value="/home/opensilex/logs"/>
 ```
 
-We use Java Logback library for logging in our application, please read their [documentation](http://logback.qos.ch/manual/) to configure it.
+For Logging we use the Java Logback library in our application. Please read their [documentation](http://logback.qos.ch/manual/) to tailor its configuration to your needs.
 
-By default logs will be printed to the console output and writen into a rotating daily log file stored for 30 days.
+By default, the logs will be printed to the console output and written into a rotating daily log file stored for 30 days.
 
 ## Initialize database and check configuration
 
@@ -322,12 +342,12 @@ This instruction creates the repository (with the name defined in the configurat
 
 **GraphDB**
 
-If your want to use graphDB, you must update some part of your `opensilex.yml` config file as following :
+If you want to use GraphDB, you must update the following parts of your `opensilex.yml` config file:
 
 ```yml
 ontologies:
   baseURI: http://opensilex.dev/
-  baseURIAlias: test
+  baseURIAlias: os
   sparql:
     implementation: org.opensilex.sparql.rdf4j.graphdb.OntotextGraphDBServiceFactory
     config:
@@ -336,9 +356,9 @@ ontologies:
       repositoryType: graphdb:FreeSailRepository
 ```
 
-Note the value for the setting `repositoryType` depends on your graphdb version (free, standard or entreprise).
+**Note :** the value for the setting `repositoryType` depends on your GraphDB version (free, standard or entreprise).
 
-You can see the following links for more details about repository configuration :
+You can follow these links for more details about repository configuration :
 
 - https://graphdb.ontotext.com/documentation/9.11/standard/configuring-a-repository.html#configuration-parameters
 - https://graphdb.ontotext.com/documentation/9.11/enterprise/configuring-a-repository.html#configuration-parameters
@@ -364,7 +384,7 @@ This instruction creates a user "admin@opensilex.org" with the password "admin"
 opensilex user add --admin
 ```
 
-More about user
+More information about the command
 
 ```
 opensilex user add --help
@@ -382,7 +402,7 @@ opensilex server start --host=192.168.178.31 --port=8081 --adminPort=4081
 opensilex server stop --host=192.168.178.31 --adminPort=4081
 ```
 
-## Add a Reverse Proxy Nginx to redirect application on port 80
+## Add a Reverse Proxy Nginx to redirect the application on port 80
 
 Instructions
 

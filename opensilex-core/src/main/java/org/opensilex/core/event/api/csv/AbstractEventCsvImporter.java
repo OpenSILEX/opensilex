@@ -12,7 +12,7 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -77,7 +77,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         validation = new CSVValidationModel();
 
         managedProperties = sparql.getMapperIndex().getForClass(EventModel.class)
-                .getClassAnalizer()
+                .getClassAnalyzer()
                 .getManagedProperties().stream().map(property -> URIDeserializer.formatURIAsStr(property.getURI()))
                 .collect(Collectors.toSet());
     }
@@ -95,7 +95,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         return EVENT_HEADER;
     }
 
-    public void readFile(boolean validateOnly) throws Exception {
+    public void readFile() throws Exception {
 
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
@@ -116,7 +116,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             csvReader.parseNext();
 
             if(! validation.hasErrors()){
-                readAndValidateBody(csvReader,validateOnly, customProperties);
+                readAndValidateBody(csvReader, customProperties);
             }
 
         }catch (IOException | URISyntaxException | ParseException e){
@@ -207,7 +207,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         return csvHeader;
     }
 
-    private void readAndValidateBody(CsvParser csvReader,boolean validateOnly, List<URI> customProperties) throws Exception {
+    private void readAndValidateBody(CsvParser csvReader, List<URI> customProperties) throws Exception {
 
         String[] row;
 
@@ -223,9 +223,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
             AtomicInteger colIndex = new AtomicInteger(0);
             readAndValidateRow(model,row,rowIndex,colIndex,customProperties,classesByType,missedPropertiesByType);
-            if(! validateOnly){
-                models.add(model);
-            }
+            models.add(model);
             rowIndex++;
             colIndex.set(0);
         }
@@ -357,7 +355,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                                       Map<URI,ClassModel> classesByTypeIndex,
                                       Map<URI,List<URI>> missedPropertiesByType
     ) throws Exception {
-
         readCommonsProps(model,row,rowIndex,colIndex);
         readCustomProps(model,row,rowIndex,colIndex,customProperties,classesByTypeIndex,missedPropertiesByType);
     }
@@ -378,7 +375,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get(), "No value for column",header);
                 validation.addInvalidValueError(cell);
             });
-
             return;
         }
 
@@ -454,7 +450,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
         String description = row[colIndex.getAndIncrement()];
         model.setDescription(description);
-        model.setCreator(user.getUri());
 
     }
 }

@@ -46,7 +46,7 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
     public SparqlNoProxyFetcher(Class<T> objectClass, SPARQLService sparql) throws Exception {
         this.constructor = objectClass.getConstructor();
         this.mapperIndex = sparql.getMapperIndex();
-        this.classAnalyzer = mapperIndex.getForClass(objectClass).getClassAnalizer();
+        this.classAnalyzer = mapperIndex.getForClass(objectClass).getClassAnalyzer();
         classesCache = new PatriciaTrie<>();
     }
 
@@ -139,7 +139,7 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
             }
         }
         // set nested object type
-        nestedObject.setType(mapperIndex.getForClass(fieldType).getClassAnalizer().getRdfTypeURI());
+        nestedObject.setType(mapperIndex.getForClass(fieldType).getClassAnalyzer().getRdfTypeURI());
 
         // set nested object type label
         ClassModel nestedObjectClass = getClassModel(nestedObject.getType());

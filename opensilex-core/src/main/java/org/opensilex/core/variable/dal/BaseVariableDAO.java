@@ -161,12 +161,12 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      * @return A List of objects of type T.
      */
     public List<T> getListForExport(List<URI> uris, String lang) throws Exception {
-        Map<String,Boolean> fieldsToFetch = new HashMap<>();
-        fieldsToFetch.put(VariableModel.SPECIES_FIELD_NAME, true);
-        fieldsToFetch.put(BaseVariableModel.EXACT_MATCH_FIELD, true);
-        fieldsToFetch.put(BaseVariableModel.NARROW_MATCH_FIELD, true);
-        fieldsToFetch.put(BaseVariableModel.BROAD_MATCH_FIELD, true);
-        fieldsToFetch.put(BaseVariableModel.CLOSE_MATCH_FIELD, true);
+        Set<String> fieldsToFetch = new HashSet<>();
+        fieldsToFetch.add(VariableModel.SPECIES_FIELD_NAME);
+        fieldsToFetch.add(BaseVariableModel.EXACT_MATCH_FIELD);
+        fieldsToFetch.add(BaseVariableModel.NARROW_MATCH_FIELD);
+        fieldsToFetch.add(BaseVariableModel.BROAD_MATCH_FIELD);
+        fieldsToFetch.add(BaseVariableModel.CLOSE_MATCH_FIELD);
 
 
         return sparql.getListByURIs(

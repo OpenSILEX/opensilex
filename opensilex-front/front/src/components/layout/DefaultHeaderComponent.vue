@@ -1,4 +1,5 @@
 <template>
+<div>
   <div class="header-top" header-theme="light">
     <router-link :to="{path: '/'}" :title="$t('component.menu.backToDashboard')">
       <div class="app-logo">
@@ -67,7 +68,7 @@
         <div>
           <div>
             <b-dropdown
-              id="langDropdown"
+              class="langDropdown"
               :title="`language - ${this.language}`"
               variant="link"
               right
@@ -116,7 +117,7 @@
 
             <!--language button -->
             <b-dropdown
-              id="langDropdown" 
+              class="langDropdown" 
               :title="`language - ${this.language}`"
               variant="link"
               right
@@ -159,7 +160,8 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> 
+</div>
 </template>
 
 <script lang="ts">
@@ -167,6 +169,7 @@ import { Component, Prop, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
+import store from "../../models/Store";
 
 
 @Component
@@ -271,7 +274,7 @@ export default class DefaultHeaderComponent extends Vue {
     this.$store.commit("lang", lang);
   }
 
-    /**
+  /**
    * Hide the header burger at start
    */
   data(){
@@ -299,6 +302,7 @@ export default class DefaultHeaderComponent extends Vue {
   }
 
   width;
+
   created() {
     window.addEventListener("resize", this.handleResize);
     this.handleResize();

@@ -8,6 +8,9 @@ package org.opensilex.sparql.response;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
@@ -56,6 +59,39 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    //Some utility recursive methods
+    /**
+     * Returns true if every node verifies the predicate
+     * @param predicate, the predicate to apply to every node
+     */
+    public boolean allMatch(Predicate<ResourceTreeDTO> predicate) {
+        if (!predicate.test(this)) {
+            return false;
+        }
+        for (var child : this.children) {
+            if (!child.allMatch(predicate)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Visits every node of tree and applies consumer
+     * @param consumer to apply
+     * @param includeThis sais if consumer should be applied to root node
+     */
+    public void visit(Consumer<ResourceTreeDTO> consumer, boolean includeThis){
+        if(includeThis){
+            consumer.accept(this);
+        }
+        if (getChildren() != null) {
+            getChildren().forEach(
+                    child -> child.visit(consumer, true)
+            );
+        }
     }
 
     public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(List<SPARQLTreeListModel<?>>trees) {

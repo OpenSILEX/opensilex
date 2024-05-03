@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" size="xl" :static="true">
+  <b-modal ref="modalRef" size="xl" :static="true" @hide='$emit("hide")'>
     <template v-slot:modal-title>
       <i class="ik ik-search mr-1"></i>
       {{ $t('GermplasmList.selectLabel') }}
@@ -25,6 +25,7 @@
           :noActions="true"
           :pageSize="5"
           :noUpdateURL="true"
+          :experimentUri="experiment"
           @select="$emit('select', $event)"
           @unselect="$emit('unselect', $event)"
           @selectall="$emit('selectall', $event)"
@@ -41,6 +42,12 @@ import GermplasmList from "./GermplasmList.vue";
 export default class GermplasmModalList extends GermplasmList {
   @Ref("germplasmSelection") readonly germplasmSelection!: any;
 
+  /**
+   * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
+   */
+  @Prop()
+  experiment: string;
+
   selectItem(row) {
       this.germplasmSelection.onItemSelected(row);
   }
@@ -54,6 +61,7 @@ export default class GermplasmModalList extends GermplasmList {
 
   show() {
     let modalRef: any = this.$refs.modalRef;
+    this.$emit("shown");
     modalRef.show();
   }
 

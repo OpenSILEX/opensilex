@@ -2,12 +2,12 @@ package org.opensilex.core.device.dal;
 
 import org.bson.Document;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SparqlSearchFilter;
+import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.LocalDate;
 
-public class DeviceSearchFilter extends SparqlSearchFilter {
+public class DeviceSearchFilter extends SearchFilter {
 
     private String namePattern;
     private URI rdfType;
@@ -18,7 +18,6 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
     private String brandPattern;
     private String modelPattern;
     private String snPattern;
-    private Document metadata;
     private AccountModel currentUser;
 
     public DeviceSearchFilter() {
@@ -103,15 +102,6 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
 
     public DeviceSearchFilter setSnPattern(String snPattern) {
         this.snPattern = snPattern;
-        return this;
-    }
-
-    public Document getMetadata() {
-        return metadata;
-    }
-
-    public DeviceSearchFilter setMetadata(Document metadata) {
-        this.metadata = metadata;
         return this;
     }
 

@@ -36,7 +36,7 @@
       icon="fa#seedling"
       modalSize="lg"
       @onCreate="germplasmList.refresh()"
-      @onUpdate="germplasmList.refresh()"
+      @onUpdate="germplasmList.updateSelectedGermplasm()"
     ></opensilex-ModalForm>
     <b-modal ref="helpModal" size="xl" hide-header hide-footer>
       <opensilex-GermplasmHelp @hideBtnIsClicked="hide()"></opensilex-GermplasmHelp>
@@ -48,10 +48,11 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { GermplasmService, GermplasmCreationDTO, GermplasmUpdateDTO, GermplasmGetSingleDTO } from "opensilex-core/index"
+import { GermplasmService, GermplasmCreationDTO, GermplasmUpdateDTO, GermplasmGetSingleDTO, GermplasmGetAllDTO } from "opensilex-core/index"
 import VueRouter from "vue-router";
 import GermplasmForm from "./GermplasmForm.vue";
+import ModalForm from '../common/forms/ModalForm.vue';
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class GermplasmView extends Vue {
@@ -69,7 +70,7 @@ export default class GermplasmView extends Vue {
   }
   
   @Ref("modalRef") readonly modalRef!: any;
-  @Ref("germplasmForm") readonly germplasmForm!: any;
+  @Ref("germplasmForm") readonly germplasmForm!: ModalForm<GermplasmForm, GermplasmCreationDTO, GermplasmUpdateDTO>;
   @Ref("germplasmList") readonly germplasmList!: any;
   @Ref("germplasmDetails") readonly germplasmDetails!: any;
   @Ref("germplasmAttributesForm") readonly germplasmAttributesForm!: any;
@@ -85,22 +86,21 @@ export default class GermplasmView extends Vue {
     this.$router.push({ path: '/germplasm/create' });
   }  
 
-  editGermplasm(uri: string) {
-    console.debug("editGermplasm " + uri);
+  async editGermplasm(uri: string) {
     this.service
       .getGermplasm(uri)
       .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
         let form: GermplasmForm = this.germplasmForm.getFormRef();
         form.readAttributes(http.response.result.metadata);
-
-        this.germplasmForm.showEditForm(http.response.result);
-        
+        //Take the has_parent_germplasm properties from the GermplasmGetSingleDTO and put the correct uris into the relations attribute of GermplasmUpdateDTO
+        //The labels will be loaded with another service call inside the GermplasmForm component
+        let resultWithRelationsField : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(http.response.result);
+        this.germplasmForm.showEditForm(resultWithRelationsField);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
   deleteGermplasm(uri: string) {
-    console.debug("deleteGermplasm " + uri);
     this.service
       .deleteGermplasm(uri)
       .then(() => {

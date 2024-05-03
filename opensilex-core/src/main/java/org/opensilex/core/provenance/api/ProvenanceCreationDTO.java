@@ -8,18 +8,22 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
+
+import java.net.URI;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Provenance Creation DTO
@@ -58,6 +62,15 @@ public class ProvenanceCreationDTO {
      */
     @JsonProperty("prov_agent")
     protected List<AgentModel> agents;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("issued")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("modified")
+    protected OffsetDateTime lastUpdatedDate;
 
     public URI getUri() {
         return uri;
@@ -99,12 +112,41 @@ public class ProvenanceCreationDTO {
         this.agents = agents;
     }
 
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     public ProvenanceModel newModel() throws ParseException, UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         ProvenanceModel model = new ProvenanceModel();
         model.setUri(uri);
         model.setName(name);
         model.setDescription(description);
-        
+        if (Objects.nonNull(publisher) && Objects.nonNull(publisher.getUri())) {
+            model.setPublisher(publisher.getUri());
+        }
+        if (Objects.nonNull(publicationDate)) {
+            model.setPublicationDate(publicationDate.toInstant());
+        }
         if (activity != null) {
             List<ActivityModel> activities = new ArrayList<>();
             for (ActivityCreationDTO act:activity) {

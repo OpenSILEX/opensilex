@@ -6,20 +6,17 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  *
@@ -34,6 +31,28 @@ public class DataFileGetDTO extends DataFileCreationDTO {
     }
 
     private String filename;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("issued")
+    protected OffsetDateTime publicationDate;
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
 
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
         if (isDateTime) {
@@ -57,7 +76,10 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setProvenance(model.getProvenance());
         dto.setArchive(model.getArchive());
         dto.setFilename(model.getFilename());
-        
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
+        }
+
         return dto;
     }
     public String getFilename() {

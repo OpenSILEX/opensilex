@@ -10,7 +10,12 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.model.geojson.Geometry;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.GeoJsonObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -22,10 +27,11 @@ import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
@@ -34,14 +40,22 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.security.group.api.GroupAPI;
+import org.opensilex.security.group.api.GroupCreationDTO;
+import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.group.api.GroupUserProfileModificationDTO;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -49,6 +63,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.mail.internet.InternetAddress;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -57,12 +72,16 @@ import java.util.function.BiPredicate;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author rcolin
  */
 public class DeviceAPITest extends AbstractMongoIntegrationTest {
+
+
 
     public String path = DeviceAPI.PATH;
     public String getByUriPath = path + "/{uri}";
@@ -70,11 +89,21 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
     public String facilityPath = path + "/{uri}/facility";
+    public String exportGeospatialPath = path + "/export_geospatial";
 
     public String provenancePath = ProvenanceAPI.PATH;
     public String dataPath = DataAPI.PATH;
 
     private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
+
+    public ServiceDescription search = new ServiceDescription(
+            DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
+            path
+    );
+    public ServiceDescription create = new ServiceDescription(DeviceAPI.class.getMethod("createDevice", DeviceCreationDTO.class, Boolean.class), createPath);
+
+    public DeviceAPITest() throws NoSuchMethodException {
+    }
 
     public DeviceCreationDTO getCreationDto() throws Exception {
 
@@ -98,6 +127,63 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
+    /**
+     * Tests some searches with different params, including a search that uses metaData
+     * @throws Exception
+     */
+    @Test
+    public void testSearch() throws Exception {
+        //createTestEnv();
+
+        new UserCallBuilder(create)
+                .setBody(getCreationDto())
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        DeviceCreationDTO dto1 = getCreationDto();
+        dto1.setName("No metadata device");
+        dto1.setMetadata(null);
+
+        new UserCallBuilder(create)
+                .setBody(dto1)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        DeviceCreationDTO dto2 = getCreationDto();
+        dto2.setName("WrongMetadataDevice");
+        Map<String, String> wrongMetadata = new HashMap<>();
+        wrongMetadata.put("no", "nono");
+        dto2.setMetadata(wrongMetadata);
+
+        new UserCallBuilder(create)
+                .setBody(dto2)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //Test search by metadata
+        Map<String, String> metaParamValue = new HashMap<>();
+        metaParamValue.put("prop1", "value1");
+        PaginatedListResponse<DeviceGetDTO> listResponse = new UserCallBuilder(search).addParam("metadata", URLEncoder.encode(new ObjectMapper().writeValueAsString(metaParamValue), "UTF-8"))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        List<DeviceGetDTO> foundDevices = listResponse.getResult();
+
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+
+        //Test search by name
+        PaginatedListResponse<DeviceGetDTO> listResponse2 = new UserCallBuilder(search).addParam("name", "name")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse2.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+    }
+
     @Test
     public void testCreateGetAndDelete() throws Exception {
         super.testCreateGetAndDelete(createPath, getByUriPath, deletePath, getCreationDto());
@@ -107,11 +193,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public void create_with_personInCharge() throws Exception {
         PersonDAO personDAO = new PersonDAO(getSparqlService());
 
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setFirstName("test");
-        personDTO.setLastName("test");
-        personDTO.setEmail("test@test.test");
-        URI personURI = personDAO.create(personDTO).getUri();
+        PersonModel personModel = new PersonModel();
+        personModel.setFirstName("test");
+        personModel.setLastName("test");
+        personModel.setEmail(new InternetAddress("test@test.test"));
+        URI personURI = personDAO.create(personModel, new ORCIDClient()).getUri();
 
         DeviceCreationDTO deviceDTO = getCreationDto();
         deviceDTO.setPersonInChargeURI(personURI);
@@ -419,11 +505,68 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<String> getCollectionsToClearNames() {
         return Arrays.asList(
-                DeviceDAO.ATTRIBUTES_COLLECTION_NAME,
+                DeviceAPI.METADATA_COLLECTION_NAME,
                 ProvenanceDAO.PROVENANCE_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
                 DataDAO.FILE_COLLECTION_NAME
         );
+    }
+
+    @Test
+    public void testExportDevicesAsShpandGeoJson() throws Exception {
+
+        //Create one Device Model
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDto());
+        URI uri = extractUriFromResponse(postResult);
+
+        DeviceModel deviceModel = new DeviceModel();
+
+        deviceModel.setName("DeviceExported");
+        deviceModel.setUri(uri);
+        deviceModel.setType(sensingDeviceType);
+        deviceModel.setTypeLabel(new SPARQLLabel("Device","en"));
+
+        deviceModel.setBrand("Roald_Dalh");
+        deviceModel.setModel("Willy_Wonka");
+        deviceModel.setStartUp(LocalDate.now());
+
+        //build geometry
+        Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
+
+        GeometryDTO objToExport = new GeometryDTO();
+        objToExport.setGeometry(geoJsonGeometry);
+        objToExport.setUri(deviceModel.getUri());
+
+        ArrayList<GeometryDTO> objectsList= new ArrayList<>();
+        objectsList.add(objToExport);
+
+        //build params
+        ArrayList<URI> propsList= new ArrayList<>();
+        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        propsList.add(new URI("vocabulary:hasModel"));
+        propsList.add(new URI("vocabulary:startUp"));
+        propsList.add(new URI("vocabulary:hasBrand"));
+
+        Map<String, Object> paramsShp = new HashMap<>() {{
+            put("format", "shp");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        Map<String, Object> paramsGJson = new HashMap<>() {{
+            put("format", "geojson");
+            put("selected_props",propsList);
+            put("pageSize",10000);
+        }};
+
+        // assert service
+        final Response resultShp =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsShp),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultShp.getStatus());
+        // assert service
+        final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
+        assertEquals(Response.Status.OK.getStatusCode(), resultGJson.getStatus());
     }
 
 }

@@ -12,6 +12,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDagReferenceDTO;
 
@@ -25,17 +26,26 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "sites", "experiments"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "publisher", "publication_date", "last_updated_date", "name", "parents", "children", "groups", "facilities", "sites", "experiments"})
 public class OrganizationGetDTO extends ResourceDagReferenceDTO<OrganizationModel> {
     
     protected List<NamedResourceDTO<GroupModel>> groups;
 
-    
     protected List<NamedResourceDTO<FacilityModel>> facilities;
 
     protected List<NamedResourceDTO<SiteModel>> sites;
 
     protected List<NamedResourceDTO<ExperimentModel>> experiments;
+
+    protected UserGetDTO publisher;
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
 
     public List<NamedResourceDTO<GroupModel>> getGroups() {
         return groups;

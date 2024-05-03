@@ -7,6 +7,7 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -26,7 +27,13 @@ import java.util.Set;
  * @author sammy
  */
 public class DataGetDTO extends DataCreationDTO {
-    
+
+    @JsonProperty("issued")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("modified")
+    private OffsetDateTime lastUpdatedDate;
+
     @NotNull
     @ValidURI
     @ApiModelProperty(value = "data URI", example = DataAPI.DATA_EXAMPLE_URI)    
@@ -40,7 +47,23 @@ public class DataGetDTO extends DataCreationDTO {
     public String getTimezone() {
         return timezone;
     }
-        
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
@@ -63,7 +86,7 @@ public class DataGetDTO extends DataCreationDTO {
      *     a {@link LocalDate} to be displayed correctly.
      * </p>
      * <p>
-     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToGetDTO(DataModel)},
      *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
      * </p>
      *
@@ -83,6 +106,13 @@ public class DataGetDTO extends DataCreationDTO {
             setValue(model.getValue());
         }
 
+        if (Objects.nonNull(model.getPublicationDate())) {
+            setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            setLastUpdatedDate(OffsetDateTime.ofInstant(model.getLastUpdateDate(), ZoneOffset.UTC));
+        }
+
         setMetadata(model.getMetadata());   
         setProvenance(model.getProvenance());
         setRawData(model.getRawData());
@@ -98,7 +128,7 @@ public class DataGetDTO extends DataCreationDTO {
      *     a {@link LocalDate} to be displayed correctly.
      * </p>
      * <p>
-     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToGetDTO(DataModel)},
      *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
      * </p>
      *

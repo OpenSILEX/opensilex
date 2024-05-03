@@ -34,7 +34,7 @@
       &nbsp;
       <button
         v-if="allowCopy"
-        v-on:click.prevent.stop="copyURI(uri)"
+        v-on:click.prevent.stop="copyURI(computeURL)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUrl')"
       >

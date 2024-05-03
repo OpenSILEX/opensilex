@@ -96,6 +96,13 @@
                 :uri="provenance.prov_activity[0].uri"
               ></opensilex-UriView>
 
+              <opensilex-MetadataView
+                v-if="provenance.publisher && provenance.publisher.uri"
+                :publisher="provenance.publisher"
+                :publicationDate="provenance.issued"
+                :lastUpdatedDate="provenance.modified" 
+              ></opensilex-MetadataView>
+
             </template>
           </opensilex-Card>
         </b-col>
@@ -180,6 +187,7 @@ export default class ProvenanceDetailsPage extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
+  routeArr : string = this.$route.path.split('/');
   $router: any;
   $t: any;
   $i18n: any;
@@ -211,6 +219,8 @@ export default class ProvenanceDetailsPage extends Vue {
   }
 
   isDetailsTab() {
+      localStorage.setItem("tabPath", this.routeArr[2]);
+      localStorage.setItem("tabPage", "1");
       return this.$route.path.startsWith("/provenances/details/");
   }
 
@@ -273,7 +283,9 @@ export default class ProvenanceDetailsPage extends Vue {
               promiseAgent = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
               .getPerson(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-                prov.prov_agent[i]["operator"] = http.response.result
+                let userDto = http.response.result;
+                prov.prov_agent[i]["operator"] = userDto;
+                prov.prov_agent[i]["name"] = userDto.first_name + userDto.last_name;
               })
               .catch(this.$opensilex.errorHandler);
             } else {
@@ -317,7 +329,10 @@ export default class ProvenanceDetailsPage extends Vue {
       activity_start_date: null,
       activity_end_date: null,
       activity_uri: null,
-      agents: []
+      agents: [],
+      publisher: this.provenance.publisher,
+      publication_date: this.provenance.issued,
+      last_updated_date: this.provenance.modified
     }
 
     if (this.provenance.prov_activity != null && this.provenance.prov_activity.length>0) {

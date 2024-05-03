@@ -300,9 +300,12 @@ searchMethod(nodeURI, page, pageSize) {
         undefined, // facility?: string,
         undefined,
         undefined,
+        undefined,
+        undefined,
+        undefined,
         orderBy,
         page,
-        pageSize );
+        pageSize);
 
     } else {
 
@@ -331,6 +334,9 @@ searchMethod(nodeURI, page, pageSize) {
         undefined, // facility?: string,
         undefined,
         undefined,
+        undefined,
+        undefined,
+          undefined,
         [], // orderBy?: ,
         page, // page?: number,
         pageSize // pageSize?: number

@@ -1,5 +1,6 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :required="required"
     :label="label"
     :selected.sync="experimentsURI"
@@ -12,20 +13,23 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 // @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class ExperimentSelector extends Vue {
   $opensilex: any;
+  pageSize = 10;
 
   @PropSync("experiments")
   experimentsURI;
@@ -44,6 +48,8 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   required;
 
+  @Ref("selectForm") readonly selectForm!: SelectForm;
+
   get placeholder() {
     return this.multiple
       ? "component.experiment.form.selector.placeholder-multiple"
@@ -54,6 +60,15 @@ export default class ExperimentSelector extends Vue {
 
   created() {
     this.experimentsByUriCache = new Map();
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    let selectForm: any = this.$refs.selectForm;
+    selectForm.refresh();
+    this.$nextTick(() => {
+      selectForm.openTreeselect();
+    })
   }
 
   searchExperiments(name) {
@@ -70,7 +85,7 @@ export default class ExperimentSelector extends Vue {
         undefined,
         undefined,
         0,
-        10
+        this.pageSize
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {

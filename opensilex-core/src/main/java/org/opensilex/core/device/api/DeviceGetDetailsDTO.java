@@ -7,12 +7,9 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Map;
 import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 
 /**
  *
@@ -40,8 +37,8 @@ public class DeviceGetDetailsDTO extends DeviceGetDTO{
     public void fromModel(DeviceModel model) {
         super.fromModel(model);
         
-        if (model.getAttributes() != null) {
-            setMetadata(model.getAttributes());
+        if (model.getMetaDataModel() != null) {
+            setMetadata(model.getMetaDataModel().getAttributes());
         }
     }
     

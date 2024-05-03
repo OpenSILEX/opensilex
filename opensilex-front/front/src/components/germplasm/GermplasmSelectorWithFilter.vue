@@ -9,8 +9,11 @@
       :clearable="true"
       :multiple="true"
       :selectedInJsonFormat="this.editMode ? germplasm : null"
+      :experiment="experimentUri"
       @clear="refreshGermplasmSelector"
       :limit="4"
+      @hide='$emit("hideSelector")'
+      @shown='$emit("shownSelector")'
       class="searchFilter"
   ></opensilex-SelectForm>
 </template>
@@ -31,6 +34,12 @@ export default class GermplasmSelectorWithFilter extends Vue {
   @Prop()
   editMode: boolean;
 
+  /**
+   * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
+   */
+  @Prop()
+  experimentUri: string;
+
   @PropSync("germplasms")
   germplasm: Array<SelectableItem>;
 
@@ -50,6 +59,7 @@ export default class GermplasmSelectorWithFilter extends Vue {
   refreshGermplasmSelector() {
     this.germplasmSelector.refreshModalSearch();
   }
+
 }
 </script>
 

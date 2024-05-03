@@ -37,7 +37,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
@@ -65,7 +65,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -135,7 +134,6 @@ public class VariableAPI {
         try {
             VariableDAO dao = getDao();
             VariableModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
             model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
@@ -646,7 +644,7 @@ public class VariableAPI {
 
         List<T> modelList = detailsCollection.stream().map(detailsDto -> {
             T model = detailsDto.toModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
             model.setFromSharedResourceInstance(service.getSharedResourceInstanceURI());
             return model;
         }).collect(Collectors.toList());

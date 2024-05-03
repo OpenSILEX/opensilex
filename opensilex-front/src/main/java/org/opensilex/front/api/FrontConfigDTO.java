@@ -10,7 +10,10 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.front.config.VersionLabel;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 @ApiModel
 public class FrontConfigDTO {
@@ -64,6 +67,16 @@ public class FrontConfigDTO {
     Boolean connectAsGuest;
 
     DashboardConfigDTO dashboard;
+
+    Boolean gdprFileIsConfigured;
+
+    MatomoConfigDTO matomo;
+
+    Map<String, String> notificationMessage;
+
+    String notificationColorTheme;
+
+    LocalDate notificationEndDate;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -248,4 +261,50 @@ public class FrontConfigDTO {
     public void setConnectAsGuest(boolean connectAsGuest) {
         this.connectAsGuest = connectAsGuest;
     }
+
+    @ApiModelProperty(value = "GDPR PDF is configured")
+    public Boolean getGdprFileIsConfigured() { return gdprFileIsConfigured; }
+
+    public void setGdprFileIsConfigured(Boolean gdprFileIsConfigured) { this.gdprFileIsConfigured = gdprFileIsConfigured; }
+
+    public MatomoConfigDTO getMatomo() {
+        return matomo;
+    }
+
+    public void setMatomo(MatomoConfigDTO matomo) {
+        this.matomo = matomo;
+    }
+
+    @ApiModelProperty(value = "Notification message for the instance", example = "deployment of version 1.2 on January 22, 2024")
+    public Map <String, String> getNotificationMessage() {
+        return notificationMessage;
+    }
+
+    public void setNotificationMessage(Map <String, String> notificationMessage) {
+        this.notificationMessage = notificationMessage;
+    }
+
+     @ApiModelProperty(value = "Color theme for the notification message", example = "Warning")
+    public String getNotificationColorTheme() {
+        return notificationColorTheme;
+    }
+
+    public void setNotificationColorTheme(String notificationColorTheme) {
+        this.notificationColorTheme = notificationColorTheme;
+    }
+
+    @ApiModelProperty(value = "Date until which to send the notification", example = "2024-04-31")
+    public LocalDate getNotificationEndDate() {
+        return notificationEndDate;
+    }
+
+    public void setNotificationEndDate(String notificationEndDate) {
+        // this.notificationEndDate = notificationEndDate;
+        try {
+            this.notificationEndDate = LocalDate.parse(notificationEndDate);
+        } catch(DateTimeParseException e){
+            notificationEndDate = null;
+        }
+    }
+    
 }

@@ -122,7 +122,7 @@ import {
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
-let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
+let lastFifteenDays = new Date(new Date((new Date).setDate(new Date().getDate() - 15)).setHours(0,0,0,0))
 
 @Component
 export default class VariableVisualizationForm extends Vue {
@@ -138,7 +138,7 @@ export default class VariableVisualizationForm extends Vue {
 
   filter = {
     variable: null,
-    startDate: lastWeekDate.toISOString(),
+    startDate: lastFifteenDays.toISOString(),
     endDate: undefined,
     device: [],
     provenance: undefined,

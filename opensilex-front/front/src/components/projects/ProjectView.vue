@@ -21,7 +21,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectForm"
       @onCreate="redirectToCreatedProject"
-      @onUpdate="projectList.refresh()"
+      @onUpdate="projectList.updateSelectedProject()"
     ></opensilex-ProjectForm>
   </div>
 </template>

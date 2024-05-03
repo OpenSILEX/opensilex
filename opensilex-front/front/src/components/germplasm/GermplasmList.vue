@@ -8,7 +8,7 @@
                  v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
                  :title="searchFiltersPannel()">
                 <div class="searchMenuIcon">
-                    <i class="icon ik ik-search"></i>
+                    <i class="ik ik-search"></i>
                 </div>
             </div>
             <Transition>
@@ -93,16 +93,30 @@
                             </div>
 
                             <!-- Experiments -->
-                            <div>
+                            <div v-if="!experimentUri">
                                 <opensilex-FilterField>
                                     <opensilex-ExperimentSelector
                                         label="GermplasmList.filter.experiment"
                                         :experiments.sync="filter.experiment"
                                         class="searchFilter"
                                         @handlingEnterKey="refresh()"
+                                        :key="resetExperimentSelectorKey"
                                     ></opensilex-ExperimentSelector>
                                 </opensilex-FilterField>
                             </div>
+
+                          <!-- Germplasm Parents filter -->
+                          <div>
+                            <opensilex-FilterField>
+                              <opensilex-GermplasmSelector
+                                  label="GermplasmList.filter.parents"
+                                  :multiple="true"
+                                  :germplasm.sync="filter.parent_germplasms"
+                                  class="searchFilter"
+                                  @handlingEnterKey="refresh()"
+                              ></opensilex-GermplasmSelector>
+                            </opensilex-FilterField>
+                          </div>
 
                           <!-- Germplasm Group -->
                           <div>
@@ -282,6 +296,9 @@ export default class GermplasmList extends Vue {
     @Ref("tableRef") readonly tableRef!: TableAsyncView<GermplasmGetAllDTO>;
     @Ref("attributesValueSelector") attributeValueSelector: GermplasmAttributesValueSelector;
 
+
+    resetExperimentSelectorKey = 0;
+
     @Prop({
         default: false
     })
@@ -291,6 +308,12 @@ export default class GermplasmList extends Vue {
         default: false
     })
     noActions;
+
+  /**
+   * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
+   */
+    @Prop()
+    experimentUri: string;
 
     get user() {
         return this.$store.state.user;
@@ -308,10 +331,8 @@ export default class GermplasmList extends Vue {
         return this.$store.state.lang;
     }
 
-    germplasmTypes = [];
     species = [];
     speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
-    experimentsList = [];
     SearchFiltersToggle: boolean = true;
 
   filter = {
@@ -321,6 +342,9 @@ export default class GermplasmList extends Vue {
     production_year: undefined,
     institute: undefined,
     experiment: undefined,
+    parent_germplasms: [],
+    parent_germplasms_m: [],
+    parent_germplasms_f: [],
     germplasm_group: undefined,
     uri: undefined,
     metadataKey: undefined,
@@ -335,6 +359,9 @@ export default class GermplasmList extends Vue {
           production_year: undefined,
           institute: undefined,
           experiment: undefined,
+          parent_germplasms: [],
+          parent_germplasms_m: [],
+          parent_germplasms_f: [],
           germplasm_group: undefined,
           uri: undefined,
           metadataKey: undefined,
@@ -342,6 +369,7 @@ export default class GermplasmList extends Vue {
         };
 
         this.refresh();
+        this.resetExperimentSelectorKey++;
     }
 
     onItemUnselected(row) {
@@ -349,7 +377,6 @@ export default class GermplasmList extends Vue {
     }
 
     onItemSelected(row) {
-        console.debug("GermplasmList selecting item, heres the row : ", row);
       this.tableRef.onItemSelected(row);
     }
 
@@ -420,13 +447,15 @@ export default class GermplasmList extends Vue {
 
   refresh() {
     this.tableRef.selectAll = false;
-    this.$opensilex.updateURLParameters(this.filter);
+    this.updateSelectedGermplasm()
+    this.tableRef.changeCurrentPage(1);     
+    }
 
+    updateSelectedGermplasm(){
+        this.tableRef.selectAll = false;
+        this.$opensilex.updateURLParameters(this.filter);
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.refresh();
-        } else {
-            this.tableRef.refresh();
         }
     }
 
@@ -443,7 +472,10 @@ export default class GermplasmList extends Vue {
       undefined,
       this.filter.germplasm_group,
       this.filter.institute,
-      this.filter.experiment,
+      this.experimentUri || this.filter.experiment,
+      this.filter.parent_germplasms,
+      this.filter.parent_germplasms_m,
+      this.filter.parent_germplasms_f,
       this.addMetadataFilter(),
       options.orderBy,
       options.currentPage,
@@ -486,32 +518,6 @@ export default class GermplasmList extends Vue {
             .downloadFilefromPostService(path, filename, "csv", exportDto, this.lang);
     }
 
-
-    loadExperiments() {
-        let expService: ExperimentsService = this.$opensilex.getService(
-            "opensilex.ExperimentsService"
-        );
-
-        this.experimentsList = [];
-        expService
-            .searchExperiments()
-            .then(
-                (
-                    http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
-                ) => {
-                    //console.log(http.response.result)
-                    for (let i = 0; i < http.response.result.length; i++) {
-                        let expDTO = http.response.result[i];
-                        this.experimentsList.push({
-                            value: expDTO.uri,
-                            text: expDTO.name
-                        });
-                    }
-                }
-            )
-            .catch(this.$opensilex.errorHandler);
-    }
-
     loadSpecies() {
         let service: SpeciesService = this.$opensilex.getService(
             "opensilex.SpeciesService"
@@ -535,7 +541,6 @@ export default class GermplasmList extends Vue {
     }
 
     updateLang() {
-        this.loadExperiments();
         this.loadSpecies();
         this.refresh();
     }
@@ -556,11 +561,6 @@ export default class GermplasmList extends Vue {
             [this.filter.metadataKey] : value
         });
     }
-
-    // refreshValueSelector(){
-    //     console.log("refreshValueSelector");
-    //     this.attributeValueSelector.refresh();
-    // }
 
     createDocument() {
         this.documentForm.showCreateForm();
@@ -650,6 +650,7 @@ en:
           metadataKey: Attribute name
           metadataValue: Attribute value
           germplasm-group: Germplasm Group
+          parents: Parents
 
 fr:
     GermplasmList:
@@ -687,5 +688,6 @@ fr:
           metadataKey: Nom de l'attribut
           metadataValue: Valeur de l'attribut
           germplasm-group: Groupe de ressources génétiques
+          parents: Parents
 
 </i18n>

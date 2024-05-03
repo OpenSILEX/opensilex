@@ -35,6 +35,14 @@ public class PaginationDTO {
     private final long totalPages;
 
     /**
+     * Indicate if the count query was used with a limit on the number of element to count.
+     * This can be done for performance reason, in order to not iterate each document to count, when this number becomes high
+     */
+    private final long limitCount;
+
+    private boolean hasNextPage;
+
+    /**
      * Empty constructor assume no pagination.
      */
     public PaginationDTO() {
@@ -42,6 +50,8 @@ public class PaginationDTO {
         this.currentPage = 0;
         this.totalCount = 0;
         this.totalPages = 0;
+        this.limitCount = 0;
+        this.hasNextPage = false;
     }
 
     /**
@@ -52,11 +62,15 @@ public class PaginationDTO {
      * @param totalCount Total item count
      */
     public PaginationDTO(long pageSize, long currentPage, long totalCount) {
+        this(pageSize, currentPage, totalCount, 0);
+    }
+
+    public PaginationDTO(long pageSize, long currentPage, long totalCount, long limitCount) {
         this.pageSize = pageSize;
         this.currentPage = currentPage;
         this.totalCount = totalCount;
 
-        // Add a page if the the total number of elements divided by the page
+        // Add a page if the total number of elements divided by the page
         if (pageSize == 0) {
             totalPages = 0;
         } else {
@@ -66,6 +80,19 @@ public class PaginationDTO {
                 totalPages = (totalCount / this.pageSize) + 1;
             }
         }
+        this.limitCount = limitCount;
+
+        // there is a next page if the last page is not reached
+        this.hasNextPage = totalPages > currentPage;
+    }
+
+    public PaginationDTO(long pageSize, long currentPage, boolean hasNextPage) {
+        this.pageSize = pageSize;
+        this.currentPage = currentPage;
+        this.hasNextPage = hasNextPage;
+        this.totalCount = 0;
+        this.totalPages = 0;
+        this.limitCount = 0;
     }
 
     /**
@@ -98,9 +125,21 @@ public class PaginationDTO {
     /**
      * Getter for total pages.
      *
-     * @return toatal pages
+     * @return total pages
      */
     public long getTotalPages() {
         return totalPages;
+    }
+
+    public long getLimitCount() {
+        return limitCount;
+    }
+
+    public boolean getHasNextPage() {
+        return hasNextPage;
+    }
+
+    public void setHasNextPage(boolean hasNextPage) {
+        this.hasNextPage = hasNextPage;
     }
 }

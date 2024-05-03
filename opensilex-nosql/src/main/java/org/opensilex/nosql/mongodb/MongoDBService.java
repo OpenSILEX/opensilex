@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.jena.arq.querybuilder.Order;
-import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -45,8 +44,8 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
-import org.opensilex.nosql.mongodb.codec.ObjectCodec;
-import org.opensilex.nosql.mongodb.codec.URICodec;
+import org.opensilex.nosql.mongodb.codec.*;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -69,9 +68,11 @@ public class MongoDBService extends BaseService {
     private MongoClient mongoClient;
     private ClientSession session = null;
     private MongoDatabase db;
-    public final static int SIZE_MAX = 10000;
     private URI generationPrefixURI;
     private static String defaultTimezone;
+
+    // V2 service : used for an easier transition from this one to the new V2
+    private MongoDBServiceV2 serviceV2;
 
     public MongoDBService(MongoDBConfig config) {
         super(config);
@@ -82,7 +83,7 @@ public class MongoDBService extends BaseService {
     /**
      * Test if the connection to the MongoDB server is OK
      * @param config MongoDB configuration
-     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeout()}
+     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeoutMs()}
      * @throws MongoSecurityException If the execution of this command is unauthorized by the MongoDB server
      *
      * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">MongoDB ping</a>
@@ -140,7 +141,11 @@ public class MongoDBService extends BaseService {
         // Define custom codec registry for URI, Object and GeoJson
         CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()),
+                CodecRegistries.fromCodecs(
+                        new URICodec(),
+                        new ObjectCodec(),
+                        new ZonedDateTimeCodec()
+                ),
                 CodecRegistries.fromProviders(
                         new GeoJsonCodecProvider(),
                         PojoCodecProvider.builder().register(URI.class).automatic(true).build()
@@ -151,7 +156,7 @@ public class MongoDBService extends BaseService {
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
                 .applyToClusterSettings(builder -> builder
                         .hosts(Collections.singletonList(new ServerAddress(config.host(), config.port())))
-                        .serverSelectionTimeout(config.serverSelectionTimeout(),TimeUnit.MILLISECONDS)
+                        .serverSelectionTimeout(config.serverSelectionTimeoutMs(),TimeUnit.MILLISECONDS)
                 ).codecRegistry(codecRegistry)
                 .applyToSocketSettings(builder -> builder
                         .connectTimeout(config.connectTimeoutMs(), TimeUnit.MILLISECONDS)
@@ -226,7 +231,7 @@ public class MongoDBService extends BaseService {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collectionName);
         }
 
-        if (instance.getPublicationDate() == null) {
+        if (Objects.isNull(instance.getPublicationDate())) {
             instance.setPublicationDate(Instant.now());
         }
 
@@ -249,7 +254,7 @@ public class MongoDBService extends BaseService {
                 generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collectionName);
             }
 
-            if (instance.getPublicationDate() == null) {
+            if (Objects.isNull(instance.getPublicationDate())) {
                 instance.setPublicationDate(Instant.now());
             }
         }
@@ -527,7 +532,7 @@ public class MongoDBService extends BaseService {
             String collectionName,
             List<Bson> aggregationArgs,
             Class<T> instanceClass) {
-        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
+        LOGGER.debug("MONGO AGGREGATE - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
         Set<T> results = new HashSet<>();
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
 
@@ -536,10 +541,8 @@ public class MongoDBService extends BaseService {
         for (T res : aggregate) {
             results.add(res);
         }
-
         return results;
     }
-
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : " + uri);
@@ -611,7 +614,7 @@ public class MongoDBService extends BaseService {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         }
 
-        if (newInstance.getPublicationDate() == null) {
+        if (Objects.isNull(newInstance.getPublicationDate())) {
             newInstance.setPublicationDate(instance.getPublicationDate());
         }
 
@@ -690,5 +693,13 @@ public class MongoDBService extends BaseService {
         } else {
             return orders.toString();
         }
+    }
+
+    public MongoDBServiceV2 getServiceV2() {
+        if(serviceV2 == null){
+            serviceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
+            Objects.requireNonNull(serviceV2);
+        }
+        return serviceV2;
     }
 }

@@ -199,6 +199,7 @@
                     @select="$emit('select', $event)"
                     @unselect="$emit('unselect', $event)"
                     @selectall="$emit('selectall', $event)"
+                    :itemIsSelected="itemIsSelected"
                     class="modalVariablesList">
 
                     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
@@ -364,6 +365,10 @@ export default class VariableList extends Vue {
     $store: OpenSilexStore;
     $route: any;
     $i18n: any;
+    SearchFiltersToggle: boolean = false;
+
+    @Prop()
+    itemIsSelected;
 
     displayActions:boolean = true;
 
@@ -514,20 +519,13 @@ export default class VariableList extends Vue {
         this.$emit("onReset");
     }
 
-
-  data(){
-    return {
-        SearchFiltersToggle : false,
-    }
-  }
-
     refresh() {
         this.$opensilex.updateURLParameters(this.filter);
-        if(this.onlySelected) {
+        if(this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.refresh();
+            this.tableRef.changeCurrentPage(1);
         } else {
-            this.tableRef.refresh();
+            this.tableRef.changeCurrentPage(1);
         }
     }
 

@@ -1,15 +1,13 @@
 package org.opensilex.sparql.ontology.store;
 
-import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.apache.commons.lang3.NotImplementedException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
-import java.util.Objects;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -66,6 +64,11 @@ public class NoOntologyStore implements OntologyStore {
     @Override
     public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException {
         return ontologyDAO.getClassModel(classURI, ancestorURI, lang);
+    }
+
+    @Override
+    public LinkedHashSet<String> getAncestorHierarchy(URI classURI, URI ancestorUri) {
+        throw new NotImplementedException("This method is not implemented");
     }
 
     @Override

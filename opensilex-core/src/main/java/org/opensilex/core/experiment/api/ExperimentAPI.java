@@ -20,6 +20,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -51,12 +52,14 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -166,7 +169,7 @@ public class ExperimentAPI {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
             ExperimentModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             return new CreatedUriResponse(model.getUri()).getResponse();
@@ -230,7 +233,11 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         ExperimentModel model = dao.get(xpUri, currentUser);
-        return new SingleObjectResponse<>(ExperimentGetDTO.fromModel(model)).getResponse();
+        ExperimentGetDTO dto = ExperimentGetDTO.fromModel(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     /**
@@ -533,7 +540,7 @@ public class ExperimentAPI {
                 pageSize
         );
 
-        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
+        ListWithPagination<DataGetSearchDTO> resultDTOList = dao.modelListToDTO(resultList);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

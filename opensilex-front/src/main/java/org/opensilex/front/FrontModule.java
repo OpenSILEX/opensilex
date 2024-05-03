@@ -111,12 +111,26 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuExclusions(frontConfig.menuExclusions());
             config.setApplicationName(frontConfig.applicationName());
             config.setConnectAsGuest(frontConfig.connectAsGuest());
+            config.setNotificationMessage(frontConfig.notificationMessage());
+            config.setNotificationEndDate(frontConfig.notificationEndDate());
+            config.setNotificationColorTheme(frontConfig.notificationColorTheme());
+
+            if (frontConfig.matomo() != null) {
+                try {
+                    config.setMatomo(new MatomoConfigDTO());
+                    config.getMatomo().setServerUrl(new URI(frontConfig.matomo().serverUrl()));
+                    config.getMatomo().setSiteId(frontConfig.matomo().siteId());
+                } catch (URISyntaxException ignored) {
+                    LOGGER.warn("Invalid configuration for Matomo URL " + frontConfig.matomo().serverUrl());
+                }
+            }
 
             DashboardConfigDTO dashboard = new DashboardConfigDTO();
             try {
                 dashboard.setShowMetrics(getOpenSilex().getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics());
                 GraphConfigDTO graph1 = new GraphConfigDTO();
                 graph1.setVariable(new URI(frontConfig.dashboard().graph1().variable()));
+                graph1.setDataLocationInformations(new String(frontConfig.dashboard().graph1().dataLocationInformations()));
                 dashboard.setGraph1(graph1);
                 GraphConfigDTO graph2 = new GraphConfigDTO();
                 graph2.setVariable(new URI(frontConfig.dashboard().graph2().variable()));
@@ -127,6 +141,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             } catch (URISyntaxException | OpenSilexModuleNotFoundException ignored) {
             }
             config.setDashboard(dashboard);
+
+            try {
+                SecurityConfig securityConfig = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class);
+                config.setGdprFileIsConfigured( ! securityConfig.gdprPdfPathsByLanguages().isEmpty() );
+            } catch (OpenSilexModuleNotFoundException e){
+                config.setGdprFileIsConfigured(false);
+            }
 
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));

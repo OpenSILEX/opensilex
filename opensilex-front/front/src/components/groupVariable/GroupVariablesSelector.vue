@@ -13,6 +13,7 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
   ></opensilex-SelectForm>
 </template>
 
@@ -25,11 +26,13 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import SelectForm from "../common/forms/SelectForm.vue";
 
+
 @Component
 export default class GroupVariablesSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  pageSize = 10;
 
-  @PropSync("variableGroup")
+  @PropSync("variableGroup", {default: () => []})
   vgURI;
 
   @Prop()
@@ -57,18 +60,18 @@ export default class GroupVariablesSelector extends Vue {
       : "component.groupVariable.form.selector.placeholder";
   }
 
-  loadVariablesGroups(vg): Promise<Array<VariablesGroupGetDTO>> {
+  loadVariablesGroups(vgUris): Promise<Array<VariablesGroupGetDTO>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getVariablesGroupByURIs(vg, this.sharedResourceInstance)
+      .getVariablesGroupByURIs(vgUris, this.sharedResourceInstance)
       .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http.response.result;
       })
-      .catch(this.$opensilex.errorHandler); 
+      .catch(this.$opensilex.errorHandler);
   }
 
-  searchVariablesGroups(name): Promise<HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>> {
+  searchVariablesGroups(searchQuery, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10, this.sharedResourceInstance)
+    .searchVariablesGroups(searchQuery, undefined, ["name=asc"], page, this.pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });
@@ -85,6 +88,14 @@ export default class GroupVariablesSelector extends Vue {
   onEnter() {
     this.$emit("handlingEnterKey")
   }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.selectForm.refresh();
+    this.$nextTick(() => {
+      this.selectForm.openTreeselect();
+    })
+  }
 }
 </script>
 
@@ -100,7 +111,6 @@ en:
             placeholder : Select one group of variables
             placeholder-multiple : Select one or more groups of variables
             filter-search-no-result : No groups of variables found
-    
             
 fr:
   component: 

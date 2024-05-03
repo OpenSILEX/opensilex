@@ -32,6 +32,8 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.JgraphtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -319,6 +321,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             }
         }
 
+    }
+
+    @Override
+    public LinkedHashSet<String> getAncestorHierarchy(URI classURI, URI ancestorUri){
+        return JgraphtUtils.getVertexesFromAncestor(modelsGraph, URIDeserializer.formatURI(ancestorUri).toString(), classURI.toString(), MAX_GRAPH_PATH_LENGTH);
     }
 
     private void inheritFromSuperClasses(URI ancestorURI, ClassModel classModel, boolean addRestrictions, boolean addDataProperties, boolean addObjectProperties) throws SPARQLInvalidURIException {

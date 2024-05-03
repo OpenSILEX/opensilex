@@ -12,6 +12,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
+import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.api.csv.EventCsvImporter;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
@@ -25,14 +26,19 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -40,6 +46,8 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
+import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
@@ -59,6 +67,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -122,6 +131,7 @@ public class EventAPI {
             URI eventGraph = dao.getGraph();
 
             List<EventModel> models = getEventModels(dtoList, eventGraph);
+            models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
@@ -149,53 +159,31 @@ public class EventAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importEventCSV(
-            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql,nosql);
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        try {
+            sparql.startTransaction();
+            nosql.startTransaction();
 
-        EventCsvImporter csvImporter = new EventCsvImporter(sparql,ontologyDAO,file,currentUser);
-        csvImporter.readFile(false);
+            CsvImporter<EventModel> csvImporter = new CachedCsvImporter<>(
+                    new EventCsvImporter(sparql, nosql, currentUser),
+                    importDTO.getValidationToken()
+            );
 
-        CSVValidationModel validation = csvImporter.getValidation();
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
+            CSVValidationModel validationModel = csvImporter.importCSV(file,false);
+            sparql.commitTransaction();
+            nosql.commitTransaction();
 
-        SingleObjectResponse<CSVValidationDTO> importResponse = new SingleObjectResponse<>(validationDTO);
+            return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
 
-        if(validation.hasErrors()) {
-            importResponse.setStatus(Response.Status.BAD_REQUEST);
-        }else {
-
-            boolean errors = false;
-            List<EventModel> models = csvImporter.getModels();
-
-            try{
-                dao.create(models);
-
-            // update validation when some URIs are already existing or unknown
-            }catch (SPARQLInvalidUriListException e){
-                validation.addInvalidURIError(new CSVCell(2,0,e.getMessage(),"URI"));
-                errors = true;
-            }catch (SPARQLAlreadyExistingUriListException e){
-                validation.addAlreadyExistingURIError(new CSVCell(2,0,e.getMessage(),"URI"));
-                errors = true;
-            }
-
-            if(errors){
-                validationDTO.setErrors(validation);
-                importResponse.setStatus(Response.Status.BAD_REQUEST);
-            }else {
-                validationDTO.setNbLinesImported(models.size());
-                String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-                validationDTO.setValidationToken(token);
-                importResponse.setStatus(Response.Status.CREATED);
-            }
-
+        }catch (Exception e){
+            sparql.rollbackTransaction();
+            nosql.rollbackTransaction();
+            throw e;
         }
-        return importResponse.getResponse();
     }
 
     @POST
@@ -207,24 +195,17 @@ public class EventAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateEventCSV(
-            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        EventCsvImporter csvImporter = new EventCsvImporter(sparql,ontologyDAO,file,currentUser);
-        csvImporter.readFile(true);
+        CsvImporter<EventModel> csvImporter = new CachedCsvImporter<>(
+                new EventCsvImporter(sparql, nosql, currentUser),
+                importDTO.getValidationToken()
+        );
 
-        CSVValidationModel validation = csvImporter.getValidation();
-
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
-
-        if (!validation.hasErrors()) {
-            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-            validationDTO.setValidationToken(token);
-        }
-
-        return new SingleObjectResponse<>(validationDTO).getResponse();
+        CSVValidationModel validationModel = csvImporter.importCSV(file, true);
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     private List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, URI eventGraph) throws Exception {
@@ -238,7 +219,6 @@ public class EventAPI {
 
         for(EventCreationDTO dto : eventDtos){
             EventModel model = dto.toModel();
-            model.setCreator(currentUser.getUri());
 
             if (!CollectionUtils.isEmpty(dto.getRelations())) {
                 URI type = dto.getType();
@@ -301,7 +281,6 @@ public class EventAPI {
 
         EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
         EventModel model = dto.toModel();
-        model.setCreator(currentUser.getUri());
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel eventClassModel = null;
@@ -386,6 +365,9 @@ public class EventAPI {
 
         EventDetailsDTO dto = new EventDetailsDTO();
         dto.fromModel(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
@@ -458,6 +440,12 @@ public class EventAPI {
             MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
+            models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
+            for (var move : models) {
+                if (move.getFrom() != null && move.getTo() == null) {
+                    throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
+                }
+            }
             dao.create(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
@@ -472,12 +460,12 @@ public class EventAPI {
 
     private <T extends EventModel> SingleObjectResponse<CSVValidationDTO> buildCsvResponse(
             AbstractEventCsvImporter<T> csvImporter,
-            EventDAO<T> dao
-
+            EventDAO<T> dao,
+            boolean forValidation
     ) throws Exception {
 
         // read file
-        csvImporter.readFile(false);
+        csvImporter.readFile();
 
         // build the validation dto
         CSVValidationModel validation = csvImporter.getValidation();
@@ -494,8 +482,12 @@ public class EventAPI {
             List<T> models = csvImporter.getModels();
 
             try{
-                dao.create(models);
-
+                if(forValidation){
+                    dao.check(models, true);
+                }else{
+                    models.forEach(model -> model.setPublisher(currentUser.getUri()));
+                    dao.create(models);
+                }
                 // update validation when some URIs are already existing or unknown
             }catch (SPARQLInvalidUriListException e){
                 validation.addInvalidURIError(new CSVCell(AbstractEventCsvImporter.ROWS_BEGIN_IDX,0,e.getMessage(),e.getField()));
@@ -545,7 +537,7 @@ public class EventAPI {
 
         AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
 
-        return buildCsvResponse(csvImporter,dao).getResponse();
+        return buildCsvResponse(csvImporter,dao, false).getResponse();
     }
 
     @POST
@@ -560,21 +552,10 @@ public class EventAPI {
             @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
+        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
-        csvImporter.readFile(true);
-
-        CSVValidationModel validation = csvImporter.getValidation();
-
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
-
-        if (!validation.hasErrors()) {
-            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-            validationDTO.setValidationToken(token);
-        }
-
-        return new SingleObjectResponse<>(validationDTO).getResponse();
+        return buildCsvResponse(csvImporter, dao, true).getResponse();
     }
 
     @PUT
@@ -597,7 +578,6 @@ public class EventAPI {
 
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         MoveModel model = dto.toModel();
-        model.setCreator(currentUser.getUri());
 
         ClassModel eventClassModel = null;
 
@@ -632,6 +612,9 @@ public class EventAPI {
         }
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
         return new SingleObjectResponse<>(dto).getResponse();
     }
 

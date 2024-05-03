@@ -156,6 +156,7 @@ export default class VariableDetails extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $store: any;
   $route: any;
+  routeArr : string = this.$route.path.split('/');
   $router: VueRouter;
   $t: any;
   $i18n: any;
@@ -203,6 +204,8 @@ export default class VariableDetails extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+    localStorage.setItem("tabPath", this.routeArr[2]);
+    localStorage.setItem("tabPage", "1");
   }
 
   showEditForm() {
@@ -247,18 +250,25 @@ export default class VariableDetails extends Vue {
         });
   }
 
-  getCountDataPromise(uri) {
+  getCountDataPromise(variable: string) {
+    // Check if there exist at least one data linked to the variable
     return this.dataService.countData(
         undefined,
         undefined,
         undefined,
         undefined,
-        undefined,
-        [uri],
-        undefined,
+        [variable],
         undefined,
         undefined,
-        undefined);
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        1,
+        undefined,
+    );
   }
 
   getPath(elementType: string, uri: string) {

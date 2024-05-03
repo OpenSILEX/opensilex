@@ -12,7 +12,7 @@
         :conversionMethod="personToSelectNode"
         placeholder="component.person.filter-placeholder"
         noResultsText="component.person.filter-search-no-result"
-        :actionHandler="allowAddPerson ? showCreateForm : null"
+        :actionHandler="allowAddPerson && user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID) ? showCreateForm : null"
         @select="select"
         @deselect="deselect"
     ></opensilex-SelectForm>

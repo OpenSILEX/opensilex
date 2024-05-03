@@ -70,11 +70,18 @@
               :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+              v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
               @click="$emit('onEdit', data.item)"
               label="component.account.update"
               :small="true"
           ></opensilex-EditButton>
+          <opensilex-DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_DELETE_ID)"
+              @click="deleteAccount(data.item.uri)"
+              label="component.account.delete"
+              :small="true"
+          >
+          </opensilex-DeleteButton>
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
@@ -91,10 +98,11 @@ import {SlotDetails} from "../common/views/TableAsyncView.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {AccountUpdateDTO} from "opensilex-security/model/accountUpdateDTO";
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class AccountList extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   service: SecurityService;
   $store: any;
   $route: any;
@@ -185,6 +193,14 @@ export default class AccountList extends Vue {
     return accountsResponse
   }
 
+  deleteAccount(uri: string) {
+    this.$opensilex.showLoader()
+    this.service.deleteAccount(uri)
+        .then( () => this.refresh() )
+        .catch( (error) => this.$opensilex.errorHandler(error))
+        .finally( () => this.$opensilex.hideLoader())
+  }
+
   async mapPersonsWithAccount(key_personUri_value_accountUri : {[id: string]: string}){
     if ( Object.keys(key_personUri_value_accountUri).length !== 0 ) {
       let personsResponse = await this.service.getPersonsByURI(Object.keys(key_personUri_value_accountUri))
@@ -204,7 +220,7 @@ export default class AccountList extends Vue {
 
   displayEnableButton(accountRow) {
     let isUserConnected = accountRow.email === this.user.email
-    return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
+    return this.user.hasCredential(this.credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)
         && !accountRow.admin
         && !isUserConnected
   }

@@ -66,6 +66,15 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         label = other.getLabel();
         comment = other.getComment();
         rdfTypeName = other.getTypeLabel();
+        if (Objects.nonNull(other.getPublisher())){
+            publisher = other.getPublisher();
+        }
+        if (Objects.nonNull(other.getPublicationDate())){
+            publicationDate = other.getPublicationDate();
+        }
+        if (Objects.nonNull(other.getLastUpdateDate())){
+            lastUpdateDate = other.getLastUpdateDate();
+        }
 
         children = other.getChildren();
         setChildren(children);

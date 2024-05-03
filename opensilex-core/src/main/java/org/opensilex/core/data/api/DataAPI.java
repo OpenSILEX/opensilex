@@ -10,16 +10,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
@@ -27,6 +30,7 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
@@ -53,11 +57,14 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
@@ -81,6 +88,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +109,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
@@ -150,7 +157,7 @@ public class DataAPI {
     public static final int SIZE_MAX = 50000;
     
     Map<URI, URI> rootDeviceTypes = null;
-    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     @Inject
     private MongoDBService nosql;
@@ -186,6 +193,7 @@ public class DataAPI {
 
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
+                model.setPublisher(user.getUri());
                 dataList.add(model);
             }
             
@@ -246,7 +254,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDTO.class),
+            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDetailsDTO.class),
             @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
@@ -255,26 +263,82 @@ public class DataAPI {
 
         try {
             DataModel model = dao.get(uri);
-            return new SingleObjectResponse<>(dao.modelToDTO(model)).getResponse();
+            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, dao.getAllDateVariables());
+
+            // fetch detailed information about publisher account
+            if(model.getPublisher() != null){
+                UserGetDTO userGetDTO = UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher()));
+                dto.setPublisher(userGetDTO);
+            }
+            return new SingleObjectResponse<>(dto).getResponse();
+
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
     }
 
-    @POST
-    @Path("by_targets")
-    @ApiOperation("Search data for a large list of targets")
+    @GET
+    @Path("mathematicalOperators")
+    @ApiOperation("Get mathematical operators")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return list of mathematical operators", response = String.class, responseContainer = "List")})
+    public Response getMathematicalOperators(){
+        return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
+    }
+
+    private Set<URI> targetByGermplasmFilter(List<URI> targets , URI germplasmGroup, List<URI> germplasmUris, List<URI> experiments) throws Exception {
+
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        //Or/And scientific objects associated with passed germplasms
+
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        Set<URI> finalTargetsFilter = new HashSet<>(targets);
+
+        //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        List<URI> xpForTargetSearch = experiments;
+
+        if (CollectionUtils.isEmpty(experiments)) {
+
+            ExperimentSearchFilter xpFilter = new ExperimentSearchFilter();
+            xpFilter.setUser(user);
+            int xpQuantity = experimentDAO.count();
+            xpFilter.setPage(0);
+            xpFilter.setPageSize(xpQuantity);
+
+            xpForTargetSearch = experimentDAO.search(xpFilter)
+                    .getList()
+                    .stream()
+                    .map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList());
+        }
+
+        List<URI> germplasmGroupTargets = scientificObjectDAO.getScientificObjectUrisAssociatedWithGermplasms(xpForTargetSearch, germplasmGroup, germplasmUris);
+        finalTargetsFilter.addAll(germplasmGroupTargets);
+        return finalTargetsFilter;
+    }
+
+    @POST
+    @Path("search")
+    @ApiOperation(
+            value = "Search data for a large list of targets",
+            notes = "Optimized search. The total count of element is not returned. Use countData (/count) service in order to get exact count of element"
+    )
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
     })
-    public Response getDataListByTargets(
+    public Response searchDataListByTargets(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -283,53 +347,103 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
-        if (targets == null) {
-            targets = new ArrayList<>();
-        }
-        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        if(germplasmGroup!=null){
-
-            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-            Set<URI> finalTargetsFilter = new HashSet<>(targets);
-            //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-            List<URI> includedExperimentsForTargetsSearch = experiments;
-            if(experiments == null || experiments.isEmpty()){
-                ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
-                experimentSearchFilter.setUser(user);
-                int xpQuantity = experimentDAO.count();
-                experimentSearchFilter.setPage(0);
-                experimentSearchFilter.setPageSize(xpQuantity);
-                includedExperimentsForTargetsSearch = experimentDAO.search(experimentSearchFilter).getList().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-            }
-
-            List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
-                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, user.getLanguage());
-            finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
-            targets = new ArrayList<>(finalTargetsFilter);
-            //if targets is still empty when a group was passed then we don't want any data to be returned
-            if(targets.isEmpty()){
-                ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<DataGetDTO>(new ArrayList<>());
-                return new PaginatedListResponse<>(resultDTOList).getResponse();
-            }
-        }
-
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
+        return getDataList(
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                variables,
+                devices,
+                confidenceMin,
+                confidenceMax,
+                provenances,
+                metadata,
+                operators,
+                germplasmGroup,
+                germplasmUris,
+                orderByList,
+                page,
+                pageSize,
+                PaginatedSearchStrategy.HAS_NEXT_PAGE
+        );
     }
 
-    @GET
-    @ApiOperation("Search data")
+    @POST
+    @Path("by_targets")
+    @ApiOperation(
+            value = "Search data for a large list of targets",
+            notes = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
+    )
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
     })
+    @Deprecated(
+            forRemoval = true
+    )
+    public Response getDataListByTargets(
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    )throws Exception {
+        return getDataList(
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                variables,
+                devices,
+                confidenceMin,
+                confidenceMax,
+                provenances,
+                metadata,
+                operators,
+                germplasmGroup,
+                germplasmUris,
+                orderByList,
+                page,
+                pageSize,
+                PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH
+        );
+    }
+
+    @GET
+    @ApiOperation(
+            value = "Search data",
+            notes = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
+    )
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
+    })
+    @Deprecated(
+            forRemoval = true
+    )
     public Response searchDataList(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
@@ -347,7 +461,26 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
+        return getDataList(
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                variables,
+                devices,
+                confidenceMin,
+                confidenceMax,
+                provenances,
+                metadata,
+                operators,
+                null,
+                null,
+                orderByList,
+                page,
+                pageSize,
+                PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH
+        );
     }
 
     private Response getDataList(
@@ -363,135 +496,150 @@ public class DataAPI {
             List<URI> provenances,
             String metadata,
             List<URI> operators,
+            URI germplasmGroup,
+            List<URI> germplasmUris,
             List<OrderBy> orderByList,
             int page,
-            int pageSize) throws Exception{
+            int pageSize,
+            PaginatedSearchStrategy paginationStrategy) throws Exception{
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataSearchFilter filter;
+
+        try{
+            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
+            if(filter == null){
+                return new PaginatedListResponse<>(new ListWithPagination<>(page, pageSize)).getResponse();
+            }
+        }catch (DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }catch (JsonParseException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
+        }
+
+        Set<URI> dateVariables = new DataDAO(nosql, sparql, fs).getAllDateVariables();
+        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
+
+        // Paginated search : direct convert from model -> dto, no count of data
+        ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
+                new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
+                        .setFilter(filter)
+                        .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
+                        .setPaginationStrategy(paginationStrategy)
+        );
+
+        return new PaginatedListResponse<>(results).getResponse();
+    }
+
+    private DataSearchFilter getSearchFilter(String startDate,
+                                             String endDate,
+                                             String timezone,
+                                             List<URI> experiments,
+                                             List<URI> targets,
+                                             List<URI> variables,
+                                             List<URI> devices,
+                                             Float confidenceMin,
+                                             Float confidenceMax,
+                                             List<URI> provenances,
+                                             String metadata,
+                                             List<URI> operators,
+                                             URI germplasmGroup,
+                                             List<URI> germplasmUris,
+                                             List<OrderBy> orderByList,
+                                             int page,
+                                             int pageSize) throws Exception {
 
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
 
         if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+            startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
         }
-
         if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+            endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
         }
-
         Document metadataFilter = null;
         if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
+            metadataFilter = Document.parse(metadata);
         }
 
-        ListWithPagination<DataModel> resultList = dao.search(
-                user,
-                experiments,
-                targets,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators,
-                orderByList,
-                page,
-                pageSize
-        );
+        DataSearchFilter filter = new DataSearchFilter()
+                .setUser(user)
+                .setExperiments(experiments)
+                .setVariables(variables)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setConfidenceMin(confidenceMin)
+                .setConfidenceMax(confidenceMax)
+                .setMetadata(metadataFilter)
+                .setOperators(operators);
 
-        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        filter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
+
+        Collection<URI> finalTargets = targets;
+
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        //Or/And scientific objects associated with passed germplasms
+        if (germplasmGroup != null || !CollectionUtils.isEmpty(germplasmUris)) {
+            finalTargets = targetByGermplasmFilter(targets, germplasmGroup, germplasmUris, experiments);
+
+            //if targets is still empty when a group was passed then we don't want any data to be returned
+            if(finalTargets.isEmpty()){
+               return null;
+            }
+        }
+        filter.setTargets(finalTargets);
+        return filter;
     }
 
 
 
-    @GET
+    @POST
     @Path("/count")
     @ApiOperation("Count data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of data ", response = Integer.class)
+            @ApiResponse(code = 200, message = "Return the number of data ", response = Long.class)
     })
     public Response countData(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by target uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
-    ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            ) throws Exception {
 
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
+        DataSearchFilter filter;
 
-        if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
+        try{
+            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            if(filter == null){
+                return new SingleObjectResponse<>(0).getResponse();
             }
+        }catch (DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }catch (JsonParseException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
         }
 
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
-        }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
-        }
-
-        int count = dao.count(
-                user,
-                experiments,
-                objects,
-                variables,
-                provenances,
-                devices,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators
-        );
+        CountOptions countOptions = new CountOptions().limit(countLimit);
+        long count = new DataDaoV2(sparql, nosql).count(null, filter, countOptions);
         return new SingleObjectResponse<>(count).getResponse();
     }
 
@@ -559,7 +707,6 @@ public class DataAPI {
 
     public Response update(
             @ApiParam("Data description") @Valid DataUpdateDTO dto
-            //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
@@ -568,7 +715,8 @@ public class DataAPI {
             DataModel model = dto.newModel();
             validData(Collections.singletonList(model));
             dao.update(model);
-            return new SingleObjectResponse<>(dao.modelToDTO(model)).getResponse();
+            return new ObjectUriResponse(model.getUri()).getResponse();
+
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
         } catch (MongoBulkWriteException e) {
@@ -1243,6 +1391,7 @@ public class DataAPI {
                 //Transactions so that we don't create any Data or Annotations if either fail
                 nosql.startTransaction();
                 sparql.startTransaction();
+                data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
                 dao.createAll(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
@@ -1557,8 +1706,7 @@ public class DataAPI {
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
-        
-        List<ProvEntityModel> agents = new ArrayList<>();
+
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
@@ -1574,6 +1722,9 @@ public class DataAPI {
         if( experiment != null) {
             experiments.add(experiment);
         }
+
+        //Set to remember which columns to do at end of row iteration (in case required columns like target are at the end).
+        Set<Integer> colsToDoAtEnd = new HashSet<>();
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
@@ -1756,7 +1907,7 @@ public class DataAPI {
                 if(!StringUtils.isEmpty(annotation)){
                     annotationFromAnnotationColumn = new AnnotationModel();
                     annotationFromAnnotationColumn.setDescription(annotation.trim());
-                    annotationFromAnnotationColumn.setCreator(user.getUri());
+                    annotationFromAnnotationColumn.setPublisher(user.getUri());
                     MotivationModel motivationModel = new MotivationModel();
                     motivationModel.setUri(URI.create(OA.commenting.getURI()));
                     annotationFromAnnotationColumn.setMotivation(motivationModel);
@@ -1765,164 +1916,166 @@ public class DataAPI {
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
-                        if (validRow) {
-                            String variable = headerByIndex.get(colIndex);
-                            URI varURI = URI.create(variable);
-                            if (deviceFromDeviceColumn == null && target == null && object == null) {
-                                missingTargetOrDevice = true;
-                                validRow = false;
-                                break;
-                            }
-                            if (deviceFromDeviceColumn != null) {
-                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
-                                if (!variableIsChecked) {
-                                    if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
-                                        csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        colsToDoAtEnd.add(colIndex);
+                    }
+                }
+            }
+        }
+        //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
+        for(Integer colIndex : colsToDoAtEnd){
+            if (validRow) {
+                String variable = headerByIndex.get(colIndex);
+                URI varURI = URI.create(variable);
+                if (deviceFromDeviceColumn == null && target == null && object == null) {
+                    missingTargetOrDevice = true;
+                    validRow = false;
+                    break;
+                }
+                if (deviceFromDeviceColumn != null) {
+                    boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
+                    if (!variableIsChecked) {
+                        if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
+                            csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
+                        }
+                        variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                    }
+
+                } else if (sensingDeviceFoundFromProvenance) {
+                    if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
+                        List<DeviceModel> devices = new ArrayList<>();
+                        List<DeviceModel> linkedDevice = new ArrayList<>();
+                        DeviceModel dev = null;
+                        for (AgentModel agent : provenance.getAgents()) {
+                            if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                if (dev != null) {
+
+                                    if (variableIsAssociatedToDevice(dev, varURI)) {
+                                        linkedDevice.add(dev);
                                     }
-                                    variableCheckedDevice.put(variable, deviceFromDeviceColumn);
+                                    devices.add(dev);
                                 }
-
-                            } else if (sensingDeviceFoundFromProvenance) {
-                                if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
-                                    List<DeviceModel> devices = new ArrayList<>();
-                                    List<DeviceModel> linkedDevice = new ArrayList<>();
-                                    DeviceModel dev = null;
-                                    for (AgentModel agent : provenance.getAgents()) {
-                                        if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
-                                            dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                            if (dev != null) {
-
-                                                if (variableIsAssociatedToDevice(dev, varURI)) {
-                                                    linkedDevice.add(dev);
-                                                }
-                                                devices.add(dev);
-                                            }
-                                        }
-                                    }
-                                    switch (linkedDevice.size()) {
-                                        case 0:
-                                            if (devices.size() > 1) {
-                                                //wich device to choose ?
-                                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                                csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                                validRow = false;
-                                                break;
-                                            } else {
-                                                if (!devices.isEmpty()) {
-                                                    csvValidation.addVariableToDevice(devices.get(0), varURI);
-                                                    variableCheckedProvDevice.put(variable, devices.get(0));
-                                                } else {
-                                                    if (target == null) {
-                                                        missingTargetOrDevice = true;
-                                                        validRow = false;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            break;
-                                        case 1:
-
-                                            variableCheckedProvDevice.put(variable, linkedDevice.get(0));
-                                            break;
-
-                                        default:
-                                            //witch device to choose ?
-                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
-                                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            }
+                        }
+                        switch (linkedDevice.size()) {
+                            case 0:
+                                if (devices.size() > 1) {
+                                    //which device to choose ?
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                    csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                    validRow = false;
+                                    break;
+                                } else {
+                                    if (!devices.isEmpty()) {
+                                        csvValidation.addVariableToDevice(devices.get(0), varURI);
+                                        variableCheckedProvDevice.put(variable, devices.get(0));
+                                    } else {
+                                        if (target == null) {
+                                            missingTargetOrDevice = true;
                                             validRow = false;
                                             break;
-                                    }
-                                    checkedVariables.add(variable);
-                                } else {
-                                    if (!variableCheckedProvDevice.containsKey(variable)) {
-                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                        csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                        break;
+                                        }
                                     }
                                 }
-                            }
-                            if(validRow) {
-                                DataModel dataModel = new DataModel();
-                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                                provenanceModel.setUri(provenance.getUri());
+                                break;
+                            case 1:
 
-                                if (!experiments.isEmpty()) {
-                                    provenanceModel.setExperiments(experiments);
-                                }
+                                variableCheckedProvDevice.put(variable, linkedDevice.get(0));
+                                break;
 
-                                if (deviceFromDeviceColumn != null) {
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(deviceFromDeviceColumn.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
-
-                                } else if (sensingDeviceFoundFromProvenance) {
-
-                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
-                                    }
-                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(checkedDevice.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
-
-                                }
-
-                                dataModel.setDate(parsedDateTimeMongo.getInstant());
-                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                                if (object != null) {
-                                    dataModel.setTarget(object.getUri());
-                                }
-                                if (target != null) {
-                                    dataModel.setTarget(target.getUri());
-                                }
-                                dataModel.setProvenance(provenanceModel);
-                                dataModel.setVariable(varURI);
-                                DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
-
-                                if (colIndex + 1 < values.length) {
-                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
-                                        dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
-                                    }
-                                }
-
-                                // check for duplicate data
-                                URI targetUri = null;
-                                URI deviceUri = null;
-                                if (target != null) {
-                                    targetUri = target.getUri();
-                                }
-                                if (object != null) {
-                                    targetUri = object.getUri();
-                                }
-                                if(deviceFromDeviceColumn != null) {
-                                    deviceUri = deviceFromDeviceColumn.getUri();
-                                }
-                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
-                                if (!duplicateDataByIndex.contains(importDataIndex)) {
-                                    duplicateDataByIndex.add(importDataIndex);
-                                } else {
-                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                    csvValidation.addDuplicatedDataError(duplicateCell);
-                                }
-                                csvValidation.addData(dataModel, rowIndex);
-
-                            }
-
+                            default:
+                                //which device to choose ?
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
+                                csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                validRow = false;
+                                break;
+                        }
+                        checkedVariables.add(variable);
+                    } else {
+                        if (!variableCheckedProvDevice.containsKey(variable)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                            break;
                         }
                     }
                 }
+                if(validRow) {
+                    DataModel dataModel = new DataModel();
+                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                    provenanceModel.setUri(provenance.getUri());
+
+                    if (!experiments.isEmpty()) {
+                        provenanceModel.setExperiments(experiments);
+                    }
+
+                    if (deviceFromDeviceColumn != null) {
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
+                        agent.setType(rootType);
+                        agent.setUri(deviceFromDeviceColumn.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    } else if (sensingDeviceFoundFromProvenance) {
+
+                        DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                        ProvEntityModel agent = new ProvEntityModel();
+                        if (rootDeviceTypes == null) {
+                            rootDeviceTypes = getRootDeviceTypes();
+                        }
+                        URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                        agent.setType(rootType);
+                        agent.setUri(checkedDevice.getUri());
+                        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
+
+                    }
+
+                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+
+                    if (object != null) {
+                        dataModel.setTarget(object.getUri());
+                    }
+                    if (target != null) {
+                        dataModel.setTarget(target.getUri());
+                    }
+                    dataModel.setProvenance(provenanceModel);
+                    dataModel.setVariable(varURI);
+                    DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
+
+                    if (colIndex + 1 < values.length) {
+                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                        }
+                    }
+
+                    // check for duplicate data
+                    URI targetUri = null;
+                    URI deviceUri = null;
+                    if (target != null) {
+                        targetUri = target.getUri();
+                    }
+                    if (object != null) {
+                        targetUri = object.getUri();
+                    }
+                    if(deviceFromDeviceColumn != null) {
+                        deviceUri = deviceFromDeviceColumn.getUri();
+                    }
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                    if (!duplicateDataByIndex.contains(importDataIndex)) {
+                        duplicateDataByIndex.add(importDataIndex);
+                    } else {
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
+                    }
+                    csvValidation.addData(dataModel, rowIndex);
+
+                }
+
             }
         }
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
@@ -1934,9 +2087,6 @@ public class DataAPI {
             }else{
                 if(validRow){
                     annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
-                    String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
-                    String setToMidday = onlyDateString + "12:00:00Z";
-                    annotationFromAnnotationColumn.setCreated(Instant.parse( setToMidday ).atOffset(ZoneOffset.ofTotalSeconds(0)));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }

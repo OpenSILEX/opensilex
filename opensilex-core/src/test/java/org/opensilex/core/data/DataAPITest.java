@@ -234,6 +234,17 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         return dataDTO;        
     }
 
+    public DataCreationDTO getCreationDataDTO(String date, URI variable, URI target, Object value, DataProvenanceModel provenance) throws URISyntaxException {
+        DataCreationDTO dataDTO = new DataCreationDTO();
+        dataDTO.setProvenance(provenance);
+        dataDTO.setVariable(variable);
+        dataDTO.setTarget(target);
+        dataDTO.setValue(value);
+        dataDTO.setDate(date);
+
+        return dataDTO;
+    }
+
     private MultiPart getImportFileAsMultipart(Path filePath) throws IOException {
         File file = tmpFolder.newFile("import.csv");
         InputStream sourceFileStream = OpenSilex.getResourceAsStream(filePath.toString());

@@ -45,7 +45,7 @@
                 end: undefined,
                 targets: [],
                 description: undefined,
-                author: undefined,
+                publisher: undefined,
                 is_instant: true,
 
                 // move specific properties

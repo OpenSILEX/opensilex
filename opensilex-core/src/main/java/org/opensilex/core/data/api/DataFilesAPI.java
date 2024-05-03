@@ -28,8 +28,9 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -42,21 +43,16 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -146,7 +142,8 @@ public class DataFilesAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         try {
             validDataFileDescription(Arrays.asList(dto));
-            DataFileModel model = dto.newModel();  
+            DataFileModel model = dto.newModel();
+            model.setPublisher(user.getUri());
             model.setFilename(fileContentDisposition.getFileName());
             dao.insertFile(model, file);
             return new CreatedUriResponse(model.getUri()).getResponse();
@@ -567,7 +564,19 @@ public class DataFilesAPI {
                 pageSize
         );
 
-        ListWithPagination<DataFileGetDTO> resultDTOList = resultList.convert(DataFileGetDTO.class, DataFileGetDTO::fromModel);
+        List<DataFileGetDTO> dtoList = new ArrayList<>();
+        resultList.getList().forEach(dataFileModel -> {
+            DataFileGetDTO dto = DataFileGetDTO.fromModel(dataFileModel);
+            if (Objects.nonNull(dataFileModel.getPublisher())) {
+                try {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataFileModel.getPublisher())));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            dtoList.add(dto);
+        });
+        ListWithPagination<DataFileGetDTO> resultDTOList = new ListWithPagination<>(dtoList, resultList.getPage(), resultList.getPageSize(), resultList.getTotal());
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
 

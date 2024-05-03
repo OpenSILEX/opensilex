@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -115,7 +115,13 @@ export default class GroupList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   refresh() {
-    this.tableRef.refresh();
+    this.$opensilex.updateURLParameters(this.filter);
+    this.tableRef.changeCurrentPage(1);
+  }
+
+  updateSelectedGroup(){
+    this.$opensilex.updateURLParameters(this.filter)
+    this.refresh()
   }
 
   searchGroups(options) {

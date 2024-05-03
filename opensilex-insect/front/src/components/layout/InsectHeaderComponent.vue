@@ -3,9 +3,8 @@
     <template v-slot:headerLogo>
       <img
           v-bind:src="$opensilex.getResourceURI('images/smallLogo-insect.png')"
-          class="header-brand-img"
-          alt="lavalite"
-      /><br>
+          class="header-brand-img" />
+      <br>
     </template>
   </opensilex-DefaultHeaderComponent>
 

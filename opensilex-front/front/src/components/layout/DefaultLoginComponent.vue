@@ -5,14 +5,13 @@
 
         <!-- Background image -->
         <div class="col-xl-8 col-lg-6 col-md-5 p-0 d-md-block d-lg-block d-sm-none d-none">
-          <div
+         <!-- "green overlay"  <div
             class="lavalite-bg"
-          >
+          > -->
             <div id="imagesCarrousel">
               <slot name="loginMedia">
                 <!-- display from the last to the first one, first one must have class "bottom" to avoid white page at the end of one cycle -->
 
-                <!--
                 <img class="bottom"
                   v-bind:src="$opensilex.getResourceURI('images/lac.jpg')"
                 />
@@ -30,35 +29,16 @@
                   v-bind:src="$opensilex.getResourceURI('images/phis-login-bg.jpg')"
                 />
 
-                -->
                 <img class="bottom"
                      v-bind:src="$opensilex.getResourceURI('images/opensilex-login-bg.png')"
                 />
 
-
-                <img class="top"
-                  v-bind:src="$opensilex.getResourceURI('images/arenaSetup_LartigueEtAl2021.jpeg')"
-                />
-
-                <img class="top"
-                     v-bind:src="$opensilex.getResourceURI('images/armoiseMultiObjectTrakcingStillFrame.jpeg')"
-                />
-
-                <img class="top"
-                     v-bind:src="$opensilex.getResourceURI('images/ExperimentalSet-up2StudySpatialPpropagation.jpeg')"
-                />
-
-                <img class="top"
-                     v-bind:src="$opensilex.getResourceURI('images/Trichogramma_dendrolimi.jpg')"
-                />
-
-
               </slot>
             </div>
             <!-- low opacity green layout used for phis bg image-->
-            <div class="lavalite-overlay"></div>
+           <!--   <div class="lavalite-overlay"></div> -->
           </div>
-        </div>
+        <!-- </div> -->
 
         <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
 

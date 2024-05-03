@@ -417,8 +417,8 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Installation">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+        <rdfs:label xml:lang="fr">Installation d&apos;un appareil</rdfs:label>
         <rdfs:label xml:lang="en">Installation of devices</rdfs:label>
-        <rdfs:label xml:lang="fr">Mise en place des appareils</rdfs:label>
     </owl:Class>
     
 

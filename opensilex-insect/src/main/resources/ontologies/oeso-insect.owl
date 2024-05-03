@@ -435,6 +435,50 @@
     
 
 
+    <!-- http://purl.org/dc/dcmitype/Image -->
+
+    <owl:Class rdf:about="http://purl.org/dc/dcmitype/Image">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <rdfs:comment xml:lang="en">Examples include paintings, drawings, graphic designs, plans and maps. Recommended best practice is to assign the type Text to images of textual materials. Instances of the type Still Image must also be describable as instances of the broader type Image.</rdfs:comment>
+        <rdfs:label xml:lang="en">Image</rdfs:label>
+        <rdfs:label xml:lang="fr">Image</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/dcmitype/MovingImage -->
+
+    <owl:Class rdf:about="http://purl.org/dc/dcmitype/MovingImage">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/dcmitype/Image"/>
+        <rdfs:comment xml:lang="en">Examples include animations, movies, television programs, videos, zoetropes, or visual output from a simulation. Instances of the type Moving Image must also be describable as instances of the broader type Image.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Image animée</rdfs:label>
+        <rdfs:label xml:lang="en">Moving image</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/dcmitype/Software -->
+
+    <owl:Class rdf:about="http://purl.org/dc/dcmitype/Software">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <rdfs:comment xml:lang="en">A computer program in source or compiled form.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Logiciel</rdfs:label>
+        <rdfs:label xml:lang="en">Software</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.org/dc/dcmitype/StillImage -->
+
+    <owl:Class rdf:about="http://purl.org/dc/dcmitype/StillImage">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/dcmitype/Image"/>
+        <rdfs:comment xml:lang="en">Examples include paintings, drawings, graphic designs, plans and maps. Recommended best practice is to assign the type Text to images of textual materials. Instances of the type Still Image must also be describable as instances of the broader type Image.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Image fixe</rdfs:label>
+        <rdfs:label xml:lang="en">Still image</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
@@ -490,6 +534,15 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Document">
+        <rdfs:label xml:lang="en">Document</rdfs:label>
+        <rdfs:label xml:lang="fr">Document</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Facility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility"/>
@@ -518,6 +571,14 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
         <rdfs:label xml:lang="en">Lightning</rdfs:label>
         <rdfs:label xml:lang="fr">Éclairage</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScientificDocument -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificDocument">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
     </owl:Class>
     
 
@@ -646,6 +707,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Figure -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Figure">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <rdfs:label xml:lang="en">Figure</rdfs:label>
+        <rdfs:label xml:lang="fr">Figure</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin">
@@ -766,12 +837,32 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Picture -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Picture">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <rdfs:label xml:lang="fr">Photo</rdfs:label>
+        <rdfs:label xml:lang="en">Picture</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#Population -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Population">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin"/>
         <rdfs:label xml:lang="en">Population</rdfs:label>
         <rdfs:label xml:lang="fr">Population</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Presentation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Presentation">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
+        <rdfs:label xml:lang="en">Presentation</rdfs:label>
+        <rdfs:label xml:lang="fr">Présentation</rdfs:label>
     </owl:Class>
     
 

@@ -791,6 +791,7 @@ test:gabriel:deploy:
   needs:
     - test:gabriel:build
 
+# Front tests
 
 test:gabriel:front-test:build:
   <<: *build_template_with_opensilex
@@ -842,7 +843,7 @@ test:gabriel:front-test:
       when: on_success
     - if: '$FRONT_TESTS == "true"'
   needs:
-    - gabriel:build
+    - test:gabriel:front-test:build
   artifacts:
     when: always
     paths:

@@ -435,6 +435,49 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
+        <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Événement lié a un objet</rdfs:comment>
+        <rdfs:label xml:lang="en">Event</rdfs:label>
+        <rdfs:label xml:lang="fr">Événement</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Incident -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Incident">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
+        <rdfs:comment xml:lang="fr">Agit sur un objet scientifique</rdfs:comment>
+        <rdfs:comment xml:lang="en">Concerns a scientific object</rdfs:comment>
+        <rdfs:label xml:lang="en">Incident</rdfs:label>
+        <rdfs:label xml:lang="fr">Incident</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:label xml:lang="fr">Gestion d&apos;objet scientifique</rdfs:label>
+        <rdfs:label xml:lang="en">Scientific object management</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Trouble -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Trouble">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:label xml:lang="fr">Problème</rdfs:label>
+        <rdfs:label xml:lang="en">Trouble</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
@@ -503,6 +546,26 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#BreedingProtocolModification -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#BreedingProtocolModification">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Modification dans le protocole d’élevage</rdfs:label>
+        <rdfs:label xml:lang="en">Modification in the breeding protocol</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Building -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Building">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
+        <rdfs:label xml:lang="fr">Batiment</rdfs:label>
+        <rdfs:label xml:lang="en">Building</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#CameraBody -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#CameraBody">
@@ -523,12 +586,52 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#ClimateChamber -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#ClimateChamber">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
+        <rdfs:label xml:lang="fr">Chambre climatique</rdfs:label>
+        <rdfs:label xml:lang="en">Climate chamber</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#ContaminantOrganism -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#ContaminantOrganism">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Contamination"/>
+        <rdfs:label xml:lang="en">Contaminant organism</rdfs:label>
+        <rdfs:label xml:lang="fr">Organisme contaminant</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Contamination -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Contamination">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="en">Contamination</rdfs:label>
+        <rdfs:label xml:lang="fr">Contamination</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#Datalogger -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Datalogger">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:label xml:lang="en">Datalogger</rdfs:label>
         <rdfs:label xml:lang="fr">Enregistreur de données</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Death -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Death">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="en">Death</rdfs:label>
+        <rdfs:label xml:lang="fr">Mort</rdfs:label>
     </owl:Class>
     
 
@@ -639,6 +742,26 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin"/>
         <rdfs:label xml:lang="fr">Lignée</rdfs:label>
         <rdfs:label xml:lang="en">Line</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Loss -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Loss">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="en">Loss</rdfs:label>
+        <rdfs:label xml:lang="fr">Perte</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Moisture -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Moisture">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Contamination"/>
+        <rdfs:label xml:lang="fr">Moissisure</rdfs:label>
+        <rdfs:label xml:lang="en">Moisture</rdfs:label>
     </owl:Class>
     
 

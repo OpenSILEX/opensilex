@@ -295,16 +295,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#BreedingProtocolModification -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#BreedingProtocolModification">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
-        <rdfs:label xml:lang="fr">Modification dans le protocole d’élevage</rdfs:label>
-        <rdfs:label xml:lang="en">Modification in the breeding protocol</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeev#Calibration -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Calibration">
@@ -339,19 +329,8 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <!-- http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ContaminantOrganisms">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Contamination"/>
         <rdfs:label xml:lang="en">contaminant organisms</rdfs:label>
         <rdfs:label xml:lang="fr">organismes contaminants</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#Contamination -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Contamination">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
-        <rdfs:label xml:lang="en">Contamination</rdfs:label>
-        <rdfs:label xml:lang="fr">Contamination</rdfs:label>
     </owl:Class>
     
 
@@ -362,16 +341,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Operability"/>
         <rdfs:label xml:lang="en">Corrective maintenance</rdfs:label>
         <rdfs:label xml:lang="fr">Maintenance correctrice</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#Death -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Death">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
-        <rdfs:label xml:lang="en">Death</rdfs:label>
-        <rdfs:label xml:lang="fr">Mort</rdfs:label>
     </owl:Class>
     
 
@@ -454,32 +423,12 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#Loss -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Loss">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
-        <rdfs:label xml:lang="en">Loss</rdfs:label>
-        <rdfs:label xml:lang="fr">Perte</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeev#ManualCalibration -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#ManualCalibration">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Calibration"/>
         <rdfs:label xml:lang="fr">Calibration manuel</rdfs:label>
         <rdfs:label xml:lang="en">Manual calibration</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#Moisture -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Moisture">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Contamination"/>
-        <rdfs:label xml:lang="fr">Moissisure</rdfs:label>
-        <rdfs:label xml:lang="en">Moisture</rdfs:label>
     </owl:Class>
     
 

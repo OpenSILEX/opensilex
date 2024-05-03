@@ -197,7 +197,7 @@ public class DataAPI {
     public Response addListData(
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
-        DataLogic dataBLL = new DataLogic(sparql, nosql, fs);
+        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
 
         try {
             if (dtoList.size() > SIZE_MAX) {
@@ -210,7 +210,7 @@ public class DataAPI {
                 model.setPublisher(user.getUri());
                 dataList.add(model);
             }
-            List<URI> createdResources = dataBLL.addListData(dataList, user);
+            List<URI> createdResources = dataBLL.addListData(dataList);
 
             return new CreatedUriResponse(createdResources).getResponse();
 
@@ -258,12 +258,12 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDetailsDTO.class),
             @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
     public Response getData(
-            @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
+            @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
+        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
 
         try {
-            DataModel model = dao.get(uri);
+            DataModel model = dataBLL.get(uri);
             DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, getAllDateVariables());
 
             // fetch detailed information about publisher account

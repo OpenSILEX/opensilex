@@ -1,3 +1,9 @@
+//******************************************************************************
+//                          DataAPI.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.data.bll;
 
 import org.apache.jena.graph.Node;
@@ -17,6 +23,7 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -46,7 +53,7 @@ public class DataLogic {
     private final AccountModel user;
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
-        this.dao = new DataDaoV2(sparql, nosql);
+        this.dao = new DataDaoV2(sparql, nosql, fs);
         this.sparql = sparql;
         this.nosql = nosql;
         this.fs = fs;
@@ -55,9 +62,10 @@ public class DataLogic {
 
     //Private stored data
     private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
-    private final Map<URI, URI> rootDeviceTypes = null;
+    private Map<URI, URI> rootDeviceTypes = null;
 
-    //PUBLIC METHODS
+
+    //PUBLIC METHODS ==================================================================================================
 
     /**
      *
@@ -84,8 +92,12 @@ public class DataLogic {
         return createdResources;
     }
 
+    public DataModel get(URI uri) throws NoSQLInvalidURIException {
+        return dao.get(uri);
+    }
 
-    //PRIVATE METHODS
+
+    //PRIVATE METHODS ================================================================================================
     /**
      * Check variable data list before creation
      * Complete the prov_was_associated_with provenance attribut

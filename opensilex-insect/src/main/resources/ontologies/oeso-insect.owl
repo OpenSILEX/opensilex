@@ -657,6 +657,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin"/>
+        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
+        <rdfs:label xml:lang="en">Species</rdfs:label>
     </owl:Class>
     
 

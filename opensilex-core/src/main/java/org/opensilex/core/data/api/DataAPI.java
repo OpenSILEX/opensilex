@@ -56,6 +56,7 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -1852,7 +1853,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = ProvenanceGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
     })
     public Response getUsedVariables(
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
@@ -1868,9 +1869,9 @@ public class DataAPI {
         filter.setProvenances(provenances);
         filter.setDevices(devices);
 
-        List<NamedResourceDTO> dtoList = dataDAO.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
+        List<VariableGetDTO> dtoList = dataDAO.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
                 .stream()
-                .map(NamedResourceDTO::getDTOFromModel)
+                .map(e -> VariableGetDTO.fromModel(e, null))
                 .collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

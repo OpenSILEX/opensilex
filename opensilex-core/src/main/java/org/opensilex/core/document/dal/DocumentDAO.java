@@ -42,8 +42,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
+import static org.opensilex.core.document.dal.DocumentModel.FIRST_ELEMENT_DATE_FIELD;
+import static org.opensilex.core.document.dal.DocumentModel.LAST_ELEMENT_DATE_FIELD;
+import static org.opensilex.core.event.dal.EventDAO.endInstantTimeStampVar;
+import static org.opensilex.core.event.dal.EventDAO.startInstantTimeStampVar;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 
@@ -159,6 +165,20 @@ public class DocumentDAO {
         );
     }
 
+    protected void appendTimeFilter(ElementGroup documentGraphGroupElem,
+                                    LocalDate start,
+                                    LocalDate end
+    ) throws Exception {
+
+        if (start == null && end == null) {
+            return;
+        }
+
+        Expr durationDocumentDateRange = SPARQLQueryHelper.dateRange(FIRST_ELEMENT_DATE_FIELD, start, LAST_ELEMENT_DATE_FIELD, end);
+        documentGraphGroupElem.addElementFilter(new ElementFilter(durationDocumentDateRange));
+    }
+
+
     /**
      * Search a document with several optional parameters
      *
@@ -180,7 +200,7 @@ public class DocumentDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, URI hasVariables, String authors, String subject, String multiple, String deprecated, String firstElementDate, String lastElementDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, URI hasVariables, String authors, String subject, String multiple, String deprecated, LocalDate firstElementDate, LocalDate lastElementDate, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -193,8 +213,7 @@ public class DocumentDAO {
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
-                appendDateFilter(select, firstElementDate);
-                appendDateFilter(select, lastElementDate);
+                appendTimeFilter(multipleGraphGroupElem, firstElementDate, lastElementDate);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendTargetsFilter(multipleGraphGroupElem, hasVariables);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);

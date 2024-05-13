@@ -490,3 +490,7 @@ routes:
     component: opensilex-ResetPassword
     credentials:
       - public
+  - path: /metadata
+    component: opensilex-Dashboard
+    credentials:
+      - public

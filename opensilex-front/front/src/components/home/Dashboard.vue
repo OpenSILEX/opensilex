@@ -402,9 +402,11 @@
             <heat-map
               class="justify-self-center"
               :siteData="data[1]"
+              :filters="[filter.start_date, filter.end_date]"
               :title="`${data[0]}`"
             >
             </heat-map>
+            <word-cloud :result="result"> </word-cloud>
           </b-col>
         </b-row>
       </div>
@@ -697,18 +699,18 @@
           </opensilex-TreeView>
           <div class="mt-10 mb-10">
             <opensilex-FilterField>
-              <opensilex-DateTimeForm
+              <opensilex-DateForm
                 :value.sync="filter.start_date"
                 label="component.common.begin"
                 name="startDate"
                 :max-date="filter.end_date ? filter.end_date : undefined"
                 class="searchFilter"
-              ></opensilex-DateTimeForm>
+              ></opensilex-DateForm>
             </opensilex-FilterField>
           </div>
           <div class="mb-10">
             <opensilex-FilterField>
-              <opensilex-DateTimeForm
+              <opensilex-DateForm
                 :value.sync="filter.end_date"
                 label="component.common.end"
                 name="endDate"
@@ -716,7 +718,7 @@
                 :minDate="filter.start_date"
                 :maxDate="filter.end_date"
                 class="searchFilter"
-              ></opensilex-DateTimeForm>
+              ></opensilex-DateForm>
             </opensilex-FilterField>
           </div>
           <div v-if="documentFromSites.length > 1">
@@ -886,7 +888,8 @@ import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisat
 import CircularGraph from "./CircularGraph.vue";
 import BarGraph from "./BarGraph.vue";
 import HeatMap from "./HeatMap.vue";
-import NewDocument from "./test-json/new_document.json";
+import WordCloud from "./WordCloud.vue";
+import Result from "./test.json";
 
 interface feature {
   type: string;
@@ -924,6 +927,7 @@ interface hasVariables {
     CircularGraph,
     BarGraph,
     HeatMap,
+    WordCloud,
   },
 })
 export default class MapView extends Vue {
@@ -939,6 +943,46 @@ export default class MapView extends Vue {
   @Ref("exportShapeModalList") readonly exportShapeModalList!: any;
   @Ref("mapSidebar") readonly mapSidebar!: any;
 
+  // onLoginAsGuest() {
+  //   this.form.email = "guest@opensilex.org";
+  //   this.form.password = "guest";
+  //   console.log("this.form", this.form)
+  //   this.login().then(() => {
+  //     this.form.email = "";
+  //     this.form.password = "";
+  //   });
+  // }
+
+  // login() {
+  //   this.$opensilex.showLoader();
+  //   return this.$opensilex
+  //     .getService<AuthenticationService>(
+  //       "opensilex-security.AuthenticationService"
+  //     )
+  //     .authenticate({
+  //       identifier: this.form.email,
+  //       password: this.form.password,
+  //     })
+  //     .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
+  //       let user = this.$opensilex.fromToken(http.response.result.token);
+  //       this.$opensilex.setCookieValue(user);
+  //       this.forceRefresh = true;
+  //       this.$store.commit("login", user);
+  //       this.$store.commit("refresh");
+  //     })
+  //     .catch((error) => {
+  //       if (error.status == 403) {
+  //         console.error("Invalid credentials", error);
+  //         this.$opensilex.errorHandler(
+  //           error,
+  //           this.$t("component.login.errors.invalid-credentials")
+  //         );
+  //       } else {
+  //         this.$opensilex.errorHandler(error);
+  //       }
+  //       this.$opensilex.hideLoader();
+  //     });
+  // }
   ///////////// BASE DATA ////////////
   $opensilex: OpenSilexVuePlugin;
   $store: Store<any>;
@@ -1079,6 +1123,8 @@ export default class MapView extends Vue {
   comparationMode: boolean = false;
   compareButtonText: String = "Compare sites";
 
+  result = Result;
+
   ///////////// BASE METHODS ////////////
   get user() {
     return this.$store.state.user;
@@ -1198,8 +1244,9 @@ export default class MapView extends Vue {
     let result = [];
     let index = 0;
     for (const [key, value] of Object.entries(data.has_variables)) {
+      const extractedString = key.split("dev:id/variable/").pop();
       result[index] = {
-        name: key,
+        name: extractedString,
         value: value.nb_of_elements,
         dates: [data.first_element_date, data.last_element_date],
       };
@@ -1432,11 +1479,12 @@ export default class MapView extends Vue {
 
   selectSites(features) {
     features.forEach((feature) => {
+      console.log(this.filter.start_date);
       this.documentsService
         .getMetadataByTargetsAndDates(
           feature.properties.uri,
-          this.formatYear(this.filter.start_date) ? undefined : "",
-          this.formatYear(this.filter.end_date) ? undefined : ""
+          this.filter.start_date,
+          this.filter.end_date
         )
         .then((http: HttpResponse<OpenSilexResponse<DocumentMetadataGetDTO>>) => {
           const result: siteData = {
@@ -1465,8 +1513,6 @@ export default class MapView extends Vue {
       // });
       if (features[0].properties.nature === "Sites") {
         this.selectSites(features);
-      } else {
-        console.log("--");
       }
     } else {
       this.showPopup = false; // Hide the graph when no feature is selected
@@ -1652,13 +1698,14 @@ export default class MapView extends Vue {
     return function __clusterStyleFunc(feature) {
       const size = feature.get("features").length;
       let style = styleCache[size];
+      console.log("feature : ", feature.get("features"));
       if (!style) {
         // Use an image for the map pin
         style = new Style({
           image: new CircleStyle({
             radius: 10,
             stroke: new Stroke({
-              color: "#fff",
+              color: "black",
             }),
             fill: new Fill({
               color: "#ADD8E6",
@@ -1862,7 +1909,6 @@ export default class MapView extends Vue {
               type: element.rdf_type,
               rdf_type_name: element.rdf_type_name,
               nature: "ScientificObjects",
-              document: NewDocument.documents[documentIndex],
             };
             let inserted = false;
             this.featuresOS.forEach((item) => {

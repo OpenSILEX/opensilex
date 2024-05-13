@@ -33,6 +33,8 @@ export default {
           formatter: "{a} <br/>{b} : {c} ({d}%)",
         },
         legend: {
+          type: "scroll",
+          orient: "horizontal",
           left: "center",
           top: "bottom",
           data: this.data.map((item) => item.name), // Assuming each item in data has a 'name' property
@@ -50,10 +52,10 @@ export default {
           {
             name: "Data",
             type: "pie",
-            radius: "50%", // Adjust the radius as needed
+            radius: "70%", // Adjust the radius as needed
             center: ["50%", "50%"], // Center the pie chart
             data: this.data,
-            roseType: "radius", // This is optional and depends on your preference
+            roseType: "area",
             itemStyle: {
               borderRadius: 5,
               marginBottom: 20,

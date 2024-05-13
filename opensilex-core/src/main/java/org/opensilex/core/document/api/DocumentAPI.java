@@ -339,8 +339,8 @@ public class DocumentAPI {
                 subject,
                 multiple,
                 deprecated,
-                firstElementDate,
-                lastElementDate,
+                firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
+                lastElementDate != null ? LocalDate.parse(lastElementDate) : null,
                 orderByList,
                 page,
                 pageSize
@@ -366,7 +366,7 @@ public class DocumentAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        // LocalDate.parse()
+         // LocalDate.parse()
         // start != null ? OffsetDateTime.parse(start) : null
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         ListWithPagination<DocumentModel> resultList = documentDAO.search(
@@ -380,8 +380,8 @@ public class DocumentAPI {
                 null,
                 null,
                 null,
-                firstElementDate,
-                lastElementDate,
+                firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
+                lastElementDate != null ? LocalDate.parse(lastElementDate) : null,
                 null,
                 page,
                 pageSize

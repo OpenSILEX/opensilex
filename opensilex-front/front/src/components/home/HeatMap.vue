@@ -12,9 +12,11 @@ export default {
       type: Object,
       required: true,
     },
+    filters: [String, String],
     title: String,
   },
   mounted() {
+    console.log("filters: ", this.filters);
     this.generateHeatMap();
   },
   watch: {
@@ -34,17 +36,14 @@ export default {
           top: 0,
           left: "center",
           text: this.title,
-          subtext:
-            "from " +
-            this.siteData.first_element_date +
-            " to " +
-            this.siteData.last_element_date,
+          subtext: "from " + this.getRange()[0] + " to " + this.getRange()[1],
         },
         tooltip: {},
         visualMap: {
           min: 0,
           max: 50000,
           type: "piecewise",
+
           orient: "horizontal",
           left: "center",
           top: 65,
@@ -54,7 +53,7 @@ export default {
           left: 30,
           right: 30,
           cellSize: ["auto", 13],
-          range: [this.siteData.first_element_date, this.siteData.last_element_date],
+          range: this.getRange(),
 
           yearLabel: { show: false },
         },
@@ -66,6 +65,16 @@ export default {
       };
 
       myChart.setOption(option);
+    },
+
+    getRange() {
+      if (this.filters[0] && !this.filters[1])
+        return [this.filters[0], this.siteData.last_element_date];
+      else if (!this.filters[0] && this.filters[1])
+        return [this.siteData.first_element_date, this.filters[1]];
+      else if (this.filters[0] && this.filters[1])
+        return [this.filters[0], this.filters[1]];
+      return [this.siteData.first_element_date, this.siteData.last_element_date];
     },
 
     transformSiteDataToHeatmapData() {

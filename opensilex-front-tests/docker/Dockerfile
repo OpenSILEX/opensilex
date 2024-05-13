@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/playwright:v1.37.0-jammy
+FROM mcr.microsoft.com/playwright:v1.40.0-jammy
 RUN apt-get update --allow-insecure-repositories && apt-get install -y git
 RUN apt-get -y install openjdk-11-jre-headless
 RUN apt-get -y install gettext-base

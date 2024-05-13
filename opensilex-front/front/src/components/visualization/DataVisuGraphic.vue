@@ -129,6 +129,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {EventsService} from "opensilex-core/api/events.service";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import {OpenSilexStore} from "../../models/Store";
 
 /**
  * Custom type for highcharts options. The event 'contextmenu', corresponding to the
@@ -160,6 +161,7 @@ exportingInit(Highcharts);
 })
 export default class DataVisuGraphic extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  $store: OpenSilexStore;
 
   @Ref("helpModal") readonly helpModal!: any;
   @Ref("contextMenu") readonly contextMenu!: any;
@@ -625,6 +627,22 @@ export default class DataVisuGraphic extends Vue {
     if (series.length > 0) {
       this.yAxis = this.buildYAxis(this.showEvents);
     }
+
+    // If numpber of data is this.$store.state.graphDataLimit -> data was truncated -> warn user
+    series.forEach((serie) => {
+      if (serie.data.length == this.$store.state.graphDataLimit) {
+        console.log(serie.data[-1])
+        this.$opensilex.showWarningToast(
+            this.$i18n.t("DataVisuGraphic.dataLimit", {
+              dataLimit: this.$store.state.graphDataLimit,
+              //@ts-ignore
+              finalDate: serie.data[serie.data.length - 1].data.date,
+              variable: serie.name
+            }).toString()
+        )
+      }
+    })
+
     this.series = series;
     this.linkToCorrectAxis();
   }
@@ -938,6 +956,7 @@ fr:
     download : Télecharger l'image
     rightClick : click droit sur un point pour ajouter un evénement ou une annotation
     name: Nom
+    dataLimit: Seules les {dataLimit} premières données de '{variable}' ont été chargées. La date finale a été reculée à '{finalDate}'. Vous pouvez mettre à jour la date de début pour charger des données ultérieures.
 
 en:
   DataVisuGraphic:
@@ -951,4 +970,5 @@ en:
     download : Download image
     rightClick : right click on a point to add event or annotation
     name: Name
+    dataLimit: Only the first {dataLimit} data of '{variable}' were loaded. The final date was moved back to '{finalDate}'. You can update your starting date to load later data.
 </i18n>

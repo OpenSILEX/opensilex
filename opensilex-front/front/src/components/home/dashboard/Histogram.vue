@@ -343,7 +343,7 @@ export default class Histogram extends Vue {
         undefined,
         ["date=asc"],
         0,
-        50000,
+          this.$store.state.graphDataLimit,
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
@@ -352,7 +352,7 @@ export default class Histogram extends Vue {
         if (dataLength >= 0) {
           const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: device.uri});
 
-          if (dataLength > 50000) {
+          if (dataLength > this.$store.state.graphDataLimit) {
             this.$opensilex.showErrorToast(
               this.$i18n.t("Histogram.limitSizeMessageA") +
               " " +

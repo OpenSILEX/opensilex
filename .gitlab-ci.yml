@@ -806,6 +806,7 @@ test:gabriel:front-test:
   image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
   #  parallel: 7    for parallelization
   script:
+    # TODO : use a specific test configs in opensilex-dev-tools?
     - echo "SETTING UP CONFIG"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
@@ -818,10 +819,10 @@ test:gabriel:front-test:
     - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - echo "$(</opensilex.yml)"
+    # TODO : comment next line out once everything works
     - printenv
     - envsubst < /opensilex.yml > /opensilex_mod.yml
-    - echo "/opensilex_mod.yml config file content :"
-    - echo "$(</opensilex_mod.yml)"
+    - echo "/opensilex_mod.yml config file content :" && echo "$(</opensilex_mod.yml)"
     - echo "START DOCKERS :"
     - cd opensilex-dev-tools/src/main/resources/docker
     - dockerd &

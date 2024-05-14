@@ -8,6 +8,7 @@ public class AgroportalTermModel {
 
     private String[] prefLabel;
     private String[] synonym;
+    @JsonProperty("definition")
     private String[] definitions;
     private boolean obsolete;
     @JsonProperty("@id")

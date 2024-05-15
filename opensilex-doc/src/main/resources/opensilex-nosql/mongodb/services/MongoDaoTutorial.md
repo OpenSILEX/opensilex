@@ -312,7 +312,7 @@ This filter is used for several methods :
 ### Session management
 
 > Each `MongoReadWriteDao#search` method can use a custom `ClientSession` during search. 
-> See [Usage of session management](#session-management-use-cases)
+> See [Usage of session management](#transaction-management--mongodbservicev2)
 
 ```java
 /* Session already created */

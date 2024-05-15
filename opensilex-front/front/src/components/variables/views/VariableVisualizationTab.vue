@@ -436,7 +436,7 @@ export default class VariableVisualizationTab extends Vue {
             undefined,
             ["date=asc"],
             0,
-            50000
+            this.$store.state.graphDataLimit
         )
         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
           const data = http.response.result as Array<DataGetDTO>;
@@ -449,17 +449,6 @@ export default class VariableVisualizationTab extends Vue {
 
           if (dataLength >= 0) {
             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
-            if (dataLength > 50000) {
-              this.$opensilex.showInfoToast(
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
-                  " " +
-                  dataLength +
-                  " " +
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageB") +
-                  concernedItem.name +
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageC")
-              );
-            }
 
             let name = concernedItem.name ? concernedItem.name : concernedItem.uri
             return {

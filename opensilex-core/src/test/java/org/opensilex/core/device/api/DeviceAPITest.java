@@ -10,6 +10,7 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
@@ -39,7 +40,12 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.group.api.GroupAPI;
+import org.opensilex.security.group.api.GroupCreationDTO;
+import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.group.api.GroupUserProfileModificationDTO;
 import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -57,6 +63,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.mail.internet.InternetAddress;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -65,6 +72,7 @@ import java.util.function.BiPredicate;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -72,6 +80,8 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  * @author rcolin
  */
 public class DeviceAPITest extends AbstractMongoIntegrationTest {
+
+
 
     public String path = DeviceAPI.PATH;
     public String getByUriPath = path + "/{uri}";
@@ -85,6 +95,15 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public String dataPath = DataAPI.PATH;
 
     private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
+
+    public ServiceDescription search = new ServiceDescription(
+            DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
+            path
+    );
+    public ServiceDescription create = new ServiceDescription(DeviceAPI.class.getMethod("createDevice", DeviceCreationDTO.class, Boolean.class), createPath);
+
+    public DeviceAPITest() throws NoSuchMethodException {
+    }
 
     public DeviceCreationDTO getCreationDto() throws Exception {
 
@@ -106,6 +125,63 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         dto.setMetadata(metadata);
 
         return dto;
+    }
+
+    /**
+     * Tests some searches with different params, including a search that uses metaData
+     * @throws Exception
+     */
+    @Test
+    public void testSearch() throws Exception {
+        //createTestEnv();
+
+        new UserCallBuilder(create)
+                .setBody(getCreationDto())
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        DeviceCreationDTO dto1 = getCreationDto();
+        dto1.setName("No metadata device");
+        dto1.setMetadata(null);
+
+        new UserCallBuilder(create)
+                .setBody(dto1)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        DeviceCreationDTO dto2 = getCreationDto();
+        dto2.setName("WrongMetadataDevice");
+        Map<String, String> wrongMetadata = new HashMap<>();
+        wrongMetadata.put("no", "nono");
+        dto2.setMetadata(wrongMetadata);
+
+        new UserCallBuilder(create)
+                .setBody(dto2)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //Test search by metadata
+        Map<String, String> metaParamValue = new HashMap<>();
+        metaParamValue.put("prop1", "value1");
+        PaginatedListResponse<DeviceGetDTO> listResponse = new UserCallBuilder(search).addParam("metadata", URLEncoder.encode(new ObjectMapper().writeValueAsString(metaParamValue), "UTF-8"))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        List<DeviceGetDTO> foundDevices = listResponse.getResult();
+
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+
+        //Test search by name
+        PaginatedListResponse<DeviceGetDTO> listResponse2 = new UserCallBuilder(search).addParam("name", "name")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse2.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
     }
 
     @Test
@@ -429,7 +505,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<String> getCollectionsToClearNames() {
         return Arrays.asList(
-                DeviceDAO.ATTRIBUTES_COLLECTION_NAME,
+                DeviceAPI.METADATA_COLLECTION_NAME,
                 ProvenanceDAO.PROVENANCE_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
                 DataDAO.FILE_COLLECTION_NAME

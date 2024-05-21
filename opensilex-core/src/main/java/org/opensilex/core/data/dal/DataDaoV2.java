@@ -113,13 +113,13 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
-        return this.distinctUris(dataSearchFilter);
+        return distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
     }
 
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
-        Set<URI> variableURIs = new HashSet<>(distinctUris(dataSearchFilter));
+        Set<URI> variableURIs = new HashSet<>(distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
         String userLanguage = null;
         if(user != null){
             userLanguage = user.getLanguage();
@@ -131,7 +131,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects);
-        return new HashSet<>(distinctUris(dataSearchFilter));
+        return new HashSet<>(distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
     }
 
     /**

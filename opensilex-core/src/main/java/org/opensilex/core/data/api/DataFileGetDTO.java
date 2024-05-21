@@ -33,16 +33,16 @@ public class DataFileGetDTO extends DataFileCreationDTO {
     private String filename;
 
     @JsonProperty("publisher")
-    protected UserGetDTO publisher;
+    protected URI publisher;
 
     @JsonProperty("issued")
     protected OffsetDateTime publicationDate;
 
-    public UserGetDTO getPublisher() {
+    public URI getPublisher() {
         return publisher;
     }
 
-    public void setPublisher(UserGetDTO publisher) {
+    public void setPublisher(URI publisher) {
         this.publisher = publisher;
     }
 
@@ -76,6 +76,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setProvenance(model.getProvenance());
         dto.setArchive(model.getArchive());
         dto.setFilename(model.getFilename());
+        dto.setPublisher(model.getPublisher());
         if (Objects.nonNull(model.getPublicationDate())) {
             dto.setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }

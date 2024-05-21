@@ -198,9 +198,7 @@ public class ProvenanceAPI {
                 new MongoSearchQuery<ProvenanceModel, ProvenanceSearchFilter, ProvenanceGetDTO>()
                         .setFilter(filter)
                         .setConvertFunction(ProvenanceGetDTO::fromModel)
-                        .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE)
         );
-
         return new PaginatedListResponse<>(results).getResponse();
     }
 

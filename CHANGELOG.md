@@ -1,11 +1,15 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.2.4]](#124)
+  * [[1.2.6]](#126)
     * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.2.5]](#125)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.2.4]](#124)
+    * [Fixed or optimized](#fixed-or-optimized-2)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features)
-    * [Fixed or optimized](#fixed-or-optimized-1)
+    * [Fixed or optimized](#fixed-or-optimized-3)
   * [[1.2.2]](#122)
     * [Fixed](#fixed)
   * [[1.2.1]](#121)
@@ -13,35 +17,35 @@
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
     * [Changes and new features](#changes-and-new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-2)
+    * [Fixed or optimized](#fixed-or-optimized-4)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
     * [Changes and new features](#changes-and-new-features-2)
-    * [Fixed or optimized](#fixed-or-optimized-3)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Fixed or optimized](#fixed-or-optimized-6)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Fixed or optimized](#fixed-or-optimized-7)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.0.0-rc+6]](#100-rc6)
-    * [Fixed or optimized](#fixed-or-optimized-7)
+    * [Fixed or optimized](#fixed-or-optimized-9)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-10)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-9)
+    * [Fixed or optimized](#fixed-or-optimized-11)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-10)
+    * [Fixed or optimized](#fixed-or-optimized-12)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed-2)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -57,10 +61,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-11)
+    * [Fixed or optimized](#fixed-or-optimized-13)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-12)
+    * [Fixed or optimized](#fixed-or-optimized-14)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -84,6 +88,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.6]
+
+### Fixed or optimized
+
+- (!1219) Fixed display of custom relations in forms when both incoming and outgoing relations are defined.
+
+## [1.2.5]
+
+### Fixed or optimized
+
+- (!1218) Service "all_facilities" now correctly returns all results
 
 ## [1.2.4]
 

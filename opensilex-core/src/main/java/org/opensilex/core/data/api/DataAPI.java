@@ -520,11 +520,31 @@ public class DataAPI {
         Set<URI> dateVariables = getAllDateVariables();
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql, fs);
 
+        //TODO made it here, this has something to do with a discussion with Renaud
+
+        MongoSearchQuery query;
+        var func = query.getConvertFunction();
+        if(func){
+            query.setConvertFunction((model) -> {
+                model.setValue("");
+                return func(model);
+            });
+        }else{
+            query.setConvertFunction((model) -> {
+                model.setValue("");
+                return model;
+            });
+        }
+
+
         // Paginated search : direct convert from model -> dto, no count of data
         ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
                 new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
                         .setFilter(filter)
-                        .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
+                        .setConvertFunction(model -> {
+                            model.setValue("fff");
+                            return DataGetSearchDTO.getDtoFromModel(model, null)
+                        })
                         .setPaginationStrategy(paginationStrategy)
         );
 

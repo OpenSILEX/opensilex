@@ -577,11 +577,27 @@ public class DataFilesAPI {
         filter.setPage(page);
         filter.setPageSize(pageSize);
 
+        //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
+        Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
         ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
                 new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
                         .setFilter(filter)
-                        .setConvertFunction(DataFileGetDTO::fromModel)
+                        .setConvertFunction(model -> {
+                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
+                            if (Objects.nonNull(model.getPublisher())) {
+                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                                publishersDataFiles.add(next);
+                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
+                            }
+                            return next;
+                        })
                         .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
+        );
+        //Fetch all the publishers in one call
+        new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
+                accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(
+                        dataFileGetDTO -> dataFileGetDTO.setPublisher(UserGetDTO.fromModel(accountModel))
+                )
         );
 
         return new PaginatedListResponse<>(results).getResponse();

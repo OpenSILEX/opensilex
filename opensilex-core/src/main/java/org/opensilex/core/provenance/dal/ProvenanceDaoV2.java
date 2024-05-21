@@ -34,6 +34,9 @@ public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, Provenan
 
         Map<Bson, IndexOptions> indexes = new HashMap<>();
         indexes.put(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
+        indexes.put(Indexes.ascending(ProvenanceModel.NAME_FIELD), null);
+        indexes.put(Indexes.ascending(ProvenanceModel.ACTIVITY_TYPE_FIELD), null);
+        indexes.put(Indexes.ascending(ProvenanceModel.AGENTS_TYPE_FIELD), null);
         return indexes;
     }
 

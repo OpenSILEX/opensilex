@@ -95,6 +95,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (!1219) Fixed display of custom relations in forms when both incoming and outgoing relations are defined.
 
+### Known issue
+
+- Self-referencing custom properties (i.e. properties that reference the same type as the object they are declared on,
+  e.g. a Device property that targets another Device) are **not stable** when declared in chain for _Scientific Objects_
+  and _Devices_, meaning that they can be removed by the system when trying to update one of the resource of the chain.
+  By "chain", we mean three or more resources that are linked together by the same property.
+
+  For example, a property "contains" declared on scientific objects A, B and C such as "A contains B" and "B contains C"
+  may be removed when trying to update A, B or C.
+  
+  We are actively working on fixing this issue, but for the moment you should avoid declaring this kind of property 
+  chain.
+
 ## [1.2.5]
 
 ### Fixed or optimized

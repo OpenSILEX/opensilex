@@ -290,7 +290,9 @@ export default class OntologyRelationsForm extends Vue {
         let valueByProperties = new Map<string, MultiValuedRDFObjectRelation>();
 
         // read each mono-valued relations and convert them into multi-valued relations (group by property)
-        relations.forEach(relation => {
+        relations
+            .filter(relation => !relation.inverse)
+            .forEach(relation => {
 
             // get data or object property model
             let propertyDto = this.typeModel.object_properties.find(propertyModel => propertyModel.uri == relation.property)

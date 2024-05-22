@@ -26,6 +26,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -34,6 +35,7 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.util.*;
@@ -94,6 +96,10 @@ public class DataLogic {
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
         return dao.get(uri);
+    }
+
+    public <T> ListWithPagination<T> getDataList(MongoSearchQuery<DataModel, DataSearchFilter, T> query){
+        return dao.searchWithPagination(query);
     }
 
 

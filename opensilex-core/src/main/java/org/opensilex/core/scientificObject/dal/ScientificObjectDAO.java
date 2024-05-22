@@ -962,8 +962,7 @@ public class ScientificObjectDAO {
         try {
             sparql.startTransaction();
             nosql.startTransaction();
-            sparql.deleteByURI(graphNode, objectURI);
-            sparql.create(graphNode, object);
+            sparql.update(graphNode, object);
             if (childrenURIs.size() > 0) {
                 sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }

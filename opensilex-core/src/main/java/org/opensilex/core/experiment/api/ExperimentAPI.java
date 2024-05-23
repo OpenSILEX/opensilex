@@ -21,10 +21,7 @@ import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
-import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
@@ -422,7 +419,7 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
         List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null, null);

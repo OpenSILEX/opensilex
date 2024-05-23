@@ -16,6 +16,7 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -27,6 +28,7 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.variable.dal.InterestEntityModel;
@@ -228,6 +230,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         MongoDBServiceV2 mongoDBServiceV2 = getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
         mongoDBServiceV2.registerIndexes(DataDaoV2.COLLECTION_NAME, DataDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(DeviceAPI.METADATA_COLLECTION_NAME, MetaDataDaoV2.getIndexes());
+        mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
+        mongoDBServiceV2.registerIndexes(ProvenanceDaoV2.PROVENANCE_COLLECTION_NAME, DataFileDaoV2.getIndexes());
 
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {

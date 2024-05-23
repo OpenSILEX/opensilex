@@ -192,7 +192,7 @@ public class CharacteristicAPI {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 
         CharacteristicModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
@@ -215,7 +215,7 @@ public class CharacteristicAPI {
             @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
-        dao.delete(uri, Oeso.hasCharacteristic);
+        dao.delete(uri, Oeso.hasCharacteristic, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

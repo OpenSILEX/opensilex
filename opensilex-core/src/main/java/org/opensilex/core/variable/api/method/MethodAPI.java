@@ -196,7 +196,7 @@ public class MethodAPI {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
 
         MethodModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
@@ -219,7 +219,7 @@ public class MethodAPI {
             @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-        dao.delete(uri, Oeso.hasMethod);
+        dao.delete(uri, Oeso.hasMethod, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

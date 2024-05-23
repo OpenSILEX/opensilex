@@ -20,6 +20,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -323,7 +324,7 @@ public class MetricDAO {
     }
 
     private HashMap<URI, String> getUsedVariablesFromDataDAO() throws Exception {
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
         List<VariableModel> usedVariables = dataDAO.getUsedVariables(user, null, null, null, null);
 
         HashMap<URI, String> variables = new HashMap<>();
@@ -415,12 +416,13 @@ public class MetricDAO {
         nosql.create(model, SystemSummaryModel.class, METRICS_COLLECTION, "system");
     }
 
+    //TODO uses data dao so move to a BLL one day
     private CountListItemModel getDataCountByVariables(URI experimentURI, AccountModel currentUser) throws Exception {
         List<URI> experiments = null;
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
         }
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
 
         List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, experiments, null, null, null);
         Map<URI, VariableModel> tmpVariable = new HashMap<>();

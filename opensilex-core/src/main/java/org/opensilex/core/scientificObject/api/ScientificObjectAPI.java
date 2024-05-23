@@ -21,6 +21,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
@@ -386,7 +387,7 @@ public class ScientificObjectAPI {
 
             //TODO this crushes the result of criteria search, how should this be handled?
             if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-                DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+                DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
                 var targets = dataDAO.getUsedTargets(currentUser, devices, variables, null);
                 if (targets.isEmpty()) {
                     return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
@@ -996,7 +997,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, null);
         List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null, null);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

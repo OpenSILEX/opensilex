@@ -28,6 +28,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -155,20 +156,20 @@ public class DataFilesAPI {
             java.nio.file.Path filePath = Paths.get(FS_FILE_PREFIX, filename);
             model.setPath(filePath.toString());
             try{
-                new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+                nosql.getServiceV2().withSession(session -> {
                     dao.create(session, model);
                     fs.writeFile(FS_FILE_PREFIX, filePath, file);
-                    return 0;
                 });
             } catch(Exception e){
                 fs.deleteIfExists(FS_FILE_PREFIX, filePath);
                 throw e;
             }
             return new CreatedUriResponse(model.getUri()).getResponse();
-        } catch (MongoWriteException duplicateKey) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Duplicate Data", duplicateKey.getMessage())
-                .getResponse();
-        } catch (DateValidationException e) {
+        }
+        catch (MongoDbUniqueIndexConstraintViolation duplicateKey) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Duplicate DataFile", duplicateKey.getMessage()).getResponse();
+        }
+        catch (DateValidationException e) {
             return new DateMappingExceptionResponse().toResponse(e);
         } catch (NoSQLInvalidUriListException e) {
             throw new NotFoundException(e.getMessage());
@@ -576,21 +577,27 @@ public class DataFilesAPI {
         filter.setPage(page);
         filter.setPageSize(pageSize);
 
+        //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
+        Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
         ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
                 new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
                         .setFilter(filter)
                         .setConvertFunction(model -> {
                             DataFileGetDTO next = DataFileGetDTO.fromModel(model);
                             if (Objects.nonNull(model.getPublisher())) {
-                                try {
-                                    next.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
+                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                                publishersDataFiles.add(next);
+                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
                             }
                             return next;
                         })
                         .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
+        );
+        //Fetch all the publishers in one call
+        new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
+                accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(
+                        dataFileGetDTO -> dataFileGetDTO.setPublisher(UserGetDTO.fromModel(accountModel))
+                )
         );
 
         return new PaginatedListResponse<>(results).getResponse();

@@ -1317,7 +1317,6 @@ public class DataAPI {
             resultDTOList.add(ProvenanceGetDTO.fromModel(result));
         });
         return new PaginatedListResponse<>(resultDTOList).getResponse();
-        //TODO MADE IT TO HERE
     }
 
     @POST
@@ -1338,7 +1337,13 @@ public class DataAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return searchUsedProvenances(experiments, targets, variables, devices);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
+        List<ProvenanceModel> usedProvenances = dataLogic.searchUsedProvenances(experiments, targets, variables, devices);
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
+        usedProvenances.forEach(result -> {
+            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+        });
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     
@@ -1357,6 +1362,7 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
+        //TODO MADE IT TO HERE
         DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);

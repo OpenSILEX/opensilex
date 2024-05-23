@@ -1,12 +1,18 @@
 //******************************************************************************
-//                          DataAPI.java
+//                          DataLogic.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
 package org.opensilex.core.data.bll;
 
+import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.result.DeleteResult;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.XSD;
+import org.opensilex.core.data.api.DataExportDTO;
+import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
@@ -16,7 +22,9 @@ import org.opensilex.core.exception.DeviceProvenanceAmbiguityException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.ProvenanceAgentTypeException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -28,16 +36,26 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.pagination.StreamWithPagination;
+import org.slf4j.Logger;
 
+import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -98,10 +116,221 @@ public class DataLogic {
         return dao.get(uri);
     }
 
+    /**
+     * Fetches and return all URIs for the variable with the xsd:date datatype.
+     *
+     * @return
+     * @throws Exception
+     */
+    public Set<URI> getAllDateVariables() throws Exception {
+        return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
+            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
+        }));
+    }
+
     public <T> ListWithPagination<T> getDataList(MongoSearchQuery<DataModel, DataSearchFilter, T> query){
         return dao.searchWithPagination(query);
     }
 
+    public StreamWithPagination<DataModel> getDataListStream(DataSearchFilter filter){
+        return dao.searchAsStreamWithPagination(filter);
+    }
+
+    /**
+     *
+     * @param forWideFormat if true it's for wide export, else for long format
+     * @return All of the data needed to perform an export
+     */
+    public DataExportInformation getDataExportInformation(boolean forWideFormat, DataSearchFilter filter, Logger logger) throws Exception {
+        //Init everything needed for result
+        Map<URI, VariableModel> variables = new HashMap<>();
+        Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
+        Map<URI, ProvenanceModel> provenances = new HashMap<>();
+        Map<URI, ExperimentModel> experiments = new HashMap();
+        //Use this next map only in the case of wide format
+        Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
+        //And use this next map only when in long format
+        HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
+
+
+        //Get data
+        Instant start = Instant.now();
+        List<DataModel> resultList = new ArrayList<>();
+        //TODO optimization the prepare stuff can just go in the stream handler ?
+        dao.searchAsStreamWithPagination(filter).forEach(resultList::add);
+
+        Instant data = Instant.now();
+        logger.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+
+        Set<URI> dateVariables = getAllDateVariables();
+
+
+        //Prepare all the other things we have to fetch (variables, objects...)
+        for (DataModel dataModel : resultList) {
+            if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
+                objects.put(dataModel.getTarget(), null);
+            }
+
+            if (!variables.containsKey(dataModel.getVariable())) {
+                variables.put(dataModel.getVariable(), null);
+            }
+
+            if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
+                provenances.put(dataModel.getProvenance().getUri(), null);
+            }
+
+            if (forWideFormat && !dataByIndexAndInstant.containsKey(dataModel.getDate())) {
+                dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
+            }
+
+            if(!forWideFormat){
+                if (!dataByInstant.containsKey(dataModel.getDate())) {
+                    dataByInstant.put(dataModel.getDate(), new ArrayList<>());
+                }
+                dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel, dateVariables));
+            }
+
+            if (dataModel.getProvenance().getExperiments() != null) {
+                for (URI exp:dataModel.getProvenance().getExperiments()) {
+                    if (!experiments.containsKey(exp)) {
+                        experiments.put(exp, null);
+                    }
+                    //Everything else in for loop is for wide format only
+                    if(!forWideFormat){
+                        continue;
+                    }
+
+                    ExportDataIndex exportDataIndex = new ExportDataIndex(
+                            exp,
+                            dataModel.getProvenance().getUri(),
+                            dataModel.getTarget()
+                    );
+
+                    if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                        dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                    }
+                    dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
+                }
+            } else if(forWideFormat) {
+                //Everything in this else block is for wide format only
+                ExportDataIndex exportDataIndex = new ExportDataIndex(
+                        null,
+                        dataModel.getProvenance().getUri(),
+                        dataModel.getTarget()
+                );
+
+                if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                    dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                }
+                dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null, dateVariables));
+            }
+        }
+        Instant dataTransform = Instant.now();
+        logger.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+
+
+        //Get other stuff we have to get (variables, objects, etc...)
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        for (VariableModel variableModel : variablesModelList) {
+            variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
+        }
+        Instant variableTime = Instant.now();
+        logger.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        // Provide the experiment as context if there is only one, and only in wide format.
+        URI context = null;
+        if (forWideFormat && experiments.size() == 1) {
+            context = experiments.keySet().stream().findFirst().get();
+        }
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), context);
+        for (SPARQLNamedResourceModel obj : objectsList) {
+            objects.put(obj.getUri(), obj);
+        }
+        Instant targetTime = Instant.now();
+        logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> provenanceModels = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
+        for (ProvenanceModel prov : provenanceModels) {
+            provenances.put(prov.getUri(), prov);
+        }
+        Instant provenancesTime = Instant.now();
+        logger.debug("Get " + provenanceModels.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+
+        sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        for (ExperimentModel exp : listExp) {
+            experiments.put(exp.getUri(), exp);
+        }
+        Instant expTime = Instant.now();
+        logger.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+
+
+        //Handle return
+        DataExportInformation result;
+        if(forWideFormat){
+            result = new DataWideExportInformation();
+            ((DataWideExportInformation)result).setDataByIndexAndInstant(dataByIndexAndInstant);
+        }else{
+            result = new DataLongExportInformation();
+            ((DataLongExportInformation)result).setDataByInstant(dataByInstant);
+        }
+        result.setVariables(variables)
+                .setObjects(objects)
+                .setProvenances(provenances)
+                .setExperiments(experiments);
+
+        return result;
+    }
+
+    public List<ProvenanceModel> searchUsedProvenances(
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> variables,
+            List<URI> devices) {
+
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(experiments);
+        filter.setTargets(targets);
+        filter.setVariables(variables);
+        filter.setDevices(devices);
+
+        List<URI> provenanceURIs = dao.distinct(null, "provenance.uri", URI.class, filter);
+        List<ProvenanceModel> resultList = new ArrayList<>();
+
+        if(!provenanceURIs.isEmpty()){
+            //TODO dont use ProvenanceDaoV2 when provenance logic class has been created
+            ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+            resultList = provenanceDao.findByUris(provenanceURIs.stream(), provenanceURIs.size());
+        }
+        return resultList;
+    }
+
+    public long countData(DataSearchFilter filter, CountOptions countOptions){
+        return dao.count(null, filter, countOptions);
+    }
+
+    public void delete(URI uri) throws NoSQLInvalidURIException {
+        dao.delete(uri);
+    }
+
+    public void updateConfidence(URI dataUri, Float confidence) throws NoSQLInvalidURIException{
+        DataModel data = dao.get(dataUri);
+        data.setConfidence(confidence);
+        dao.update(data);
+    }
+
+    public void update(DataModel model) throws Exception{
+        validData(Collections.singletonList(model));
+        dao.update(model);
+    }
+
+    public DeleteResult deleteManyByFilter(DataSearchFilter filter){
+        return dao.deleteMany(filter);
+    }
 
     //PRIVATE METHODS ================================================================================================
     /**

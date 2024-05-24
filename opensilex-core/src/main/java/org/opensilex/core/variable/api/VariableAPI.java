@@ -215,7 +215,7 @@ public class VariableAPI {
         VariableDAO dao = getDao();
 
         VariableModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK, shortUri).getResponse();
     }
@@ -238,7 +238,7 @@ public class VariableAPI {
             @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = getDao();
-        dao.delete(uri);
+        dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

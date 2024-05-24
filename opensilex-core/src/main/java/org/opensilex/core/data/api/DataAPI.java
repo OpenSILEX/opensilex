@@ -9,9 +9,11 @@ package org.opensilex.core.data.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
+import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
@@ -19,8 +21,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -40,22 +44,26 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
+import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
-import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -84,6 +92,7 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
@@ -104,11 +113,14 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
@@ -184,7 +196,7 @@ public class DataAPI {
     public Response addListData(
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         List<DataModel> dataList = new ArrayList<>();
         try {
             if (dtoList.size() > SIZE_MAX) {
@@ -196,48 +208,51 @@ public class DataAPI {
                 model.setPublisher(user.getUri());
                 dataList.add(model);
             }
-            
+
             dataList = validData(dataList);
 
-            dataList = dao.createAll(dataList);
+            dao.create(dataList);
             if(variablesToDevices.size() > 0) {
-               
+
                 DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
                 for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    
+
                     deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                    
+
                 }
             }
-            // do the  variable/device associations here ..
-            
+
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList) {
                 createdResources.add(data.getUri());
             }
             return new CreatedUriResponse(createdResources).getResponse();
-
         } catch (NoSQLTooLargeSetException ex) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",
                     ex.getMessage()).getResponse();
 
-        } catch (MongoBulkWriteException duplicateError) {
-            List<DataCreationDTO> datas = new ArrayList();
-            List<BulkWriteError> errors = duplicateError.getWriteErrors();
-            for (int i = 0; i < errors.size(); i++) {
-                int index = errors.get(i).getIndex();
-                datas.add(dtoList.get(index));
-            }
-            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-            String json = mapper.writeValueAsString(datas);
-
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
+        }catch (MongoDbUniqueIndexConstraintViolation duplicateError){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
+                    .getResponse();
+        }
+        catch (MongoBulkWriteException someWriteException) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "WRITE_ERROR", someWriteException.getMessage())
                     .getResponse();
 
-        } catch (MongoCommandException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
+        }
+        catch (MongoException mongoException) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "MONGO_EXCEPTION", mongoException.getMessage())
                     .getResponse();
-        } catch (DateValidationException e) {
+        }
+        catch(NoSQLAlreadyExistingUriException noSQLAlreadyExistingUriException){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_URI", noSQLAlreadyExistingUriException.getMessage())
+                    .getResponse();
+        }
+        catch(URISyntaxException uriSyntaxException){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "URI_SYNTAX_ERROR", uriSyntaxException.getMessage())
+                    .getResponse();
+        }
+        catch (DateValidationException e) {
             return new DateMappingExceptionResponse().toResponse(e);
         } catch (DataTypeException | NoVariableDataTypeException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR", e.getMessage())
@@ -259,11 +274,11 @@ public class DataAPI {
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
 
         try {
             DataModel model = dao.get(uri);
-            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, dao.getAllDateVariables());
+            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, getAllDateVariables());
 
             // fetch detailed information about publisher account
             if(model.getPublisher() != null){
@@ -516,8 +531,8 @@ public class DataAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
         }
 
-        Set<URI> dateVariables = new DataDAO(nosql, sparql, fs).getAllDateVariables();
-        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql);
+        Set<URI> dateVariables = getAllDateVariables();
+        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, nosql, fs);
 
         // Paginated search : direct convert from model -> dto, no count of data
         ListWithPagination<DataGetSearchDTO> results = dataDaoV2.searchWithPagination(
@@ -563,18 +578,18 @@ public class DataAPI {
             metadataFilter = Document.parse(metadata);
         }
 
-        DataSearchFilter filter = new DataSearchFilter()
-                .setUser(user)
-                .setExperiments(experiments)
-                .setVariables(variables)
-                .setProvenances(provenances)
-                .setDevices(devices)
-                .setStartDate(startInstant)
-                .setEndDate(endInstant)
-                .setConfidenceMin(confidenceMin)
-                .setConfidenceMax(confidenceMax)
-                .setMetadata(metadataFilter)
-                .setOperators(operators);
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(experiments);
+        filter.setVariables(variables);
+        filter.setProvenances(provenances);
+        filter.setDevices(devices);
+        filter.setStartDate(startInstant);
+        filter.setEndDate(endInstant);
+        filter.setConfidenceMin(confidenceMin);
+        filter.setConfidenceMax(confidenceMax);
+        filter.setMetadata(metadataFilter);
+        filter.setOperators(operators);
 
         filter.setPage(page)
                 .setPageSize(pageSize)
@@ -623,7 +638,7 @@ public class DataAPI {
             @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
-            ) throws Exception {
+    ) throws Exception {
 
         DataSearchFilter filter;
 
@@ -639,7 +654,7 @@ public class DataAPI {
         }
 
         CountOptions countOptions = new CountOptions().limit(countLimit);
-        long count = new DataDaoV2(sparql, nosql).count(null, filter, countOptions);
+        long count = new DataDaoV2(sparql, nosql, fs).count(null, filter, countOptions);
         return new SingleObjectResponse<>(count).getResponse();
     }
 
@@ -658,7 +673,7 @@ public class DataAPI {
             @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            DataDAO dao = new DataDAO(nosql, sparql, fs);
+            DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -682,7 +697,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         try {
             DataModel data = dao.get(uri);
             data.setConfidence(dto.getConfidence());
@@ -709,8 +724,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataUpdateDTO dto
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         try {
             DataModel model = dto.newModel();
             validData(Collections.singletonList(model));
@@ -746,12 +760,17 @@ public class DataAPI {
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        DeleteResult result = dao.deleteWithFilter(user, experimentUri, objectUri, variableUri, provenanceUri);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(Collections.singletonList(experimentUri));
+        filter.setTargets(Collections.singletonList(objectUri));
+        filter.setProvenances(Collections.singletonList(provenanceUri));
+        filter.setVariables(Collections.singletonList(variableUri));
+
+        DeleteResult result = dao.deleteMany(filter);
         return new SingleObjectResponse<>(result).getResponse();
     }
-
-
 
     /** 
      * check that value is coherent with the variable datatype 
@@ -783,7 +802,7 @@ public class DataAPI {
 
      * @throws Exception
      */
-    private void variablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
+    private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         URI provenanceURI = data.getProvenance().getUri();
@@ -850,7 +869,7 @@ public class DataAPI {
      * @param data
      * @throws Exception
      */
-    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
+    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDaoV2 provDAO, DataModel data) throws Exception {
 
        ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
 
@@ -1035,10 +1054,10 @@ public class DataAPI {
             }
 
             //check provenance uri and variables device association
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
+                if (!provDAO.exists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } 
             }
@@ -1128,60 +1147,29 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
-
-        if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
+        try{
+            return prepareCSVExportResponse(
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    objects,
+                    variables,
+                    devices,
+                    confidenceMin,
+                    confidenceMax,
+                    provenances,
+                    metadata,
+                    operators,
+                    csvFormat,
+                    withRawData,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+        }catch(Exception e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "EXPORT_ERROR", e.getMessage()).getResponse();
         }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
-            }
-        }
-
-        Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
-        Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
-
-        Response prepareCSVExport = null;
-
-        if (csvFormat.equals("long")) {
-            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, withRawData);
-        } else {
-            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, withRawData);
-        }
-
-        Instant finish = Instant.now();
-        long timeElapsed = Duration.between(start, finish).toMillis();
-        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
-
-        return prepareCSVExport;
     }
 
     @POST
@@ -1197,58 +1185,84 @@ public class DataAPI {
     public Response exportData(
             @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
-
-        if (dto.getStartDate() != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(dto.getStartDate(), dto.getTimezone(), Boolean.FALSE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
+        try{
+            return prepareCSVExportResponse(
+                    dto.getStartDate(),
+                    dto.getEndDate(),
+                    dto.getTimezone(),
+                    dto.getExperiments(),
+                    dto.getObjects(),
+                    dto.getVariables(),
+                    dto.getDevices(),
+                    dto.getConfidenceMin(),
+                    dto.getConfidenceMax(),
+                    dto.getProvenances(),
+                    dto.getMetadata(),
+                    null,
+                    dto.csvFormat,
+                    dto.withRawData,
+                    null,
+                    0,
+                    0
+            );
+        }catch(Exception e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "EXPORT_ERROR", e.getMessage()).getResponse();
         }
+    }
 
-        if (dto.getEndDate() != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(dto.getEndDate(), dto.getTimezone(), Boolean.TRUE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
+    /**
+     * Handles any common code of the export services (Logs, validation, error responses, etc...)
+     * @return the export response or an error response
+     */
+    private Response prepareCSVExportResponse(
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> devices,
+            Float confidenceMin,
+            Float confidenceMax,
+            List<URI> provenances,
+            String metadata,
+            List<URI> operators,
+            String csvFormat,
+            boolean withRawData,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize
+    ) throws Exception {
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
 
-        Document metadataFilter = null;
-        if (dto.getMetadata() != null) {
-            try {
-                metadataFilter = Document.parse(dto.getMetadata());
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
+        DataSearchFilter filter;
+
+        try{
+            filter = getSearchFilter(startDate, endDate, timezone, experiments, objects, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
+            if(filter == null){
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "EMPTY_SEARCH_FILTER", "The filter used to export was null").getResponse();
             }
+        }catch (DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }catch (JsonParseException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata").getResponse();
+        }catch (Exception e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "SEARCH_FILTER_ERROR", e.getMessage()).getResponse();
         }
 
         Instant start = Instant.now();
+        List<DataModel> resultList = new ArrayList<>();
+        dao.searchAsStreamWithPagination(filter).forEach(resultList::add);
+
+        Instant data = Instant.now();
+        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+
         Response prepareCSVExport = null;
 
-        try{
-            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
-            Instant data = Instant.now();
-            LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
-
-            if (dto.getCsvFormat().equals("long")) {
-                prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, dto.isWithRawData());
-            } else {
-                prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, dto.isWithRawData());
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-            return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "EXPORT FAILED", e.getMessage()).getResponse();
+        if (csvFormat.equals("long")) {
+            prepareCSVExport = prepareCSVLongExportResponse(resultList, user, withRawData);
+        } else {
+            prepareCSVExport = prepareCSVWideExportResponse(resultList, user, withRawData);
         }
 
         Instant finish = Instant.now();
@@ -1256,6 +1270,512 @@ public class DataAPI {
         LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
         return prepareCSVExport;
+    }
+
+    public Response prepareCSVWideExportResponse(List<DataModel> resultList, AccountModel user, boolean withRawData) throws Exception {
+        Instant data = Instant.now();
+
+        Set<URI> dateVariables = getAllDateVariables();
+
+        List<URI> variables = new ArrayList<>();
+
+        Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
+        Map<URI, ProvenanceModel> provenances = new HashMap<>();
+        Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
+        Map<URI, ExperimentModel> experiments = new HashMap();
+
+        for (DataModel dataModel : resultList) {
+            if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
+                objects.put(dataModel.getTarget(), null);
+            }
+
+            if (!variables.contains(dataModel.getVariable())) {
+                variables.add(dataModel.getVariable());
+            }
+
+            if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
+                provenances.put(dataModel.getProvenance().getUri(), null);
+            }
+
+            if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
+                dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
+            }
+
+            if (dataModel.getProvenance().getExperiments() != null) {
+                for (URI exp:dataModel.getProvenance().getExperiments()) {
+                    if (!experiments.containsKey(exp)) {
+                        experiments.put(exp, null);
+                    }
+
+                    ExportDataIndex exportDataIndex = new ExportDataIndex(
+                            exp,
+                            dataModel.getProvenance().getUri(),
+                            dataModel.getTarget()
+                    );
+
+                    if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                        dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                    }
+                    dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
+                }
+            } else {
+                ExportDataIndex exportDataIndex = new ExportDataIndex(
+                        null,
+                        dataModel.getProvenance().getUri(),
+                        dataModel.getTarget()
+                );
+
+                if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                    dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                }
+                dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null, dateVariables));
+
+            }
+
+        }
+
+        Instant dataTransform = Instant.now();
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+
+        List<String> defaultColumns = new ArrayList<>();
+
+        // first static columns
+
+        defaultColumns.add("Experiment");
+        defaultColumns.add("Target");
+        defaultColumns.add("Date");
+
+        List<String> methods = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            methods.add("");
+        }
+        methods.add("Method");
+        List<String> units = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            units.add("");
+        }
+        units.add("Unit");
+        List<String> variablesList = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            variablesList.add("");
+        }
+        variablesList.add("Variable");
+
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
+
+        Map<URI, Integer> variableUriIndex = new HashMap<>();
+        for (VariableModel variableModel : variablesModelList) {
+
+            MethodModel method = variableModel.getMethod();
+
+            if (method != null) {
+                String methodID = method.getName() + " (" + method.getUri().toString() + ")";
+                methods.add(methodID);
+            } else {
+                methods.add("");
+            }
+            UnitModel unit = variableModel.getUnit();
+
+            String unitID = unit.getName() + " (" + unit.getUri().toString() + ")";
+            units.add(unitID);
+            variablesList.add(variableModel.getName() + " (" + variableModel.getUri() + ")");
+            defaultColumns.add(variableModel.getName());
+            if (withRawData) {
+                defaultColumns.add("Raw data");
+                methods.add("");
+                units.add("");
+                variablesList.add("");
+                variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 2));
+            } else {
+                variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 1));
+            }
+        }
+        // static supplementary columns
+        defaultColumns.add("Provenance");
+        defaultColumns.add("Experiment URI");
+        defaultColumns.add("Target URI");
+        defaultColumns.add("Provenance URI");
+
+        Instant variableTime = Instant.now();
+        LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+
+        // Provides the experiment as context if there is only one
+        URI context = null;
+        if (experiments.size() == 1) {
+            context = experiments.keySet().stream().findFirst().get();
+        }
+
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), context);
+        for (SPARQLNamedResourceModel obj : objectsList) {
+            objects.put(obj.getUri(), obj);
+        }
+        Instant targetTime = Instant.now();
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> listByURIs = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
+        for (ProvenanceModel prov : listByURIs) {
+            provenances.put(prov.getUri(), prov);
+        }
+        Instant provenancesTime = Instant.now();
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+
+        sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        for (ExperimentModel exp : listExp) {
+            experiments.put(exp.getUri(), exp);
+        }
+        Instant expTime = Instant.now();
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+
+        // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
+        try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
+            // Method
+            // Unit
+            // Variable
+            writer.writeNext(methods.toArray(new String[methods.size()]));
+            writer.writeNext(units.toArray(new String[units.size()]));
+            writer.writeNext(variablesList.toArray(new String[variablesList.size()]));
+            // empty line
+            writer.writeNext(new String[defaultColumns.size()]);
+            // headers
+            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+
+            // Search in map indexed by date for exp, prov, object and data
+            for (Map.Entry<Instant, Map<ExportDataIndex, List<DataExportDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
+                Map<ExportDataIndex, List<DataExportDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
+                // Search in map indexed by  prov and data
+                for (Map.Entry<ExportDataIndex, List<DataExportDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
+                    List<DataExportDTO> val = provUriObjectEntry.getValue();
+
+                    ArrayList<String> csvRow = new ArrayList<>();
+                    //first is used to have value with the same dates on the same line
+                    boolean first = true;
+
+                    for (DataExportDTO dataGetDTO : val) {
+
+
+                        if (first) {
+
+                            csvRow = new ArrayList<>();
+
+                            // experiment
+                            ExperimentModel experiment = null;
+                            if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
+                                experiment = experiments.get(dataGetDTO.getExperiment());
+                            }
+
+                            if (experiment != null) {
+                                csvRow.add(experiment.getName());
+                            } else {
+                                csvRow.add("");
+                            }
+
+                            // target
+                            SPARQLNamedResourceModel target = null;
+                            if(dataGetDTO.getTarget() != null){
+                                target = objects.get(dataGetDTO.getTarget());
+                            }
+
+                            if(target != null){
+                                csvRow.add(target.getName());
+                            }else{
+                                csvRow.add("");
+                            }
+
+                            // date
+                            csvRow.add(dataGetDTO.getDate());
+
+                            // write blank columns for value and rawData
+                            for (int i = 0; i < variables.size(); i++) {
+                                csvRow.add("");
+                                if (withRawData) {
+                                    csvRow.add("");
+                                }
+                            }
+
+                            // provenance
+                            if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
+                                csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
+                            } else {
+                                csvRow.add("");
+                            }
+
+                            // experiment URI
+                            if (experiment != null) {
+                                csvRow.add(experiment.getUri().toString());
+                            } else {
+                                csvRow.add("");
+                            }
+
+                            // target URI
+                            if(target != null){
+                                csvRow.add(target.getUri().toString());
+                            }else{
+                                csvRow.add("");
+                            }
+
+                            // provenance Uri
+                            csvRow.add(dataGetDTO.getProvenance().getUri().toString());
+
+                            first = false;
+                        }
+                        // compare only expended URIs
+                        URI dataGetDTOVariable = URI.create(SPARQLDeserializers.getExpandedURI(dataGetDTO.getVariable()));
+
+                        // value
+                        if (dataGetDTO.getValue() == null){
+                            csvRow.set(variableUriIndex.get(dataGetDTOVariable), null);
+                        } else {
+                            csvRow.set(variableUriIndex.get(dataGetDTOVariable), dataGetDTO.getValue().toString());
+                        }
+
+                        // raw data
+                        if (withRawData) {
+                            if (dataGetDTO.getRawData() == null){
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, null);
+                            } else {
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                            }
+                        }
+
+                    }
+
+
+                    String[] row = csvRow.toArray(new String[csvRow.size()]);
+                    writer.writeNext(row);
+
+                }
+            }
+
+            LocalDate date = LocalDate.now();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
+
+            Instant writeCSVTime = Instant.now();
+            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+
+            return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
+                    .header("Content-Disposition", "attachment; filename=" + fileName )
+                    .build();
+
+        } catch (Exception e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, e.getMessage(), e).getResponse();
+
+        }
+    }
+
+    public Response prepareCSVLongExportResponse(List<DataModel> resultList, AccountModel user, boolean withRawData) throws Exception {
+        Instant data = Instant.now();
+
+        Set<URI> dateVariables = getAllDateVariables();
+
+        Map<URI, VariableModel> variables = new HashMap<>();
+        Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
+        Map<URI, ProvenanceModel> provenances = new HashMap<>();
+        Map<URI, ExperimentModel> experiments = new HashMap();
+
+        HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
+        for (DataModel dataModel : resultList) {
+            if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
+                objects.put(dataModel.getTarget(), null);
+            }
+            if (!variables.containsKey(dataModel.getVariable())) {
+                variables.put(dataModel.getVariable(), null);
+            }
+            if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
+                provenances.put(dataModel.getProvenance().getUri(), null);
+            }
+            if (!dataByInstant.containsKey(dataModel.getDate())) {
+                dataByInstant.put(dataModel.getDate(), new ArrayList<>());
+            }
+            dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel, dateVariables));
+            if (dataModel.getProvenance().getExperiments() != null) {
+                for (URI exp:dataModel.getProvenance().getExperiments()) {
+                    if (!experiments.containsKey(exp)) {
+                        experiments.put(exp, null);
+                    }
+                }
+            }
+        }
+
+        Instant dataTransform = Instant.now();
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+
+        List<String> defaultColumns = new ArrayList<>();
+
+        defaultColumns.add("Experiment");
+        defaultColumns.add("Target");
+        defaultColumns.add("Date");
+        defaultColumns.add("Variable");
+        defaultColumns.add("Method");
+        defaultColumns.add("Unit");
+        defaultColumns.add("Value");
+        if (withRawData) {
+            defaultColumns.add("Raw data");
+        }
+        defaultColumns.add("Data Description");
+        defaultColumns.add("");
+        defaultColumns.add("Experiment URI");
+        defaultColumns.add("Target URI");
+        defaultColumns.add("Variable URI");
+        defaultColumns.add("Data Description URI");
+
+        Instant variableTime = Instant.now();
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        for (VariableModel variableModel : variablesModelList) {
+            variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
+        }
+        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), null);
+        for (SPARQLNamedResourceModel obj : objectsList) {
+            objects.put(obj.getUri(), obj);
+        }
+        Instant targetTime = Instant.now();
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+
+        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> listByURIs = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
+        for (ProvenanceModel prov : listByURIs) {
+            provenances.put(prov.getUri(), prov);
+        }
+        Instant provenancesTime = Instant.now();
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+
+        sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
+        for (ExperimentModel exp : listExp) {
+            experiments.put(exp.getUri(), exp);
+        }
+        Instant expTime = Instant.now();
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+
+        // See defaultColumns order
+        //        Target
+        //        Date
+        //        Variable
+        //        Method
+        //        Unit
+        //        Value
+        //        Data Description
+        //
+        //        Target URI
+        //        Variable URI
+        //        Data Description URI
+        try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
+            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+            for (Map.Entry<Instant, List<DataGetDTO>> entry : dataByInstant.entrySet()) {
+                List<DataGetDTO> val = entry.getValue();
+                for (DataGetDTO dataGetDTO : val) {
+
+                    //1 row per experiment
+                    int maxRows = 1;
+                    if (dataGetDTO.getProvenance().getExperiments() != null && dataGetDTO.getProvenance().getExperiments().size()>1) {
+                        maxRows = dataGetDTO.getProvenance().getExperiments().size();
+                    }
+
+                    for (int j=0; j<maxRows; j++) {
+                        ArrayList<String> csvRow = new ArrayList<>();
+                        // experiment
+                        ExperimentModel experiment = null;
+                        if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
+                            experiment = experiments.get(dataGetDTO.getProvenance().getExperiments().get(j));
+                        }
+
+                        if (experiment != null) {
+                            csvRow.add(experiment.getName());
+                        } else {
+                            csvRow.add("");
+                        }
+
+                        SPARQLNamedResourceModel target = null;
+                        if(dataGetDTO.getTarget() != null){
+                            target = objects.get(dataGetDTO.getTarget());
+                        }
+                        // target name
+                        if(target != null){
+                            csvRow.add(target.getName());
+                        }else{
+                            csvRow.add("");
+                        }
+
+                        // date
+                        csvRow.add(dataGetDTO.getDate());
+                        // variable
+                        csvRow.add(variables.get(dataGetDTO.getVariable()).getName());
+                        // method
+                        if (variables.get(dataGetDTO.getVariable()).getMethod() != null) {
+                            csvRow.add(variables.get(dataGetDTO.getVariable()).getMethod().getName());
+                        } else {
+                            csvRow.add("");
+                        }
+                        // unit
+                        csvRow.add(variables.get(dataGetDTO.getVariable()).getUnit().getName());
+                        // value
+                        if(dataGetDTO.getValue() == null){
+                            csvRow.add(null);
+                        }else{
+                            csvRow.add(dataGetDTO.getValue().toString());
+                        }
+
+                        // rawData
+                        if (withRawData) {
+                            if(dataGetDTO.getRawData() == null){
+                                csvRow.add(null);
+                            }else{
+                                csvRow.add(Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                            }
+                        }
+
+                        // provenance
+                        if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
+                            csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
+                        } else {
+                            csvRow.add("");
+                        }
+                        csvRow.add("");
+
+                        // experiment URI
+                        if (experiment != null) {
+                            csvRow.add(experiment.getUri().toString());
+                        } else {
+                            csvRow.add("");
+                        }
+
+                        // target uri
+                        if (target != null) {
+                            csvRow.add(target.getUri().toString());
+                        } else {
+                            csvRow.add("");
+                        }
+
+                        // variable uri
+                        csvRow.add(dataGetDTO.getVariable().toString());
+                        // provenance Uri
+                        csvRow.add(dataGetDTO.getProvenance().getUri().toString());
+
+                        String[] row = csvRow.toArray(new String[csvRow.size()]);
+                        writer.writeNext(row);
+                    }
+                }
+            }
+            LocalDate date = LocalDate.now();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String fileName = "export_data_long_format" + dtf.format(date) + ".csv";
+
+            Instant writeCSVTime = Instant.now();
+            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+
+            return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
+                    .header("Content-Disposition", "attachment; filename=" + fileName)
+                    .build();
+
+        } catch (Exception e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, e.getMessage(), e).getResponse();
+
+        }
     }
 
     @GET
@@ -1303,16 +1823,26 @@ public class DataAPI {
             List<URI> variables,
             List<URI> devices) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, targets, variables, devices);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(experiments);
+        filter.setTargets(targets);
+        filter.setVariables(variables);
+        filter.setDevices(devices);
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
+        List<URI> provenanceURIs = dataDAO.distinct(null, "provenance.uri", URI.class, filter);
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
 
-        resultList.forEach(result -> {
-            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-        });
+        if(!provenanceURIs.isEmpty()){
+            ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
+            List<ProvenanceModel> resultList = provenanceDao.findByUris(provenanceURIs.stream(), provenanceURIs.size());
+
+            resultList.forEach(result -> {
+                resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+            });
+        }
+
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
@@ -1323,7 +1853,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = ProvenanceGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
     })
     public Response getUsedVariables(
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
@@ -1331,10 +1861,18 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
-        
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances, devices);
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(user);
+        filter.setExperiments(experiments);
+        filter.setTargets(objects);
+        filter.setProvenances(provenances);
+        filter.setDevices(devices);
+
+        List<VariableGetDTO> dtoList = dataDAO.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
+                .stream()
+                .map(e -> VariableGetDTO.fromModel(e, null))
+                .collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -1357,12 +1895,12 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dao = new DataDaoV2(sparql, nosql, fs);
         AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
         ProvenanceModel provenanceModel = null;
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql); 
+        ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1388,28 +1926,23 @@ public class DataAPI {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
-                //Transactions so that we don't create any Data or Annotations if either fail
-                nosql.startTransaction();
-                sparql.startTransaction();
-                data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
-                dao.createAll(data);
-                
-                if(!validation.getVariablesToDevices().isEmpty()){
-                    DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                    for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
-                        deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session->{
+                    data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
+                    dao.create(session, data);
+                    if(!validation.getVariablesToDevices().isEmpty()){
+                        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+                        for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
+                            deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                        }
                     }
-                }
-                validation.setNbLinesImported(data.size());
-                //If the data import was successful, post the annotations on objects
-                annotationDAO.create(validation.getAnnotationsOnObjects());
-                nosql.commitTransaction();
-                sparql.commitTransaction();
+                    validation.setNbLinesImported(data.size());
+                    //If the data import was successful, post the annotations on objects
+                    annotationDAO.create(validation.getAnnotationsOnObjects());
+                    return 0;
+                });
+
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
-
             } catch (MongoBulkWriteException duplicateError) {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
@@ -1420,19 +1953,13 @@ public class DataAPI {
                     CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
             } catch (MongoCommandException e) {
                 CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
                 validation.addDuplicatedDataError(csvCell);
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
             } catch (DataTypeException e) {
                 int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
                 String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
                 validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction();
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
@@ -1467,7 +1994,7 @@ public class DataAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -2247,8 +2774,8 @@ public class DataAPI {
             dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
         }
         else {
-            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-            ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
+            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
+            ProvenanceModel provModel = provDAO.get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());
         }
@@ -2273,7 +2800,7 @@ public class DataAPI {
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
         Instant start, end;
@@ -2285,25 +2812,15 @@ public class DataAPI {
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
 
         /// Get last stored data
+        DataSearchFilter getLastFoundDataFilter = new DataSearchFilter();
+        getLastFoundDataFilter.setUser(user);
+        getLastFoundDataFilter.setTargets(Collections.singletonList(facilityUri));
+        getLastFoundDataFilter.setVariables(Collections.singletonList(variableUri));
 
-        DataComputedGetDTO lastData = dataDAO.getLastDataFound(
-                user,
-                null,
-                Collections.singletonList(facilityUri),
-                Collections.singletonList(variableUri),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        DataComputedGetDTO lastData = dataDAO.getLastDataFound(getLastFoundDataFilter);
         dto.setLastData(lastData);
 
         /// Retrieve median series
-
         start = Instant.now();
         List<DataComputedModel> dataModels = dataDAO.computeAllMediansPerHour(
                 user,
@@ -2387,6 +2904,19 @@ public class DataAPI {
         }
 
         return new SingleObjectResponse<>(dto).getResponse();
+    }
+
+    /**
+     * Fetches and return all URIs for the variable with the xsd:date datatype.
+     *
+     * @return
+     * @throws Exception
+     */
+    public Set<URI> getAllDateVariables() throws Exception {
+        return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
+            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
+        }));
     }
 
 }

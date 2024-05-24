@@ -165,7 +165,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
 
         // Create filter from URIS and run query with pagination
-        Bson filter = Filters.in(idField(), uris.limit(size).iterator());
+        // Filters.in's second parameter is an iterable. An Iterable has a single iterator.
+        Bson filter = Filters.in(idField(), () -> uris.limit(size).iterator());
         FindIterable<T> queryResult = collection.find(filter).limit(size);
 
         List<T> instances = new ArrayList<>(size);
@@ -783,15 +784,24 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     @Override
     public List<T> aggregate(List<Bson> pipeline) {
+        return aggregate(pipeline, modelClass);
+    }
 
-        String pipelineStr = pipeline.toString();
+    @Override
+    public Stream<T> aggregateAsStream(List<Bson> pipeline) {
+        return aggregateAsStream(pipeline, modelClass);
+    }
+
+    @Override
+    public <T_RESULT> List<T_RESULT> aggregate(List<Bson> aggregationPipeline, Class<T_RESULT> tResultClass) {
+        String pipelineStr = aggregationPipeline.toString();
         Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
 
-        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
-        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipeline);
+        AggregateIterable<T_RESULT> aggregate = collection.aggregate(aggregationPipeline, tResultClass);
+        mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, aggregationPipeline);
 
-        List<T> results = new ArrayList<>();
-        for (T res : aggregate) {
+        List<T_RESULT> results = new ArrayList<>();
+        for (T_RESULT res : aggregate) {
             results.add(res);
         }
         mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
@@ -800,11 +810,10 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
-    public Stream<T> aggregateAsStream(List<Bson> pipeline) {
-
-        String pipelineStr = pipeline.toString();
+    public <T_RESULT> Stream<T_RESULT> aggregateAsStream(List<Bson> aggregationPipeline, Class<T_RESULT> tResultClass) {
+        String pipelineStr = aggregationPipeline.toString();
         Instant operationStart = mongoLogger.logOperationStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
-        AggregateIterable<T> aggregate = collection.aggregate(pipeline, modelClass);
+        AggregateIterable<T_RESULT> aggregate = collection.aggregate(aggregationPipeline, tResultClass);
         mongoLogger.logOperationOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
 
         return StreamSupport.stream(aggregate.spliterator(), false);

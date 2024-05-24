@@ -1,9 +1,12 @@
-//******************************************************************************
-//                          FaidareModule.java
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: gabriel.besombes@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * *****************************************************************************
+ *                         CallsAPI.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/05/2024 00:00
+ * Contact: gabriel.besombes@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ * *****************************************************************************
+ */
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
@@ -52,8 +55,7 @@ public class CallsAPI extends FaidareCall {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCalls(
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "datatype", example = "json") @QueryParam("dataType") String dataType) {
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize) {
         List<Faidarev1CallDTO> faidareCallsInfo = FaidareCall.getfaidareCallsInfo();
         ListWithPagination<Faidarev1CallDTO> callsList = new ListWithPagination<>(faidareCallsInfo, page, pageSize, faidareCallsInfo.size());
         return new Faidarev1CallListResponse(callsList).getResponse();

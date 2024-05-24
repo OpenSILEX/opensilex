@@ -1,9 +1,12 @@
-//******************************************************************************
-//                          StudiesAPI.java
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: gabriel.besombes@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * *****************************************************************************
+ *                         StudiesAPI.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/05/2024 00:00
+ * Contact: gabriel.besombes@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ * *****************************************************************************
+ */
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
@@ -84,34 +87,11 @@ public class StudiesAPI extends FaidareCall {
 
     public Response getStudiesList(
             @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
-            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
-            @ApiParam(value = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
-            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-
-        ArrayList<OrderBy> orderByList = new ArrayList<>();
-
-        if (!StringUtils.isEmpty(sortBy)) {
-            if (sortBy.equals("studyDbId")) {
-                sortBy = "uri";
-            } else {
-                sortBy = "";
-            }
-            String orderByStr;
-            if (!StringUtils.isEmpty(sortOrder)) {
-                orderByStr = sortBy + "=" + sortOrder;
-            } else {
-                orderByStr = sortBy + "=" + "desc";
-            }
-            OrderBy order = new OrderBy(orderByStr);
-            orderByList.add(order);
-        }
-
-        Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
         String experimentPathExtention = "";
         List<RouteDTO> routeDTOS = frontModule.getConfigDTO(currentUser, sparql).getRoutes();
@@ -140,10 +120,8 @@ public class StudiesAPI extends FaidareCall {
             }
         } else {
             ExperimentSearchFilter filter = new ExperimentSearchFilter()
-                    .setEnded(isEnded)
                     .setUser(currentUser);
-            filter.setOrderByList(orderByList)
-                    .setPage(page)
+            filter.setPage(page)
                     .setPageSize(pageSize);
 
             resultList = xpDao.search(filter);

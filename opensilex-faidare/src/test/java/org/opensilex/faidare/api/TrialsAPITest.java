@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         TrialsAPITest.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/05/2024 23:10
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,6 +19,7 @@ import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.project.api.ProjectCreationDTO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,19 +69,19 @@ public class TrialsAPITest  extends FaidareAPITest {
         ));
 
         // Check deeper level mapping
-        assertEquals(experimentBuilder.getDTOList().get(0).getUri().toString(), actual.get("studies").get(0).get("studyDbId").asText());
-        assertEquals(expected.get("administrative_contacts").get(0), actual.get("contacts").get(0).get("contactDbId"));
+        assertTrue(SPARQLDeserializers.compareURIs(experimentBuilder.getDTOList().get(0).getUri().toString(), actual.get("studies").get(0).get("studyDbId").asText()));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("administrative_contacts").get(0).asText(), actual.get("contacts").get(0).get("contactDbId").asText()));
         assertEquals(expected.get("shortname"), actual.get("additionalInfo").get("shortName"));
         assertEquals(expected.get("description"), actual.get("additionalInfo").get("description"));
         assertEquals(expected.get("financial_funding"), actual.get("additionalInfo").get("financialFunding"));
         assertEquals(expected.get("related_projects"), actual.get("additionalInfo").get("relatedProjects"));
-        assertEquals(expected.get("coordinators").get(0), actual.get("additionalInfo").get("coordinators").get(0).get("contactDbId"));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("coordinators").get(0).asText(), actual.get("additionalInfo").get("coordinators").get(0).get("contactDbId").asText()));
 
         FacilityCreationDTO expectedLocation = facilityBuilder.getDTOList().get(0);
         ExperimentCreationDTO expectedStudy = experimentBuilder.getDTOList().get(0);
-        assertEquals(expectedLocation.getUri().toString(), actual.get("studies").get(0).get("locationDbId").asText());
+        assertTrue(SPARQLDeserializers.compareURIs(expectedLocation.getUri().toString(), actual.get("studies").get(0).get("locationDbId").asText()));
         assertEquals(expectedLocation.getName(), actual.get("studies").get(0).get("locationName").asText());
-        assertEquals(expectedStudy.getUri().toString(), actual.get("studies").get(0).get("studyDbId").asText());
+        assertTrue(SPARQLDeserializers.compareURIs(expectedStudy.getUri().toString(), actual.get("studies").get(0).get("studyDbId").asText()));
         assertEquals(expectedStudy.getName(), actual.get("studies").get(0).get("studyName").asText());
 
     }

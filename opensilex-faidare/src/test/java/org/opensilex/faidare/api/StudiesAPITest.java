@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         StudiesAPITest.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/05/2024 23:10
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -8,6 +18,7 @@ import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -25,9 +36,7 @@ public class StudiesAPITest extends FaidareAPITest {
         try {
             search = new ServiceDescription(
                     StudiesAPI.class.getMethod(
-                            "getStudiesList",
-                            URI.class, String.class, String.class, String.class, int.class, int.class
-                    ),
+                            "getStudiesList", URI.class, int.class, int.class),
                     "/faidare/v1/studies"
             );
         } catch (NoSuchMethodException e) {
@@ -77,17 +86,17 @@ public class StudiesAPITest extends FaidareAPITest {
         ));
 
         assertEquals(expected.get("name"), actual.get("name"));
-        assertEquals(expected.get("projects").get(0), actual.get("trialDbIds").get(0));
-        assertEquals(expected.get("facilities").get(0), actual.get("locationDbId"));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("projects").get(0).asText(), actual.get("trialDbIds").get(0).asText()));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("facilities").get(0).asText(), actual.get("locationDbId").asText()));
 
         // Check deeper level mapping
-        assertEquals(expected.get("scientific_supervisors").get(0), actual.get("contacts").get(0).get("contactDbId"));
-        assertEquals(expected.get("technical_supervisors").get(0), actual.get("contacts").get(1).get("contactDbId"));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("scientific_supervisors").get(0).asText(), actual.get("contacts").get(0).get("contactDbId").asText()));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.get("technical_supervisors").get(0).asText(), actual.get("contacts").get(1).get("contactDbId").asText()));
 
         JsonNode actualContact = actual.get("contacts").get(0);
         PersonDTO expectedContact = personBuilder.getDTOList().get(0);
 
-        assertEquals(expectedContact.getUri().toString(), actualContact.get("contactDbId").asText());
+        assertTrue(SPARQLDeserializers.compareURIs(expectedContact.getUri().toString(), actualContact.get("contactDbId").asText()));
         assertEquals(expectedContact.getEmail(), actualContact.get("email").asText());
         assertEquals(expectedContact.getAffiliation(), actualContact.get("institutionName").asText());
         String fullName = expectedContact.getLastName().toUpperCase()
@@ -95,8 +104,8 @@ public class StudiesAPITest extends FaidareAPITest {
                 + expectedContact.getFirstName().substring(0,1).toUpperCase()
                 + expectedContact.getFirstName().substring(1);
         assertEquals(fullName, actualContact.get("name").asText());
-        assertEquals("ScientificSupervisor", actualContact.get("type").asText());
-        assertEquals("TechnicalSupervisor", actual.get("contacts").get(1).get("type").asText());
+        assertTrue(SPARQLDeserializers.compareURIs("ScientificSupervisor", actualContact.get("type").asText()));
+        assertTrue(SPARQLDeserializers.compareURIs("TechnicalSupervisor", actual.get("contacts").get(1).get("type").asText()));
 
 
 

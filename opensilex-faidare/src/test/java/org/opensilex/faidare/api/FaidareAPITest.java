@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         FaidareAPITest.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/05/2024 23:01
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,6 +32,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
@@ -46,7 +57,9 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
 
     public static boolean valuesMatch(JsonNode expected, JsonNode actual, Map<String, String> keysMatching) {
         for (Map.Entry<String, String> entry : keysMatching.entrySet()) {
-            if (!expected.has(entry.getKey()) || !expected.get(entry.getKey()).equals(actual.get(entry.getValue()))) {
+            if (!expected.has(entry.getKey())) {
+                return false;
+            } else if (!expected.get(entry.getKey()).equals(actual.get(entry.getValue())) && !SPARQLDeserializers.compareURIs(expected.get(entry.getKey()).asText(), actual.get(entry.getValue()).asText())) {
                 return false;
             }
         }

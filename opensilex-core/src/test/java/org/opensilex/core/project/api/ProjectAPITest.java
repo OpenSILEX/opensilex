@@ -9,8 +9,12 @@ package org.opensilex.core.project.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.integration.test.ServiceDescription;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -22,20 +26,29 @@ import java.util.*;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * @author Julien BONNEFONT
  */
 public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/projects";
+    protected static String path = "/core/projects";
 
     protected String uriPath = path + "/{uri}";
     protected String searchPath = path;
-    protected String createPath = path;
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    ProjectAPI.class.getMethod("createProject", ProjectCreationDTO.class),
+                    path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 
@@ -53,7 +66,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreate() throws Exception {
 
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -68,7 +81,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         List<ProjectCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
 
         for (ProjectCreationDTO creationDTO : creationDTOS) {
-            final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
+            final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), creationDTO);
             assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
             URI uri = extractUriFromResponse(postResult);
@@ -83,7 +96,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // create the pj
         ProjectCreationDTO pjctDto = getCreationDTO();
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), pjctDto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), pjctDto);
 
         // update the pj
         pjctDto.setUri(extractUriFromResponse(postResult));
@@ -110,7 +123,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testGetByUri() throws Exception {
 
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
@@ -128,7 +141,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     public void testSearch() throws Exception {
 
         ProjectCreationDTO creationDTO = getCreationDTO();
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Faidare pom.xml
+ This module includes all services for Faidare interaction
+******************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>opensilex-faidare</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-faidare</name>
+    
+    <url>https://www.opensilex.org/</url>
+    <version>${revision}</version>
+
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-module</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-module/pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-brapi</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-front</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>brapi-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.faidare.api.CallsAPI</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+

@@ -283,7 +283,7 @@ public class DataFilesAPI {
         @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
-        DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target);
+        DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target).setUser(user);
         long countResult = dao.count(filter);
 
         return new SingleObjectResponse<>(countResult).getResponse();

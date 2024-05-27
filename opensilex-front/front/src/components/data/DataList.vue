@@ -262,6 +262,7 @@ export default class DataList extends Vue {
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,
                 this.filter.experiments,
+                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets), // targets & os & facilities
                 this.$opensilex.prepareGetParameter(this.filter.variables),
                 this.$opensilex.prepareGetParameter(this.filter.devices),
                 undefined,
@@ -273,8 +274,7 @@ export default class DataList extends Vue {
                 this.filter.germplasm,
                 options.orderBy,
                 options.currentPage,
-                options.pageSize,
-                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
+                options.pageSize
             )
                 .then((http) => {
                     let promiseArray = [];

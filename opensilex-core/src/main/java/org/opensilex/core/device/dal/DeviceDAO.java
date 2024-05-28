@@ -432,13 +432,11 @@ public class DeviceDAO {
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
-            sparql.deleteByURI(graph, instance.getUri());
-            sparql.create(instance);
+            sparql.update(graph, instance);
         } else {
             nosql.startTransaction();
             sparql.startTransaction();
-            sparql.deleteByURI(graph, instance.getUri());
-            sparql.create(instance);
+            sparql.update(graph, instance);
             MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
             try {

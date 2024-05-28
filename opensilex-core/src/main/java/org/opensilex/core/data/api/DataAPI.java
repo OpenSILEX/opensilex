@@ -210,7 +210,6 @@ public class DataAPI {
 
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
-                model.setPublisher(user.getUri());
                 dataList.add(model);
             }
             List<URI> createdResources = dataBLL.addListData(dataList);
@@ -1400,24 +1399,10 @@ public class DataAPI {
         DataCSVValidationModel validation = dataLogic.validateWholeCSV(true, provenance, experiment, file, LOGGER);
 
         if (validation.isValidCSV()) {
-            AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
-                new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session->{
-                    data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
-                    dao.create(session, data);
-                    if(!validation.getVariablesToDevices().isEmpty()){
-                        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                        for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
-                            deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                        }
-                    }
-                    validation.setNbLinesImported(data.size());
-                    //If the data import was successful, post the annotations on objects
-                    annotationDAO.create(validation.getAnnotationsOnObjects());
-                    return 0;
-                });
+                dataLogic.addListDataFromImport(data, validation);
 
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
@@ -1479,50 +1464,6 @@ public class DataAPI {
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
-
-
-    private void childrenToRoot( List<ResourceTreeDTO> children,Map<URI, URI> map, URI agentRootType){
-        for (ResourceTreeDTO subTree : children) {
-            map.put(subTree.getUri(), agentRootType);
-            List<ResourceTreeDTO> child = subTree.getChildren();
-            if (!child.isEmpty()) {
-                childrenToRoot(child, map, agentRootType);
-            }
-        }
-    }
-
-    /**
-     * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
-     * @detail
-     * Analyze the provenance from the data model and do as follows:
-     *  if there is one agent (device or operator), retrieve the uri and name of the agent
-     *  otherwise, take the uri and name from the provenance model
-     * @param dataProvModel
-     * @return a simple data provenance with uri and name attributes
-     * @throws Exception
-     */
-    private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
-            throws Exception {
-        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
-
-        List<ProvEntityModel> provEntityList = dataProvModel.getProvWasAssociatedWith();
-
-        if (provEntityList != null && provEntityList.size() == 1) {
-            OntologyDAO ontologyDao = new OntologyDAO(sparql);
-            URI uri = provEntityList.get(0).getUri();
-            dto.setUri(uri);
-            dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
-        }
-        else {
-            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
-            ProvenanceModel provModel = provDAO.get(dataProvModel.getUri());
-            dto.setUri(provModel.getUri());
-            dto.setName(provModel.getName());
-        }
-
-        return dto;
-    }
-
     @GET
     @Path("/data_serie/facility")
     @ApiOperation("Get all data series associated with a facility")
@@ -1540,110 +1481,15 @@ public class DataAPI {
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
-        DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, fs);
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-
-        Instant start, end;
-
-        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
-        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
-
-        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
-        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
-
-        /// Get last stored data
-        DataSearchFilter getLastFoundDataFilter = new DataSearchFilter();
-        getLastFoundDataFilter.setUser(user);
-        getLastFoundDataFilter.setTargets(Collections.singletonList(facilityUri));
-        getLastFoundDataFilter.setVariables(Collections.singletonList(variableUri));
-
-        DataComputedGetDTO lastData = dataDAO.getLastDataFound(getLastFoundDataFilter);
-        dto.setLastData(lastData);
-
-        /// Retrieve median series
-        start = Instant.now();
-        List<DataComputedModel> dataModels = dataDAO.computeAllMediansPerHour(
-                user,
-                facilityUri,
-                variableUri,
-                startInstant,
-                endInstant);
-        end = Instant.now();
-        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
-
-        Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
-
-        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
-        List<DataComputedModel> medians = new ArrayList<>();
-
-        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
-
-        for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
-
-            List<DataComputedModel> medianSerie = entryProv.getValue()
-                    .stream()
-                    .sorted(Comparator.comparing(DataComputedModel::getDate))
-                    .collect(Collectors.toList());
-
-            // adjust datetime for median data by setting it to the middle of the hour it represents
-            medianSerie.forEach(data -> {
-                Instant middleDate = data.getDate().truncatedTo(ChronoUnit.HOURS);
-                data.setDate(middleDate.plus(30, ChronoUnit.MINUTES));
-            });
-
-            medians.addAll(medianSerie);
-
-            DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
-
-            List<DataComputedGetDTO> medianSerieDTO = medianSerie.stream()
-                    .map(DataComputedGetDTO::getDtoFromModel)
-                    .collect(Collectors.toList());
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerieDTO);
-            dataSeriesDTOs.add(dataSerie);
-        }
-
-        if (!calculatedOnly) {
-            dto.setDataSeries(dataSeriesDTOs);
-        }
-        else if (dataSeriesDTOs.size() == 1) {
-            dto.setCalculatedSeries(dataSeriesDTOs);
-        }
-
-        /// Compute calculated series
-
-        if (dataSeriesDTOs.size() > 1) {
-
-            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
-
-            DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
-            provMedian.setName("median_per_hour");
-
-            List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
-            List<DataComputedGetDTO> medianOfMediansDTO = medianOfMedians.stream()
-                    .map(DataComputedGetDTO::getDtoFromModel)
-                    .collect(Collectors.toList());
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));
-
-            DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
-            provAverage.setName("mean_per_day");
-
-            List<DataComputedModel> averageSerie = dataDAO.computeAllMeanPerDay(
-                    user,
-                    facilityUri,
-                    variableUri,
-                    startInstant,
-                    endInstant);
-            List<DataComputedGetDTO> averageSerieDtos = averageSerie
-                    .stream()
-                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
-                    .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
-                    .collect(Collectors.toList());
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerieDtos));
-
-            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
-        }
-
-        return new SingleObjectResponse<>(dto).getResponse();
+        return new SingleObjectResponse<>(
+                new DataLogic(sparql, nosql, fs, user).getDataSeriesByFacility(
+                        variableUri,
+                        facilityUri,
+                        startDate,
+                        endDate,
+                        calculatedOnly,
+                        LOGGER)
+        ).getResponse();
     }
 
 }

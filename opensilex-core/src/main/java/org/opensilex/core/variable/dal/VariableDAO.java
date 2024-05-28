@@ -18,6 +18,7 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -78,12 +79,16 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         varsByVarName.put(unitLabelVar.getVarName(), unitLabelVar);
     }
 
-    //TODO BLL, dont call other daos here
-    protected final DataDaoV2 dataDAO;
+    private final MongoDBService nosql;
+    private final FileStorageService fs;
+    private final AccountModel user;
 
-    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
+
+    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
-        this.dataDAO = new DataDaoV2(sparql, nosql, fs);
+        this.nosql = nosql;
+        this.fs = fs;
+        this.user = user;
     }
 
     public void delete(URI uri, AccountModel currentUser) throws Exception {
@@ -113,7 +118,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUri(uri);
         dataSearchFilter.setUser(currentUser);
-        return dataDAO.count(dataSearchFilter);
+        return new DataLogic(sparql, nosql, fs, user).countData(dataSearchFilter);
     }
 
     @Override
@@ -197,9 +202,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
-        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
+        //TODO dataLogic should be called from a VariableLogic class
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
+        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataLogic.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
         if (variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null, filter.getDevices()));
+            return new ListWithPagination<>(dataLogic.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null, filter.getDevices(), this));
         }
         filter.setIncludedUris(variableUriList);
 

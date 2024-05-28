@@ -7,7 +7,9 @@ import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ScientificObjectSearchFilter extends SearchFilter {
 
@@ -66,6 +68,23 @@ public class ScientificObjectSearchFilter extends SearchFilter {
     public ScientificObjectSearchFilter setUris(List<URI> uris) {
         this.uris = uris;
         return this;
+    }
+
+    /**
+     * Keeps only uris that are present in this.uris and param uris, furthermore if they are not in excluded uris.
+     * Handles setting list if currently null.
+     * @param uris
+     */
+    public void unionOnUris(List<URI> uris){
+        if(this.uris == null){
+            this.uris = uris;
+            return;
+        }
+        if(this.excludedUris==null){
+            this.uris.retainAll(uris);
+            return;
+        }
+        this.uris.retainAll(uris.stream().filter(uri -> !this.excludedUris.contains(uri)).collect(Collectors.toList()));
     }
 
     public List<URI> getExcludedUris() {

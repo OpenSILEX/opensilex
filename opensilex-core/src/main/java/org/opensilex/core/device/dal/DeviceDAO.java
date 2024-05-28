@@ -287,8 +287,6 @@ public class DeviceDAO {
     }
 
     public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
-        //TODO check if ive done indexes correctly
-        //createIndexes();
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
         sparql.deleteByURI(graph, instance.getUri());

@@ -6,10 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.data.bll;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -17,13 +23,16 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
-import org.opensilex.core.data.api.DataAPI;
-import org.opensilex.core.data.api.DataExportDTO;
-import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.*;
 import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -40,12 +49,15 @@ import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -64,10 +76,13 @@ import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
+import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 import org.slf4j.Logger;
 
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,9 +92,12 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHour;
 
 /**
  * Class containing all logic used by DataAPI, handles usage of different DAOs
@@ -89,17 +107,34 @@ public class DataLogic {
 
     //Data initialized in constructor :
     private final DataDaoV2 dao;
+    private final AccountModel user;
     private final SPARQLService sparql;
     private final MongoDBService nosql;
-    private final FileStorageService fs;
-    private final AccountModel user;
+    /*
+    private final FileStorageService fs;*/
+    //TODO these daos are the ones that will need to be deleted when logic classes are done. There is also AnnotationDao which i didnt do globally because it throws uri syntax errors
+    private final VariableDAO variableDAO;
+    private final DeviceDAO deviceDAO;
+    private final ExperimentDAO expDAO;
+    private final ScientificObjectDAO scientificObjectDAO;
+    private final ProvenanceDaoV2 provDAO;
+    private final OntologyDAO ontologyDAO;
+
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         this.dao = new DataDaoV2(sparql, nosql, fs);
         this.sparql = sparql;
         this.nosql = nosql;
-        this.fs = fs;
         this.user = user;
+        this.variableDAO = new VariableDAO(sparql, nosql, fs, user);
+        this.deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        this.expDAO = new ExperimentDAO(sparql, nosql);
+        this.scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        this.provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
+        this.ontologyDAO = new OntologyDAO(sparql);
+        /*
+        this.fs = fs;
+       */
     }
 
     //Private stored data
@@ -115,31 +150,6 @@ public class DataLogic {
 
 
     //PUBLIC METHODS ==================================================================================================
-
-    /**
-     *
-     * Validates - throws or inserts the models
-     */
-    public List<URI> addListData(List<DataModel> modelList) throws Exception{
-
-        modelList = validData(modelList);
-
-        dao.create(modelList);
-        if(!variablesToDevices.isEmpty()) {
-
-            DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-            for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-
-                deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-
-            }
-        }
-        List<URI> createdResources = new ArrayList<>();
-        for (DataModel data : modelList) {
-            createdResources.add(data.getUri());
-        }
-        return createdResources;
-    }
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
         return dao.get(uri);
@@ -260,28 +270,26 @@ public class DataLogic {
 
 
         //Get other stuff we have to get (variables, objects, etc...)
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = variableDAO.getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
         Instant variableTime = Instant.now();
         logger.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
 
-        OntologyDAO ontologyDao = new OntologyDAO(sparql);
         // Provide the experiment as context if there is only one, and only in wide format.
         URI context = null;
         if (forWideFormat && experiments.size() == 1) {
             context = experiments.keySet().stream().findFirst().get();
         }
-        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), context);
+        List<SPARQLNamedResourceModel> objectsList = this.ontologyDAO.getURILabels(objects.keySet(), user.getLanguage(), context);
         for (SPARQLNamedResourceModel obj : objectsList) {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
         logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
-        List<ProvenanceModel> provenanceModels = provenanceDao.findByUris(provenances.keySet().parallelStream(), provenances.size());
+        List<ProvenanceModel> provenanceModels = provDAO.findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : provenanceModels) {
             provenances.put(prov.getUri(), prov);
         }
@@ -331,15 +339,17 @@ public class DataLogic {
         List<ProvenanceModel> resultList = new ArrayList<>();
 
         if(!provenanceURIs.isEmpty()){
-            //TODO dont use ProvenanceDaoV2 when provenance logic class has been created
-            ProvenanceDaoV2 provenanceDao = new ProvenanceDaoV2(nosql.getServiceV2());
-            resultList = provenanceDao.findByUris(provenanceURIs.stream(), provenanceURIs.size());
+            resultList = provDAO.findByUris(provenanceURIs.stream(), provenanceURIs.size());
         }
         return resultList;
     }
 
     public long countData(DataSearchFilter filter, CountOptions countOptions){
         return dao.count(null, filter, countOptions);
+    }
+
+    public long countData(DataSearchFilter filter){
+        return dao.count(filter);
     }
 
     public void delete(URI uri) throws NoSQLInvalidURIException {
@@ -366,13 +376,20 @@ public class DataLogic {
         return dao.deleteMany(filter);
     }
 
+    public List<URI> addListData(List<DataModel> modelList) throws Exception {
+        return addListDataInnerCode(modelList, variablesToDevices, false, null);
+    }
+
+    public void addListDataFromImport(List<DataModel> modelList, DataCSVValidationModel csvValidationModel) throws Exception {
+        addListDataInnerCode(modelList, csvValidationModel.getVariablesToDevices(), true, csvValidationModel);
+    }
+
     /**
      * Validates the csv for data import after verifying provenance and experiment
      */
     public DataCSVValidationModel validateWholeCSV(boolean forInsertion, URI provenance, URI experiment, InputStream file, Logger logger) throws Exception {
         // test prov
         ProvenanceModel provenanceModel;
-        ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -381,8 +398,7 @@ public class DataLogic {
 
         // test exp
         if(experiment != null) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-            xpDAO.validateExperimentAccess(experiment, user);
+            expDAO.validateExperimentAccess(experiment, user);
         }
 
         //Validate csv
@@ -401,6 +417,199 @@ public class DataLogic {
         return validation;
     }
 
+    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
+        return dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+    }
+
+    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
+        Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
+        String userLanguage = null;
+        if(user != null){
+            userLanguage = user.getLanguage();
+        }
+        return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
+    }
+
+    public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects);
+        return new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
+    }
+
+    //TODO this next function would make more sense being in the future ScientificObjectLogic class
+    /**
+     *
+     * @param criteriaDTO
+     * @return Null if criteria dto had no valid criteria, Object containing empty list if valid criteria but no results,
+     * or a list of object uris if criteria were valid and results were found
+     * The return object also contains a boolean to say if we need to keep only elements in the the list, or exclude them
+     */
+    public ExcludableUriList getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment) throws Exception {
+
+        //Verify if that there is at least one complete line and if every line is a "NotMeasured"
+        boolean atLeastOneCompleteSingle = criteriaDTO.getCriteriaList().stream().anyMatch(dto ->
+                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || com.apicatalog.jsonld.StringUtils.isNotBlank(dto.getValue())));
+        boolean everyLineIsNotMeausured =
+                criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
+
+        if(!atLeastOneCompleteSingle){
+            return null;
+        }
+
+        //If every line is "NotMeausured" then we perform a different operation
+        //We simply get all the objects that are measured and return that we need to exclude them
+        if(everyLineIsNotMeausured){
+            return new ExcludableUriList(
+                    true,
+                    getUsedTargets(
+                            null,
+                            criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
+                            (experiment == null ? null : Collections.singletonList(experiment))
+                    ).stream().filter(Objects::nonNull).collect(Collectors.toList())
+            );
+        }
+        //If every line wasn't "NotMeasured" :
+        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+
+        //If aggregationDocs is null then it means there was a contradiction
+        if(aggregationDocs == null){
+            return new ExcludableUriList(false, Collections.emptyList());
+        }
+
+        Set<DataTargetAggregateModel> criteriaSearchedResult = new HashSet<>(dao.aggregate(aggregationDocs, DataTargetAggregateModel.class));
+        //If result is empty return an empty list otherwise take first and only element's targets value because of the
+        // mongo request always returns a single Document with a list of targets validating the criteria
+
+        if(criteriaSearchedResult.isEmpty()){
+            return new ExcludableUriList(false, Collections.emptyList());
+        } else if (criteriaSearchedResult.size() > 1) {
+            throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
+        }
+
+        // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
+        return new ExcludableUriList(
+                false,
+                criteriaSearchedResult.stream().findAny()
+                        .get()
+                        .getTargets()
+                        .stream().filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    public DataVariableSeriesGetDTO getDataSeriesByFacility(
+            URI variableUri,
+            URI facilityUri,
+            String startDate,
+            String endDate,
+            Boolean calculatedOnly,
+            Logger logger
+    ) throws Exception {
+
+        Instant start, end;
+
+        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
+        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
+
+        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+
+        /// Get last stored data
+        DataSearchFilter getLastFoundDataFilter = new DataSearchFilter();
+        getLastFoundDataFilter.setUser(user);
+        getLastFoundDataFilter.setTargets(Collections.singletonList(facilityUri));
+        getLastFoundDataFilter.setVariables(Collections.singletonList(variableUri));
+
+        DataComputedGetDTO lastData = dao.getLastDataFound(getLastFoundDataFilter);
+        dto.setLastData(lastData);
+
+        /// Retrieve median series
+        start = Instant.now();
+        List<DataComputedModel> dataModels = computeAllMediansPerHour(
+                facilityUri,
+                variableUri,
+                startInstant,
+                endInstant);
+        end = Instant.now();
+        logger.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+
+        Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
+
+        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
+        List<DataComputedModel> medians = new ArrayList<>();
+
+        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
+
+        for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
+
+            List<DataComputedModel> medianSerie = entryProv.getValue()
+                    .stream()
+                    .sorted(Comparator.comparing(DataComputedModel::getDate))
+                    .collect(Collectors.toList());
+
+            // adjust datetime for median data by setting it to the middle of the hour it represents
+            medianSerie.forEach(data -> {
+                Instant middleDate = data.getDate().truncatedTo(ChronoUnit.HOURS);
+                data.setDate(middleDate.plus(30, ChronoUnit.MINUTES));
+            });
+
+            medians.addAll(medianSerie);
+
+            DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
+
+            List<DataComputedGetDTO> medianSerieDTO = medianSerie.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerieDTO);
+            dataSeriesDTOs.add(dataSerie);
+        }
+
+        if (!calculatedOnly) {
+            dto.setDataSeries(dataSeriesDTOs);
+        }
+        else if (dataSeriesDTOs.size() == 1) {
+            dto.setCalculatedSeries(dataSeriesDTOs);
+        }
+
+        /// Compute calculated series
+
+        if (dataSeriesDTOs.size() > 1) {
+
+            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
+
+            DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
+            provMedian.setName("median_per_hour");
+
+            List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
+            List<DataComputedGetDTO> medianOfMediansDTO = medianOfMedians.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));
+
+            DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
+            provAverage.setName("mean_per_day");
+
+            List<DataComputedModel> averageSerie = computeAllMeanPerDay(
+                    facilityUri,
+                    variableUri,
+                    startInstant,
+                    endInstant);
+            List<DataComputedGetDTO> averageSerieDtos = averageSerie
+                    .stream()
+                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
+                    .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerieDtos));
+
+            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+        }
+        return dto;
+    }
+
     //PRIVATE METHODS ================================================================================================
     /**
      * Check variable data list before creation
@@ -410,8 +619,6 @@ public class DataLogic {
      * @throws Exception
      */
     private List<DataModel> validData(List<DataModel> dataList) throws Exception {
-
-        VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs);
 
         Map<URI, VariableModel> variableURIs = new HashMap<>();
         Set<URI> notFoundedVariableURIs = new HashSet<>();
@@ -465,7 +672,6 @@ public class DataLogic {
             }
 
             //check provenance uri and variables device association
-            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.exists(data.getProvenance().getUri())) {
@@ -508,29 +714,69 @@ public class DataLogic {
     }
 
     /**
+     *
+     * Validates - throws or inserts the models
+     * Handles setting of publisher
+     * Handles Annotation creation in the case of import
+     * @param modelList models to insert
+     * @param variablesToDevices device, variable map to add the links to devices
+     * @param calledFromImport so we know to run any extra code
+     * @param csvValidation null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
+     * @return a list of uris if it the caller wasn't the import function
+     */
+    private List<URI> addListDataInnerCode(List<DataModel> modelList, Map<DeviceModel, List<URI>> variablesToDevices, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception{
+
+        //TODO can the validations done for import be refactord with the validData method ?
+        if(!calledFromImport){
+            modelList = validData(modelList);
+        }
+        //Set publisher
+        modelList.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
+
+        //Transaction to add data and to add link to device
+        List<DataModel> finalModelList = modelList;
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session->{
+            //Create data
+            dao.create(session, finalModelList);
+            //Create device links
+            if(!variablesToDevices.isEmpty()) {
+                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
+                    deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                }
+            }
+            //In the case of import set number of imported lines and create any annotations that were imported on the targets
+            if(calledFromImport){
+                csvValidation.setNbLinesImported(finalModelList.size());
+                //If the data import was successful, post the annotations on objects
+                AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+                annotationDAO.create(csvValidation.getAnnotationsOnObjects());
+            }
+            return 0;
+        });
+        if(!calledFromImport){
+            return finalModelList.stream().map(MongoModel::getUri).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Does the actual validating once we have loaded our provenance
      */
     private DataCSVValidationModel validateWholeCSVInnerCode(ProvenanceModel provenance, URI experiment, InputStream file, Logger logger) throws Exception {
         //TODO DAOs other than DataDao used in this function. Change when logic layer is done elsewhere
 
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
         List<String> notExistingTargets = new ArrayList<>();
         List<String> duplicatedTargets = new ArrayList<>();
 
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();
 
-
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
         Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 
-
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();
@@ -574,7 +820,6 @@ public class DataLogic {
 
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
-            VariableDAO dao = new VariableDAO(sparql,nosql,fs);
 
             if (ids != null) {
 
@@ -594,7 +839,7 @@ public class DataLogic {
                                 if (!URIDeserializer.validateURI(header)) {
                                     csvValidation.addInvalidHeaderURI(i, header);
                                 } else {
-                                    VariableModel var = dao.get(URI.create(header));
+                                    VariableModel var = variableDAO.get(URI.create(header));
                                     // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
                                     if (var == null) {
                                         csvValidation.addInvalidHeaderURI(i, header);
@@ -642,7 +887,7 @@ public class DataLogic {
                                 rowIndex,
                                 csvValidation,
                                 headerByIndex,
-                                xpDAO,
+                                expDAO,
                                 notExistingExperiments,
                                 duplicatedExperiments,
                                 nameURIExperiments,
@@ -1261,7 +1506,6 @@ public class DataLogic {
      */
     private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
 
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         URI provenanceURI = data.getProvenance().getUri();
         DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO);
         if (deviceFromProvWasAssociated == null) {
@@ -1442,4 +1686,615 @@ public class DataLogic {
         }
         return deviceToReturn;
     }
+
+    /**
+     * <p>
+     * Translates the dto into a search filter permitting the acquisition of data needed to get the right objects.
+     * Or creates error lists if there are errors in the request.
+     *
+     * @return List of Bson for the aggregation, or null if a contradiction was identified
+     * </p>
+     *
+     * <p>
+     * Example of a request : If we want all objects who have a Variable A > 10 and a Variable B < 5.
+     * Then we need to fetch all data concerning A where value > 10 as well as all data concerning B where value < 5.
+     * Even though in the end we will only retain objects if they have data that validates both.
+     * Precondition : criteriaDTO is of type And for first version
+     * </p>
+     *
+     * @apiNote
+     * <ul>
+     * <li> In the "group" pipeline stage, the name of the field which contains target is "targets" </li>
+     * <li> This is the mongo request that is created for an example with two criteria </li>
+     * </ul>
+     *
+     * <pre>
+     * {@code
+     *       db.getCollection('data').aggregate(
+     *    [
+     *        {$match : { $or:
+     *     [
+     *         { $and: [
+     *            {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/lot_weight_balance_kilogramm"} ,
+     *            {"value":{ $lt: 1000 }}
+     *             ] },
+     *        { $and: [
+     *                {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_density_hydromtre_kilogramm_per_litre"} ,
+     *                {"value":{ $lt: 1000 }}
+     *                     ] },
+     *         {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_istall_standard_method_trueorfalse"},
+     *         {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_readytodrink_datenotime"}
+     *     ] }},
+     *    {
+     *         $group : {_id : {target : "$target"},
+     *             variables: {$addToSet: "$variable"}}
+     *         },
+     *         {
+     *            $match: {
+     *               $expr:
+     *               { $and: [
+     *                   {$eq: [{ $size: "$variables" }, 2]},
+     *                   { $not:
+     *                       [
+     *                         { $or: [
+     *                                 { $in: ["http://vegetalunit.inrae.fr/vigne/id/variable/must_istall_standard_method_trueorfalse","$variables" ] },
+     *                                 { $in: ["http://vegetalunit.inrae.fr/vigne/id/variable/must_readytodrink_datenotime", "$variables" ] }
+     *                             ] }
+     *                       ] }
+     *                   ] }
+     *             }
+     *        },
+     *        {
+     *    $group: {
+     *       _id: null,
+     *       targets: { $addToSet: "$_id.target" }
+     *     }
+     *   }
+     *  ]
+     * ).pretty();
+     * }
+     * </pre>
+     *
+     */
+    private List<Bson> createCriteriaSearchAggregation(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
+        GetScientificObjectsByDataCriteriaRequestErrors errors = new GetScientificObjectsByDataCriteriaRequestErrors();
+
+        List<Document> criteriaDocuments = new ArrayList<>();
+        Map<String, List<Document>> criteriaDocumentPerVariable = new HashMap<>();
+        //List to remember which vars we are testing to be not measured so that we can identify impossible request if we try to compare this var with a value
+        Set<String> varsWhereWeWantNoData = new HashSet<>();
+
+        //Make the aggregation docs
+        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()){
+            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
+            MathematicalOperator criteriaType = singleCriteriaDTO.getCriteria();
+            String valueString = singleCriteriaDTO.getValue();
+            //If line is complete
+            if(currentVariableUri != null && criteriaType != null && (criteriaType == MathematicalOperator.NotMeasured || !valueString.trim().isEmpty())){
+                URI varDataTypeUri = null;
+                //Create variable filter and a new list of filters if this is the first time we've crossed this variable, add to existing list otherwise
+                String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
+                try{
+                    varDataTypeUri = variableDAO.get(currentVariableUri).getDataType();
+                }catch (Exception e){
+                    errors.addInvalidVariable(singleCriteriaDTO, currentVariableUri);
+                }
+
+                if(!criteriaDocumentPerVariable.containsKey(currentVariableStringUri)){
+                    Document currentCriteriaDocument = new Document();
+                    currentCriteriaDocument.put(DataModel.VARIABLE_FIELD, currentVariableStringUri);
+                    List<Document> variableDocuments = new ArrayList<>();
+                    variableDocuments.add(currentCriteriaDocument);
+                    criteriaDocumentPerVariable.put(currentVariableStringUri, variableDocuments);
+
+                }
+
+                List<Document> currentCriteriaDocuments = criteriaDocumentPerVariable.get(currentVariableStringUri);
+
+                if(criteriaType == MathematicalOperator.NotMeasured ){
+                    //If size of currentCriteriaDocuments is bigger than one it means we already compared this var to a value so contradiction, so return null
+                    if(currentCriteriaDocuments.size() > 1){
+                        return null;
+                    }
+                    varsWhereWeWantNoData.add(currentVariableStringUri);
+                }else{
+                    //If we previously said this var needs to not be measured then contradiction so return null
+                    if(varsWhereWeWantNoData.contains(currentVariableStringUri)){
+                        return null;
+                    }
+                    Object parsedValue = null;
+                    //Add to invalid value datatype errors if parse fails
+                    try{
+                        parsedValue = DataValidateUtils.convertData(varDataTypeUri, valueString);
+                    } catch(Exception e){
+                        errors.addInvalidValueDatatypeError(singleCriteriaDTO, valueString);
+                    }
+
+                    if(criteriaType == MathematicalOperator.EqualToo ){
+                        if(currentCriteriaDocuments != null && parsedValue != null){
+                            currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, parsedValue));
+                        }
+                    }else{
+                        //If filterType stays null then it means the criteriaUri wasn't recognized, so add to invalid criteria uris
+                        String filterType = null;
+                        if(criteriaType == MathematicalOperator.MoreOrEqualThan ){
+                            filterType = "$gte";
+                        }else if(criteriaType == MathematicalOperator.MoreThan ){
+                            filterType = "$gt";
+                        }else if(criteriaType == MathematicalOperator.LessThan ){
+                            filterType = "$lt";
+                        }else if(criteriaType == MathematicalOperator.LessOrEqualThan){
+                            filterType = "$lte";
+                        }
+                        if(filterType == null){
+                            errors.addInvalidCriteriaOperator(singleCriteriaDTO, criteriaType.toString());
+                        } else{
+                            if(currentCriteriaDocuments != null && parsedValue != null){
+                                Document valueConstraintFilter = new Document();
+                                valueConstraintFilter.put(filterType, parsedValue);
+                                currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, valueConstraintFilter));
+                            }
+                        }
+                    }
+                }
+            }
+        }//End of criteria list for loop
+        if (errors.hasErrors()){
+            throw new IllegalArgumentException(errors.generateErrorMessage());
+        }
+
+        for(List<Document> varDocs : criteriaDocumentPerVariable.values()){
+            if(varDocs.size()==1){
+                criteriaDocuments.add(varDocs.get(0));
+            }else{
+                criteriaDocuments.add(new Document("$and", varDocs));
+            }
+        }
+        final List<Bson> aggregationDocuments = new ArrayList<>();
+        //Data search filter
+        Document dataSearchFilter = new Document();
+        //Some strings used to create the request :
+        final String variables = "variables";
+        dataSearchFilter.put("$or", criteriaDocuments);
+        if(experiment == null){
+            aggregationDocuments.add(new Document("$match", dataSearchFilter));
+        }else{
+            Document experimentFilter = new Document();
+            appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment));
+            List<Document> andList = new ArrayList<>();
+            andList.add(dataSearchFilter);
+            andList.add(experimentFilter);
+            Document dataSearchFilterWithExperiment = new Document("$and", andList);
+            aggregationDocuments.add(new Document("$match", dataSearchFilterWithExperiment));
+        }
+
+        //Group by target and create list of variables that have returned data for each target
+        Document groupByTargetDoc = new Document();
+        Document groupByIdDoc = new Document();
+        groupByIdDoc.put(DataModel.TARGET_FIELD, "$" + DataModel.TARGET_FIELD);
+        groupByTargetDoc.put("_id", groupByIdDoc);
+        Document groupByVarListDoc = new Document();
+        groupByVarListDoc.put("$addToSet", "$" + DataModel.VARIABLE_FIELD);
+        groupByTargetDoc.put(variables, groupByVarListDoc);
+        aggregationDocuments.add(new Document("$group", groupByTargetDoc));
+
+
+        //Keep only the ones that have every tested variable present but not the ones that need to not be measured
+        Document sizeExpr = new Document("$size", "$" + variables);
+        Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariable.size() - varsWhereWeWantNoData.size()));
+        List<Document> inNotMeasuredVarsListDocs = varsWhereWeWantNoData.stream().map(
+                notMeasuredVar -> new Document("$in", Arrays.asList(notMeasuredVar, "$" + variables))).collect(Collectors.toList());
+        Document notInNotMeasuredVarsListDoc = new Document("$not", Collections.singletonList(new Document("$or", inNotMeasuredVarsListDocs)));
+        Document correctSizeAndNoNotMeasuredVars = new Document("$and", Arrays.asList(sizeCondition, notInNotMeasuredVarsListDoc));
+        aggregationDocuments.add(new Document("$match", new Document("$expr", correctSizeAndNoNotMeasuredVars)));
+
+
+        //group by nothing and create a list of targets that validate the criteria
+        Document targetListCreator = new Document();
+        targetListCreator.put("_id", null);
+        targetListCreator.put(DataModel.TARGET_FIELD + "s", new Document("$addToSet", "$_id." + DataModel.TARGET_FIELD));
+        aggregationDocuments.add(new Document("$group", targetListCreator));
+
+        return aggregationDocuments;
+
+    }
+
+
+    //TODO ? This is redundant for most cases with the new method addExperimentFilter in DataFileDao. But i use it in an aggregation so need to see how i handle
+    public void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments) throws Exception {
+        String experimentField = "provenance.experiments";
+
+        //user access
+        if (!user.isAdmin()) {
+            Set<URI> userExperiments = expDAO.getUserExperiments(user);
+
+            if (experiments != null && !experiments.isEmpty()) {
+
+                //Transform experiments and userExperiments in long format to compare the two lists
+                Set<URI> longUserExp = new HashSet<>();
+                for (URI exp:userExperiments) {
+                    longUserExp.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
+                }
+                Set <URI> longExpURIs = new HashSet<>();
+                for (URI exp:experiments) {
+                    longExpURIs.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
+                }
+                longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
+
+                if (longExpURIs.isEmpty()) {
+                    throw new Exception("you can't access to the given experiments");
+                } else {
+                    Document inFilter = new Document();
+                    inFilter.put("$in", longExpURIs);
+                    filter.put("provenance.experiments", inFilter);
+                }
+            } else {
+                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));
+                Document notExistingExpFilter = new Document(experimentField, new Document("$exists", false));
+                Document emptyExpFilter = new Document(experimentField, new ArrayList());
+                List<Document> expFilter = Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter);
+
+                filter.put("$or", expFilter);
+            }
+        } else {
+            if (experiments != null && !experiments.isEmpty()) {
+                Document inFilter = new Document();
+                inFilter.put("$in", experiments);
+                filter.put("provenance.experiments", inFilter);
+            }
+        }
+    }
+
+    /**
+     * Retrieve median per hour data series
+     * @details
+     *  data are collected and grouped by [target, variable, provenance].
+     *  The median per hour is then computed for each data series
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return a list of median values
+     * @throws Exception
+     */
+    private List<DataComputedModel> computeAllMediansPerHour(URI target,
+                                                             URI variable,
+                                                             Instant startDate,
+                                                             Instant endDate) {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        //$match
+        //{
+        //	variable: "http://opensilex.dev/id/variable/air_temprature_degree_celsius",
+        //	target: "http://opensilex.dev/id/organization/facility.phenoarch",
+        //	date:
+        //	{
+        //		"$gte": ISODate("2022-05-31T11:26:16.856Z"),
+        //		"$lt": ISODate("2023-05-31T11:26:16.856Z")
+        //	}
+        //}
+        Document filter = new Document();
+        filter.put(DataModel.VARIABLE_FIELD, URIDeserializer.getExpandedURI(variable));
+        filter.put(DataModel.TARGET_FIELD, URIDeserializer.getExpandedURI(target));
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {
+                dateFilter.put("$gte", startDate);
+            }
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+            }
+            filter.put("date", dateFilter);
+        }
+        Bson match = Aggregates.match(filter);
+
+        //$project
+        //{
+        //  "y":{"$year":"$date"},
+        //  "m":{"$month":"$date"},
+        //  "d":{"$dayOfMonth":"$date"},
+        //  "h":{"$hour":"$date"},
+        //  "date": "$date",
+        //  "value": "$value"
+        //}
+        Document splitDateProj = new Document();
+        splitDateProj.put("y", new Document("$year", "$date"));
+        splitDateProj.put("m", new Document("$month", "$date"));
+        splitDateProj.put("d", new Document("$dayOfMonth", "$date"));
+        splitDateProj.put("h", new Document("$hour", "$date"));
+        splitDateProj.put("provenance", "$provenance");
+        splitDateProj.put("date", "$date");
+        splitDateProj.put("value", "$value");
+        Bson projectSplitDate = Aggregates.project(splitDateProj);
+
+        //$group
+        //{
+        //  _id: {"year":"$y","month":"$m","day":"$d","hour":"$h","provenance":"$provenance"},
+        //  count: {
+        //    $sum: 1
+        //  },
+        //  dates: {
+        //    $push: "$date"
+        //  },
+        //  values: {
+        //    $push: "$value"
+        //  }
+        //}
+        Document groupDateAndProvId = new Document();
+        groupDateAndProvId.put("year", "$y");
+        groupDateAndProvId.put("month", "$m");
+        groupDateAndProvId.put("day", "$d");
+        groupDateAndProvId.put("hour", "$h");
+        groupDateAndProvId.put("provenance", "$provenance");
+        BsonField sizeAcc = new BsonField("size", new Document("$sum", 1));
+        BsonField datesAcc = new BsonField("dates", new Document("$push", "$date"));
+        BsonField valuesAcc = new BsonField("values", new Document("$push", "$value"));
+        Bson groupDateAndProv = Aggregates.group(groupDateAndProvId, sizeAcc, datesAcc, valuesAcc);
+
+        //$project
+        //{
+        //  size: 1,
+        //  values: 1,
+        //  date: { "$arrayElemAt": ["$values", 0] },
+        //  isEvenLength: { "$eq": [{ "$mod": ["$size", 2] }, 0 ] },
+        //  middlePoint: { "$trunc": { "$divide": ["$size", 2] } }
+        //}
+        Document sizeProj = new Document();
+        sizeProj.put("size", 1);
+        sizeProj.put("values", 1);
+        sizeProj.put("date", new Document("$arrayElemAt", Arrays.asList("$dates", 0)));
+        Document mod = new Document("$mod", Arrays.asList("$size", 2));
+        Document eq = new Document("eq", Arrays.asList(mod, 0));
+        sizeProj.put("isEvenLength", eq);
+        Document divide = new Document("$divide", Arrays.asList("$size", 2));
+        sizeProj.put("middlePoint", new Document("$trunc", divide));
+        Bson projectArraySize = Aggregates.project(sizeProj);
+
+        //$addFields
+        //{
+        //  beginMiddle: { "$subtract": [ "$middlePoint", 1] },
+        //  endMiddle: "$middlePoint"
+        //}
+        Document subtract = new Document("$subtract", Arrays.asList("$middlePoint", 1));
+        Field beginMiddle = new Field("beginMiddle", subtract);
+        Field endMiddle = new Field("endMiddle", "$middlePoint");
+        Bson projectMiddle = Aggregates.addFields(beginMiddle, endMiddle);
+
+        //$addFields
+        //{
+        //  "beginValue": { "$arrayElemAt": ["$values", "$beginMiddle"] },
+        //  "endValue": { "$arrayElemAt": ["$values", "$endMiddle"] }
+        //}
+        Document arrayElemAtBegin = new Document("$arrayElemAt", Arrays.asList("$values", "$beginMiddle"));
+        Document arrayElemAtEnd = new Document("$arrayElemAt", Arrays.asList("$values", "$endMiddle"));
+        Field beginValue = new Field("beginValue", arrayElemAtBegin);
+        Field endValue = new Field("endValue", arrayElemAtEnd);
+        Bson projectMiddleValues = Aggregates.addFields(beginValue, endValue);
+
+        //$addFields
+        //{
+        //  "middleSum": { "$add": ["$beginValue", "$endValue"] }
+        //}
+        Document sum = new Document("$add", Arrays.asList("$beginValue", "$endValue"));
+        Field middleSum = new Field("middleSum", sum);
+        Bson projectMiddleSum = Aggregates.addFields(middleSum);
+
+        //$project
+        //{
+        //  date: 1,
+        //  value: {
+        //    "$cond": {
+        //      if: "$isEvenLength",
+        //      then: { "$divide": ["$middleSum", 2] },
+        //      else:  { "$arrayElemAt": ["$values", "$middlePoint"] }
+        //    }
+        //  }
+        //}
+        Document finalProj = new Document();
+        finalProj.put("_id", 0);
+        finalProj.put("date", 1);
+        finalProj.put("provenance", "$_id.provenance");
+        Document condContent = new Document();
+        condContent.put("if", "$isEvenLength");
+        condContent.put("then", new Document("$divide", Arrays.asList("$middleSum", 2)));
+        condContent.put("else", new Document("$arrayElemAt", Arrays.asList("$values", "$middlePoint")));
+        Document cond = new Document("$cond", condContent);
+        finalProj.put("value", cond);
+        Bson projectFinal = Aggregates.project(finalProj);
+
+
+        aggregations.add(match);
+        aggregations.add(projectSplitDate);
+        aggregations.add(groupDateAndProv);
+        aggregations.add(projectArraySize);
+        aggregations.add(projectMiddle);
+        aggregations.add(projectMiddleValues);
+        aggregations.add(projectMiddleSum);
+        aggregations.add(projectFinal);
+
+        return dao.aggregate(aggregations, DataComputedModel.class);
+    }
+
+    /**
+     * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
+     * @detail
+     * Analyze the provenance from the data model and do as follows:
+     *  if there is one agent (device or operator), retrieve the uri and name of the agent
+     *  otherwise, take the uri and name from the provenance model
+     * @param dataProvModel
+     * @return a simple data provenance with uri and name attributes
+     * @throws Exception
+     */
+    private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
+            throws Exception {
+        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
+
+        List<ProvEntityModel> provEntityList = dataProvModel.getProvWasAssociatedWith();
+
+        if (provEntityList != null && provEntityList.size() == 1) {
+            URI uri = provEntityList.get(0).getUri();
+            dto.setUri(uri);
+            dto.setName(this.ontologyDAO.getURILabel(uri, user.getLanguage()));
+        }
+        else {
+            ProvenanceModel provModel = provDAO.get(dataProvModel.getUri());
+            dto.setUri(provModel.getUri());
+            dto.setName(provModel.getName());
+        }
+
+        return dto;
+    }
+
+    /**
+     * Compute the daily average from data
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
+    private List<DataComputedModel> computeAllMeanPerDay(URI target,
+                                                        URI variable,
+                                                        Instant startDate,
+                                                        Instant endDate) {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        //$match
+        //{
+        //	variable: "http://opensilex.dev/id/variable/air_temprature_degree_celsius",
+        //	target: "http://opensilex.dev/id/organization/facility.phenoarch",
+        //  date:
+        //	{
+        //		"$gte": ISODate("2022-05-31T11:26:16.856Z"),
+        //		"$lt": ISODate("2023-05-31T11:26:16.856Z")
+        //	}
+        //}
+        Document filter = new Document();
+        filter.put(DataModel.VARIABLE_FIELD, URIDeserializer.getExpandedURI(variable));
+        filter.put(DataModel.TARGET_FIELD, URIDeserializer.getExpandedURI(target));
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {
+                dateFilter.put("$gte", startDate);
+            }
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+            }
+            filter.put("date", dateFilter);
+        }
+        Bson match = Aggregates.match(filter);
+
+        //$project
+        //{
+        //  "y":{"$year":"$date"},
+        //  "m":{"$month":"$date"},
+        //  "d":{"$dayOfMonth":"$date"},
+        //  "date": "$date",
+        //  "value": "$value"
+        //}
+        Document splitDateProj = new Document();
+        splitDateProj.put("y", new Document("$year", "$date"));
+        splitDateProj.put("m", new Document("$month", "$date"));
+        splitDateProj.put("d", new Document("$dayOfMonth", "$date"));
+        splitDateProj.put("date", "$date");
+        splitDateProj.put("value", "$value");
+        Bson projectSplitDate = Aggregates.project(splitDateProj);
+
+        //$group
+        //{
+        //  _id: {"year":"$y","month":"$m","day":"$d"},
+        //  dates: {
+        //    $push: "$date"
+        //  },
+        //  value: {
+        //    $avg: "$value"
+        //  }
+        //}
+        Document groupDateAndProvId = new Document();
+        groupDateAndProvId.put("year", "$y");
+        groupDateAndProvId.put("month", "$m");
+        groupDateAndProvId.put("day", "$d");
+        BsonField datesAcc = new BsonField("dates", new Document("$push", "$date"));
+        BsonField avgAcc = new BsonField("value", new Document("$avg", "$value"));
+        Bson groupDateAndProv = Aggregates.group(groupDateAndProvId, datesAcc, avgAcc);
+
+        //$project
+        //{
+        //  _id: 0,
+        //  date: { "$arrayElemAt": ["$dates", 0]},
+        //  value: 1
+        //}
+        Document finalProj = new Document();
+        finalProj.put("_id", 0);
+        finalProj.put("date", new Document("$arrayElemAt", Arrays.asList("$dates", 0)));
+        finalProj.put("value", 1);
+        Bson projectFinal = Aggregates.project(finalProj);
+
+
+        aggregations.add(match);
+        aggregations.add(projectSplitDate);
+        aggregations.add(groupDateAndProv);
+        aggregations.add(projectFinal);
+
+        return dao.aggregate(aggregations, DataComputedModel.class);
+    }
+
+    //Embedded classes for complex return types
+    /**
+     * Contains one main map providing an identifier to each criteria triplet that is invalid.
+     * And 3 other maps to identify what type of error each invalid triplet has.
+     * The 3 add error functions will automatically create the identifier if the triplet didn't already have an error.
+     * (Variable uri not found, Criteria uri not found or Invalid datatype for the given variable.
+     */
+    private static class GetScientificObjectsByDataCriteriaRequestErrors{
+        private final Map<Integer, URI> invalidVariables;
+        private final Map<Integer, String> invalidCriteriaOperators;
+        private final Map<Integer, String> invalidValueDatatypes;
+        private final Map<SingleCriteriaDTO, Integer> invalidCriterias;
+        int currentIdentifier;
+        public GetScientificObjectsByDataCriteriaRequestErrors(){
+            this.invalidVariables = new HashMap<>();
+            this.invalidCriteriaOperators = new HashMap<>();
+            this.invalidValueDatatypes = new HashMap<>();
+            this.invalidCriterias = new HashMap<>();
+            this.currentIdentifier = 0;
+        }
+        public boolean hasErrors(){
+            return !invalidCriterias.isEmpty();
+        }
+        public void addInvalidVariable(SingleCriteriaDTO invalidCriteria, URI invalidVariable){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidVariables.put(id, invalidVariable);
+        }
+        public void addInvalidCriteriaOperator(SingleCriteriaDTO invalidCriteria, String invalidCriteriaOperator){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidCriteriaOperators.put(id, invalidCriteriaOperator);
+        }
+        public void addInvalidValueDatatypeError(SingleCriteriaDTO invalidCriteria, String invalidValue){
+            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
+            this.invalidValueDatatypes.put(id, invalidValue);
+        }
+        public String generateErrorMessage(){
+            StringBuilder result = new StringBuilder("Errors were found in the following criteria : \n");
+            ObjectMapper objectMapper = new ObjectMapper();
+            for (SingleCriteriaDTO singleCriteriaDTO : invalidCriterias.keySet()) {
+                try {
+                    result.append(objectMapper.writeValueAsString(singleCriteriaDTO));
+                } catch (JsonProcessingException e) {
+                    result.append("{singleCriteriaDTO json serialization failed}");
+                }
+                Integer id = invalidCriterias.get(singleCriteriaDTO);
+                result.append((invalidVariables.get(id) == null ? "" : "variable uri not found, "));
+                result.append((invalidCriteriaOperators.get(id) == null ? "" : "criteria operator not found, "));
+                result.append((invalidValueDatatypes.get(id) == null ? "" : "value does not match required data-type of variable. "));
+                result.append("\n");
+            }
+            return result.toString();
+
+        }
+    }
+
 }

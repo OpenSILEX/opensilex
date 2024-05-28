@@ -15,7 +15,6 @@ import com.mongodb.client.model.Field;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -43,7 +42,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -61,7 +59,6 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -80,10 +77,6 @@ import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.pagination.StreamWithPagination;
 import org.slf4j.Logger;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -110,15 +103,15 @@ public class DataLogic {
     private final AccountModel user;
     private final SPARQLService sparql;
     private final MongoDBService nosql;
-    /*
-    private final FileStorageService fs;*/
-    //TODO these daos are the ones that will need to be deleted when logic classes are done. There is also AnnotationDao which i didnt do globally because it throws uri syntax errors
-    private final VariableDAO variableDAO;
-    private final DeviceDAO deviceDAO;
-    private final ExperimentDAO expDAO;
-    private final ScientificObjectDAO scientificObjectDAO;
-    private final ProvenanceDaoV2 provDAO;
-    private final OntologyDAO ontologyDAO;
+    private final FileStorageService fs;
+
+    //TODO these daos are the ones that will need to be deleted in the class when logic classes are done.
+    //VariableDAO
+    //DeviceDAO
+    //ExperimentDAO
+    //ScientificObjectDAO
+    //ProvenanceDaoV2
+    //OntologyDAO
 
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
@@ -126,15 +119,7 @@ public class DataLogic {
         this.sparql = sparql;
         this.nosql = nosql;
         this.user = user;
-        this.variableDAO = new VariableDAO(sparql, nosql, fs, user);
-        this.deviceDAO = new DeviceDAO(sparql, nosql, fs);
-        this.expDAO = new ExperimentDAO(sparql, nosql);
-        this.scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-        this.provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
-        this.ontologyDAO = new OntologyDAO(sparql);
-        /*
         this.fs = fs;
-       */
     }
 
     //Private stored data
@@ -270,6 +255,7 @@ public class DataLogic {
 
 
         //Get other stuff we have to get (variables, objects, etc...)
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         List<VariableModel> variablesModelList = variableDAO.getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
@@ -282,14 +268,14 @@ public class DataLogic {
         if (forWideFormat && experiments.size() == 1) {
             context = experiments.keySet().stream().findFirst().get();
         }
-        List<SPARQLNamedResourceModel> objectsList = this.ontologyDAO.getURILabels(objects.keySet(), user.getLanguage(), context);
+        List<SPARQLNamedResourceModel> objectsList = new OntologyDAO(sparql).getURILabels(objects.keySet(), user.getLanguage(), context);
         for (SPARQLNamedResourceModel obj : objectsList) {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
         logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        List<ProvenanceModel> provenanceModels = provDAO.findByUris(provenances.keySet().parallelStream(), provenances.size());
+        List<ProvenanceModel> provenanceModels = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : provenanceModels) {
             provenances.put(prov.getUri(), prov);
         }
@@ -339,7 +325,7 @@ public class DataLogic {
         List<ProvenanceModel> resultList = new ArrayList<>();
 
         if(!provenanceURIs.isEmpty()){
-            resultList = provDAO.findByUris(provenanceURIs.stream(), provenanceURIs.size());
+            resultList = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenanceURIs.stream(), provenanceURIs.size());
         }
         return resultList;
     }
@@ -391,14 +377,14 @@ public class DataLogic {
         // test prov
         ProvenanceModel provenanceModel;
         try {
-            provenanceModel = provDAO.get(provenance);
+            provenanceModel = new ProvenanceDaoV2(nosql.getServiceV2()).get(provenance);
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Provenance URI not found: ", provenance);
         }
 
         // test exp
         if(experiment != null) {
-            expDAO.validateExperimentAccess(experiment, user);
+            new ExperimentDAO(sparql, nosql).validateExperimentAccess(experiment, user);
         }
 
         //Validate csv
@@ -431,6 +417,7 @@ public class DataLogic {
         if(user != null){
             userLanguage = user.getLanguage();
         }
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
@@ -473,7 +460,7 @@ public class DataLogic {
             );
         }
         //If every line wasn't "NotMeasured" :
-        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
+        List<Bson> aggregationDocs = this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, new VariableDAO(sparql, nosql, fs, user));
 
         //If aggregationDocs is null then it means there was a contradiction
         if(aggregationDocs == null){
@@ -515,6 +502,7 @@ public class DataLogic {
         Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
         Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
 
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
 
@@ -640,7 +628,7 @@ public class DataLogic {
                 VariableModel variable = null;
                 URI variableURI = data.getVariable();
                 if (!variableURIs.containsKey(variableURI)) {
-                    variable = variableDAO.get(variableURI);
+                    variable = new VariableDAO(sparql, nosql, fs, user).get(variableURI);
                     if (variable == null) {
                         notFoundedVariableURIs.add(variableURI);
                     } else {
@@ -672,6 +660,7 @@ public class DataLogic {
             }
 
             //check provenance uri and variables device association
+            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.exists(data.getProvenance().getUri())) {
@@ -741,7 +730,7 @@ public class DataLogic {
             //Create device links
             if(!variablesToDevices.isEmpty()) {
                 for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                    new DeviceDAO(sparql, nosql, fs).associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
                 }
             }
             //In the case of import set number of imported lines and create any annotations that were imported on the targets
@@ -764,6 +753,7 @@ public class DataLogic {
      */
     private DataCSVValidationModel validateWholeCSVInnerCode(ProvenanceModel provenance, URI experiment, InputStream file, Logger logger) throws Exception {
         //TODO DAOs other than DataDao used in this function. Change when logic layer is done elsewhere
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
 
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
@@ -839,7 +829,7 @@ public class DataLogic {
                                 if (!URIDeserializer.validateURI(header)) {
                                     csvValidation.addInvalidHeaderURI(i, header);
                                 } else {
-                                    VariableModel var = variableDAO.get(URI.create(header));
+                                    VariableModel var = new VariableDAO(sparql, nosql, fs, user).get(URI.create(header));
                                     // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
                                     if (var == null) {
                                         csvValidation.addInvalidHeaderURI(i, header);
@@ -887,15 +877,15 @@ public class DataLogic {
                                 rowIndex,
                                 csvValidation,
                                 headerByIndex,
-                                expDAO,
+                                new ExperimentDAO(sparql, nosql),
                                 notExistingExperiments,
                                 duplicatedExperiments,
                                 nameURIExperiments,
-                                ontologyDAO,
+                                new OntologyDAO(sparql),
                                 notExistingTargets,
                                 duplicatedTargets,
                                 nameURITargets,
-                                scientificObjectDAO,
+                                new ScientificObjectDAO(sparql, nosql),
                                 nameURIScientificObjectsInXp,
                                 scientificObjectsNotInXp,
                                 deviceDAO,
@@ -1413,7 +1403,7 @@ public class DataLogic {
     }
 
 
-    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectDAO dao, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
+    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
 
         // check if object exist by URI inside experiment
         if (URIDeserializer.validateURI(nameOrUri)) {
@@ -1428,7 +1418,7 @@ public class DataLogic {
 
             // check if object exist by name inside experiment
         } else if (experiment != null) {
-            SPARQLNamedResourceModel existingObject = dao.getUriByNameAndGraph(experiment, nameOrUri);
+            SPARQLNamedResourceModel existingObject = scientificObjectDAO.getUriByNameAndGraph(experiment, nameOrUri);
             if (existingObject == null) {
                 validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));
                 return null;
@@ -1506,6 +1496,7 @@ public class DataLogic {
      */
     private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
 
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         URI provenanceURI = data.getProvenance().getUri();
         DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO);
         if (deviceFromProvWasAssociated == null) {
@@ -1906,7 +1897,7 @@ public class DataLogic {
 
         //user access
         if (!user.isAdmin()) {
-            Set<URI> userExperiments = expDAO.getUserExperiments(user);
+            Set<URI> userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(user);
 
             if (experiments != null && !experiments.isEmpty()) {
 
@@ -2135,10 +2126,10 @@ public class DataLogic {
         if (provEntityList != null && provEntityList.size() == 1) {
             URI uri = provEntityList.get(0).getUri();
             dto.setUri(uri);
-            dto.setName(this.ontologyDAO.getURILabel(uri, user.getLanguage()));
+            dto.setName(new OntologyDAO(sparql).getURILabel(uri, user.getLanguage()));
         }
         else {
-            ProvenanceModel provModel = provDAO.get(dataProvModel.getUri());
+            ProvenanceModel provModel = new ProvenanceDaoV2(nosql.getServiceV2()).get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());
         }

@@ -168,7 +168,7 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
+        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser, fs);
         ListWithPagination<SystemSummaryModel> systemSummaries = metricsDao.getSystemSummaryWithPagination(startInstant, endInstant, page, pageSize, currentUser.getLanguage());
 
         //Convert paginated list to DTO
@@ -217,7 +217,7 @@ public class MetricAPI {
                 startInstant = ZonedDateTime.now().minusYears(1).toInstant();
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
+        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser, fs);
 
         //Get SystemSummaryModels for startInstant and endInstant in order to calculate later the differences between both SystemSummaryModels
         List<SystemSummaryModel> firstAndLastPeriodSystemSummaries = metricsDao.getSystemSummaryFirstAndLastByPeriod(startInstant, endInstant, currentUser.getLanguage());

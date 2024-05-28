@@ -25,7 +25,8 @@ import java.time.LocalDate;
         ontology = Oeso.class,
         resource = "Device",
         graph = DeviceModel.GRAPH,
-        prefix = "device"
+        prefix = "device",
+        handleCustomProperties = true
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 

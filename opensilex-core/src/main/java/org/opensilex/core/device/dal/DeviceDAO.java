@@ -291,7 +291,7 @@ public class DeviceDAO {
         //createIndexes();
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
-        sparql.update(graph, instance.getUri());
+        sparql.update(graph, instance);
         return instance;
     }
 

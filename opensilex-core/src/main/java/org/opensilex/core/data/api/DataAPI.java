@@ -353,7 +353,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null") @QueryParam("targets") List<URI> targets,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -637,7 +637,7 @@ public class DataAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null") @QueryParam("targets") List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
     ) throws Exception {
 
         DataSearchFilter filter;

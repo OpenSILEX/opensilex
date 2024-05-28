@@ -3,7 +3,7 @@
  *                         GermplasmAPI.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 02/05/2024 10:01
+ * Last Modification: 28/05/2024 16:21
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -15,6 +15,7 @@ import org.brapi.v2.model.BrAPIPagination;
 import org.brapi.v2.model.BrAPIStatus;
 import org.brapi.v2.model.germ.BrAPIGermplasm;
 import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.olga.OlgaModule;
 import org.opensilex.olga.bll.GermplasmLogic;
@@ -55,9 +56,8 @@ public class GermplasmAPI {
     private OlgaModule olgaModule;
 
     @Inject
-    private MongoDBServiceV2 mongodb;
+    private MongoDBService mongodb;
 
-    private final GermplasmLogic germplasmLogic = new GermplasmLogic(mongodb, olgaModule);
 
     // Service to get germplasm detail from Olga
     @GET
@@ -72,6 +72,7 @@ public class GermplasmAPI {
     public Response getGermplasmByDbId(
             @ApiParam(value = GERMPLASM_DBID, example = GERMPLASM_EXAMPLE_DBID, required = true) @PathParam("germplasmDbId") @NotNull String germplasmDbId
     ) throws Exception {
+        GermplasmLogic germplasmLogic = new GermplasmLogic(mongodb.getServiceV2(), olgaModule);
 
         var germplasmDetailResult = germplasmLogic.getOpensilexGermplasmDetail(germplasmDbId);
 
@@ -95,6 +96,7 @@ public class GermplasmAPI {
     public Response searchGermplasms(
             @ApiParam(value = GERMPLASM_NAME, example = GERMPLASM_EXAMPLE_NAME) String germplasmName
     ) {
+        GermplasmLogic germplasmLogic = new GermplasmLogic(mongodb.getServiceV2(), olgaModule);
         return new PaginatedListResponse<>(germplasmLogic.searchGermplasm(germplasmName)).getResponse();
     }
 
@@ -109,6 +111,7 @@ public class GermplasmAPI {
             @ApiResponse(code = 200, message = "Harvest olga germplasms")
     })
     public void forceHarvestGermplasms() throws Exception {
+        GermplasmLogic germplasmLogic = new GermplasmLogic(mongodb.getServiceV2(), olgaModule);
         germplasmLogic.harvestOlgaGermplasms();
     }
 

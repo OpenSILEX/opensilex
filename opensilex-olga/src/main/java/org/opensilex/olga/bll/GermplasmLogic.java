@@ -3,7 +3,7 @@
  *                         GermplasmLogic.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 02/05/2024 10:31
+ * Last Modification: 28/05/2024 16:23
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -16,7 +16,6 @@ import org.brapi.v2.model.BrAPIPagination;
 import org.brapi.v2.model.BrAPIStatus;
 import org.brapi.v2.model.germ.BrAPIGermplasm;
 import org.brapi.v2.model.germ.response.BrAPIGermplasmSingleResponse;
-import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.olga.OlgaModule;
 import org.opensilex.olga.dal.GermplasmClient;
@@ -24,7 +23,6 @@ import org.opensilex.olga.dal.GermplasmDAO;
 import org.opensilex.olga.dal.GermplasmModel;
 import org.opensilex.olga.model.GermplasmDTO;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 

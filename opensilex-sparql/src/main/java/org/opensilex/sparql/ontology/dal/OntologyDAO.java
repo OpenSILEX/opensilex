@@ -30,14 +30,13 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
-import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -277,7 +276,7 @@ public final class OntologyDAO {
         }
 
         if (model == null) {
-            throw new SPARQLInvalidUriListException("URI not found ", Collections.singletonList(rdfClass));
+            throw new SPARQLInvalidURIException("URI not found ", rdfClass);
         }
 
         try {

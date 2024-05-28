@@ -12,8 +12,6 @@
             :successMessage="successMessage"
             :createAction="create"
             :updateAction="update"
-            @onCreate="$emit('onCreate', $event)"
-            @onUpdate="$emit('onUpdate', $event)"
         ></opensilex-ModalForm>
 
     </template>
@@ -119,47 +117,46 @@
 
         create(event: EventCreationDTO) {
             let isMove = this.isMove(event.rdf_type);
-            EventModalForm.convertFormToDto(event,isMove);
+            let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
 
-            let events = [event];
+            let events = [formatedMoveEvent];
             let createPromise = isMove ?
                 this.service.createMoves(events) :
                 this.service.createEvents(events);
 
             return createPromise.then((http: HttpResponse<OpenSilexResponse<string>>) => {
-
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                event.uri = http.response.result.toString();
-                this.$emit("onCreate", event);
+                formatedMoveEvent.uri = http.response.result.toString();
+                this.$emit("onCreate", formatedMoveEvent);
 
             }).catch((error) => {
-                if (error.status == 409) {
-                    this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
-                }         
-                else {
-                    this.$opensilex.errorHandler(error,error.response.result.message);
-                }
+              if (error.status == 409) {
+                this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
+              } else {
+                let message = this.$i18n.t("Event.uri-error", {error: error.response.result.message});
+                this.$opensilex.showErrorToast(message);
+              }
             });
         }
 
         update(event: EventUpdateDTO) {
 
             let isMove = this.isMove(event.rdf_type);
-
-            EventModalForm.convertFormToDto(event,isMove);
+            let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
+            
 
             let updatePromise = isMove?
-                this.service.updateMoveEvent(event) :
-                this.service.updateEvent(event);
+                this.service.updateMoveEvent(formatedMoveEvent) :
+                this.service.updateEvent(formatedMoveEvent);
 
             return updatePromise.then(() => {
 
-                let message = this.$i18n.t("Event.name") + " " + event.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                let message = this.$i18n.t("Event.name") + " " + formatedMoveEvent.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                this.$emit("onUpdate", event);
+                this.$emit("onUpdate", formatedMoveEvent);
             }).catch((error) => {
                 this.$opensilex.errorHandler(error,error.response.result.message);
             });
@@ -212,15 +209,17 @@
         }
 
         static convertFormToDto(event: MoveCreationDTO, isMove: boolean) {
+            let moveCopy = JSON.parse(JSON.stringify(event));
             if (isMove) {
-                EventModalForm.convertMoveFormToMoveDto(event);
+                EventModalForm.convertMoveFormToMoveDto(moveCopy);
             } else {
-                event.targets_positions = undefined;
+                moveCopy.targets_positions = undefined;
             }
 
             if (event.is_instant) {
-                event.start = undefined;
+                moveCopy.start = undefined;
             }
+            return moveCopy
 
         }
 
@@ -310,6 +309,7 @@
             target: Target
             target-help: Object targeted by the event (Must exist)
             targets-example: "os-so:plant1"
+            uri-error: Creation canceled, URI not found - {error}
             end: End
             end-help: End of event, required if the event is instantaneous
             list-title: Events
@@ -340,6 +340,7 @@
             targets-help: Objet(s) concerné(s) sont "Appareils" et "Objets scientifiques"
             targets-example: "os-so:plant1"
             target-help: URI de l'objet concerné par l'évènement (Doit exister).
+            uri-error: Création annulée, URI non trouvée - {error}
             start: Début
             start-help: Début de l'événement, uniquement si celui-ci n'est pas instantané
             start-example: 2019-09-08T13:00:00+01:00"

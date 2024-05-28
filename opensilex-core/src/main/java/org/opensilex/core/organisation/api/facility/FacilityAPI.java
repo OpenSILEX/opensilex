@@ -141,7 +141,9 @@ public class FacilityAPI {
     public Response getAllFacilities() throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
-        List<FacilityModel> facilities = facilityDAO.search(new FacilitySearchFilter()
+        FacilitySearchFilter searchFilter = new FacilitySearchFilter();
+        searchFilter.setPageSize(0);
+        List<FacilityModel> facilities = facilityDAO.search(searchFilter
                         .setUser(currentUser))
                 .getList();
 

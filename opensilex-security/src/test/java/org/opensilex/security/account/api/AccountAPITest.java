@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -27,7 +28,20 @@ import static junit.framework.TestCase.*;
 public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
     public final static String path = "security/accounts";
-    public final static String createPath = path ;
+    
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    AccountAPI.class.getMethod("createAccount", AccountCreationDTO.class),
+                    path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final static String updatePath = path;
     public static String getPath = path + "/{uri}";
 
@@ -63,7 +77,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
         AccountCreationDTO accountToCreate = getAccount1CreationDTO();
         accountToCreate.setLinkedPerson(URIPersonToLinkWith);
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), accountToCreate);
+        Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
         assertEquals("crerate account failed", Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         URI createdUri = extractUriFromResponse(postResponse);
@@ -72,7 +86,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
     private AccountModel createAccount1WithoutPerson() throws Exception {
         AccountCreationDTO accountToCreate = getAccount1CreationDTO();
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), accountToCreate);
+        Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
 
         URI createdUri = extractUriFromResponse(postResponse);
         return accountDAO.get(createdUri);
@@ -80,7 +94,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
     private URI createPerson() throws Exception {
         PersonDTO personToLinkWith = getDefaultPersonDTO();
-        Response postResponse = getJsonPostResponseAsAdmin(target(PersonAPITest.createPath), personToLinkWith);
+        Response postResponse = getJsonPostResponseAsAdmin(target(PersonAPITest.create.getPathTemplate()), personToLinkWith);
         assertEquals("create person failed", Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         return extractUriFromResponse(postResponse);
@@ -120,7 +134,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreateWithoutHolder() throws Exception {
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getAccount1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getAccount1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well-formed URI, else throw exception
@@ -128,7 +142,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         Response getResult = getJsonGetByUriResponseAsAdmin(target(UserAPITest.getPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        postResult = getJsonPostResponseAsAdmin(target(createPath), getAccount2CreationDTO());
+        postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getAccount2CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well-formed URI, else throw exception
@@ -145,7 +159,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         //create the user
         AccountCreationDTO accountToCreate = getAccount1CreationDTO();
         accountToCreate.setLinkedPerson(URIPersonToLinkWith);
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), accountToCreate);
+        Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         //check that account (user URI) and person are linked
@@ -161,7 +175,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         accountToCreate.setLinkedPerson(new URI("http://inventedURI"));
 
         //check that API return the right code
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), accountToCreate);
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
 
         //check that the user (account) was not insert in the dataBase
@@ -175,13 +189,13 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         //create an account with this person
         AccountCreationDTO accountToCreate = getAccount1CreationDTO();
         accountToCreate.setLinkedPerson(URIPersonToLinkWith);
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), accountToCreate);
+        Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         //try to create an other account with this same person
         AccountCreationDTO accountThatWillNotBeCreated = getAccount2CreationDTO();
         accountThatWillNotBeCreated.setLinkedPerson(URIPersonToLinkWith);
-        postResponse = getJsonPostResponseAsAdmin(target(createPath), accountThatWillNotBeCreated);
+        postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountThatWillNotBeCreated);
         assertEquals(Response.Status.CONFLICT.getStatusCode(), postResponse.getStatus());
     }
 
@@ -224,7 +238,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
 
         AccountCreationDTO accountCreationDTO = getAccount2CreationDTO();
         accountCreationDTO.setUri(firstCreatedAccount.getUri());
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), accountCreationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountCreationDTO);
         assertEquals(Response.Status.CONFLICT.getStatusCode(), postResult.getStatus());
     }
 
@@ -253,7 +267,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
     public void updateAddPersonButPersonIsAlreadyLinkedToAnAccount() throws Exception {
         AccountModel accountWithPerson = createAccount1WithPerson();
 
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getAccount2CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getAccount2CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
         URI accountUri = extractUriFromResponse(postResult);
 
@@ -274,7 +288,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         PersonDTO newPerson = new PersonDTO();
         newPerson.setFirstName("new person");
         newPerson.setLastName("new person");
-        Response postResponse = getJsonPostResponseAsAdmin(target(PersonAPITest.createPath), newPerson);
+        Response postResponse = getJsonPostResponseAsAdmin(target(PersonAPITest.create.getPathTemplate()), newPerson);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
         URI NewPersonURI = extractUriFromResponse(postResponse);
 

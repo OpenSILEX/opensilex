@@ -96,7 +96,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     @Override
     public List<Bson> getBsonFilters(DataSearchFilter filter) {
 
-        //Get all bysons from DataFiles as they are all the same apart from the variable filter
+        //Get all bsons from DataFiles as they are all the same apart from the variable filter
 
         List<Bson> bsonFilters = dataFileDaoV2.getBsonFilters(filter);
 

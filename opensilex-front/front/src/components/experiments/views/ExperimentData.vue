@@ -76,20 +76,21 @@
                 <div>
                   <opensilex-FilterField halfWidth="true">
                     <opensilex-SelectForm
-                      ref="soSelector"
-                      label="DataView.filter.scientificObjects"
-                      placeholder="DataView.filter.scientificObjects-placeholder"
-                      :selected.sync="filter.scientificObjects"
-                      modalComponent="opensilex-ScientificObjectModalListByExp"
-                      :filter.sync="soFilter"
-                      :isModalSearch="true"
-                      :clearable="true"
-                      :multiple="true"
-                      @clear="refreshSoSelector"
-                      @onValidate="refreshProvComponent"
-                      @onClose="refreshProvComponent"
-                      :limit="1"
-                      class="searchFilter"
+                        ref="soSelector"
+                        label="DataView.filter.scientificObjects"
+                        placeholder="DataView.filter.scientificObjects-placeholder"
+                        :selected.sync="filter.scientificObjects"
+                        modalComponent="opensilex-ScientificObjectModalList"
+                        class="searchFilter"
+                        :filter.sync="soFilter"
+                        :isModalSearch="true"
+                        :clearable="true"
+                        :multiple="true"
+                        @clear="refreshSoSelector"
+                        @onValidate="refreshComponent"
+                        @onClose="refreshComponent"
+                        @select="refreshComponent"
+                        :limit="1"
                     ></opensilex-SelectForm>
                   </opensilex-FilterField>
                 </div>
@@ -271,23 +272,18 @@ export default class ExperimentData extends Vue {
     return this.$store.state.user;
   }
 
-  refreshProvComponent() {
-    this.refreshKey += 1;
+  refreshSoSelector() {
+    this.soSelector.refreshModalSearch();
+    this.refreshComponent();
+  }
+
+  refreshComponent() {
+    this.refreshKey += 1
   }
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.resetFilters();
-
-    this.soFilter = {
-      name: "",
-      experiment: this.uri,
-      germplasm: undefined,
-      factorLevels: [],
-      types: [],
-      existenceDate: undefined,
-      creationDate: undefined,
-    };  
   }
 
   resetFilters() {
@@ -326,12 +322,6 @@ export default class ExperimentData extends Vue {
     this.$nextTick(() => {
       this.modalDataForm.showCreateForm();
     });
-  }
-
-  refreshSoSelector() {
-    
-    this.soSelector.refreshModalSearch();
-    this.refreshProvComponent();
   }
 
   successMessage(form) {

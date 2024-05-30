@@ -48,6 +48,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -92,6 +93,20 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
+
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("createScientificObject", ScientificObjectCreationDTO.class),
+                    createPath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final String searchGeomPath = path + "/geometry";
     public static final String exportGeospatialPath = path + "/export_geospatial";
 

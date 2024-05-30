@@ -64,8 +64,6 @@ public abstract class ExperimentDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
-
-
     public URI getUri() {
         return uri;
     }

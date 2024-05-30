@@ -45,7 +45,7 @@
                         </goals>
                         <configuration>
                             <services>
-                                <param>org.opensilex.brapi.api.BrapiCall</param>
+                                <param>org.opensilex.brapi.api.CallsAPI</param>
                             </services>
                         </configuration>
                     </execution>

@@ -3,6 +3,7 @@ package org.opensilex.security.person.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.person.dal.PersonModel;
@@ -27,7 +28,20 @@ import static org.junit.Assert.assertTrue;
 public class PersonAPITest extends AbstractSecurityIntegrationTest {
 
     protected static String path = "security/persons";
-    public static String createPath = path;
+
+    public static ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                PersonAPI.class.getMethod("createPerson", PersonDTO.class),
+                    path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected static String updatePath = path;
     protected static String getPath = path + "/{uri}";
     public static String deletePath = path + "/{uri}";
@@ -58,7 +72,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void create() throws Exception {
         //check the response
-        Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
         URI createdUri = extractUriFromResponse(result);
 
@@ -74,7 +88,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         withoutURI.setFirstName("Default");
         withoutURI.setLastName("DEFAULT");
 
-        Response result = getJsonPostResponseAsAdmin(target(createPath), withoutURI);
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), withoutURI);
         assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
 
     }
@@ -82,9 +96,9 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void createWithExistingURIReturnConflict() throws Exception {
         //create a Person
-        getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
         //try to create the same Person again
-        Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
         assertEquals(Response.Status.CONFLICT.getStatusCode(), result.getStatus());
     }
 
@@ -95,7 +109,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         PersonDTO personWithOrcid = getDefaultDTO();
         personWithOrcid.setOrcid(orcid);
 
-        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), personWithOrcid);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatus());
     }
 
@@ -109,10 +123,10 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         withoutFirst.setUri(new URI("http://opensilex.dev/id/user/autre.autre"));
         withoutFirst.setLastName("DEFAULT");
 
-        Response result = getJsonPostResponseAsAdmin(target(createPath), withoutLast);
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), withoutLast);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatus());
 
-        result = getJsonPostResponseAsAdmin(target(createPath), withoutFirst);
+        result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), withoutFirst);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatus());
     }
 
@@ -121,8 +135,8 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         PersonDTO person1 = getDefaultDTO();
         PersonDTO person2 = get2ndDefaultDTO();
         //creating persons
-        getJsonPostResponseAsAdmin(target(createPath), person1);
-        getJsonPostResponseAsAdmin(target(createPath), person2);
+        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), person1);
+        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), person2);
 
         //call to get service and extract the result
         //extract first result
@@ -149,8 +163,8 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void getPersonReturnNotFoundForUniexsistingURI() throws Exception {
         //creating persons
-        getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
-        getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
+        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), get2ndDefaultDTO());
 
         URI unexistingURI = new URI("http://opensilex.dev/id/user/unexistingUSER");
 
@@ -160,10 +174,10 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void search() throws Exception {
-        Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
 
-        Response result2 = getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+        Response result2 = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), get2ndDefaultDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), result2.getStatus());
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -199,13 +213,13 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         userThatWillNotBeInSearchResponse.setEmail("e@mail.valid");
         userThatWillNotBeInSearchResponse.setLanguage("en");
         userThatWillNotBeInSearchResponse.setAdmin(true);
-        Response userResponse = getJsonPostResponseAsAdmin(target(UserAPITest.createPath), userThatWillNotBeInSearchResponse);
+        Response userResponse = getJsonPostResponseAsAdmin(target(UserAPITest.create.getPathTemplate()), userThatWillNotBeInSearchResponse);
         assertEquals(Response.Status.CREATED.getStatusCode(), userResponse.getStatus());
 
-        Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        Response result = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
 
-        Response result2 = getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+        Response result2 = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), get2ndDefaultDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), result2.getStatus());
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -237,7 +251,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void update() throws Exception {
         // create the person
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
 
         //update the person
         URI uriCreated = extractUriFromResponse(postResult);
@@ -277,8 +291,8 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
 //    @Test
 //    public void delete() throws Exception {
 //        //creating persons
-//        getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
-//        getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+//        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
+//        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), get2ndDefaultDTO());
 //
 //        URI uriToDelete = getDefaultDTO().getUri();
 //
@@ -303,7 +317,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
 //        user.setLanguage("fr");
 //
 //        //user creation
-//        Response createdResult = getJsonPostResponseAsAdmin(target(UserAPITest.createPath), user);
+//        Response createdResult = getJsonPostResponseAsAdmin(target(UserAPITest.create.getPathTemplate()), user);
 //        assertEquals(Response.Status.CREATED.getStatusCode(), createdResult.getStatus());
 //
 //        //deleting the person linked to the account
@@ -328,8 +342,8 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
 //    @Test
 //    public void deleteWithUnexistingURI() throws Exception {
 //        //creating persons
-//        getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
-//        getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+//        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getDefaultDTO());
+//        getJsonPostResponseAsAdmin(target(create.getPathTemplate()), get2ndDefaultDTO());
 //
 //        URI unexistingURI = new URI("http://opensilex.dev/id/user/unexistingUSER");
 //

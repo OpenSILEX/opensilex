@@ -9,19 +9,8 @@ package org.opensilex.core.germplasm.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
@@ -32,30 +21,23 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.ListWithPagination;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.URI;
+import java.util.*;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertFalse;
 
 /**
  *
  * @author Alice BOIZET
  */
-public class GermplasmAPITest extends AbstractMongoIntegrationTest {
-
-    public static final String path = "/core/germplasm";
-
-    public static final String uriPath = path + "/{uri}";
-    public static final String searchPath = path;
-    public static final String createPath = path;
-    public static final String updatePath = path;
-    public static final String deletePath = path + "/{uri}";
-
-    public static GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
-        GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setName("testSpecies");
-        germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
-        return germplasmDTO;
-    }
-
+public class GermplasmAPITest extends BaseGermplasmAPITest {
     @Test
     public void testCreate() throws Exception {
 
@@ -63,7 +45,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
 
-        // ensure that the result is a well formed URI, else throw exception
+        // ensure that the result is a well-formed URI, else throw exception
         URI createdSpeciesUri = extractUriFromResponse(postResultSpecies);
         final Response getResultSpecies = getJsonGetByUriResponseAsAdmin(target(uriPath), createdSpeciesUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultSpecies.getStatus());
@@ -274,7 +256,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
+        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         GermplasmGetSingleDTO germplasmGetDto = getResponse.getResult();
         assertNotNull(germplasmGetDto);
@@ -283,10 +265,9 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearch() throws Exception {
         GermplasmCreationDTO creationDTO = getCreationSpeciesDTO();
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
-        URI uri = extractUriFromResponse(postResult);
+        getJsonPostResponseAsAdmin(target(createPath), creationDTO);
 
-        Map<String, Object> params = new HashMap<String, Object>() {
+        Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().name);
                 put("rdf_type", getCreationSpeciesDTO().getType());
@@ -299,7 +280,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
 
@@ -390,11 +371,6 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uriToDelete.toString());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
 
-    }
-
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(GermplasmModel.class);
     }
 
 }

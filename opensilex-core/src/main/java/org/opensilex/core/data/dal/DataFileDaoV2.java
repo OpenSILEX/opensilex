@@ -166,18 +166,13 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
                 new ProvenanceDAO(mongoDBService, sparqlService).getProvenancesURIsByAgents(dataProvenanceAgents);
 
         Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, globalProvenanceAgents);
-        Bson globalProvenanceOrEmptyFilter = Filters.or(globalProvenanceFilter, NO_PROV_WAS_ASSOCIATED_WITH_FILTER);
 
         // Try to simplify the query : avoid a complex OR query with empty array
-        if (dataProvenanceAgents.isEmpty()) {
-            if (!globalProvenanceAgents.isEmpty()) { // only match global provenance
-                bsonFilters.add(globalProvenanceOrEmptyFilter);
-            }
-        } else {
+        if (!dataProvenanceAgents.isEmpty()) {
             if (globalProvenanceAgents.isEmpty()) {  // only match data provenance
                 bsonFilters.add(dataProvenanceFilter);
             } else {
-                bsonFilters.add(Filters.or(dataProvenanceFilter, globalProvenanceOrEmptyFilter));  // match agents from data provenance or from global provenance
+                bsonFilters.add(Filters.or(dataProvenanceFilter, globalProvenanceFilter));  // match agents from data provenance or from global provenance
             }
         }
     }

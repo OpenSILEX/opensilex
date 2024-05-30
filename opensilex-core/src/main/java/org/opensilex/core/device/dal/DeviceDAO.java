@@ -289,8 +289,7 @@ public class DeviceDAO {
     public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
-        sparql.deleteByURI(graph, instance.getUri());
-        sparql.create(instance);
+        sparql.update(graph, instance);
         return instance;
     }
 

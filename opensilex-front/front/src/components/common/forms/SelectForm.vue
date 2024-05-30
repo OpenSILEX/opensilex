@@ -524,10 +524,7 @@ export default class SelectForm extends Vue {
     } 
     else {
       if (this.multiple) {
-        console.log("selectform Value ", value)
-        console.log("selectForm selection AV", this.selection)
         this.selection.push(value.id);
-        console.log("this.selectForm.selection AP ", this.selection)
       } else {
         this.selection = value.id;
       }
@@ -553,7 +550,6 @@ export default class SelectForm extends Vue {
   }
 
   onValidate() {
-    console.log("selectForm onValidate")
     if(this.selectedTmp == null || this.selectedTmp.length == 0) {
       this.loading = false;
     } else {

@@ -309,7 +309,6 @@ export default class FormSelector extends Vue {
       }
     } else {
       if (this.selection) {
-        console.log("hiddenValue : ", this.selection)
         return this.selection;
       }
     }
@@ -342,7 +341,6 @@ export default class FormSelector extends Vue {
   }
 
   select(value){
-    console.log("FormSelector  $select : value", value)
     this.$emit("select", value);
   }
 

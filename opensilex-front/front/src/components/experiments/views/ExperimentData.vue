@@ -91,6 +91,7 @@
                         @onClose="refreshComponent"
                         @select="refreshComponent"
                         :limit="1"
+                        :key="refreshKey"
                     ></opensilex-SelectForm>
                   </opensilex-FilterField>
                 </div>
@@ -284,6 +285,17 @@ export default class ExperimentData extends Vue {
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.resetFilters();
+
+
+    this.soFilter = {
+      name: "",
+      experiment: this.uri,
+      germplasm: undefined,
+      factorLevels: [],
+      types: [],
+      existenceDate: undefined,
+      creationDate: undefined,
+    };  
   }
 
   resetFilters() {

@@ -25,7 +25,6 @@
     @keyup.enter.native="onEnter"
     :key="treeselectRefreshKey"
   >
-    <!-- v-bind="treeselectProps" -->
     <template v-slot:after-list>
       <slot name="after-list"></slot>
     </template>
@@ -37,7 +36,6 @@ import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-
 
 export interface SelectableItem {
   id: string,
@@ -52,33 +50,16 @@ export default class CustomTreeselect extends Vue {
 
   @Ref("treeref") readonly  treeref!: any;
 
-  // @Prop({ type: Object, required: true }) 
-  // treeselectProps!: object;
-
-  // @Prop() multiple;
-  // @Prop() placeholder: string;
-  // @Prop({ default: false }) showCount: boolean;
-  // @Prop({ default: true }) clearable: boolean;
-  // @Prop() disabled: boolean;
-  // @Prop({ default:  1 }) limit: number;
-  // @Prop({ default: "component.common.filter-search-no-result" }) noResultsText: string;
-  // @Prop({ default: false }) disableBranchNodes: boolean;
-  // @Prop({ default: false }) searchNested: boolean;
-  // @Prop({ default: true }) flat: boolean;
-  // @Prop() searchMethod;
-  // @Prop() loadOptions: Function;
-  // @Prop() optionsLoadingMethod;
-  // @Prop() options;
-
-currentValue;
-internalOption = null;
+  currentValue;
+  internalOption = null;
 
   @PropSync("selected")
   selection;
 
-    /**
-   * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
-   */
+
+  /**
+  * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
+  */
   @Prop({default: null})
   selectedInJsonFormat;
 
@@ -129,10 +110,10 @@ internalOption = null;
 
   selectedTmp = [];
 
-@Prop({
-  default: false,
-})
-showCount;
+  @Prop({
+    default: false,
+  })
+  showCount;
 
   @Prop({
     type: Function,
@@ -153,7 +134,6 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
 @Watch("selection")
 onSelectionChange() {
-  console.log("watcher selection : ", this.selection)
   this.currentValue = null;
 }
 
@@ -186,8 +166,6 @@ onSelectionChange() {
                     nodeList.push(this.conversionMethod(item));
                   });
                   if (this.multiple) {
-                    console.log("currentValue : ", this.currentValue)
-                    console.log("nodeList ", nodeList)
                     this.currentValue = nodeList;
                   } else {
                     this.currentValue = nodeList[0];
@@ -210,7 +188,6 @@ onSelectionChange() {
           if (this.multiple) {
             if (this.selection && this.selection.length > 0) {
               let items = this.findListInTree(currentOptions, this.selection);
-              console.log("items ", items)
               resolve(items);
             } else {
               resolve([]);
@@ -265,7 +242,6 @@ onSelectionChange() {
 
   loadOptions({ action, searchQuery, callback }) {
     if (action === "ASYNC_SEARCH") {
-      console.log("customTS loadOp - async")
       this.debounceSearch(searchQuery, callback);
     } else if (action === "LOAD_ROOT_OPTIONS") {
       if (this.optionsLoadingMethod) {
@@ -286,8 +262,6 @@ onSelectionChange() {
               this.selection=URISelected;
               this.$emit("select", this.selection);
             }
-            
-            console.log("customTS loadOp load root options ", this.internalOption)
             callback(null, this.internalOption);
             this.$opensilex.enableLoader();
           })
@@ -412,10 +386,7 @@ onSelectionChange() {
 
   select(value) {  
     if (this.multiple) {
-      console.log("custom -select - value ", value)
-      console.log("custom -select - this.selection Av ", this.selection)
       this.selection.push(value.id);
-      console.log("custom -select - this.selection AP ", this.selection)
     } else {
       this.selection = value.id;
     }
@@ -424,36 +395,27 @@ onSelectionChange() {
 
   deselect(item) { 
     if (this.multiple) {
-      console.log("deselect av", this.selection)
-        this.selection = this.selection.filter((id) => id !== item.id);
-              console.log("deselect ap", this.selection)
+      this.selection = this.selection.filter((id) => id !== item.id);
     } else {
-      console.log("deselect selection : ", this.selection)
         this.selection = null;
       }
-  
     this.$emit("deselect", item);
   }
 
   onEnter() {
-      this.$emit("handlingEnterKey")
+    this.$emit("handlingEnterKey")
   }
 
   clearIfNeeded(values) {
-    console.log("clearIfNeeded values : ", values)
-
     if (this.multiple) {
       if (values.length == 0) {
-        console.log("clearIf 1er ifselection av", this.selection)
         this.selection.splice(0, this.selection.length);
-        console.log("clearIf  1ier if selection ap", this.selection)
         this.$emit("clear");
         return;
       }
     }
     
     else if (!values) {
-      console.log("clearIf no value ", this.selection)
       this.selection = undefined;
       this.$emit("clear");
       return;
@@ -464,13 +426,8 @@ onSelectionChange() {
       for (let i in values) {
         newValues.push(values[i].id); // id because valueFormat="node" if we dont have a valueFormat we dont need the id
       }
-      console.log("newValues", newValues)
-        console.log("clearIf selection av", this.selection )
       this.selection = newValues;
-      console.log("clearIf  selection ap ", this.selection)
     }
   }
-
-
 }
 </script>

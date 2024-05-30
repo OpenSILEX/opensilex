@@ -14,13 +14,6 @@
                 @deselect="deselect"
         ></opensilex-FormSelector>
     </div>
-
-    <!-- Facility search on Data Form -> semble marcher
-    Mais rechercher un formulaire  modal ou le selecteur est présent aussi
-    recherche ET / OU création (ex: creation expe)
-    pas sur que les props itemLoadingMethod et conversionMethod(? retour du dto pas sous forme d'objet non / label / hid...?) soient traitées 
-    convenablement (voir du tout ) -->
-
 </template>
 
 

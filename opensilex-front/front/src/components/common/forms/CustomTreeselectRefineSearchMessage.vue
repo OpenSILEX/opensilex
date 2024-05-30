@@ -20,14 +20,13 @@ import Vue from "vue";
 
 @Component
 export default class CustomTreeselectRefineSearchMessage extends Vue {
-  $opensilex: any;
+    $opensilex: any;
 
-  @Prop()
-  resultCount: number;
+    @Prop()
+    resultCount: number;
 
-  @Prop()
-  totalCount: number;
-
+    @Prop()
+    totalCount: number;
 
     refine($event){
         this.$emit("loadMoreItems")

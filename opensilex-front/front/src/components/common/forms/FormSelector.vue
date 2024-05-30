@@ -6,7 +6,7 @@
     :label="label"
     :helpMessage="helpMessage"
   >
-  <!-------------------------------------------------------------------->
+
     <template v-slot:field="field">
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
@@ -33,26 +33,13 @@
           :itemLoadingMethod="itemLoadingMethod"
           :conversionMethod="conversionMethod"
         >
-          <!-- :disabled="disabled"
-          :disableBranchNodes="disableBranchNodes" -->
 
-          
-          <!-- @deselect="deselect"
-          @select="select"
-          @input="clearIfNeeded"
-          @close="close(field)"
-          @search-change="onSearchChange"
-          @keyup.enter.native="onEnter"
-           -->
-
-          <!-- choix dans les listes déroulantes -->
+          <!-- choice in lists -->
           <template v-slot:option-label ="{ node }" >
             <opensilex-CustomTreeselectOptionLabel :node="node" />
-            <!-- <slot name="option-label" v-bind:node="node">{{ node.label }}</slot> -->
           </template>
           
-          
-          <!-- elements selectionnés (pour les filtres à choix multiples) -->
+          <!-- selected elements (for multiple choice filters)-->
           <template v-slot:value-label="{ node }">
             <opensilex-CustomTreeselectValueLabel :node="node" />
           </template>
@@ -94,7 +81,6 @@
       </b-input-group>
 
     </template>
-    <!-------------------------------------------------------------------->
   </opensilex-FormField>
 </template>
 
@@ -124,52 +110,6 @@ export default class FormSelector extends Vue {
 
   @PropSync("selected")
   selection;
-
-  @Watch("selection") 
-  test() {
-    console.log("formSelector - watcher selection  :", this.selection)
-  }
-
-  // @provide props 
-  isMultiple: boolean = false;
-  hadShowCount: boolean = false;
-  isClearable: boolean = true;
-  isDisabled: boolean = false;
-  hadDisableBranchNodes: boolean = false;
-  hadSearchNested: boolean = false;
-
-  private hadPlaceholder: string = "";
-  private hadSearchPromptText: string = 'component.common.search-prompt-text';
-  private hadNoResultsText: string = 'component.common.filter-search-no-result';
-  hadDefaultExpandLevel: number = 2;
-  hadLimit: number = 1;
-  private selectedValuesData: any = null;
-  
-  
-
-  setSearchMethod(value: any){
-    this.searchMethod = value;
-  }
-
-
-  // @Provide() treeselectProps = {
-    //   multiple: this.isMultiple,
-  //   showCount: this.hadShowCount,
-  //   disabled: this.isDisabled,
-  //   disableBranchNodes: this.hadDisableBranchNodes,
-  //   searchNested: this.hadSearchNested,
-  //   clearable: this.isClearable,
-  //   placeholder: Ref(this.hadPlaceholder),
-  //   searchPromptText: Ref(this.hadSearchPromptText),
-  //   noResultsText: Ref(this.hadNoResultsText),
-  //   defaultExpandLevel: this.hadDefaultExpandLevel,
-  //   limit: this.hadLimit,
-  //   key: this.treeselectRefreshKey,
-  //   value: this.selectedValuesData,
-  //   async: this.searchMethod !== null,
-  //   defaultOptions: this.searchMethod !== null,
-  // };
-
 
   /**
    * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
@@ -207,18 +147,8 @@ export default class FormSelector extends Vue {
   })
   showCount;
 
-  // @Prop({
-  //   default: 0
-  // })
   totalCount = 0;
-
-  // @Prop({
-  //   default: 0
-  // })
   resultCount = 0;
-
-
-
 
   @Prop({
     type: Function,
@@ -278,14 +208,7 @@ export default class FormSelector extends Vue {
   })
   viewHandlerDetailsVisible
 
-  // @Prop({
-  //   default: false,
-  // })
-  // disableBranchNodes: boolean;
-
-
   resultLimit = 10;
-
 
   @Prop()
   defaultSelectedValue;
@@ -322,17 +245,6 @@ export default class FormSelector extends Vue {
   countsData;
 
   detailVisible: boolean = false;
-    // confirmed modal selection
-  selectedCopie = [];
-  // temporary modal selection
-  selectedTmp = [];
-
-  firstTimeOpening = false;
-
-  setSelectorToFirstTimeOpen(){
-    this.firstTimeOpening = true;
-  }
-
 
   public findInTree(tree, id) {
     for (let i in tree) {
@@ -362,9 +274,6 @@ export default class FormSelector extends Vue {
     this.customTreeselect.refresh();
     this.$nextTick(() => {
       this.customTreeselect.openTreeselect();
-    // selectForm.refresh();
-    // this.$nextTick(() => {
-    //   selectForm.openTreeselect();
     })
   }
 
@@ -461,8 +370,7 @@ export default class FormSelector extends Vue {
   height: 100%;
 }
 
-::v-deep .multiselect-action .vue-treeselect__control,
-::v-deep .multiselect-popup .vue-treeselect__control {
+::v-deep .multiselect-action .vue-treeselect__control {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
   border-bottom-left-radius: 5px !important;
@@ -470,13 +378,11 @@ export default class FormSelector extends Vue {
   height: 35px;
 }
 
-::v-deep .multiselect-view.vue-treeselect,
-::v-deep .multiselect-popup.vue-treeselect {
+::v-deep .multiselect-view.vue-treeselect {
   width: calc(100% - 85px);
 }
 
-::v-deep .multiselect-view .vue-treeselect__control,
-::v-deep .multiselect-popup .vue-treeselect__control {
+::v-deep .multiselect-view .vue-treeselect__control {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
   border-bottom-left-radius: 5px !important;
@@ -486,14 +392,6 @@ export default class FormSelector extends Vue {
 
 .select-button-container {
   margin-bottom: 0;
-}
-
-::v-deep .multiselect-popup .vue-treeselect__control-arrow-container {
-  display: none;
-}
-
-::v-deep .multiselect-popup .vue-treeselect__menu-container {
-  display: none;
 }
 
 i.more-results-info {

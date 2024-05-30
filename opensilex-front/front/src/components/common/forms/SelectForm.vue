@@ -1,5 +1,4 @@
 <template>
-  <!-- Commun  -->
   <opensilex-FormField
     :rules="rules"
     :required="required"
@@ -7,13 +6,12 @@
     :label="label"
     :helpMessage="helpMessage"
   >
-  <!-------------------------------------------------------------------->
     <template v-slot:field="field">
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
 
-        <!-- First case : modal search-->
+        <!-- modal search-->
         <treeselect
           v-if="isModalSearch"
           class="multiselect-popup modalSearchLabel"

@@ -82,11 +82,9 @@ export default class DataProvenanceSelector extends Vue {
   viewHandlerDetailsVisible: boolean;
 
   refresh() {
-    // this.formSelector.refresh();
   }
 
   select(value) {
-    console.log("dataProvSelector select value :", value)
     this.$emit("select", value);
   }
 
@@ -104,7 +102,6 @@ export default class DataProvenanceSelector extends Vue {
       .getService("opensilex.DataService")
       .getUsedProvenancesByTargets(this.experiments, this.variables, this.devices, this.targets)
       .then(http => {
-        console.log("dataProvSeletor loadProv : ", http.response.result)
         return http.response.result;
       });
   }

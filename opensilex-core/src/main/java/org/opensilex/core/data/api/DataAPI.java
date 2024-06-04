@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
@@ -14,24 +13,12 @@ import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.vocabulary.OA;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.annotation.dal.AnnotationDAO;
-import org.opensilex.core.annotation.dal.AnnotationModel;
-import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.bll.DataExportInformation;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.bll.DataLongExportInformation;
@@ -39,9 +26,7 @@ import org.opensilex.core.data.bll.DataWideExportInformation;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.api.ExperimentAPI;
@@ -49,24 +34,16 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
-import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
@@ -80,25 +57,13 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedSearchStrategy;
@@ -115,22 +80,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.opensilex.core.data.utils.DataMathFunctions.*;
 
 
 /**
@@ -204,7 +162,7 @@ public class DataAPI {
 
         try {
             if (dtoList.size() > SIZE_MAX) {
-                throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", "Single data import limit reached").getResponse();
             }
             List<DataModel> dataList = new ArrayList<>();
 
@@ -212,15 +170,11 @@ public class DataAPI {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-            List<URI> createdResources = dataBLL.addListData(dataList);
+            List<URI> createdResources = dataBLL.createMany(dataList);
 
             return new CreatedUriResponse(createdResources).getResponse();
 
-        } catch (NoSQLTooLargeSetException ex) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",
-                    ex.getMessage()).getResponse();
-
-        }catch (MongoDbUniqueIndexConstraintViolation duplicateError){
+        } catch (MongoDbUniqueIndexConstraintViolation duplicateError){
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
                     .getResponse();
         }
@@ -266,7 +220,7 @@ public class DataAPI {
 
         try {
             DataModel model = dataBLL.get(uri);
-            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, dataBLL.getAllDateVariables());
+            DataGetDetailsDTO dto = DataGetDetailsDTO.getDtoFromModel(model, new VariableDAO(sparql, nosql, fs, user).getAllDateVariables());
 
             // fetch detailed information about publisher account
             if(model.getPublisher() != null){
@@ -521,7 +475,7 @@ public class DataAPI {
 
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
 
-        Set<URI> dateVariables = dataLogic.getAllDateVariables();
+        Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, user).getAllDateVariables();
 
         //Define query and it's conversion method here
         var query = new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
@@ -530,7 +484,7 @@ public class DataAPI {
                 .setPaginationStrategy(paginationStrategy);
 
         // Paginated search : direct convert from model -> dto, no count of data
-        ListWithPagination<DataGetSearchDTO> results = dataLogic.getDataList(query);
+        ListWithPagination<DataGetSearchDTO> results = dataLogic.searchWithPagination(query);
 
         return new PaginatedListResponse<>(results).getResponse();
     }
@@ -757,25 +711,6 @@ public class DataAPI {
 
         DeleteResult result = dataLogic.deleteManyByFilter(filter);
         return new SingleObjectResponse<>(result).getResponse();
-    }
-    
-    /** 
-     * check if variable is associated to device
-     * @param device
-     * @param variable
-     * @throws Exception
-     */
-    private boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
-        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
-
-        if (!variables.isEmpty()) {
-            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
-                return true;
-            }
-
-        }
-        return false;
-        
     }
 
     /**
@@ -1402,7 +1337,7 @@ public class DataAPI {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
-                dataLogic.addListDataFromImport(data, validation);
+                dataLogic.createManyFromImport(data, validation);
 
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);

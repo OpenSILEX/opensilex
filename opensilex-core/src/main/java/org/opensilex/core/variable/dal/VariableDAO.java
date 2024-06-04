@@ -17,6 +17,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDaoV2;
@@ -35,6 +36,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -46,6 +48,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -334,6 +337,37 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 variable.getSpecies().add(nestedModel);
             }
         });
+
+    }
+
+    /**
+     * Fetches and return all URIs for the variable with the xsd:date datatype.
+     *
+     * @return
+     * @throws Exception
+     */
+    public Set<URI> getAllDateVariables() throws Exception {
+        return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
+            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
+        }));
+    }
+
+    /**
+     * check if variable is associated to device
+     * @param device
+     * @param variable
+     * @throws Exception
+     */
+    public boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
+        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+        if (!variables.isEmpty()) {
+            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
+                return true;
+            }
+        }
+        return false;
 
     }
 

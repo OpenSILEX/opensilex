@@ -580,7 +580,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             aggregationDocuments.add(new Document("$match", dataSearchFilter));
         }else{
             Document experimentFilter = new Document();
-            appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment));
+            DataFilterBuilder.appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment), sparql, mongoDBService);
             List<Document> andList = new ArrayList<>();
             andList.add(dataSearchFilter);
             andList.add(experimentFilter);
@@ -619,50 +619,6 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     }
     //#endregion
-
-    private void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments) throws Exception {
-        String experimentField = "provenance.experiments";
-
-        //user access
-        if (!user.isAdmin()) {
-            Set<URI> userExperiments = new ExperimentDAO(sparql, mongoDBService).getUserExperiments(user);
-
-            if (experiments != null && !experiments.isEmpty()) {
-
-                //Transform experiments and userExperiments in long format to compare the two lists
-                Set<URI> longUserExp = new HashSet<>();
-                for (URI exp:userExperiments) {
-                    longUserExp.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
-                }
-                Set <URI> longExpURIs = new HashSet<>();
-                for (URI exp:experiments) {
-                    longExpURIs.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
-                }
-                longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
-
-                if (longExpURIs.isEmpty()) {
-                    throw new Exception("you can't access to the given experiments");
-                } else {
-                    Document inFilter = new Document();
-                    inFilter.put("$in", longExpURIs);
-                    filter.put("provenance.experiments", inFilter);
-                }
-            } else {
-                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));
-                Document notExistingExpFilter = new Document(experimentField, new Document("$exists", false));
-                Document emptyExpFilter = new Document(experimentField, new ArrayList());
-                List<Document> expFilter = Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter);
-
-                filter.put("$or", expFilter);
-            }
-        } else {
-            if (experiments != null && !experiments.isEmpty()) {
-                Document inFilter = new Document();
-                inFilter.put("$in", experiments);
-                filter.put("provenance.experiments", inFilter);
-            }
-        }
-    }
 
     //#region Embedded classes
     //Embedded classes for complex return types

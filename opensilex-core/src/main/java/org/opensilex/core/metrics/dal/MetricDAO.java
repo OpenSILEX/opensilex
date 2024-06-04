@@ -22,6 +22,7 @@ import org.bson.Document;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataFilterBuilder;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -439,7 +440,7 @@ public class MetricDAO {
         inFilter.put("$in", new ArrayList<>(tmpVariable.keySet()));
         filter.put("variable", inFilter);
         // Add experiment filter
-        dataLogic.appendExperimentUserAccessFilter(filter, currentUser, experiments);
+        DataFilterBuilder.appendExperimentUserAccessFilter(filter, currentUser, experiments, sparql, nosql);
         // 1.match - Filter data on these variables
         // 2.group - Group variables with number of data  
         Set<Document> variablesWithDataCount = nosql.aggregate(

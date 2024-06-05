@@ -406,7 +406,7 @@
               :title="`${data[0]}`"
             >
             </heat-map>
-            <word-cloud :result="result"> </word-cloud>
+            <word-cloud class="justify-self-center" :result="data[1]"> </word-cloud>
           </b-col>
         </b-row>
       </div>
@@ -1122,8 +1122,6 @@ export default class MapView extends Vue {
   documentFromSites: [String, siteData][] = [];
   comparationMode: boolean = false;
   compareButtonText: String = "Compare sites";
-
-  result = Result;
 
   ///////////// BASE METHODS ////////////
   get user() {

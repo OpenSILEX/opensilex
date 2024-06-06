@@ -395,7 +395,7 @@ public class DataLogic {
 
         //Verify if that there is at least one complete line and if every line is a "NotMeasured"
         boolean atLeastOneCompleteSingle = criteriaDTO.getCriteriaList().stream().anyMatch(dto ->
-                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || com.apicatalog.jsonld.StringUtils.isNotBlank(dto.getValue())));
+                dto.getVariableUri() != null && dto.getCriteria() != null && (dto.getCriteria() == MathematicalOperator.NotMeasured || StringUtils.isNotBlank(dto.getValue())));
         boolean everyLineIsNotMeausured =
                 criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
 

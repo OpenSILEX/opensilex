@@ -107,14 +107,13 @@ public class DataLogic {
     //Private stored data
     private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     private Map<URI, URI> rootDeviceTypes = null;
-    private final String expHeader = "experiment";
-    private final String targetHeader = "target";
-    private final String dateHeader = "date";
-    private final String deviceHeader = "device";
-    private final String rawdataHeader = "raw_data";
-    private final String soHeader = "scientific_object";
-    private final String annotationHeader = "object_annotation";
-
+    private final String EXPERIMENT_HEADER = "experiment";
+    private final String TARGET_HEADER = "target";
+    private final String DATE_HEADER = "date";
+    private final String DEVICE_HEADER = "device";
+    private final String RAWDATA_HEADER = "raw_data";
+    private final String SCIENTIFICOBJ_HEADER = "scientific_object";
+    private final String ANNOTATION_HEADER = "object_annotation";
 
     //#region PUBLIC METHODS
 
@@ -360,7 +359,7 @@ public class DataLogic {
         return validation;
     }
 
-    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
+    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
         return dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
@@ -759,12 +758,12 @@ public class DataLogic {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
+            if (!headers.contains(DEVICE_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER) && !sensingDeviceFoundFromProvenance) {
+                csvValidation.addMissingHeaders(Arrays.asList(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
-            // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
-            if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
-                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
+            // Check that there is an SCIENTIFICOBJ_HEADER or a TARGET_HEADER if there is an ANNOTATION_HEADER otherwise create error
+            if(headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER)){
+                csvValidation.addMissingHeaders(Arrays.asList(TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
 
             // 1. check variables
@@ -778,9 +777,9 @@ public class DataLogic {
                         csvValidation.addEmptyHeader(i+1);
                     } else {
 
-                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader)
-                                || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
-                                || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
+                        if (header.equalsIgnoreCase(EXPERIMENT_HEADER) || header.equalsIgnoreCase(TARGET_HEADER)
+                                || header.equalsIgnoreCase(DATE_HEADER) || header.equalsIgnoreCase(DEVICE_HEADER) || header.equalsIgnoreCase(SCIENTIFICOBJ_HEADER)
+                                || header.equalsIgnoreCase(RAWDATA_HEADER) || header.equalsIgnoreCase(ANNOTATION_HEADER)) {
                             headerByIndex.put(i, header);
 
                         } else {
@@ -931,7 +930,7 @@ public class DataLogic {
         Set<Integer> colsToDoAtEnd = new HashSet<>();
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
+            if (headerByIndex.get(colIndex).equalsIgnoreCase(EXPERIMENT_HEADER)) {
                 //check experiment column
                 ExperimentModel exp = null;
                 String expNameOrUri = values[colIndex];
@@ -978,7 +977,7 @@ public class DataLogic {
                 }
 
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(targetHeader)) {
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(TARGET_HEADER)) {
                 //check target column
                 String targetNameOrUri = values[colIndex];
                 targetColIndex = colIndex;
@@ -1022,7 +1021,7 @@ public class DataLogic {
                     }
                 }
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(SCIENTIFICOBJ_HEADER)) {
 
                 String objectNameOrUri = values[colIndex];
                 // check if the object name/uri has been previously referenced -> if so, no need to re-perform a check with the Dao
@@ -1048,7 +1047,7 @@ public class DataLogic {
                     }
                 }
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(dateHeader)) {
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(DATE_HEADER)) {
                 // check date
                 // TODO : Validate timezone ambiguity
                 parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(values[colIndex], null);
@@ -1059,7 +1058,7 @@ public class DataLogic {
                     break;
                 }
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(deviceHeader)){
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(DEVICE_HEADER)){
                 // check device column
                 String deviceNameOrUri = values[colIndex];
                 deviceColIndex = colIndex;
@@ -1105,7 +1104,7 @@ public class DataLogic {
             }
             //If we are at the annotation column, and the cell isn't empty, create a new Annotation Model.
             //Set the motivation to commenting, and leave the target for now until we're sure that the target column has already been imported
-            else if (headerByIndex.get(colIndex).equalsIgnoreCase(annotationHeader)){
+            else if (headerByIndex.get(colIndex).equalsIgnoreCase(ANNOTATION_HEADER)){
                 String annotation = values[colIndex];
                 annotationIndex = colIndex;
                 if(!StringUtils.isEmpty(annotation)){
@@ -1116,7 +1115,7 @@ public class DataLogic {
                     motivationModel.setUri(URI.create(OA.commenting.getURI()));
                     annotationFromAnnotationColumn.setMotivation(motivationModel);
                 }
-            }else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
+            }else if (!headerByIndex.get(colIndex).equalsIgnoreCase(RAWDATA_HEADER)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
@@ -1251,7 +1250,7 @@ public class DataLogic {
                     DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
 
                     if (colIndex + 1 < values.length) {
-                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(RAWDATA_HEADER) && values[colIndex + 1] != null) {
                             dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
                         }
                     }
@@ -1285,7 +1284,7 @@ public class DataLogic {
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
         if( annotationFromAnnotationColumn != null ){
             if(target == null && object == null){
-                CSVCell annotationCell = new CSVCell(rowIndex, annotationIndex, annotationFromAnnotationColumn.getDescription(), annotationHeader);
+                CSVCell annotationCell = new CSVCell(rowIndex, annotationIndex, annotationFromAnnotationColumn.getDescription(), ANNOTATION_HEADER);
                 csvValidation.addInvalidAnnotationError(annotationCell);
                 validRow = false;
             }else{
@@ -1298,8 +1297,8 @@ public class DataLogic {
 
         if (missingTargetOrDevice) {
             //the device or the target is mandatory if there is no device in the provenance
-            CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, deviceHeader);
-            CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, targetHeader);
+            CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, DEVICE_HEADER);
+            CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, TARGET_HEADER);
             csvValidation.addMissingRequiredValue(cell1);
             csvValidation.addMissingRequiredValue(cell2);
         }

@@ -721,7 +721,7 @@
               ></opensilex-DateForm>
             </opensilex-FilterField>
           </div>
-          <div v-if="documentFromSites.length > 1">
+          <div v-if="selectedSites.length > 1">
             <table class="table">
               <thead>
                 <tr>
@@ -729,8 +729,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(site, index) in documentFromSites" :key="index">
-                  <td>{{ site[0] }}</td>
+                <tr v-for="(site, index) in selectedSites" :key="index">
+                  <td>{{ site }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1036,6 +1036,7 @@ export default class MapView extends Vue {
     creationDate: undefined,
   };
   selectedOS: string[] = [];
+  selectedSites: string[] = [];
 
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
@@ -1206,6 +1207,21 @@ export default class MapView extends Vue {
   };
 
   compareSites() {
+    this.selectedSites.forEach((uri) => {
+      console.log(this.filter.start_date);
+      this.documentsService
+        .getMetadataByTargetsAndDates(uri, this.filter.start_date, this.filter.end_date)
+        .then((http: HttpResponse<OpenSilexResponse<DocumentMetadataGetDTO>>) => {
+          const result: siteData = {
+            first_element_date: http.response.result.firstElementDate,
+            last_element_date: http.response.result.lastElementDate,
+            has_variables: http.response.result.variables,
+            keywords: http.response.result.keywords,
+          };
+          this.documentFromSites.push([uri, result]);
+        })
+        .catch(this.$opensilex.errorHandler);
+    });
     this.comparationMode = !this.comparationMode;
     if (this.comparationMode) this.compareButtonText = "Return to map";
     if (!this.comparationMode) this.compareButtonText = "Compare sites";
@@ -1423,19 +1439,16 @@ export default class MapView extends Vue {
   //Focus on map vectors
   defineCenter() {
     // this.featuresOS
-    if (this.featuresSites.length > 0 && this.vectorSource[0].$source) {
+    if (this.featuresSites.length > 0 && this.vectorSource[0].getSource()) {
       let extent = olExtent.createEmpty();
-      setTimeout(() => {
-        this.vectorSource.forEach((v) => {
-          if (v && v.$source) {
-            let extentTemporary = v.$source.getExtent();
-            olExtent.extend(extent, extentTemporary);
-          }
-        });
-        this.mapView.$view.fit(extent);
-        // create cluster after
-        this.getClusterFeatures();
-      }, 200);
+
+      this.vectorSource.forEach((v) => {
+        if (v && v.getSource()) {
+          let extentTemporary = v.getSource().getExtent();
+          olExtent.extend(extent, extentTemporary);
+        }
+      });
+      this.mapView.$view.fit(extent);
     }
   }
 
@@ -1477,30 +1490,16 @@ export default class MapView extends Vue {
 
   selectSites(features) {
     features.forEach((feature) => {
-      console.log(this.filter.start_date);
-      this.documentsService
-        .getMetadataByTargetsAndDates(
-          feature.properties.uri,
-          this.filter.start_date,
-          this.filter.end_date
-        )
-        .then((http: HttpResponse<OpenSilexResponse<DocumentMetadataGetDTO>>) => {
-          const result: siteData = {
-            first_element_date: http.response.result.firstElementDate,
-            last_element_date: http.response.result.lastElementDate,
-            has_variables: http.response.result.variables,
-            keywords: http.response.result.keywords,
-          };
-          this.documentFromSites.push([feature.properties.name, result]);
-        })
-        .catch(this.$opensilex.errorHandler);
+      this.selectedSites.push(feature.properties.uri);
     });
+    console.log("SITES", this.selectedSites);
     this.showPopup = true;
   }
 
   //Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
     this.documentFromSites = [];
+    this.selectedSites = [];
 
     if (features.length && features[0]) {
       this.selectedFeatures = features;
@@ -1556,8 +1555,8 @@ export default class MapView extends Vue {
     if (this.mapView.$view.getZoom() < 5) {
       this.featuresArea = [];
       this.featuresDevice = [];
-      this.devices = this.initDevices();
-      this.areas = this.initAreas();
+      // this.devices = this.initDevices();
+      //this.areas = this.initAreas();
       this.isDisabled = true;
       this.checkZoom = true;
       this.opacityOS = 0;
@@ -1627,8 +1626,8 @@ export default class MapView extends Vue {
         if (maxDate != undefined) {
           maxDateString = maxDate.toISOString();
         }
-        this.areasRecovery(geometry, minDateString, maxDateString);
-        this.devicesRecovery(geometry);
+        // this.areasRecovery(geometry, minDateString, maxDateString);
+        // this.devicesRecovery(geometry);
       }
     }
   }

@@ -889,7 +889,6 @@ import CircularGraph from "./CircularGraph.vue";
 import BarGraph from "./BarGraph.vue";
 import HeatMap from "./HeatMap.vue";
 import WordCloud from "./WordCloud.vue";
-import Result from "./test.json";
 
 interface feature {
   type: string;

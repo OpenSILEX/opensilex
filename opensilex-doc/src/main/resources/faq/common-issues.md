@@ -1,3 +1,16 @@
+
+<!-- TOC -->
+* [Building errors:](#building-errors)
+  * [Can't find node module](#cant-find-node-module)
+  * [Error: ENOSPC: System limit for number of file watchers reached](#error-enospc-system-limit-for-number-of-file-watchers-reached-)
+* [Run issues](#run-issues)
+  * [Authentication](#authentication)
+    * [Unexpected internal error - java.lang.IllegalStateException, message": "size = 2"](#unexpected-internal-error---javalangillegalstateexception-message-size--2)
+  * [IntelliJ: java.lang.ClassNotFoundException](#intellij-javalangclassnotfoundexception)
+* [OpenSilex installation errors](#opensilex-installation-errors)
+  * [Failure on Tests](#failure-on-tests)
+<!-- TOC -->
+
 # Building errors:
 ## Can't find node module
 If you get an error while building the front part, it could be due to finding library issues. For example, you get this error "Error: Cannot find module 'ajv'" whereas you can find it in the "node-modules" folder.
@@ -61,6 +74,19 @@ $ sudo sysctl -p
 - **How to reproduce** : This errors is returned when you try to login (via UI or via Swagger UI) and only occurs if you have a JAVA version >= 17.
 - **Cause** : It's due to the dependency [ByteBuddy](https://bytebuddy.net/)
 - **How to solve** : use a JAVA version <= 14
+
+## IntelliJ: java.lang.ClassNotFoundException
+
+When you comme across this issue or something similar :
+```
+java.lang.ClassNotFoundException: org.opensilex.dev.StartServerWithFront
+```
+```
+java.lang.ClassNotFoundException: org.opensilex.dev.StartServer
+```
+
+You can fix it by changing this parameter: Structure> project> compiler output
+to the target directory at the root of this directory (opensilex-dev/target)
 
 # OpenSilex installation errors
 

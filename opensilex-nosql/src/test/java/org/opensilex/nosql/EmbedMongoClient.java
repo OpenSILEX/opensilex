@@ -1,26 +1,16 @@
 package org.opensilex.nosql;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.Defaults;
-import de.flapdoodle.embed.mongo.config.MongoCmdOptions;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
+import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.mongo.packageresolver.Command;
-import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.process.ProcessOutput;
-import org.bson.Document;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.reverse.TransitionWalker;
+import de.flapdoodle.reverse.transitions.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +20,9 @@ public class EmbedMongoClient {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(EmbedMongoClient.class);
 
-    private final MongodExecutable mongoExec;
-    private final MongodProcess mongod;
+    private final TransitionWalker.ReachedState<RunningMongodProcess> runningMongod;
+//    private final MongodExecutable mongoExec;
+//    private final MongodProcess mongod;
     public static final int MONGO_PORT = 28018;
     public static final String MONGO_DATABASE = "admin";
     public static final String MONGO_HOST = "localhost";
@@ -45,54 +36,22 @@ public class EmbedMongoClient {
     }
 
     private EmbedMongoClient() throws IOException {
-
-        RuntimeConfig runtimeConfig = Defaults.runtimeConfigFor(Command.MongoD)
-                .processOutput(ProcessOutput.silent())
+        var mongod = Mongod.builder()
+                .net(Start.to(Net.class).initializedWith(Net.defaults().withPort(MONGO_PORT)))
+                .mongodArguments(Start.to(MongodArguments.class).initializedWith(MongodArguments.defaults().withArgs(Map.of("--replSet", "rs0")).withUseNoJournal(false)))
                 .build();
-
-        MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-        int nodePort = MONGO_PORT;
-        Map<String, String> args = new HashMap<>();
-        String replicaName = "rs0";
-        args.put("--replSet", replicaName);
-        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V6_0_2)
-                .args(args)
-                .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
-                .net(new Net("127.0.0.1", nodePort, false)).build());
-        mongod = mongoExec.start();
-
-        try (MongoClient mongo = MongoClients.create("mongodb://127.0.0.1:" + nodePort)) {
-            MongoDatabase adminDatabase = mongo.getDatabase(MONGO_DATABASE);
-
-            Document config = new Document("_id", replicaName);
-            BasicDBList members = new BasicDBList();
-            members.add(new Document("_id", 0)
-                    .append("host", MONGO_HOST + ":" + nodePort));
-            config.put("members", members);
-
-            adminDatabase.runCommand(new Document("replSetInitiate", config));
-        }
+        runningMongod = mongod.start(Version.V6_0_2);
 
         await().atMost(5, TimeUnit.SECONDS);
     }
 
     public void stop() {
-        if (mongod != null) {
+        if (runningMongod != null) {
             try {
-                mongod.stopInternal();
+                runningMongod.close();
             } catch (IllegalStateException e) {
                 LOGGER.error(e.getMessage());
-            } finally {
-                try {
-                    mongod.stop();
-                } catch (IllegalStateException e) {
-                    await().atMost(1, TimeUnit.MINUTES).until(() -> !mongod.isProcessRunning());
-                }
             }
-        }
-
-        if (mongoExec != null) {
-            mongoExec.stop();
         }
     }
 

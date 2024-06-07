@@ -130,15 +130,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#hasPest -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#hasPest">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#PestAttack"/>
-        <rdfs:label xml:lang="en">has pest</rdfs:label>
-    </owl:ObjectProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeev#to -->
 
@@ -468,24 +459,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     </owl:Class>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#Pest -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Pest">
-        <rdfs:isDefinedBy>skos:closeMatch http://www.cropontology.org/rdf/CO_715:0000216</rdfs:isDefinedBy>
-        <rdfs:label xml:lang="en">Pest type</rdfs:label>
-        <rdfs:label xml:lang="fr">Type de ravageur</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#PestAttack -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#PestAttack">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
-        <rdfs:label xml:lang="fr">Attaque de ravageurs</rdfs:label>
-        <rdfs:label xml:lang="en">Pest attack</rdfs:label>
-    </owl:Class>
     
 
 

@@ -46,14 +46,6 @@
     
 
 
-    <!-- http://webprotege.stanford.edu/RBYFUp6a3eYGnauhyWkEMKL -->
-
-    <owl:AnnotationProperty rdf:about="http://webprotege.stanford.edu/RBYFUp6a3eYGnauhyWkEMKL">
-        <rdfs:label>l</rdfs:label>
-    </owl:AnnotationProperty>
-    
-
-
     <!-- http://www.w3.org/2002/07/owl#maxQualifiedCardinality -->
 
     <owl:AnnotationProperty rdf:about="http://www.w3.org/2002/07/owl#maxQualifiedCardinality"/>
@@ -75,19 +67,10 @@
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasLine">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Line"/>
         <rdfs:label xml:lang="fr">aLignée</rdfs:label>
         <rdfs:label xml:lang="en">hasLine</rdfs:label>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasMeasure -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasMeasure">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:label xml:lang="fr">aMésure</rdfs:label>
-        <rdfs:label xml:lang="en">hasMeasure</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -100,20 +83,11 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasRole -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasRole">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:label xml:lang="fr">a le rôle</rdfs:label>
-        <rdfs:label xml:lang="en">hasRole</rdfs:label>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasSubLine -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasSubLine">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Line"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Subline"/>
         <rdfs:label xml:lang="fr">aSousLignée</rdfs:label>
         <rdfs:label xml:lang="en">hasSubLine</rdfs:label>
@@ -121,12 +95,22 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasSubSpecies -->
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasTracklet -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasSubSpecies">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasTracklet">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:label xml:lang="fr">estAssocieASousEspece</rdfs:label>
-        <rdfs:label xml:lang="en">hasSubSpecies</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Tracklet"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasTrajectory -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasTrajectory">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GroupOfIndividuals"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Trajectory"/>
     </owl:ObjectProperty>
     
 
@@ -146,17 +130,8 @@
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#isPartOf -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#isPartOf">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#CameraComponent"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#studiedIn -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#studiedIn">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:label xml:lang="en">studied in</rdfs:label>
-        <rdfs:label xml:lang="fr">étudié dans</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GroupOfIndividuals"/>
     </owl:ObjectProperty>
     
 
@@ -172,25 +147,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#activityRate -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#activityRate">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#areaSinuosity -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#areaSinuosity">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#birthday -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#birthday">
@@ -199,46 +155,6 @@
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
         <rdfs:label xml:lang="fr">date de naissance</rdfs:label>
         <rdfs:label xml:lang="en">date of birth</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#exploredArea -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#exploredArea">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#fecundity72h -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#fecundity72h">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasCoordinateX -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasCoordinateX">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:label xml:lang="fr">coordonnée X</rdfs:label>
-        <rdfs:label xml:lang="en">x coordinate</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasCoordinateY -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasCoordinateY">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:label xml:lang="fr">coordonnée Y</rdfs:label>
-        <rdfs:label xml:lang="en">y coordinate</rdfs:label>
     </owl:DatatypeProperty>
     
 
@@ -285,17 +201,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasTibiaLength -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasTibiaLength">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:label xml:lang="fr">longueur du tibia</rdfs:label>
-        <rdfs:label xml:lang="en">tibia length</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#lineName -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#lineName">
@@ -332,24 +237,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#longevPostFec -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#longevPostFec">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#meanSpeed -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#meanSpeed">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GroupOfIndividuals"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#offspringNumber -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#offspringNumber">
@@ -358,58 +245,6 @@
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
         <rdfs:label xml:lang="fr">nombre de descendants</rdfs:label>
         <rdfs:label xml:lang="en">offspring number</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#sinuosityChange -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#sinuosityChange">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#speedChange -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#speedChange">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#timeCoordinate -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#timeCoordinate">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <rdfs:label xml:lang="en">instant</rdfs:label>
-        <rdfs:label xml:lang="fr">instant</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#timeToFirstBorderCrossing -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#timeToFirstBorderCrossing">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#zCoordinate -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#zCoordinate">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Individual"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-        <rdfs:label>coordonnée Z</rdfs:label>
-        <rdfs:label xml:lang="en">z coordinate</rdfs:label>
     </owl:DatatypeProperty>
     
 
@@ -880,7 +715,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#Subline -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Subline">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#Line"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso-insect#GeneticOrigin"/>
         <rdfs:label xml:lang="fr">Souslignée</rdfs:label>
         <rdfs:label xml:lang="en">Subline</rdfs:label>
     </owl:Class>
@@ -893,6 +728,26 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
         <rdfs:label xml:lang="en">Temperature</rdfs:label>
         <rdfs:label xml:lang="fr">Température</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Tracklet -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Tracklet">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">Tracklet</rdfs:label>
+        <rdfs:label xml:lang="fr">Tracklet</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Trajectory -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Trajectory">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="fr">Trajectoire</rdfs:label>
+        <rdfs:label xml:lang="en">Trajectory</rdfs:label>
     </owl:Class>
     
 

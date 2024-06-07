@@ -21,6 +21,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.opensilex.nosql.EmbedMongod.*;
+
 /**
  * @author rcolin
  */

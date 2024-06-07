@@ -125,7 +125,18 @@ public class DataCSVValidationModel extends CSVValidationModel {
     }
     
     public void addVariableToDevice(DeviceModel device, URI variable) {
-        
+        addVariableToDeviceMap(device, variable, variablesToDevices);
+    }
+
+    /**
+     * Adds the device to correct list if already present, creates new list otherwise. Modifies the passed variablesToDevices param
+     *
+     * @param device
+     * @param variable
+     * @param variablesToDevices
+     */
+    public static void addVariableToDeviceMap(DeviceModel device, URI variable, Map<DeviceModel, List<URI>> variablesToDevices) {
+
         if (!variablesToDevices.containsKey(device)) {
             List<URI> list = new ArrayList<>();
             list.add(variable);

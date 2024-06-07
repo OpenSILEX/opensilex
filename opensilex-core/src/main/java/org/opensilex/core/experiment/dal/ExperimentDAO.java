@@ -593,6 +593,18 @@ public class ExperimentDAO {
         return results.getList().get(0);
     }
 
+    public ExperimentModel getExperimentByNameOrURI(String expNameOrUri, AccountModel user) throws Exception {
+        ExperimentModel exp = null;
+        if (URIDeserializer.validateURI(expNameOrUri)) {
+            URI expUri = URI.create(expNameOrUri);
+            exp = get(expUri, user);
+
+        } else {
+            exp = getByName(expNameOrUri);
+        }
+        return exp;
+    }
+
     /**
      * Update the experiment species from the germplasms of their scientific objects. Three requests are performed :
      *

@@ -66,7 +66,7 @@ public class ObservationVariablesAPI extends FaidareCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs);
+        VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs, currentUser);
 
         ListWithPagination<VariableModel> variables;
         if (observationVariableDbId != null) {

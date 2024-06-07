@@ -15,10 +15,7 @@ package org.opensilex.sparql.ontology.dal;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -47,6 +44,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -1031,6 +1029,32 @@ public final class OntologyDAO {
         }
 
         return resultList;
+    }
+
+    public SPARQLNamedResourceModel<?> getTargetByNameOrURI(String targetNameOrUri) throws Exception {
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel<>();
+        if (URIDeserializer.validateURI(targetNameOrUri)) {
+            URI targetUri = URI.create(targetNameOrUri);
+            if (sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(targetUri), RDFS.label, "?label")
+            )) {
+                target.setUri(targetUri);
+            } else {
+                target = null;
+            }
+        } else {
+            List<SPARQLNamedResourceModel> results = getByName(targetNameOrUri);
+            if (results.size()>1) {
+                throw new Exception();
+            } else {
+                if(!results.isEmpty()) {
+                    target = results.get(0);
+                } else {
+                    target = null ;
+                }
+            }
+        }
+        return target;
     }
 
     public List<ResourceTreeDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {

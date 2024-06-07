@@ -947,7 +947,7 @@ public class DataDAO {
             userLanguage = user.getLanguage();
         }
         // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
+        return new VariableDAO(sparql,nosql,fs, user).getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
 
@@ -1052,7 +1052,7 @@ public class DataDAO {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs, user).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -1314,7 +1314,7 @@ public class DataDAO {
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs, user).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }

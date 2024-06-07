@@ -82,7 +82,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         ProjectDAO projectDAO = new ProjectDAO(sparql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
 
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         BaseVariableDAO<CharacteristicModel> characteristicDAO = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
         BaseVariableDAO<MethodModel> methodDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
         BaseVariableDAO<EntityModel> entityDAO = new BaseVariableDAO<>(EntityModel.class, sparql);

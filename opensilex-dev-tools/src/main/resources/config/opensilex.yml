@@ -1,11 +1,11 @@
 ontologies:
-    baseURI: http://opensilex.test/
+    baseURI: http://opensilex.dev/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://138.102.159.37:8080//rdf4j-server/
-            repository: develop
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
 
 file-system:
     fs:
@@ -23,8 +23,8 @@ file-system:
                 gridfs:
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:
-                        host: 138.102.159.37
-                        port: 27017
+                        host: localhost
+                        port: 8668
                         database: opensilex
             # customPath:
             #     datafile/: irods
@@ -32,8 +32,8 @@ file-system:
 big-data:
     mongodb:
         config:
-            host: 138.102.159.37
-            port: 27017
+            host: localhost
+            port: 8668
             database: opensilex
     #            timezone: Europe/Paris
 
@@ -77,7 +77,7 @@ system:
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: "https://data-preproduction.inrae.fr"
+#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
 #     dataverseAlias: "opensilex-tests"
 #     dataverseLanguages:
 #         - en
@@ -85,7 +85,3 @@ system:
 #     datasetMetadataLanguages:
 #         - en
 #         - fr
-
-olga:
-    host: "https://webservicesdev.crb-plantes-olga.fr/public"
-    token: "$2y$10$VdflTBSkESRnOJnt3i.vRuRWC/iKGiWFBedkI.MXTulrXSOYItsI2"

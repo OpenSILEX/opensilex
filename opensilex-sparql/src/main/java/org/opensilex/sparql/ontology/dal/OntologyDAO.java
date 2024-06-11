@@ -15,10 +15,7 @@ package org.opensilex.sparql.ontology.dal;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,14 +27,13 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
-import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -48,6 +44,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -277,7 +274,7 @@ public final class OntologyDAO {
         }
 
         if (model == null) {
-            throw new SPARQLInvalidUriListException("URI not found ", Collections.singletonList(rdfClass));
+            throw new SPARQLInvalidURIException("URI not found ", rdfClass);
         }
 
         try {
@@ -1032,6 +1029,32 @@ public final class OntologyDAO {
         }
 
         return resultList;
+    }
+
+    public SPARQLNamedResourceModel<?> getTargetByNameOrURI(String targetNameOrUri) throws Exception {
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel<>();
+        if (URIDeserializer.validateURI(targetNameOrUri)) {
+            URI targetUri = URI.create(targetNameOrUri);
+            if (sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(targetUri), RDFS.label, "?label")
+            )) {
+                target.setUri(targetUri);
+            } else {
+                target = null;
+            }
+        } else {
+            List<SPARQLNamedResourceModel> results = getByName(targetNameOrUri);
+            if (results.size()>1) {
+                throw new Exception();
+            } else {
+                if(!results.isEmpty()) {
+                    target = results.get(0);
+                } else {
+                    target = null ;
+                }
+            }
+        }
+        return target;
     }
 
     public List<ResourceTreeDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {

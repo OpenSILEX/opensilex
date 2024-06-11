@@ -191,7 +191,7 @@ public class InterestEntityAPI {
         BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
 
         InterestEntityModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
@@ -214,7 +214,7 @@ public class InterestEntityAPI {
             @ApiParam(value = "Entity of interest URI", example = "http://opensilex.dev/set/variables/entity_of_interest/Plot", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
-        dao.delete(uri, Oeso.hasEntityOfInterest);
+        dao.delete(uri, Oeso.hasEntityOfInterest, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
     

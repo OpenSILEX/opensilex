@@ -19,29 +19,31 @@ import de.flapdoodle.embed.mongo.config.MongoCmdOptions;
 import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.packageresolver.Command;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
+import de.flapdoodle.embed.process.config.process.ProcessOutput;
+import org.bson.Document;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.server.response.ObjectUriResponse;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import static org.awaitility.Awaitility.await;
 
-import de.flapdoodle.embed.mongo.packageresolver.Command;
-import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.process.ProcessOutput;
-import org.bson.Document;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.server.response.ObjectUriResponse;
-
 /**
- *
  * @author vmigot
+ * Abstract class used in OpenSILEX for Secure API testing with Mongodb support.
+ * This is used for testing services with direct Mongodb setup and teardown (specific Before and After tests methods, etc...)
  */
-public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTest {
+public abstract class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTest {
 
     private static MongodExecutable mongoExec;
     private static MongodProcess mongod;

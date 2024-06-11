@@ -43,14 +43,18 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
@@ -282,8 +286,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private List<DataGetDTO> getSearchResponseAsDTOList(URI provenance) throws Exception {
-
-        return getSearchResultsAsAdmin(searchPath,
+        List<DataGetDTO> debug = getSearchResultsAsAdmin(searchPath,
                 0,
                 20,
                 new HashMap<String, Object>() {{
@@ -292,6 +295,16 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
                 new TypeReference<PaginatedListResponse<DataGetDTO>>() {
                 }
         );
+        return debug;
+        /*return getSearchResultsAsAdmin(searchPath,
+                0,
+                20,
+                new HashMap<String, Object>() {{
+                    put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
+                }},
+                new TypeReference<PaginatedListResponse<DataGetDTO>>() {
+                }
+        );*/
     }
 
     private List<AnnotationGetDTO> getSearchAnnotationsResponseAsDTOList() throws Exception {
@@ -616,6 +629,14 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(AnnotationModel.class);
+    }
+
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return Arrays.asList(
+                DataDAO.DATA_COLLECTION_NAME,
+                ProvenanceDAO.PROVENANCE_COLLECTION_NAME
+        );
     }
 
 }

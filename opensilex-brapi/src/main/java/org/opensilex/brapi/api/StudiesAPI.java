@@ -11,7 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.opensilex.brapi.model.*;
 import org.opensilex.brapi.responses.*;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -275,8 +277,8 @@ public class StudiesAPI extends BrapiCall {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, Collections.singletonList(studyDbId), null, null, null);
+        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, currentUser);
+        List<VariableModel> variables = dataBLL.getUsedVariables(Collections.singletonList(studyDbId), null, null, null);
 
         BaseVariableDAO<MethodModel> baseVariableDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
         ListWithPagination<VariableModel> variablesPaginated = new ListWithPagination<>(variables, page, pageSize, variables.size());

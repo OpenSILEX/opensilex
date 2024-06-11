@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         playwright.config.ts
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 11/06/2024 13:57
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 import { defineConfig, devices } from '@playwright/test';
 import * as path from 'path';
 
@@ -27,7 +37,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:8080/app/',
+    baseURL: "http://localhost:8080",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'retain-on-failure',

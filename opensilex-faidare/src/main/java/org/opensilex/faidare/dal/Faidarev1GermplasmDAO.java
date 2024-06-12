@@ -25,6 +25,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -45,11 +46,12 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * This class was added to answer specific optimization issues with FAIDARE services
  */
 public class Faidarev1GermplasmDAO extends GermplasmDAO {
-    public Faidarev1GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
+    public Faidarev1GermplasmDAO(SPARQLService sparql, MongoDBServiceV2 nosql) {
         super(sparql, nosql);
     }
 
-    public ListWithPagination<Faidarev1GermplasmModel> faidareSearch(AccountModel user, URI germplasmDbId, String germplasmName, int page, int pageSize) throws Exception {
+    //@todo: remove nosql parameter when experimentDAO can be instanciated with MongoDBServiceV2
+    public ListWithPagination<Faidarev1GermplasmModel> faidareSearch(AccountModel user, URI germplasmDbId, String germplasmName, int page, int pageSize, MongoDBService nosql) throws Exception {
 
         /* Count the number of accessions
 

@@ -14,9 +14,11 @@ import org.opensilex.core.germplasm.api.BaseGermplasmAPITest;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
 import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -65,6 +67,52 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         URI createdLotUri = extractUriFromResponse(postResultLot);
         final Response getResultLot = getJsonGetByUriResponseAsAdmin(target(uriPath), createdLotUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultLot.getStatus());
+    }
+
+    @Test
+    public void CreatedVarietyShouldHaveASpecies() throws Exception {
+        GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
+        germplasmDTO.setRdfType(URI.create(Oeso.Variety.getURI()));
+        germplasmDTO.setSpecies(null);
+
+        new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void SpeciesShouldBeAutomaticallyRetrievedWhenVarietyIsGiven() throws Exception {
+        GermplasmCreationDTO baseSpecies = getCreationSpeciesDTO();
+        final URI baseSpeciesURI = new UserCallBuilder(create)
+                .setBody(baseSpecies)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        GermplasmCreationDTO variety = getCreationVarietyDTO(baseSpeciesURI);
+        final URI varietyURI = new UserCallBuilder(create)
+                .setBody(variety)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        GermplasmCreationDTO germplasmWithVariety = getCreationSpeciesDTO();
+        germplasmWithVariety.setVariety(varietyURI);
+        final URI createdURI = new UserCallBuilder(create)
+                .setBody(germplasmWithVariety)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        final GermplasmGetSingleDTO germplasmDTO = new UserCallBuilder(get)
+                .addPathTemplateParam("uri", createdURI)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
+        })
+                .getDeserializedResponse()
+                .getResult();
+
+        assertEquals("When creating the 'germplasmWithVariety' germplasm, the API should have automatically added the baseSpecies linked to the given variety",
+                SPARQLDeserializers.getShortURI(baseSpeciesURI),
+                SPARQLDeserializers.getShortURI(germplasmDTO.getSpecies()) );
     }
 
     @Test
@@ -139,6 +187,30 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
 
         // check that the object has been updated
         assertEquals(variety.getName(), dtoFromApi.getName());
+    }
+
+    @Test
+    public void UpdatedGermplasmShouldHaveASpecies() throws Exception {
+        GermplasmCreationDTO speciesDTO = getCreationSpeciesDTO();
+        final URI speciesURI = new UserCallBuilder(create)
+                .setBody(speciesDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
+        germplasmToUpdateDTO.setRdfType(URI.create(Oeso.Accession.toString()));
+        germplasmToUpdateDTO.setSpecies(speciesURI);
+        final URI createdURI = new UserCallBuilder(create)
+                .setBody(germplasmToUpdateDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        germplasmToUpdateDTO.setUri(createdURI);
+        germplasmToUpdateDTO.setSpecies(null);
+        new UserCallBuilder(update)
+                .setBody(germplasmToUpdateDTO)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
     }
 
     @Test

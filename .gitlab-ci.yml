@@ -804,20 +804,16 @@ test:gabriel:front-test:
   # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
   # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
   image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
-  #  parallel: 7    for parallelization
+  #  parallel: 7    This option can be used for parallelization
   script:
-    # TODO : use a specific test configs in opensilex-dev-tools?
+    # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml
     - echo "SETTING UP CONFIG"
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=test/gabriel" >> /opensilex.yml
+    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
-    - yq -i '.ontologies.sparql.config.serverURI = "http://localhost:8667/rdf4j-server/"' /opensilex.yml
-    - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.host = "localhost"' /opensilex.yml
-    - yq -i '.big-data.mongodb.config.host = "localhost"' /opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.port = 8668' /opensilex.yml
-    - yq -i '.big-data.mongodb.config.port = 8668' /opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-    - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
+    # The following lines aren't needed yet as everything is done locally but could be useful if we want to have the databases on a remote vm.
+    # - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
+    # - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
+    # - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - echo "$(</opensilex.yml)"
     # TODO : comment next line out once everything works
     - printenv
@@ -833,7 +829,7 @@ test:gabriel:front-test:
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
     - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-    - sleep 30
+    - sleep 30 # Check port opened in a for or while
     - npm ci
     - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 

@@ -130,10 +130,10 @@ import {BTable} from "bootstrap-vue";
 import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityCreationDTO,
-  FacilityGetDTO,
   NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import DTOConverter from "../../models/DTOConverter";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -225,7 +225,7 @@ export default class FacilitiesView extends Vue {
       });
   }
 
-  onFacilitySelected(selected: Array<FacilityGetDTO>) {
+  onFacilitySelected(selected: Array<NamedResourceDTO>) {
     this.selectedFacility = selected[0];
     this.$emit('facilitySelected', this.selectedFacility);
   }
@@ -243,8 +243,8 @@ export default class FacilitiesView extends Vue {
       return;
     }
 
-    return this.service.searchFacilities(this.filter)
-        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+    return this.service.simpleSearchFacilities(this.filter)
+        .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
 
@@ -268,8 +268,8 @@ export default class FacilitiesView extends Vue {
     this.facilityForm.showCreateForm()
   }
 
-  editFacility(facility: FacilityGetDTO) {
-    this.facilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(facility));
+  editFacility(facility: NamedResourceDTO) {
+    this.facilityForm.showEditForm(facility.uri);
   }
 
   onUpdate() {

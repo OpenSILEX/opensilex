@@ -826,6 +826,8 @@ test:gabriel:front-test:
     - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --email=admin@opensilex.org --lang=fr --firstName=firstName --lastName=lastName --password=admin"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --email=admin@opensilex.org --lang=fr --firstName=firstName --lastName=lastName --password=admin
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
     - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e

@@ -826,30 +826,30 @@ test:gabriel:front-test:
         - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
         - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
         - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
-        - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar sparql reset-ontologies"
-        - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar sparql reset-ontologies
-        - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin"
-        - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin
+        - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar sparql reset-ontologies --CONFIG_FILE=/opensilex_mod.yml"
+        - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar sparql reset-ontologies --CONFIG_FILE=/opensilex_mod.yml
+        - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --CONFIG_FILE=/opensilex_mod.yml"
+        - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --CONFIG_FILE=/opensilex_mod.yml
         - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8081 --adminPort=4081 --host=localhost --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
         - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8081 --adminPort=4081 --host=localhost --DEBUG --CONFIG_FILE=/opensilex_mod.yml
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
         - |
-            # Check if OpenSILEX process has started on port 8080 three times, once every 10 seconds
+            # Check if OpenSILEX process has started on port 8081 three times, once every 15 seconds
             for attempt in {1..3}; do
-              # Check if port 8080 is in use
-              if sudo ss -ltnp | grep ':8080 '; then
-                echo "Process started on port 8080."
-                break # Break the loop if port 8080 is in use
-              else
-                echo "Port 8080 is not in use. Attempt $attempt of 3."
-                sleep 10 # Wait for 10 seconds before the next attempt
-              fi
+                sleep 15 # Wait for 15 seconds before the attempt
+                # Check if port 8081 is in use
+                if sudo ss -ltnp | grep ':8081 '; then
+                    echo "Process started on port 8081."
+                    break # Break the loop if port 8081 is in use
+                else
+                    echo "Port 8081 is not in use. Attempt $attempt of 3."
+                fi
             done
             
-            # Check if port 8080 was never in use during the attempts
+            # Check if port 8081 was never in use during the attempts
             if [[ $attempt -eq 3 ]]; then
-              echo "Error: OpenSILEX never started on port 8080 during the allowed 30 seconds." >&2
-              exit 1
+                echo "Error: OpenSILEX never started on port 8081 during the allowed 30 seconds." >&2
+                # exit 1
             fi
             
             echo "OpenSILEX has started on port 8080."

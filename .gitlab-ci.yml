@@ -808,6 +808,7 @@ test:gabriel:front-test:
   script:
     # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml
     - echo "SETTING UP CONFIG"
+    - echo 'curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml'
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
     # The following lines aren't needed yet as everything is done locally but could be useful if we want to have the databases on a remote vm.

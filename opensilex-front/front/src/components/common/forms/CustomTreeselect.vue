@@ -17,6 +17,7 @@
     :multiple="multiple"
     :show-count="showCount"
     :limit="limit"
+    :clearable="true"
     @deselect="deselect"
     @select="select"
     @input="clearIfNeeded"
@@ -45,23 +46,22 @@ export interface SelectableItem {
 
 @Component
 export default class CustomTreeselect extends Vue {
+
+  //#region Plugins and Datas
   $opensilex: any;
   treeselectRefreshKey: number = 0;
-
-  @Ref("treeref") readonly  treeref!: any;
-
+  totalCount = -1;
+  resultCount = 0;
+  countCache = new Map<String, { total: number , result: number}>()
   currentValue;
   internalOption = null;
+  debounceSearch;
+  lastSearchQuery = ".*";
+  //#endregion
 
+  //#region Props and PropSync
   @PropSync("selected")
   selection;
-
-
-  /**
-  * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
-  */
-  @Prop({default: null})
-  selectedInJsonFormat;
 
   @Prop()
   searchMethod;
@@ -107,9 +107,6 @@ export default class CustomTreeselect extends Vue {
   })
   viewHandlerDetailsVisible
 
-
-  selectedTmp = [];
-
   @Prop({
     default: false,
   })
@@ -132,78 +129,162 @@ export default class CustomTreeselect extends Vue {
 
 conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
-@Watch("selection")
-onSelectionChange() {
-  this.currentValue = null;
-}
+  //#endregion
 
-@AsyncComputedProp()
-  selectedValues(): Promise<any> {
-    return new Promise((resolve, reject) => {
-        if (this.itemLoadingMethod) {
-          if (!this.selection || this.selection.length == 0) {
-            if (this.multiple) {
-              resolve([]);
-            } else {
-              resolve();
-            }
-          } else if (this.currentValue) {
-            resolve(this.currentValue);
-          } else {
-            this.$opensilex.disableLoader();
-            let uris = this.selection;
-            if (!this.multiple) {
-              uris = [this.selection];
-            }
-            let loadingPromise = this.itemLoadingMethod(uris);
-            if (!(loadingPromise instanceof Promise)) {
-              loadingPromise = Promise.resolve(loadingPromise);
-            }
-            loadingPromise
-                .then((list) => {
-                  let nodeList = [];
-                  list.forEach((item) => {
-                    nodeList.push(this.conversionMethod(item));
-                  });
-                  if (this.multiple) {
-                    this.currentValue = nodeList;
-                  } else {
-                    this.currentValue = nodeList[0];
-                  }
-                  resolve(this.currentValue);
-                })
-                .catch((error) => {
+  //#region Refs
+  @Ref("treeref") readonly  treeref!: any;
+  //#endregion
 
-                  this.$opensilex.errorHandler(error);
-                  reject(error);
-                });
-          }
-        } else if (this.searchMethod) {
-          // If there is a search method but no item loading method, then initial values
-          // cannot be retrieved.
-          console.warn("A search method was specified but no item loading method.")
-          resolve(undefined);
-        } else {
-          let currentOptions = this.options || this.internalOption;
-          if (this.multiple) {
-            if (this.selection && this.selection.length > 0) {
-              let items = this.findListInTree(currentOptions, this.selection);
-              resolve(items);
-            } else {
-              resolve([]);
-            }
-          } else {
-            if (this.selection) {
-              let item = this.findInTree(currentOptions, this.selection);
-              resolve(item);
-            } else {
-              resolve();
-            }
-          }
-        }
-    });
+  //#region Computed
+  @Watch("selection")
+  onSelectionChange() {
+    this.currentValue = null;
   }
 
+  @AsyncComputedProp()
+    selectedValues(): Promise<any> {
+      return new Promise((resolve, reject) => {
+          if (this.itemLoadingMethod) {
+            if (!this.selection || this.selection.length == 0) {
+              if (this.multiple) {
+                resolve([]);
+              } else {
+                resolve();
+              }
+            } else if (this.currentValue) {
+              resolve(this.currentValue);
+            } else {
+              this.$opensilex.disableLoader();
+              let uris = this.selection;
+              if (!this.multiple) {
+                uris = [this.selection];
+              }
+              let loadingPromise = this.itemLoadingMethod(uris);
+              if (!(loadingPromise instanceof Promise)) {
+                loadingPromise = Promise.resolve(loadingPromise);
+              }
+              loadingPromise
+                  .then((list) => {
+                    let nodeList = [];
+                    list.forEach((item) => {
+                      nodeList.push(this.conversionMethod(item));
+                    });
+                    if (this.multiple) {
+                      this.currentValue = nodeList;
+                    } else {
+                      this.currentValue = nodeList[0];
+                    }
+                    resolve(this.currentValue);
+                  })
+                  .catch((error) => {
+
+                    this.$opensilex.errorHandler(error);
+                    reject(error);
+                  });
+            }
+          } else if (this.searchMethod) {
+            // If there is a search method but no item loading method, then initial values
+            // cannot be retrieved.
+            console.warn("A search method was specified but no item loading method.")
+            resolve(undefined);
+          } else {
+            let currentOptions = this.options || this.internalOption;
+            if (this.multiple) {
+              if (this.selection && this.selection.length > 0) {
+                let items = this.findListInTree(currentOptions, this.selection);
+                resolve(items);
+              } else {
+                resolve([]);
+              }
+            } else {
+              if (this.selection) {
+                let item = this.findInTree(currentOptions, this.selection);
+                resolve(item);
+              } else {
+                resolve();
+              }
+            }
+          }
+      });
+    }
+  //#endregion
+
+  //#region Events Handlers 
+  select(value) {  
+    if (this.multiple) {
+      this.selection.push(value.id);
+    } else {
+      this.selection = value.id;
+    }
+    this.$emit("select", value);
+  }
+
+  deselect(item) { 
+    if (this.multiple) {
+      this.selection = this.selection.filter((id) => id !== item.id);
+    } else {
+        this.selection = null;
+      }
+    this.$emit("deselect", item);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
+  }
+
+  onSearchChange(searchQuery) {
+    if (searchQuery == "") {
+      searchQuery = ".*";
+    }
+
+    if(this.countCache.has(searchQuery)){
+      this.resultCount = this.countCache.get(searchQuery).result;
+      this.totalCount = this.countCache.get(searchQuery).total;
+      this.$emit('counts', { totalCount: this.totalCount, resultCount: this.resultCount });
+    }
+    this.lastSearchQuery = searchQuery;
+  }
+  //#endregion
+
+  //#region Hooks
+  created() {
+    let self = this;
+    this.debounceSearch = this.debounce(function (query, callback) {
+      self.$opensilex.disableLoader();
+      if (query == "") {
+        query = ".*";
+      }
+      self
+        .searchMethod(query, 0, self.resultLimit)
+        .then((http) => {
+          let list = http.response.result;
+
+          // at start if the research is empty field
+          // after, onSearchChange() replace lastSearchQuery by the value entered by user
+          if(self.lastSearchQuery === query){
+            self.totalCount = http.response.metadata.pagination.totalCount;
+            if (http.response.size && http.response.size != list.length) {
+              self.resultCount = http.response.size;
+            } else {
+              self.resultCount = list.length;
+            }
+          }
+          this.$emit('totalCount', self.totalCount);
+          this.$emit('resultCount', self.resultCount)
+          self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
+          let nodeList = [];
+          list.forEach((item) => {
+            nodeList.push(self.conversionMethod(item));
+          });
+          callback(null, nodeList);
+          self.$opensilex.enableLoader();
+        })
+        .catch(self.$opensilex.errorHandler);
+    }, 300);
+  }
+  //endregion
+
+  //#region Methods
   public findInTree(tree, id) {
     for (let i in tree) {
       let item = tree[i];
@@ -231,14 +312,12 @@ onSelectionChange() {
         }
       }
 
-      let childItems = this.findListInTree(item.children, ids, list);
       if (list.length == ids.length) {
         return list;
       }
     }
     return list;
   }
-
 
   loadOptions({ action, searchQuery, callback }) {
     if (action === "ASYNC_SEARCH") {
@@ -277,49 +356,6 @@ onSelectionChange() {
     }
   }
 
-  totalCount = -1;
-  resultCount = 0;
-  countCache = new Map<String, { total: number , result: number}>()
-
-
-  created() {
-    let self = this;
-    this.debounceSearch = this.debounce(function (query, callback) {
-      self.$opensilex.disableLoader();
-      if (query == "") {
-        query = ".*";
-      }
-      self
-        .searchMethod(query, 0, self.resultLimit)
-        .then((http) => {
-          let list = http.response.result;
-
-          // at start if the research is empty field
-          // after, onSearchChange() replace lastSearchQuery by the value entered by user
-          if(self.lastSearchQuery === query){
-            self.totalCount = http.response.metadata.pagination.totalCount;
-            if (http.response.size && http.response.size != list.length) {
-              self.resultCount = http.response.size;
-            } else {
-              self.resultCount = list.length;
-            }
-          }
-          this.$emit('totalCount', self.totalCount);
-          this.$emit('resultCount', self.resultCount)
-          self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
-          let nodeList = [];
-          list.forEach((item) => {
-            nodeList.push(self.conversionMethod(item));
-          });
-          callback(null, nodeList);
-          self.$opensilex.enableLoader();
-        })
-        .catch(self.$opensilex.errorHandler);
-    }, 300);
-  }
-
-  debounceSearch;
-
   debounce(func, wait, immediate?): Function {
     var timeout;
     var context: any = this;
@@ -336,23 +372,8 @@ onSelectionChange() {
     };
   }
 
-  lastSearchQuery = ".*";
 
-
-  onSearchChange(searchQuery) {
-    if (searchQuery == "") {
-      searchQuery = ".*";
-    }
-
-    if(this.countCache.has(searchQuery)){
-      this.resultCount = this.countCache.get(searchQuery).result;
-      this.totalCount = this.countCache.get(searchQuery).total;
-      this.$emit('counts', { totalCount: this.totalCount, resultCount: this.resultCount });
-    }
-    this.lastSearchQuery = searchQuery;
-  }
-
-    openTreeselect() {
+  openTreeselect() {
     this.treeref.focusInput();
     this.treeref.openMenu();
     this.treeref.getInput().value = this.lastSearchQuery;
@@ -363,47 +384,6 @@ onSelectionChange() {
    */
   refresh(){
     this.treeselectRefreshKey += 1;
-  }
-
-    get hiddenValue() {
-    if (this.multiple) {
-      if(Array.isArray(this.selection)) {
-        if (this.selection.length > 0) {
-          return this.selection.join(",");
-        }else{
-          return "";
-        }
-      }
-    } else {
-      if (this.selection) {
-        return this.selection;
-      }
-    }
-
-    return "";
-  }
-
-
-  select(value) {  
-    if (this.multiple) {
-      this.selection.push(value.id);
-    } else {
-      this.selection = value.id;
-    }
-    this.$emit("select", value);
-  }
-
-  deselect(item) { 
-    if (this.multiple) {
-      this.selection = this.selection.filter((id) => id !== item.id);
-    } else {
-        this.selection = null;
-      }
-    this.$emit("deselect", item);
-  }
-
-  onEnter() {
-    this.$emit("handlingEnterKey")
   }
 
   clearIfNeeded(values) {
@@ -429,5 +409,7 @@ onSelectionChange() {
       this.selection = newValues;
     }
   }
+  //#endregion
+
 }
 </script>

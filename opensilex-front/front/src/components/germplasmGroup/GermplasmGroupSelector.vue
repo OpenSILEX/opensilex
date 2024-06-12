@@ -6,7 +6,6 @@
       :multiple="multiple"
       :searchMethod="searchGermplasmGroups"
       :itemLoadingMethod="loadGermplasmGroups"
-      :clearable="clearable"
       :placeholder="placeholder"
       noResultsText="component.groupGermplasm.form.selector.filter-search-no-result"
       @clear="$emit('clear')"
@@ -39,9 +38,6 @@ export default class GermplasmGroupSelector extends Vue {
 
   @Prop()
   multiple: string;
-
-  @Prop()
-  clearable: string;
 
   @Ref("formSelector") readonly formSelector!: FormSelector;
 

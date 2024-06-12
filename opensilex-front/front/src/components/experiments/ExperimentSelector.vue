@@ -6,7 +6,6 @@
     :selected.sync="experimentsURI"
     :multiple="multiple"
     :searchMethod="searchExperiments"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.experiment.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -41,9 +40,6 @@ export default class ExperimentSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   required;

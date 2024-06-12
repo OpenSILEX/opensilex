@@ -28,17 +28,12 @@
 
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import SelectForm from "../common/forms/SelectForm.vue";
-import FormSelector from "../common/forms/FormSelector.vue"
 
 
 @Component
 export default class DataProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
-
-  @Ref("formSelector") readonly formSelector!: FormSelector;
-  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   @Prop()
   actionHandler: Function;
@@ -80,9 +75,6 @@ export default class DataProvenanceSelector extends Vue {
     default: false,
   })
   viewHandlerDetailsVisible: boolean;
-
-  refresh() {
-  }
 
   select(value) {
     this.$emit("select", value);

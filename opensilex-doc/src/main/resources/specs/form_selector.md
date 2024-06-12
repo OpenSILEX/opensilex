@@ -1,8 +1,8 @@
-Developers :
+**History**
 
-Sebastien Prado (sebastien.prado@inrae.fr) <br>
-Date : 2024-04-25 <br>
-OpenSILEX version : 1.2.4 (develop) (1.3.0?)
+| Date | Author | Developer(s) | OpenSILEX version | Comment |
+|----|----|----|----|----|
+| 2024-04-25 | Sebastien Prado | Sebastien Prado | 1.3.0 | New components for selections by forms |
 
 
 ## Needs
@@ -30,7 +30,7 @@ Each child component is responsible for a single task, which should allow for be
 
 - **vue-treeselect** : vue-treeselect is a multi-select component with nested options.
 We use this library for managing forms : [Link to library documentation](https://vue-treeselect.js.org/).
-<br><br>
+
 
 ### Used props
 

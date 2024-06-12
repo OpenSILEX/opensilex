@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchMethods"
     :itemLoadingMethod="loadMethods"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.method.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -39,9 +38,6 @@ export default class MethodSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   sharedResourceInstance;

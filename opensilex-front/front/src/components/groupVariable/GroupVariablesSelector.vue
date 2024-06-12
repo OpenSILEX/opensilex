@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchVariablesGroups"
     :itemLoadingMethod="loadVariablesGroups"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.groupVariable.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -40,9 +39,6 @@ export default class GroupVariablesSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   sharedResourceInstance;

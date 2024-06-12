@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchUnits"
     :itemLoadingMethod="loadUnits"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.unit.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -39,9 +38,6 @@ export default class UnitSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   sharedResourceInstance;

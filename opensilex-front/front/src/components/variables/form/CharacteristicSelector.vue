@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchCharacteristics"
     :itemLoadingMethod="loadCharacteristics"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -40,9 +39,6 @@ export default class CharacteristicSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   sharedResourceInstance;

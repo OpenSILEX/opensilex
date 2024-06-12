@@ -8,8 +8,8 @@
   >
 
     <template v-slot:field="field">
-      <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
-      <input :id="field.id" type="hidden" :value="hiddenValue" />
+      <!-- <b-spinner small label="Small Spinning" v-if="loading"></b-spinner> -->
+      <input :id="field.id" type="hidden" />
       <b-input-group class="select-button-container">
 
         <opensilex-CustomTreeselect
@@ -28,23 +28,16 @@
           :selected.sync="selection"
           :placeholder="placeholder"
           :optionsLoadingMethod="optionsLoadingMethod"
-          :options="options || internalOption"
+          :options="options"
           :viewHandler="viewHandler"
           :itemLoadingMethod="itemLoadingMethod"
           :conversionMethod="conversionMethod"
+          :defaultSelectedValue="defaultSelectedValue"
+          :showCount="showCount"
+          :noResultsText="$t(noResultsText)"
         >
-
-          <!-- choice in lists -->
-          <template v-slot:option-label ="{ node }" >
-            <opensilex-CustomTreeselectOptionLabel :node="node" />
-          </template>
           
-          <!-- selected elements (for multiple choice filters)-->
-          <template v-slot:value-label="{ node }">
-            <opensilex-CustomTreeselectValueLabel :node="node" />
-          </template>
-          
-          <template v-slot:after-list v-if="resultCount < totalCount">
+          <template v-slot:after-list v-if="resultCount < totalCount && !showAllResults">
             <opensilex-CustomTreeselectRefineSearchMessage
               @loadMoreItems="loadMoreItems"
               :totalCount="totalCount"
@@ -59,7 +52,6 @@
            <opensilex-DetailButton
             v-if="viewHandler"
             @click="viewHandler"
-            :detailVisible="viewHandlerDetailsVisible"
             :label="(viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails')"
             :small="true"
             class="greenThemeColor"
@@ -72,7 +64,6 @@
           <opensilex-DetailButton
             v-if="viewHandler"
             @click="viewHandler"
-            :detailVisible="viewHandlerDetailsVisible"
             :label="(viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails')"
             :small="true"
           ></opensilex-DetailButton>
@@ -100,22 +91,24 @@ export interface SelectableItem {
 
 @Component
 export default class FormSelector extends Vue {
+
+  //#region Plugins and Datas
   $opensilex: any;
   $t: any;
-  currentValue;
-  loading = false;
+  showAllResults : boolean = false;
+  totalCount = 0;
+  resultCount = 0;
+  resultLimit = 10;
+  flat: boolean = true;
+  //#endregion
 
-  @Ref("treeref") readonly  treeref!: any;
+  //#region Refs
   @Ref("customTreeselect") readonly customTreeselect!: CustomTreeselect;
+  //#endregion
 
+  //#region Props
   @PropSync("selected")
   selection;
-
-  /**
-   * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
-   */
-  @Prop({default: null})
-  selectedInJsonFormat;
 
   @Prop()
   searchMethod;
@@ -132,28 +125,18 @@ export default class FormSelector extends Vue {
   @Prop()
   optionsLoadingMethod;
 
-  internalOption = null;
-
   @Prop()
   options;
-
-  @Prop({
-    default: true,
-  })
-  clearable;
 
   @Prop({
     default: false,
   })
   showCount;
 
-  totalCount = 0;
-  resultCount = 0;
-
   @Prop({
     type: Function,
     default: function (e) {
-        if (e && e.name) {
+      if (e && e.name) {
         return {
             id: e.uri,
             label: e.name,
@@ -165,7 +148,7 @@ export default class FormSelector extends Vue {
     }
   })
   conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
-
+  
   @Prop()
   label: string;
 
@@ -183,6 +166,7 @@ export default class FormSelector extends Vue {
   @Prop()
   required: boolean;
 
+  //a blue star on text fields to indicate that at least one of them is required.
   @Prop()
   requiredBlue: boolean;
 
@@ -191,9 +175,6 @@ export default class FormSelector extends Vue {
 
   @Prop()
   rules: string | Function;
-
-
-  flat: boolean = true;
 
   @Prop({
     default: null,
@@ -208,133 +189,31 @@ export default class FormSelector extends Vue {
   })
   viewHandlerDetailsVisible
 
-  resultLimit = 10;
-
   @Prop()
   defaultSelectedValue;
+  //#endregion
 
-  @Watch("selection")
-  onSelectionChange() {
-    this.currentValue = null;
-  }
-
-  @Prop({
-    default: false,
-  })
-  searchNested: boolean;
-
-  @Prop()
-  maximumSelectedItems;
-
-  @Prop({default: 1})
-  limit: number; // limit number of items in the input box
-
-  // props for variableSelectorWithFilter
-  @Prop()
-  withAssociatedData;
-
-  @Prop()
-  experiment;
-
-  @Prop()
-  objects;
-
-  @Prop()
-  devices;
-
-  countsData;
-
-  detailVisible: boolean = false;
-
-  public findInTree(tree, id) {
-    for (let i in tree) {
-      let item = tree[i];
-
-      if (item.id == id) {
-        return item;
-      }
-
-      let childItem = this.findInTree(item.children, id);
-      if (childItem != null) {
-        return childItem;
-      }
+   //#region Methods
+    refresh(){
+      this.customTreeselect.refresh()
     }
-  }
-
-  refresh(){
-    this.customTreeselect.refresh()
-  }
-
-  openTreeselect(){
-    this.customTreeselect.openTreeselect()
-  }
-
+  
+    openTreeselect(){
+      this.customTreeselect.openTreeselect()
+    }
+  
     loadMoreItems(){
-    this.resultLimit = 0;
-    this.customTreeselect.refresh();
-    this.$nextTick(() => {
-      this.customTreeselect.openTreeselect();
-    })
-  }
-
-  public findListInTree(tree, ids, list?) {
-    list = list || [];
-    for (let i in tree) {
-      let item = tree[i];
-
-      if (ids.indexOf(item.id) >= 0) {
-        list.push(item);
-        if (list.length == ids.length) {
-          return list;
-        }
-      }
-
-      let childItems = this.findListInTree(item.children, ids, list);
-      if (list.length == ids.length) {
-        return list;
-      }
+      this.resultLimit = 0;
+      this.showAllResults = true;
+      this.customTreeselect.refresh();
+      this.$nextTick(() => {
+        this.customTreeselect.openTreeselect();
+      })
     }
+   //#endregion
 
-    return list;
-  }
-
-  get hiddenValue() {
-    if (this.multiple) {
-      if(Array.isArray(this.selection)) {
-        if (this.selection.length > 0) {
-          return this.selection.join(",");
-        }else{
-          return "";
-        }
-      }
-    } else {
-      if (this.selection) {
-        return this.selection;
-      }
-    }
-
-    return "";
-  }
-
-  debounce(func, wait, immediate?): Function {
-    var timeout;
-    var context: any = this;
-    return function () {
-      var args = arguments;
-      var later = function () {
-        timeout = null;
-        if (!immediate) func.apply(context, args);
-      };
-      var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
-    };
-  }
-
-  lastSearchQuery = ".*";
-
-  close(field) {
+   //#region Events Handlers
+   close(field) {
     if (field.validator) {
       this.$nextTick(() => field.validator.validate());
     }
@@ -355,6 +234,7 @@ export default class FormSelector extends Vue {
   updateResultCount(resultCountUpdate){
     this.resultCount = resultCountUpdate;
   }
+  //#endregion
 }
 </script>
 

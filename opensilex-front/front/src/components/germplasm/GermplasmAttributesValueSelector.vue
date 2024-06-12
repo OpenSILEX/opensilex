@@ -8,7 +8,6 @@
         :multiple="false"
         :searchMethod="searchAttributeValues"
         :conversionMethod="convert"
-        :clearable="true"
         noResultsText="component.experiment.form.selector.filter-search-no-result"
         @clear="$emit('clear')"
         @select="select"

@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchEntities"
     :itemLoadingMethod="loadEntities"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.entity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
@@ -40,9 +39,6 @@ export default class EntitySelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  clearable;
 
   @Prop()
   sharedResourceInstance?: string;

@@ -833,7 +833,7 @@ test:gabriel:front-test:
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
     - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-    - sleep 10
+    - sleep 30
     - npm ci
     - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 

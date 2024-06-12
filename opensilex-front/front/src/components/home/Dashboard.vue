@@ -392,21 +392,28 @@
         />
       </vl-map>
       <div v-if="comparationMode" class="mb-30">
+        <select v-model="selectedYear">
+          <option v-for="year in availableYears" :key="year" :value="year">
+            {{ year }}
+          </option>
+        </select>
         <b-row class="justify-content-center">
           <b-col v-for="(data, index) in documentFromSites" :key="index" cols="auto">
-            <circular-graph
-              class="justify-self-center"
-              :data="generateGraphData(data[1])"
-              :title="`${data[0]}`"
-            ></circular-graph>
             <heat-map
               class="justify-self-center"
-              :siteData="data[1]"
+              :data="data"
               :filters="[filter.start_date, filter.end_date]"
-              :title="`${data[0]}`"
+              :title="data.name"
+              :year="selectedYear"
+              :update="update"
             >
             </heat-map>
-            <word-cloud class="justify-self-center" :result="data[1]"> </word-cloud>
+            <circular-graph
+              class="justify-self-center"
+              :data="generateGraphData(data)"
+              :title="`${data[0]}`"
+            ></circular-graph>
+            <word-cloud class="justify-self-center" :result="data"> </word-cloud>
           </b-col>
         </b-row>
       </div>
@@ -840,7 +847,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { Circle as CircleStyle, Fill, Stroke, Style, Text, Icon } from "ol/style";
 import { DragBox } from "ol/interaction";
@@ -889,6 +896,7 @@ import CircularGraph from "./CircularGraph.vue";
 import BarGraph from "./BarGraph.vue";
 import HeatMap from "./HeatMap.vue";
 import WordCloud from "./WordCloud.vue";
+import { watch } from "@syncfusion/ej2-vue-inputs/src/textbox/textbox.component";
 
 interface feature {
   type: string;
@@ -1119,9 +1127,13 @@ export default class MapView extends Vue {
   showPopup: boolean = false;
   documents: DocumentGetDTO[] = [];
   tempDocuments: DocumentGetDTO[] = [];
-  documentFromSites: [String, siteData][] = [];
+  documentFromSites: DocumentMetadataGetDTO[] = [];
   comparationMode: boolean = false;
   compareButtonText: String = "Compare sites";
+
+  selectedYear: number = 2022;
+  availableYears: number[] = [2021, 2022, 2023, 2024];
+  update: boolean = false;
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1141,6 +1153,13 @@ export default class MapView extends Vue {
     );
   }
 
+  triggerUpdate() {
+    this.update = true;
+    this.$nextTick(() => {
+      this.update = false;
+    });
+  }
+
   beforeDestroy() {
     this.langUnwatcher();
   }
@@ -1154,6 +1173,22 @@ export default class MapView extends Vue {
       // short type (example: Vocabulary#Area)
       return res.pathname;
     }
+  }
+
+  generateGraphData(data: DocumentMetadataGetDTO) {
+    // Return the mapped array for each site
+    let result = [];
+    let index = 0;
+    for (const [key, value] of Object.entries(data.variables)) {
+      const extractedString = key.split("dev:id/variable/").pop();
+      result[index] = {
+        name: extractedString,
+        value: value.nb_of_elements,
+        dates: [data.firstElementDate, data.lastElementDate],
+      };
+      index++;
+    }
+    return result;
   }
 
   created() {
@@ -1206,21 +1241,17 @@ export default class MapView extends Vue {
   };
 
   compareSites() {
-    this.selectedSites.forEach((uri) => {
-      console.log(this.filter.start_date);
-      this.documentsService
-        .getMetadataByTargetsAndDates(uri, this.filter.start_date, this.filter.end_date)
-        .then((http: HttpResponse<OpenSilexResponse<DocumentMetadataGetDTO>>) => {
-          const result: siteData = {
-            first_element_date: http.response.result.firstElementDate,
-            last_element_date: http.response.result.lastElementDate,
-            has_variables: http.response.result.variables,
-            keywords: http.response.result.keywords,
-          };
-          this.documentFromSites.push([uri, result]);
-        })
-        .catch(this.$opensilex.errorHandler);
-    });
+    this.documentsService
+      .getMetadataByTargetsAndDates(
+        this.selectedSites,
+        this.filter.start_date,
+        this.filter.end_date
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<DocumentMetadataGetDTO>>>) => {
+        const result = http.response.result;
+        this.documentFromSites = result.slice();
+      })
+      .catch(this.$opensilex.errorHandler);
     this.comparationMode = !this.comparationMode;
     if (this.comparationMode) this.compareButtonText = "Return to map";
     if (!this.comparationMode) this.compareButtonText = "Compare sites";
@@ -1250,22 +1281,6 @@ export default class MapView extends Vue {
 
       return style;
     };
-  }
-
-  generateGraphData(data: siteData) {
-    // Return the mapped array for each site
-    let result = [];
-    let index = 0;
-    for (const [key, value] of Object.entries(data.has_variables)) {
-      const extractedString = key.split("dev:id/variable/").pop();
-      result[index] = {
-        name: extractedString,
-        value: value.nb_of_elements,
-        dates: [data.first_element_date, data.last_element_date],
-      };
-      index++;
-    }
-    return result;
   }
 
   calculateTopRightCorner() {
@@ -1491,13 +1506,11 @@ export default class MapView extends Vue {
     features.forEach((feature) => {
       this.selectedSites.push(feature.properties.uri);
     });
-    console.log("SITES", this.selectedSites);
     this.showPopup = true;
   }
 
   //Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
-    this.documentFromSites = [];
     this.selectedSites = [];
 
     if (features.length && features[0]) {

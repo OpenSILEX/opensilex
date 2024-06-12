@@ -11,8 +11,10 @@ public class DocumentMetadataGetDTO {
     private List<String> keywords;
     private LocalDate firstElementDate;
     private LocalDate lastElementDate;
+    private String name;
 
-    public DocumentMetadataGetDTO(Map<URI, Map<String, Object>> variables, List<String> keywords, LocalDate firstElementDate, LocalDate lastElementDate) {
+    public DocumentMetadataGetDTO(String name, Map<URI, Map<String, Object>> variables, List<String> keywords, LocalDate firstElementDate, LocalDate lastElementDate) {
+        this.name = name;
         this.variables = variables;
         this.keywords = keywords;
         this.firstElementDate = firstElementDate;
@@ -20,6 +22,10 @@ public class DocumentMetadataGetDTO {
     }
 
     // Getters and setters for the fields
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
     public Map<URI, Map<String, Object>> getVariables() {
         return variables;
     }

@@ -1,84 +1,252 @@
 <template>
-  <div ref="chart" style="width: 50vh; height: 55vh; margin-bottom: 10px"></div>
+  <div ref="chart" style="width: 100%; height: 400px"></div>
 </template>
 
-<script>
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
 import * as echarts from "echarts";
 
-export default {
-  name: "CircularGraph",
-  props: ["data", "title"],
+@Component
+export default class BarChart extends Vue {
+  private chart: echarts.ECharts | null = null;
+
   mounted() {
-    this.chart = echarts.init(this.$refs.chart);
-    this.updateChart();
-  },
-  watch: {
-    data: {
-      handler() {
-        this.updateChart();
+    this.initChart();
+  }
+
+  beforeDestroy() {
+    if (this.chart) {
+      this.chart.dispose();
+    }
+  }
+
+  private filterZeroValues(data: number[]) {
+    return data.map((value) => (value === 0 ? null : value));
+  }
+
+  private initChart() {
+    const chartDom = this.$refs.chart as HTMLDivElement;
+    this.chart = echarts.init(chartDom);
+
+    const option = {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: {
+          type: "shadow",
+        },
       },
-      deep: true,
-    },
-  },
-  methods: {
-    updateChart() {
-      const option = {
-        title: {
-          text: this.title, // Use the title prop here
-          left: "center",
-          subtext: "Densité de mesure par variable",
+      legend: {
+        type: "scroll",
+        orient: "horizontal",
+        left: "center",
+        top: "top",
+      },
+      grid: {
+        left: "3%",
+        right: "4%",
+        bottom: "3%",
+        containLabel: true,
+      },
+      xAxis: [
+        {
+          type: "category",
+          data: ["Taxonomy", "Sub-Taxonomy", "Scientific Measurements"],
         },
-        tooltip: {
-          trigger: "item",
-          formatter: "{a} <br/>{b} : {c} ({d}%)",
+      ],
+      yAxis: [
+        {
+          type: "value",
         },
-        legend: {
-          type: "scroll",
-          orient: "horizontal",
-          left: "center",
-          top: "bottom",
-          data: this.data.map((item) => item.name), // Assuming each item in data has a 'name' property
-        },
-        toolbox: {
-          show: true,
-          feature: {
-            mark: { show: true },
-            dataView: { show: true, readOnly: false },
-            restore: { show: true },
-            saveAsImage: { show: true },
+      ],
+      series: [
+        {
+          name: "Taxonomy",
+          type: "bar",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([862, 0, 0]),
+          markLine: {
+            lineStyle: {
+              type: "dashed",
+            },
+            data: [[{ type: "min" }, { type: "max" }]],
           },
         },
-        series: [
-          {
-            name: "Data",
-            type: "pie",
-            radius: "70%", // Adjust the radius as needed
-            center: ["50%", "50%"], // Center the pie chart
-            data: this.data,
-            roseType: "area",
-            itemStyle: {
-              borderRadius: 5,
-              marginBottom: 20,
-            },
-            label: {
-              show: false,
-            },
-            emphasis: {
-              label: {
-                show: true,
-              },
-            },
+        {
+          name: "Class",
+          type: "bar",
+          barWidth: 5,
+          stack: "Taxonomy",
+          emphasis: {
+            focus: "series",
           },
-        ],
-      };
-      this.chart.setOption(option);
-    },
-  },
-};
+          data: this.filterZeroValues([620, 0, 0]),
+        },
+        {
+          name: "Family",
+          type: "bar",
+          stack: "Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([120, 0, 0]),
+        },
+        {
+          name: "Genus",
+          type: "bar",
+          stack: "Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([60, 0, 0]),
+        },
+        {
+          name: "Order",
+          type: "bar",
+          stack: "Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([62, 0, 0]),
+        },
+        {
+          name: "Species",
+          type: "bar",
+          stack: "Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([31, 0, 0]),
+        },
+        {
+          name: "Sub-Taxonomy",
+          type: "bar",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 862, 0]),
+          markLine: {
+            lineStyle: {
+              type: "dashed",
+            },
+            data: [[{ type: "min" }, { type: "max" }]],
+          },
+        },
+        {
+          name: "Common Name",
+          type: "bar",
+          barWidth: 5,
+          stack: "Sub-Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 701, 0]),
+        },
+        {
+          name: "Scientific Name",
+          type: "bar",
+          stack: "Sub-Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 120, 0]),
+        },
+        {
+          name: "Espece Brut",
+          type: "bar",
+          stack: "Sub-Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 60, 0]),
+        },
+        {
+          name: "Name Raw",
+          type: "bar",
+          stack: "Sub-Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 62, 0]),
+        },
+        {
+          name: "Species Raw",
+          type: "bar",
+          stack: "Sub-Taxonomy",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 31, 0]),
+        },
+        {
+          name: "Scientific Measurements",
+          type: "bar",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 1600]),
+          markLine: {
+            lineStyle: {
+              type: "dashed",
+            },
+            data: [[{ type: "min" }, { type: "max" }]],
+          },
+        },
+        {
+          name: "Abundance",
+          type: "bar",
+          barWidth: 5,
+          stack: "Scientific Measurements",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 734]),
+        },
+        {
+          name: "Flower Density",
+          type: "bar",
+          stack: "Scientific Measurements",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 134]),
+        },
+        {
+          name: "Monocot Percent",
+          type: "bar",
+          stack: "Scientific Measurements",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 74]),
+        },
+        {
+          name: "Final Seed Number",
+          type: "bar",
+          stack: "Scientific Measurements",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 84]),
+        },
+        {
+          name: "Initial Seed Number",
+          type: "bar",
+          stack: "Scientific Measurements",
+          emphasis: {
+            focus: "series",
+          },
+          data: this.filterZeroValues([0, 0, 84]),
+        },
+      ],
+    };
+
+    this.chart.setOption(option);
+  }
+}
 </script>
 
 <style scoped>
-.chart {
-  height: 400px;
-}
+/* Ajoutez des styles personnalisés ici si nécessaire */
 </style>

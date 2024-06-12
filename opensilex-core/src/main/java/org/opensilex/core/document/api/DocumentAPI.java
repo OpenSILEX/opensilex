@@ -357,78 +357,149 @@ public class DocumentAPI {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Document list", response = DocumentMetadataGetDTO.class)
+            @ApiResponse(code = 200, message = "Return Document list", response = DocumentMetadataGetDTO.class, responseContainer = "List")
     })
     public Response getMetadataByTargetsAndDates(
-            @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
+            @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") List<URI> targets,
             @ApiParam(value = "Regex pattern for filtering list by the first element date", example = "2020") @QueryParam("first_element_date") String firstElementDate,
             @ApiParam(value = "Regex pattern for filtering list by the last element date", example = "2020") @QueryParam("last_element_date") String lastElementDate,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-         // LocalDate.parse()
-        // start != null ? OffsetDateTime.parse(start) : null
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
-        ListWithPagination<DocumentModel> resultList = documentDAO.search(
-                currentUser,
-                null,
-                null,
-                null,
-                targets,
-                null,
-                null,
-                null,
-                null,
-                null,
-                firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
-                lastElementDate != null ? LocalDate.parse(lastElementDate) : null,
-                null,
-                page,
-                pageSize
-        );
+        List<DocumentMetadataGetDTO> metadataDTOList = new ArrayList<>();
 
-        // Convert paginated list to DTO
-        ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
+        // Calculate variable occurrences
+        Map<URI, Integer> variableOccurrences = calculateVariableOccurrences(targets, firstElementDate, lastElementDate, page, pageSize, documentDAO);
 
-        // Initialize the aggregated object
-        Map<URI, Map<String, Object>> variables = new HashMap<>();
-        Set<String> uniqueKeywords = new LinkedHashSet<>();
-        LocalDate localFirstElementDate = null;
-        LocalDate localLastElementDate = null;
+        // Convert variable occurrences map to a sorted list
+        List<Map.Entry<URI, Integer>> sortedVariableOccurrences = new ArrayList<>(variableOccurrences.entrySet());
+        sortedVariableOccurrences.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
-        // Iterate over each DTO to aggregate data
-        for (DocumentGetDTO dto : resultDTOList.getList()) {
-            // Aggregate variables
-            for (URI variableURI : dto.getHasVariables()) {
-                int count = Integer.parseInt(dto.getNumberOfElements()); // Adjust based on your actual implementation
-                Map<String, Object> variableData = new HashMap<>();
-                variableData.put("nb_of_elements", count);
-                variableData.put("last_element_date", dto.getLastElementDate());
-                variableData.put("first_element_date", dto.getFirstElementDate());
+        for (URI target : targets) {
+            ListWithPagination<DocumentModel> resultList = documentDAO.search(
+                    currentUser,
+                    null,
+                    null,
+                    null,
+                    target,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
+                    lastElementDate != null ? LocalDate.parse(lastElementDate) : null,
+                    null,
+                    page,
+                    pageSize
+            );
 
-                variables.put(variableURI, variableData);
+            // Convert paginated list to DTO
+            ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
+
+            // Initialize the aggregated object
+            Map<URI, Map<String, Object>> sortedVariables = new LinkedHashMap<>();
+            Set<String> uniqueKeywords = new LinkedHashSet<>();
+            LocalDate localFirstElementDate = null;
+            LocalDate localLastElementDate = null;
+
+            String targetUriStr = target.toString(); // Convert URI to String
+            String namePart = targetUriStr.substring(targetUriStr.lastIndexOf("/") + 1); // Extract the part after the last slash
+
+            // Temp map to hold variables data for this target
+            Map<URI, Map<String, Object>> variables = new HashMap<>();
+
+            // Iterate over each DTO to aggregate data
+            for (DocumentGetDTO dto : resultDTOList.getList()) {
+                // Aggregate variables
+                for (URI variableURI : dto.getHasVariables()) {
+                    int count = Integer.parseInt(dto.getNumberOfElements());
+                    Map<String, Object> variableData = new HashMap<>();
+                    variableData.put("nb_of_elements", count);
+                    variableData.put("last_element_date", dto.getLastElementDate());
+                    variableData.put("first_element_date", dto.getFirstElementDate());
+                    variableData.put("occurrence", variableOccurrences.get(variableURI));
+
+                    variables.put(variableURI, variableData);
+                }
+
+                // Aggregate keywords
+                uniqueKeywords.addAll(dto.getSubject());
+
+                // Update the first and last element dates for the entire dataset
+                if (localFirstElementDate == null || dto.getFirstElementDate().isBefore(localFirstElementDate)) {
+                    localFirstElementDate = dto.getFirstElementDate();
+                }
+                if (localLastElementDate == null || dto.getLastElementDate().isAfter(localLastElementDate)) {
+                    localLastElementDate = dto.getLastElementDate();
+                }
             }
 
-            // Aggregate keywords
-            uniqueKeywords.addAll(dto.getSubject());
+            List<String> keywords = new ArrayList<>(uniqueKeywords);
 
-            // Update the first and last element dates for the entire dataset
-            if (localFirstElementDate == null || dto.getFirstElementDate().isBefore(localFirstElementDate)) {
-                localFirstElementDate = dto.getFirstElementDate();
+            // Reorganize variables based on occurrences and add them to the sorted map
+            for (Map.Entry<URI, Integer> entry : sortedVariableOccurrences) {
+                if (variables.containsKey(entry.getKey())) {
+                    sortedVariables.put(entry.getKey(), variables.get(entry.getKey()));
+                }
             }
-            if (localLastElementDate == null || dto.getLastElementDate().isAfter(localLastElementDate)) {
-                localLastElementDate = dto.getLastElementDate();
+
+            // Create the final DocumentMetadataGetDTO object
+            DocumentMetadataGetDTO metadataDTO = new DocumentMetadataGetDTO(namePart, sortedVariables, keywords, localFirstElementDate, localLastElementDate);
+
+            // Add the DTO to the list
+            metadataDTOList.add(metadataDTO);
+        }
+
+        // Return the list of DocumentMetadataGetDTO objects as a PaginatedListResponse
+        return new PaginatedListResponse<>(metadataDTOList).getResponse();
+    }
+
+    private Map<URI, Integer> calculateVariableOccurrences(List<URI> targets, String firstElementDate, String lastElementDate, int page, int pageSize, DocumentDAO documentDAO) throws Exception {
+        Map<URI, Integer> variableOccurrences = new HashMap<>();
+
+        for (URI target : targets) {
+            ListWithPagination<DocumentModel> resultList = documentDAO.search(
+                    currentUser,
+                    null,
+                    null,
+                    null,
+                    target,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
+                    lastElementDate != null ? LocalDate.parse(lastElementDate) : null,
+                    null,
+                    page,
+                    pageSize
+            );
+
+            // Convert paginated list to DTO
+            ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
+
+            // Use a set to store variables for the current target to avoid counting duplicates within the same target
+            Set<URI> uniqueVariablesInTarget = new HashSet<>();
+            for (DocumentGetDTO dto : resultDTOList.getList()) {
+                uniqueVariablesInTarget.addAll(dto.getHasVariables());
+            }
+
+            // Increment occurrence count for each unique variable found in the current target
+            for (URI variableURI : uniqueVariablesInTarget) {
+                variableOccurrences.put(variableURI, variableOccurrences.getOrDefault(variableURI, 0) + 1);
             }
         }
 
-        List<String> keywords = new ArrayList<>(uniqueKeywords);
-
-        // Create the final DocumentMetadataGetDTO object
-        DocumentMetadataGetDTO metadataDTO = new DocumentMetadataGetDTO(variables, keywords, localFirstElementDate, localLastElementDate);
-
-        // Return the DocumentMetadataGetDTO object as a SingleObjectResponse
-        return new SingleObjectResponse<>(metadataDTO).getResponse();
+        return variableOccurrences;
     }
+
+
+
+
+
 
 
     @GET

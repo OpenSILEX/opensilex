@@ -808,7 +808,7 @@ test:gabriel:front-test:
   script:
     # TODO : use a specific test configs in opensilex-dev-tools?
     - echo "SETTING UP CONFIG"
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml
+    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=test/gabriel" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
     - yq -i '.ontologies.sparql.config.serverURI = "http://localhost:8667/rdf4j-server/"' /opensilex.yml
     - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml

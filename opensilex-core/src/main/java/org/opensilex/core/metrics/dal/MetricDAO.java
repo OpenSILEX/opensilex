@@ -19,10 +19,14 @@ import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataFilterBuilder;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
@@ -55,6 +59,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class MetricDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    private FileStorageService fs;
 
     private AccountModel user;
 
@@ -66,10 +71,11 @@ public class MetricDAO {
         this.nosql = nosql;
     }
 
-    public MetricDAO(SPARQLService sparql, MongoDBService nosql, AccountModel user) {
+    public MetricDAO(SPARQLService sparql, MongoDBService nosql, AccountModel user, FileStorageService fs) {
         this.sparql = sparql;
         this.nosql = nosql;
         this.user = user;
+        this.fs = fs;
     }
 
     public void createIndexes() {
@@ -323,8 +329,8 @@ public class MetricDAO {
     }
 
     private HashMap<URI, String> getUsedVariablesFromDataDAO() throws Exception {
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<VariableModel> usedVariables = dataDAO.getUsedVariables(user, null, null, null, null);
+        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
+        List<VariableModel> usedVariables = dataBLL.getUsedVariables(null, null, null, null);
 
         HashMap<URI, String> variables = new HashMap<>();
 
@@ -420,9 +426,9 @@ public class MetricDAO {
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
         }
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
 
-        List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, experiments, null, null, null);
+        List<VariableModel> variables = dataLogic.getUsedVariables(experiments, null, null, null);
         Map<URI, VariableModel> tmpVariable = new HashMap<>();
         for (VariableModel variable : variables) {
             tmpVariable.put(new URI(SPARQLDeserializers.getExpandedURI(variable.getUri())), variable);
@@ -434,7 +440,7 @@ public class MetricDAO {
         inFilter.put("$in", new ArrayList<>(tmpVariable.keySet()));
         filter.put("variable", inFilter);
         // Add experiment filter
-        dataDAO.appendExperimentUserAccessFilter(filter, currentUser, experiments);
+        DataFilterBuilder.appendExperimentUserAccessFilter(filter, currentUser, experiments, sparql, nosql);
         // 1.match - Filter data on these variables
         // 2.group - Group variables with number of data  
         Set<Document> variablesWithDataCount = nosql.aggregate(

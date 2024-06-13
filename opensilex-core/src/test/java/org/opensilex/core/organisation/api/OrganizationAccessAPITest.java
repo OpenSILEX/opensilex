@@ -26,6 +26,7 @@ import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.group.api.GroupAPITest;
 import org.opensilex.security.group.api.GroupCreationDTO;
@@ -62,7 +63,19 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     public static final String URI_PATH = PATH + "/{uri}";
     public static final String SEARCH_PATH = PATH;
-    public static final String CREATE_PATH = PATH;
+    
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                OrganizationAPI.class.getMethod("createOrganization", OrganizationCreationDTO.class),
+                    PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // Site API
     public static final String SITE_PATH = "/core/sites";
@@ -71,7 +84,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     public static final String SITE_URIS_PATH = SITE_PATH + "/by_uris";
     public static final String SITE_CREATE_PATH = SITE_PATH;
 
-    private final UserAPITest userAPITest = new UserAPITest();
     private final ProfileAPITest profileAPITest = new ProfileAPITest();
     private final GroupAPITest groupAPITest = new GroupAPITest();
 
@@ -153,7 +165,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     }
 
     private URI createOrganization(String name, URI parentURI, URI groupURI, boolean createdByUser) throws Exception {
-        WebTarget createTarget = target(CREATE_PATH);
+        WebTarget createTarget = target(create.getPathTemplate());
         OrganizationCreationDTO creationDTO = getCreationDTO(name, parentURI, groupURI);
         Response postOrganizationResponse;
 
@@ -178,7 +190,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     }
 
     private URI createFacility(String name, URI orgURI, boolean createdByUser) throws Exception {
-        WebTarget createTarget = target(FacilityApiTest.CREATE_PATH);
+        WebTarget createTarget = target(FacilityApiTest.create.getPathTemplate());
         FacilityCreationDTO facilityCreationDTO = getFacilityCreationDTO(name, orgURI);
         Response postFacilityResponse;
 
@@ -249,7 +261,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         userCreationDTO.setFirstName("User");
         userCreationDTO.setLastName("Example");
         userCreationDTO.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
-        Response postUserResponse = getJsonPostResponseAsAdmin(target(userAPITest.createPath), userCreationDTO);
+        Response postUserResponse = getJsonPostResponseAsAdmin(target(UserAPITest.create.getPathTemplate()), userCreationDTO);
         user = extractUriFromResponse(postUserResponse);
 
         // Profile creation

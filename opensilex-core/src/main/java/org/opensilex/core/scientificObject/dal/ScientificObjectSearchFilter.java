@@ -2,11 +2,14 @@ package org.opensilex.core.scientificObject.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.collections4.SetUtils;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ScientificObjectSearchFilter extends SearchFilter {
@@ -66,6 +69,22 @@ public class ScientificObjectSearchFilter extends SearchFilter {
     public ScientificObjectSearchFilter setUris(List<URI> uris) {
         this.uris = uris;
         return this;
+    }
+
+    /**
+     * Keeps only uris that are present in this.uris and param uris
+     * Handles setting list if currently null.
+     * @param uris
+     */
+    public void intersectionOnUris(List<URI> uris){
+        if(this.uris == null){
+            this.uris = uris;
+            return;
+        }
+        this.uris = new ArrayList<>(
+                SetUtils.intersection(new HashSet<>(this.uris), new HashSet<>(uris))
+        );
+
     }
 
     public List<URI> getExcludedUris() {

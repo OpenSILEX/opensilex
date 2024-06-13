@@ -431,7 +431,7 @@ export default class ExperimentDataVisualisationView extends Vue {
               undefined,
               ["date=asc"],
               0,
-              50000
+              this.$store.state.graphDataLimit
           );
 
       const data = http.response.result as Array<DataGetDTO>;
@@ -448,17 +448,7 @@ export default class ExperimentDataVisualisationView extends Vue {
           imageData
         } = await this.transformDataWithImages(data, {scientificObjectUri: concernedItem.id});
         // const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.id});
-        if (dataLength > 50000) {
-          this.$opensilex.showInfoToast(
-              this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageA") +
-              " " +
-              dataLength +
-              " " +
-              this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageB") +
-              concernedItem.label +
-              this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageC")
-          );
-        }
+
         const dataAndImage = [];
 
         let name = this.multipleVariables ? concernedItem.label + " / " + selectedVariable.name : concernedItem.label

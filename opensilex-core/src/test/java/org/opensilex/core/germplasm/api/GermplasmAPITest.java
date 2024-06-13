@@ -9,19 +9,8 @@ package org.opensilex.core.germplasm.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
@@ -32,29 +21,27 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.ListWithPagination;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  * @author Alice BOIZET
  */
-public class GermplasmAPITest extends AbstractMongoIntegrationTest {
-
-    public static final String path = "/core/germplasm";
-
-    public static final String uriPath = path + "/{uri}";
-    public static final String searchPath = path;
-    public static final String createPath = path;
-    public static final String updatePath = path;
-    public static final String deletePath = path + "/{uri}";
-
-    public static GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
-        GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setName("testSpecies");
-        germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
-        return germplasmDTO;
-    }
+public class GermplasmAPITest extends BaseGermplasmAPITest {
 
     @Test
     public void testCreate() throws Exception {
@@ -63,7 +50,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
 
-        // ensure that the result is a well formed URI, else throw exception
+        // ensure that the result is a well-formed URI, else throw exception
         URI createdSpeciesUri = extractUriFromResponse(postResultSpecies);
         final Response getResultSpecies = getJsonGetByUriResponseAsAdmin(target(uriPath), createdSpeciesUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultSpecies.getStatus());
@@ -144,6 +131,192 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
         assertEquals(germplasmList.size(), 1);
         assertEquals(germplasmList.get(0).uri, germplasmToUpdateURI);
+    }
+
+    @Test
+    public void updateFailWithUnexistentUri() throws Exception {
+        GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
+        germplasmToUpdateDTO.setUri(new URI("http://www.opensilex.org/germplasm/doesnotexist"));
+
+        final Response updateResponse = new UserCallBuilder(update)
+                .setBody(germplasmToUpdateDTO)
+                .buildAdmin()
+                .executeCall();
+        assertEquals(Status.NOT_FOUND.getStatusCode(), updateResponse.getStatus());
+    }
+
+    @Test
+    public void updateFailIfWithSpeciesDoesNotExists() throws Exception {
+        GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
+        URI germplasmToUpdateURI = new UserCallBuilder(create)
+                .setBody(germplasmToUpdateDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        germplasmToUpdateDTO.setUri(germplasmToUpdateURI);
+        germplasmToUpdateDTO.setSpecies(new URI("http://www.opensilex.org/germplasm/doesnotexist"));
+
+        final Response updateResponse = new UserCallBuilder(update)
+                .setBody(germplasmToUpdateDTO)
+                .buildAdmin()
+                .executeCall();
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResponse.getStatus());
+    }
+
+    /**
+     * test search with filter on metadata field
+     */
+    @Test
+    public void searchWithMetadataField() throws Exception {
+        String key = "key";
+        Collection<URI> expectedUris = new ArrayList<>();
+
+        GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key"));
+        germplasmDTO.setMetadata(Map.of(key, "value1"));
+        URI createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_another_one"));
+        germplasmDTO.setMetadata(Map.of(key, "value_other", "other_key", "value1"));
+        createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        // this one should not be retrieved
+        germplasmDTO.setUri(URI.create("http://test/germplasm/does_not_has_the_key"));
+        germplasmDTO.setMetadata(Map.of("other_key", "value1"));
+        new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        String metadataStringSearch = String.format("{%s:null}", key);
+        Map<String, Object> params = Map.of("metadata", URLEncoder.encode(metadataStringSearch, StandardCharsets.UTF_8));
+        Collection<URI> retrievedUris = new UserCallBuilder(search)
+                .setParams(params)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+                })
+                .getDeserializedResponse()
+                .getResult()
+                .stream()
+                .map(dto -> dto.uri)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(expectedUris, retrievedUris);
+    }
+
+    /**
+     * when filtering on many metadata fields, the germplasm should be retrieved only if it has all the fields
+     */
+    @Test
+    public void searchWithMetadataManyField() throws Exception {
+        String key = "key";
+        String key2 = "key2";
+        Collection<URI> expectedUris = new ArrayList<>();
+
+        GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_both_key"));
+        germplasmDTO.setMetadata(Map.of(key, "value1", key2, "value2"));
+        URI createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_both_key_and_another_one"));
+        germplasmDTO.setMetadata(Map.of(key, "value_other", key2, "value2","other_key", "value1"));
+        createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        // this one should not be retrieved beceause it has only one of the two keys
+        germplasmDTO = getCreationSpeciesDTO();
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_only_one_key"));
+        germplasmDTO.setMetadata(Map.of(key, "value1"));
+        new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        String metadataStringSearch = String.format("{%s:null,%s:null}", key, key2);
+        Map<String, Object> params = Map.of("metadata", URLEncoder.encode(metadataStringSearch, StandardCharsets.UTF_8));
+        Collection<URI> retrievedUris = new UserCallBuilder(search)
+                .setParams(params)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+                })
+                .getDeserializedResponse()
+                .getResult()
+                .stream()
+                .map(dto -> dto.uri)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(expectedUris, retrievedUris);
+    }
+
+    @Test
+    public void searchWithMetadataFieldAndValue() throws Exception{
+        String key = "key";
+        String value = "value";
+        Collection<URI> expectedUris = new ArrayList<>();
+
+        GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_complete_value"));
+        germplasmDTO.setMetadata(Map.of(key, value));
+        URI createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_part_of_value"));
+        germplasmDTO.setMetadata(Map.of(key, value.concat("_should_be_retrieved"), "other_key", "value1"));
+        createdUri = new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        expectedUris.add(createdUri);
+
+        // this one should not be retrieved
+        germplasmDTO.setUri(URI.create("http://test/germplasm/doesnt_has_the_key"));
+        germplasmDTO.setMetadata(Map.of("other_key", "value1"));
+        new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCall();
+
+        // this one should not be retrieved
+        String stringWithNoCharsInCommonWithValue = "azertyuiopqsdfghjklmwxcvbn,;:!7894561230-+_@".replace(value, "");
+        germplasmDTO.setUri(URI.create("http://test/germplasm/has_key_but_wrong_value"));
+        germplasmDTO.setMetadata(Map.of(key, stringWithNoCharsInCommonWithValue));
+        new UserCallBuilder(create)
+                .setBody(germplasmDTO)
+                .buildAdmin()
+                .executeCall();
+
+        String metadataStringSearch = String.format("{%s:\"%s\"}", key, value);
+        Map<String, Object> params = Map.of("metadata", URLEncoder.encode(metadataStringSearch, StandardCharsets.UTF_8));
+        Collection<URI> retrievedUris = new UserCallBuilder(search)
+                .setParams(params)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+                })
+                .getDeserializedResponse()
+                .getResult()
+                .stream()
+                .map(dto -> dto.uri)
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(expectedUris, retrievedUris);
     }
 
     @Test
@@ -274,7 +447,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {
+        SingleObjectResponse<GermplasmGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         GermplasmGetSingleDTO germplasmGetDto = getResponse.getResult();
         assertNotNull(germplasmGetDto);
@@ -283,10 +456,9 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearch() throws Exception {
         GermplasmCreationDTO creationDTO = getCreationSpeciesDTO();
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
-        URI uri = extractUriFromResponse(postResult);
+        getJsonPostResponseAsAdmin(target(createPath), creationDTO);
 
-        Map<String, Object> params = new HashMap<String, Object>() {
+        Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().name);
                 put("rdf_type", getCreationSpeciesDTO().getType());
@@ -299,7 +471,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
 
@@ -371,7 +543,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         
         //check that you can update species
         final Response updateSpecies = getJsonPutResponse(target(updatePath), species);
-        assertEquals(Status.OK.getStatusCode(), updateSpecies.getStatus());        
+        assertEquals(Status.OK.getStatusCode(), updateSpecies.getStatus());
 
     }
 
@@ -392,9 +564,76 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
     }
 
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(GermplasmModel.class);
+    @Test
+    public void getGermplasmeAttributes() throws Exception {
+        UserCallBuilder createBuilder = new UserCallBuilder(create);
+        // instantiated as a set to ensure no duplicate as the "key2" is used in both species but should be retrieved only once by the service
+        Collection<String> allAttributesKeys = new HashSet<>();
+
+        // create a species with metadatas
+        final Map<String, String> specie1Metadata = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            specie1Metadata.put("key" + i, "value" + i);
+            allAttributesKeys.add("key" + i);
+        }
+        GermplasmCreationDTO specie1 = getCreationSpeciesDTO(specie1Metadata);
+        createBuilder.setBody(specie1).buildAdmin().executeCall();
+
+        // create a 2nd specie to ensure method is searching in all germplasm
+        final Map<String, String> specie2Metadata = new HashMap<>();
+        for (int i = 2; i < 7; i++) {
+            specie2Metadata.put("key" + i, "value" + i);
+            allAttributesKeys.add("key" + i);
+        }
+        GermplasmCreationDTO specie2 = getCreationSpeciesDTO(specie2Metadata);
+        createBuilder.setBody(specie2).buildAdmin().executeCall();
+
+        Collection<String> attributes = new UserCallBuilder(getAttributes).buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<Collection<String>>>() {
+                })
+                .getDeserializedResponse()
+                .getResult();
+        assertTrue("All attributes should be retrieved", attributes.containsAll(allAttributesKeys));
+        assertTrue("attributes should be unique", attributes.size() == allAttributesKeys.size());
     }
 
+    @Test
+    public void getAttributesValues() throws Exception {
+        UserCallBuilder createBuilder = new UserCallBuilder(create);
+        // instantiated as a set to ensure no duplicate as the many values are used several times but should be retrieved only once by the service
+        final String key = "key1";
+        final Collection<String> allAttributeValuesForKey = new HashSet<>();
+
+        final Map<String, String> specie1Metadata = new HashMap<>();
+        specie1Metadata.put(key, "value1");
+        allAttributeValuesForKey.add("value1");
+        //should not be retrieved by the service
+        specie1Metadata.put("key2", "valueThatShouldNotBeRetrieved");
+        GermplasmCreationDTO specie1 = getCreationSpeciesDTO(specie1Metadata);
+        createBuilder.setBody(specie1).buildAdmin().executeCall();
+
+        final Map<String, String> specie2Metadata = new HashMap<>();
+        // "value1" should be return only once by the service
+        specie2Metadata.put(key, "value1");
+        GermplasmCreationDTO specie2 = getCreationSpeciesDTO(specie2Metadata);
+        createBuilder.setBody(specie2).buildAdmin().executeCall();
+
+        final Map<String, String> specie3Metadata = new HashMap<>();
+        specie3Metadata.put(key, "value2");
+        allAttributeValuesForKey.add("value2");
+        GermplasmCreationDTO specie3 = getCreationSpeciesDTO(specie3Metadata);
+        createBuilder.setBody(specie3).buildAdmin().executeCall();
+
+        Map<String, Object> params = new HashMap<>(){{put("attribute", key);}};
+        Collection<String> attributeValues = new UserCallBuilder(getAttributeValues)
+                .setPathTemplateParams(params)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<Collection<String>>>() {
+                })
+                .getDeserializedResponse()
+                .getResult();
+
+        assertTrue("All values for the attribute should be retrieved", attributeValues.containsAll(allAttributeValuesForKey));
+        assertTrue("values should be unique", attributeValues.size() == allAttributeValuesForKey.size());
+    }
 }

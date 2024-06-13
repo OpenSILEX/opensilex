@@ -7,6 +7,8 @@ import org.opensilex.server.response.StatusLevel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
@@ -15,6 +17,13 @@ public class BrAPIv1AccessionWarning {
     public static final URI ACCESSION_URI = URI.create(Oeso.DOMAIN + "#" + "Accession");
 
     public static final URI GERMPLASM_URI = URI.create(Oeso.Germplasm.getURI());
+
+    public static final StatusDTO WARNING = new StatusDTO(
+            "This service will not return any information related to 'Germplasms' as the 'Accession' notion doesn't exist in your ontology",
+            StatusLevel.WARNING
+    );
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrAPIv1AccessionWarning.class);
 
     public BrAPIv1AccessionWarning() {
     }
@@ -25,10 +34,8 @@ public class BrAPIv1AccessionWarning {
                 ACCESSION_URI,
                 GERMPLASM_URI
         )) {
-            responseClass.addMetadataStatus(new StatusDTO(
-                    "This service will not return any information related to 'Germplasms' as the 'Accession' notion doesn't exist in your ontology",
-                    StatusLevel.WARNING
-            ));
+            LOGGER.warn(WARNING.getMessage());
+            responseClass.addMetadataStatus(WARNING);
         }
     }
 }

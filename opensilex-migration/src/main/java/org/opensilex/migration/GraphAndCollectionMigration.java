@@ -13,7 +13,7 @@ import com.mongodb.client.MongoCollection;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
@@ -150,7 +150,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         // build the Map of old -> new collection names (germplasm/device attributes), log and form
         Map<String, String> oldToNewCollectionNames = new HashMap<>();
         oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
-        oldToNewCollectionNames.put("devicesAttributes", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
+        oldToNewCollectionNames.put("devicesAttributes", DeviceAPI.METADATA_COLLECTION_NAME);
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
         oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);
 

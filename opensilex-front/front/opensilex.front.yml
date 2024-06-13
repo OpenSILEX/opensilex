@@ -323,6 +323,7 @@ routes:
     component: opensilex-SiteView
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
+    rdfType: vocabulary:Experiment
   - path: /experiment/scientific-objects/:uri
     component: opensilex-ExperimentView
   - path: /experiment/data/:uri

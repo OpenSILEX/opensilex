@@ -192,7 +192,7 @@ public class EntityAPI {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
 
         EntityModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
@@ -215,7 +215,7 @@ public class EntityAPI {
             @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-        dao.delete(uri, Oeso.hasEntity);
+        dao.delete(uri, Oeso.hasEntity, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

@@ -7,6 +7,7 @@
 package org.opensilex.nosql.mongodb;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;

@@ -3,15 +3,15 @@
  *                         test-1.spec.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 11/06/2024 17:16
+ * Last Modification: 13/06/2024 15:31
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
 
-import { test, expect } from '@playwright/test';
+import {test, expect, chromium} from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/app');
+  await page.goto(process.env.APP_URL);
 });
 
 test('menu', async ({ page }) => {

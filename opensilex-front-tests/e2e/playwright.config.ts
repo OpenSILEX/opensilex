@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 11/06/2024 13:57
+ * Last Modification: 13/06/2024 15:40
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,7 +11,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as path from 'path';
 
-export const STORAGE_STATE = path.join(__dirname, 'playwright/.auth/user.json');
+process.env.BASE_URL = "http://localhost:8080"
+process.env.APP_URL = process.env.BASE_URL + "/app"
 
 /**
  * Read environment variables from file.
@@ -36,44 +37,25 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:8080",
-
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'retain-on-failure',
+    storageState: 'state.json'
   },
+
+  globalSetup: require.resolve('./global-setup'),
 
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'setup',
-      testMatch: /global.setup\.ts/,
-    },
-    {
-      name: 'chromium',
-      dependencies: ['setup'],
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: STORAGE_STATE
-      },
+      name: 'chromium'
     },
 
     {
-      name: 'firefox',
-      dependencies: ['setup'],
-      use: {
-        ...devices['Desktop Firefox'],
-        storageState: STORAGE_STATE
-      },
+      name: 'firefox'
     },
 
     {
-      name: 'webkit',
-      dependencies: ['setup'],
-      use: {
-        ...devices['Desktop Safari'],
-        storageState: STORAGE_STATE
-      },
+      name: 'webkit'
     },
 
     /* Test against mobile viewports. */
@@ -98,9 +80,12 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: '../../opensilex-release/target/opensilex/opensilex.sh server start --CONFIG_FILE=../../../opensilex-dev-tools/src/main/resources/config/opensilex.yml --port=8080',
+    url: process.env.APP_URL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    stdout: "pipe",
+    stderr: "pipe"
+  },
 });

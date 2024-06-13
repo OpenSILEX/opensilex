@@ -1,18 +1,20 @@
 /*
  * *****************************************************************************
- *                         global.setup.ts
+ *                         global-setup.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 11/06/2024 17:16
+ * Last Modification: 13/06/2024 15:31
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
 
-import { test as setup, expect } from '@playwright/test';
-import { STORAGE_STATE } from '../playwright.config';
+import {chromium, expect, FullConfig} from '@playwright/test';
 
-setup('do login as admin', async ({ page }) => {
-    await page.goto('/app', { timeout: 10000 });
+async function globalSetup(config: FullConfig) {
+    const { baseURL, storageState } = config.projects[0].use;
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.goto(process.env.APP_URL);
 
     // Connect as admin
     await page.getByTestId('default-login-component-email-input').click();
@@ -23,5 +25,8 @@ setup('do login as admin', async ({ page }) => {
 
     await expect(page.getByTestId('dashboard-page-header')).toBeVisible({ timeout: 10000 });
 
-    await page.context().storageState({ path: STORAGE_STATE });
-});
+    await page.context().storageState({ path: storageState as string });
+    await browser.close();
+}
+
+export default globalSetup;

@@ -3,7 +3,7 @@
  *                         global-setup.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 13/06/2024 15:31
+ * Last Modification: 14/06/2024 10:16
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -15,6 +15,8 @@ async function globalSetup(config: FullConfig) {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.goto(process.env.APP_URL);
+
+    await page.waitForTimeout(10000);
 
     // Connect as admin
     await page.getByTestId('default-login-component-email-input').click();

@@ -1,5 +1,6 @@
 package org.opensilex.faidare.api;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.integration.test.ServiceDescription;
 
@@ -20,6 +21,7 @@ public class GermplasmAPITest extends FaidareAPITest {
         }
     }
 
+    @Ignore("no longer relevant if vocabulary:Accession stays in oeso-core")
     @Test
     public void testSearch() {
 

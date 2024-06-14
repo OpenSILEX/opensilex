@@ -826,6 +826,8 @@ test:gabriel:front-test:
         # Copy the generated jars to respect the project's usual structure
         - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
         - cp -r $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION $CI_PROJECT_DIR/opensilex-release/target/opensilex
+        - cd $CI_PROJECT_DIR
+        - tree
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
         - npm ci
         - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding

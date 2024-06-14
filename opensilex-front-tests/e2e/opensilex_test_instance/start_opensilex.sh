@@ -5,10 +5,13 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 14/06/2024 13:13
+# Last Modification: 14/06/2024 13:42
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
+
+# Redirect all subsequent commands' stdout and stderr to the terminal
+exec > >(tee) 2>&1
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 

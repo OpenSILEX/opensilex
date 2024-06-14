@@ -9,8 +9,8 @@ This document describes how to execute migration commands into OpenSILEX, the li
 <!-- TOC -->
 * [Opensilex Migration Commands](#opensilex-migration-commands)
 * [Introduction](#introduction)
-  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file-useradmin-oriented)
-  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module-for-developers)
+  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file--useradmin-oriented-)
+  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module--for-developers-)
 * [List](#list)
 * [Descriptions](#descriptions)
   * [org.opensilex.migration.GraphAndCollectionMigration](#orgopensilexmigrationgraphandcollectionmigration)
@@ -27,7 +27,11 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Description](#description-4)
   * [org.opensilex.migration.AddAccountCredentialsToProfilWithUserCredential](#orgopensilexmigrationaddaccountcredentialstoprofilwithusercredential)
     * [Description](#description-5)
-* [Create an update command (For developers)](#create-an-update-command-for-developers)
+  * [org.opensilex.migration.MongoDbIndexesMigration](#orgopensilexmigrationmongodbindexesmigration)
+    * [Description](#description-6)
+  * [org.opensilex.migration.RemoveExternalOntologiesContexts](#orgopensilexmigrationremoveexternalontologiescontexts)
+    * [Description](#description-7)
+* [Create an update command (For developers)](#create-an-update-command--for-developers-)
       * [Example](#example)
 <!-- TOC -->
 

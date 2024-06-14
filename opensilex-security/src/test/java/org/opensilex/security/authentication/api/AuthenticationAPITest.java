@@ -8,7 +8,6 @@ import org.opensilex.security.account.api.AccountAPI;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.group.api.GroupAPI;
 import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;

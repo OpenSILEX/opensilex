@@ -807,7 +807,7 @@ test:gabriel:front-test:
     #  parallel: 7    This option can be used for parallelization
     script:
         # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml
-        - sudo apt install tree -y
+        - apt install tree -y
         - echo "SETTING UP CONFIG"
         - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN_DEV_TOOLS" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml
         - echo "$(</opensilex.yml)"

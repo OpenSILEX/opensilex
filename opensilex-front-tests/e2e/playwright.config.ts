@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 14/06/2024 14:53
+ * Last Modification: 14/06/2024 15:42
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,14 +11,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as path from 'path';
 
-process.env.BASE_URL = "http://localhost:8080"
+process.env.BASE_URL = !process.env.ACCESS_DISTANT ? "http://localhost:8080" : process.env.BASE_ADDRESS
 process.env.APP_URL = process.env.BASE_URL + "/app"
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -80,7 +74,7 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: !process.env.ACCESS_DISTANT ? {
     command: './opensilex_test_instance/start_opensilex.sh',
     url: process.env.APP_URL,
     reuseExistingServer: !process.env.CI,
@@ -88,5 +82,5 @@ export default defineConfig({
     stdout: "pipe",
     stderr: "pipe"
     // could use this to differenciate CI : !process.env.CI
-  },
+  } : undefined,
 });

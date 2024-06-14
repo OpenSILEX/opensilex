@@ -822,15 +822,13 @@ test:gabriel:front-test:
         - echo "/opensilex_mod.yml config file content :" && echo "$(</opensilex_mod.yml)"
         - echo "START DOCKERS :"
         - cd opensilex-dev-tools/src/main/resources/docker
-        - dockerd &
-        - docker compose -p test up &
+        - dockerd &&
+        - docker compose -p test up &&
         # Copy the generated jars to respect the project's usual structure
         - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
         - cp -rf $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
-        - cd $CI_PROJECT_DIR
-        - tree
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-        - npm ci
+        - npm ci &&
         - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 
     after_script:

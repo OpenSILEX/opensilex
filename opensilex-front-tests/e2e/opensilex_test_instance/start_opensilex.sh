@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 14/06/2024 13:42
+# Last Modification: 14/06/2024 14:28
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -15,12 +15,18 @@ exec > >(tee) 2>&1
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+pwd
+
 cd "$SCRIPT_DIR" || exit 1
 CONFIG_FILE="$(readlink -f "opensilex.yml")"
+
+pwd
 
 cd "${SCRIPT_DIR}/../../../opensilex-release/target/opensilex" || exit 1
 
 OPENSILEX="java -jar opensilex.jar"
+
+pwd
 
 $OPENSILEX system install --CONFIG_FILE="$CONFIG_FILE" &&
 $OPENSILEX --CONFIG_FILE="$CONFIG_FILE" user add --admin &&

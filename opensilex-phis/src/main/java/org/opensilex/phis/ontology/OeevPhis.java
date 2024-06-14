@@ -1,5 +1,8 @@
 package org.opensilex.phis.ontology;
 
+/**
+ * @author Sarra Abidri
+ */
 public class OeevPhis {
     public static final String DOMAIN = "http://www.opensilex.org/vocabulary/oeev-phis";
 

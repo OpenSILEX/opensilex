@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 
+/**
+ * @author Sarra Abidri
+ */
+
 public class RemoveExternalOntologiesContexts implements OpenSilexModuleUpdate {
     private OpenSilex opensilex;
 

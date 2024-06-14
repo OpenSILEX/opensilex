@@ -491,6 +491,6 @@ routes:
     credentials:
       - public
   - path: /metadata
-    component: opensilex-Dashboard
+    component: opensilex-HomeView
     credentials:
       - public

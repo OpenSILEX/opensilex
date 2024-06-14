@@ -364,13 +364,14 @@ public class DocumentAPI {
             @ApiParam(value = "Regex pattern for filtering list by the first element date", example = "2020") @QueryParam("first_element_date") String firstElementDate,
             @ApiParam(value = "Regex pattern for filtering list by the last element date", example = "2020") @QueryParam("last_element_date") String lastElementDate,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Search by keywords", example = "BIODIVERSITY") @QueryParam("subject") String subject,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         List<DocumentMetadataGetDTO> metadataDTOList = new ArrayList<>();
 
         // Calculate variable occurrences
-        Map<URI, Integer> variableOccurrences = calculateVariableOccurrences(targets, firstElementDate, lastElementDate, page, pageSize, documentDAO);
+        Map<URI, Integer> variableOccurrences = calculateVariableOccurrences(subject, targets, firstElementDate, lastElementDate, page, pageSize, documentDAO);
 
         // Convert variable occurrences map to a sorted list
         List<Map.Entry<URI, Integer>> sortedVariableOccurrences = new ArrayList<>(variableOccurrences.entrySet());
@@ -385,7 +386,7 @@ public class DocumentAPI {
                     target,
                     null,
                     null,
-                    null,
+                    subject,
                     null,
                     null,
                     firstElementDate != null ? LocalDate.parse(firstElementDate) : null,
@@ -456,7 +457,7 @@ public class DocumentAPI {
         return new PaginatedListResponse<>(metadataDTOList).getResponse();
     }
 
-    private Map<URI, Integer> calculateVariableOccurrences(List<URI> targets, String firstElementDate, String lastElementDate, int page, int pageSize, DocumentDAO documentDAO) throws Exception {
+    private Map<URI, Integer> calculateVariableOccurrences(String subject, List<URI> targets, String firstElementDate, String lastElementDate, int page, int pageSize, DocumentDAO documentDAO) throws Exception {
         Map<URI, Integer> variableOccurrences = new HashMap<>();
 
         for (URI target : targets) {
@@ -468,7 +469,7 @@ public class DocumentAPI {
                     target,
                     null,
                     null,
-                    null,
+                    subject,
                     null,
                     null,
                     firstElementDate != null ? LocalDate.parse(firstElementDate) : null,

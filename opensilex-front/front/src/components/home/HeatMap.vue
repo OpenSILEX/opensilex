@@ -101,7 +101,6 @@ export default class HeatmapChart extends Vue {
 
     const option = {
       title: {
-        top: 30,
         left: "center",
         text: this.data.name,
       },
@@ -112,10 +111,9 @@ export default class HeatmapChart extends Vue {
         type: "piecewise",
         orient: "horizontal",
         left: "center",
-        top: 65,
+        top: "50%",
       },
       calendar: {
-        top: 120,
         left: 30,
         right: 30,
         cellSize: ["auto", 13],
@@ -123,7 +121,7 @@ export default class HeatmapChart extends Vue {
         itemStyle: {
           borderWidth: 0.5,
         },
-        yearLabel: { show: false },
+        yearLabel: { show: true },
       },
       series: {
         type: "heatmap",

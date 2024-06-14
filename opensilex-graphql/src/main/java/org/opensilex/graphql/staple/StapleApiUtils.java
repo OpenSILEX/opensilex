@@ -51,6 +51,10 @@ public class StapleApiUtils {
     @Inject
     private SPARQLService sparql;
 
+     /**
+     * By default, each resource type is associated with its default graph in the graph map. This field contains
+     * exceptions to this rule, for example the `Instant` resource that is stored in the same graph as the events.
+     */
     private static final Map<URI, Class<?>> graphMapExceptions = new HashMap<URI, Class<?>>() {{
        put(URI.create(Time.Instant.getURI()), EventModel.class);
     }};

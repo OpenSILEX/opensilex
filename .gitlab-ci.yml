@@ -806,7 +806,7 @@ test:gabriel:front-test:
     image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
     #  parallel: 7    This option can be used for parallelization
     variables:
-        ACCESS_DISTANT: true
+        ACCESS_DISTANT: false
         BASE_ADDRESS: "$REMOTE_TEST_SERVER_IP:8091"
     script:
         # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml

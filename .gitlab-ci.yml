@@ -865,6 +865,7 @@ test:gabriel:front-test:
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
     needs:
+        - test:gabriel:build
         - test:gabriel:deploy
     artifacts:
         when: always

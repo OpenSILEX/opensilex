@@ -793,11 +793,6 @@ test:gabriel:deploy:
 
 # Front tests
 
-test:gabriel:front-test:build:
-    <<: *build_template_with_opensilex
-    rules:
-        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
 test:gabriel:front-test:
@@ -872,7 +867,8 @@ test:gabriel:front-test:
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
     needs:
-        - test:gabriel:front-test:build
+        - test:gabriel:build
+        - test:gabriel:deploy
     artifacts:
         when: always
         paths:

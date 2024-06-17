@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 14/06/2024 15:42
+ * Last Modification: 17/06/2024 09:55
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,7 +11,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as path from 'path';
 
-process.env.BASE_URL = !process.env.ACCESS_DISTANT ? "http://localhost:8080" : process.env.BASE_ADDRESS
+process.env.BASE_URL = "http://localhost:8080"
 process.env.APP_URL = process.env.BASE_URL + "/app"
 
 /**
@@ -81,6 +81,5 @@ export default defineConfig({
     timeout: 240000,
     stdout: "pipe",
     stderr: "pipe"
-    // could use this to differenciate CI : !process.env.CI
   } : undefined,
 });

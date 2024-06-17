@@ -126,12 +126,12 @@ export default class VariableDevicesSelector extends Vue {
 
   select(value) {
     this.$emit("select", value);
-    this.$emit("input", this.devicesURI)
+  
   }
 
   deselect(value) {
     this.$emit("deselect", value);
-    this.$emit("input", this.devicesURI)
+   
   }
 }
 </script>

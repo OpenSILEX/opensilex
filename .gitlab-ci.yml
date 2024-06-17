@@ -862,6 +862,7 @@ test:gabriel:front-test:
         - chmod 600 ${HOME}/.ssh/id_rsa
 
         ## SSH tunnel to test server
+        - echo "ssh ${REMOTE_SERVER_IP} -NT -L 8080:localhost:${OPENSILEX_JAR_PORT} &"
         - ssh $REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
 
         - npm ci &&

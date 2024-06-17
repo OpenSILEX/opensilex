@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 14/06/2024 14:28
+# Last Modification: 17/06/2024 16:32
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -22,7 +22,15 @@ CONFIG_FILE="$(readlink -f "opensilex.yml")"
 
 pwd
 
-cd "${SCRIPT_DIR}/../../../opensilex-release/target/opensilex" || exit 1
+cd "${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/docker" || exit 1
+
+pwd
+
+docker compose -p test up &
+
+sleep 30
+
+cd "${SCRIPT_DIR}/../../../../../opensilex-release/target/opensilex" || exit 1
 
 OPENSILEX="java -jar opensilex.jar"
 

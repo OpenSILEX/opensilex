@@ -822,13 +822,9 @@ test:gabriel:front-test:
         # - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
         - echo "$(</opensilex.yml)"
         # TODO : comment next line out once everything works
-        - printenv
-        - envsubst < /opensilex.yml > /opensilex_mod.yml
-        - echo "/opensilex_mod.yml config file content :" && echo "$(</opensilex_mod.yml)"
-        - echo "START DOCKERS :"
-        - cd opensilex-dev-tools/src/main/resources/docker
-        - dockerd &
-        - docker compose -p test up &
+        #- cd opensilex-dev-tools/src/main/resources/docker
+        #- dockerd &
+        #- docker compose -p test up &
         - sleep 30 # replace with a check on docker state?
         # Copy the generated jars to respect the project's usual structure
         - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex

@@ -165,7 +165,7 @@ public class FacilityDAO {
      * @param filter The search filters
      * @return The list of facilities
      */
-    public ListWithPagination<FacilityModel> simpleSearch(FacilitySearchFilter filter) throws Exception {
+    public ListWithPagination<FacilityModel> minimalSearch(FacilitySearchFilter filter) throws Exception {
         filter.validate();
 
         FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);

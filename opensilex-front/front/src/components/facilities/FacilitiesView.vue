@@ -239,11 +239,12 @@ export default class FacilitiesView extends Vue {
   }
 
   refresh() {
-    if (Array.isArray(this.facilities)) {
-      return;
-    }
+      if (Array.isArray(this.facilities)) {
+        return;
+      }
 
-    return this.service.simpleSearchFacilities(this.filter)
+      this.$opensilex.showLoader();
+      return this.service.minimalSearchFacilities(this.filter)
         .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
@@ -252,7 +253,7 @@ export default class FacilitiesView extends Vue {
           if (this.isSelectable && this.fetchedFacilities.length > 0) {
             this.facilityTable.selectRow(0);
           }
-        });
+        }).finally( () => this.$opensilex.hideLoader());
   }
 
   initForm(form: FacilityCreationDTO) {

@@ -54,7 +54,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
@@ -249,7 +248,7 @@ public class FacilityAPI {
     }
 
     @GET
-    @Path("simple_search")
+    @Path("minimal_search")
     @ApiOperation("Search facilities returning minimal embedded information for better performance")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -257,7 +256,7 @@ public class FacilityAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return facilities", response = NamedResourceDTO.class, responseContainer = "List")
     })
-    public Response simpleSearchFacilities(
+    public Response minimalSearchFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -268,7 +267,7 @@ public class FacilityAPI {
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
-        ListWithPagination<FacilityModel> facilities = facilityDAO.simpleSearch(filter);
+        ListWithPagination<FacilityModel> facilities = facilityDAO.minimalSearch(filter);
 
         List<NamedResourceDTO> dtoList = facilities.getList().stream()
                 .map(NamedResourceDTO::getDTOFromModel)

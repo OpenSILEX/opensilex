@@ -862,7 +862,7 @@ test:gabriel:front-test:
         - chmod 600 ${HOME}/.ssh/id_rsa
 
         ## SSH tunnel to test server
-        - ssh $REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT
+        - ssh $REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
 
         - npm ci &&
         - ACCESS_DISTANT=$ACCESS_DISTANT BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding

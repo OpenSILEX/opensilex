@@ -796,7 +796,7 @@ test:gabriel:deploy:
 test:gabriel:front-test:build:
     <<: *build_template_with_opensilex
     rules:
-        -   if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
@@ -868,7 +868,7 @@ test:gabriel:front-test:
     after_script:
         - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
     rules:
-        -   if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
     needs:

@@ -110,8 +110,8 @@ public class VariableAPI {
     @CurrentUser
     AccountModel currentUser;
 
-    private VariableDAO getDao() throws URISyntaxException {
-        return new VariableDAO(sparql, mongodb, fs);
+    private VariableDAO getDao() {
+        return new VariableDAO(sparql, mongodb, fs, currentUser);
     }
 
     @POST

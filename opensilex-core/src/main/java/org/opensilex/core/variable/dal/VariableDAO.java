@@ -17,7 +17,9 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -34,6 +36,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -45,6 +48,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -78,12 +82,16 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         varsByVarName.put(unitLabelVar.getVarName(), unitLabelVar);
     }
 
-    //TODO BLL, dont call other daos here
-    protected final DataDaoV2 dataDAO;
+    private final MongoDBService nosql;
+    private final FileStorageService fs;
+    private final AccountModel user;
 
-    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
+
+    public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
-        this.dataDAO = new DataDaoV2(sparql, nosql, fs);
+        this.nosql = nosql;
+        this.fs = fs;
+        this.user = user;
     }
 
     public void delete(URI uri, AccountModel currentUser) throws Exception {
@@ -113,7 +121,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUri(uri);
         dataSearchFilter.setUser(currentUser);
-        return dataDAO.count(dataSearchFilter);
+        return new DataLogic(sparql, nosql, fs, user).countData(dataSearchFilter);
     }
 
     @Override
@@ -197,9 +205,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
-        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
+        //TODO dataLogic should be called from a VariableLogic class
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
+        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataLogic.getUsedVariablesByExpeSoDevice(filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
         if (variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null, filter.getDevices()));
+            return new ListWithPagination<>(dataLogic.getUsedVariables(filter.getExperiments(), filter.getObjects(), null, filter.getDevices()));
         }
         filter.setIncludedUris(variableUriList);
 
@@ -327,6 +337,37 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 variable.getSpecies().add(nestedModel);
             }
         });
+
+    }
+
+    /**
+     * Fetches and return all URIs for the variable with the xsd:date datatype.
+     *
+     * @return
+     * @throws Exception
+     */
+    public Set<URI> getAllDateVariables() throws Exception {
+        return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
+            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
+        }));
+    }
+
+    /**
+     * check if variable is associated to device
+     * @param device
+     * @param variable
+     * @throws Exception
+     */
+    public boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
+        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+        if (!variables.isEmpty()) {
+            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
+                return true;
+            }
+        }
+        return false;
 
     }
 

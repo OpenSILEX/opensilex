@@ -65,7 +65,7 @@ public class VariablesAPI extends BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs);
+        VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs, currentUser);
 
         ListWithPagination<VariableModel> variables;
         if (observationVariableDbId != null) {
@@ -106,7 +106,7 @@ public class VariablesAPI extends BrapiCall {
             @ApiParam(value = "A variable URI (Unique Resource Identifier)", required = true) @PathParam("observationVariableDbId") @NotNull URI observationVariableDbId
     ) throws Exception {
 
-        VariableDAO variableDAO = new VariableDAO(sparql,mongodb,fs);
+        VariableDAO variableDAO = new VariableDAO(sparql,mongodb,fs, currentUser);
 
         VariableModel variable = variableDAO.get(observationVariableDbId);
         if (variable != null) {

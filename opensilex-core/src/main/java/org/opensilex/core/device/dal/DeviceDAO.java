@@ -40,8 +40,10 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -287,8 +289,6 @@ public class DeviceDAO {
     }
 
     public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
-        //TODO check if ive done indexes correctly
-        //createIndexes();
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
         sparql.update(graph, instance);
@@ -418,6 +418,50 @@ public class DeviceDAO {
         DeviceModel device = results.getList().get(0);
 
         return device;
+    }
+
+    public DeviceModel getDeviceByNameOrURI(AccountModel user, String deviceNameOrUri) throws Exception {
+        DeviceModel device;
+        if (URIDeserializer.validateURI(deviceNameOrUri)) {
+            URI deviceURI = URI.create(deviceNameOrUri);
+            device = getDeviceByURI(deviceURI, user);
+        } else {
+            device = getByName(deviceNameOrUri);
+        }
+        return device;
+    }
+
+    // Map which associates each type with its root type
+    public Map<URI, URI> getRootDeviceTypes(AccountModel user) throws Exception {
+
+        SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
+        List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
+
+        Map<URI, URI> map = new HashMap<>();
+
+        for (ResourceTreeDTO tree : treeDtos) {
+            URI agentRootType = tree.getUri();
+            List<ResourceTreeDTO> children = tree.getChildren();
+            if (!children.isEmpty()) {
+                childrenToRoot(children, map, agentRootType);
+            }
+
+            // Push root type inside map
+            // It allows the recognition of device with a type included inside the root types list
+            map.put(tree.getUri(),tree.getUri());
+        }
+
+        return map;
+    }
+
+    private void childrenToRoot( List<ResourceTreeDTO> children,Map<URI, URI> map, URI agentRootType){
+        for (ResourceTreeDTO subTree : children) {
+            map.put(subTree.getUri(), agentRootType);
+            List<ResourceTreeDTO> child = subTree.getChildren();
+            if (!child.isEmpty()) {
+                childrenToRoot(child, map, agentRootType);
+            }
+        }
     }
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {

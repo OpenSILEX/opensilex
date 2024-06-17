@@ -792,7 +792,7 @@ gabriel-deploy:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success
     needs:
-        - test:gabriel:build
+        - gabriel-build
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
@@ -869,7 +869,7 @@ gabriel-front-test:
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
     needs:
-        - test:gabriel:deploy
+        - gabriel-deploy
     artifacts:
         when: always
         paths:

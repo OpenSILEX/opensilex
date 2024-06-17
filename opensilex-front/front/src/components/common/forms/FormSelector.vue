@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Watch, Ref, Provide } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref, Provide } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";

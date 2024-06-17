@@ -791,8 +791,6 @@ test:gabriel:deploy:
     needs:
         - test:gabriel:build
 
-# Front tests
-
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
 test:gabriel:front-test:
@@ -867,7 +865,6 @@ test:gabriel:front-test:
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
     needs:
-        - test:gabriel:build
         - test:gabriel:deploy
     artifacts:
         when: always

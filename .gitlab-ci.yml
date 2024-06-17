@@ -862,8 +862,6 @@ test:gabriel:front-test:
         - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
         - chmod 600 ${HOME}/.ssh/id_rsa
 
-        - ping $REMOTE_SERVER_IP
-
         ## SSH tunnel to test server
         - echo "ssh ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
         - ssh ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &

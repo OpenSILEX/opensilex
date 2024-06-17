@@ -9,6 +9,7 @@ stages:
     - build
     - test
     - deploy
+    - front-test
     - release
 
 ########################

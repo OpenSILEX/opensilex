@@ -10,11 +10,6 @@
     <template v-slot:body>
       <div class="globalStatsContainer">
 
-        <!-- show component icon and title -->
-        <span class="title">
-          {{ $t("DataMonitoring.title") }}
-        </span>
-
         <!-- button group to select time period for which entity counts should be shown -->
         <span class="button-group">
              <div class="btn-group btn-group-toggle btnsGroup" data-toggle="buttons" :options="periods">
@@ -87,34 +82,68 @@
         
         <!-- show entity counts for a specific time period (added since last day or week) -->
         <span class="stats-values">
-           <!-- show experiment count -->
-           <span id="popover-experiments" class="expe">
+
+          <!-- show experiment count -->
+          <span id="popover-experiments" class="expe">
             <opensilex-Icon icon="ik#ik-layers"/>
-            <span>{{ nbExperiments }} ({{ deltaExperiments }}) {{ $t("component.menu.experiments") }}</span>
-           </span>
+            <span>{{ nbExperiments }} ({{ deltaExperiments }}) 
+              <a 
+                href="/app/experiments" 
+                class="metricsElementTitle" 
+                :title="$t('DataMonitoring.redirectionToExpe')"
+              >
+                {{$t('component.menu.experiments')}}
+              </a>
+            </span>
+          </span>
 
           <!-- show scientific object count -->
-           <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so">
-             <opensilex-Icon icon="ik#ik-target"/>
-              <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }}) {{ $t("component.menu.scientificObjects") }}</span>
-             <!-- handle mouse-over events on "os" -->
-               <b-popover target="popover-so" triggers="hover" placement="bottom">
-                <template #title>{{ $t("DataMonitoring.scientificObjetcTypes") }}</template>
-                <ul style="padding-left: 10px">
-                  <li v-for="item in scientificObjetcTypes" :key="item.index">
-                    {{ item }}
-                  </li>
-                </ul>
-               </b-popover>
-           </span>
-           <span v-else>
-             <opensilex-Icon icon="ik#ik-target"/><span>{{ nbScientificObjects }} ({{ deltaScientificObjects }}) {{ $t("component.menu.scientificObjects") }}</span>
-           </span>
+          <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so">
+            <opensilex-Icon icon="ik#ik-target"/>
+            <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }})
+              <a 
+                href="/scientific-objects" 
+                :title="$t('DataMonitoring.redirectionToOS')"
+                class="metricsElementTitle"
+              >
+                {{ $t("component.menu.scientificObjects") }}
+              </a>
+            </span>
+            <b-popover target="popover-so" triggers="hover" placement="bottom">
+              <template #title>{{ $t("DataMonitoring.scientificObjetcTypes") }}</template>
+              <ul style="padding-left: 10px">
+                <li v-for="item in scientificObjetcTypes" :key="item.index">
+                  {{ item }}
+                </li>
+              </ul>
+            </b-popover>
+          </span>
+          
+          <span v-else>
+            <opensilex-Icon icon="ik#ik-target"/>
+            <span>{{ nbScientificObjects }} ({{ deltaScientificObjects }}) 
+              <a 
+                href="/app/scientific-objects" 
+                :title="$t('DataMonitoring.redirectionToOS')" 
+                class="metricsElementTitle"
+              >
+                {{ $t("component.menu.scientificObjects") }}
+              </a>
+            </span>
+          </span>
 
           <!-- show data count -->
-           <span class="data">
-             <opensilex-Icon icon="ik#ik-bar-chart"/>
-             <span>{{ nbData }} ({{ deltaData }}) {{ $t("component.menu.data.label") }}</span>
+          <span class="data">
+            <opensilex-Icon icon="ik#ik-bar-chart"/>
+            <span>{{ nbData }} ({{ deltaData }})
+              <a 
+                href="/app/data" 
+                class="metricsElementTitle" 
+                :title="$t('DataMonitoring.redirectionToData')"
+              > 
+                {{ $t("component.menu.data.label") }}
+              </a>
+            </span>
            </span>
         </span>
       </div>
@@ -325,6 +354,17 @@ export default class DataMonitoring extends Vue {
   margin: 0 10px 0 10px;
 }
 
+.metricsElementTitle  {
+  color: #000 !important;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.metricsElementTitle:hover {
+  text-decoration: none !important;
+  color: #018371 !important;
+}
+
 @media only screen and (max-width: 1451px){
   .button-group {
     float: left;
@@ -351,6 +391,9 @@ export default class DataMonitoring extends Vue {
 en:
   DataMonitoring:
     title: Data monitoring
+    redirectionToExpe: List of experiments
+    redirectionToOS: List of scientific objects
+    redirectionToData: Data list
     settings: Settings
     lastUpdated: update
     scientificObjetcTypes: Types
@@ -363,6 +406,9 @@ en:
 fr:
   DataMonitoring:
     title: Suivi de données
+    redirectionToExpe: Liste des expérimentations
+    redirectionToOS: Liste des objets scientifiques
+    redirectionToData:  Liste des données
     settings: Paramètres
     lastUpdated: statut
     scientificObjetcTypes: Types

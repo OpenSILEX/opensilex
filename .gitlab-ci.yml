@@ -809,23 +809,6 @@ gabriel-front-test:
         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     script:
-        # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml
-        - echo "SETTING UP CONFIG"
-        - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN_DEV_TOOLS" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml
-        - echo "$(</opensilex.yml)"
-        # The following lines aren't needed yet as everything is done locally but could be useful if we want to have the databases on a remote vm.
-        # - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-        # - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-        # - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-        - echo "$(</opensilex.yml)"
-        # TODO : comment next line out once everything works
-        #- cd opensilex-dev-tools/src/main/resources/docker
-        #- dockerd &
-        #- docker compose -p test up &
-        - sleep 30 # replace with a check on docker state?
-        # Copy the generated jars to respect the project's usual structure
-        - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
-        - cp -rf $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
         ##

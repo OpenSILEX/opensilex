@@ -55,6 +55,7 @@
       :fields="fields"
       @row-selected="onFacilitySelected"
       ref="facilityTable"
+      class="scrollable-container"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(rdf_type_name)="data">{{
@@ -299,6 +300,12 @@ export default class FacilitiesView extends Vue {
 .spaced-actions {
   margin-top: -15px;
   margin-bottom: 10px;
+}
+
+.scrollable-container {
+    width: 100%;
+    height: 600px;
+    overflow-y: auto; /* Enables vertical scrolling */
 }
 
 </style>

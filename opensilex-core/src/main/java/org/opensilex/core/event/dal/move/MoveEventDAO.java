@@ -131,37 +131,14 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
 
     /**
-     * @param models
-     * @return
+     * @param models to be inserted into sparql graph
+     * @return models
      * @throws Exception
      */
     @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
-        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
-
-        check(models, true);
-
-        // build streams of sparql and no models from main model stream
-        for (MoveModel model : models) {
-
-            URI uri = model.getUri();
-            if (uri == null) {
-                uri = model.generateURI(eventGraph.toString(), model, 0);
-                model.setUri(uri);
-            }
-
-            // set noSql model uri and update noSql model list
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            if (noSqlModel != null) {
-                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-                noSqlModels.add(noSqlModel);
-            }
-
-        }
-
-        create(models, noSqlModels);
+        sparql.createWithoutTransaction(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
         return models;
     }
 

@@ -19,6 +19,7 @@ import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
@@ -26,8 +27,6 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -36,7 +35,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
@@ -128,7 +126,7 @@ public class EventAPI {
 
         try {
             EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-            URI eventGraph = dao.getGraph();
+            URI eventGraph = dao.getGraphUri();
 
             List<EventModel> models = getEventModels(dtoList, eventGraph);
             models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
@@ -208,6 +206,13 @@ public class EventAPI {
         return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
+    /**
+     *
+     * @param eventDtos
+     * @param eventGraph
+     * @return a list of fresh models created using the dtos
+     * @throws Exception
+     */
     private List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, URI eventGraph) throws Exception {
 
         URI eventBaseType = new URI(Oeev.Event.getURI());
@@ -288,7 +293,7 @@ public class EventAPI {
         if(dto.getType() != null){
             eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
             if (!CollectionUtils.isEmpty(dto.getRelations())) {
-                setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
+                setEventRelations(model, dto.getRelations(), dao.getGraphUri(), ontologyDAO, eventClassModel);
             }
         }
         dao.update(model);
@@ -437,16 +442,9 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-
-            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
-            models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
-            for (var move : models) {
-                if (move.getFrom() != null && move.getTo() == null) {
-                    throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-                }
-            }
-            dao.create(models);
+            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, new URI(EventDAO.getEventsGraph(sparql).toString()));
+            models = logic.createMoves(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -584,7 +582,7 @@ public class EventAPI {
         if (!CollectionUtils.isEmpty(dto.getRelations())) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
             eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
-            setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
+            setEventRelations(model, dto.getRelations(), dao.getGraphUri(), ontologyDAO, eventClassModel);
         }
 
         dao.update(model);

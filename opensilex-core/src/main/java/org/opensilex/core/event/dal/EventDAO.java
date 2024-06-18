@@ -31,9 +31,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -64,6 +62,7 @@ public class EventDAO<T extends EventModel> {
     protected final SPARQLService sparql;
     protected final MongoDBService mongodb;
     protected final OntologyDAO ontologyDAO;
+
     protected final Node eventGraph;
 
     // SPARQL vars
@@ -126,8 +125,18 @@ public class EventDAO<T extends EventModel> {
         this.mongodb = mongodb;
 
         ontologyDAO = new OntologyDAO(sparql);
-        eventGraph = sparql.getDefaultGraph(EventModel.class);
+        eventGraph = getEventsGraph(sparql);
         timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
+    }
+
+    /**
+     *
+     * @param sparql
+     * @return static function to get graph as is needed to create models in EventAPI
+     * @throws SPARQLException
+     */
+    public static Node getEventsGraph(SPARQLService sparql) throws SPARQLException {
+        return sparql.getDefaultGraph(EventModel.class);
     }
 
     public T create(T model) throws Exception {
@@ -141,67 +150,11 @@ public class EventDAO<T extends EventModel> {
         return models;
     }
 
-    public void check(List<T> models, boolean checkNewModel) throws Exception {
-
-        final int batchSize = 256;
-        int i = 0;
-
-        Collection<URI> targetsBuffer = new HashSet<>(batchSize);
-        Collection<URI> urisBuffer = new HashSet<>(batchSize);
-        Set<URI> duplicateUris = new HashSet<>();
-
-        // optimize checking time : run query on multiple URIs instead of one query by URI
-
-        for (EventModel model : models) {
-
-            // check if URI is new
-            URI uri = model.getUri();
-            if (checkNewModel && uri != null) {
-                if (model.getUri().toString().isEmpty()) {
-                    throw new IllegalArgumentException("Empty model uri at index " + 0);
-                }
-
-                if (urisBuffer.contains(model.getUri())) {
-                    duplicateUris.add(model.getUri());
-                } else {
-                    urisBuffer.add(model.getUri());
-                }
-
-                if (urisBuffer.size() >= batchSize || i == models.size() - 1) {
-                    Set<URI> alreadyExistingUris = sparql.getExistingUris(null, urisBuffer, true);
-                    if (!alreadyExistingUris.isEmpty()) {
-                        throw new SPARQLAlreadyExistingUriListException("[" + EventModel.class.getSimpleName() + "] already existing URIs : ", alreadyExistingUris, EventModel.URI_FIELD);
-                    }
-
-                    urisBuffer.clear();
-                }
-            }
-
-            // check if target already exist
-            targetsBuffer.addAll(model.getTargets());
-            if (targetsBuffer.size() >= batchSize || i == models.size() - 1) {
-                Set<URI> unknownTargets = new HashSet<>();
-                try{
-                    unknownTargets = sparql.getExistingUris(null, targetsBuffer, false);
-                    if (!unknownTargets.isEmpty()) {
-                        throw new Exception();
-                    }
-                }catch (Exception e){
-                    throw new SPARQLInvalidUriListException("[" + EventModel.class.getSimpleName() + "] Unknown targets : ", unknownTargets, EventModel.TARGETS_FIELD);
-                }
-                targetsBuffer.clear();
-            }
-
-            i++;
-        }
-
-        if (!duplicateUris.isEmpty()) {
-            throw new SPARQLInvalidUriListException("[" + EventModel.class.getSimpleName() + "] Duplicate event URIs : ", duplicateUris, EventModel.URI_FIELD);
-        }
-
+    public Node getGraphAsNode(){
+        return eventGraph;
     }
 
-    public URI getGraph() throws URISyntaxException {
+    public URI getGraphUri() throws URISyntaxException {
         return new URI(eventGraph.toString());
     }
 

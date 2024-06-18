@@ -1,3 +1,13 @@
+<!--
+  - ******************************************************************************
+  -                         DefaultMenuComponent.vue
+  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  - Copyright © INRAE 2024.
+  - Last Modification: 18/06/2024 15:40
+  - Contact: gabriel.besombes@inrae.fr
+  - ******************************************************************************
+  -->
+
 <template>
   <div>
     <!-- Hamburger -->
@@ -35,7 +45,7 @@
                 v-on:click="toogle(item, $event);"
               >
                 <i class="ik" v-bind:class="getIcon(item)"></i>
-                <span>{{ $t(item.label) }}</span>
+                <span :data-testid="item.label">{{ $t(item.label) }}</span>
               </a>
               <router-link v-else :to="item.route.path" :active="isActive">
                 <i class="ik" v-bind:class="getIcon(item)"></i>
@@ -55,6 +65,7 @@
                   }"
                   class="menu-item"
                   :to="itemChild.route.path"
+                  :data-testid="itemChild.label"
                 >
                  {{ $t(itemChild.label) }}
                 </router-link></span>

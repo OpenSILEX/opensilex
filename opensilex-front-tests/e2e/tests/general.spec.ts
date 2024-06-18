@@ -1,9 +1,9 @@
 /*
  * *****************************************************************************
- *                         test-1.spec.ts
+ *                         general.spec.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 13/06/2024 15:31
+ * Last Modification: 18/06/2024 15:42
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -16,6 +16,6 @@ test.beforeEach(async ({ page }) => {
 
 test('menu', async ({ page }) => {
   await page.locator('#menu-container').getByRole('button').click();
-  await page.getByRole('link', { name: '  Data' }).click();
-  await page.getByRole('link', { name: ' Tabular Data' }).click();
+  await page.getByTestId("component.menu.data.label").click();
+  await page.getByTestId("component.menu.data.tabularData").click();
 });

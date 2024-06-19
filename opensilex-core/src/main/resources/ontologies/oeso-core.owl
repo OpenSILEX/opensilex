@@ -242,35 +242,7 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="en">to</rdfs:label>
         <rdfs:label xml:lang="fr">vers</rdfs:label>
     </owl:ObjectProperty>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#fromAccession -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromAccession">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Accession"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#fromSpecies -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromSpecies">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#fromVariety -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromVariety">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variety"/>
-    </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasAdministrativeContact -->
@@ -354,17 +326,7 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
     </owl:ObjectProperty>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasMethod -->
@@ -449,14 +411,7 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
     </owl:ObjectProperty>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasSpecies -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSpecies">
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
-    </owl:ObjectProperty>
     
 
 
@@ -1843,16 +1798,7 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="fr">Problème</rdfs:label>
         <rdfs:label xml:lang="en">Trouble</rdfs:label>
     </owl:Class>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Accession</rdfs:label>
-        <rdfs:label xml:lang="fr">Accession</rdfs:label>
-    </owl:Class>
     
 
 
@@ -2218,13 +2164,6 @@ OESO</rdfs:label>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasGroup"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.opensilex.org/security#Group"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSpecies"/>
-                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -2979,14 +2918,7 @@ OESO</rdfs:label>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoilArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:Class>
     
 
 
@@ -3070,13 +3002,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variable">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSpecies"/>
-                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasCharacteristic"/>
@@ -3278,14 +3203,7 @@ OESO</rdfs:label>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-        <rdfs:label xml:lang="en">Variety</rdfs:label>
-        <rdfs:label xml:lang="fr">Variété</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
@@ -4302,9 +4220,7 @@ OESO</rdfs:label>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Species"/>
     
 
 
@@ -4470,13 +4386,6 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeso#hasGeometry -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeometry"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasModel -->
@@ -5237,10 +5146,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Soil area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone de sol</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
-        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
-        <rdfs:label xml:lang="en">Species</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Station">
         <rdfs:label xml:lang="en">Station</rdfs:label>
         <rdfs:label xml:lang="fr">Station</rdfs:label>
@@ -5349,10 +5254,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:comment xml:lang="fr">Coordonnées géospatiales de l&apos;objet, au format WKT</rdfs:comment>
         <rdfs:label xml:lang="en">Geometry</rdfs:label>
         <rdfs:comment xml:lang="en">Geospatial coordinates of the object, in WKT format</rdfs:comment>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
-        <rdfs:label xml:lang="fr">Matériel génétique</rdfs:label>
-        <rdfs:label xml:lang="en">Germplasm</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel">
         <rdfs:comment xml:lang="fr">Modèle constructeur de l&apos;appareil</rdfs:comment>

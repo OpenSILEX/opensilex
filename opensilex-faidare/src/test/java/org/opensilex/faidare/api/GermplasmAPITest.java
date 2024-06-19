@@ -21,7 +21,7 @@ public class GermplasmAPITest extends FaidareAPITest {
         }
     }
 
-    @Ignore("no longer relevant if vocabulary:Accession stays in oeso-core")
+
     @Test
     public void testSearch() {
 

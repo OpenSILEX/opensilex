@@ -36,7 +36,7 @@
 
     <opensilex-StringFilter
         :filter.sync="filter"
-        @update="updateFilter()"
+        @update="refresh()"
         placeholder="component.facility.filter-placeholder"
         :debounce="300"
         :lazy="false"
@@ -282,9 +282,6 @@ export default class FacilitiesView extends Vue {
     this.$emit("onCreate");
   }
 
-  updateFilter() {
-    this.refresh();
-  }
 }
 </script>
 

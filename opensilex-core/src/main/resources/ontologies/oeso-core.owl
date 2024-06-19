@@ -1365,8 +1365,11 @@ OESO</rdfs:label>
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
-    
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/security#Group -->
@@ -3731,7 +3734,9 @@ OESO</rdfs:label>
      -->
 
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Species"/>
 
     <!-- http://purl.org/dc/elements/1.1/description -->
 
@@ -5442,7 +5447,10 @@ Used in OpenSILEX for group things</rdfs:comment>
     <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Organization">
         <rdfs:comment xml:lang="en">The Organization class represents a kind of Agent corresponding to social instititutions such as companies, societies etc.</rdfs:comment>
     </rdf:Description>
-    
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
+        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
+        <rdfs:label xml:lang="en">Species</rdfs:label>
+    </rdf:Description>
 
 
     <!-- 

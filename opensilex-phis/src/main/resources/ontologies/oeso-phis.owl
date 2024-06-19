@@ -550,15 +550,7 @@
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
-
-    
-    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:Class>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
+ <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
@@ -1887,10 +1879,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
-    <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Species"/>
 
     <!-- http://www.opensilex.org/vocabulary/oeev#Staking -->
 
@@ -1996,10 +1985,7 @@
         <rdfs:label xml:lang="fr">Forme</rdfs:label>
         <rdfs:comment xml:lang="fr">La valeur doit être dans la liste suivante : Circular, Rectangular</rdfs:comment>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
-        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
-        <rdfs:label xml:lang="en">Species</rdfs:label>
-    </rdf:Description>
+
 </rdf:RDF>
 
 

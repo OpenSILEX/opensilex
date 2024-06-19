@@ -126,9 +126,8 @@ public class EventAPI {
 
         try {
             EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-            URI eventGraph = dao.getGraphUri();
 
-            List<EventModel> models = getEventModels(dtoList, eventGraph);
+            List<EventModel> models = getEventModels(dtoList, new URI(EventDAO.getEventsGraph(sparql).toString()));
             models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 

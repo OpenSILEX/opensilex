@@ -32,11 +32,9 @@ public class MoveLogic extends EventLogic<MoveModel> {
 
     MoveEventDAO dao;
     MongoDBService mongodb;
-    AccountModel currentUser;
 
     public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
-        super(sparql);
-        this.currentUser = currentUser;
+        super(sparql, currentUser);
         //TODO change to mongoServiceV2 at end if we can
         this.mongodb = mongodb;
         dao = new MoveEventDAO(sparql, mongodb);

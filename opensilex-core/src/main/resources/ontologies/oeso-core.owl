@@ -145,7 +145,13 @@ OESO</rdfs:label>
      -->
 
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
 
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:ObjectProperty>
 
     <!-- http://www.opensilex.org/security#hasGroup -->
 

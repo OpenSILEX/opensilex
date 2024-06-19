@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 18/06/2024 16:03
+ * Last Modification: 18/06/2024 16:16
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -78,7 +78,7 @@ export default defineConfig({
     command: './opensilex_test_instance/start_opensilex.sh',
     url: process.env.APP_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 480000,
+    timeout: 1200000, // 20 minutes
     stdout: "pipe",
     stderr: "pipe"
   } : undefined,

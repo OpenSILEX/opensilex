@@ -19,6 +19,7 @@ import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
+import org.opensilex.core.event.bll.EventLogic;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
@@ -125,11 +126,10 @@ public class EventAPI {
     public Response createEvents(@Valid @NotNull List<EventCreationDTO> dtoList) throws Exception {
 
         try {
-            EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
+            EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
 
             List<EventModel> models = getEventModels(dtoList, new URI(EventDAO.getEventsGraph(sparql).toString()));
-            models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
-            dao.create(models);
+            models = logic.createEvents(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();

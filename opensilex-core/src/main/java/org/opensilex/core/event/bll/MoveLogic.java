@@ -16,7 +16,6 @@ import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -30,14 +29,8 @@ import java.util.List;
 
 public class MoveLogic extends EventLogic<MoveModel> {
 
-    MoveEventDAO dao;
-    MongoDBService mongodb;
-
     public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
-        super(sparql, currentUser);
-        //TODO change to mongoServiceV2 at end if we can
-        this.mongodb = mongodb;
-        dao = new MoveEventDAO(sparql, mongodb);
+        super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
     }
 
     //#region PUBLIC METHODS
@@ -76,7 +69,7 @@ public class MoveLogic extends EventLogic<MoveModel> {
             dao.create(models);
             if (!noSqlModels.isEmpty()) {
                 //TODO create MongoReadWriteDao ? Concerns geospatial so will it change soon anyway
-                dao.getMoveEventCollection().insertMany(noSqlModels);
+                ((MoveEventDAO)dao).getMoveEventCollection().insertMany(noSqlModels);
             }
             return models;
         });

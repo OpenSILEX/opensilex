@@ -11,14 +11,19 @@
 
 package org.opensilex.core.event.bll;
 
+import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -28,54 +33,43 @@ import java.util.*;
 public class EventLogic<T extends EventModel> {
 
     SPARQLService sparql;
+    MongoDBService mongodb;
     AccountModel currentUser;
+    EventDAO<T> dao;
 
-    public EventLogic(SPARQLService sparql, AccountModel currentUser) {
+    /**
+     * Basic constructor, dao will be set to default EventDao
+     */
+    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLDeserializerNotFoundException, SPARQLException {
         this.sparql = sparql;
+        //TODO change to mongoServiceV2 at end if we can
+        this.mongodb = mongodb;
         this.currentUser = currentUser;
+        this.dao = new EventDAO<T>(sparql, mongodb);
+    }
+
+    /**
+     * Constructor used by children Logic classes in case they have a unique Dao
+     */
+    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, EventDAO<T> dao) {
+        this.sparql = sparql;
+        this.mongodb = mongodb;
+        this.currentUser = currentUser;
+        this.dao = dao;
     }
 
     //#region PUBLIC METHODS
 
-    public List<EventModel> createEvents(List<EventModel> models) throws Exception {
+    /**
+     *
+     * @param models : Events to be created
+     * @return the new models with metadata and uri set
+     * @throws Exception if validation fails
+     */
+    public List<T> createEvents(List<T> models) throws Exception {
         models.forEach(model -> model.setPublisher(currentUser.getUri()));
-        for (var move : models) {
-            if (move.getFrom() != null && move.getTo() == null) {
-                throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-            }
-        }
-        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
-
         check(models, true);
-
-        // build streams of sparql and no models from main model stream
-        for (MoveModel model : models) {
-
-            URI uri = model.getUri();
-            if (uri == null) {
-                uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
-                model.setUri(uri);
-            }
-
-            // set noSql model uri and update noSql model list
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            if (noSqlModel != null) {
-                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-                noSqlModels.add(noSqlModel);
-            }
-
-        }
-        return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session->{
-            //insert into sparql graph
-            dao.create(models);
-            if (!noSqlModels.isEmpty()) {
-                //TODO create MongoReadWriteDao ? Concerns geospatial so will it change soon anyway
-                dao.getMoveEventCollection().insertMany(noSqlModels);
-            }
-            return models;
-        });
-
+        return dao.create(models);
     }
 
     //#endregion

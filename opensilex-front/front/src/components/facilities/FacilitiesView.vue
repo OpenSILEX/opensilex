@@ -36,7 +36,7 @@
 
     <opensilex-StringFilter
         :filter.sync="filter"
-        @update="updateFilter()"
+        @update="refresh()"
         placeholder="component.facility.filter-placeholder"
         :debounce="300"
         :lazy="false"
@@ -55,6 +55,7 @@
       :fields="fields"
       @row-selected="onFacilitySelected"
       ref="facilityTable"
+      class="scrollable-container"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(rdf_type_name)="data">{{
@@ -130,10 +131,10 @@ import {BTable} from "bootstrap-vue";
 import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityCreationDTO,
-  FacilityGetDTO,
   NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import DTOConverter from "../../models/DTOConverter";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -225,7 +226,7 @@ export default class FacilitiesView extends Vue {
       });
   }
 
-  onFacilitySelected(selected: Array<FacilityGetDTO>) {
+  onFacilitySelected(selected: Array<NamedResourceDTO>) {
     this.selectedFacility = selected[0];
     this.$emit('facilitySelected', this.selectedFacility);
   }
@@ -239,12 +240,13 @@ export default class FacilitiesView extends Vue {
   }
 
   refresh() {
-    if (Array.isArray(this.facilities)) {
-      return;
-    }
+      if (Array.isArray(this.facilities)) {
+        return;
+      }
 
-    return this.service.searchFacilities(this.filter)
-        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+      this.$opensilex.showLoader();
+      return this.service.minimalSearchFacilities(this.filter)
+        .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
 
@@ -252,7 +254,7 @@ export default class FacilitiesView extends Vue {
           if (this.isSelectable && this.fetchedFacilities.length > 0) {
             this.facilityTable.selectRow(0);
           }
-        });
+        }).finally( () => this.$opensilex.hideLoader());
   }
 
   initForm(form: FacilityCreationDTO) {
@@ -268,8 +270,8 @@ export default class FacilitiesView extends Vue {
     this.facilityForm.showCreateForm()
   }
 
-  editFacility(facility: FacilityGetDTO) {
-    this.facilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(facility));
+  editFacility(facility: NamedResourceDTO) {
+    this.facilityForm.showEditForm(facility.uri);
   }
 
   onUpdate() {
@@ -280,9 +282,6 @@ export default class FacilitiesView extends Vue {
     this.$emit("onCreate");
   }
 
-  updateFilter() {
-    this.refresh();
-  }
 }
 </script>
 
@@ -298,6 +297,12 @@ export default class FacilitiesView extends Vue {
 .spaced-actions {
   margin-top: -15px;
   margin-bottom: 10px;
+}
+
+.scrollable-container {
+    width: 100%;
+    height: 600px;
+    overflow-y: auto; /* Enables vertical scrolling */
 }
 
 </style>

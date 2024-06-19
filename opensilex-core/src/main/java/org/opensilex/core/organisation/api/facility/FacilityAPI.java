@@ -54,7 +54,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
@@ -237,7 +236,47 @@ public class FacilityAPI {
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
+        ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
+
+        List<FacilityGetDTO> dtoList = facilities.getList().stream()
+                .map((facilityModel) -> FacilityGetDTO.getDTOFromModel(facilityModel, true))
+                .collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("minimal_search")
+    @ApiOperation("Search facilities returning minimal embedded information for better performance")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return facilities", response = NamedResourceDTO.class, responseContainer = "List")
+    })
+    public Response minimalSearchFacilities(
+            @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number") @QueryParam("page") int page,
+            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+    ) throws Exception {
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
+
+        ListWithPagination<FacilityModel> facilities = facilityDAO.minimalSearch(filter);
+
+        List<NamedResourceDTO> dtoList = facilities.getList().stream()
+                .map(NamedResourceDTO::getDTOFromModel)
+                .collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    private FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList){
         FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
                 .setUser(currentUser)
                 .setPattern(pattern)
@@ -247,13 +286,7 @@ public class FacilityAPI {
         if (!organizations.isEmpty()) {
             filter.setOrganizations(organizations);
         }
-        ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
-
-        List<FacilityGetDTO> dtoList = facilities.getList().stream()
-                .map((facilityModel) -> FacilityGetDTO.getDTOFromModel(facilityModel, true))
-                .collect(Collectors.toList());
-
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        return filter;
     }
 
     @DELETE

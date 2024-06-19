@@ -13,6 +13,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.external.geocoding.GeocodingService;
@@ -35,6 +36,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -43,6 +45,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -141,53 +144,105 @@ public class FacilityDAO {
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter) throws Exception {
         filter.validate();
 
-        final List<URI> userOrganizations = filter.getUser().isAdmin() ? null :
-                organizationDAO.search(new OrganizationSearchFilter()
-                                .setRestrictedOrganizations(filter.getOrganizations())
-                                .setUser(filter.getUser()))
-                .stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toList());
-
-        final List<URI> userSites = filter.getUser().isAdmin() ? null :
-                siteDAO.search(new SiteSearchFilter()
-                                .setUser(filter.getUser())
-                                .setOrganizations(filter.getOrganizations())
-                                .setUserOrganizations(userOrganizations)
-                                .setSkipUserOrganizationFetch(true))
-                .getList().stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toList());
+        FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
         return sparql.searchWithPagination(
                 FacilityModel.class,
                 filter.getUser().getLanguage(),
-                (select -> {
-                    Var uriVar = makeVar(FacilityModel.URI_FIELD);
-
-                    if (!filter.getUser().isAdmin()) {
-                        organizationSPARQLHelper.addFacilityAccessClause(select, uriVar, userOrganizations, userSites, filter.getUser().getUri());
-                    }
-
-                    // Facilities filter
-                    if (CollectionUtils.isNotEmpty(filter.getFacilities())) {
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, filter.getFacilities()));
-                    }
-
-                    // Organization filter
-                    if (CollectionUtils.isNotEmpty(filter.getOrganizations())) {
-                        select.addWhere(makeVar(FacilityModel.ORGANIZATION_FIELD), Oeso.isHosted, uriVar);
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.ORGANIZATION_FIELD), filter.getOrganizations()));
-                    }
-
-                    if (!StringUtils.isEmpty(filter.getPattern())) {
-                        select.addFilter(SPARQLQueryHelper.regexFilter(SiteModel.NAME_FIELD, filter.getPattern()));
-                    }
-                }),
+                (select -> filterHandler(select, organizationsAndSites, filter)),
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
         );
 
     }
+
+    /**
+     * Search the facilities among the ones accessible to the user. See {@link OrganizationSPARQLHelper#addFacilityAccessClause(WhereClause, Var, Collection, Collection, URI)}
+     * for further information on access validation.
+     * Minimal amount of fields loaded. Embedded object lists are not loaded, embedded single objects only have name and type loaded.
+     *
+     * @param filter The search filters
+     * @return The list of facilities
+     */
+    public ListWithPagination<FacilityModel> minimalSearch(FacilitySearchFilter filter) throws Exception {
+        filter.validate();
+
+        FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
+
+        SparqlNoProxyFetcher<FacilityModel> customFetcher = new SparqlNoProxyFetcher<>(FacilityModel.class, sparql);
+
+        return sparql.searchWithPagination(
+                sparql.getDefaultGraph(FacilityModel.class),
+                FacilityModel.class,
+                filter.getUser().getLanguage(),
+                (select -> filterHandler(select, organizationsAndSites, filter)),
+                Collections.emptyMap(),
+                result -> customFetcher.getInstance(result, filter.getLang()),
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
+        );
+
+    }
+
+    private void filterHandler(SelectBuilder select, FacilitySearchRights organizationsAndSites, FacilitySearchFilter filter) throws Exception {
+        Var uriVar = makeVar(FacilityModel.URI_FIELD);
+
+        if (!filter.getUser().isAdmin()) {
+            organizationSPARQLHelper.addFacilityAccessClause(select, uriVar, organizationsAndSites.userOrganizations, organizationsAndSites.userSites, filter.getUser().getUri());
+        }
+
+        // Facilities filter
+        if (CollectionUtils.isNotEmpty(filter.getFacilities())) {
+            select.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, filter.getFacilities()));
+        }
+
+        // Organization filter
+        if (CollectionUtils.isNotEmpty(filter.getOrganizations())) {
+            select.addWhere(makeVar(FacilityModel.ORGANIZATION_FIELD), Oeso.isHosted, uriVar);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.ORGANIZATION_FIELD), filter.getOrganizations()));
+        }
+
+        if (!StringUtils.isEmpty(filter.getPattern())) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(SiteModel.NAME_FIELD, filter.getPattern()));
+        }
+    }
+
+    //region Search rights
+
+    private FacilitySearchRights calculateUserSearchRights(FacilitySearchFilter filter) throws Exception {
+        List<URI> userOrganizations = filter.getUser().isAdmin() ? null :
+                organizationDAO.search(new OrganizationSearchFilter()
+                                .setRestrictedOrganizations(filter.getOrganizations())
+                                .setUser(filter.getUser()))
+                        .stream().map(SPARQLResourceModel::getUri)
+                        .collect(Collectors.toList());
+
+        List<URI> userSites = filter.getUser().isAdmin() ? null :
+                siteDAO.search(new SiteSearchFilter()
+                                .setUser(filter.getUser())
+                                .setOrganizations(filter.getOrganizations())
+                                .setUserOrganizations(userOrganizations)
+                                .setSkipUserOrganizationFetch(true))
+                        .getList().stream().map(SPARQLResourceModel::getUri)
+                        .collect(Collectors.toList());
+        return new FacilitySearchRights(userOrganizations, userSites);
+    }
+
+    /**
+     * Mini class to contain results of search rights calculation.
+     */
+    private static class FacilitySearchRights{
+        final List<URI> userOrganizations;
+        final List<URI> userSites;
+
+        public FacilitySearchRights(List<URI> userOrganizations, List<URI> userSites) {
+            this.userOrganizations = userOrganizations;
+            this.userSites = userSites;
+        }
+    }
+    //endregion
 
 
     /**

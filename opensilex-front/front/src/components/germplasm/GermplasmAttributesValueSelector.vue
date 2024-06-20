@@ -1,19 +1,18 @@
 <template>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         v-if="metadataKey"
         :key=metadataKey
         :label="label"
-        ref="selectForm"
+        ref="formSelector"
         :selected.sync="metadataValue"
         :multiple="false"
         :searchMethod="searchAttributeValues"
         :conversionMethod="convert"
-        :clearable="true"
         noResultsText="component.experiment.form.selector.filter-search-no-result"
         @clear="$emit('clear')"
         @select="select"
         @deselect="deselect"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -22,7 +21,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 
 @Component
 export default class GermplasmAttributesValueSelector extends Vue {
@@ -42,7 +41,7 @@ export default class GermplasmAttributesValueSelector extends Vue {
 
     service: GermplasmService;
 
-    @Ref("selectForm") readonly selectForm!: SelectForm;
+    @Ref("formSelector") readonly formSelector!: FormSelector;
 
     created() {
         this.service = this.$opensilex.getService("opensilex.GermplasmService");
@@ -71,13 +70,6 @@ export default class GermplasmAttributesValueSelector extends Vue {
     deselect(value) {
         this.$emit("deselect", value);
     }
-
-    // refresh(){
-    //     console.log("refresh");
-    //     if(this.selectForm){
-    //         this.selectForm.refresh();
-    //     }
-    // }
 }
 </script>
 

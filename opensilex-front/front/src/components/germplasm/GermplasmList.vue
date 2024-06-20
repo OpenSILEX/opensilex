@@ -37,7 +37,7 @@
                             <!-- Species -->
                             <div>
                                 <opensilex-FilterField>
-                                    <opensilex-SelectForm
+                                    <opensilex-FormSelector
                                         label="GermplasmList.filter.species"
                                         placeholder="GermplasmList.filter.species-placeholder"
                                         :multiple="false"
@@ -45,7 +45,7 @@
                                         :options="species"
                                         class="searchFilter"
                                         @handlingEnterKey="refresh()"
-                                    ></opensilex-SelectForm>
+                                    ></opensilex-FormSelector>
                                 </opensilex-FilterField>
                             </div>
 

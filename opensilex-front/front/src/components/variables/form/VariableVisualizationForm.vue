@@ -24,6 +24,7 @@
                     :multiple="true"
                     :showURI="false"
                     @select="getTotalEventsCount"
+                    @clear="getTotalEventsCount"
                     class="searchFilter"
                 ></opensilex-VariableDevicesSelector>
               </opensilex-FilterField>
@@ -121,6 +122,7 @@ import {
 } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import VueI18n from "vue-i18n";
 
 let lastFifteenDays = new Date(new Date((new Date).setDate(new Date().getDate() - 15)).setHours(0,0,0,0))
 
@@ -134,6 +136,7 @@ export default class VariableVisualizationForm extends Vue {
   filterProvenanceLabel: string = null;
   visibleDetails: boolean = false;
   countIsLoading: boolean = false;
+  $i18n: VueI18n;
   @Ref("searchField") readonly searchField!: any;
 
   filter = {
@@ -182,7 +185,13 @@ export default class VariableVisualizationForm extends Vue {
   }
 
   onSearch() {
-    this.$emit("search", this.filter);
+    if (this.filter.device && Array.isArray(this.filter.device) && this.filter.device.length > 0) {
+      this.$emit("search", this.filter);
+    } else {
+      this.$opensilex.showInfoToast(
+        this.$i18n.t("VariableVisualizationForm.deviceRequired")
+      );
+    }
   }
 
   getTotalEventsCount() {
@@ -288,8 +297,10 @@ export default class VariableVisualizationForm extends Vue {
 en:
   VariableVisualizationForm:
     devicesSelector: Devices
+    deviceRequired: "Please select at least one device."
 
 fr:
   VariableVisualizationForm:
     devicesSelector: Appareils
+    deviceRequired: "Veuillez selectionner au moins un appareil."
 </i18n>

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <opensilex-SelectForm
-        ref="selectForm"
+    <opensilex-FormSelector
+        ref="formSelector"
         :label="label"
         :helpMessage="helpMessage"
         :selected.sync="personsURI"
@@ -15,7 +15,8 @@
         :actionHandler="allowAddPerson && user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID) ? showCreateForm : null"
         @select="select"
         @deselect="deselect"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
+
     <opensilex-ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
         :static="false"
@@ -35,7 +36,7 @@ import Vue from "vue";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 import {OpenSilexStore} from "../../models/Store";
 import ModalForm from "../common/forms/ModalForm.vue";
 import PersonForm from "./PersonForm.vue";
@@ -73,7 +74,7 @@ export default class PersonSelector extends Vue {
   @Prop({default: false})
   allowAddPerson: boolean;
 
-  @Ref("selectForm") selectForm!: SelectForm;
+  @Ref("formSelector") formSelector!: FormSelector;
   @Ref("PersonForm") readonly personForm!: ModalForm<PersonForm, PersonDTO, PersonDTO>;
 
   get user() {
@@ -100,7 +101,6 @@ export default class PersonSelector extends Vue {
   async searchPersons(searchQuery, page) {
     let searchResponse = await this.service
         .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0)
-
     return searchResponse
   }
 
@@ -122,7 +122,7 @@ export default class PersonSelector extends Vue {
 
   async setCreatedPerson(createdPersonUri: HttpResponse<OpenSilexResponse<string>>) {
     let createdPerson = ( await this.service.getPerson(createdPersonUri.response.result) ).response.result
-    this.selectForm.select(this.personToSelectNode(createdPerson));
+    this.formSelector.select(this.personToSelectNode(createdPerson));
     this.$emit("onCreate")
   }
 

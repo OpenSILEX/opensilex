@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
     :key="lang"
     :label="label"
     :selected.sync="typesURI"
@@ -9,7 +9,7 @@
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

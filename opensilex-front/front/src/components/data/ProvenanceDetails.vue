@@ -2,8 +2,9 @@
   <div class="container-fluid">
     <b-row>
       <opensilex-Card
-      icon :label="$t(label)"
-      class="ProvenanceDetailsVisible">
+        icon :label="$t(label)"
+        :class="computedClass"
+      >
         <template v-slot:rightHeader>
           <div class="ml-3"></div>
         </template>
@@ -73,6 +74,10 @@ export default class ProvenanceDetails extends Vue {
     return this.$store.state.credentials;
   }
 
+  get computedClass(){
+    return this.dataImportResult === true ? 'dataImportProvenanceDetails' : 'ProvenanceDetailsVisible'
+  }
+
   @Prop({
     default: () => {
       return {
@@ -86,6 +91,11 @@ export default class ProvenanceDetails extends Vue {
     },
   })
   provenance: any;
+
+  @Prop({
+    default: false
+  })
+  dataImportResult!: boolean;
 
   update(provenance) {
     this.$emit("onUpdate", provenance);
@@ -127,11 +137,23 @@ export default class ProvenanceDetails extends Vue {
   max-width: 340px;
 }
 
+.dataImportProvenanceDetails{
+  width: auto;
+  min-width: auto;
+  max-width: 340px;
+}
+
 @media screen and (min-width: 1200px) {
   .ProvenanceDetailsVisible{
     min-width: 340px;
     max-width: 340px;
     margin-left: -20px;
+    overflow: hidden;
+  }
+  .dataImportProvenanceDetails{
+    min-width: 340px;
+    max-width: 340px;
+    margin-left: 0;
     overflow: hidden;
   }
 }

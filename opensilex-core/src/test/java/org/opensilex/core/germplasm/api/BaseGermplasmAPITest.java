@@ -1,12 +1,14 @@
 package org.opensilex.core.germplasm.api;
 
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.integration.test.ServiceDescription;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
 
@@ -23,6 +25,8 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     protected static final ServiceDescription create;
     protected static final ServiceDescription update;
     protected static final ServiceDescription delete;
+    protected static final ServiceDescription getAttributes;
+    protected static final ServiceDescription getAttributeValues;
 
     static {
         try {
@@ -57,15 +61,28 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
                     ),
                     path + "/{uri}"
             );
+            getAttributes = new ServiceDescription(
+                    GermplasmAPI.class.getMethod("getGermplasmAttributes"),
+                    path + "/attributes"
+            );
+            getAttributeValues = new ServiceDescription(
+                    GermplasmAPI.class.getMethod("getGermplasmAttributeValues", String.class, String.class, int.class, int.class),
+                    path + "/attributes/{attribute}"
+            );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
+        return getCreationSpeciesDTO(null);
+    }
+
+    protected static GermplasmCreationDTO getCreationSpeciesDTO(Map<String, String> metadatas) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testSpecies");
         germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
+        germplasmDTO.setMetadata(metadatas);
         return germplasmDTO;
     }
 
@@ -102,5 +119,10 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     }
     protected URI createAccession(URI varietyUri) throws Exception {
         return new UserCallBuilder(create).setBody(getCreationAccessionDTO(varietyUri)).buildAdmin().executeCallAndReturnURI();
+    }
+
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return List.of(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
     }
 }

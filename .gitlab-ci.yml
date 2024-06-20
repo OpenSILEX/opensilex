@@ -803,7 +803,8 @@ gabriel-front-test:
     image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
     #  parallel: 7    This option can be used for parallelization
     variables:
-        ACCESS_DISTANT: true
+        START_OPENSILEX: false
+        DOCKERISED_BASES: false
         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
         OPENSILEX_JAR_PORT: 8091
         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
@@ -843,7 +844,7 @@ gabriel-front-test:
         - ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
 
         - npm ci &&
-        - ACCESS_DISTANT=$ACCESS_DISTANT BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+        - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 
     after_script:
         - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"

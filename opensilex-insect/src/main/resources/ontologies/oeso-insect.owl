@@ -159,16 +159,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasEnd -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasEnd">
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <rdfs:label xml:lang="fr">a une fin</rdfs:label>
-        <rdfs:label xml:lang="en">has end</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasLightIntensity -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasLightIntensity">
@@ -176,16 +166,6 @@
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
         <rdfs:label xml:lang="fr">intensité de lumière</rdfs:label>
         <rdfs:label xml:lang="en">light intensity</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso-insect#hasStart -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#hasStart">
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <rdfs:label xml:lang="fr">a un début</rdfs:label>
-        <rdfs:label xml:lang="en">has start</rdfs:label>
     </owl:DatatypeProperty>
     
 

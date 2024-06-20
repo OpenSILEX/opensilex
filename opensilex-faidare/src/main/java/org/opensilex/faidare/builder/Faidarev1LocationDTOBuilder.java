@@ -3,7 +3,7 @@
  *                         Faidarev1LocationDTOBuilder.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 11/06/2024 16:24
+ * Last Modification: 19/06/2024 16:09
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,7 +11,7 @@
 package org.opensilex.faidare.builder;
 
 import com.mongodb.client.model.geojson.Geometry;
-import org.apache.commons.lang3.StringUtils;
+import io.github.castmart.jcountry.*;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -26,11 +26,14 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Faidarev1LocationDTOBuilder {
     private final FacilityDAO facilityDAO;
     private final OrganizationDAO organizationDAO;
+    private final JCountry jcountry = JCountry.getInstance();
+    private final CountryDB countryDB = jcountry.getCountriesDB();
+    private final Map<String, Country> countriesByName = countryDB.getCountriesMapByName();
+    private final ResourceBundle frenchCountriesTranslations = countryDB.getCountriesTranslations(Locale.FRENCH).get();
 
     public Faidarev1LocationDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
         this.facilityDAO = facilityDAO;
@@ -72,8 +75,7 @@ public class Faidarev1LocationDTOBuilder {
                         dto.setInstituteAddress(parentAddress.toString())
                                 .setInstituteAdress(parentAddress.toString());
                         String countryName = parentAddress.getCountryName();
-                        dto.setCountryName(countryName)
-                                .setCountryCode(new Locale(countryName).getISO3Country());
+                        setCounteyCodeFromName(dto, countryName);
                     }
                 }
             }
@@ -82,11 +84,32 @@ public class Faidarev1LocationDTOBuilder {
         // If facility has an address use its country for country name and code instead of its parent organization's
         if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
-            dto.setCountryName(countryName);
-            dto.setCountryCode(new Locale(countryName).getISO3Country());
-
+            setCounteyCodeFromName(dto, countryName);
         }
 
         return dto;
+    }
+
+    private void setCounteyCodeFromName(Faidarev1LocationDTO dto, String countryName) {
+        dto.setCountryName(countryName);
+        if (countriesByName.containsKey(countryName)){
+            dto.setCountryCode(
+                    countriesByName.get(countryName).getAlpha3()
+            );
+        } else {
+            Map<String, String> countriesTranslations = new HashMap<>();
+            Enumeration<String> countriesSet = frenchCountriesTranslations.getKeys();
+            for (Iterator<String> it = countriesSet.asIterator(); it.hasNext(); ) {
+                String countryNameEnglish = it.next();
+                countriesTranslations.put(frenchCountriesTranslations.getObject(countryNameEnglish).toString(), countryNameEnglish);
+            }
+
+            if (countriesTranslations.containsKey(countryName) && countriesByName.containsKey(countriesTranslations.get(countryName))) {
+                dto.setCountryCode(
+                        countriesByName.get(countriesTranslations.get(countryName)).getAlpha3()
+                );
+            }
+
+        }
     }
 }

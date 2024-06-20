@@ -1,8 +1,12 @@
-//******************************************************************************
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * *****************************************************************************
+ *                         OrganizationDAO.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 20/06/2024 14:43
+ * Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
 package org.opensilex.core.organisation.dal;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -51,7 +55,7 @@ public class OrganizationDAO {
      * are retrieved using a {@link SPARQLListFetcher} for the {@link OrganizationModel#children} field, so only the
      * URI of the children is accessible.
      */
-    private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
+    public static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
             .build();
 
     public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {

@@ -49,7 +49,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.functionnal.ThrowingSupplier;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -84,7 +83,7 @@ public class DeviceDAO {
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI prop = SPARQLDeserializers.formatURI(relation.getProperty());
-                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
+                if (!ontologyDAO.validateThenUpdateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }

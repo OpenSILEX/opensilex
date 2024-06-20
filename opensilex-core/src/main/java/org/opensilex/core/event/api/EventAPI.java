@@ -128,7 +128,7 @@ public class EventAPI {
         try {
             EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
 
-            List<EventModel> models = getEventModels(dtoList, new URI(EventDAO.getEventsGraph(sparql).toString()));
+            List<EventModel> models = getEventModels(dtoList, logic);
             models = logic.createEvents(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
@@ -208,62 +208,23 @@ public class EventAPI {
     /**
      *
      * @param eventDtos
-     * @param eventGraph
+     * @param logic : logic class previously generated in a service
      * @return a list of fresh models created using the dtos
      * @throws Exception
      */
-    private List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, URI eventGraph) throws Exception {
+    private <T extends EventModel> List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, EventLogic<T> logic) throws Exception {
 
-        URI eventBaseType = new URI(Oeev.Event.getURI());
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<URI, ClassModel> eventClassesByTypeCache = new HashMap<>();
 
         List<EventModel> models = new ArrayList<>(eventDtos.size());
 
         for(EventCreationDTO dto : eventDtos){
             EventModel model = dto.toModel();
-
-            if (!CollectionUtils.isEmpty(dto.getRelations())) {
-                URI type = dto.getType();
-
-                ClassModel eventClassModel = eventClassesByTypeCache.get(type);
-                if (eventClassModel == null) {
-                    eventClassModel = ontologyDAO.getClassModel(type, eventBaseType, currentUser.getLanguage());
-                    eventClassesByTypeCache.put(type, eventClassModel);
-                }
-                setEventRelations(model, dto.getRelations(), eventGraph, ontologyDAO, eventClassModel);
-            }
+            logic.setEventRelations((T)model, dto.getRelations(), dto.getType(), eventClassesByTypeCache);
             models.add(model);
         }
 
         return models;
-    }
-
-    private void setEventRelations(EventModel model, List<RDFObjectRelationDTO> relations, URI eventGraph, OntologyDAO ontologyDAO, ClassModel eventClassModel) throws InvalidValueException, URISyntaxException {
-
-        Map<URI,URI> shortPropertiesUris = new HashMap<>();
-
-        for (int i = 0; i < relations.size(); i++) {
-            RDFObjectRelationDTO relation = relations.get(i);
-            if (relation == null) {
-                throw new IllegalArgumentException("Relation at index " + i + " is null");
-            }
-
-            if (relation.getProperty() == null || relation.getValue() == null) {
-                throw new IllegalArgumentException("Relation at index " + i + " has null property or value");
-            }
-
-            URI shortPropUri = shortPropertiesUris.get(relation.getProperty());
-            if(shortPropUri == null){
-                shortPropUri = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
-                shortPropertiesUris.put(relation.getProperty(),shortPropUri);
-            }
-
-            if (!ontologyDAO.validateObjectValue(eventGraph, eventClassModel, shortPropUri, relation.getValue(), model)) {
-                throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
-            }
-        }
     }
 
     @PUT
@@ -283,19 +244,9 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull EventUpdateDTO dto
     ) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-        EventModel model = dto.toModel();
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel eventClassModel = null;
-
-        if(dto.getType() != null){
-            eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
-            if (!CollectionUtils.isEmpty(dto.getRelations())) {
-                setEventRelations(model, dto.getRelations(), dao.getGraphUri(), ontologyDAO, eventClassModel);
-            }
-        }
-        dao.update(model);
+        EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
+        EventModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
+        logic.updateModel(model);
 
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
@@ -442,7 +393,7 @@ public class EventAPI {
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
             MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
-            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, new URI(EventDAO.getEventsGraph(sparql).toString()));
+            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.createMoves(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
@@ -572,19 +523,9 @@ public class EventAPI {
     public Response updateMoveEvent(
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
-
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        MoveModel model = dto.toModel();
-
-        ClassModel eventClassModel = null;
-
-        if (!CollectionUtils.isEmpty(dto.getRelations())) {
-            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
-            setEventRelations(model, dto.getRelations(), dao.getGraphUri(), ontologyDAO, eventClassModel);
-        }
-
-        dao.update(model);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
+        logic.updateModel(model);
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
 

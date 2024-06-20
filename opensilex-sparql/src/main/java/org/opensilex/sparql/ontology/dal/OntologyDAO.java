@@ -44,7 +44,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -423,10 +422,14 @@ public final class OntologyDAO {
 
     /**
      *
-     * Validates the relation, then adds it to the object.
-     * TODO Rename this function ??
+     * @param graph : Graph that relation applies in.
+     * @param model : Model of class required to identify restrictions
+     * @param propertyURI : Uri of the property
+     * @param value : String value of property for object, can be null
+     * @param object : SPARQLResourceModel inherited object to modify if valid
+     * @return true if valid triplet, false otherwise
      */
-    public boolean validateObjectValue(
+    public boolean validateThenUpdateObjectValue(
             URI graph,
             ClassModel model,
             URI propertyURI,

@@ -11,23 +11,26 @@
 
 package org.opensilex.core.event.bll;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 public class EventLogic<T extends EventModel> {
@@ -70,6 +73,69 @@ public class EventLogic<T extends EventModel> {
         models.forEach(model -> model.setPublisher(currentUser.getUri()));
         check(models, true);
         return dao.create(models);
+    }
+
+    /**
+     *
+     * @param model to update if relations are valid
+     * @param relations set of triplets to validate then apply
+     * @param eventType so that we can detect if the relations are valid
+     * @param typeCache can be null, to remember what uri points to what type. Will add to the cache if it wasn't null
+     * @return updated model TODO global SPARQLNamedRessourceModel relation setter in an ontology dao ??
+     * @throws InvalidValueException
+     * @throws URISyntaxException
+     */
+    public T setEventRelations(T model, List<RDFObjectRelationDTO> relations, URI eventType, Map<URI, ClassModel> typeCache) throws InvalidValueException, URISyntaxException, SPARQLException {
+
+        if(CollectionUtils.isEmpty(relations) || eventType == null){
+            return model;
+        }
+
+        ClassModel eventClassModel = null;
+        if(!MapUtils.isEmpty(typeCache) && typeCache.containsKey(eventType)){
+            eventClassModel = typeCache.get(eventType);
+        }
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        if(eventClassModel == null){
+            eventClassModel = ontologyDAO.getClassModel(eventType, new URI(Oeev.Event.getURI()), currentUser.getLanguage());
+            if(typeCache != null){
+                typeCache.put(eventType, eventClassModel);
+            }
+        }
+        Map<URI,URI> shortPropertiesUris = new HashMap<>();
+
+        for (int i = 0; i < relations.size(); i++) {
+            RDFObjectRelationDTO relation = relations.get(i);
+            if (relation == null) {
+                throw new IllegalArgumentException("Relation at index " + i + " is null");
+            }
+
+            if (relation.getProperty() == null || relation.getValue() == null) {
+                throw new IllegalArgumentException("Relation at index " + i + " has null property or value");
+            }
+
+            URI shortPropUri = shortPropertiesUris.get(relation.getProperty());
+            if(shortPropUri == null){
+                shortPropUri = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
+                shortPropertiesUris.put(relation.getProperty(),shortPropUri);
+            }
+
+            if (!ontologyDAO.validateThenUpdateObjectValue(dao.getGraphUri(), eventClassModel, shortPropUri, relation.getValue(), model)) {
+                throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+            }
+        }
+        return model;
+    }
+
+    /**
+     *
+     * @param model to update in graph
+     * @return updated model after sparql update operation
+     * @throws Exception
+     */
+    public T updateModel(T model) throws Exception {
+        check(Collections.singletonList(model), false);
+        return dao.update(model);
     }
 
     //#endregion
@@ -134,4 +200,6 @@ public class EventLogic<T extends EventModel> {
         }
 
     }
+
+
 }

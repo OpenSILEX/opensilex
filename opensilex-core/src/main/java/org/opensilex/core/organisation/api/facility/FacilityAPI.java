@@ -54,7 +54,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
@@ -118,7 +117,7 @@ public class FacilityAPI {
                         new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                    if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                    if (!ontoDAO.validateThenUpdateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                         throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                     }
                 }
@@ -308,7 +307,7 @@ public class FacilityAPI {
             ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
             URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                if (!ontoDAO.validateThenUpdateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }

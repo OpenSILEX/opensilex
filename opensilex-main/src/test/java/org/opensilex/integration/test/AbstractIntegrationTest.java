@@ -345,7 +345,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public <T extends JsonResponse<?>> Result<T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
             try (Response response = executeCall()) {
-                assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+                assertTrue("request failed with status : "+response.getStatus(), response.getStatus() >= 200 && response.getStatus() < 300);
                 Result<T> result = new Result<>(readResponse(response, typeReference), response);
                 response.close();
                 return result;
@@ -603,7 +603,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * Method to check if all path parameters exist in the path template.
          */
         protected void checkPathParamsExist() {
-            assertTrue(pathTemplateParams.entrySet().stream().allMatch(entry -> pathTemplate.contains("{" + entry.getKey() + "}")));
+            assertTrue("one or many path parameter does was given but does not exists for this endpoint", pathTemplateParams.entrySet().stream().allMatch(entry -> pathTemplate.contains("{" + entry.getKey() + "}")));
         }
     }
 

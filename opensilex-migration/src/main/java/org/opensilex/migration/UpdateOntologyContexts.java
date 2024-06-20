@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
  * @author Sarra Abidri
  */
 
-public class RemoveExternalOntologiesContexts implements OpenSilexModuleUpdate {
+public class UpdateOntologyContexts implements OpenSilexModuleUpdate {
     private OpenSilex opensilex;
 
     private SPARQLService sparql;
@@ -29,7 +29,7 @@ public class RemoveExternalOntologiesContexts implements OpenSilexModuleUpdate {
 
     @Override
     public String getDescription() {
-        return "Remove contexts representing external ontologies";
+        return "Update ontology contexts";
     }
 
     @Override
@@ -40,10 +40,10 @@ public class RemoveExternalOntologiesContexts implements OpenSilexModuleUpdate {
     public void execute() throws OpensilexModuleUpdateException {
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         sparql = factory.provide();
-        removeExternalOntologiesContexts();
+        updateOntologyContexts();
     }
 
-    private void removeExternalOntologiesContexts() {
+    private void updateOntologyContexts() {
         try {
             sparql.startTransaction();
 
@@ -57,15 +57,16 @@ public class RemoveExternalOntologiesContexts implements OpenSilexModuleUpdate {
             sparql.clearGraph("http://www.w3.org/2002/07/owl");
             sparql.clearGraph("http://www.w3.org/2006/time");
             sparql.clearGraph("http://purl.org/dc/terms/");
+            sparql.clearGraph("http://www.opensilex.org/vocabulary/oeso-ext");
 
             sparql.commitTransaction();
-            logger.info("Removed contexts representing external ontologies successfully");
+            logger.info("Updated ontology contexts successfully");
         } catch (Exception e) {
             try {
                 sparql.rollbackTransaction();
-                logger.error("Error occurred while removing contexts representing external ontologies, no changes were made to the database", e);
+                logger.error("Error occurred while updating ontology contexts, no changes were made to the database", e);
             } catch (Exception exception) {
-                logger.error("Critical error occurred while removing contexts representing external ontologies, the database may no longer be in a stable state, data may have been lost", exception);
+                logger.error("Critical error occurred while updating ontology contexts, the database may no longer be in a stable state, data may have been lost", exception);
             }
         }
     }

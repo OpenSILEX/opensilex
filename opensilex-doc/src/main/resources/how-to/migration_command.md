@@ -29,7 +29,7 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Description](#description-5)
   * [org.opensilex.migration.MongoDbIndexesMigration](#orgopensilexmigrationmongodbindexesmigration)
     * [Description](#description-6)
-  * [org.opensilex.migration.RemoveExternalOntologiesContexts](#orgopensilexmigrationremoveexternalontologiescontexts)
+  * [org.opensilex.migration.UpdateOntologyContexts](#orgopensilexmigrationupdateontologycontexts)
     * [Description](#description-7)
 * [Create an update command (For developers)](#create-an-update-command--for-developers-)
       * [Example](#example)
@@ -78,7 +78,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
 | 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3        |           |
-| 2024/03/20 | <b> org.opensilex.migration.RemoveExternalOntologiesContexts </b>          | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
+| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
 
 # Descriptions
 
@@ -178,13 +178,13 @@ This migration was done because Users credentials was replaced by account creden
 - **Note**: Executing this migration cause the deletion of indexes which are not registered by OpenSILEX
 
 
-## org.opensilex.migration.RemoveExternalOntologiesContexts
+## org.opensilex.migration.UpdateOntologyContexts
 
 ### Description
 
-For this version, the migration process removes contexts representing external ontologies from the triple store. However, the concepts used from the external ontologies have been integrated into our core ontology, while the external ontologies themselves have been removed.
+For this version, the migration process updates contexts representing external ontologies from the triple store. The concepts previously used from these external ontologies have been integrated into our core ontology.
 
-The migration script `RemoveExternalOntologiesContexts` removes the following external ontology contexts:
+Consequently, the migration script `UpdateOntologyContexts` removes the following external ontology contexts:
 
 - `http://www.opensilex.org/security`
 - `http://www.w3.org/ns/org`
@@ -195,6 +195,8 @@ The migration script `RemoveExternalOntologiesContexts` removes the following ex
 - `http://www.w3.org/2002/07/owl`
 - `http://www.w3.org/2006/time`
 - `http://purl.org/dc/terms/`
+
+Additionally, it removes the `oeso-ext` graph, which has been renamed to `oeso-phis`.
 
 # Create an update command (For developers)
 

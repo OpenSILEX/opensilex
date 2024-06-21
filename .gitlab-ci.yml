@@ -767,97 +767,97 @@ test:bernhard:deploy:
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-gabriel-build:
-    stage: build
-    <<: *build_template_with_opensilex
-    variables:
-        MAVEN_SKIP_TESTS: "true"
-    rules:
-        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-
-gabriel-deploy:
-    stage: deploy
-    <<: *deploy_opensilex_before_script
-    <<: *deploy_opensilex_template
-    variables:
-        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
-        INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-        OPENSILEX_JAR_ADMIN_PORT: 4091
-        OPENSILEX_JAR_PORT: 8091
-        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-        REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
-        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    rules:
-        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-            when: on_success
-    needs:
-        - gabriel-build
-
-# See : https://playwright.dev/docs/ci#gitlab-ci
-# TODO : make it into a template
-gabriel-front-test:
-    stage: front-test
-    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
-    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
-    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
-    #  parallel: 7    This option can be used for parallelization
-    variables:
-        START_OPENSILEX: false
-        DOCKERISED_BASES: false
-        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-        OPENSILEX_JAR_PORT: 8091
-        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    script:
-        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-
-        ##
-        ## Create the SSH directory and give it the right permissions
-        ##
-        - echo "$REMOTE_SERVER_IP"
-        - mkdir -p ${HOME}/.ssh
-        - chmod 700 ${HOME}/.ssh
-        ##
-        ## Install ssh-agent if not already installed, it is required by Docker.
-        ## (change apt-get to yum if you use an RPM-based image)
-        ##
-        - "which ssh-agent || ( apt-get update && apt-get install openssh-client -y )"
-        ##
-        ## Run ssh-agent (inside the build environment)
-        ##
-        - eval $(ssh-agent -s)
-        ##
-        ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-        ## We're using tr to fix line endings which makes ed25519 keys work
-        ## without extra base64 encoding.
-        ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-        ##
-        - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-        - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
-        - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
-        - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
-        - chmod 600 ${HOME}/.ssh/id_rsa
-
-        ## SSH tunnel to test server
-        - echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
-        - ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
-
-        - npm ci &&
-        - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
-
-    after_script:
-        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
-    rules:
-        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-            when: on_success
-        -   if: '$FRONT_TESTS == "true"'
-    needs:
-        - gabriel-deploy
-    artifacts:
-        when: always
-        paths:
-            - artifacts
+# gabriel-build:
+#     stage: build
+#     <<: *build_template_with_opensilex
+#     variables:
+#         MAVEN_SKIP_TESTS: "true"
+#     rules:
+#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+#
+# gabriel-deploy:
+#     stage: deploy
+#     <<: *deploy_opensilex_before_script
+#     <<: *deploy_opensilex_template
+#     variables:
+#         CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
+#         INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+#         OPENSILEX_JAR_ADMIN_PORT: 4091
+#         OPENSILEX_JAR_PORT: 8091
+#         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+#         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+#         REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
+#         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+#     rules:
+#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+#             when: on_success
+#     needs:
+#         - gabriel-build
+#
+# # See : https://playwright.dev/docs/ci#gitlab-ci
+# # TODO : make it into a template
+# gabriel-front-test:
+#     stage: front-test
+#     # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+#     # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+#     image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+#     #  parallel: 7    This option can be used for parallelization
+#     variables:
+#         START_OPENSILEX: false
+#         DOCKERISED_BASES: false
+#         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+#         OPENSILEX_JAR_PORT: 8091
+#         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+#         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+#     script:
+#         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+#
+#         ##
+#         ## Create the SSH directory and give it the right permissions
+#         ##
+#         - echo "$REMOTE_SERVER_IP"
+#         - mkdir -p ${HOME}/.ssh
+#         - chmod 700 ${HOME}/.ssh
+#         ##
+#         ## Install ssh-agent if not already installed, it is required by Docker.
+#         ## (change apt-get to yum if you use an RPM-based image)
+#         ##
+#         - "which ssh-agent || ( apt-get update && apt-get install openssh-client -y )"
+#         ##
+#         ## Run ssh-agent (inside the build environment)
+#         ##
+#         - eval $(ssh-agent -s)
+#         ##
+#         ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+#         ## We're using tr to fix line endings which makes ed25519 keys work
+#         ## without extra base64 encoding.
+#         ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+#         ##
+#         - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+#         - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+#         - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
+#         - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
+#         - chmod 600 ${HOME}/.ssh/id_rsa
+#
+#         ## SSH tunnel to test server
+#         - echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
+#         - ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
+#
+#         - npm ci &&
+#         - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+#
+#     after_script:
+#         - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+#     rules:
+#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+#             when: on_success
+#         -   if: '$FRONT_TESTS == "true"'
+#     needs:
+#         - gabriel-deploy
+#     artifacts:
+#         when: always
+#         paths:
+#             - artifacts
 
 
 gabriel-front-test-independent:
@@ -878,7 +878,7 @@ gabriel-front-test-independent:
 
         ## make BASE_ADDRESS
         - |
-            if [OPENSILEX_JAR_PORT == false] && [REMOTE_SERVER_IP == false]; then
+            if [&OPENSILEX_JAR_PORT == false] && [&REMOTE_SERVER_IP == false]; then
                 BASE_ADDRESS=false
             else
                 BASE_ADDRESS="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"

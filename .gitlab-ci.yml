@@ -878,14 +878,14 @@ gabriel-front-test-independent:
 
         ## make BASE_ADDRESS
         - |
-            if ["$OPENSILEX_JAR_PORT" == false] && ["$REMOTE_SERVER_IP" == false]; then
+            if ["$OPENSILEX_JAR_PORT" == "false"] && ["$REMOTE_SERVER_IP" == "false"]; then
                 BASE_ADDRESS=false
             else
                 BASE_ADDRESS="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
             fi
 
         - |
-            if ["$START_OPENSILEX" == true]; then
+            if ["$START_OPENSILEX" == "true"]; then
             
                 ## Install maven
                 sudo apt install maven -y

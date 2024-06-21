@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 21/06/2024 13:40
+# Last Modification: 21/06/2024 14:30
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -33,9 +33,10 @@ CONFIG_FILE="${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/confi
 # Start the dockers if needed
 if [ "$dockerisedBases" = 1 ]; then
   cd "${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/docker" || exit 1
-  if ! docker ps | grep "opensilex-mongodb\|opensilex-rdf4j"
+  if ! docker ps | grep "opensilex-mongodb\|opensilex-rdf4j" >> "${SCRIPT_DIR}/logs/docker_ps.log" 2>&1
     then
-      docker compose -p test up --quiet-pull & # --quiet-pull for less output
+      echo "===========STARTING DOCKERIZED BASES==========="
+      docker compose -p test up  >> "${SCRIPT_DIR}/logs/docker_compose.log" 2>&1 & # --quiet-pull for less output
       sleep 30
   fi
 fi
@@ -44,11 +45,15 @@ fi
 # -DskipTests to skip backend tests
 # -q for quiet (only show errors)
 cd "${SCRIPT_DIR}/../../.." || exit 1
-mvn clean install -DskipTests -q &&
+echo "===========MVN CLEAN INSTALL==========="
+mvn clean install -DskipTests -X >> "${SCRIPT_DIR}/logs/mvn_clean_install.log" 2>&1 &&
 
 # Install and start OpenSILEX
 cd "${SCRIPT_DIR}/../../../opensilex-release/target/opensilex" || exit 1
 OPENSILEX="java -jar opensilex.jar"
-$OPENSILEX system install --CONFIG_FILE="$CONFIG_FILE" &&
-$OPENSILEX --CONFIG_FILE="$CONFIG_FILE" user add --admin &&
-$OPENSILEX server start --CONFIG_FILE="$CONFIG_FILE" --port=8080 --adminPort=4080
+echo "===========INSTALLING OPENSILEX==========="
+$OPENSILEX system install --CONFIG_FILE="$CONFIG_FILE" >> "${SCRIPT_DIR}/logs/opensilex_system_install.log" 2>&1 &&
+echo "===========ADDING ADMIN==========="
+$OPENSILEX --CONFIG_FILE="$CONFIG_FILE" user add --admin >> "${SCRIPT_DIR}/logs/opensilex_user_add.log" 2>&1 &&
+echo "===========STARTING OPENSILEX==========="
+$OPENSILEX server start --CONFIG_FILE="$CONFIG_FILE" --port=8080 --adminPort=4080 --DEBUG >> "${SCRIPT_DIR}/logs/opensilex_server_start.log" 2>&1

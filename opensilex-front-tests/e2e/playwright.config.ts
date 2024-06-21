@@ -3,12 +3,12 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 20/06/2024 18:11
+ * Last Modification: 21/06/2024 11:43
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
 
-import {defineConfig} from '@playwright/test';
+import {defineConfig, PlaywrightTestConfig} from '@playwright/test';
 
 let DEFAULT_BASE_URL = "http://localhost:8080"
 
@@ -40,7 +40,7 @@ if (process.env.START_OPENSILEX) {
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig({
+let config : PlaywrightTestConfig = {
     testDir: './tests',
     /* Run tests in files in parallel */
     fullyParallel: true,
@@ -98,4 +98,7 @@ export default defineConfig({
 
     /* Run your local dev server before starting the tests */
     webServer: webServer
-});
+}
+
+console.log(config)
+export default defineConfig(config);

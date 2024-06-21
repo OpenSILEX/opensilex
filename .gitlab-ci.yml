@@ -922,6 +922,7 @@ gabriel-front-test-independent:
         - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 
     after_script:
+        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
         - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
     rules:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"

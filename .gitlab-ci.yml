@@ -891,7 +891,8 @@ gabriel-front-test-independent:
                 echo "3"
             
                 ## Install maven
-                apt install maven -y
+                apt-get update -y
+                apt-get install maven -y
     
                 ##
                 ## Create the SSH directory and give it the right permissions

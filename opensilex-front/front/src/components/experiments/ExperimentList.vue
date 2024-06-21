@@ -42,7 +42,7 @@
               <!-- Species -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                     v-if="!isGermplasmMenuExcluded"
                     label="ExperimentList.filter-species"
                     placeholder="ExperimentList.filter-species-placeholder"
@@ -50,7 +50,7 @@
                     :selected.sync="filter.species"
                     :options="species"
                     class="searchFilter"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
 
@@ -72,14 +72,14 @@
               <!-- Facilities -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                       label="ExperimentList.filter-facilities"
                       placeholder="ExperimentList.filter-facilities-placeholder"
                       :multiple="true"
                       :selected.sync="filter.facilities"
                       :options="facilities"
                       class="searchFilter"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
 
@@ -122,7 +122,7 @@
               <!-- State -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                     label="ExperimentList.filter-state"
                     placeholder="ExperimentList.filter-state-placeholder"
                     :multiple="false"
@@ -130,7 +130,7 @@
                     :options="experimentStates"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
             </template>

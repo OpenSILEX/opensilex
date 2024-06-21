@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
     label="ProvenanceView.agent_type"
     :selected.sync="agentTypeURI"
     :options="internalOptions"
@@ -10,7 +10,7 @@
     @select="$emit('select')"
     @deselect="$emit('deselect')"
     @keyup.enter.native="onEnter"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

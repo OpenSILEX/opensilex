@@ -3,7 +3,6 @@
     @hide="clearModal"
     v-model="modalShow"
     :title="$t('ResultModalView.title')"
-    ok-only
   >
     <template v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
@@ -19,26 +18,35 @@
     </template>
     <template>
       <p v-if="nbLinesImported != null" class="validation-confirm-container">
-        {{ nbLinesImported }}
         {{
           nbLinesImported > 1
-            ? $t("ResultModalView.data-imported")
+            ? `${nbLinesImported} ${$t("ResultModalView.data-imported")}`
             : $t("ResultModalView.datum-imported")
         }}
       </p>
       <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
-          {{ nbAnnotationsImported }}
-          {{
+        {{
           nbAnnotationsImported > 1
-              ? $t("ResultModalView.annotations-imported")
-              : $t("ResultModalView.annotation-imported")
-          }}
+            ? `${nbAnnotationsImported} ${$t("ResultModalView.annotations-imported")}`
+            : $t("ResultModalView.annotation-imported")
+        }}
       </p>
       <opensilex-ProvenanceDetails
         label="ResultModalView.provenanceLabel"
         v-if="provenance"
         :provenance="provenance"
+        :dataImportResult="true"
       ></opensilex-ProvenanceDetails>
+    </template>
+
+    <template v-slot:modal-footer> 
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="hide()"
+      >
+        {{ $t('component.common.ok') }}
+      </button>
     </template>
   </b-modal>
 </template>
@@ -86,7 +94,7 @@ export default class ResultModalView extends Vue {
 }
 </script>
 
-<style>
+<style scoped>
 .validation-confirm-container {
   color: rgb(40, 167, 69);
   font-weight: bold;
@@ -96,18 +104,18 @@ export default class ResultModalView extends Vue {
   fr: 
     ResultModalView:
       data-imported: observations ont été importées avec succès
-      datum-imported: L'observation a été importée avec succès
+      datum-imported: Observation importée avec succès
       title : Rapport de l'insertion des données 
       provenanceLabel : Provenance
       annotations-imported: annotations ont été importées avec succès
-      annotation-imported: L'annotation a été importée avec succès
+      annotation-imported: Annotation importée avec succès
 
   en: 
     ResultModalView:
       data-imported: Observations have been imported successfully
-      datum-imported: Observation has been imported successfully
+      datum-imported: Observation imported successfully
       title : Data insertion report
       provenanceLabel : Provenance
       annotations-imported: annotations have been imported successfully
-      annotation-imported: annotation has been imported successfully
+      annotation-imported: Annotation imported successfully
 </i18n>

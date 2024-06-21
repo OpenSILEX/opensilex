@@ -178,6 +178,18 @@ import TextAreaForm from './common/forms/TextAreaForm.vue'
 components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
+
+import FormSelector from './common/forms/FormSelector.vue'
+components["opensilex-FormSelector"] = FormSelector;
+import CustomTreeselect from './common/forms/CustomTreeselect.vue'
+components["opensilex-CustomTreeselect"] = CustomTreeselect;
+import CustomTreeselectOptionLabel from './common/forms/CustomTreeselectOptionLabel.vue'
+components["opensilex-CustomTreeselectOptionLabel"] = CustomTreeselectOptionLabel;
+import CustomTreeselectValueLabel from './common/forms/CustomTreeselectValueLabel.vue'
+components["opensilex-CustomTreeselectValueLabel"] = CustomTreeselectValueLabel;
+import CustomTreeselectRefineSearchMessage from './common/forms/CustomTreeselectRefineSearchMessage.vue'
+components["opensilex-CustomTreeselectRefineSearchMessage"] = CustomTreeselectRefineSearchMessage;
+
 import CheckboxForm from './common/forms/CheckboxForm.vue'
 components["opensilex-CheckboxForm"] = CheckboxForm;
 import TranslatedNameInputForm from './common/forms/TranslatedNameInputForm.vue'

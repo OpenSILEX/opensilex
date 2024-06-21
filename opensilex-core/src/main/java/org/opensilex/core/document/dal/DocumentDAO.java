@@ -24,6 +24,9 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -44,7 +47,9 @@ import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.opensilex.core.document.dal.DocumentModel.FIRST_ELEMENT_DATE_FIELD;
 import static org.opensilex.core.document.dal.DocumentModel.LAST_ELEMENT_DATE_FIELD;
@@ -370,6 +375,30 @@ public class DocumentDAO {
 
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+    }
+
+    public Map<URI, String> getVariableGroups(List<URI> variableURIs) throws Exception {
+        VariablesGroupDAO groupDAO = new VariablesGroupDAO(sparql);
+        Map<URI, String> variableGroups = new HashMap<>();
+
+        int pageSize = 100; // Ajustez la taille de la page selon vos besoins
+        int currentPage = 0;
+        boolean hasMore = true;
+
+        while (hasMore) {
+            ListWithPagination<VariablesGroupModel> groups = groupDAO.search(null, null, null, currentPage, pageSize, null);
+            for (VariablesGroupModel group : groups.getList()) {
+                for (VariableModel variable : group.getVariablesList()) {
+                    if (variableURIs.contains(variable.getUri())) {
+                        variableGroups.put(variable.getUri(), group.getName());
+                    }
+                }
+            }
+            currentPage++;
+            hasMore = groups.getList().size() == pageSize;
+        }
+
+        return variableGroups;
     }
 
     public void validateDocumentAccess(URI documentURI, AccountModel user) throws Exception {

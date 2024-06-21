@@ -104,6 +104,12 @@ export default class HeatmapChart extends Vue {
         left: "center",
         text: this.data.name,
       },
+      toolbox: {
+        feature: {
+          restore: {},
+          saveAsImage: {},
+        },
+      },
       tooltip: {},
       visualMap: {
         min: 0,

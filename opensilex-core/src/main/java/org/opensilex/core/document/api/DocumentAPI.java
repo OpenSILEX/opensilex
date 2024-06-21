@@ -377,6 +377,9 @@ public class DocumentAPI {
         List<Map.Entry<URI, Integer>> sortedVariableOccurrences = new ArrayList<>(variableOccurrences.entrySet());
         sortedVariableOccurrences.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
+        // Collect all variable URIs to fetch their groups later
+        Set<URI> allVariableURIs = new HashSet<>();
+
         for (URI target : targets) {
             ListWithPagination<DocumentModel> resultList = documentDAO.search(
                     currentUser,
@@ -423,6 +426,7 @@ public class DocumentAPI {
                     variableData.put("occurrence", variableOccurrences.get(variableURI));
 
                     variables.put(variableURI, variableData);
+                    allVariableURIs.add(variableURI); // Collect variable URIs
                 }
 
                 // Aggregate keywords
@@ -453,9 +457,22 @@ public class DocumentAPI {
             metadataDTOList.add(metadataDTO);
         }
 
+        // Fetch variable groups
+        Map<URI, String> variableGroups = documentDAO.getVariableGroups(new ArrayList<>(allVariableURIs));
+
+        // Add group information to each variable
+        for (DocumentMetadataGetDTO metadataDTO : metadataDTOList) {
+            for (Map.Entry<URI, Map<String, Object>> variableEntry : metadataDTO.getVariables().entrySet()) {
+                URI variableURI = variableEntry.getKey();
+                String group = variableGroups.get(variableURI);
+                variableEntry.getValue().put("group", group);
+            }
+        }
+
         // Return the list of DocumentMetadataGetDTO objects as a PaginatedListResponse
         return new PaginatedListResponse<>(metadataDTOList).getResponse();
     }
+
 
     private Map<URI, Integer> calculateVariableOccurrences(String subject, List<URI> targets, String firstElementDate, String lastElementDate, int page, int pageSize, DocumentDAO documentDAO) throws Exception {
         Map<URI, Integer> variableOccurrences = new HashMap<>();

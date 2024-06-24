@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 24/06/2024 14:40
+ * Last Modification: 24/06/2024 17:15
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -16,7 +16,7 @@ console.log("===============================================ENV=================
 console.log(process.env)
 console.log("=================================================================================================")
 
-if (!process.env.BASE_URL) {
+if (!process.env.BASE_URL || process.env.BASE_URL == 'false') {
     process.env.BASE_URL = DEFAULT_BASE_URL
 }
 
@@ -24,13 +24,13 @@ process.env.APP_URL = process.env.BASE_URL + "/app"
 
 let COMMAND = './opensilex_test_instance/start_opensilex.sh'
 
-if (process.env.DOCKERISED_BASES) {
+if (process.env.DOCKERISED_BASES && process.env.BASE_URL != 'false') {
     COMMAND += ' -d'
 }
 
 let webServer = undefined;
 
-if (process.env.START_OPENSILEX) {
+if (process.env.START_OPENSILEX && process.env.START_OPENSILEX != 'false') {
     webServer = {
         command: COMMAND,
         url: process.env.APP_URL,

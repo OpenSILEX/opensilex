@@ -17,8 +17,8 @@ import java.util.Set;
 import org.apache.jena.riot.Lang;
 
 import org.opensilex.OpenSilex;
-import org.opensilex.phis.ontology.OesoExt;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
+import org.opensilex.phis.ontology.OesoPhis;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.CoreModule;
@@ -48,13 +48,14 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                OesoExt.NS,
-                "ontologies/oeso-ext.owl",
+                OesoPhis.NS,
+                "ontologies/oeso-phis.owl",
                 Lang.RDFXML,
-                OesoExt.PREFIX,
+                OesoPhis.PREFIX,
                 null,
                 true
         ));
+
         return list;
     }
     

@@ -16,6 +16,7 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.jvnet.hk2.annotations.Service;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -25,6 +26,7 @@ import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 
@@ -49,6 +51,14 @@ public class StapleApiUtils {
     @Inject
     private SPARQLService sparql;
 
+     /**
+     * By default, each resource type is associated with its default graph in the graph map. This field contains
+     * exceptions to this rule, for example the `Instant` resource that is stored in the same graph as the events.
+     */
+    private static final Map<URI, Class<?>> graphMapExceptions = new HashMap<URI, Class<?>>() {{
+       put(URI.create(Time.Instant.getURI()), EventModel.class);
+    }};
+
     //region Public methods
 
     public Model getStapleModel() throws Exception {
@@ -63,8 +73,14 @@ public class StapleApiUtils {
                 continue;
             }
             SPARQLClassObjectMapper<?> mapper = index.getForClass(resourceClass);
-            if (mapper.getDefaultGraphURI() != null) {
-                result.put(URI.create(mapper.getRDFType().getURI()), mapper.getDefaultGraphURI());
+            URI rdfType = URI.create(mapper.getRDFType().getURI());
+            if (graphMapExceptions.containsKey(rdfType)) {
+                SPARQLClassObjectMapper<?> otherMapper = index.getForClass(graphMapExceptions.get(rdfType));
+                if (otherMapper.getDefaultGraphURI() != null) {
+                    result.put(rdfType, otherMapper.getDefaultGraphURI());
+                }
+            } else if (mapper.getDefaultGraphURI() != null) {
+                result.put(rdfType, mapper.getDefaultGraphURI());
             }
         }
         return result;

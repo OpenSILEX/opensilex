@@ -557,7 +557,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         postDto1.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
         EventCreationDTO postDto2 = getCreationDto();
-        postDto2.setType(new URI("oeev:PestAttack"));
+        postDto2.setType(new URI("oeev:Cleaning"));
         postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(postDto2));
         postDto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 

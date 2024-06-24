@@ -57,6 +57,9 @@ public class OntologyAPI {
 
     public static final String PATH = "/ontology";
     public static final String GET_NAMESPACE_PATH = "/name_space";
+
+    public static final String GET_BASEURI_PATH = "/base_uri";
+
     public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
@@ -745,6 +748,19 @@ public class OntologyAPI {
     public Response getNameSpace() {
         Map<String, String> nameSpaces = SPARQLService.getPrefixes();
         return new SingleObjectResponse<>(nameSpaces).getResponse();
+    }
+
+    @GET
+    @Path(GET_BASEURI_PATH)
+    @ApiOperation("Return base uri")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return base uri", response = String.class)
+    })
+    public Response getBaseURI() {
+        String base_uri = sparql.getBaseURI().toString();
+        return new SingleObjectResponse<>(base_uri).getResponse();
     }
 
     @PUT

@@ -296,18 +296,16 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         List<String> expectedColumns = Arrays.asList(
                 CSV_URI_KEY, CSV_TYPE_KEY,
                 RDFS.label.getURI(),
-                Oeso.hasGeometry.getURI(),
                 RDFS.comment.getURI(),
                 Oeso.hasCreationDate.getURI(),
                 Oeso.hasDestructionDate.getURI(),
-                Oeso.isHosted.getURI(),
                 Oeso.isPartOf.getURI(),
                 Oeso.hasGermplasm.getURI(),
                 Oeso.hasFactorLevel.getURI(),
                 "vocabulary:customDataPropExport",
                 "vocabulary:customObjectPropExport"
         );
-        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(13, row.length));
+        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(11, row.length));
 
         Map<String, Consumer<String>> assertByProperty = getDefaultAssertByProperty(models);
 

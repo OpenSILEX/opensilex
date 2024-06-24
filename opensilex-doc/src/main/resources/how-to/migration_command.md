@@ -9,8 +9,8 @@ This document describes how to execute migration commands into OpenSILEX, the li
 <!-- TOC -->
 * [Opensilex Migration Commands](#opensilex-migration-commands)
 * [Introduction](#introduction)
-  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file-useradmin-oriented)
-  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module-for-developers)
+  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file--useradmin-oriented-)
+  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module--for-developers-)
 * [List](#list)
 * [Descriptions](#descriptions)
   * [org.opensilex.migration.GraphAndCollectionMigration](#orgopensilexmigrationgraphandcollectionmigration)
@@ -29,7 +29,9 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Description](#description-5)
   * [org.opensilex.migration.MongoDbIndexesMigration](#orgopensilexmigrationmongodbindexesmigration)
     * [Description](#description-6)
-* [Create an update command (For developers)](#create-an-update-command-for-developers)
+  * [org.opensilex.migration.UpdateOntologyContexts](#orgopensilexmigrationupdateontologycontexts)
+    * [Description](#description-7)
+* [Create an update command (For developers)](#create-an-update-command--for-developers-)
       * [Example](#example)
 <!-- TOC -->
 
@@ -76,6 +78,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
 | 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3        |           |
+| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
 
 # Descriptions
 
@@ -173,6 +176,27 @@ This migration was done because Users credentials was replaced by account creden
 
 - This migration ensures that the database has the indexes specified by OpenSILEX
 - **Note**: Executing this migration cause the deletion of indexes which are not registered by OpenSILEX
+
+
+## org.opensilex.migration.UpdateOntologyContexts
+
+### Description
+
+For this version, the migration process updates contexts representing external ontologies from the triple store. The concepts previously used from these external ontologies have been integrated into our core ontology.
+
+Consequently, the migration script `UpdateOntologyContexts` removes the following external ontology contexts:
+
+- `http://www.opensilex.org/security`
+- `http://www.w3.org/ns/org`
+- `http://xmlns.com/foaf/0.1/`
+- `http://www.w3.org/2006/vcard/ns`
+- `http://www.w3.org/ns/oa`
+- `http://www.opensilex.org/vocabulary/oeev`
+- `http://www.w3.org/2002/07/owl`
+- `http://www.w3.org/2006/time`
+- `http://purl.org/dc/terms/`
+
+Additionally, it removes the `oeso-ext` graph, which has been renamed to `oeso-phis`.
 
 # Create an update command (For developers)
 

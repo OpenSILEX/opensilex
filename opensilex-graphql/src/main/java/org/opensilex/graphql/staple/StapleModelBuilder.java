@@ -186,13 +186,9 @@ public class StapleModelBuilder {
 
     private Resource createBaseClassResource(ClassModel classModel) {
         Resource resource = createResource(classModel.getUri(), RDFS.Class);
-        URI parentUri = Optional.ofNullable(classModel.getParent())
+        Optional.ofNullable(classModel.getParent())
                 .map(ClassModel::getUri)
-                .orElseGet(() -> {
-                    LOGGER.debug("No superclass : <{}>", classModel.getUri());
-                    return URI.create(OWL.Thing.getURI());
-                });
-        resource.addProperty(RDFS.subClassOf, createResource(parentUri));
+                .ifPresent(parentUri -> resource.addProperty(RDFS.subClassOf, createResource(parentUri)));
         if (classModel.getLabel() != null) {
             for (Map.Entry<String, String> translation : classModel.getLabel().getAllTranslations().entrySet()) {
                 Literal literal = model.createLiteral(translation.getValue(), translation.getKey());

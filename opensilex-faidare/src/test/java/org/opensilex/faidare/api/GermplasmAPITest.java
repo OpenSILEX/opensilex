@@ -1,5 +1,6 @@
 package org.opensilex.faidare.api;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.integration.test.ServiceDescription;
 
@@ -19,6 +20,7 @@ public class GermplasmAPITest extends FaidareAPITest {
             throw new RuntimeException(e);
         }
     }
+
 
     @Test
     public void testSearch() {

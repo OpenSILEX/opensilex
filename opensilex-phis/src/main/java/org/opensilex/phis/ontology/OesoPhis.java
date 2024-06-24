@@ -1,8 +1,8 @@
 package org.opensilex.phis.ontology;
 
-public class OesoExt {
+public class OesoPhis {
 
-    public static final String DOMAIN = "http://www.opensilex.org/vocabulary/oeso-ext";
+    public static final String DOMAIN = "http://www.opensilex.org/vocabulary/oeso-phis";
 
     public static final String PREFIX = "oeso";
 

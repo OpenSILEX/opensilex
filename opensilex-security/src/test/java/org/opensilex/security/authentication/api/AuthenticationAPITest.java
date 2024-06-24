@@ -137,4 +137,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             }
         });
     }
+
+
 }

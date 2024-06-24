@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core;
 
+import com.auth0.jwt.JWTCreator;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.jena.riot.Lang;
@@ -14,6 +15,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFileDaoV2;
@@ -40,6 +42,9 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
@@ -59,15 +64,20 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension, ModuleWithNosqlEntityLinkedToAccount {
+public class CoreModule extends OpenSilexModule implements LoginExtension, APIExtension, SPARQLExtension, JCSApiCacheExtension, ModuleWithNosqlEntityLinkedToAccount {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
+    public static final String EXPERIMENT_LIST_JWT_CLAIM = "experiments_list";
+
+    public static final String EXPERIMENTS_EXCEED_LIMIT_CLAIM = "experiments_exceed_limit";
+    public static final int MAX_EXPERIMENTS = 100;
 
     @Override
     public Class<?> getConfigClass() {
@@ -162,12 +172,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 Lang.RDFXML,
                 "peco"
         ));
-        list.add(new OntologyFileDefinition(
-                OA.NS,
-                ONTOLOGIES_DIRECTORY + "/oa.rdf",
-                Lang.RDFXML,
-                "oa"
-        ));
+
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY + "/oeso-core.owl",
@@ -176,32 +181,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 null,
                 true
         ));
-        list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeev#",
-                ONTOLOGIES_DIRECTORY + "/oeev.owl",
-                Lang.RDFXML,
-                "oeev",
-                null,
-                true
-        ));
-        list.add(new OntologyFileDefinition(
-                OWL.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/owl2.ttl",
-                Lang.TURTLE,
-                OWL.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                Time.NS,
-                ONTOLOGIES_DIRECTORY + "/time.ttl",
-                Lang.TURTLE,
-                Time.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                DCTERMS.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/dublin_core_terms.ttl",
-                Lang.TTL,
-                DCTERMS.PREFIX
-        ));
+
         return list;
     }
 
@@ -342,6 +322,33 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             sparql.create(chamberGrowth);
         } catch (Exception e) {
             throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void login(AccountModel user, JWTCreator.Builder tokenBuilder) throws Exception {
+        LoginExtension.super.login(user, tokenBuilder);
+
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+
+        MongoDBService mongodb = getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+
+        // Retrieve the list of experiences the user can access
+        ExperimentDAO dao = new ExperimentDAO(sparql, mongodb);
+        String[] accessExperimentsList = dao.getUserExperiments(user).stream()
+                .map(URI::toString)
+                .toArray(String[]::new);
+
+        // Add list of experiments to the Authentication token
+        if (accessExperimentsList.length <= MAX_EXPERIMENTS) {
+            // If the number of experiments is less than or equal to the max limit,
+            // add the list to the EXPERIMENT_LIST_JWT_CLAIM claim
+            tokenBuilder.withArrayClaim(EXPERIMENT_LIST_JWT_CLAIM, accessExperimentsList);
+        } else {
+            // If the number of experiments is greater than the max limit,
+            // add a flag to indicate that the number of experiments exceeds the limit
+            tokenBuilder.withClaim(EXPERIMENTS_EXCEED_LIMIT_CLAIM, true);
         }
     }
 

@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 21/06/2024 13:41
+ * Last Modification: 24/06/2024 14:40
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,6 +11,10 @@
 import {defineConfig, PlaywrightTestConfig} from '@playwright/test';
 
 let DEFAULT_BASE_URL = "http://localhost:8080"
+
+console.log("===============================================ENV===============================================")
+console.log(process.env)
+console.log("=================================================================================================")
 
 if (!process.env.BASE_URL) {
     process.env.BASE_URL = DEFAULT_BASE_URL

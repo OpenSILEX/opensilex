@@ -201,7 +201,6 @@ variables:
         reports:
             dotenv: deploy.env
 
-
 ##############################
 ### FRONT TEST REMOTE INSTANCE
 ##############################
@@ -253,6 +252,30 @@ variables:
 
         - npm ci &&
         - START_OPENSILEX=false DOCKERISED_BASES=false BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+
+    after_script:
+        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
+        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+    artifacts:
+        when: always
+        paths:
+            - artifacts
+
+##############################
+### FRONT TEST LOCAL INSTANCE
+##############################
+
+.front-test:local:instance: &front_test_local_template
+    stage: front-test
+    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+    #  parallel: 7    This option can be used for parallelization
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+
+        - npm ci &&
+        - START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 
     after_script:
         - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
@@ -828,33 +851,34 @@ test:bernhard:deploy:
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-# gabriel-build:
-#     stage: build
-#     <<: *build_template_with_opensilex
-#     variables:
-#         MAVEN_SKIP_TESTS: "true"
-#     rules:
-#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-#
-# gabriel-deploy:
-#     stage: deploy
-#     <<: *deploy_opensilex_before_script
-#     <<: *deploy_opensilex_template
-#     variables:
-#         CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
-#         INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-#         OPENSILEX_JAR_ADMIN_PORT: 4091
-#         OPENSILEX_JAR_PORT: 8091
-#         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-#         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-#         REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
-#         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-#     rules:
-#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
-#             when: on_success
-#     needs:
-#         - gabriel-build
-#
+test:gabriel:build:
+    stage: build
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+
+test:gabriel:deploy:
+    stage: deploy
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
+        INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4091
+        OPENSILEX_JAR_PORT: 8091
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+            when: on_success
+    needs:
+        - test:gabriel:build
+
+
 # # See : https://playwright.dev/docs/ci#gitlab-ci
 # # TODO : make it into a template
 # gabriel-front-test:
@@ -994,8 +1018,17 @@ test:bernhard:deploy:
 #        paths:
 #            - artifacts
 
-front-test:gabriel:front-test:
+front-test:gabriel:remote:
     <<: *front_test_remote_template
+    needs:
+        - test:gabriel:deploy
+    rules:
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+            when: on_success
+        -   if: '$FRONT_TESTS == "true"'
+
+front-test:gabriel:local:
+    <<: *front_test_local_template
     rules:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success

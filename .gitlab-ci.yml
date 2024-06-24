@@ -211,11 +211,6 @@ variables:
     # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
     image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
     #  parallel: 7    This option can be used for parallelization
-    variables:
-        REMOTE_SERVER_IP: false
-        OPENSILEX_JAR_PORT: false
-        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     script:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
@@ -273,6 +268,11 @@ variables:
     #  parallel: 7    This option can be used for parallelization
     script:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+
+        - |
+            if [ MAVEN_BUILD != true ]; then
+                cp $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
+            fi
 
         - npm ci &&
         - START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
@@ -1020,6 +1020,11 @@ test:gabriel:deploy:
 
 front-test:gabriel:remote:
     <<: *front_test_remote_template
+    variables:
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        OPENSILEX_JAR_PORT: 8091
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     needs:
         - test:gabriel:deploy
     rules:
@@ -1029,6 +1034,8 @@ front-test:gabriel:remote:
 
 front-test:gabriel:local:
     <<: *front_test_local_template
+    variables:
+        MAVEN_BUILD: false
     rules:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success

@@ -3,7 +3,7 @@
  *                         FacilityDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 20/06/2024 15:29
+ * Last Modification: 24/06/2024 17:44
  * Contact: valentin.rigolle@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr, gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -401,6 +401,10 @@ public class FacilityDAO {
     protected void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) {
 
         if (facilityModel.getAddress() == null) {
+            return;
+        }
+
+        if (facilityModel.getSites() == null) {
             return;
         }
 

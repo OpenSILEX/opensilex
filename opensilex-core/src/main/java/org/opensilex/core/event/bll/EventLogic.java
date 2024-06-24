@@ -20,6 +20,7 @@ import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
@@ -136,6 +137,18 @@ public class EventLogic<T extends EventModel> {
     public T updateModel(T model) throws Exception {
         check(Collections.singletonList(model), false);
         return dao.update(model);
+    }
+
+    public void delete(URI uri) throws Exception{
+        dao.delete(uri);
+    }
+
+    public T get(URI uri) throws Exception {
+        T res = (T)dao.get(uri, currentUser);
+        if (res == null) {
+            throw new NotFoundURIException(uri);
+        }
+        return res;
     }
 
     //#endregion

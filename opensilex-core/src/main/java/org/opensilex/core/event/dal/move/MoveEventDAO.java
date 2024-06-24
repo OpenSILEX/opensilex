@@ -148,17 +148,9 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @return
      * @throws Exception
      */
-    public MoveModel getMoveEventByURI(URI eventUri, AccountModel user) throws Exception {
-
-        MoveModel model = sparql.getByURI(MoveModel.class, eventUri, user.getLanguage());
-        if (model == null) {
-            return null;
-        }
-        MoveEventNoSqlModel noSqlModel = getMoveEventNoSqlModel(eventUri);
-        if (noSqlModel != null) {
-            model.setNoSqlModel(noSqlModel);
-        }
-        return model;
+    @Override
+    public MoveModel get(URI eventUri, AccountModel user) throws Exception {
+        return sparql.getByURI(MoveModel.class, eventUri, user.getLanguage());
     }
 
     public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws URISyntaxException {
@@ -232,7 +224,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     }
 
 
-    public ListWithPagination<MoveModel> searchMoveEvents(
+    private ListWithPagination<MoveModel> searchMoveEvents(
             URI target,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
@@ -277,71 +269,13 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
     @Override
     public MoveModel update(MoveModel model) throws Exception {
-
-        check(Collections.singletonList(model), false);
-
-        try {
-            sparql.startTransaction();
-            sparql.update(model);
-
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            Bson idFilter = eq(MoveEventNoSqlModel.ID_FIELD, model.getUri());
-            boolean moveExistInMongo = moveEventCollection.find(idFilter).first() != null;
-
-            // the new move event has no data model in mongodb, so we need to delete the old if exists
-            if (noSqlModel == null) {
-                if (moveExistInMongo) {
-                    mongodb.startTransaction();
-                    moveEventCollection.deleteOne(idFilter);
-                    mongodb.commitTransaction();
-                }
-            } else {
-                noSqlModel.setUri(model.getUri());
-
-                // insert or update the mongodb data model
-                mongodb.startTransaction();
-                if (moveExistInMongo) {
-                    moveEventCollection.findOneAndReplace(idFilter, noSqlModel);
-                } else {
-                    moveEventCollection.insertOne(noSqlModel);
-                }
-                mongodb.commitTransaction();
-            }
-
-            sparql.commitTransaction();
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            mongodb.rollbackTransaction();
-            throw e;
-        }
+        sparql.update(model);
         return model;
     }
 
     @Override
     public void delete(URI uri) throws Exception {
-
-        try {
-            sparql.startTransaction();
-            sparql.delete(MoveModel.class, uri);
-
-            // first check if the model exist
-            boolean moveExistInMongo = mongodb.uriExists(moveEventCollection, uri, MoveEventNoSqlModel.ID_FIELD);
-
-            // start the transaction for deleting, only if the model exist
-            if (moveExistInMongo) {
-                mongodb.startTransaction();
-                moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri));
-                mongodb.commitTransaction();
-            }
-
-            sparql.commitTransaction();
-
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            mongodb.rollbackTransaction();
-            throw e;
-        }
-
+        sparql.delete(MoveModel.class, uri);
     }
 
     /**

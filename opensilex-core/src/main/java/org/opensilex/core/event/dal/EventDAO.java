@@ -158,7 +158,6 @@ public class EventDAO<T extends EventModel> {
     }
 
     public T update(T model) throws Exception {
-        check(Collections.singletonList(model), false);
         sparql.update(model);
         return model;
     }

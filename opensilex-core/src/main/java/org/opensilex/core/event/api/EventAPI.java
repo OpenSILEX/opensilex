@@ -8,7 +8,6 @@
 package org.opensilex.core.event.api;
 
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -26,8 +25,6 @@ import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -36,7 +33,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -47,7 +43,6 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
@@ -69,7 +64,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -268,8 +262,8 @@ public class EventAPI {
     public Response deleteEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDAO dao = new EventDAO(sparql, nosql);
-        dao.delete(uri);
+        EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
+        logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -286,12 +280,7 @@ public class EventAPI {
     public Response getEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-        EventModel model = dao.get(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
-
+        EventModel model = new EventLogic<>(sparql, nosql, currentUser).get(uri);
         EventGetDTO dto = new EventGetDTO();
         dto.fromModel(model);
         return new SingleObjectResponse<>(dto).getResponse();
@@ -311,12 +300,7 @@ public class EventAPI {
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        EventDAO dao = new EventDAO(sparql, nosql);
-
-        EventModel model = dao.get(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
+        EventModel model = new EventLogic<>(sparql, nosql, currentUser).get(uri);
 
         EventDetailsDTO dto = new EventDetailsDTO();
         dto.fromModel(model);
@@ -327,10 +311,7 @@ public class EventAPI {
     }
 
     @GET
-    @ApiOperation(
-            value = "Search events"
-
-    )
+    @ApiOperation(value = "Search events")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return event list", response = EventGetDTO.class, responseContainer = "List")
@@ -542,12 +523,7 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-
-        MoveModel model = dao.getMoveEventByURI(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
+        MoveModel model = new MoveLogic(sparql, nosql, currentUser).get(uri);
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -573,8 +549,8 @@ public class EventAPI {
     public Response deleteMoveEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        dao.delete(uri);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

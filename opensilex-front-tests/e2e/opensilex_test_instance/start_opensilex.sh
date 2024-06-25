@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 25/06/2024 13:52
+# Last Modification: 25/06/2024 15:09
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -49,6 +49,8 @@ if [ "$dockerisedBases" = 1 ]; then
   if ! docker ps | grep "opensilex-mongodb\|opensilex-rdf4j" >> "${SCRIPT_DIR}/logs/docker_ps.log" 2>&1
     then
       echo "===========STARTING DOCKERIZED BASES==========="
+      dockerd &
+      sleep 5
       docker compose -p test up >> "${SCRIPT_DIR}/logs/docker_compose.log" 2>&1 & # --quiet-pull for less output
       sleep 30
   fi

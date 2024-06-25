@@ -3,7 +3,7 @@
  *                         SiteDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 20/06/2024 15:34
+ * Last Modification: 25/06/2024 10:10
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.dal.OrganizationDAO.userOrganizationCache;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -236,7 +235,7 @@ public class SiteDAO {
         createSiteGeospatialModel(siteModel);
 
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
         return siteModel;
     }
 
@@ -272,7 +271,7 @@ public class SiteDAO {
         sparql.deleteByURI(sparql.getDefaultGraph(SiteModel.class), existingModel.getUri());
         sparql.create(siteModel);
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
         return siteModel;
     }
 
@@ -293,7 +292,7 @@ public class SiteDAO {
 
         sparql.delete(SiteModel.class, uri);
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
     }
 
     protected void deleteSiteGeospatialModel(SiteModel siteModel) throws Exception {

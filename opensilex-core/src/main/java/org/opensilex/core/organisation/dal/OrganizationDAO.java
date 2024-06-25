@@ -3,7 +3,7 @@
  *                         OrganizationDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 20/06/2024 14:43
+ * Last Modification: 25/06/2024 10:10
  * Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -55,8 +55,12 @@ public class OrganizationDAO {
      * are retrieved using a {@link SPARQLListFetcher} for the {@link OrganizationModel#children} field, so only the
      * URI of the children is accessible.
      */
-    public static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
+    private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
             .build();
+
+    public void invalidateCache() {
+        userOrganizationCache.invalidateAll();
+    }
 
     public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
         this.sparql = sparql;

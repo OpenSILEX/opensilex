@@ -3,7 +3,7 @@
  *                         FacilityDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 24/06/2024 17:44
+ * Last Modification: 25/06/2024 10:10
  * Contact: valentin.rigolle@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr, gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.dal.OrganizationDAO.userOrganizationCache;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -102,7 +101,7 @@ public class FacilityDAO {
 
         createFacilityGeospatialModel(instance, geometry);
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
         return instance;
     }
 
@@ -267,7 +266,7 @@ public class FacilityDAO {
 
         sparql.delete(FacilityModel.class, uri);
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
     }
 
     /**
@@ -301,7 +300,7 @@ public class FacilityDAO {
 
         sparql.update(instance);
 
-        userOrganizationCache.invalidateAll();
+        organizationDAO.invalidateCache();
         return instance;
     }
 

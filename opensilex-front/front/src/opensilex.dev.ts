@@ -3,7 +3,7 @@
  *                         opensilex.dev.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 25/06/2024 10:33
+ * Last Modification: 25/06/2024 10:44
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */

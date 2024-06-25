@@ -3,7 +3,7 @@
  *                         Faidarev1LocationDTOBuilder.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 19/06/2024 16:09
+ * Last Modification: 25/06/2024 10:32
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,7 +11,9 @@
 package org.opensilex.faidare.builder;
 
 import com.mongodb.client.model.geojson.Geometry;
-import io.github.castmart.jcountry.*;
+import io.github.castmart.jcountry.Country;
+import io.github.castmart.jcountry.CountryDB;
+import io.github.castmart.jcountry.JCountry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -30,10 +32,17 @@ import java.util.*;
 public class Faidarev1LocationDTOBuilder {
     private final FacilityDAO facilityDAO;
     private final OrganizationDAO organizationDAO;
-    private final JCountry jcountry = JCountry.getInstance();
-    private final CountryDB countryDB = jcountry.getCountriesDB();
+    private static final JCountry jcountry = JCountry.getInstance();
+    private static final CountryDB countryDB = jcountry.getCountriesDB();
     private final Map<String, Country> countriesByName = countryDB.getCountriesMapByName();
-    private final ResourceBundle frenchCountriesTranslations = countryDB.getCountriesTranslations(Locale.FRENCH).get();
+    private static final ResourceBundle frenchCountriesTranslations = countryDB.getCountriesTranslations(Locale.FRENCH).get();
+
+    private final static Map<String, String> countriesTranslations = new HashMap<>() {{
+        for (Iterator<String> it = frenchCountriesTranslations.getKeys().asIterator(); it.hasNext(); ) {
+            String countryNameEnglish = it.next();
+            put(frenchCountriesTranslations.getObject(countryNameEnglish).toString(), countryNameEnglish);
+        }
+    }};
 
     public Faidarev1LocationDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
         this.facilityDAO = facilityDAO;
@@ -66,17 +75,16 @@ public class Faidarev1LocationDTOBuilder {
                 .setFacilityURI(model.getUri())
                 .setUser(currentAccount)));
         if (directParentOrganizations.size() == 1){
-            for(OrganizationModel parentOrganization : directParentOrganizations){
-                dto.setInstituteName(parentOrganization.getName());
-                List<SiteModel> sites = parentOrganization.getSites();
-                if(sites.size() == 1){
-                    SiteAddressModel parentAddress = sites.get(0).getAddress();
-                    if (Objects.nonNull(parentAddress)){
-                        dto.setInstituteAddress(parentAddress.toString())
-                                .setInstituteAdress(parentAddress.toString());
-                        String countryName = parentAddress.getCountryName();
-                        setCounteyCodeFromName(dto, countryName);
-                    }
+            OrganizationModel parentOrganization = new ArrayList<>(directParentOrganizations).get(0);
+            dto.setInstituteName(parentOrganization.getName());
+            List<SiteModel> sites = parentOrganization.getSites();
+            if(sites.size() == 1){
+                SiteAddressModel parentAddress = sites.get(0).getAddress();
+                if (Objects.nonNull(parentAddress)){
+                    dto.setInstituteAddress(parentAddress.toString())
+                            .setInstituteAdress(parentAddress.toString());
+                    String countryName = parentAddress.getCountryName();
+                    setCountryCodeFromName(dto, countryName);
                 }
             }
         }
@@ -84,25 +92,19 @@ public class Faidarev1LocationDTOBuilder {
         // If facility has an address use its country for country name and code instead of its parent organization's
         if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
-            setCounteyCodeFromName(dto, countryName);
+            setCountryCodeFromName(dto, countryName);
         }
 
         return dto;
     }
 
-    private void setCounteyCodeFromName(Faidarev1LocationDTO dto, String countryName) {
+    private void setCountryCodeFromName(Faidarev1LocationDTO dto, String countryName) {
         dto.setCountryName(countryName);
         if (countriesByName.containsKey(countryName)){
             dto.setCountryCode(
                     countriesByName.get(countryName).getAlpha3()
             );
         } else {
-            Map<String, String> countriesTranslations = new HashMap<>();
-            Enumeration<String> countriesSet = frenchCountriesTranslations.getKeys();
-            for (Iterator<String> it = countriesSet.asIterator(); it.hasNext(); ) {
-                String countryNameEnglish = it.next();
-                countriesTranslations.put(frenchCountriesTranslations.getObject(countryNameEnglish).toString(), countryNameEnglish);
-            }
 
             if (countriesTranslations.containsKey(countryName) && countriesByName.containsKey(countriesTranslations.get(countryName))) {
                 dto.setCountryCode(

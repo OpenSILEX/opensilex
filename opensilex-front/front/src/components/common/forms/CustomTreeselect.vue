@@ -240,8 +240,10 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
     if(this.countCache.has(searchQuery)){
       this.resultCount = this.countCache.get(searchQuery).result;
       this.totalCount = this.countCache.get(searchQuery).total;
-      this.$emit('counts', { totalCount: this.totalCount, resultCount: this.resultCount });
-    }
+    } 
+    
+    this.$emit('totalCount', this.totalCount);
+    this.$emit('resultCount', this.resultCount);
     this.lastSearchQuery = searchQuery;
   }
   //#endregion

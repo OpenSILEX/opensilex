@@ -227,12 +227,18 @@ export default class FormSelector extends Vue {
     this.$emit("deselect", value)
   }
 
+  /**
+  *  Use Vue.set to ensure reactivity (target, key, value ) 
+  *  target is the object of array to update
+  *  key is the key or the index to modify
+  *  value is the new value to give to this key or index
+  */
   updateTotalCount(totalCountUpdate){
-    this.totalCount = totalCountUpdate;
+    this.$set(this, 'totalCount', totalCountUpdate);
   }
 
   updateResultCount(resultCountUpdate){
-    this.resultCount = resultCountUpdate;
+    this.$set(this, 'resultCount', resultCountUpdate);
   }
   //#endregion
 }

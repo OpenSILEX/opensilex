@@ -1,5 +1,11 @@
 <template>
     <div class="container-fluid">
+        <opensilex-PageHeader
+            icon="fa#vials"
+            title="VariableView.title"
+            description="VariableView.description"
+            class="detail-element-header"
+        ></opensilex-PageHeader>
         <div>
             <opensilex-PageActions>
                 <div>

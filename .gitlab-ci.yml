@@ -270,7 +270,8 @@ variables:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
         - |
-            if [ MAVEN_BUILD != true ]; then
+            if [[ $MAVEN_BUILD != "true" ]]; then
+                mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
                 cp $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
             fi
 

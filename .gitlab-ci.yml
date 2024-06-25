@@ -269,14 +269,11 @@ variables:
     script:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
-        - |
-            if [[ $MAVEN_BUILD != "true" ]]; then
-                mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
-                cp $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
-            fi
+        - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
+        - cp $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
 
         - npm ci &&
-        - START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+        - MAVEN_BUILD=false START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
 
     after_script:
         - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
@@ -1035,8 +1032,8 @@ front-test:gabriel:remote:
 
 front-test:gabriel:local:
     <<: *front_test_local_template
-    variables:
-        MAVEN_BUILD: false
+    needs:
+        - test:gabriel:build
     rules:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success

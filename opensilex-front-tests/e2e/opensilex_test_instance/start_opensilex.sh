@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 25/06/2024 13:22
+# Last Modification: 25/06/2024 13:52
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -19,11 +19,21 @@ dockerisedBases=0
 # Build flag
 mvnBuild=0
 
-while getopts ":d:b" opt; do
-  case "$opt" in
-    d) dockerisedBases=1 ;;
-    b) mvnBuild=1 ;;
-    \?) echo "Invalid option -$OPTARG" >&2 ;;
+for arg in "$@"; do
+  case $arg in
+    -d)
+      dockerisedBases=1
+      echo "Option -d detected, dockerised bases will be started if needed" >&2
+      shift # Remove the processed argument from the list
+      ;;
+    -b)
+      mvnBuild=1
+      echo "Option -b detected, maven build wil be executed before installing OpenSILEX" >&2
+      shift # Remove the processed argument from the list
+      ;;
+    *)
+      echo "Invalid option $arg" >&2
+      ;;
   esac
 done
 
@@ -33,15 +43,13 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 # Get the config file
 CONFIG_FILE="${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/config/opensilex.yml"
 
-echo "OPTION -d:$dockerisedBases, OPTION -b:$mvnBuild"
-
 # Start the dockers if needed
 if [ "$dockerisedBases" = 1 ]; then
   cd "${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/docker" || exit 1
   if ! docker ps | grep "opensilex-mongodb\|opensilex-rdf4j" >> "${SCRIPT_DIR}/logs/docker_ps.log" 2>&1
     then
       echo "===========STARTING DOCKERIZED BASES==========="
-      docker compose -p test up  >> "${SCRIPT_DIR}/logs/docker_compose.log" 2>&1 & # --quiet-pull for less output
+      docker compose -p test up >> "${SCRIPT_DIR}/logs/docker_compose.log" 2>&1 & # --quiet-pull for less output
       sleep 30
   fi
 fi

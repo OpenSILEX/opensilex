@@ -3,7 +3,7 @@
  *                         playwright.config.ts
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 25/06/2024 11:39
+ * Last Modification: 25/06/2024 12:29
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -16,10 +16,12 @@ console.log("===============================================ENV=================
 console.log(process.env)
 console.log("=================================================================================================")
 
-console.log(process.env.BASE_URL)
+console.log(process.env.BASE_ADDRESS)
 console.log("=================================================================================================")
-if (!process.env.BASE_URL || process.env.BASE_URL == 'false') {
+if (!process.env.BASE_ADDRESS || process.env.BASE_ADDRESS == 'false') {
     process.env.BASE_URL = DEFAULT_BASE_URL
+} else {
+    process.env.BASE_URL = process.env.BASE_ADDRESS
 }
 
 process.env.APP_URL = process.env.BASE_URL + "/app"

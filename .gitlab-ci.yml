@@ -270,7 +270,7 @@ variables:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
         - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
-        - cp $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
+        - cp -r $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
 
         - npm ci &&
         - MAVEN_BUILD=false START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding

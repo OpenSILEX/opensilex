@@ -215,7 +215,7 @@ variables:
         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
 
         ## make BASE_ADDRESS
-        - BASE_ADDRESS="http://$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
+        - BASE_ADDRESS=false
 
         ##
         ## Create the SSH directory and give it the right permissions

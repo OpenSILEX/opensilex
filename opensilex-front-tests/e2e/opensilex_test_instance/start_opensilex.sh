@@ -5,7 +5,7 @@
 #                         start_opensilex.sh
 # OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 # Copyright © INRAE 2024.
-# Last Modification: 24/06/2024 18:10
+# Last Modification: 25/06/2024 13:22
 # Contact: gabriel.besombes@inrae.fr
 # ******************************************************************************
 #
@@ -17,12 +17,12 @@ exec > >(tee) 2>&1
 dockerisedBases=0
 
 # Build flag
-build=0
+mvnBuild=0
 
 while getopts ":d:b" opt; do
   case "$opt" in
     d) dockerisedBases=1 ;;
-    b) build=1 ;;
+    b) mvnBuild=1 ;;
     \?) echo "Invalid option -$OPTARG" >&2 ;;
   esac
 done
@@ -33,6 +33,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 # Get the config file
 CONFIG_FILE="${SCRIPT_DIR}/../../../opensilex-dev-tools/src/main/resources/config/opensilex.yml"
 
+echo "OPTION -d:$dockerisedBases, OPTION -b:$mvnBuild"
 
 # Start the dockers if needed
 if [ "$dockerisedBases" = 1 ]; then
@@ -48,7 +49,7 @@ fi
 # Run maven clean install to get the latest changes
 # -DskipTests to skip backend tests
 # -q for quiet (only show errors)
-if [ "$build" = 1 ]; then
+if [ "$mvnBuild" = 1 ]; then
   cd "${SCRIPT_DIR}/../../.." || exit 1
   echo "===========MVN CLEAN INSTALL==========="
   mvn clean install -DskipTests -X >> "${SCRIPT_DIR}/logs/mvn_clean_install.log" 2>&1

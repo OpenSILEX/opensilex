@@ -1,6 +1,19 @@
+/*
+ * *****************************************************************************
+ *                         Faidarev1LocationDTOBuilder.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/06/2024 10:32
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.builder;
 
 import com.mongodb.client.model.geojson.Geometry;
+import io.github.castmart.jcountry.Country;
+import io.github.castmart.jcountry.CountryDB;
+import io.github.castmart.jcountry.JCountry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -9,16 +22,27 @@ import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.faidare.model.Faidarev1LocationDTO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Faidarev1LocationDTOBuilder {
     private final FacilityDAO facilityDAO;
     private final OrganizationDAO organizationDAO;
+    private static final JCountry jcountry = JCountry.getInstance();
+    private static final CountryDB countryDB = jcountry.getCountriesDB();
+    private final Map<String, Country> countriesByName = countryDB.getCountriesMapByName();
+    private static final ResourceBundle frenchCountriesTranslations = countryDB.getCountriesTranslations(Locale.FRENCH).get();
+
+    private final static Map<String, String> countriesTranslations = new HashMap<>() {{
+        for (Iterator<String> it = frenchCountriesTranslations.getKeys().asIterator(); it.hasNext(); ) {
+            String countryNameEnglish = it.next();
+            put(frenchCountriesTranslations.getObject(countryNameEnglish).toString(), countryNameEnglish);
+        }
+    }};
 
     public Faidarev1LocationDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
         this.facilityDAO = facilityDAO;
@@ -46,54 +70,48 @@ public class Faidarev1LocationDTOBuilder {
             }
         }
 
-        // Try to get a Site from the hierarchy of Organisations
-        // Initialize with the Organisations hosted by the facility
+        // If exactly one parent organization use it as institute
         Set<OrganizationModel> directParentOrganizations = new HashSet<>(organizationDAO.search(new OrganizationSearchFilter()
                 .setFacilityURI(model.getUri())
                 .setUser(currentAccount)));
-        while (!directParentOrganizations.isEmpty()){
-            List<OrganizationModel> parentsWithOneAddress = directParentOrganizations.stream().map(parentOrg -> {
-                OrganizationModel parentModel;
-                try {
-                    parentModel = organizationDAO.get(parentOrg.getUri(), currentAccount);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+        if (directParentOrganizations.size() == 1){
+            OrganizationModel parentOrganization = new ArrayList<>(directParentOrganizations).get(0);
+            dto.setInstituteName(parentOrganization.getName());
+            List<SiteModel> sites = parentOrganization.getSites();
+            if(sites.size() == 1){
+                SiteAddressModel parentAddress = sites.get(0).getAddress();
+                if (Objects.nonNull(parentAddress)){
+                    dto.setInstituteAddress(parentAddress.toString())
+                            .setInstituteAdress(parentAddress.toString());
+                    String countryName = parentAddress.getCountryName();
+                    setCountryCodeFromName(dto, countryName);
                 }
-                if (parentModel.getSites().size() == 1 && parentModel.getSites().get(0).getAddress() != null) {
-                    return parentModel;
-                } else {
-                    return null;
-                }
-            }).filter(Objects::nonNull).collect(Collectors.toList());
-            if (parentsWithOneAddress.size()==1) { // If exactly one organisation on this level with exactly one site
-                OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
-                SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
-                dto.setInstituteAddress(parentAddress.toString())
-                        .setInstituteAdress(parentAddress.toString())
-                        .setInstituteName(institute.getName());
-                String countryName = parentAddress.getCountryName();
-                dto.setCountryName(countryName)
-                        .setCountryCode(new Locale(countryName).getISO3Country());
-                directParentOrganizations.remove(parentsWithOneAddress.get(0));
-            } else if (parentsWithOneAddress.size()>1) { // If more than one, go an Organisation level above
-                Set<OrganizationModel> newParents = new HashSet<>();
-                for (OrganizationModel childOrga : directParentOrganizations) {
-                    newParents.addAll(organizationDAO.search(new OrganizationSearchFilter()
-                            .setDirectChildURI(childOrga.getUri())
-                            .setUser(currentAccount)));
-                }
-                directParentOrganizations = newParents;
-            } else {
-                directParentOrganizations = Collections.emptySet();
             }
         }
 
+        // If facility has an address use its country for country name and code instead of its parent organization's
         if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
-            dto.setCountryName(countryName);
-            dto.setCountryCode(new Locale(countryName).getISO3Country());
+            setCountryCodeFromName(dto, countryName);
         }
 
         return dto;
+    }
+
+    private void setCountryCodeFromName(Faidarev1LocationDTO dto, String countryName) {
+        dto.setCountryName(countryName);
+        if (countriesByName.containsKey(countryName)){
+            dto.setCountryCode(
+                    countriesByName.get(countryName).getAlpha3()
+            );
+        } else {
+
+            if (countriesTranslations.containsKey(countryName) && countriesByName.containsKey(countriesTranslations.get(countryName))) {
+                dto.setCountryCode(
+                        countriesByName.get(countriesTranslations.get(countryName)).getAlpha3()
+                );
+            }
+
+        }
     }
 }

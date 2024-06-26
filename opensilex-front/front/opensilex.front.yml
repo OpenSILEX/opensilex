@@ -87,9 +87,6 @@ menu:
           component: opensilex-VariablesView
           credentials:
             - variable-access
-          icon: fa#vials
-          title: VariableView.title
-          description: VariableView.description
       - id: germplasm
         label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain

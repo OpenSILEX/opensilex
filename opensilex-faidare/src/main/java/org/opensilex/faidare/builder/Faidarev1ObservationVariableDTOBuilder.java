@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         Faidarev1ObservationVariableDTOBuilder.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 06/06/2024 17:14
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.builder;
 
 import org.opensilex.core.variable.dal.VariableModel;
@@ -28,7 +38,7 @@ public class Faidarev1ObservationVariableDTOBuilder {
                 .setCrop(
                         Optional.ofNullable(variableModel.getSpecies())
                                 .filter(list -> list.size() == 1)
-                                .map(list -> list.get(0).toString())
+                                .map(list -> list.get(0).getName())
                                 .orElse(null)
                 )
                 .setSynonyms(new ArrayList<>(Collections.singletonList(variableModel.getAlternativeName())))

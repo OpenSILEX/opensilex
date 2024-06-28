@@ -392,7 +392,7 @@ public class BrAPIv1ObservationUnitDTO {
                 observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
                 observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
             }
-        } else if (moveEventDAO.countMoves(model.getUri()) >= 1){
+        } else if (moveEventDAO.countForTarget(model.getUri()) >= 1){
             MoveModel moveModel = moveEventDAO.getLastMoveEvent(model.getUri());
             PositionModel movePosition = moveEventDAO.getPosition(model.getUri(), moveModel.getUri());
 

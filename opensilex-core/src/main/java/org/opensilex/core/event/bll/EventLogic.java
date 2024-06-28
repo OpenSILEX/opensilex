@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -29,33 +30,34 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class EventLogic<T extends EventModel> {
+public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
 
     SPARQLService sparql;
     MongoDBService mongodb;
     AccountModel currentUser;
-    EventDAO<T> dao;
+    EventDAO<T, F> dao;
 
     /**
      * Basic constructor, dao will be set to default EventDao
      */
-    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLDeserializerNotFoundException, SPARQLException {
+    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, Class<T> clazz) throws SPARQLDeserializerNotFoundException, SPARQLException {
         this.sparql = sparql;
         //TODO change to mongoServiceV2 at end if we can
         this.mongodb = mongodb;
         this.currentUser = currentUser;
-        this.dao = new EventDAO<T>(sparql, mongodb);
+        this.dao = new EventDAO<>(sparql, mongodb, clazz);
     }
 
     /**
      * Constructor used by children Logic classes in case they have a unique Dao
      */
-    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, EventDAO<T> dao) {
+    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, EventDAO<T, F> dao) {
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.currentUser = currentUser;
@@ -67,13 +69,29 @@ public class EventLogic<T extends EventModel> {
     /**
      *
      * @param models : Events to be created
-     * @return the new models with metadata and uri set
+     * @return the new models with metadata and uri set, performs che"cks beforehand
      * @throws Exception if validation fails
      */
-    public List<T> createEvents(List<T> models) throws Exception {
+    public List<T> createEvents(List<T> models, boolean doValidate) throws Exception {
         models.forEach(model -> model.setPublisher(currentUser.getUri()));
-        check(models, true);
+        if(doValidate){
+            check(models, true);
+        }
         return dao.create(models);
+    }
+
+    public T create(T model) throws Exception {
+        model.setPublisher(currentUser.getUri());
+        check(Collections.singletonList(model), true);
+        return dao.create(model);
+    }
+
+    public int countForTargets(List<URI> targets) throws Exception {
+        return dao.countForTargets(targets);
+    }
+
+    public int countForTarget(URI target) throws Exception{
+        return dao.countForTarget(target);
     }
 
     /**
@@ -149,6 +167,10 @@ public class EventLogic<T extends EventModel> {
             throw new NotFoundURIException(uri);
         }
         return res;
+    }
+
+    public ListWithPagination<T> search(F filter) throws Exception {
+        return dao.search(filter);
     }
 
     //#endregion

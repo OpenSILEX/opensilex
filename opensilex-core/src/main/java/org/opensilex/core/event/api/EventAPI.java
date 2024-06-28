@@ -20,10 +20,8 @@ import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
 import org.opensilex.core.event.bll.EventLogic;
 import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -123,7 +121,7 @@ public class EventAPI {
             EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
 
             List<EventModel> models = getEventModels(dtoList, logic);
-            models = logic.createEvents(models);
+            models = logic.createEvents(models, true);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -330,7 +328,7 @@ public class EventAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
+        EventLogic<EventModel> logic = new EventLogic<>(sparql, nosql, currentUser);
         //create search filter
         EventSearchFilter searchFilter = new EventSearchFilter();
         searchFilter.setTarget(target)
@@ -343,7 +341,7 @@ public class EventAPI {
                 .setPage(page)
                 .setPageSize(pageSize);
 
-        ListWithPagination<EventModel> resultList = dao.search(searchFilter);
+        ListWithPagination<EventModel> resultList = logic.search(searchFilter);
 
         ListWithPagination<EventGetDTO> resultDTOList = resultList.convert(
                 EventGetDTO.class,
@@ -389,7 +387,7 @@ public class EventAPI {
 
     private <T extends EventModel> SingleObjectResponse<CSVValidationDTO> buildCsvResponse(
             AbstractEventCsvImporter<T> csvImporter,
-            EventDAO<T> dao,
+            EventLogic<T> logic,
             boolean forValidation
     ) throws Exception {
 
@@ -411,12 +409,7 @@ public class EventAPI {
             List<T> models = csvImporter.getModels();
 
             try{
-                if(forValidation){
-                    dao.check(models, true);
-                }else{
-                    models.forEach(model -> model.setPublisher(currentUser.getUri()));
-                    dao.create(models);
-                }
+                logic.createEvents(models, forValidation);
                 // update validation when some URIs are already existing or unknown
             }catch (SPARQLInvalidUriListException e){
                 validation.addInvalidURIError(new CSVCell(AbstractEventCsvImporter.ROWS_BEGIN_IDX,0,e.getMessage(),e.getField()));
@@ -461,12 +454,12 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
 
-        return buildCsvResponse(csvImporter,dao, false).getResponse();
+        return buildCsvResponse(csvImporter, logic, false).getResponse();
     }
 
     @POST
@@ -481,10 +474,10 @@ public class EventAPI {
             @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
-        return buildCsvResponse(csvImporter, dao, true).getResponse();
+        return buildCsvResponse(csvImporter, logic, true).getResponse();
     }
 
     @PUT
@@ -566,8 +559,8 @@ public class EventAPI {
     public Response countEvents(
             @ApiParam(value = "Targets URIs", required = true) @QueryParam("targets") @NotNull @NotEmpty List<URI> targets) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql,nosql);
-        int count = dao.count(targets);
+        EventLogic<EventModel> logic = new EventLogic(sparql, nosql, currentUser);
+        int count = logic.countForTargets(targets);
 
         return new SingleObjectResponse<>(count).getResponse();
     }

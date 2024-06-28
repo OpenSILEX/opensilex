@@ -57,11 +57,12 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 /**
  * @author Renaud COLIN
  */
-public class EventDAO<T extends EventModel> {
+public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
 
     protected final SPARQLService sparql;
     protected final MongoDBService mongodb;
     protected final OntologyDAO ontologyDAO;
+    protected final Class<T> clazz;
 
     protected final Node eventGraph;
 
@@ -120,14 +121,17 @@ public class EventDAO<T extends EventModel> {
         partialTargetMatchTriple = new Triple(uriVar, Oeev.concerns.asNode(), partialTargetMatchVar);
     }
 
-    public EventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public EventDAO(SPARQLService sparql, MongoDBService mongodb, Class<T> clazz) throws SPARQLException, SPARQLDeserializerNotFoundException {
         this.sparql = sparql;
         this.mongodb = mongodb;
+        this.clazz = clazz;
 
         ontologyDAO = new OntologyDAO(sparql);
         eventGraph = getEventsGraph(sparql);
         timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
     }
+
+    //#region PUBLIC METHODS
 
     /**
      *
@@ -169,6 +173,110 @@ public class EventDAO<T extends EventModel> {
     public EventModel get(URI uri, AccountModel user) throws Exception {
         return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
     }
+
+
+    /**
+     *
+     * target partial or exact match on target
+     * targets exact match on a URI list
+     * targetType target type (device, scientific object,...)
+     * descriptionPattern
+     * type
+     * start
+     * end
+     * lang
+     * orderByList
+     * page
+     * pageSize
+     * @return
+     * @throws Exception
+     *
+     * @implNote <b>targets</b> filter is applied in priority if non-empty or null, else <b>target</b> filter is applied. (Not both of them)
+     */
+    public ListWithPagination<T> search(F searchFilter) throws Exception {
+
+        this.updateOrderByList(searchFilter.getOrderByList());
+
+        // set the custom filter on type
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+        appendTypeFilter(customHandlerByFields, searchFilter.getType());
+
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+        AtomicReference<Boolean> targetTripleAdded = new AtomicReference<>(false);
+
+        ListWithPagination<T> results = sparql.searchWithPagination(
+                eventGraph,
+                clazz,
+                searchFilter.getLang(),
+                (select -> {
+                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+
+                    //append filter for baseType
+                    if (searchFilter.getBaseType() != null) {
+                        Var baseTypeVar = makeVar("baseType");
+                        Var targetTypeVar = makeVar("target");
+
+                        eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetTypeVar));
+                        select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(searchFilter.getBaseType()));
+                        select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
+                    }
+
+                    // match on list of URIs
+                    if(! CollectionUtils.isEmpty(searchFilter.getTargets())){
+                        appendInTargetsValues(select, searchFilter.getTargets().stream(), searchFilter.getTargets().size());
+                    }else{
+                        // partial/exact match on one pattern/URI
+
+                        // append target filtering + check if the corresponding triple has been added or not to the query.
+                        // Used in order to indicate further to the SPARQLListFetcher if this triple must be added or not
+                        targetTripleAdded.set(appendTargetEqFilter(eventGraphGroupElem, searchFilter.getTarget(), searchFilter.getOrderByList()));
+                    }
+
+                    // for each optional field, the filtering must be applied outside the OPTIONAL
+                    appendDescriptionFilter(eventGraphGroupElem, searchFilter.getDescriptionPattern());
+                    appendTimeFilter(eventGraphGroupElem, searchFilter.getStart(), searchFilter.getEnd());
+
+                    initialSelect.set(select);
+                }),
+                customHandlerByFields,
+                (result -> fromResult(result, searchFilter.getLang(), new EventModel())),  // custom result handler, direct convert SPARQLResult to EventModel
+                searchFilter.getOrderByList(),
+                searchFilter.getPage(),
+                searchFilter.getPageSize()
+        );
+
+        // manually fetch targets
+        SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                clazz,
+                eventGraph,
+                Collections.singleton(EventModel.TARGETS_FIELD),
+                results.getList()
+        );
+        listFetcher.updateModels();
+
+        return results;
+    }
+
+    public int countForTargets(List<URI> targets) throws Exception {
+
+        return sparql.count(
+                eventGraph,
+                EventModel.class,
+                null,
+                select -> appendInTargetsValues(select, targets.stream(), targets.size()),
+                null
+        );
+    }
+
+    public int countForTarget(URI target) throws Exception {
+        return countForTargets(Collections.singletonList(target));
+    }
+
+    //#endregion
+
+    //#region PRIVATE/PROTECTED METHODS
 
     protected void appendInTargetsValues(SelectBuilder select, Stream<URI> targets, int size) {
 
@@ -238,7 +346,7 @@ public class EventDAO<T extends EventModel> {
     /**
      * Append a REGEX filter on {@link EventModel#DESCRIPTION_FIELD}
      *
-     * @param descriptionPattern the pattern to evaluate on event description
+     * @param descriptionPattern the pattern to evaluate on event description, if null or empty then doesn't do anything
      */
     protected void appendDescriptionFilter(ElementGroup eventGraphGroupElem, String descriptionPattern) {
 
@@ -271,7 +379,7 @@ public class EventDAO<T extends EventModel> {
         eventGraphGroupElem.addElementFilter(new ElementFilter(durationEventDateRange));
     }
 
-    public EventModel fromResult(SPARQLResult result, String lang, EventModel model) throws Exception {
+    protected T fromResult( SPARQLResult result, String lang, EventModel model) throws Exception {
 
         model.setUri(new URI(SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD))));
         model.setType(new URI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
@@ -302,9 +410,8 @@ public class EventDAO<T extends EventModel> {
             model.setEnd(instant);
         }
 
-        return model;
+        return (T)model;
     }
-
 
     protected void updateOrderByList(List<OrderBy> orderByList) {
 
@@ -323,101 +430,6 @@ public class EventDAO<T extends EventModel> {
                 orderByList.set(i, new OrderBy(endInstantTimeStampVar.getVarName(), orderBy.getOrder()));
             }
         }
-    }
-
-    /**
-     *
-     * target partial or exact match on target
-     * targets exact match on a URI list
-     * targetType target type (device, scientific object,...)
-     * descriptionPattern
-     * type
-     * start
-     * end
-     * lang
-     * orderByList
-     * page
-     * pageSize
-     * @return
-     * @throws Exception
-     *
-     * @implNote <b>targets</b> filter is applied in priority if non-empty or null, else <b>target</b> filter is applied. (Not both of them)
-     */
-    public ListWithPagination<EventModel> search(EventSearchFilter searchFilter) throws Exception {
-
-        this.updateOrderByList(searchFilter.getOrderByList());
-
-        // set the custom filter on type
-        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
-        appendTypeFilter(customHandlerByFields, searchFilter.getType());
-
-        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
-        AtomicReference<Boolean> targetTripleAdded = new AtomicReference<>(false);
-
-        ListWithPagination<EventModel> results = sparql.searchWithPagination(
-                eventGraph,
-                EventModel.class,
-                searchFilter.getLang(),
-                (select -> {
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
-
-                    //append filter for baseType
-                    if (searchFilter.getBaseType() != null) {
-                        Var baseTypeVar = makeVar("baseType");
-                        Var targetTypeVar = makeVar("target");
-
-                        eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetTypeVar));
-                        select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(searchFilter.getBaseType()));
-                        select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
-                    }
-
-                    // match on list of URIs
-                    if(! CollectionUtils.isEmpty(searchFilter.getTargets())){
-                        appendInTargetsValues(select, searchFilter.getTargets().stream(), searchFilter.getTargets().size());
-                    }else{
-                        // partial/exact match on one pattern/URI
-
-                        // append target filtering + check if the corresponding triple has been added or not to the query.
-                        // Used in order to indicate further to the SPARQLListFetcher if this triple must be added or not
-                        targetTripleAdded.set(appendTargetEqFilter(eventGraphGroupElem, searchFilter.getTarget(), searchFilter.getOrderByList()));
-                    }
-
-                    // for each optional field, the filtering must be applied outside the OPTIONAL
-                    appendDescriptionFilter(eventGraphGroupElem, searchFilter.getDescriptionPattern());
-                    appendTimeFilter(eventGraphGroupElem, searchFilter.getStart(), searchFilter.getEnd());
-
-                    initialSelect.set(select);
-                }),
-                customHandlerByFields,
-                (result -> fromResult(result, searchFilter.getLang(), new EventModel())),  // custom result handler, direct convert SPARQLResult to EventModel
-                searchFilter.getOrderByList(),
-                searchFilter.getPage(),
-                searchFilter.getPageSize()
-        );
-
-        // manually fetch targets
-        SPARQLListFetcher<EventModel> listFetcher = new SPARQLListFetcher<>(
-                sparql,
-                EventModel.class,
-                eventGraph,
-                Collections.singleton(EventModel.TARGETS_FIELD),
-                results.getList()
-        );
-        listFetcher.updateModels();
-
-        return results;
-    }
-
-    public int count(List<URI> targets) throws Exception {
-
-        return sparql.count(
-                eventGraph,
-                EventModel.class,
-                null,
-                select -> appendInTargetsValues(select, targets.stream(), targets.size()),
-                null
-        );
     }
 
 }

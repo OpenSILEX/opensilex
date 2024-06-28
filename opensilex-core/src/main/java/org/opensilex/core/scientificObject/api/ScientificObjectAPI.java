@@ -22,6 +22,7 @@ import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
@@ -876,7 +877,7 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         searchFilter.setLang(currentUser.getLanguage());
 
@@ -895,7 +896,7 @@ public class ScientificObjectAPI {
         HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(searchFilter.getExperiment(), objectsUris);
 
         // get last location of objects
-        Map<URI, URI> arrivalFacilityByOs = moveDAO.getLastLocations(objectsUris.stream(), objects.getList().size());
+        Map<URI, URI> arrivalFacilityByOs = moveLogic.getLastLocations(objectsUris.stream(), objects.getList().size());
 
         CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
                 sparql,

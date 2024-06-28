@@ -16,6 +16,7 @@ public class EventSearchFilter extends SearchFilter {
     protected OffsetDateTime start;
     protected OffsetDateTime end;
 
+
     public String getTarget() {
         return target;
     }

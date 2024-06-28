@@ -11,11 +11,16 @@
 
 package org.opensilex.core.event.bll;
 
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.geojson.Geometry;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.arq.querybuilder.Order;
+import org.apache.jena.sparql.syntax.ElementGroup;
 import org.bson.conversions.Bson;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
-import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
+import org.opensilex.core.event.dal.move.*;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
@@ -26,16 +31,25 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class MoveLogic extends EventLogic<MoveModel> {
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Projections.excludeId;
 
-    private MoveEventNoSqlDao noSqlDao;
+public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
+
+    private final MoveEventNoSqlDao noSqlDao;
 
     public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
@@ -94,6 +108,22 @@ public class MoveLogic extends EventLogic<MoveModel> {
         return model;
     }
 
+    @Override
+    public MoveModel create(MoveModel model) throws Exception {
+        return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
+            //Validate and set publisher
+            MoveModel realModel = super.create(model);
+            // insert move event in mongodb
+            MoveEventNoSqlModel noSqlModel = realModel.getNoSqlModel();
+            if (noSqlModel != null) {
+                String shortEventUri = URIDeserializer.getShortURI(realModel.getUri().toString());
+                noSqlModel.setUri(new URI(shortEventUri));
+                noSqlDao.create(session, noSqlModel);
+            }
+            return realModel;
+        });
+    }
+
     public List<MoveModel> createMoves(List<MoveModel> models) throws Exception {
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         for (var move : models) {
@@ -124,16 +154,215 @@ public class MoveLogic extends EventLogic<MoveModel> {
 
         }
         return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session->{
-            //insert into sparql graph
+            //insert into sparql graph and nosql
             dao.create(models);
             if (!noSqlModels.isEmpty()) {
-                //TODO create MongoReadWriteDao ? Concerns geospatial so will it change soon anyway
-                ((MoveEventDAO)dao).getMoveEventCollection().insertMany(noSqlModels);
+                noSqlDao.create(session, noSqlModels);
             }
             return models;
         });
 
     }
 
+    public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException {
+
+        Objects.requireNonNull(uri);
+
+        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
+        filter.setUri(uri);
+
+        MongoSearchQuery<MoveEventNoSqlModel, MoveNoSqlSearchFilter, MoveEventNoSqlModel> mongoSearchQuery = new MongoSearchQuery<>();
+        mongoSearchQuery.setFilter(filter);
+        mongoSearchQuery.setProjection(Projections.fields(
+                excludeId() //  don't fetch concernedItem and position of other item
+        ));
+
+        MoveEventNoSqlModel model = noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().findFirst().orElseThrow();
+
+        model.setUri(uri);
+        return model;
+    }
+
+    public List<MoveEventNoSqlModel> getIntersectPosition(List<MoveEventNoSqlModel> moveEventNoSqlModelList, Geometry geometry){
+
+        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
+        filter.setIncludedUris(moveEventNoSqlModelList.stream().map(MoveEventNoSqlModel::getUri).collect(Collectors.toList()));
+        filter.setGeometry(geometry);
+
+        return noSqlDao.searchAsStreamWithPagination(filter).getSource().collect(Collectors.toList());
+    }
+
+    /**
+     * @param target the object on which we get the position
+     * @param start  the time at which we search the position
+     * @return the position of the given object during a time interval with a descending sort on the move end.
+     * @apiNote The method run in two times :
+     * <ul>
+     * <li> Search corresponding move URI and location from the SPARQL repository </li>
+     * <li> Then for each move URI, get the corresponding {@link MoveEventNoSqlModel} from the mongodb collection.
+     * <ul>
+     * <li> This last operation is done with a single query with a IN filter on {@link MoveEventNoSqlModel#ID_FIELD} field. </li>
+     * <li> A {@link Map} between move URI and {@link PositionModel} is maintained in order to associated data from the two databases</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * @see MoveEventDAO#search(MoveSearchFilter)
+     */
+    public ListWithPagination<MoveModel> getPositionsHistory(
+            URI target,
+            String descriptionPattern,
+            OffsetDateTime start,
+            OffsetDateTime end,
+            List<OrderBy> orderByList,
+            Integer page, Integer pageSize) throws Exception {
+
+        Objects.requireNonNull(target);
+
+        // search move history sorted with DESC order on move end, from SPARQL repository
+        MoveSearchFilter searchFilter = new MoveSearchFilter();
+        searchFilter.setTarget(target.toString()).setDescriptionPattern(descriptionPattern).setStart(start).setEnd(end);
+        searchFilter.setOrderByList(orderByList);
+        searchFilter.setPage(page);
+        searchFilter.setPageSize(pageSize);
+        ListWithPagination<MoveModel> locationHistory = dao.search(searchFilter);
+
+        // Index of position by uri, sorted by event end time
+        LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
+        Map<URI, MoveModel> moveByURI = new HashMap<>();
+
+        // for each location, create a position model initialized with the location and update position index
+        locationHistory.forEach(move -> {
+            moveByURI.put(move.getUri(), move);
+            positionsByUri.put(move.getUri(), null);
+        });
+
+
+        if (start != null) {
+            MoveModel lastMove = getLastMoveAfter(target, start);
+            if (lastMove != null) {
+                positionsByUri.put(lastMove.getUri(), null);
+            }
+        }
+
+        if (!positionsByUri.isEmpty()) {
+
+            MoveNoSqlSearchFilter noSqlSearchFilter = new MoveNoSqlSearchFilter();
+            noSqlSearchFilter.setIncludedUris(positionsByUri.keySet());
+            noSqlSearchFilter.setPage(page);
+            noSqlSearchFilter.setPageSize(pageSize);
+            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(target);
+
+            MongoSearchQuery<MoveEventNoSqlModel, MoveNoSqlSearchFilter, MoveEventNoSqlModel> mongoSearchQuery = new MongoSearchQuery<>();
+            mongoSearchQuery.setFilter(noSqlSearchFilter);
+            mongoSearchQuery.setProjection(Projections.fields(concernedItemPositionProjection));
+
+
+            noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().forEach(moveNoSqlModel -> {
+                if (!moveNoSqlModel.getTargetPositions().isEmpty()) {
+                    positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
+                } else {
+                    positionsByUri.remove(moveNoSqlModel.getUri());
+                }
+            });
+
+            // found all positions from mongodb collection according the filter
+            //TODO ive replaced this with the above but am unsure if it is correct, does skip and limit = a normal page and pageSize in the mongo filter? Delete if all good
+            /*moveEventCollection
+                    .find(eventInIdFilter)
+                    .skip(page * pageSize)
+                    .limit(pageSize)
+                    .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
+                    .forEach(moveNoSqlModel -> {
+                        if (moveNoSqlModel.getTargetPositions().size() > 0) {
+                            positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
+                        } else {
+                            positionsByUri.remove(moveNoSqlModel.getUri());
+                        }
+                    });*/
+
+        }
+
+        locationHistory.forEach(move -> {
+            var targetPosition = new TargetPositionModel();
+            targetPosition.setTarget(target);
+            targetPosition.setPosition(positionsByUri.get(move.getUri()));
+            var noSqlModel = new MoveEventNoSqlModel();
+            noSqlModel.setTargetPositions(Collections.singletonList(targetPosition));
+            move.setNoSqlModel(noSqlModel);
+        });
+        return locationHistory;
+    }
+
+    /**
+     * @param concernedItem the object on which we get the last move event
+     * @return the last move event of the given object, null if no move event was found.
+     */
+    public MoveModel getLastMoveEvent(URI concernedItem) throws Exception {
+        return this.getLastMoveAfter(concernedItem, null);
+    }
+
+    public Map<URI, URI> getLastLocations(Stream<URI> targets, int size) throws Exception {
+        return ((MoveEventDAO) dao).getLastLocations(targets, size);
+    }
+
+    /**
+     * @param target the URI of the object concerned by the {@link MoveModel}
+     * @return a {@link SPARQLResult} which the following bindings :
+     */
+    public MoveModel getLastMoveAfter(URI target, OffsetDateTime dateTime) throws Exception {
+
+        MoveSearchFilter searchFilter = new MoveSearchFilter().setAfterEnd(dateTime);
+        searchFilter.setPage(0);
+        searchFilter.setTarget(target.toString());
+        searchFilter.setPageSize(1);
+        ListWithPagination<MoveModel> moves = dao.search(searchFilter);
+
+        if (CollectionUtils.isEmpty(moves.getList())) {
+            return null;
+        }
+
+        return moves.getList().get(0);
+    }
+
+    /**
+     * @param objectUri the object on which we get the position
+     * @param moveURI   the associated move event uri
+     * @return the position of the given object at a given time, null if no move event was found.
+     * @apiNote if time is null, then the last known position will be returned
+     */
+    public PositionModel getPosition(URI objectUri, URI moveURI) throws Exception {
+
+        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
+        filter.setUri(objectUri);
+        MongoSearchQuery<MoveEventNoSqlModel, MoveNoSqlSearchFilter, MoveEventNoSqlModel> mongoSearchQuery = new MongoSearchQuery<>();
+        mongoSearchQuery.setFilter(filter);
+        mongoSearchQuery.setProjection(Projections.fields(
+                excludeId(), // don't fetch position _id field
+                getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
+        ));
+
+        MoveEventNoSqlModel moveNoSqlModel = noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().findFirst().orElseThrow();
+
+        if (moveNoSqlModel == null || moveNoSqlModel.getTargetPositions().size() == 0) {
+            return null;
+        }
+
+        return moveNoSqlModel.getTargetPositions().get(0).getPosition();
+    }
+
+    //#endregion
+
+    //#region PRIVATE METHODS
+    /**
+     * @param concernedItemUri the URI of the item concerned by a move event.
+     * @return a {@link Bson} with {@link Filters#eq(Object)} expression on itemPositions.concernedItem property and the given URI
+     * @see MoveEventNoSqlModel#getTargetPositions()
+     * @see TargetPositionModel#getPosition()
+     */
+    private Bson getConcernedItemArrayItemProjection(URI concernedItemUri) {
+        return Filters.elemMatch(MoveEventNoSqlDao.POSITION_ARRAY_FIELD,
+                Filters.eq(MoveEventNoSqlDao.TARGET_FIELD, concernedItemUri)
+        );
+    }
     //#endregion
 }

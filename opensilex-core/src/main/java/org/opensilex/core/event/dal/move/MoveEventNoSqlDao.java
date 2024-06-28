@@ -11,16 +11,34 @@
 
 package org.opensilex.core.event.dal.move;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 
-public class MoveEventNoSqlDao extends MongoReadWriteDao<MoveEventNoSqlModel, MongoSearchFilter> {
+import java.util.List;
+
+import static com.mongodb.client.model.Filters.and;
+
+public class MoveEventNoSqlDao extends MongoReadWriteDao<MoveEventNoSqlModel, MoveNoSqlSearchFilter> {
     public static final String COLLECTION_NAME = "move";
+    public static final String POSITION_ARRAY_FIELD = "targetPositions";
+    public static final String TARGET_FIELD = "target";
 
     public MoveEventNoSqlDao(MongoDBServiceV2 mongodb) {
         super(mongodb, MoveEventNoSqlModel.class, COLLECTION_NAME, COLLECTION_NAME, false, false);
+    }
+
+    @Override
+    public List<Bson> getBsonFilters(MoveNoSqlSearchFilter filter) {
+        List<Bson> result = super.getBsonFilters(filter);
+        if(filter.geometry != null){
+            result.add(Filters.exists(MoveEventNoSqlModel.COORDINATES_FIELD, true));
+            result.add(Filters.geoWithin(MoveEventNoSqlModel.COORDINATES_FIELD, filter.geometry));
+        }
+
+        return result;
     }
 
     /**

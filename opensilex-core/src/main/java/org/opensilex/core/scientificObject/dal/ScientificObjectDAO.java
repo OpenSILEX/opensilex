@@ -20,6 +20,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -967,11 +968,12 @@ public class ScientificObjectDAO {
                 sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }
 
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-            MoveModel event = moveDAO.getLastMoveEvent(objectURI);
+            //TODO dont invoke MoveLogic here, put it in a ScientificObjectLogic class in future
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+            MoveModel event = moveLogic.getLastMoveEvent(objectURI);
             if(event != null){
                 //retrieve the position to the move event to link it to the new OS for the update
-                MoveEventNoSqlModel moveNoSql = moveDAO.getMoveEventNoSqlModel(event.getUri());
+                MoveEventNoSqlModel moveNoSql = moveLogic.getMoveEventNoSqlModel(event.getUri());
                 if(moveNoSql != null){
                     event.setNoSqlModel(moveNoSql);
                 }
@@ -980,7 +982,7 @@ public class ScientificObjectDAO {
             if (hasFacilityURI) {
                 if (event != null) {
                     fillFacilityMoveEvent(event, object);
-                    moveDAO.update(event);
+                    moveLogic.update(event);
                 } else {
                     event = new MoveModel();
                     if (fillFacilityMoveEvent(event, object)) {

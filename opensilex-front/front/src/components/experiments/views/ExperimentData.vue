@@ -80,18 +80,16 @@
                         label="DataView.filter.scientificObjects"
                         placeholder="DataView.filter.scientificObjects-placeholder"
                         :selected.sync="filter.scientificObjects"
-                        modalComponent="opensilex-ScientificObjectModalList"
+                        modalComponent="opensilex-ScientificObjectModalListByExp"
                         class="searchFilter"
                         :filter.sync="soFilter"
                         :isModalSearch="true"
                         :clearable="true"
                         :multiple="true"
                         @clear="refreshSoSelector"
-                        @onValidate="refreshComponent"
                         @onClose="refreshComponent"
-                        @select="refreshComponent"
+                        @onValidate="refreshComponent"
                         :limit="1"
-                        :key="refreshKey"
                     ></opensilex-SelectForm>
                   </opensilex-FilterField>
                 </div>

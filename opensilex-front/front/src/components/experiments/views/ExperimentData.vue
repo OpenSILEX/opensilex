@@ -272,6 +272,15 @@ export default class ExperimentData extends Vue {
   }
 
   refreshSoSelector() {
+    this.soFilter = {
+      name: "",
+      experiment: this.uri,
+      germplasm: undefined,
+      factorLevels: [],
+      types: [],
+      existenceDate: undefined,
+      creationDate: undefined,
+    };
     this.soSelector.refreshModalSearch();
     this.refreshComponent();
   }

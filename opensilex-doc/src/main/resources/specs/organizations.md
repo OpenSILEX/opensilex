@@ -28,6 +28,8 @@ A user has access to an organization if and only if at least one of these condit
 - The user is a member of a group associated with the organization
 - The user is a member of a group associated with an ancestor organization
 - The user is the creator of the organization
+- Neither the organization nor any of its ancestor have associated groups (an organization without
+  group is considered public)
 
 ## Technical specifications
 

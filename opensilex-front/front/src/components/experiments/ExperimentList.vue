@@ -548,6 +548,7 @@ export default class ExperimentList extends Vue {
       .getService<ExperimentsService>("opensilex.ExperimentsService")
       .deleteExperiment(uri)
       .then(() => {
+        this.tableRef.checkSelectedItems(uri);
         this.refresh();
         let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);

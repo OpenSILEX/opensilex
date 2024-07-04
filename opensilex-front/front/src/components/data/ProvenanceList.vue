@@ -164,7 +164,7 @@
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
-            @click="$emit('onDelete', data.item.uri)"
+            @click="deleteProvenance(data.item.uri)"
             label="ProvenanceList.delete"
             :small="true"
           ></opensilex-DeleteButton>
@@ -423,6 +423,11 @@ export default class ProvenanceList extends Vue {
         that.tableRef.selectAll = false;
       } 
     }, 1);
+  }
+
+  deleteProvenance(uri){
+      this.tableRef.checkSelectedItems(uri);
+      this.$emit('onDelete', uri);
   }
 }
 </script>

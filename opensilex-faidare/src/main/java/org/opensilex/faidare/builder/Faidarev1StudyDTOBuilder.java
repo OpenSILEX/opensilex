@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         Faidarev1StudyDTOBuilder.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 02/07/2024 15:15
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.faidare.builder;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -30,6 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.opensilex.sparql.deserializer.SPARQLDeserializers.getShortURI;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class Faidarev1StudyDTOBuilder {
@@ -163,7 +174,7 @@ public class Faidarev1StudyDTOBuilder {
             LOGGER.error("Error while fetching the accessions of study " + dto.getStudyDbId(), e);
         }
 
-        dto.setDocumentationURL(experimentDetailsPath.replace(":uri", URLEncoder.encode(dto.getStudyDbId(), StandardCharsets.UTF_8)));
+        dto.setDocumentationURL(experimentDetailsPath.replace(":uri", URLEncoder.encode(getShortURI(dto.getStudyDbId()), StandardCharsets.UTF_8)));
 
         return dto;
 

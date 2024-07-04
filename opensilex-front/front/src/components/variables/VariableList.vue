@@ -306,7 +306,7 @@
                             ></opensilex-InteroperabilityButton>
                             <opensilex-DeleteButton
                                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && displayActions"
-                                @click="$emit('onDelete', data.item.uri)"
+                                @click="deleteVariable(data.item.uri)"
                                 label="component.common.list.buttons.delete"
                                 :small="true"
                             ></opensilex-DeleteButton>
@@ -805,6 +805,12 @@ export default class VariableList extends Vue {
             this.loadAdvancedSearchFilters = true;
         }
     }
+
+    deleteVariable(uri){
+       this.tableRef.checkSelectedItems(uri);
+       this.$emit('onDelete', uri);
+    }
+
 }
 </script>
 

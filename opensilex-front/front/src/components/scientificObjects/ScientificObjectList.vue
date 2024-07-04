@@ -443,6 +443,7 @@ export default class ScientificObjectList extends Vue {
     scientificObjectsService
       .deleteScientificObject(uri)
       .then(() => {
+        this.tableRef.checkSelectedItems(uri);
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);

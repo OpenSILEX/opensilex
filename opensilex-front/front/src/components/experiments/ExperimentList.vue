@@ -360,10 +360,11 @@ export default class ExperimentList extends Vue {
   }
 
   updateSelectedExperiment(){
-    this.$opensilex.updateURLParameters(this.filter);
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
     }
+        this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
   }
 
   searchExperiments(options) {

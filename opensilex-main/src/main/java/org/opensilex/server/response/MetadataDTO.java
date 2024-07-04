@@ -3,7 +3,7 @@
  *                         MetadataDTO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 04/07/2024 16:12
+ * Last Modification: 04/07/2024 17:38
  * Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -101,13 +101,6 @@ public class MetadataDTO {
      */
     public void addDataFile(URI uri) {
         this.datafiles.add(uri);
-    }
-
-    /**
-     * Add metadata null data file.
-     */
-    public void addNullDataFile() {
-        this.datafiles.add(null);
     }
 
     /**

@@ -403,6 +403,7 @@ export default class EventList extends Vue {
 
     updateSelectedEvent(){
         this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
     }
 
     displayAfterCreation(event) {

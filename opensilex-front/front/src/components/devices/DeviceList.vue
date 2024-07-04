@@ -418,6 +418,7 @@ export default class DeviceList extends Vue {
         if(this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
         }
+        this.tableRef.refresh();
     }
 
     searchDevices(options) {

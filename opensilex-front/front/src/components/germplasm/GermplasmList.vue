@@ -246,7 +246,7 @@
                         ></opensilex-EditButton>
                         <opensilex-DeleteButton
                             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
-                            @click="$emit('onDelete', data.item.uri)"
+                            @click="deleteGermplasm(data.item.uri)"
                             label="GermplasmList.delete"
                             :small="true"
                         ></opensilex-DeleteButton>
@@ -601,6 +601,11 @@ export default class GermplasmList extends Vue {
                 that.tableRef.selectAll = false;
             }
         }, 1);
+    }
+
+    deleteGermplasm(uri){
+        this.tableRef.checkSelectedItems(uri);
+        this.$emit('onDelete', uri);
     }
 }
 </script>

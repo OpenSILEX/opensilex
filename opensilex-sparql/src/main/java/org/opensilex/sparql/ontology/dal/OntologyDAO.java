@@ -1055,6 +1055,15 @@ public final class OntologyDAO {
         return target;
     }
 
+    /**
+     *
+     * @param domainURI The domain on which the property applies
+     * @param propertyURI , parent property to get sub properties of
+     * @param ignoreRoot , if false then the parent propertyURI is also returned in the list
+     * @param lang
+     * @return A list of ObjectNamedResourceDTO (name and uri) of the sub properties
+     * @throws Exception
+     */
     public List<ObjectNamedResourceDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {
         //Get root property
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -1067,7 +1076,7 @@ public final class OntologyDAO {
             return next;
         }).collect(Collectors.toList());
 
-        //Add root if required, set children to empty list to get rid of duplicated information
+        //Add root if required
         if(!ignoreRoot){
             var rootDto = new ObjectNamedResourceDTO();
             rootDto.setUri(model.getUri());

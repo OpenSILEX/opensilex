@@ -1,272 +1,267 @@
 <template>
-    <div id="v-step-global">
-        <ValidationObserver ref="validatorRef">
-            
-            <opensilex-Tutorial
-                ref="variableTutorial"
-                :steps="tutorialSteps"
-                @onSkip="continueFormEditing()"
-                @onFinish="continueFormEditing()"
-                :editMode="editMode"
-            ></opensilex-Tutorial>
+  <div id="v-step-global">
+    <ValidationObserver ref="validatorRef">
+      <opensilex-Tutorial
+        ref="variableTutorial"
+        :steps="tutorialSteps"
+        @onSkip="continueFormEditing()"
+        @onFinish="continueFormEditing()"
+        :editMode="editMode"
+      ></opensilex-Tutorial>
 
-            <!-- URI -->
-            <opensilex-UriForm
-                :uri.sync="form.uri"
-                label="component.common.uri"
-                :editMode="editMode"
-                :generated.sync="uriGenerated"
-            ></opensilex-UriForm>
+      <!-- URI -->
+      <opensilex-UriForm
+        :uri.sync="form.uri"
+        label="component.common.uri"
+        :editMode="editMode"
+        :generated.sync="uriGenerated"
+      ></opensilex-UriForm>
 
-            <div class="row">
-                <div class="col-lg-6" id="v-step-entity">
-                    <!-- Entity -->
-                    <opensilex-SelectForm
-                        ref="entitySelectForm"
-                        label="VariableView.entity"
-                        :selected.sync="form.entity"
-                        :multiple="false"
-                        :required="true"
-                        :searchMethod="searchEntities"
-                        :itemLoadingMethod="loadEntity"
-                        placeholder="VariableForm.entity-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-entity"
-                        helpMessage="VariableForm.entity-help"
-                        @select="updateEntity"
-                        :actionHandler="editMode ? undefined : showEntityCreateForm"
-                        :disabled="false"
-                        @loadMoreItems="loadMoreItems(entitySelectForm)"
-                    ></opensilex-SelectForm>
-                    <opensilex-EntityCreate
-                        ref="entityForm"
-                        @onCreate="setLoadedEntity">
-                    </opensilex-EntityCreate>
-                </div>
+      <div class="row">
+        <div class="col-lg-6" id="v-step-entity">
+          <!-- Entity -->
+          <opensilex-SelectForm
+            ref="entitySelectForm"
+            label="VariableView.entity"
+            :selected.sync="form.entity"
+            :multiple="false"
+            :required="true"
+            :searchMethod="searchEntities"
+            :itemLoadingMethod="loadEntity"
+            placeholder="VariableForm.entity-placeholder"
+            :conversionMethod="objectToSelectNode"
+            noResultsText="VariableForm.no-entity"
+            helpMessage="VariableForm.entity-help"
+            @select="updateEntity"
+            :actionHandler="editMode ? undefined : showEntityCreateForm"
+            :disabled="false"
+            @loadMoreItems="loadMoreItems(entitySelectForm)"
+          ></opensilex-SelectForm>
+          <opensilex-EntityCreate ref="entityForm" @onCreate="setLoadedEntity">
+          </opensilex-EntityCreate>
+        </div>
 
-                <!-- Entity of interest -->
-                <div class="col-lg-6" id="v-step-interestEntity">
-                    <opensilex-SelectForm
-                        ref="interestEntitySelectForm"
-                        label="VariableForm.interestEntity-label"
-                        :selected.sync="form.entity_of_interest"
-                        :multiple="false"
-                        :required="false"
-                        :searchMethod="searchInterestEntities"
-                        :itemLoadingMethod="loadInterestEntity"
-                        placeholder="VariableForm.interestEntity-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-interestEntity"
-                        helpMessage="VariableForm.interestEntity-help"
-                        :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
-                        :disabled="false"
-                        @loadMoreItems="loadMoreItems(interestEntitySelectForm)"
-                    ></opensilex-SelectForm>
-                    <opensilex-InterestEntityCreate
-                        ref="interestEntityForm"
-                        @onCreate="setLoadedInterestEntity">
-                    </opensilex-InterestEntityCreate>
-                </div>
+        <!-- Entity of interest -->
+        <div class="col-lg-6" id="v-step-interestEntity">
+          <opensilex-SelectForm
+            ref="interestEntitySelectForm"
+            label="VariableForm.interestEntity-label"
+            :selected.sync="form.entity_of_interest"
+            :multiple="false"
+            :required="false"
+            :searchMethod="searchInterestEntities"
+            :itemLoadingMethod="loadInterestEntity"
+            placeholder="VariableForm.interestEntity-placeholder"
+            :conversionMethod="objectToSelectNode"
+            noResultsText="VariableForm.no-interestEntity"
+            helpMessage="VariableForm.interestEntity-help"
+            :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
+            :disabled="false"
+            @loadMoreItems="loadMoreItems(interestEntitySelectForm)"
+          ></opensilex-SelectForm>
+          <opensilex-InterestEntityCreate
+            ref="interestEntityForm"
+            @onCreate="setLoadedInterestEntity"
+          >
+          </opensilex-InterestEntityCreate>
+        </div>
 
-                <!-- Characteristic -->
-                <div class="col-lg-6" id="v-step-characteristic">                    
-                    <opensilex-SelectForm
-                        ref="characteristicSelectForm"
-                        label="VariableView.characteristic"
-                        :selected.sync="form.characteristic"
-                        :multiple="false"
-                        :required="true"
-                        :searchMethod="searchCharacteristics"
-                        :itemLoadingMethod="loadCharacteristic"
-                        placeholder="VariableForm.characteristic-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-characteristic"
-                        helpMessage="VariableForm.characteristic-help"
-                        @select="updateCharacteristic"
-                        :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
-                        :disabled="false"
-                        @loadMoreItems="loadMoreItems(characteristicSelectForm)"
-                    ></opensilex-SelectForm>
-                    <opensilex-CharacteristicModalForm
-                        ref="characteristicForm"
-                        @onCreate="setLoadedCharacteristic">
-                    </opensilex-CharacteristicModalForm>
-                </div>
+        <!-- Characteristic -->
+        <div class="col-lg-6" id="v-step-characteristic">
+          <opensilex-SelectForm
+            ref="characteristicSelectForm"
+            label="VariableView.characteristic"
+            :selected.sync="form.characteristic"
+            :multiple="false"
+            :required="true"
+            :searchMethod="searchCharacteristics"
+            :itemLoadingMethod="loadCharacteristic"
+            placeholder="VariableForm.characteristic-placeholder"
+            :conversionMethod="objectToSelectNode"
+            noResultsText="VariableForm.no-characteristic"
+            helpMessage="VariableForm.characteristic-help"
+            @select="updateCharacteristic"
+            :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
+            :disabled="false"
+            @loadMoreItems="loadMoreItems(characteristicSelectForm)"
+          ></opensilex-SelectForm>
+          <opensilex-CharacteristicModalForm
+            ref="characteristicForm"
+            @onCreate="setLoadedCharacteristic"
+          >
+          </opensilex-CharacteristicModalForm>
+        </div>
 
-                <!-- Species -->
-                <div class="col-lg-6" id="v-step-species">
-                    <opensilex-SpeciesSelector
-                        v-if="!isGermplasmMenuExcluded"
-                        label="SpeciesSelector.select-multiple"
-                        placeholder="SpeciesSelector.select-multiple-placeholder"
-                        :multiple="true"
-                        :species.sync="form.species"
-                    ></opensilex-SpeciesSelector>
-                </div>
+        <!-- Species -->
+        <div class="col-lg-6" id="v-step-species">
+          <opensilex-SpeciesSelector
+            v-if="!isGermplasmMenuExcluded"
+            label="SpeciesSelector.select-multiple"
+            placeholder="SpeciesSelector.select-multiple-placeholder"
+            :multiple="true"
+            :species.sync="form.species"
+          ></opensilex-SpeciesSelector>
+        </div>
 
-                <!-- Method -->
-                <div class="col-lg-6" id="v-step-method">
-                    <opensilex-SelectForm
-                        ref="methodSelectForm"
-                        label="VariableView.method"
-                        :selected.sync="form.method"
-                        :multiple="false"
-                        :required="true"
-                        :searchMethod="searchMethods"
-                        :itemLoadingMethod="loadMethod"
-                        placeholder="VariableForm.method-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        helpMessage="VariableForm.method-help"
-                        @select="updateMethod"
-                        :actionHandler="editMode ? undefined : showMethodCreateForm"
-                        noResultsText="VariableForm.no-method"
-                        :disabled="false"
-                        @loadMoreItems="loadMoreItems(methodSelectForm)"
-                    ></opensilex-SelectForm>
-                    <opensilex-MethodCreate
-                        ref="methodForm"
-                        @onCreate="setLoadedMethod">
-                    </opensilex-MethodCreate>
-                </div>
-                
-                <!-- Trait button -->
-                <div class="col-lg-6" id="traitButton">
-                    <opensilex-Button
-                        label="VariableForm.trait-button"
-                        helpMessage="VariableForm.trait-button-help"
-                        @click="showTraitForm()"
-                        :small="false"
-                        icon="fa#globe-americas"
-                        class="greenThemeColor"
-                    ></opensilex-Button>
-                </div>
+        <!-- Method -->
+        <div class="col-lg-6" id="v-step-method">
+          <opensilex-SelectForm
+            ref="methodSelectForm"
+            label="VariableView.method"
+            :selected.sync="form.method"
+            :multiple="false"
+            :required="true"
+            :searchMethod="searchMethods"
+            :itemLoadingMethod="loadMethod"
+            placeholder="VariableForm.method-placeholder"
+            :conversionMethod="objectToSelectNode"
+            helpMessage="VariableForm.method-help"
+            @select="updateMethod"
+            :actionHandler="editMode ? undefined : showMethodCreateForm"
+            noResultsText="VariableForm.no-method"
+            :disabled="false"
+            @loadMoreItems="loadMoreItems(methodSelectForm)"
+          ></opensilex-SelectForm>
+          <opensilex-MethodCreate ref="methodForm" @onCreate="setLoadedMethod">
+          </opensilex-MethodCreate>
+        </div>
 
-                <opensilex-WizardForm
-                    ref="traitForm"
-                    :steps="traitSteps"
-                    createTitle="VariableForm.trait-form-create-title"
-                    editTitle="VariableForm.trait-form-edit-title"
-                    icon="fa#vials"
-                    modalSize="full"
-                    :static="false"
-                    :initForm="getEmptyTraitForm"
-                    :createAction="updateVariableTrait"
-                    :updateAction="updateVariableTrait"
-                ></opensilex-WizardForm>
+        <!-- Trait button -->
+        <div class="col-lg-6" id="traitButton">
+          <opensilex-Button
+            label="VariableForm.trait-button"
+            helpMessage="VariableForm.trait-button-help"
+            @click="showTraitForm()"
+            :small="false"
+            icon="fa#globe-americas"
+            class="greenThemeColor"
+          ></opensilex-Button>
+        </div>
 
-                <!-- Unit -->
-                <div class="col-lg-6" id="v-step-unit">
-                    <opensilex-SelectForm
-                        ref="unitSelectForm"
-                        label="VariableView.unit"
-                        :selected.sync="form.unit"
-                        :multiple="false"
-                        :required="true"
-                        :searchMethod="searchUnits"
-                        :itemLoadingMethod="loadUnit"
-                        :conversionMethod="objectToSelectNode"
-                        helpMessage="VariableForm.unit-help"
-                        placeholder="VariableForm.unit-placeholder"
-                        @select="updateUnit"
-                        :actionHandler="editMode ? undefined : showUnitCreateForm"
-                        noResultsText="VariableForm.no-unit"
-                        :disabled="false"
-                        @loadMoreItems="loadMoreItems(unitSelectForm)"
-                    ></opensilex-SelectForm>
-                    <opensilex-UnitCreate
-                        ref="unitForm"
-                        @onCreate="setLoadedUnit">
-                    </opensilex-UnitCreate>
-                </div>
-            </div>
+        <opensilex-WizardForm
+          ref="traitForm"
+          :steps="traitSteps"
+          createTitle="VariableForm.trait-form-create-title"
+          editTitle="VariableForm.trait-form-edit-title"
+          icon="fa#vials"
+          modalSize="full"
+          :static="false"
+          :initForm="getEmptyTraitForm"
+          :createAction="updateVariableTrait"
+          :updateAction="updateVariableTrait"
+        ></opensilex-WizardForm>
 
-            <hr/>
+        <!-- Unit -->
+        <div class="col-lg-6" id="v-step-unit">
+          <opensilex-SelectForm
+            ref="unitSelectForm"
+            label="VariableView.unit"
+            :selected.sync="form.unit"
+            :multiple="false"
+            :required="true"
+            :searchMethod="searchUnits"
+            :itemLoadingMethod="loadUnit"
+            :conversionMethod="objectToSelectNode"
+            helpMessage="VariableForm.unit-help"
+            placeholder="VariableForm.unit-placeholder"
+            @select="updateUnit"
+            :actionHandler="editMode ? undefined : showUnitCreateForm"
+            noResultsText="VariableForm.no-unit"
+            :disabled="false"
+            @loadMoreItems="loadMoreItems(unitSelectForm)"
+          ></opensilex-SelectForm>
+          <opensilex-UnitCreate ref="unitForm" @onCreate="setLoadedUnit">
+          </opensilex-UnitCreate>
+        </div>
+      </div>
 
-            <div class="row">
-                <!-- Name -->
-                <div class="col-lg-6" id="v-step-name">
-                    <opensilex-InputForm
-                        :value.sync="form.name"
-                        label="component.common.name"
-                        type="text"
-                        :required="true"
-                    ></opensilex-InputForm>
-                </div>
+      <hr />
 
-                <!-- altName -->
-                <div class="col-lg-6" id="v-step-alt">
-                    <opensilex-InputForm
-                        :value.sync="form.alternative_name"
-                        label="VariableForm.altName"
-                        type="text"
-                    ></opensilex-InputForm>
-                </div>
+      <div class="row">
+        <!-- Name -->
+        <div class="col-lg-6" id="v-step-name">
+          <opensilex-InputForm
+            :value.sync="form.name"
+            label="component.common.name"
+            type="text"
+            :required="true"
+          ></opensilex-InputForm>
+        </div>
 
-                <!-- DataType -->
-                <div class="col-lg-6" id="v-step-datatype">
-                    <opensilex-SelectForm
-                        label="OntologyPropertyForm.data-type"
-                        :required="true"
-                        :disabled="hasLinkedData"
-                        :selected.sync="form.datatype"
-                        :options="datatypesNodes"
-                        :itemLoadingMethod="loadDataType"
-                        helpMessage="VariableForm.datatype-help"
-                        placeholder="VariableForm.datatype-placeholder"
-                    ></opensilex-SelectForm>
-                </div>
+        <!-- altName -->
+        <div class="col-lg-6" id="v-step-alt">
+          <opensilex-InputForm
+            :value.sync="form.alternative_name"
+            label="VariableForm.altName"
+            type="text"
+          ></opensilex-InputForm>
+        </div>
 
-                <!-- time-interval -->
-                <div class="col-lg-6" id="v-step-time-interval">
-                    <opensilex-SelectForm
-                        label="VariableForm.time-interval"
-                        :selected.sync="form.time_interval"
-                        :multiple="false"
-                        :options="periodList"
-                        placeholder="VariableForm.time-interval-placeholder"
-                        helpMessage="VariableForm.time-interval-help"
-                    ></opensilex-SelectForm>
-                </div>
+        <!-- DataType -->
+        <div class="col-lg-6" id="v-step-datatype">
+          <opensilex-SelectForm
+            label="OntologyPropertyForm.data-type"
+            :required="true"
+            :disabled="hasLinkedData"
+            :selected.sync="form.datatype"
+            :options="datatypesNodes"
+            :itemLoadingMethod="loadDataType"
+            helpMessage="VariableForm.datatype-help"
+            placeholder="VariableForm.datatype-placeholder"
+          ></opensilex-SelectForm>
+        </div>
 
-                <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
-                <div class="col-lg-6"></div>
+        <!-- time-interval -->
+        <div class="col-lg-6" id="v-step-time-interval">
+          <opensilex-SelectForm
+            label="VariableForm.time-interval"
+            :selected.sync="form.time_interval"
+            :multiple="false"
+            :options="periodList"
+            placeholder="VariableForm.time-interval-placeholder"
+            helpMessage="VariableForm.time-interval-help"
+          ></opensilex-SelectForm>
+        </div>
 
-                <!-- sample/distance-interval -->
-                <div class="col-lg-6" id="v-step-sampling-interval">
-                    <opensilex-SelectForm
-                        label="VariableForm.sampling-interval"
-                        :selected.sync="form.sampling_interval"
-                        :multiple="false"
-                        :options="sampleList"
-                        placeholder="VariableForm.sampling-interval-placeholder"
-                        helpMessage="VariableForm.sampling-interval-help"
-                    ></opensilex-SelectForm>
-                </div>
+        <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
+        <div class="col-lg-6"></div>
 
-                <!-- description -->
-                <div class="col-xl-12" id="v-step-description">
-                    <opensilex-TextAreaForm
-                        :value.sync="form.description"
-                        label="component.common.description"
-                        @keydown.native.enter.stop
-                    >
-                    </opensilex-TextAreaForm>
-                </div>
-                
-                <!-- variables groups-->
-                <!-- <div class="col-xl-12">
+        <!-- sample/distance-interval -->
+        <div class="col-lg-6" id="v-step-sampling-interval">
+          <opensilex-SelectForm
+            label="VariableForm.sampling-interval"
+            :selected.sync="form.sampling_interval"
+            :multiple="false"
+            :options="sampleList"
+            placeholder="VariableForm.sampling-interval-placeholder"
+            helpMessage="VariableForm.sampling-interval-help"
+          ></opensilex-SelectForm>
+        </div>
+
+        <!-- description -->
+        <div class="col-xl-12" id="v-step-description">
+          <opensilex-TextAreaForm
+            :value.sync="form.description"
+            label="component.common.description"
+            @keydown.native.enter.stop
+          >
+          </opensilex-TextAreaForm>
+        </div>
+
+        <!-- variables groups-->
+        <!-- <div class="col-xl-12">
                     <opensilex-GroupVariablesTable
                         ref="groupVariablesTable"
                         :variablesGroupArray="variablesGroupArray"
                     ></opensilex-GroupVariablesTable>
                 </div> -->
-            </div>
-        </ValidationObserver>
-    </div>
+      </div>
+    </ValidationObserver>
+  </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
@@ -278,595 +273,604 @@ import {
   NamedResourceDTO,
   UnitCreationDTO,
   VariableDatatypeDTO,
-  VariablesService
+  VariablesService,
 } from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {DataService} from "opensilex-core/api/data.service";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import { DataService } from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
-import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+import { VariableCreationDTO } from "opensilex-core/model/variableCreationDTO";
 
 @Component
 export default class VariableForm extends Vue {
-    $opensilex: any;
-    $store: any;
-    pageSize = 10;
+  $opensilex: any;
+  $store: any;
+  pageSize = 10;
 
-    @Prop()
-    editMode: boolean;
+  @Prop()
+  editMode: boolean;
 
-    @Prop({default: true})
-    uriGenerated: boolean;
+  @Prop({ default: true })
+  uriGenerated: boolean;
 
-    @Prop({
-        default: () => {return VariableForm.getEmptyForm();},
-    })
-    form;
+  @Prop({
+    default: () => {
+      return VariableForm.getEmptyForm();
+    },
+  })
+  form;
 
-    savedVariable: any = {};
+  savedVariable: any = {};
 
-    service: VariablesService;
-    dataService: DataService;
+  service: VariablesService;
+  dataService: DataService;
 
-    @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
+  @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelectForm") entitySelectForm!: SelectForm;
-    @Ref("interestEntitySelectForm") interestEntitySelectForm!: any;
-    @Ref("characteristicSelectForm") characteristicSelectForm!: any;
-    @Ref("methodSelectForm") methodSelectForm!: any;
-    @Ref("unitSelectForm") unitSelectForm!: any;
+  @Ref("entitySelectForm") entitySelectForm!: SelectForm;
+  @Ref("interestEntitySelectForm") interestEntitySelectForm!: any;
+  @Ref("characteristicSelectForm") characteristicSelectForm!: any;
+  @Ref("methodSelectForm") methodSelectForm!: any;
+  @Ref("unitSelectForm") unitSelectForm!: any;
 
-    @Ref("entityForm") readonly entityForm!: any;
-    @Ref("interestEntityForm") readonly interestEntityForm!: any;
-    @Ref("characteristicForm") readonly characteristicForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
-    @Ref("unitForm") readonly unitForm!: any;
+  @Ref("entityForm") readonly entityForm!: any;
+  @Ref("interestEntityForm") readonly interestEntityForm!: any;
+  @Ref("characteristicForm") readonly characteristicForm!: any;
+  @Ref("methodForm") readonly methodForm!: any;
+  @Ref("unitForm") readonly unitForm!: any;
 
-    @Ref("traitForm") readonly traitForm!: any;
+  @Ref("traitForm") readonly traitForm!: any;
 
-    get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  get isGermplasmMenuExcluded() {
+    return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  }
+
+  traitSteps = [{ component: "opensilex-TraitForm" }];
+
+  datatypes: Array<VariableDatatypeDTO> = [];
+  datatypesNodes: Array<any> = [];
+  periodList: Array<any> = [];
+  sampleList: Array<any> = [];
+
+  @Ref("validatorRef") readonly validatorRef!: any;
+
+  created() {
+    this.service = this.$opensilex.getService("opensilex.VariablesService");
+    this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+
+    for (let period of [
+      "millisecond",
+      "second",
+      "minute",
+      "hour",
+      "day",
+      "week",
+      "month",
+      "unique",
+    ]) {
+      this.periodList.push({
+        id: this.$i18n.t("VariableForm.dimension-values." + period),
+        label: this.$i18n.t("VariableForm.dimension-values." + period),
+      });
     }
 
-    traitSteps = [
-        {component: "opensilex-TraitForm"}
-    ]
-
-    datatypes: Array<VariableDatatypeDTO> = [];
-    datatypesNodes: Array<any> = [];
-    periodList: Array<any> = [];
-    sampleList: Array<any> = [];
-
-    @Ref("validatorRef") readonly validatorRef!: any;
-
-    created() {
-        this.service = this.$opensilex.getService("opensilex.VariablesService");
-        this.dataService = this.$opensilex.getService("opensilex-core.DataService");
-
-        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
-            this.periodList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +period),
-                label: this.$i18n.t("VariableForm.dimension-values." + period)
-            })
-        }
-
-        for(let sample of ["mm","cm","m","km","field","region"]){
-            this.sampleList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +sample),
-                label: this.$i18n.t("VariableForm.dimension-values." + sample)
-            })
-        }
-
-        this.loadDatatypes();
+    for (let sample of ["mm", "cm", "m", "km", "field", "region"]) {
+      this.sampleList.push({
+        id: this.$i18n.t("VariableForm.dimension-values." + sample),
+        label: this.$i18n.t("VariableForm.dimension-values." + sample),
+      });
     }
 
-    reset() {
-        this.uriGenerated = true;
-        this.validatorRef.reset();
+    this.loadDatatypes();
+  }
 
-        if(this.variableTutorial && ! this.editMode){
-            this.variableTutorial.stop();
-        }
+  reset() {
+    this.uriGenerated = true;
+    this.validatorRef.reset();
+
+    if (this.variableTutorial && !this.editMode) {
+      this.variableTutorial.stop();
+    }
+  }
+
+  validate() {
+    return this.validatorRef.validate();
+  }
+
+  getLabel(dto: any, dtoList): string {
+    if (!dto) {
+      return "";
+    }
+    if (dto.uri) {
+      return dto.name.replace(/\s+/g, "_");
+    }
+    let returnedDto: NamedResourceDTO = dtoList.find((dtoElem) => dtoElem.uri == dto);
+    if (returnedDto) {
+      return returnedDto.name.replace(/\s+/g, "_");
+    }
+    return "";
+  }
+
+  // variablesGroupArray = [];
+  // setVariablesGroups(form) {
+  //     this.variablesGroupArray = [];
+  //     if (form.relations != null) {
+  //         form.variablesGroup.forEach(variablesGroup => {
+  //             if(variablesGroup.uri != null){
+  //                 this.variablesGroupArray.push(variablesGroup);
+  //             }
+  //         })
+  //     }
+  // }
+
+  selectedEntityName;
+  selectedCharacteristicName;
+  selectedMethodName;
+  selectedUnitName;
+
+  updateEntity(entity) {
+    this.selectedEntityName = entity.label;
+    this.updateName();
+  }
+
+  updateCharacteristic(characteristic) {
+    this.selectedCharacteristicName = characteristic.label;
+    this.updateName();
+  }
+
+  updateMethod(method) {
+    this.selectedMethodName = method.label;
+    this.updateName();
+  }
+
+  updateUnit(unit) {
+    this.selectedUnitName = unit.label;
+    this.updateName();
+  }
+
+  updateName() {
+    if (!this.editMode) {
+      let form = this.form;
+      let nameParts: string[] = [];
+
+      if (this.selectedEntityName && this.selectedEntityName.length > 0) {
+        let name = this.selectedEntityName.split(" ");
+        nameParts.push(name[0]);
+      }
+      if (this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0) {
+        nameParts.push(this.selectedCharacteristicName);
+      }
+      if (nameParts.length) {
+        form.alternative_name = nameParts.join("_");
+      }
+
+      if (this.selectedMethodName && this.selectedMethodName.length > 0) {
+        nameParts.push(this.selectedMethodName);
+      }
+      if (this.selectedUnitName && this.selectedUnitName.length > 0) {
+        nameParts.push(this.selectedUnitName);
+      }
+      if (nameParts.length) {
+        form.name = nameParts.join("_");
+      }
+    }
+  }
+
+  showEntityCreateForm() {
+    this.entityForm.showCreateForm();
+  }
+
+  showInterestEntityCreateForm() {
+    this.interestEntityForm.showCreateForm();
+  }
+
+  showCharacteristicCreateForm() {
+    this.characteristicForm.showCreateForm();
+  }
+
+  showMethodCreateForm() {
+    this.methodForm.showCreateForm();
+  }
+
+  showUnitCreateForm() {
+    this.unitForm.showCreateForm();
+  }
+
+  showTraitForm() {
+    if (this.editMode) {
+      this.traitForm.showEditForm(this.getEmptyTraitForm());
+    } else {
+      this.traitForm.showCreateForm();
+    }
+  }
+
+  static getEmptyForm() {
+    return {
+      uri: undefined,
+      alternative_name: undefined,
+      name: undefined,
+      entity: undefined,
+      entity_of_interest: undefined,
+      characteristic: undefined,
+      description: undefined,
+      time_interval: undefined,
+      sampling_interval: undefined,
+      datatype: undefined,
+      trait: undefined,
+      trait_name: undefined,
+      method: undefined,
+      unit: undefined,
+      exact_match: [],
+      close_match: [],
+      broad_match: [],
+      narrow_match: [],
+      species: undefined,
+      linked_data_nb: 0,
+    };
+  }
+
+  getEmptyForm(): VariableCreationDTO {
+    return VariableForm.getEmptyForm();
+  }
+
+  searchEntities(name: string, page, pageSize) {
+    return this.service
+      .searchEntities(name, ["name=asc"], page, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+        return http;
+      });
+  }
+
+  loadEntity(uris: Array<any>) {
+    if (!uris || uris.length !== 1) {
+      return undefined;
     }
 
-    validate() {
-        return this.validatorRef.validate();
+    // in edit mode, the loaded entity is an object composed of uri and name
+    if (uris[0].uri) {
+      return [this.form.entity];
+    }
+    return this.service.getEntity(uris[0]).then((http) => [http.response.result]);
+  }
+
+  setLoadedEntity(created: EntityCreationDTO) {
+    this.form.entity = created.uri;
+    this.entitySelectForm.select({ id: created.uri, label: created.name });
+  }
+
+  searchInterestEntities(name: string, page, pageSize) {
+    return this.service
+      .searchInterestEntity(name, ["name=asc"], page, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+        return http;
+      });
+  }
+
+  loadInterestEntity(uris: Array<any>) {
+    if (!uris || uris.length !== 1) {
+      return undefined;
     }
 
-    getLabel(dto: any, dtoList): string {
-        if (!dto) {
-            return "";
-        }
-        if (dto.uri) {
-            return dto.name.replace(/\s+/g, "_");
-        }
-        let returnedDto: NamedResourceDTO = dtoList.find(dtoElem => dtoElem.uri == dto)
-        if (returnedDto) {
-            return returnedDto.name.replace(/\s+/g, "_");
-        }
-        return "";
+    // in edit mode, the loaded entity is an object composed of uri and name
+    if (uris[0].uri) {
+      return [this.form.entity_of_interest];
+    }
+    return this.service.getInterestEntity(uris[0]).then((http) => [http.response.result]);
+  }
+
+  setLoadedInterestEntity(created: InterestEntityCreationDTO) {
+    this.form.entity_of_interest = created.uri;
+    this.interestEntitySelectForm.select({ id: created.uri, label: created.name });
+  }
+
+  searchCharacteristics(name: string, page, pageSize) {
+    return this.service
+      .searchCharacteristics(name, ["name=asc"], page, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+        return http;
+      });
+  }
+
+  loadCharacteristic(uris: Array<any>) {
+    if (!uris || uris.length !== 1) {
+      return undefined;
     }
 
-    // variablesGroupArray = [];
-    // setVariablesGroups(form) {
-    //     this.variablesGroupArray = [];
-    //     if (form.relations != null) {  
-    //         form.variablesGroup.forEach(variablesGroup => {
-    //             if(variablesGroup.uri != null){
-    //                 this.variablesGroupArray.push(variablesGroup);
-    //             }
-    //         })        
-    //     }
-    // }
+    // in edit mode, the loaded characteristic is an object composed of uri and name
+    if (uris[0].uri) {
+      return [this.form.characteristic];
+    }
+    return this.service.getCharacteristic(uris[0]).then((http) => [http.response.result]);
+  }
 
-    selectedEntityName;
-    selectedCharacteristicName;
-    selectedMethodName;
-    selectedUnitName;
+  setLoadedCharacteristic(created: CharacteristicCreationDTO) {
+    this.form.characteristic = created.uri;
+    this.characteristicSelectForm.select({ id: created.uri, label: created.name });
+  }
 
-    updateEntity(entity){
-        this.selectedEntityName = entity.label;
-        this.updateName();
+  searchMethods(name: string, page, pageSize) {
+    return this.service
+      .searchMethods(name, ["name=asc"], page, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+        return http;
+      });
+  }
+
+  loadMethod(uris: Array<any>) {
+    if (!uris || uris.length !== 1) {
+      return undefined;
     }
 
-    updateCharacteristic(characteristic){
-        this.selectedCharacteristicName = characteristic.label;
-        this.updateName();
+    // in edit mode, the loaded characteristic is an object composed of uri and name
+    if (uris[0].uri) {
+      return [this.form.method];
     }
+    return this.service.getMethod(uris[0]).then((http) => [http.response.result]);
+  }
 
-    updateMethod(method){
-        this.selectedMethodName = method.label;
-        this.updateName();
+  setLoadedMethod(created: MethodCreationDTO) {
+    this.form.method = created.uri;
+    this.methodSelectForm.select({ id: created.uri, label: created.name });
+  }
+
+  searchUnits(name: string, page, pageSize) {
+    return this.service
+      .searchUnits(name, ["name=asc"], page, this.pageSize)
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+        return http;
+      });
+  }
+
+  loadUnit(uris: Array<any>) {
+    if (!uris || uris.length !== 1) {
+      return undefined;
     }
-
-    updateUnit(unit){
-        this.selectedUnitName = unit.label;
-        this.updateName();
+    // in edit mode, the loaded unit is an object composed of uri and name
+    if (uris[0].uri) {
+      return [this.form.unit];
     }
+    return this.service.getUnit(uris[0]).then((http) => [http.response.result]);
+  }
 
-    updateName() {
-        if(!this.editMode){
-            let form = this.form;
-            let nameParts: string[] = [];
+  setLoadedUnit(created: UnitCreationDTO) {
+    this.form.unit = created.uri;
+    this.unitSelectForm.select({ id: created.uri, label: created.name });
+  }
 
-            if(this.selectedEntityName && this.selectedEntityName.length > 0 ){
-                let name = this.selectedEntityName.split(' ');
-                nameParts.push(name[0]);
-            }
-            if(this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0 ){
-                nameParts.push(this.selectedCharacteristicName);
-            }
-            if(nameParts.length){
-                form.alternative_name = nameParts.join("_");
-            }
-
-            if(this.selectedMethodName && this.selectedMethodName.length > 0 ){
-                nameParts.push(this.selectedMethodName);
-            }
-            if(this.selectedUnitName && this.selectedUnitName.length > 0 ){
-                nameParts.push(this.selectedUnitName);
-            }
-            if(nameParts.length){
-                form.name = nameParts.join("_");
-            }
-        }
+  objectToSelectNode(dto) {
+    if (dto) {
+      return { id: dto.uri, label: dto.name };
     }
+    return null;
+  }
 
-    showEntityCreateForm() {
-        this.entityForm.showCreateForm();
+  getEmptyTraitForm() {
+    return {
+      trait: this.form.trait,
+      trait_name: this.form.trait_name,
+    };
+  }
+  updateVariableTrait(form) {
+    let uriFilled = form.trait && form.trait.length > 0;
+    let nameFilled = form.trait_name && form.trait_name.length > 0;
+
+    // is both name and uri are filled or empty, then update current variable
+    if (uriFilled == nameFilled) {
+      this.form.trait = form.trait;
+      this.form.trait_name = form.trait_name;
     }
+  }
 
-    showInterestEntityCreateForm(){
-        this.interestEntityForm.showCreateForm();
+  loadDatatypes() {
+    if (this.datatypes.length == 0) {
+      this.service
+        .getDatatypes()
+        .then((http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>) => {
+          this.datatypes = http.response.result;
+          this.updateDatatypeNodes();
+        });
+    } else {
+      this.updateDatatypeNodes();
     }
+  }
 
-    showCharacteristicCreateForm() {
-        this.characteristicForm.showCreateForm();
+  updateDatatypeNodes() {
+    this.datatypesNodes = [];
+    for (let dto of this.datatypes) {
+      let label: any = this.$t(dto.name);
+      this.datatypesNodes.push({
+        id: dto.uri,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      });
     }
+  }
 
-    showMethodCreateForm() {
-        this.methodForm.showCreateForm();
+  loadDataType(dataTypeUri: string) {
+    if (!dataTypeUri) {
+      return undefined;
     }
+    let dataType = this.datatypesNodes.find(
+      (datatypeNode) => datatypeNode.id == dataTypeUri
+    );
+    return [dataType];
+  }
 
-    showUnitCreateForm() {
-        this.unitForm.showCreateForm();
-    }
-
-    showTraitForm(){
-        if(this.editMode){
-            this.traitForm.showEditForm(this.getEmptyTraitForm());
-        }else{
-            this.traitForm.showCreateForm();
-        }
-    }
-
-    static getEmptyForm() {
-      return {
-        uri: undefined,
-        alternative_name: undefined,
-        name: undefined,
-        entity: undefined,
-        entity_of_interest: undefined,
-        characteristic: undefined,
-        description: undefined,
-        time_interval: undefined,
-        sampling_interval: undefined,
-        datatype: undefined,
-        trait: undefined,
-        trait_name: undefined,
-        method: undefined,
-        unit: undefined,
-        exact_match: [],
-        close_match: [],
-        broad_match: [],
-        narrow_match: [],
-        species: undefined,
-        linked_data_nb: 0
-      };
-    }
-
-    getEmptyForm(): VariableCreationDTO {
-        return VariableForm.getEmptyForm();
-    }
-
-    searchEntities(name: string, page, pageSize){
-        return this.service.searchEntities(name, ["name=asc"], page, this.pageSize)
-            .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-                return http;
-            });
-    }
-
-    loadEntity(uris: Array<any>) {
-
-        if (!uris || uris.length !== 1) {
-            return undefined;
-        }
-
-        // in edit mode, the loaded entity is an object composed of uri and name
-        if (uris[0].uri) {
-            return [this.form.entity];
-        }
-        return this.service.getEntity( uris[0]).then(http =>
-           [http.response.result]
-        );
-    }
-
-    setLoadedEntity(created: EntityCreationDTO) {
-        this.form.entity = created.uri;
-        this.entitySelectForm.select({id: created.uri, label: created.name});
-    }
-
-    searchInterestEntities(name: string, page, pageSize){
-        return this.service.searchInterestEntity(name, ["name=asc"], page, this.pageSize)
-            .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                return http;
-            });
-    }
-
-    loadInterestEntity(uris: Array<any>) {
-
-        if (!uris || uris.length !== 1) {
-            return undefined;
-        }
-
-        // in edit mode, the loaded entity is an object composed of uri and name
-        if (uris[0].uri) {
-            return [this.form.entity_of_interest];
-        }
-        return this.service.getInterestEntity( uris[0]).then(http =>
-           [http.response.result]
-        );
-    }    
-
-    setLoadedInterestEntity(created: InterestEntityCreationDTO) {
-        this.form.entity_of_interest = created.uri;
-        this.interestEntitySelectForm.select({id: created.uri, label: created.name});
-    }
-    
-    searchCharacteristics(name: string, page, pageSize){
-        return this.service
-            .searchCharacteristics(name, ["name=asc"], page, this.pageSize)
-            .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-                return http;
-            });
-    }
-
-    loadCharacteristic(uris: Array<any>) {
-        if (!uris || uris.length !== 1) {
-            return undefined;
-        }
-
-        // in edit mode, the loaded characteristic is an object composed of uri and name
-        if (uris[0].uri) {
-            return [this.form.characteristic];
-        }
-        return this.service.getCharacteristic(uris[0]).then(http =>
-            [http.response.result]
-        );
-    }
-
-    setLoadedCharacteristic(created: CharacteristicCreationDTO) {
-        this.form.characteristic = created.uri;
-        this.characteristicSelectForm.select({id: created.uri, label: created.name});
-    }
-
-    searchMethods(name: string, page, pageSize){
-        return this.service
-            .searchMethods(name, ["name=asc"], page, this.pageSize)
-            .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                return http;
-            });
-    }
-
-    loadMethod(uris: Array<any>) {
-        if (!uris || uris.length !== 1) {
-            return undefined;
-        }
-
-        // in edit mode, the loaded characteristic is an object composed of uri and name
-        if (uris[0].uri) {
-            return [this.form.method];
-        }
-        return this.service.getMethod(uris[0]).then(http =>
-            [http.response.result]
-        );
-    }
-
-    setLoadedMethod(created: MethodCreationDTO) {
-        this.form.method = created.uri;
-        this.methodSelectForm.select({id: created.uri, label: created.name});
-    }
-
-    searchUnits(name: string ,page, pageSize){
-        return this.service
-            .searchUnits(name, ["name=asc"], page,this.pageSize)
-            .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                return http;
-            });
-    }
-
-    loadUnit(uris: Array<any>) {
-        if(! uris || uris.length !== 1){
-            return undefined;
-        }
-        // in edit mode, the loaded unit is an object composed of uri and name
-        if(uris[0].uri){
-            return [this.form.unit];
-        }
-        return this.service.getUnit(uris[0]).then(http =>
-            [http.response.result]
-        );
-    }
-
-    setLoadedUnit(created: UnitCreationDTO) {
-        this.form.unit = created.uri;
-        this.unitSelectForm.select({id: created.uri, label: created.name});
-    }
-
-    objectToSelectNode(dto) {
-        if (dto) {
-            return {id: dto.uri, label: dto.name};
-        }
-        return null;
-    }
-
-    getEmptyTraitForm(){
-        return {
-            trait: this.form.trait,
-            trait_name: this.form.trait_name
-        };
-    }
-    updateVariableTrait(form){
-        let uriFilled = (form.trait && form.trait.length > 0);
-        let nameFilled = (form.trait_name && form.trait_name.length > 0);
-
-        // is both name and uri are filled or empty, then update current variable
-        if(uriFilled == nameFilled){
-            this.form.trait = form.trait;
-            this.form.trait_name = form.trait_name;
-        }
-    }
-
-    loadDatatypes(){
-
-        if(this.datatypes.length == 0){
-            this.service.getDatatypes().then((http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>) => {
-                this.datatypes = http.response.result;
-                this.updateDatatypeNodes();
-            });
-        }else{
-            this.updateDatatypeNodes();
-        }
-    }
-
-    updateDatatypeNodes(){
-        this.datatypesNodes = [];
-        for (let dto of this.datatypes) {
-            let label: any = this.$t(dto.name);
-            this.datatypesNodes.push({
-                id: dto.uri,
-                label: label.charAt(0).toUpperCase() + label.slice(1)
-            });
-        }
-    }
-
-    loadDataType(dataTypeUri: string){
-        if(! dataTypeUri){
-            return undefined;
-        }
-        let dataType = this.datatypesNodes.find(datatypeNode => datatypeNode.id == dataTypeUri);
-        return [dataType];
-    }
-
-
-
-    private langUnwatcher;
-    mounted() {
-        this.langUnwatcher = this.$store.watch(
-            () => this.$store.getters.language,
-            () => this.loadDatatypes()
-        );
-    }
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      () => this.loadDatatypes()
+    );
+  }
 
   get hasLinkedData() {
-    if(! this.form && this.form.linked_data_nb){
+    if (!this.form && this.form.linked_data_nb) {
       return true;
-    }else{
+    } else {
       return this.form.linked_data_nb > 0;
     }
-
   }
 
   beforeDestroy() {
-        this.langUnwatcher();
+    this.langUnwatcher();
+  }
+
+  tutorial() {
+    this.savedVariable = JSON.parse(JSON.stringify(this.form));
+
+    this.form.entity = {
+      uri: this.$i18n.t("VariableForm.example.entity"),
+      name: this.$i18n.t("VariableForm.example.entity"),
+    };
+    this.form.characteristic = {
+      uri: this.$i18n.t("VariableForm.example.characteristic"),
+      name: this.$i18n.t("VariableForm.example.characteristic"),
+    };
+    this.form.method = {
+      uri: this.$i18n.t("VariableForm.example.method"),
+      name: this.$i18n.t("VariableForm.example.method"),
+    };
+    this.form.unit = {
+      uri: this.$i18n.t("VariableForm.example.unit"),
+      name: this.$i18n.t("VariableForm.example.unit"),
+    };
+
+    this.form.name = this.$i18n.t("VariableForm.example.name");
+    this.form.alternative_name = this.$i18n.t("VariableForm.example.altName");
+    this.form.dataType = this.$i18n.t("VariableForm.example.datatype");
+    this.form.time_interval = this.$i18n.t("VariableForm.example.time-interval");
+    this.form.sampling_interval = this.$i18n.t("VariableForm.example.sampling-interval");
+    this.form.comment = this.$i18n.t("VariableForm.example.description");
+
+    this.variableTutorial.start();
+  }
+
+  continueFormEditing() {
+    if (this.savedVariable) {
+      this.form = JSON.parse(JSON.stringify(this.savedVariable));
     }
+  }
 
-    tutorial() {
+  get tutorialSteps(): any[] {
+    return [
+      {
+        target: "#v-step-global",
+        header: { title: this.$i18n.t("VariableView.title") },
+        content: this.$i18n.t("VariableForm.tutorial.global"),
+        params: { placement: "bottom" },
+      },
+      {
+        target: "#v-step-entity",
+        header: { title: this.$i18n.t("VariableView.entity") },
+        content: this.$i18n.t("Varia bleForm.tutorial.entity"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-entity",
+        header: { title: this.$i18n.t("VariableView.entity") },
+        content: this.$i18n.t("VariableForm.tutorial.entity-check"),
+        params: { placement: "right" },
+      },
+      {
+        target: "#v-step-interestEntity",
+        header: { title: this.$i18n.t("VariableView.entityOfInterest") },
+        content: this.$i18n.t("VariableForm.tutorial.entityOfInterest"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-interestEntity",
+        header: { title: this.$i18n.t("VariableView.entityOfInterest") },
+        content: this.$i18n.t("VariableForm.tutorial.entityOfInterest-check"),
+        params: { placement: "right" },
+      },
+      {
+        target: "#v-step-characteristic",
+        header: { title: this.$i18n.t("VariableView.characteristic") },
+        content: this.$i18n.t("VariableForm.tutorial.characteristic"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-characteristic",
+        header: { title: this.$i18n.t("VariableView.characteristic") },
+        content: this.$i18n.t("VariableForm.tutorial.characteristic-check"),
+        params: { placement: "right" },
+      },
+      {
+        target: "#v-step-method",
+        header: { title: this.$i18n.t("VariableView.method") },
+        content: this.$i18n.t("VariableForm.tutorial.method"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-method",
+        header: { title: this.$i18n.t("VariableView.method") },
+        content: this.$i18n.t("VariableForm.tutorial.method-check"),
+        params: { placement: "right" },
+      },
+      {
+        target: "#v-step-unit",
+        header: { title: this.$i18n.t("VariableView.unit") },
+        content: this.$i18n.t("VariableForm.tutorial.unit"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-name",
+        header: { title: this.$i18n.t("component.common.name") },
+        content: this.$i18n.t("VariableForm.tutorial.name"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-alt",
+        header: { title: this.$i18n.t("VariableForm.altName") },
+        content: this.$i18n.t("VariableForm.tutorial.altName"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-species",
+        header: { title: this.$i18n.t("component.experiment.species") },
+        content: this.$i18n.t("VariableForm.tutorial.species"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-datatype",
+        header: { title: this.$i18n.t("OntologyPropertyForm.data-type") },
+        content: this.$i18n.t("VariableForm.tutorial.datatype"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-time-interval",
+        header: { title: this.$i18n.t("VariableForm.time-interval") },
+        content: this.$i18n.t("VariableForm.tutorial.time-interval"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-sampling-interval",
+        header: { title: this.$i18n.t("VariableForm.sampling-interval") },
+        content: this.$i18n.t("VariableForm.tutorial.sampling-interval"),
+        params: { placement: "left" },
+      },
+      {
+        target: "#v-step-description",
+        header: { title: this.$i18n.t("component.common.description") },
+        content: this.$i18n.t("VariableForm.tutorial.description"),
+        params: { placement: "left" },
+      },
+    ];
+  }
 
-        this.savedVariable = JSON.parse(JSON.stringify(this.form));
-
-        this.form.entity = { uri: this.$i18n.t("VariableForm.example.entity"),  name: this.$i18n.t("VariableForm.example.entity")};
-        this.form.characteristic = { uri: this.$i18n.t("VariableForm.example.characteristic"),  name: this.$i18n.t("VariableForm.example.characteristic")};
-        this.form.method = { uri: this.$i18n.t("VariableForm.example.method"),  name: this.$i18n.t("VariableForm.example.method")};
-        this.form.unit = { uri: this.$i18n.t("VariableForm.example.unit"),  name: this.$i18n.t("VariableForm.example.unit")};
-
-        this.form.name = this.$i18n.t("VariableForm.example.name");
-        this.form.alternative_name = this.$i18n.t("VariableForm.example.altName");
-        this.form.dataType = this.$i18n.t("VariableForm.example.datatype");
-        this.form.time_interval =  this.$i18n.t("VariableForm.example.time-interval");
-        this.form.sampling_interval =  this.$i18n.t("VariableForm.example.sampling-interval");
-        this.form.comment =  this.$i18n.t("VariableForm.example.description");
-
-        this.variableTutorial.start();
-    }
-
-    continueFormEditing(){
-        if(this.savedVariable){
-            this.form = JSON.parse(JSON.stringify(this.savedVariable));
-        }
-    }
-
-    get tutorialSteps(): any[] {
-        return [
-            {
-                target: "#v-step-global",
-                header: { title: this.$i18n.t("VariableView.title")},
-                content: this.$i18n.t("VariableForm.tutorial.global"),
-                params: {placement: "bottom"},
-            },
-            {
-                target: "#v-step-entity",
-                header: { title: this.$i18n.t("VariableView.entity")},
-                content: this.$i18n.t("VariableForm.tutorial.entity"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-entity",
-                header: { title: this.$i18n.t("VariableView.entity")},
-                content: this.$i18n.t("VariableForm.tutorial.entity-check"),
-                params: {placement: "right"},
-            },
-            {
-                target: "#v-step-interestEntity",
-                header: { title: this.$i18n.t("VariableView.entityOfInterest")},
-                content: this.$i18n.t("VariableForm.tutorial.entityOfInterest"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-interestEntity",
-                header: { title: this.$i18n.t("VariableView.entityOfInterest")},
-                content: this.$i18n.t("VariableForm.tutorial.entityOfInterest-check"),
-                params: {placement: "right"},
-            },
-            {
-                target: "#v-step-characteristic",
-                header: { title: this.$i18n.t("VariableView.characteristic")},
-                content: this.$i18n.t("VariableForm.tutorial.characteristic"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-characteristic",
-                header: { title: this.$i18n.t("VariableView.characteristic")},
-                content: this.$i18n.t("VariableForm.tutorial.characteristic-check"),
-                params: {placement: "right"},
-            },
-            {
-                target: "#v-step-method",
-                header: { title: this.$i18n.t("VariableView.method")},
-                content: this.$i18n.t("VariableForm.tutorial.method"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-method",
-                header: { title: this.$i18n.t("VariableView.method")},
-                content: this.$i18n.t("VariableForm.tutorial.method-check"),
-                params: {placement: "right"},
-            },
-            {
-                target: "#v-step-unit",
-                header: { title: this.$i18n.t("VariableView.unit")},
-                content: this.$i18n.t("VariableForm.tutorial.unit"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-name",
-                header: { title: this.$i18n.t("component.common.name")},
-                content: this.$i18n.t("VariableForm.tutorial.name"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-alt",
-                header: { title: this.$i18n.t("VariableForm.altName")},
-                content: this.$i18n.t("VariableForm.tutorial.altName"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-species",
-                header: { title: this.$i18n.t("component.experiment.species")},
-                content: this.$i18n.t("VariableForm.tutorial.species"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-datatype",
-                header: { title: this.$i18n.t("OntologyPropertyForm.data-type")},
-                content: this.$i18n.t("VariableForm.tutorial.datatype"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-time-interval",
-                header: { title: this.$i18n.t("VariableForm.time-interval")},
-                content: this.$i18n.t("VariableForm.tutorial.time-interval"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-sampling-interval",
-                header: { title: this.$i18n.t("VariableForm.sampling-interval")},
-                content: this.$i18n.t("VariableForm.tutorial.sampling-interval"),
-                params: {placement: "left"},
-            },
-            {
-                target: "#v-step-description",
-                header: { title: this.$i18n.t("component.common.description")},
-                content: this.$i18n.t("VariableForm.tutorial.description"),
-                params: {placement: "left"},
-            },
-        ];
-    }
-
-  loadMoreItems(ref){
+  loadMoreItems(ref) {
     this.pageSize = 0;
     ref.refresh();
     this.$nextTick(() => {
       ref.openTreeselect();
-    })
+    });
   }
-
 }
 </script>
 
 <style scoped>
-    #traitButton {
-        padding-top: 23px;
-    }
+#traitButton {
+  padding-top: 23px;
+}
 </style>
 
 <i18n>

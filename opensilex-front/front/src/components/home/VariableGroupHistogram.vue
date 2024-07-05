@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart" style="width: 100%; height: 400px"></div>
+  <div ref="chart" style="width: 100%; height: 400px; margin-bottom: 5%"></div>
 </template>
 
 <script lang="ts">
@@ -80,6 +80,14 @@ export default class VariableGroupHistogram extends Vue {
     const processedSeries = this.processData();
 
     const option = {
+      title: {
+        text: "Nombre d'observation par groupe de variables",
+        left: "center",
+        textStyle: {
+          color: "#333",
+          fontSize: 18,
+        },
+      },
       tooltip: {
         trigger: "axis",
         axisPointer: {
@@ -97,12 +105,12 @@ export default class VariableGroupHistogram extends Vue {
         type: "scroll",
         orient: "horizontal",
         left: "center",
-        top: "top",
+        bottom: 0,
       },
       grid: {
         left: "3%",
         right: "4%",
-        bottom: "3%",
+        bottom: "8%",
         containLabel: true,
       },
       xAxis: [

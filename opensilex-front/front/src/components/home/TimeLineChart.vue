@@ -94,7 +94,7 @@ export default class LargeAreaChart extends Vue {
       },
       title: {
         left: "center",
-        text: "Large Area Chart",
+        text: "Densité de mesure par variable sur la période de suivi",
       },
       toolbox: {
         feature: {
@@ -104,6 +104,7 @@ export default class LargeAreaChart extends Vue {
           restore: {},
           saveAsImage: {},
         },
+        top: 20,
       },
       xAxis: {
         type: "category",

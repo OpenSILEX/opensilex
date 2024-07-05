@@ -102,7 +102,7 @@ export default class HeatmapChart extends Vue {
     const option = {
       title: {
         left: "center",
-        text: this.data.name,
+        text: "Densité de mesure sur la période de suivi",
       },
       toolbox: {
         feature: {

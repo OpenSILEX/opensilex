@@ -331,6 +331,7 @@ export default class ProjectList extends Vue {
     this.$nextTick(() => {
       if (!this.noUpdateURL) {
         this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
       }
     });
   }

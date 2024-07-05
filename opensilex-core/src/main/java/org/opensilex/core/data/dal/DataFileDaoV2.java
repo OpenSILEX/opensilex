@@ -44,7 +44,6 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
 
     public static Map<Bson, IndexOptions> getIndexes() {
 
-        Bson idIndex = Indexes.ascending(MongoModel.MONGO_ID_FIELD);
         Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
         Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
@@ -54,7 +53,6 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         Map<Bson, IndexOptions> indexes = new HashMap<>();
 
         // index on field : _id, URI and date
-        indexes.put(idIndex, new IndexOptions().background(false)); // background building can't be specified for the _id field
         indexes.put(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
         indexes.put(dateDescIndex, null);
 

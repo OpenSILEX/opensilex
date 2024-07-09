@@ -33,7 +33,7 @@ variables:
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
-  MVN_VERSION: 3.8.6
+  MVN_VERSION: 3.8.8
   # DEFAULT SERVER JAVA VERSION
   JAVA_VERSION: 11
   ## DEPLOY CONFIGS ##
@@ -540,7 +540,7 @@ update:nightly:builds:branch:
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
     - apt-get update && apt-get install -y git
   stage: build
-  image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   script:
     - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -554,14 +554,10 @@ update:nightly:builds:branch:
 .with_java11: &java11
   variables:
     JAVA_VERSION: 11
-
-.with_java14: &java14
+ 
+.with_java17: &java17
   variables:
-    JAVA_VERSION: 14
-
-#.with_java17: &java17
-#  variables:
-#    JAVA_VERSION: 17
+    JAVA_VERSION: 17
 
 
 test:build:java11:

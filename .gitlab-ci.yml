@@ -564,8 +564,8 @@ test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java14:
-  <<: *java14
+test:build:java17:
+  <<: *java17
   <<: *test_build_on_schedules
 
 #test:build:java17:

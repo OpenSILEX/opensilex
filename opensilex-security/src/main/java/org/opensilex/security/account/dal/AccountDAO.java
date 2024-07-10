@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.security.account.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -12,12 +13,18 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.ConflictException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -192,7 +199,7 @@ public final class AccountDAO {
 
     /**
      * @param stringPattern : pattern we will use to find a corresponding match with Account's email (ex .* to match every Account)
-     * @return a paginatedList of AccountModel which correspond to the Pattern
+     * @return a paginatedList of AccountModel which correspond to the Pattern. Uses Proxy so all fields available.
      */
     public ListWithPagination<AccountModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
@@ -202,13 +209,7 @@ public final class AccountDAO {
                 SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern)
         );
 
-        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
-        WhereBuilder whereGraph = new WhereBuilder();
-        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.LINKED_PERSON_FIELD), FOAF.lastName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.LAST_NAME_FIELD));
-        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.LINKED_PERSON_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
-        WhereBuilder whereOptional = new WhereBuilder();
-        whereOptional.addOptional(whereGraph);
-        customHandlerByFields.put(AccountModel.LINKED_PERSON_FIELD, whereOptional.getWhereHandler());
+        Map<String, WhereHandler> customHandlerByFields = getLinkedPersonFieldHandler();
 
         return sparql.searchWithPagination(
                 sparql.getDefaultGraph(AccountModel.class),
@@ -225,6 +226,109 @@ public final class AccountDAO {
                 page,
                 pageSize
         );
+    }
+
+    /**
+     * @param stringPattern : pattern we will use to find a corresponding match with Account's email (ex .* to match every Account)
+     * @param urisFilter : Return only accounts whose uri is in this list
+     * @param lang : language
+     * @param fetchLinkedPersons : If false the linked persons field will just contain a uri instead of a PersonModel
+     * @param fetchFavorites : If false the favorites list will be null
+     * @return a paginatedList of AccountModels, with GroupUserProfileLists set to null
+     */
+    public ListWithPagination<AccountModel> searchWithNoGroupUserProfiles(String stringPattern, List<URI> urisFilter, String lang, boolean fetchLinkedPersons, boolean fetchFavorites, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+        Expr stringFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern)
+        );
+
+        Map<String, WhereHandler> customHandlerByFields = getLinkedPersonFieldHandler();
+
+        SparqlNoProxyFetcher<AccountModel> customFetcher = new SparqlNoProxyFetcher<>(AccountModel.class, sparql);
+
+        //Get Accounts
+        ListWithPagination<AccountModel> accountModels = sparql.searchWithPagination(
+                sparql.getDefaultGraph(AccountModel.class),
+                AccountModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    if (stringFilter != null) {
+                        select.addFilter(stringFilter);
+                    }
+                    if(!CollectionUtils.isEmpty(urisFilter)){
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, urisFilter));
+                    }
+                },
+                customHandlerByFields,
+                (SPARQLResult result) -> customFetcher.getInstance(result, lang),
+                orderByList,
+                page,
+                pageSize
+        );
+
+        if(fetchFavorites && !CollectionUtils.isEmpty(accountModels.getList())){
+            //Fetch favs
+            SPARQLListFetcher<AccountModel> listFetcher = new SPARQLListFetcher<>(
+                    sparql,
+                    AccountModel.class,
+                    sparql.getDefaultGraph(AccountModel.class),
+                    Collections.singleton(AccountModel.FAVORITES_FIELD),
+                    accountModels.getList()
+            );
+            listFetcher.updateModels();
+        }
+
+        if(fetchLinkedPersons && !CollectionUtils.isEmpty(accountModels.getList())){
+            loadPersonModelsIntoAccounts(accountModels.getList(), lang);
+        }
+
+        return accountModels;
+    }
+
+    private Map<String, WhereHandler> getLinkedPersonFieldHandler() throws SPARQLException {
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+        WhereBuilder whereGraph = new WhereBuilder();
+        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.LINKED_PERSON_FIELD), FOAF.lastName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.LAST_NAME_FIELD));
+        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.LINKED_PERSON_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
+        WhereBuilder whereOptional = new WhereBuilder();
+        whereOptional.addOptional(whereGraph);
+        customHandlerByFields.put(AccountModel.LINKED_PERSON_FIELD, whereOptional.getWhereHandler());
+        return customHandlerByFields;
+    }
+
+    private void loadPersonModelsIntoAccounts(List<AccountModel> accounts, String lang) throws Exception {
+        //Get embedded fields all at once : PersonModels
+        //Sets to save only distinct uris we need to fetch
+        HashSet<String> encounteredPersonUris = new HashSet<>();
+
+        accounts.forEach(accountModel -> {
+            if(accountModel.getLinkedPerson()!= null){
+                encounteredPersonUris.add(SPARQLDeserializers.getExpandedURI(accountModel.getLinkedPerson().getUri()));
+            }
+        });
+
+        Map<String, PersonModel> personMap = new HashMap<>();
+
+        //Load persons
+        if(!CollectionUtils.isEmpty(encounteredPersonUris)){
+            List<URI> encounteredPersonUrisAsUris = new ArrayList<>();
+            for(String stringUri : encounteredPersonUris){
+                encounteredPersonUrisAsUris.add(new URI(stringUri));
+            }
+
+            ListWithPagination<PersonModel> personModels = new PersonDAO(sparql).noProxySearch(encounteredPersonUrisAsUris, lang);
+
+            personModels.forEach(e->personMap.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
+        }
+
+        //Set Accounts PersonModel
+        for(AccountModel account : accounts){
+            if(account.getLinkedPerson() != null){
+                account.setLinkedPerson(personMap.get(SPARQLDeserializers.getExpandedURI(account.getLinkedPerson().getUri())));
+            }
+        }
     }
 
     /**

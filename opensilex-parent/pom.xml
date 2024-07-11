@@ -44,9 +44,9 @@
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
         <!-- Front-end Node & Yarn version -->
-        <node.version>v14.19.0</node.version>
-        <yarn.version>v1.22.10</yarn.version>
-        <npm.version>v8.5.2</npm.version>
+        <node.version>v16.10.0</node.version>
+        <yarn.version>v1.22.22</yarn.version>
+        <npm.version>v7.24.0</npm.version>
 
         <!-- Java supported version -->
         <java.compiler.version>11</java.compiler.version>

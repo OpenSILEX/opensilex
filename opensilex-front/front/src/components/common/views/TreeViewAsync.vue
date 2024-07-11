@@ -6,13 +6,13 @@
     @nodeclick="selectItem"
     @toggle="toggle"
   >
-    <template slot="toggle" slot-scope="{ node }">
+    <template #toggle="{ node }">
       <span class="toggle-icon" v-if="!node.isLeaf">
         <opensilex-Icon v-if="node.isExpanded" icon="fa#chevron-down" />
         <opensilex-Icon v-if="!node.isExpanded" icon="fa#chevron-right" />
       </span>
     </template>
-    <template slot="title" slot-scope="{ node }">
+    <template #title="{ node }">
       <span v-if="node.data != null">
         <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
         <b-form-checkbox

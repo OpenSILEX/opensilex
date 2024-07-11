@@ -27,7 +27,7 @@
           ></component>
         </tab-content>
 
-        <template slot="footer" slot-scope="props">
+        <template #footer="{ props }">
           <footer class="modal-footer modal-footer-replacement">
             <div class="wizard-footer-left">
               <b-button

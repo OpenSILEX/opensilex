@@ -43,13 +43,6 @@ export default class ScientificObjectParentPropertySelector extends Vue {
     created(){
         this.service = this.$opensilex.getService("opensilex.ScientificObjectsService");
     }
-    getContextURI() {
-        if (this.context && this.context.experimentURI) {
-            return this.context.experimentURI;
-        } else {
-            return undefined;
-        }
-    }
 
     searchParents(query, page, pageSize) {
 
@@ -65,7 +58,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
         }
 
         return this.service.searchScientificObjects(
-                this.getContextURI(),
+                this.context.experimentURI ? this.context.experimentURI :undefined,
                 types,
                 query,
                 undefined,
@@ -103,6 +96,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
         if (this.context && this.context.experimentURI) {
             contextURI = this.context.experimentURI;
         }
+
         return this.$opensilex
             .getService("opensilex.ScientificObjectsService")
             .getScientificObjectsListByUris(contextURI, soURIs)

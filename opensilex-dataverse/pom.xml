@@ -54,11 +54,5 @@
             <version>0.9.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
     </dependencies>
 </project>

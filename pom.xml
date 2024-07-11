@@ -50,6 +50,10 @@
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
         
+        <!-- Siduri module-->
+        <module>siduri-module</module>
+        
+        
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
 
@@ -128,6 +132,14 @@
             <artifactId>opensilex-phis</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <!-- SIDURI -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>siduri-module</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
 
         <!-- BRAPI dependency --> 
         <dependency>

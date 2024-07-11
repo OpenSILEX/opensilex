@@ -1,0 +1,37 @@
+extend: opensilex-front#opensilex
+
+stylesheets:
+    - _mixins.scss
+    - _settings.scss
+    - _cards.scss
+    - _widgets.scss
+    - _tables.scss
+    - _badges.scss
+    - _navigation.scss
+    - _buttons.scss
+    - _modal.scss
+    - _forms.scss
+    - _carousel.scss
+    - _calendar.scss
+    - _alert.scss
+    - _rating.scss
+    - _range-slider.scss
+    - _layout.scss
+    - _auth.scss
+    - _main.scss
+    - main.css
+    - fix.css
+    - hamburgers.css
+
+# fonts:
+#    - family: Eras Light ITC
+#      style: normal
+#      weight: normal
+#      url: fonts/eras-light/eras-light.eot
+#      src:
+#        opentype: fonts/eras-light/eras-light.otf
+#        svg: fonts/eras-light/eras-light.svg
+#        truetype: fonts/eras-light/eras-light.ttf
+#        woff: fonts/eras-light/eras-light.woff
+#        woff2: fonts/eras-light/eras-light.woff2
+        

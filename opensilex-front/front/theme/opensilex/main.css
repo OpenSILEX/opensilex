@@ -710,7 +710,7 @@ a.external-url-link:hover {
     transition: opacity 0.5s ease;
 }
   
-.v-enter,
+.v-enter-from,
 .v-leave-to {
     opacity: 0;
 }

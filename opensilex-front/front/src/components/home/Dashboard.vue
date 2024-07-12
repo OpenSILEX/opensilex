@@ -640,15 +640,13 @@ export default class MapView extends Vue {
   compareSites(sites, value) {
     this.documentFromSites = [];
     if (sites.length == 0) sites = this.selectedSites.slice();
-    if (!this.comparationMode) {
-      this.documentsService
-        .getMetadataByTargetsAndDates(sites, this.filter.start_date, this.filter.end_date)
-        .then((http: HttpResponse<OpenSilexResponse<Array<DocumentMetadataGetDTO>>>) => {
-          const result = http.response.result;
-          this.documentFromSites = result.slice();
-        })
-        .catch(this.$opensilex.errorHandler);
-    }
+    this.documentsService
+      .getMetadataByTargetsAndDates(sites, this.filter.start_date, this.filter.end_date)
+      .then((http: HttpResponse<OpenSilexResponse<Array<DocumentMetadataGetDTO>>>) => {
+        const result = http.response.result;
+        this.documentFromSites = result.slice();
+      })
+      .catch(this.$opensilex.errorHandler);
     if (value) {
       this.comparationMode = !this.comparationMode;
       if (this.comparationMode) this.compareButtonText = "Return to map";

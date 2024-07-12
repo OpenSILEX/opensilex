@@ -113,11 +113,11 @@ export default class HeatmapChart extends Vue {
       tooltip: {},
       visualMap: {
         min: 0,
-        max: 100000,
-        type: "piecewise",
+        max: 300000,
+        calculable: true,
         orient: "horizontal",
         left: "center",
-        top: "50%",
+        top: "center",
       },
       calendar: {
         left: 30,

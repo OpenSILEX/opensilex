@@ -1,6 +1,6 @@
 <template>
-  <opensilex-FormSelector
-    ref="formSelector"
+  <opensilex-FormSelector v-if="!isModalSearch"
+    ref="experimentSelector"
     :required="required"
     :label="label"
     :selected.sync="experimentsURI"
@@ -13,6 +13,22 @@
     @deselect="deselect"
     @keyup.enter.native="onEnter"
   ></opensilex-FormSelector>
+
+  <opensilex-SelectForm v-else
+    ref="experimentSelector"
+    :required="required"
+    :label="label"
+    :selected.sync="experimentsURI"
+    :multiple="multiple"
+    :searchMethod="searchExperiments"
+    :placeholder="placeholder"
+    noResultsText="component.experiment.form.selector.filter-search-no-result"
+    @clear="$emit('clear')"
+    @select="select"
+    @deselect="deselect"
+    @keyup.enter.native="onEnter"
+    @loadMoreItems="loadMoreItems"
+  ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
@@ -23,6 +39,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse
 // @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
 import FormSelector from "../common/forms/FormSelector.vue";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class ExperimentSelector extends Vue {
@@ -44,7 +61,12 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   required;
 
-  @Ref("formSelector") readonly formSelector!: FormSelector;
+  //this condition has been added until the selectForm modal is refactored
+  @Prop({default: false})
+  isModalSearch;
+
+
+  @Ref("experimentSelector") readonly experimentSelector!: any;
 
   get placeholder() {
     return this.multiple
@@ -100,6 +122,14 @@ export default class ExperimentSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.experimentSelector.refresh();
+    this.$nextTick(() => {
+      this.experimentSelector.openTreeselect();
+    })
   }
 }
 </script>

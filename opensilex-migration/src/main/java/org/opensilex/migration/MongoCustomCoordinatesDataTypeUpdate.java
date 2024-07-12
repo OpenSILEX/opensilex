@@ -7,7 +7,7 @@ import com.mongodb.client.result.UpdateResult;
 import org.apache.jena.atlas.json.JSON;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.update.AbstractOpenSilexModuleUpdate;
@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * <pre>
- * Performs an update on the {@link MoveEventDAO#MOVE_COLLECTION_NAME} collection
+ * Performs an update on the {@link MoveEventNoSqlDao#COLLECTION_NAME} collection
  * after change on data-scheme of the {@link org.opensilex.core.event.dal.move.PositionModel}.
  * For any model of {@link org.opensilex.core.event.dal.move.MoveEventNoSqlModel} each nested position must be updated.
  *
@@ -83,7 +83,7 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
         // check collection existence
         boolean collectionExist = false;
         for (String collectionName : mongodb.getDatabase().listCollectionNames()) {
-            if(collectionName.equals(MoveEventDAO.MOVE_COLLECTION_NAME)){
+            if(collectionName.equals(MoveEventNoSqlDao.COLLECTION_NAME)){
                 collectionExist = true;
                 break;
             }
@@ -93,7 +93,7 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
             return;
         }
 
-        MongoCollection<?> moveCollection = mongodb.getDatabase().getCollection(MoveEventDAO.MOVE_COLLECTION_NAME);
+        MongoCollection<?> moveCollection = mongodb.getDatabase().getCollection(MoveEventNoSqlDao.COLLECTION_NAME);
 
         // use a session in order to handle transaction
         // required since an update which apply on multiple document must be executed

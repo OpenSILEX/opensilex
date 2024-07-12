@@ -2,12 +2,10 @@ package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
-import com.mongodb.client.FindIterable;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.fs.service.FileStorageService;
@@ -83,7 +81,7 @@ public class PositionAPI {
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
 
         MoveModel model = moveLogic.getLastMoveAfter(
                 uri,
@@ -122,7 +120,7 @@ public class PositionAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
 
         MoveModel moveEvent = moveLogic.getLastMoveAfter(target, null);
 
@@ -166,7 +164,7 @@ public class PositionAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
         List<MoveEventNoSqlModel> lastTargetPositionList = new ArrayList<>();
         List<MoveEventNoSqlModel> lastPositionListGeo = new ArrayList<>();
 

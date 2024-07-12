@@ -23,7 +23,6 @@ import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
@@ -429,8 +428,8 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
 
         ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -463,13 +462,13 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
 
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
 
-        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
+        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
 
         for (URI contextURI : contexts) {
             ExperimentModel experiment;
@@ -877,7 +876,7 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
 
         searchFilter.setLang(currentUser.getLanguage());
 

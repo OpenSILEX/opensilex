@@ -21,7 +21,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
@@ -865,10 +864,10 @@ public class ScientificObjectDAO {
             // that we reuse this OS inside the experiment, so no need to performs additional checking
             sparql.create(graphNode, object);
 
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, false);
             MoveModel facilityMoveEvent = new MoveModel();
             if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
-                moveDAO.create(facilityMoveEvent);
+                moveLogic.create(facilityMoveEvent);
             }
             sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
             nosql.commitTransaction();
@@ -969,7 +968,7 @@ public class ScientificObjectDAO {
             }
 
             //TODO dont invoke MoveLogic here, put it in a ScientificObjectLogic class in future
-            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, false);
             MoveModel event = moveLogic.getLastMoveEvent(objectURI);
             if(event != null){
                 //retrieve the position to the move event to link it to the new OS for the update
@@ -982,11 +981,11 @@ public class ScientificObjectDAO {
             if (hasFacilityURI) {
                 if (event != null) {
                     fillFacilityMoveEvent(event, object);
-                    moveLogic.update(event);
+                    moveLogic.updateModel(event);
                 } else {
                     event = new MoveModel();
                     if (fillFacilityMoveEvent(event, object)) {
-                        moveDAO.create(event);
+                        moveLogic.create(event);
                     }
                 }
             } else {
@@ -998,7 +997,7 @@ public class ScientificObjectDAO {
                         }
                     }
                     if (newTargets.size() == 0) {
-                        moveDAO.delete(event.getUri());
+                        moveLogic.delete(event.getUri());
                     } else {
                         event.setTargets(newTargets);
 
@@ -1011,7 +1010,7 @@ public class ScientificObjectDAO {
                             }
                             event.getNoSqlModel().setTargetPositions(newTargetsPositions);
                         }
-                        moveDAO.update(event);
+                        moveLogic.updateModel(event);
                     }
                 }
             }

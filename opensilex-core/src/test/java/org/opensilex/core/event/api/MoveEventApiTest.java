@@ -13,7 +13,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.*;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -441,6 +441,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(MoveEventDAO.MOVE_COLLECTION_NAME);
+        return Collections.singletonList(MoveEventNoSqlDao.COLLECTION_NAME);
     }
 }

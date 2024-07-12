@@ -36,6 +36,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+/**
+ *
+ * @param <T> Model class that this logic class deals with
+ * @param <F> Filter class used for searching
+ *
+ * This class contains all logic for basic Events.
+ */
 public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
 
     SPARQLService sparql;
@@ -46,7 +53,12 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
     /**
      * Basic constructor, dao will be set to default EventDao
      */
-    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, Class<T> clazz) throws SPARQLDeserializerNotFoundException, SPARQLException {
+    public EventLogic(
+            SPARQLService sparql,
+            MongoDBService mongodb,
+            AccountModel currentUser,
+            Class<T> clazz
+            ) throws SPARQLDeserializerNotFoundException, SPARQLException {
         this.sparql = sparql;
         //TODO change to mongoServiceV2 at end if we can
         this.mongodb = mongodb;
@@ -57,7 +69,11 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
     /**
      * Constructor used by children Logic classes in case they have a unique Dao
      */
-    public EventLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, EventDAO<T, F> dao) {
+    public EventLogic(
+            SPARQLService sparql,
+            MongoDBService mongodb,
+            AccountModel currentUser,
+            EventDAO<T, F> dao) {
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.currentUser = currentUser;

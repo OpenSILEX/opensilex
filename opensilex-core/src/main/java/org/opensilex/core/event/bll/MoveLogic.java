@@ -11,19 +11,15 @@
 
 package org.opensilex.core.event.bll;
 
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.arq.querybuilder.Order;
-import org.apache.jena.sparql.syntax.ElementGroup;
 import org.bson.conversions.Bson;
-import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -31,14 +27,13 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingFunction;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,13 +42,22 @@ import java.util.stream.Stream;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Projections.excludeId;
 
+/**
+ *
+ *
+ * This class contains all logic for Move Events.
+ * There is a boolean attribute handleTransactions, if it is set to false then no transactions are started,
+ * This is a temporary solution for the embedded transactions problem
+ */
 public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     private final MoveEventNoSqlDao noSqlDao;
+    private final boolean handleTransactions;
 
-    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, boolean handleTransactions) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
         this.noSqlDao = new MoveEventNoSqlDao(mongodb.getServiceV2());
+        this.handleTransactions = handleTransactions;
     }
 
     //#region PUBLIC METHODS
@@ -61,37 +65,18 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     @Override
     public MoveModel updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
-        return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
-            dao.update(model);
-            URI modelUri = model.getUri();
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            boolean moveExistInMongo = noSqlDao.exists(session, modelUri);
 
-            // the new move event has no data model in mongodb, so we need to delete the old if exists
-            if (noSqlModel == null) {
-                if (moveExistInMongo) {
-                    noSqlDao.delete(session, modelUri);
-                }
-            } else {
-                noSqlModel.setUri(model.getUri());
-                noSqlDao.upsert(session, noSqlModel);
-            }
-            return model;
-        });
+        return wrapWithTransaction(session -> updateMoveNoTransaction(model, session));
     }
 
     @Override
     public void delete(URI uri) throws Exception{
 
-        new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
-            dao.delete(uri);
-            boolean moveExistInMongo = noSqlDao.exists(session, uri);
-
-            if (moveExistInMongo) {
-                noSqlDao.delete(session, uri);
-            }
+        wrapWithTransaction(session ->{
+            deleteNoTransaction(uri, session);
             return 0;
         });
+
     }
 
     @Override
@@ -110,18 +95,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public MoveModel create(MoveModel model) throws Exception {
-        return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
-            //Validate and set publisher
-            MoveModel realModel = super.create(model);
-            // insert move event in mongodb
-            MoveEventNoSqlModel noSqlModel = realModel.getNoSqlModel();
-            if (noSqlModel != null) {
-                String shortEventUri = URIDeserializer.getShortURI(realModel.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-                noSqlDao.create(session, noSqlModel);
-            }
-            return realModel;
-        });
+        return wrapWithTransaction(session -> createNoTransaction(model, session));
+
     }
 
     public List<MoveModel> createMoves(List<MoveModel> models) throws Exception {
@@ -153,15 +128,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             }
 
         }
-        return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session->{
-            //insert into sparql graph and nosql
-            dao.create(models);
-            if (!noSqlModels.isEmpty()) {
-                noSqlDao.create(session, noSqlModels);
-            }
-            return models;
-        });
 
+        return wrapWithTransaction(session ->{return createMultipleNoTransaction(models, noSqlModels, session);});
     }
 
     public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException {
@@ -265,21 +233,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 }
             });
 
-            // found all positions from mongodb collection according the filter
-            //TODO ive replaced this with the above but am unsure if it is correct, does skip and limit = a normal page and pageSize in the mongo filter? Delete if all good
-            /*moveEventCollection
-                    .find(eventInIdFilter)
-                    .skip(page * pageSize)
-                    .limit(pageSize)
-                    .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
-                    .forEach(moveNoSqlModel -> {
-                        if (moveNoSqlModel.getTargetPositions().size() > 0) {
-                            positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
-                        } else {
-                            positionsByUri.remove(moveNoSqlModel.getUri());
-                        }
-                    });*/
-
         }
 
         locationHistory.forEach(move -> {
@@ -353,6 +306,23 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     //#endregion
 
     //#region PRIVATE METHODS
+
+    /**
+     * Runs function either in a transaction or nay
+     *
+     * @param function to be run
+     * @return the result of function
+     * @param <R> return type of function
+     * @param <E> Some Exception type
+     * @throws Exception
+     */
+    private <R, E extends Exception> R wrapWithTransaction(ThrowingFunction<ClientSession, R, E> function) throws Exception {
+        if(this.handleTransactions){
+            return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(function::apply);
+        }
+        return function.apply(null);
+    }
+
     /**
      * @param concernedItemUri the URI of the item concerned by a move event.
      * @return a {@link Bson} with {@link Filters#eq(Object)} expression on itemPositions.concernedItem property and the given URI
@@ -363,6 +333,56 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return Filters.elemMatch(MoveEventNoSqlDao.POSITION_ARRAY_FIELD,
                 Filters.eq(MoveEventNoSqlDao.TARGET_FIELD, concernedItemUri)
         );
+    }
+
+    private List<MoveModel> createMultipleNoTransaction(List<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels, ClientSession clientSech) throws Exception {
+        //insert into sparql graph and nosql
+        dao.create(models);
+        if (!noSqlModels.isEmpty()) {
+            noSqlDao.create(clientSech, noSqlModels);
+        }
+        return models;
+    }
+
+    private MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
+        //Validate and set publisher
+        MoveModel realModel = super.create(model);
+        // insert move event in mongodb
+        MoveEventNoSqlModel noSqlModel = realModel.getNoSqlModel();
+        if (noSqlModel != null) {
+            String shortEventUri = URIDeserializer.getShortURI(realModel.getUri().toString());
+            noSqlModel.setUri(new URI(shortEventUri));
+            noSqlDao.create(session, noSqlModel);
+        }
+        return realModel;
+    }
+
+    private void deleteNoTransaction(URI uri, ClientSession session) throws Exception{
+
+        dao.delete(uri);
+        boolean moveExistInMongo = noSqlDao.exists(session, uri);
+
+        if (moveExistInMongo) {
+            noSqlDao.delete(session, uri);
+        }
+    }
+
+    private MoveModel updateMoveNoTransaction(MoveModel model, ClientSession session) throws Exception {
+        dao.update(model);
+        URI modelUri = model.getUri();
+        MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
+        boolean moveExistInMongo = noSqlDao.exists(session, modelUri);
+
+        // the new move event has no data model in mongodb, so we need to delete the old if exists
+        if (noSqlModel == null) {
+            if (moveExistInMongo) {
+                noSqlDao.delete(session, modelUri);
+            }
+        } else {
+            noSqlModel.setUri(model.getUri());
+            noSqlDao.upsert(session, noSqlModel);
+        }
+        return model;
     }
     //#endregion
 }

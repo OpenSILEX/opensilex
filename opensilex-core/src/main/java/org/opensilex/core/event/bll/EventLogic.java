@@ -60,7 +60,6 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
             Class<T> clazz
             ) throws SPARQLDeserializerNotFoundException, SPARQLException {
         this.sparql = sparql;
-        //TODO change to mongoServiceV2 at end if we can
         this.mongodb = mongodb;
         this.currentUser = currentUser;
         this.dao = new EventDAO<>(sparql, mongodb, clazz);
@@ -88,7 +87,7 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
      * @return the new models with metadata and uri set, performs che"cks beforehand
      * @throws Exception if validation fails
      */
-    public List<T> createEvents(List<T> models, boolean doValidate) throws Exception {
+    public List<T> create(List<T> models, boolean doValidate) throws Exception {
         models.forEach(model -> model.setPublisher(currentUser.getUri()));
         if(doValidate){
             check(models, true);

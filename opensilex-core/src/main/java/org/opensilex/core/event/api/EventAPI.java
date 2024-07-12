@@ -121,7 +121,7 @@ public class EventAPI {
             EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
 
             List<EventModel> models = getEventModels(dtoList, logic);
-            models = logic.createEvents(models, true);
+            models = logic.create(models, true);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -373,7 +373,7 @@ public class EventAPI {
         try {
             MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
-            models = logic.createMoves(models);
+            models = logic.create(models, true);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -409,7 +409,7 @@ public class EventAPI {
             List<T> models = csvImporter.getModels();
 
             try{
-                logic.createEvents(models, forValidation);
+                logic.create(models, forValidation);
                 // update validation when some URIs are already existing or unknown
             }catch (SPARQLInvalidUriListException e){
                 validation.addInvalidURIError(new CSVCell(AbstractEventCsvImporter.ROWS_BEGIN_IDX,0,e.getMessage(),e.getField()));

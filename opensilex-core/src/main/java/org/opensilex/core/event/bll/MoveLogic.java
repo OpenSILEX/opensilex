@@ -99,7 +99,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     }
 
-    public List<MoveModel> createMoves(List<MoveModel> models) throws Exception {
+    @Override
+    public List<MoveModel> create(List<MoveModel> models, boolean doValidate) throws Exception {
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         for (var move : models) {
             if (move.getFrom() != null && move.getTo() == null) {
@@ -108,7 +109,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         }
         List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
 
-        check(models, true);
+        if(doValidate){
+            check(models, true);
+        }
 
         // build streams of sparql and no models from main model stream
         for (MoveModel model : models) {
@@ -129,7 +132,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         }
 
-        return wrapWithTransaction(session ->{return createMultipleNoTransaction(models, noSqlModels, session);});
+        return wrapWithTransaction(session -> createMultipleNoTransaction(models, noSqlModels, session));
     }
 
     public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException {

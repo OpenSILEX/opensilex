@@ -100,12 +100,10 @@ export default class GroupUserProfileForm extends Vue {
   async created() {
     this.service = this.$opensilex.getService("opensilex.SecurityService");
 
-    let http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>> = await this.service.getAllProfiles();
-
-    this.profilesList = http.response.result.map(e=>{
-        e.uri = this.$opensilex.getLongUri(e.uri);
-        return e;
-    });
+      let http: HttpResponse<OpenSilexResponse<
+          Array<ProfileGetDTO>
+      >> = await this.service.getAllProfiles();
+      this.profilesList = http.response.result;
   }
 
   selectedFields = [

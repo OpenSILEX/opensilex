@@ -121,7 +121,12 @@ public final class ProfileDAO {
                     }
                 },
                 Collections.emptyMap(),
-                (SPARQLResult result) -> profileFetcher.getInstance(result, lang),
+                (SPARQLResult result) -> {
+                    //Set to short uri so that they can be easily used in Front-end for Profile selectors
+                    ProfileModel nextModel = profileFetcher.getInstance(result, lang);
+                    nextModel.setUri(new URI(SPARQLDeserializers.getShortURI(nextModel.getUri())));
+                    return nextModel;
+                },
                 Collections.emptyList(),
                 0,
                 0

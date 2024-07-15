@@ -4,7 +4,7 @@
   ~                         pom.xml
   ~ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
   ~ Copyright © INRAE 2024.
-  ~ Last Modification: 19/06/2024 13:43
+  ~ Last Modification: 15/07/2024 13:31
   ~ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
   ~ ******************************************************************************
   -->
@@ -36,12 +36,6 @@
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front</artifactId>
             <version>${revision}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.castmart</groupId>
-            <artifactId>jcountry</artifactId>
-            <version>0.0.2</version>
         </dependency>
 
     </dependencies>

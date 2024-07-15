@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         InstallTest.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 15/07/2024 13:54
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.dev;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -74,7 +84,7 @@ public class InstallTest {
 
     private void testInstall(String configFile, boolean reset) throws Exception {
 
-        Path configPath = Paths.get("src","test","resources","configs",configFile);
+        Path configPath = Paths.get("src","test", "","configs",configFile);
 
         // use custom config
         Map<String, String> customArgs = new HashMap<>();

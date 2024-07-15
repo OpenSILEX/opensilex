@@ -42,6 +42,7 @@
                     @editProperty="showEditForm($event)"
                     @createChildProperty="showCreateForm($event)"
                     @deleteProperty="deleteProperty($event)"
+                    class="scrollable-container"
                 ></opensilex-OntologyPropertyTreeView>
             </b-card>
         </div>
@@ -167,6 +168,11 @@ export default class OntologyPropertyView extends Vue {
 .createButton{
   margin-bottom: -10px;
   margin-top: -10px
+}
+.scrollable-container {
+    width: 100%;
+    height: 600px;
+    overflow-y: auto; /* Enables vertical scrolling */
 }
 </style>
 

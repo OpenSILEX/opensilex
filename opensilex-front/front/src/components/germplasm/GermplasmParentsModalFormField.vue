@@ -23,11 +23,11 @@ import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { SelectableItem } from '../common/forms/SelectForm.vue';
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import Oeso from "../../ontologies/Oeso";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import ModalListBuilder from '../common/views/ModalListBuilder.vue';
+import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
 
 export interface GermplasmParentsAttributesUsedInFront {
   germplasm_uri: string,
@@ -106,13 +106,13 @@ export default class GermplasmParentsModalFormField extends Vue {
     this.id = this.$opensilex.generateID();
     this.germplasmService = this.$opensilex.getService("opensilex.GermplasmService");
     let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let existingPropertiesRessourceTree: Array<ResourceTreeDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
+    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
       return http.response.result;
     }).catch(this.$opensilex.errorHandler);
-    existingPropertiesRessourceTree.forEach(resourceTree => {
+    existingProperties.forEach(property => {
           this.existingRdfParentProperties.push({
-            id: resourceTree.uri,
-            label: resourceTree.name});
+            id: property.uri,
+            label: property.name});
         }
     );
   }

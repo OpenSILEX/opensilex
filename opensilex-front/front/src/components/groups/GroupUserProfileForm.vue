@@ -65,10 +65,11 @@ import Vue from "vue";
 // @ts-ignore
 import { SecurityService, ProfileGetDTO, GroupUserProfileDTO } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GroupUserProfileForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   searchedUser = null;
 
@@ -99,10 +100,12 @@ export default class GroupUserProfileForm extends Vue {
   async created() {
     this.service = this.$opensilex.getService("opensilex.SecurityService");
 
-    let http: HttpResponse<OpenSilexResponse<
-      Array<ProfileGetDTO>
-    >> = await this.service.getAllProfiles();
-    this.profilesList = http.response.result;
+    let http: HttpResponse<OpenSilexResponse<Array<ProfileGetDTO>>> = await this.service.getAllProfiles();
+
+    this.profilesList = http.response.result.map(e=>{
+        e.uri = this.$opensilex.getLongUri(e.uri);
+        return e;
+    });
   }
 
   selectedFields = [

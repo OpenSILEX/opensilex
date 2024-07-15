@@ -174,7 +174,7 @@ export default class FactorLevelTable extends Vue {
     },
   })
   internalFactorLevels: Array<FactorLevelGetDTO>;
-  
+
   get tableColumns(): ColumnDefinition[] {
     return [
       {
@@ -235,32 +235,28 @@ export default class FactorLevelTable extends Vue {
     this.langUnwatcher();
   }
 
-  uploaded(data: any[]) {
-    console.debug("uploaded", data);
-    let tmpLength = this.internalFactorLevels.length;
-    for (let row in data) {
-      console.debug(
-        "uploaded row ",
-        data[row],
-        data[row].name,
-        this.hasDuplicateName(data[row].name)
-      );
+    /**
+     * add factor levels from CSV in the internalFactorLevels field. Add only none empty and unique factor levels
+     * @param factor_levels factor levels to add
+     */
+  private uploaded(factor_levels: any[]) {
+      let validated_factors = []
+      factor_levels.forEach((row) => {
+          if (validated_factors.some((factor) => factor.name === row.name)) {
+              this.$opensilex.showInfoToast(
+                      "Duplicated factor level : " + row.name
+              );
+                return
+            }
+          validated_factors.push(row)
+      })
+        validated_factors = this.remove_blanks_factors(this.internalFactorLevels.concat(validated_factors))
+      this.internalFactorLevels = validated_factors
+        this.$opensilex.showSuccessToast("Data successfully loaded");
+  }
 
-      if (!this.hasDuplicateName(data[row].name)) {
-        this.addRow(data[row]);
-      } else {
-        this.$opensilex.showInfoToast(
-          "Already existing factor level : " + data[row].name
-        );
-      }
-    }
-    if (tmpLength == this.internalFactorLevels.length) {
-      this.$opensilex.showInfoToast("Valid file. No data to add");
-    }
-    if (tmpLength < this.internalFactorLevels.length) {
-      this.$opensilex.showSuccessToast("Data successfully loaded");
-      this.removeEmptyValues();
-    }
+  private remove_blanks_factors(factors: Array<FactorLevelGetDTO>) {
+    return factors.filter((factor) => factor.name !== null && factor.name !== "")
   }
 
   options: any = {
@@ -360,27 +356,6 @@ export default class FactorLevelTable extends Vue {
     return false;
   }
 
-  removeEmptyValues() : void {
-    if (this.internalFactorLevels.length != 0) {
-      this.internalFactorLevels = this.internalFactorLevels.filter(
-          (factorLevel) => factorLevel.name != null && factorLevel.name != ""
-        ); 
-    }
-  }
-
-  hasDuplicateName(name: string) : boolean {
-    if (this.internalFactorLevels.length != 0) {
-      if (
-        this.internalFactorLevels.some(
-          (factorLevel) => factorLevel.name === name
-        )
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   deleteFactorLevel(uri: string) : any {
     console.debug("delete Factor Level" + uri);
     return this.service.deleteFactorLevel(uri);
@@ -418,12 +393,6 @@ export default class FactorLevelTable extends Vue {
       this.$opensilex.showWarningToast(
         this.$i18n.t("component.factorLevel.errors.factor-empty-row")
       );
-    }
-  }
-  addRow(row): void  {
-    console.debug("Add row", row, "empty row", this.hasEmptyValue());
-    if (row.name != undefined && row.name != null && row.name != "") {
-      this.internalFactorLevels = this.internalFactorLevels.concat(row);
     }
   }
 
@@ -477,7 +446,7 @@ en:
         factor-empty-row: You can't add several empty rows
         factor-empty-levels: Missing factor levels
         factor-badname-levels: Must not contains -,+,=,<,>,=,?,/,*,&
-        associated-factor-level : You can't remove a factor level which is associated to a scientific object 
+        associated-factor-level : You can't remove a factor level which is associated to a scientific object
         minimum-factor-level : You must have one factor level a least
       delete: delete
 fr:
@@ -507,6 +476,6 @@ fr:
         associated-factor-level : Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
         minimum-factor-level : Vous devez au moins avoir un niveau de facteur
       delete: supprimer
-        
+
 
 </i18n>

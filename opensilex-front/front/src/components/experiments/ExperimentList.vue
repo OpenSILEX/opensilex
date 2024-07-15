@@ -360,10 +360,11 @@ export default class ExperimentList extends Vue {
   }
 
   updateSelectedExperiment(){
-    this.$opensilex.updateURLParameters(this.filter);
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
     }
+        this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
   }
 
   searchExperiments(options) {
@@ -547,6 +548,7 @@ export default class ExperimentList extends Vue {
       .getService<ExperimentsService>("opensilex.ExperimentsService")
       .deleteExperiment(uri)
       .then(() => {
+        this.tableRef.checkSelectedItems(uri);
         this.refresh();
         let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);

@@ -40,6 +40,7 @@
             :filter.sync="filter.name"
             placeholder="ScientificObjectList.name-placeholder"
             class="searchFilter"
+            @keyup.enter.native="refresh()"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
         </div>

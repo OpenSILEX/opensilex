@@ -42,6 +42,7 @@
                     @editClass="showEditForm($event)"
                     @createChildClass="showCreateForm($event)"
                     @deleteRDFType="deleteRDFType($event)"
+                    class="scrollable-container"
                 ></opensilex-OntologyClassTreeView>
             </b-card>
         </div>
@@ -174,6 +175,11 @@ div.sticky {
     position: -webkit-sticky; /* Safari */
     position: sticky;
     top: 0;
+}
+.scrollable-container {
+    width: 100%;
+    height: 600px;
+    overflow-y: auto; /* Enables vertical scrolling */
 }
 </style>
 

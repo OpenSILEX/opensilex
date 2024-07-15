@@ -83,7 +83,9 @@ public abstract class ResourceDTO<T extends SPARQLResourceModel> {
     public void fromModel(T model) {
         setUri(model.getUri());
         setType(model.getType());
-        setTypeLabel(model.getTypeLabel().getDefaultValue());
+        if(model.getTypeLabel() != null){
+            setTypeLabel(model.getTypeLabel().getDefaultValue());
+        }
         if (Objects.nonNull(model.getPublicationDate())) {
             setPublicationDate(model.getPublicationDate());
         }

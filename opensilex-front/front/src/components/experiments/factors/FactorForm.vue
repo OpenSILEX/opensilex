@@ -180,7 +180,13 @@ export default class FactorForm extends Vue {
       close_match: [],
       broad_match: [],
       narrow_match: [],
-      levels: [],
+      levels: [
+          {
+              uri: null,
+              name: null,
+              description: null,
+          },
+      ],
     };
   }
 

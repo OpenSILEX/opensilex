@@ -240,11 +240,8 @@ export default class FactorLevelTable extends Vue {
      * @param factor_levels factor levels to add
      */
   private uploaded(factor_levels: any[]) {
-      const validated_factors = []
+      let validated_factors = []
       factor_levels.forEach((row) => {
-          if (!row.name || row.name === "") {
-              return
-          }
           if (validated_factors.some((factor) => factor.name === row.name)) {
               this.$opensilex.showInfoToast(
                       "Duplicated factor level : " + row.name
@@ -253,9 +250,13 @@ export default class FactorLevelTable extends Vue {
             }
           validated_factors.push(row)
       })
-
-      this.internalFactorLevels = this.internalFactorLevels.concat(validated_factors);
+        validated_factors = this.remove_blanks_factors(this.internalFactorLevels.concat(validated_factors))
+      this.internalFactorLevels = validated_factors
         this.$opensilex.showSuccessToast("Data successfully loaded");
+  }
+
+  private remove_blanks_factors(factors: Array<FactorLevelGetDTO>) {
+    return factors.filter((factor) => factor.name !== null && factor.name !== "")
   }
 
   options: any = {

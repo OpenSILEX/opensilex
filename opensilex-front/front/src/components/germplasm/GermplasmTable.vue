@@ -182,13 +182,13 @@ import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import { SelectableItem } from '../common/forms/SelectForm.vue';
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import VueRouter from "vue-router";
 import {OpenSilexStore} from "../../models/Store";
 import VueI18n from "vue-i18n";
 import {User} from "../../models/User";
+import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -931,15 +931,15 @@ export default class GermplasmTable extends Vue {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
     //Existing duplicatable rdf property stuff
     let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let existingPropertiesRessourceTree: Array<ResourceTreeDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
+    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
       return http.response.result;
     }).catch(this.$opensilex.errorHandler);
     this.existingDuplicatablePropertiesNameList = [];
-    existingPropertiesRessourceTree.forEach(resourceTree => {
+    existingProperties.forEach(property => {
           this.existingDuplicatableRdfAttributesObjects.push({
-            id: resourceTree.uri,
-            label: resourceTree.name});
-            this.existingDuplicatablePropertiesNameList.push(resourceTree.name);
+            id: property.uri,
+            label: property.name});
+            this.existingDuplicatablePropertiesNameList.push(property.name);
         }
     );
     //Add stuff to existing property string rule (to prevent duplicates)

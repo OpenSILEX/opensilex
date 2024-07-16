@@ -299,13 +299,14 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 RDFS.comment.getURI(),
                 Oeso.hasCreationDate.getURI(),
                 Oeso.hasDestructionDate.getURI(),
+                Oeso.isHosted.getURI(),
                 Oeso.isPartOf.getURI(),
                 Oeso.hasGermplasm.getURI(),
                 Oeso.hasFactorLevel.getURI(),
                 "vocabulary:customDataPropExport",
                 "vocabulary:customObjectPropExport"
         );
-        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(11, row.length));
+        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(12, row.length));
 
         Map<String, Consumer<String>> assertByProperty = getDefaultAssertByProperty(models);
 

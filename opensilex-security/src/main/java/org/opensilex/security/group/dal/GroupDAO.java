@@ -161,12 +161,7 @@ public final class GroupDAO {
                     select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, encounteredUserProfileUrisAsUris));
                 },
                 Collections.emptyMap(),
-                (SPARQLResult result) -> {
-                    //Set uri to short as update service doesn't seem to be working with embedded long uris
-                    GroupUserProfileModel nextModel = userProfileFetcher.getInstance(result, lang);
-                    nextModel.setUri(new URI(SPARQLDeserializers.getShortURI(nextModel.getUri())));
-                    return nextModel;
-                },
+                (SPARQLResult result) -> userProfileFetcher.getInstance(result, lang),
                 Collections.emptyList(),
                 0,
                 0
@@ -186,11 +181,7 @@ public final class GroupDAO {
                 List<GroupUserProfileModel> newGropUserProfileModels = userProfileUrisPerGroup.get(
                         SPARQLDeserializers.getShortURI(group.getUri()))
                         .stream()
-                        .map(groupUserProfileUri ->{
-                            GroupUserProfileModel nextModel = groupUserProfileModelMap.get(groupUserProfileUri);
-                            return nextModel;
-                            //nextModel.setUri(SPARQLDeserializers.);
-                        })
+                        .map(groupUserProfileModelMap::get)
                         .collect(Collectors.toList());
 
                 group.setUserProfiles(newGropUserProfileModels);

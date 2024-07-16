@@ -83,8 +83,6 @@ public final class GroupDAO {
 
     }
 
-
-
     public ListWithPagination<GroupModel> search(String namePattern, String lang, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         Expr nameFilter = SPARQLQueryHelper.regexFilter(GroupModel.NAME_FIELD, namePattern);
@@ -137,9 +135,9 @@ public final class GroupDAO {
         HashSet<String> encounteredUserProfileUris = new HashSet<>();
 
         for(GroupModel groupModel : groupModels) {
-            String groupUri = SPARQLDeserializers.getExpandedURI(groupModel.getUri());
+            String groupUri = SPARQLDeserializers.getShortURI(groupModel.getUri());
             if(groupModel.getUserProfiles() != null){
-                List<String> userProfileUris = groupModel.getUserProfiles().stream().map(e -> SPARQLDeserializers.getExpandedURI(e.getUri())).collect(Collectors.toList());
+                List<String> userProfileUris = groupModel.getUserProfiles().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri())).collect(Collectors.toList());
                 userProfileUrisPerGroup.put(groupUri, userProfileUris);
                 encounteredUserProfileUris.addAll(userProfileUris);
             }else{
@@ -170,7 +168,7 @@ public final class GroupDAO {
         );
         //After search generate uri-GroupUserProfileModel map
         Map<String, GroupUserProfileModel> groupUserProfileModelMap = new HashMap<>();
-        userProfileModels.forEach(e->groupUserProfileModelMap.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
+        userProfileModels.forEach(e->groupUserProfileModelMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
 
         //Load Profiles and Accounts into GroupUserProfileModels
         if(!CollectionUtils.isEmpty(userProfileModels.getList())){
@@ -179,9 +177,9 @@ public final class GroupDAO {
 
         //Set Groups userProfileModel lists
         for(GroupModel group : groupModels){
-            if(userProfileUrisPerGroup.get(SPARQLDeserializers.getExpandedURI(group.getUri())) != null){
+            if(userProfileUrisPerGroup.get(SPARQLDeserializers.getShortURI(group.getUri())) != null){
                 List<GroupUserProfileModel> newGropUserProfileModels = userProfileUrisPerGroup.get(
-                        SPARQLDeserializers.getExpandedURI(group.getUri()))
+                        SPARQLDeserializers.getShortURI(group.getUri()))
                         .stream()
                         .map(groupUserProfileModelMap::get)
                         .collect(Collectors.toList());
@@ -210,11 +208,11 @@ public final class GroupDAO {
 
         groupUserProfileModels.forEach(userProfileModel -> {
             if(userProfileModel.getProfile() != null){
-                encounteredProfileUris.add(SPARQLDeserializers.getExpandedURI(userProfileModel.getProfile().getUri()));
+                encounteredProfileUris.add(SPARQLDeserializers.getShortURI(userProfileModel.getProfile().getUri()));
             }
 
             if(userProfileModel.getUser() != null){
-                encounteredAccountUris.add(SPARQLDeserializers.getExpandedURI(userProfileModel.getUser().getUri()));
+                encounteredAccountUris.add(SPARQLDeserializers.getShortURI(userProfileModel.getUser().getUri()));
             }
 
         });
@@ -227,7 +225,7 @@ public final class GroupDAO {
             }
             //TODO dont invoke profile dao here (put this code in a future logic layer)
             ListWithPagination<ProfileModel> profileModels = new ProfileDAO(sparql).noProxySearch(encounteredProfileUrisAsUris, lang);
-            profileModels.forEach(e->profileMap.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
+            profileModels.forEach(e->profileMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
         }
 
         //Load AccountModels
@@ -247,13 +245,13 @@ public final class GroupDAO {
                     0,
                     0);
 
-            accountModels.forEach(e->accountMap.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
+            accountModels.forEach(e->accountMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
         }
 
         //Set GroupUserProfileModel's Accounts and Profiles with what was just fetched
         for(GroupUserProfileModel groupUserProfileModel : groupUserProfileModels){
-            groupUserProfileModel.setProfile(profileMap.get(SPARQLDeserializers.getExpandedURI(groupUserProfileModel.getProfile().getUri())));
-            groupUserProfileModel.setUser(accountMap.get(SPARQLDeserializers.getExpandedURI(groupUserProfileModel.getUser().getUri())));
+            groupUserProfileModel.setProfile(profileMap.get(SPARQLDeserializers.getShortURI(groupUserProfileModel.getProfile().getUri())));
+            groupUserProfileModel.setUser(accountMap.get(SPARQLDeserializers.getShortURI(groupUserProfileModel.getUser().getUri())));
         }
     }
 

@@ -116,8 +116,6 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
      * @param eventType so that we can detect if the relations are valid
      * @param typeCache can be null, to remember what uri points to what type. Will add to the cache if it wasn't null
      * @return updated model TODO global SPARQLNamedRessourceModel relation setter in an ontology dao ??
-     * @throws InvalidValueException
-     * @throws URISyntaxException
      */
     public T setEventRelations(T model, List<RDFObjectRelationDTO> relations, URI eventType, Map<URI, ClassModel> typeCache) throws InvalidValueException, URISyntaxException, SPARQLException {
 
@@ -154,7 +152,7 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
                 shortPropertiesUris.put(relation.getProperty(),shortPropUri);
             }
 
-            if (!ontologyDAO.validateThenUpdateObjectValue(dao.getGraphUri(), eventClassModel, shortPropUri, relation.getValue(), model)) {
+            if (!ontologyDAO.validateThenAddObjectRelationValue(dao.getGraphUri(), eventClassModel, shortPropUri, relation.getValue(), model)) {
                 throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
             }
         }
@@ -165,11 +163,10 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
      *
      * @param model to update in graph
      * @return updated model after sparql update operation
-     * @throws Exception
      */
-    public T updateModel(T model) throws Exception {
+    public void updateModel(T model) throws Exception {
         check(Collections.singletonList(model), false);
-        return dao.update(model);
+        dao.update(model);
     }
 
     public void delete(URI uri) throws Exception{
@@ -250,6 +247,6 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
         }
 
     }
-
+    //#endregion
 
 }

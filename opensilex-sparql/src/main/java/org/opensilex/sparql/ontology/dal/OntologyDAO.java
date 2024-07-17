@@ -421,15 +421,16 @@ public final class OntologyDAO {
     }
 
     /**
+     * Validates the relation, then adds it to the object.
      *
-     * @param graph : Graph that relation applies in.
-     * @param model : Model of class required to identify restrictions
-     * @param propertyURI : Uri of the property
-     * @param value : String value of property for object, can be null
-     * @param object : SPARQLResourceModel inherited object to modify if valid
-     * @return true if valid triplet, false otherwise
+     * @param graph that relation applies in.
+     * @param model Model of class required to identify restrictions
+     * @param propertyURI Uri of the property
+     * @param value of property for object, can be null
+     * @param object to modify if valid
+     * @return true if valid triple, false otherwise
      */
-    public boolean validateThenUpdateObjectValue(
+    public boolean validateThenAddObjectRelationValue(
             URI graph,
             ClassModel model,
             URI propertyURI,

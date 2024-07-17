@@ -81,7 +81,7 @@ public class PositionAPI {
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         MoveModel model = moveLogic.getLastMoveAfter(
                 uri,
@@ -93,7 +93,7 @@ public class PositionAPI {
             return new SingleObjectResponse<>(new PositionGetDTO()).getResponse();
         }
         else {
-            PositionModel position = moveLogic.getPosition(uri, model.getUri());
+            PositionModel position = moveLogic.getPosition(uri);
 
             if (model.getTo() == null && model.getFrom() == null && position == null) {
                 throw new NotFoundURIException("No position found", uri);
@@ -120,7 +120,7 @@ public class PositionAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         MoveModel moveEvent = moveLogic.getLastMoveAfter(target, null);
 
@@ -164,9 +164,9 @@ public class PositionAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
-        List<MoveEventNoSqlModel> lastTargetPositionList = new ArrayList<>();
-        List<MoveEventNoSqlModel> lastPositionListGeo = new ArrayList<>();
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        List<MoveNosqlModel> lastTargetPositionList = new ArrayList<>();
+        List<MoveNosqlModel> lastPositionListGeo = new ArrayList<>();
 
         try {
             //create search filter
@@ -191,7 +191,7 @@ public class PositionAPI {
             //for each unique target uri, get the mongoDB Model move linked (and the target detail?)
             for (Optional<EventModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
 
-                MoveEventNoSqlModel lastTargetPosition = moveLogic.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
+                MoveNosqlModel lastTargetPosition = moveLogic.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
                 if(lastTargetPosition != null){
                     lastTargetPositionList.add(lastTargetPosition);
                 }

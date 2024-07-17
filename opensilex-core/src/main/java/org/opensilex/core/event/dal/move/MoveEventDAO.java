@@ -1,10 +1,5 @@
 package org.opensilex.core.event.dal.move;
 
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -20,16 +15,12 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
-import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -43,25 +34,22 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.excludeId;
-
+/**
+ * This class deals with all of MoveModels fields, other than it's noSqlModel
+ */
 public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
     public static final Var fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.FROM_FIELD));
     public static final Var toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.TO_FIELD));
     private static final Var lastEndTimeStampVar = SPARQLQueryHelper.makeVar("last_end_ts");
-    private static final Triple moveToTriple = new Triple(uriVar, Oeev.to.asNode(), toVar);
-    private static final Triple moveTypeTriple = new Triple(uriVar, RDF.type.asNode(), Oeev.Move.asNode());
-    private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
+    private static final Triple moveToTriple = Triple.create(uriVar, Oeev.to.asNode(), toVar);
+    private static final Triple moveTypeTriple = Triple.create(uriVar, RDF.type.asNode(), Oeev.Move.asNode());
+    private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(Triple.create(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
 
@@ -229,7 +217,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
             Var uriVar = SPARQLQueryHelper.makeVar(MoveModel.URI_FIELD);
             Var targetVar = SPARQLQueryHelper.makeVar(MoveModel.TARGET_FIELD);
 
-            Triple targetTriple = new Triple(uriVar, Oeev.concerns.asNode(), targetVar);
+            Triple targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);
 
             targetGraphGroupElem.addTriplePattern(targetTriple);
 

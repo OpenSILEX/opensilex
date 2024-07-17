@@ -322,7 +322,7 @@ public class StudiesAPI extends BrapiCall {
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         GeospatialDAO geospatialDAO = new GeospatialDAO(nosql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 

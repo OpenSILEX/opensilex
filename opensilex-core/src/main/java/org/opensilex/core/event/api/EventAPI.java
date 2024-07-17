@@ -371,7 +371,7 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
+            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.create(models, true);
 
@@ -454,7 +454,7 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
@@ -474,7 +474,7 @@ public class EventAPI {
             @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
         return buildCsvResponse(csvImporter, logic, true).getResponse();
@@ -497,7 +497,7 @@ public class EventAPI {
     public Response updateMoveEvent(
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
         logic.updateModel(model);
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
@@ -516,7 +516,7 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveModel model = new MoveLogic(sparql, nosql, currentUser, true).get(uri);
+        MoveModel model = new MoveLogic(sparql, nosql, currentUser).get(uri);
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -542,7 +542,7 @@ public class EventAPI {
     public Response deleteMoveEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }

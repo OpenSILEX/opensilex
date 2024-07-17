@@ -21,7 +21,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
@@ -36,6 +36,7 @@ import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
@@ -844,10 +845,7 @@ public class ScientificObjectDAO {
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
         object.setPublisher(currentUser.getUri());
-        try {
-            sparql.startTransaction();
-            nosql.startTransaction();
-
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             // experimental context + no URI set
             if(! SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI) && objectURI == null) {
 
@@ -864,18 +862,14 @@ public class ScientificObjectDAO {
             // that we reuse this OS inside the experiment, so no need to performs additional checking
             sparql.create(graphNode, object);
 
-            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, false);
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, session);
             MoveModel facilityMoveEvent = new MoveModel();
             if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moveLogic.create(facilityMoveEvent);
             }
             sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
-            nosql.commitTransaction();
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-        }
+            return 0;
+        });
 
         return object;
     }
@@ -951,28 +945,20 @@ public class ScientificObjectDAO {
                     select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
                 });
 
-        boolean hasFacilityURI = false;
-        for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
-                hasFacilityURI = true;
-                break;
-            }
-        }
+        boolean hasFacilityURI = object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
 
-        try {
-            sparql.startTransaction();
-            nosql.startTransaction();
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             sparql.update(graphNode, object);
-            if (childrenURIs.size() > 0) {
+            if (!childrenURIs.isEmpty()) {
                 sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }
 
             //TODO dont invoke MoveLogic here, put it in a ScientificObjectLogic class in future
-            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, false);
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, session);
             MoveModel event = moveLogic.getLastMoveEvent(objectURI);
             if(event != null){
                 //retrieve the position to the move event to link it to the new OS for the update
-                MoveEventNoSqlModel moveNoSql = moveLogic.getMoveEventNoSqlModel(event.getUri());
+                MoveNosqlModel moveNoSql = moveLogic.getMoveEventNoSqlModel(event.getUri());
                 if(moveNoSql != null){
                     event.setNoSqlModel(moveNoSql);
                 }
@@ -996,7 +982,7 @@ public class ScientificObjectDAO {
                             newTargets.add(item);
                         }
                     }
-                    if (newTargets.size() == 0) {
+                    if (newTargets.isEmpty()) {
                         moveLogic.delete(event.getUri());
                     } else {
                         event.setTargets(newTargets);
@@ -1015,15 +1001,8 @@ public class ScientificObjectDAO {
                 }
             }
             sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
-
-            sparql.commitTransaction();
-            nosql.commitTransaction();
-        } catch (Exception ex) {
-            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-
-        }
-
+            return 0;
+        });
         return object.getUri();
     }
 

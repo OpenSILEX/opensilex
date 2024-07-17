@@ -8,6 +8,7 @@ import org.apache.jena.atlas.json.JSON;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.update.AbstractOpenSilexModuleUpdate;
@@ -22,7 +23,7 @@ import java.util.Objects;
  * <pre>
  * Performs an update on the {@link MoveEventNoSqlDao#COLLECTION_NAME} collection
  * after change on data-scheme of the {@link org.opensilex.core.event.dal.move.PositionModel}.
- * For any model of {@link org.opensilex.core.event.dal.move.MoveEventNoSqlModel} each nested position must be updated.
+ * For any model of {@link MoveNosqlModel} each nested position must be updated.
  *
  * Indeed, {@link PositionModel#X_FIELD}, {@link PositionModel#Y_FIELD} and {@link PositionModel#Z_FIELD} now
  * use a {@link String} representation instead of {@link Integer}

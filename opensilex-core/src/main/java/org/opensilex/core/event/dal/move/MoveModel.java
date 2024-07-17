@@ -45,7 +45,7 @@ public class MoveModel extends EventModel {
 
 
     @SPARQLIgnore
-    private MoveEventNoSqlModel noSqlModel;
+    private MoveNosqlModel noSqlModel;
 
     public FacilityModel getTo() {
         return to;
@@ -72,11 +72,11 @@ public class MoveModel extends EventModel {
     }
 
 
-    public MoveEventNoSqlModel getNoSqlModel() {
+    public MoveNosqlModel getNoSqlModel() {
         return noSqlModel;
     }
 
-    public void setNoSqlModel(MoveEventNoSqlModel noSqlModel) {
+    public void setNoSqlModel(MoveNosqlModel noSqlModel) {
         this.noSqlModel = noSqlModel;
     }
 }

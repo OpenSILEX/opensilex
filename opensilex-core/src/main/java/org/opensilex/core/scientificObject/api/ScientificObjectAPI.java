@@ -428,7 +428,7 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
 
         ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
@@ -462,7 +462,7 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
@@ -876,7 +876,7 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         searchFilter.setLang(currentUser.getLanguage());
 

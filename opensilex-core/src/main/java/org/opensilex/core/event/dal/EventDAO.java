@@ -102,23 +102,23 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         isInstantVar = SPARQLQueryHelper.makeVar(EventModel.IS_INSTANT_FIELD);
         fromVar = SPARQLQueryHelper.makeVar(MoveModel.FROM_FIELD);
         toVar = SPARQLQueryHelper.makeVar(MoveModel.TO_FIELD);
-
-        descriptionTriple = new Triple(uriVar, RDFS.comment.asNode(), descriptionVar);
-        targetTriple = new Triple(uriVar, Oeev.concerns.asNode(), targetVar);
+        
+        descriptionTriple = Triple.create(uriVar, RDFS.comment.asNode(), descriptionVar);
+        targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);
 
         startInstantVar = SPARQLQueryHelper.makeVar(EventModel.START_FIELD);
         endInstantVar = SPARQLQueryHelper.makeVar(EventModel.END_FIELD);
         startInstantTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(EventModel.START_FIELD));
         endInstantTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(EventModel.END_FIELD));
 
-        isInstantTriple = new Triple(uriVar, Oeev.isInstant.asNode(), isInstantVar);
-        beginTriple = new Triple(uriVar, Time.hasBeginning.asNode(), startInstantVar);
-        beginInstantTimeStampTriple = new Triple(startInstantVar, Time.inXSDDateTimeStamp.asNode(), startInstantTimeStampVar);
-        endTriple = new Triple(uriVar, Time.hasEnd.asNode(), endInstantVar);
-        endInstantTimeStampTriple = new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), endInstantTimeStampVar);
+        isInstantTriple = Triple.create(uriVar, Oeev.isInstant.asNode(), isInstantVar);
+        beginTriple = Triple.create(uriVar, Time.hasBeginning.asNode(), startInstantVar);
+        beginInstantTimeStampTriple = Triple.create(startInstantVar, Time.inXSDDateTimeStamp.asNode(), startInstantTimeStampVar);
+        endTriple = Triple.create(uriVar, Time.hasEnd.asNode(), endInstantVar);
+        endInstantTimeStampTriple = Triple.create(endInstantVar, Time.inXSDDateTimeStamp.asNode(), endInstantTimeStampVar);
 
         partialTargetMatchVar = SPARQLQueryHelper.makeVar(TARGET_PARTIAL_MATCH_VAR_NAME);
-        partialTargetMatchTriple = new Triple(uriVar, Oeev.concerns.asNode(), partialTargetMatchVar);
+        partialTargetMatchTriple = Triple.create(uriVar, Oeev.concerns.asNode(), partialTargetMatchVar);
     }
 
     public EventDAO(SPARQLService sparql, MongoDBService mongodb, Class<T> clazz) throws SPARQLException, SPARQLDeserializerNotFoundException {
@@ -127,21 +127,11 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         this.clazz = clazz;
 
         ontologyDAO = new OntologyDAO(sparql);
-        eventGraph = getEventsGraph(sparql);
+        eventGraph = sparql.getDefaultGraph(clazz);
         timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
     }
 
     //#region PUBLIC METHODS
-
-    /**
-     *
-     * @param sparql
-     * @return static function to get graph as is needed to create models in EventAPI
-     * @throws SPARQLException
-     */
-    public static Node getEventsGraph(SPARQLService sparql) throws SPARQLException {
-        return sparql.getDefaultGraph(EventModel.class);
-    }
 
     public T create(T model) throws Exception {
         sparql.create(eventGraph, model, false, true);
@@ -170,26 +160,16 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         sparql.delete(EventModel.class, uri);
     }
 
-    public EventModel get(URI uri, AccountModel user) throws Exception {
-        return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
+    public T get(URI uri, AccountModel user) throws Exception {
+        return sparql.loadByURI(eventGraph, clazz, uri, user.getLanguage());
     }
+
 
 
     /**
      *
-     * target partial or exact match on target
-     * targets exact match on a URI list
-     * targetType target type (device, scientific object,...)
-     * descriptionPattern
-     * type
-     * start
-     * end
-     * lang
-     * orderByList
-     * page
-     * pageSize
-     * @return
-     * @throws Exception
+     * @param searchFilter The filter to be used for search
+     * @return a paginated list of T
      *
      * @implNote <b>targets</b> filter is applied in priority if non-empty or null, else <b>target</b> filter is applied. (Not both of them)
      */
@@ -200,9 +180,6 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         // set the custom filter on type
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         appendTypeFilter(customHandlerByFields, searchFilter.getType());
-
-        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
-        AtomicReference<Boolean> targetTripleAdded = new AtomicReference<>(false);
 
         ListWithPagination<T> results = sparql.searchWithPagination(
                 eventGraph,
@@ -217,7 +194,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
                         Var baseTypeVar = makeVar("baseType");
                         Var targetTypeVar = makeVar("target");
 
-                        eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetTypeVar));
+                        eventGraphGroupElem.addTriplePattern(Triple.create(uriVar, Oeev.concerns.asNode(), targetTypeVar));
                         select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(searchFilter.getBaseType()));
                         select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
                     }
@@ -225,22 +202,15 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
                     // match on list of URIs
                     if(! CollectionUtils.isEmpty(searchFilter.getTargets())){
                         appendInTargetsValues(select, searchFilter.getTargets().stream(), searchFilter.getTargets().size());
-                    }else{
-                        // partial/exact match on one pattern/URI
-
-                        // append target filtering + check if the corresponding triple has been added or not to the query.
-                        // Used in order to indicate further to the SPARQLListFetcher if this triple must be added or not
-                        targetTripleAdded.set(appendTargetEqFilter(eventGraphGroupElem, searchFilter.getTarget(), searchFilter.getOrderByList()));
                     }
 
                     // for each optional field, the filtering must be applied outside the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, searchFilter.getDescriptionPattern());
                     appendTimeFilter(eventGraphGroupElem, searchFilter.getStart(), searchFilter.getEnd());
 
-                    initialSelect.set(select);
                 }),
                 customHandlerByFields,
-                (result -> fromResult(result, searchFilter.getLang(), new EventModel())),  // custom result handler, direct convert SPARQLResult to EventModel
+                (result -> fromResult(result, searchFilter.getLang(), ((T)new EventModel()))),  // custom result handler, direct convert SPARQLResult to EventModel
                 searchFilter.getOrderByList(),
                 searchFilter.getPage(),
                 searchFilter.getPageSize()
@@ -324,7 +294,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         if (exactTargetMatching) {
             String expandedTarget = SPARQLDeserializers.getExpandedURI(new URI(target));
             Node targetNode = NodeFactory.createURI(expandedTarget);
-            eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetNode));
+            eventGraphGroupElem.addTriplePattern(Triple.create(uriVar, Oeev.concerns.asNode(), targetNode));
         } else {
             /* create EXISTS clause and filter on event with a target matching with the partial string filter.
             It allows the retrieval, for each event matching with target filter, of the full target list(not only URIs which match) */
@@ -379,7 +349,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         eventGraphGroupElem.addElementFilter(new ElementFilter(durationEventDateRange));
     }
 
-    protected T fromResult( SPARQLResult result, String lang, EventModel model) throws Exception {
+    protected T fromResult( SPARQLResult result, String lang, T model) throws Exception {
 
         model.setUri(new URI(SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD))));
         model.setType(new URI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
@@ -410,7 +380,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
             model.setEnd(instant);
         }
 
-        return (T)model;
+        return model;
     }
 
     protected void updateOrderByList(List<OrderBy> orderByList) {
@@ -431,5 +401,6 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
             }
         }
     }
+    //#endregion
 
 }

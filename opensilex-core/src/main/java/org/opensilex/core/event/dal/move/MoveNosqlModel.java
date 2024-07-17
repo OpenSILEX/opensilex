@@ -6,7 +6,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import java.net.URI;
 import java.util.List;
 
-public class MoveEventNoSqlModel extends MongoModel {
+public class MoveNosqlModel extends MongoModel {
 
     public final static String ID_FIELD = "_id";
     public final static String COORDINATES_FIELD = "targetPositions.position.coordinates";

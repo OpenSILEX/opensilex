@@ -83,7 +83,7 @@ public class DeviceDAO {
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI prop = SPARQLDeserializers.formatURI(relation.getProperty());
-                if (!ontologyDAO.validateThenUpdateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
+                if (!ontologyDAO.validateThenAddObjectRelationValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
@@ -465,7 +465,7 @@ public class DeviceDAO {
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {
 
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, true);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         MoveModel moveEvent = moveLogic.getLastMoveAfter(deviceURI, null);
 

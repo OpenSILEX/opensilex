@@ -117,7 +117,7 @@ public class FacilityAPI {
                         new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                    if (!ontoDAO.validateThenUpdateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                    if (!ontoDAO.validateThenAddObjectRelationValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                         throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                     }
                 }
@@ -307,7 +307,7 @@ public class FacilityAPI {
             ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
             URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                if (!ontoDAO.validateThenUpdateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                if (!ontoDAO.validateThenAddObjectRelationValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }

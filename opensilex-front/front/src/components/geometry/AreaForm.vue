@@ -73,7 +73,7 @@ export default class AreaForm extends Vue {
   $store: any;
   $i18n: any;
   uriGenerated = true;
-  baseType: string = "";
+  defaultType: string = "";
   link: boolean = true;
 
   @Prop()
@@ -123,6 +123,7 @@ export default class AreaForm extends Vue {
   }
 
   set toggleAreaType(value: boolean) {
+    this.defaultType = value ? this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.STRUCTURAL_AREA_TYPE_URI) : this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.EVENT_TYPE_URI);
     this.form.is_structural_area = value;
   }
 
@@ -131,7 +132,6 @@ export default class AreaForm extends Vue {
   }
 
   created() {
-    this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
     this.areaService = this.$opensilex.getService("opensilex.AreaService");
   }
 
@@ -203,6 +203,11 @@ export default class AreaForm extends Vue {
     }
 
     //Formatting event
+    // conversion en booléen. Les valeurs `undefined` et `null` seront interprétées comme `false`
+    if(!form.rdf_type){
+      form.rdf_type = this.defaultType;
+    }
+
     form.event = {
       rdf_type : form.rdf_type,
       start: form.start,

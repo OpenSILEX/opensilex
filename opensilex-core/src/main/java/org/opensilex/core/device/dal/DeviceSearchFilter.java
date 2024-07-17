@@ -18,7 +18,6 @@ public class DeviceSearchFilter extends SearchFilter {
     private String brandPattern;
     private String modelPattern;
     private String snPattern;
-    private Document metadata;
     private AccountModel currentUser;
 
     public DeviceSearchFilter() {
@@ -103,15 +102,6 @@ public class DeviceSearchFilter extends SearchFilter {
 
     public DeviceSearchFilter setSnPattern(String snPattern) {
         this.snPattern = snPattern;
-        return this;
-    }
-
-    public Document getMetadata() {
-        return metadata;
-    }
-
-    public DeviceSearchFilter setMetadata(Document metadata) {
-        this.metadata = metadata;
         return this;
     }
 

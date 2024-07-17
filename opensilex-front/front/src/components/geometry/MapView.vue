@@ -212,10 +212,10 @@
         <!-- Vectors -->
         <template v-if="endReceipt">
           <!-- Temporal and structural Areas -->
-          <vl-layer-vector ref="vectorLayerArea" v-for="area in featuresArea" :key="area.id">
+          <vl-layer-vector ref="vectorLayerArea" v-for="area in featuresArea" :key="area.id" :visible="false">
             <vl-source-vector
                 :features="area"
-                @update:features="setVisibility(areas,vectorLayerArea)"
+                @mounted="setVisibility(areas,vectorLayerArea)"
             ></vl-source-vector>
             <vl-style-box v-if="area[0].properties.type === structuralAreaLabel">
               <vl-style-stroke color="green"></vl-style-stroke>
@@ -243,10 +243,10 @@
                     ></vl-source-vector>
                 </vl-layer-vector>
           <!-- Devices features -->
-          <vl-layer-vector ref="vectorLayerDevice" v-for="layerDevice in featuresDevice" :key="layerDevice.id">
+          <vl-layer-vector ref="vectorLayerDevice" v-for="layerDevice in featuresDevice" :key="layerDevice.id" :visible="false">
             <vl-source-vector
                 :features="layerDevice"
-                @update:features="setVisibility(devices,vectorLayerDevice)"
+                @mounted="setVisibility(devices,vectorLayerDevice)"
             ></vl-source-vector>
             <vl-style-box>
               <vl-style-circle :radius="5">
@@ -613,7 +613,7 @@
         </template>
 
         <template v-slot:cell(type)="{ data }">{{
-          nameType(data.item.properties.type)
+          nameType(data.item.properties.rdf_type)
         }}</template>
 
         <template v-slot:row-details="{ data }">
@@ -908,7 +908,7 @@ export default class MapView extends Vue {
 
     baseTypes.forEach((baseType) => {
       this.ontologyService
-          .getSubClassesOf(baseType, true)
+          .getSubClassesOf(baseType, false)
           .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
             const res = http.response.result;
             this.extracted(res, typeLabel);
@@ -1829,7 +1829,7 @@ export default class MapView extends Vue {
   }
 
   downloadFeatures(values) {
-    
+
       this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
 
       if(this.exportedOS.length> 0){
@@ -2026,30 +2026,53 @@ export default class MapView extends Vue {
       }
     });
   }
+
   // Update the visibility of elements
-  updateVisibility(node,event,treeView,layers) {
+  updateVisibility(node, event, treeView, layers) {
     //set checkbox status in treeView data
-    if(treeView[0].title === node.title){
+    if (treeView[0].title === node.title) {
       treeView[0].isVisible = event;
-    }else{
+    } else {
       treeView[0].children.forEach(child => {
-        if(child.title === node.title){
+        if (child.title === node.title) {
           child.isVisible = event;
         }
       })
     }
-    this.setVisibility(treeView,layers)
+    this.setVisibility(treeView, layers)
   }
 
   //set visibility value from map panel to layers
- setVisibility(treeView,layers) {
-  this.$opensilex.showLoader();
-  if(layers){
+  setVisibility(treeView, layers) {
+    this.$opensilex.showLoader();
+
+    const isLayerMounted = (layer) =>
+        layer &&
+        layer.getSource() &&
+        layer.getSource().getFeatures();
+
+    if (layers && layers.every(isLayerMounted)) {
+      this.treatVisibility(treeView, layers);
+    } else {
+      setTimeout(() => {
+        this.treatVisibility(treeView, layers);
+      }, 500);
+    }
+    //update the OS cluster visibility
+    if (this.checkZoom) {
+      setTimeout(() => {
+        this.getClusterFeatures();
+      }, 200)
+    }
+    this.$opensilex.hideLoader();
+  }
+
+  treatVisibility(treeView, layers) {
     if (!treeView[0].isVisible) {
-      this.$nextTick(()=>{
+      this.$nextTick(() => {
         layers.forEach(layer => {
-        layer.$layer.setVisible(treeView.isVisible)
-         })
+          layer.$layer.setVisible(treeView.isVisible)
+        })
       })
     } else {
       treeView[0].children.forEach(child => {
@@ -2065,12 +2088,6 @@ export default class MapView extends Vue {
       })
     }
   }
-  //update the OS cluster visibility
-  if(this.checkZoom){
-    setTimeout(()=>{this.getClusterFeatures();},200)
-  }
- this.$opensilex.hideLoader();
-}
 
   initDevices(){
     return [{

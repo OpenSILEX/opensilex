@@ -116,6 +116,7 @@ let store = new Vuex.Store({
     search: {
       experiments: new SearchStore()
     },
+    graphDataLimit: 50000,
     credentials: {
       CREDENTIAL_EXPERIMENT_MODIFICATION_ID: "experiment-modification",
       CREDENTIAL_EXPERIMENT_DELETE_ID: "experiment-delete",

@@ -1,7 +1,7 @@
 <template>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :key="lang"
-        ref="selectForm"
+        ref="formSelector"
         :label="label"
         :selected.sync="germplasmAttributeSelected"
         :multiple="false"
@@ -14,7 +14,7 @@
         @select="select"
         @deselect="deselect"
         @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -23,7 +23,7 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 
 @Component
 export default class GermplasmAttributesSelector extends Vue {
@@ -56,7 +56,7 @@ export default class GermplasmAttributesSelector extends Vue {
         return this.$store.getters.language;
     }
 
-    @Ref("selectForm") readonly selectForm!: SelectForm;
+    @Ref("formSelector") readonly formSelector!: FormSelector;
 
     loadOptions(query, page, pageSize) {
         return this.service

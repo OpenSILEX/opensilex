@@ -17,28 +17,26 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.bll.GermplasmLogic;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -61,7 +59,6 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -95,27 +92,15 @@ public class GermplasmAPI {
     protected static final String GERMPLASM_EXAMPLE_METADATA = "{ \"water_stress\" : \"resistant\",\n" +
                                                         "\"yield\" : \"moderate\"}";
 
-    private static final Cache<Key, Boolean> cache = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
-
-    private static final Cache<KeyType, Boolean> cacheType = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
-
-    private static final Cache<KeyGermplasm, GermplasmModel> cacheGermplasm = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
-
     @Inject
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBService nosql;
+    private MongoDBServiceV2 nosql;
 
     @CurrentUser
     AccountModel currentUser;
-    
+
     /**
      *
      * @param germplasmDTO
@@ -142,31 +127,26 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
-
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-
-        ErrorResponse error = check(germplasmDTO, false);
-        if (error != null) {
-            return error.getResponse();
-        }
+        GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
+        GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
 
         if (!checkOnly) {
 
             try {
-                germplasmDTO = completeDTO(germplasmDTO);
-                // create new germplasm
-                GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
-                model.setPublisher(currentUser.getUri());
-                GermplasmModel germplasm = germplasmDAO.create(model);
+                GermplasmModel germplasm = germplasmBusiness.create(model);
                 return new CreatedUriResponse(germplasm.getUri()).getResponse();
+            } catch (DisplayableResponseException exception){
+                return exception.getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }
 
         } else {
+            //raise a Displayable Exception if the germplasm already exists or is incorrect
+            germplasmBusiness.checkBeforeCreateOrUpdate(model, false);
             return new ObjectUriResponse().getResponse();
-        }     
-       
+        }
+
     }
 
     /**
@@ -188,11 +168,8 @@ public class GermplasmAPI {
     public Response getGermplasm(
             @ApiParam(value = "germplasm URI", example = GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
-        // Get germplasm from DAO by URI
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        GermplasmModel model = germplasmDAO.get(uri, currentUser, true);
+        GermplasmModel model = new GermplasmLogic(sparql, nosql, currentUser).get(uri, true);
 
-        // Check if germplasm is found
         if (model != null) {
             // Return GermplasmGetDTO
             GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(model);
@@ -226,19 +203,16 @@ public class GermplasmAPI {
     public Response getGermplasmsByURI(
             @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         GermplasmSearchFilter filter = new GermplasmSearchFilter();
         filter.setLang(currentUser.getLanguage());
         filter.setUris(uris);
 
-        List<GermplasmModel> models = germplasmDAO.search(filter,false, false).getList();
+        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false, false).getList();
 
     if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(GermplasmGetAllDTO.fromModel(result));
-            });
+            models.forEach(result -> resultDTOList.add(GermplasmGetAllDTO.fromModel(result)));
 
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         } else {
@@ -279,9 +253,8 @@ public class GermplasmAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        // Get germplasm from DAO by URI
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        ListWithPagination<ExperimentModel> experiments = germplasmDAO.getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
+        ListWithPagination<ExperimentModel> experiments = new GermplasmLogic(sparql, nosql, currentUser)
+                .getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = experiments.convert(
@@ -309,8 +282,8 @@ public class GermplasmAPI {
         @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
     })
     public Response getGermplasmAttributes() throws Exception {
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        Set<String> attributes = germplasmDAO.getDistinctGermplasmAttributes();
+        Set<String> attributes = new GermplasmLogic(sparql, nosql, currentUser)
+                .getDistinctGermplasmAttributes();
         return new SingleObjectResponse<>(attributes).getResponse();
     }
 
@@ -331,8 +304,8 @@ public class GermplasmAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        Set<String> values = germplasmDAO.getDistinctGermplasmAttributesValues(attributeKey,name,page,pageSize);
+        Set<String> values = new GermplasmLogic(sparql, nosql, currentUser)
+                .getDistinctGermplasmAttributesValues(attributeKey,name,page,pageSize);
         return new SingleObjectResponse<>(values).getResponse();
     }
 
@@ -406,11 +379,8 @@ public class GermplasmAPI {
                  .setPageSize(pageSize)
                  .setLang(currentUser.getLanguage());
 
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-
-        ListWithPagination<GermplasmModel> resultList = dao.search(
-               searchFilter,false, false
-        );
+        ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
+                .search(searchFilter,false, false);
 
         // Convert paginated list to DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
@@ -434,9 +404,8 @@ public class GermplasmAPI {
     public Response exportGermplasm(
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
-
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> resultList = dao.search(searchFilter,true, true).getList();
+        List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
+                .search(searchFilter,true, true).getList();
 
         return buildCSV(resultList);
     }
@@ -612,16 +581,9 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
     ) throws Exception {
         try {
-            GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-            ErrorResponse error = check(germplasmDTO, true);
-            if (error != null) {
-                return error.getResponse();
-            }
-
-            germplasmDTO = completeDTO(germplasmDTO);
-
             GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
-            germplasmDAO.update(model);
+            model = new GermplasmLogic(sparql, nosql, currentUser)
+                    .update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
@@ -642,388 +604,7 @@ public class GermplasmAPI {
     public Response deleteGermplasm(
             @ApiParam(value = "Germplasm URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-
-        //check
-        GermplasmModel germplasmToDelete = dao.get(uri, currentUser, false);
-
-        if (germplasmToDelete == null) {
-            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", uri);
-        }
-        
-        if (dao.isLinkedToSth(germplasmToDelete)) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "The germplasm is linked to another germplasm or a scientific object or an experiment",
-                    "You can't delete a germplasm linked to another object"
-            ).getResponse();
-        } else {        
-            dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
-
-    }
-
-    private ErrorResponse check(GermplasmCreationDTO germplasmDTO, boolean update) throws Exception {
-
-        if (!update) {
-            // check if germplasm URI already exists
-            if (sparql.uriExists(GermplasmModel.class, germplasmDTO.getUri())) {
-                // Return error response 409 - CONFLICT if URI already exists
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Germplasm URI already exists",
-                        "Duplicated URI: " + germplasmDTO.getUri(),
-                        "component.germplasms.errors.duplicateUri",
-                        new HashMap<String, String>() {{
-                            put("uri", germplasmDTO.getUri().toString());
-                        }}
-                );
-            }
-        }
-
-        // check rdfType
-        boolean isType = cacheType.get(new KeyType(germplasmDTO.getType()), this::checkType);
-        if (!isType) {
-            // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "rdfType doesn't exist in the ontology",
-                    "wrong rdfType: " + germplasmDTO.getType().toString(),
-                    "component.germplasms.errors.wrongRdfType",
-                    new HashMap<String, String>() {{
-                        put("rdfType", germplasmDTO.getType().toString());
-                    }}
-            );
-        }
-
-        //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
-        if (germplasmDTO.getSpecies() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getSpecies())) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't exist in the database",
-                        "unknown species : " + germplasmDTO.getSpecies().toString(),
-                        "component.germplasms.errors.unknownSpecies",
-                        new HashMap<String, String>() {{
-                            put("unknownSpecies", germplasmDTO.getSpecies().toString());
-                        }}
-                );
-            }
-        }
-
-        if (germplasmDTO.getVariety() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmDTO.getVariety())) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given variety doesn't exist in the database",
-                        "unknown variety : " + germplasmDTO.getVariety().toString(),
-                        "component.germplasms.errors.unknownVariety",
-                        new HashMap<String, String>() {{
-                            put("unknownVariety", germplasmDTO.getVariety().toString());
-                        }}
-                );
-            }
-        }
-
-        if (germplasmDTO.getAccession() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getAccession())) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given accession doesn't exist in the database",
-                        "unknown accession : " + germplasmDTO.getAccession().toString(),
-                        "component.germplasms.errors.unknownAccession",
-                        new HashMap<String, String>() {{
-                            put("unknownAccession", germplasmDTO.getAccession().toString());
-                        }}
-                );
-            }
-        }
-
-        // check that fromAccession, fromVariety or fromSpecies are given
-        boolean missingLink = true;
-        String message = new String();
-        if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
-            missingLink = false;
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Variety.getURI())) {
-            message = "species";
-            if (germplasmDTO.getSpecies() != null) {
-                missingLink = false;
-            }
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Accession.getURI())) {
-            message = "variety or species";
-            if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null) {
-                missingLink = false;
-            }
-        } else {
-            message = "accession, variety or species";
-            if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null || germplasmDTO.getAccession() != null) {
-                missingLink = false;
-            }
-        }
-
-        if (missingLink) {
-            final String finalMessage = message;
-            // Return error response 409 - CONFLICT if link fromSpecies, fromVariety or fromAccession is missing
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "missing attribute",
-                    "you have to fill " + finalMessage,
-                    "component.germplasms.errors.missingAttribute",
-                    new HashMap<String, String>() {{
-                        put("message", finalMessage);
-                    }}
-            );
-        }
-
-        // check coherence between species, variety and accession
-        boolean isRelated;
-        if (germplasmDTO.getSpecies() != null && germplasmDTO.getVariety() != null) {
-            //check coherence between variety and species
-            isRelated = cache.get(new Key(germplasmDTO), this::checkVarietySpecies);
-            //isRelated = checkVarietySpecies(germplasmDTO.getSpecies(), germplasmDTO.getFromVariety());
-            if (!isRelated) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getSpecies().toString()
-                );
-            }
-
-        }
-
-        if (germplasmDTO.getSpecies() != null && germplasmDTO.getAccession() != null) {
-            //check coherence between accession and species
-            isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionSpecies);
-            if (!isRelated) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getSpecies().toString()
-                );
-            }
-        }
-
-        if (germplasmDTO.getVariety() != null && germplasmDTO.getAccession() != null) {
-            //check coherence between variety and accession
-            isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionVariety);
-            if (!isRelated) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getSpecies().toString()
-                );
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Sets a species if a variety was given. Sets species and variety if an accession was given.
-     */
-    private <T extends GermplasmCreationDTO> T completeDTO(T germplasmDTO) throws Exception {
-        if (germplasmDTO.getSpecies() == null && germplasmDTO.getVariety() != null) {
-            GermplasmModel variety = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getVariety()), this::getGermplasm);
-            if (variety != null) {
-                germplasmDTO.setSpecies(variety.getSpecies().getUri());
-            }
-
-        }
-        if (germplasmDTO.getAccession() != null && germplasmDTO.getVariety() == null && germplasmDTO.getSpecies() == null) {
-            GermplasmModel accession = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getAccession()), this::getGermplasm);
-            if (accession != null) {
-                germplasmDTO.setVariety(accession.getVariety().getUri());
-                germplasmDTO.setSpecies(accession.getSpecies().getUri());
-            }
-        }
-        return germplasmDTO;
-    }
-
-    private boolean checkVarietySpecies(Key key) {
-        return checkVarietySpecies(key.species, key.variety);
-    }
-
-    public boolean checkVarietySpecies(URI speciesURI, URI varietyURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        try {
-            GermplasmModel variety = dao.get(varietyURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), speciesURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
-            return true; //the variety doesn't exist in the database yet
-        }
-    }
-
-    private boolean checkAccessionSpecies(Key key) {
-        return checkAccessionSpecies(key.species, key.variety);
-    }
-
-    private boolean checkAccessionSpecies(URI speciesURI, URI accessionURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), speciesURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
-            return true; //the accession doesn't exist in the database yet
-        }
-    }
-
-    private boolean checkAccessionVariety(Key key) {
-        return checkAccessionVariety(key.species, key.variety);
-    }
-
-    private boolean checkAccessionVariety(URI varietyURI, URI accessionURI) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            if (SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), varietyURI.toString())) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
-            return true; //the accession doesn't exist in the database yet
-        }
-    }
-
-    private static final class Key {
-
-        final URI species;
-        final URI variety;
-
-        public Key(URI species, URI variety) {
-            this.species = species;
-            this.variety = variety;
-        }
-
-        private Key(GermplasmCreationDTO germplasmDTO) {
-            species = germplasmDTO.getSpecies();
-            variety = germplasmDTO.getVariety();
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(this.species));
-            hash = 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(this.variety));
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Key other = (Key) obj;
-            if (!SPARQLDeserializers.compareURIs(this.species.toString(), other.species.toString())) {
-                return false;
-            }
-            if (!SPARQLDeserializers.compareURIs(this.variety.toString(), other.variety.toString())) {
-                return false;
-            }
-            return true;
-        }
-
-    }
-
-    private static final class KeyType {
-
-        final URI type;
-
-        public KeyType(URI type) {
-            this.type = type;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 89 * hash + Objects.hashCode(this.type);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final KeyType other = (KeyType) obj;
-            if (!SPARQLDeserializers.compareURIs(this.type.toString(), other.type.toString())) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    private boolean checkType(KeyType key) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        try {
-            return dao.isGermplasmType(key.type);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static class KeyGermplasm {
-
-        final URI uri;
-
-        public KeyGermplasm(URI uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 11 * hash + Objects.hashCode(this.uri);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final KeyGermplasm other = (KeyGermplasm) obj;
-            if (!SPARQLDeserializers.compareURIs(this.uri.toString(), other.uri.toString())) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    private GermplasmModel getGermplasm(KeyGermplasm key) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        try {
-            GermplasmModel germplasm = dao.get(key.uri, currentUser, false);
-            return germplasm;
-        } catch (Exception e) {
-            return null;
-        }
+        new GermplasmLogic(sparql, nosql, currentUser).delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 }

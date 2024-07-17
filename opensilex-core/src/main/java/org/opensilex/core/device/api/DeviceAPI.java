@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -23,10 +24,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
-import org.opensilex.core.device.dal.DeviceDAO;
-import org.opensilex.core.device.dal.DeviceGeospatialExporter;
-import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.device.dal.DeviceSearchFilter;
+import org.opensilex.core.device.dal.*;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.geospatial.api.GeometryDTO;
@@ -36,7 +34,12 @@ import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
+import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.*;
@@ -59,6 +62,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.pagination.StreamWithPagination;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -66,8 +70,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
@@ -78,6 +81,7 @@ import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Filters.eq;
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 
@@ -112,6 +116,8 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
 
     public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
+
+    public static final String METADATA_COLLECTION_NAME = "deviceAttribute";
 
     @CurrentUser
     AccountModel currentUser;
@@ -158,7 +164,17 @@ public class DeviceAPI {
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
                 devModel.setPersonInCharge(personInCharge);
                 devModel.setPublisher(currentUser.getUri());
-                URI uri = deviceDAO.create(devModel, currentUser);
+                URI uri = new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
+                    URI transactionResult = deviceDAO.create(devModel, currentUser);
+                    if(devModel.getMetaDataModel() != null){
+                        //Set the metaDataModel's uri to be the same as the device
+                        MetaDataModel metaDataModel = devModel.getMetaDataModel();
+                        metaDataModel.setUri(transactionResult);
+                        MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
+                        metaDataDao.create(session, metaDataModel);
+                    }
+                    return transactionResult;
+                });
                 return new CreatedUriResponse(uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
@@ -196,12 +212,16 @@ public class DeviceAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
+
+        List<URI> filteredDeviceUris = null;
+        if(metadata != null){
+            MetadataSearchFilter metadataFilter = new MetadataSearchFilter();
+            Document docVersionOfMetaFilter = Document.parse(metadata);
+            metadataFilter.setAttributes(docVersionOfMetaFilter);
+            MetaDataDaoV2 metaDataDaoV2 = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
+            filteredDeviceUris = metaDataDaoV2.distinctUris(metadataFilter);
+            if(CollectionUtils.isEmpty(filteredDeviceUris)){
+                return new PaginatedListResponse<>().getResponse();
             }
         }
 
@@ -217,11 +237,11 @@ public class DeviceAPI {
                 .setBrandPattern(brand)
                 .setModelPattern(model)
                 .setSnPattern(serialNumber)
-                .setMetadata(metadataFilter)
                 .setCurrentUser(currentUser);
         filter.setOrderByList(orderByList)
                 .setPage(page)
-                .setPageSize(pageSize);
+                .setPageSize(pageSize)
+                .setIncludedUris(filteredDeviceUris);
 
         ListWithPagination<DeviceModel> devices = dao.search(filter);
 
@@ -264,10 +284,16 @@ public class DeviceAPI {
     ) throws Exception {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+        MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
 
             DeviceModel model = dao.getDeviceByURI(uri, currentUser);
-
             if (model != null) {
+                //Handle creation of MetaDataModel
+                MetaDataModel metaDataModel = null;
+                try{
+                    metaDataModel = metaDataDao.get(uri);
+                    model.setMetaDataModel(metaDataModel);
+                }catch (NoSQLInvalidURIException ignore){}
                 DeviceGetDetailsDTO dto = DeviceGetDetailsDTO.getDTOFromModel(model);
                 if (Objects.nonNull(model.getPublisher())) {
                     dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
@@ -298,6 +324,7 @@ public class DeviceAPI {
         if (!models.isEmpty()) {
             List<DeviceGetDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(model -> {
+                //No need to fetch metadata here as DeviceGetDTO doesn't have metadata information
                 resultDTOList.add(DeviceGetDTO.getDTOFromModel(model));
             });
 
@@ -345,8 +372,25 @@ public class DeviceAPI {
             }
         }
 
-        deviceDAO.update(deviceModel, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, deviceModel.getUri()).getResponse();
+        //Transaction to update device and it's metadata
+        URI uri = new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
+            URI deviceUri = deviceModel.getUri();
+            MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
+            MetaDataModel newMetaData = deviceModel.getMetaDataModel();
+            if(newMetaData == null){
+                try{
+                    metaDataDao.delete(session, deviceUri);
+                } catch (NoSQLInvalidURIException ignored){}
+
+            }else{
+                newMetaData.setUri(deviceUri);
+                metaDataDao.upsert(session, newMetaData);
+            }
+            deviceDAO.update(deviceModel, currentUser);
+            return deviceUri;
+        });
+
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
     @DELETE
@@ -369,9 +413,15 @@ public class DeviceAPI {
             @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-
+        MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
         try {
-            dao.delete(uri, currentUser);
+            new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
+                try{
+                    metaDataDao.delete(session, uri);
+                }catch (NoSQLInvalidURIException ignore){}
+                dao.delete(uri, currentUser);
+                return 0;
+            });
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
         } catch (ForbiddenURIAccessException e) {
@@ -456,17 +506,21 @@ public class DeviceAPI {
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
             @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws Exception {
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
+        // Search device with device DAO and metaDataDao for metaData
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+        MetaDataDaoV2 metaDataDaoV2 = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
+
+        //Handle metadata filter
+        List<URI> filteredDeviceUris = null;
+        if(metadata != null){
+            MetadataSearchFilter metadataFilter = new MetadataSearchFilter();
+            Document docVersionOfMetaFilter = Document.parse(metadata);
+            metadataFilter.setAttributes(docVersionOfMetaFilter);
+            filteredDeviceUris = metaDataDaoV2.distinctUris(metadataFilter);
+            if(CollectionUtils.isEmpty(filteredDeviceUris)){
+                return buildCSV(Collections.emptyList());
             }
         }
-
-        // Search device with device DAO
-        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         DeviceSearchFilter filter = new DeviceSearchFilter()
                 .setNamePattern(name)
@@ -477,12 +531,37 @@ public class DeviceAPI {
                 .setBrandPattern(brand)
                 .setModelPattern(model)
                 .setSnPattern(serialNumber)
-                .setMetadata(metadataFilter)
                 .setCurrentUser(currentUser);
+        filter.setIncludedUris(filteredDeviceUris);
 
         List<DeviceModel> resultList = dao.searchForExport(filter);
 
+        //Handle fetching metadata
+        loadMetaData(resultList, metaDataDaoV2);
+
         return buildCSV(resultList);
+    }
+
+    /**
+     * Modifies a list of device models by loading their mongo-stored metadata
+     * @param devices, device list to load metaData into
+     */
+    private void loadMetaData(List<DeviceModel> devices, MetaDataDaoV2 metaDataDaoV2) {
+        Map<URI,DeviceModel> deviceByUris = new HashMap<>();
+        devices.forEach(e -> deviceByUris.put(e.getUri(), e));
+
+        MetadataSearchFilter metadataSearchFilter = new MetadataSearchFilter();
+        metadataSearchFilter.setIncludedUris(deviceByUris.keySet());
+        metadataSearchFilter.setPage(0);
+        metadataSearchFilter.setPageSize(0);
+        StreamWithPagination<MetaDataModel> metadataStream = metaDataDaoV2.searchAsStreamWithPagination(metadataSearchFilter);
+
+        metadataStream.forEach(metaDataModel -> {
+            if(deviceByUris.containsKey(metaDataModel.getUri())){
+                deviceByUris.get(metaDataModel.getUri()).setMetaDataModel(metaDataModel);
+            }
+
+        });
     }
 
     @POST
@@ -500,6 +579,8 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
+        //Handle metadata loading
+        loadMetaData(resultList, new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME));
         return buildCSV(resultList);
     }
 

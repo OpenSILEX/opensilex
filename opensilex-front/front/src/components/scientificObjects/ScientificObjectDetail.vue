@@ -130,7 +130,7 @@
             :maximizeFilterSize="true"
             :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
             :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
-            :context="{experimentURI: experiment}"
+            :context="{experimentURI: uri}"
         ></opensilex-EventList>
 
         <opensilex-PositionList

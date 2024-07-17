@@ -1,5 +1,6 @@
 package org.opensilex.core;
 
+
 import org.junit.Test;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.ontology.Oeso;
@@ -13,10 +14,12 @@ import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.List;
 
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CoreModuleTest extends AbstractMongoIntegrationTest {
+
     private final CoreModule coreModule;
     private final AccountDAO accountDAO;
     private final ProvenanceDAO provenanceDAO;

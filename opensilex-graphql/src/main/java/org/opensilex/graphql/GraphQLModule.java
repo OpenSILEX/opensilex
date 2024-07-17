@@ -9,6 +9,7 @@
 package org.opensilex.graphql;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.graphql.staple.StapleApiUtils;
 import org.opensilex.server.extensions.APIExtension;
@@ -21,6 +22,6 @@ import org.opensilex.server.extensions.APIExtension;
 public class GraphQLModule extends OpenSilexModule implements APIExtension {
     @Override
     public void bindServices(AbstractBinder binder) {
-        binder.bindAsContract(StapleApiUtils.class);
+        binder.bindAsContract(StapleApiUtils.class).in(RequestScoped.class);
     }
 }

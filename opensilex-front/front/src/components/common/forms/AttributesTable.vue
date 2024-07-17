@@ -185,9 +185,7 @@ export default class AttributesTable extends Vue {
 
 <style lang="scss">
 .tabulator-row > .tabulator-cell {
-  text-align: center;
-  padding: 1%;
-}
+  text-align: center;}
 </style>
 
 <i18n>

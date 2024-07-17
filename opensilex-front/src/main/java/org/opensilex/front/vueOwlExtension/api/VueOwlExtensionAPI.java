@@ -16,6 +16,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -23,6 +24,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
@@ -75,10 +77,14 @@ public class VueOwlExtensionAPI {
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
-        ClassModel model = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
+        try {
+            ClassModel model = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
-        VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, model.getUri(), currentUser.getLanguage());
-        return new SingleObjectResponse<>(new VueRDFTypeDTO(model, modelExt)).getResponse();
+            VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, model.getUri(), currentUser.getLanguage());
+            return new SingleObjectResponse<>(new VueRDFTypeDTO(model, modelExt)).getResponse();
+        } catch (SPARQLInvalidURIException e) {
+            throw new NotFoundURIException(rdfType);
+        }
     }
 
     @POST

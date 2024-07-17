@@ -153,13 +153,13 @@
                 <!-- Operator -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-AccountSelector
-                      :users.sync="filter.operators"
+                    <opensilex-PersonSelector
+                      :persons.sync="filter.operators"
                       label="DataView.filter.operator"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                       :multiple="true"
-                    ></opensilex-AccountSelector>
+                    ></opensilex-PersonSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -388,7 +388,6 @@ export default class DataView extends Vue {
   }
 
   updateSOFilter() {
-
     this.refreshComponent();
     this.soFilter.experiment = this.filter.experiments[0];
     this.soSelector.refreshModalSearch();

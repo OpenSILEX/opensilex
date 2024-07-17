@@ -1,12 +1,11 @@
 <template>
-  <opensilex-SelectForm
-      ref="selectForm"
+  <opensilex-FormSelector
+      ref="formSelector"
       :label="label"
       :selected.sync="groupURI"
       :multiple="multiple"
       :searchMethod="searchGermplasmGroups"
       :itemLoadingMethod="loadGermplasmGroups"
-      :clearable="clearable"
       :placeholder="placeholder"
       noResultsText="component.groupGermplasm.form.selector.filter-search-no-result"
       @clear="$emit('clear')"
@@ -14,7 +13,7 @@
       @deselect="deselect"
       @keyup.enter.native="onEnter"
       @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -24,7 +23,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {GermplasmGroupGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
 
 @Component
 export default class GermplasmGroupSelector extends Vue {
@@ -40,10 +39,7 @@ export default class GermplasmGroupSelector extends Vue {
   @Prop()
   multiple: string;
 
-  @Prop()
-  clearable: string;
-
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   get placeholder() {
     return this.multiple
@@ -82,9 +78,9 @@ export default class GermplasmGroupSelector extends Vue {
 
   loadMoreItems(){
     this.pageSize = 0;
-    this.selectForm.refresh();
+    this.formSelector.refresh();
     this.$nextTick(() => {
-      this.selectForm.openTreeselect();
+      this.formSelector.openTreeselect();
     })
   }
 }

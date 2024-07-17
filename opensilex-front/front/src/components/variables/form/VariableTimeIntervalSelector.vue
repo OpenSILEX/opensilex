@@ -1,11 +1,11 @@
 <template>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :label="label"
         :selected.sync="timeIntervalURI"
         :options="periodList"
         placeholder="VariableForm.time-interval-placeholder"
         @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

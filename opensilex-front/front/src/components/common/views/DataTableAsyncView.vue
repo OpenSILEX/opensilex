@@ -50,14 +50,18 @@
 
       <!-- afficher 0 à 10 de ... -->
       <span>
-       <strong>
-            <span class="ml-1"> {{
-                $t('component.common.list.pagination.nbEntriesNoTotal', {
-                  limit: getCurrentItemLimit(),
-                  offset: getCurrentItemOffset()
-                })
-              }}
-              </span>
+        <strong>
+          <span class="ml-1" v-if="hasResults"> {{
+            $t('component.common.list.pagination.nbEntriesNoTotal', {
+              limit: getCurrentItemLimit(),
+              offset: getCurrentItemOffset()
+            })
+          }}
+          </span>
+            
+          <span class="ml-1" v-else> {{
+            $t('component.common.list.pagination.noEntries')}}
+          </span> 
         </strong>
 
 
@@ -70,16 +74,9 @@
               </span>
           </strong>
         </span>
-        <span v-else>
-          <strong>
-            <span class="ml-1"> {{$t('component.common.list.pagination.noEntries')}}
-              </span>
-          </strong>
-        </span>
       </span>
 
-
-      <span v-if="!showCount">
+      <span v-if="!showCount && hasResults">
         <strong> ... </strong>
 
         <opensilex-Button
@@ -88,7 +85,6 @@
           label="component.common.list.pagination.showTotalCount"
           class="totalCountDetailButton"
         >
-          <!-- @click="countData" -->
           <template v-slot:icon>
             <opensilex-Icon icon="fa#eye" />
           </template>
@@ -159,15 +155,6 @@
           last-class="last-el"
         >
         </b-pagination>
-          <!-- hide-goto-end-buttons="true" -->
-          
-          <!-- check si assez de resultats pour une page suivante 
-            -> attribuer prop / classe au début puis les add/remove à chaque changement de page?
-          check si à la page 1 -> masquer "previous" et "first" -->
-          <!-- prev-class="previous-el" /
-               first-class="first-el" / 
-               next-class="next-el" 
-          et les traiter en css-->
       </div>
     </div>
   </opensilex-Overlay>
@@ -314,6 +301,7 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
   routeArr : string = this.$route.path.split('/');
   pageSize: number;
   totalRow = 0;
+  nbOfResultsOnCurrentPage: number;
 
   calculatedTotalCount: any = 0;
   sortBy;
@@ -616,14 +604,10 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
         pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
       })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-          // this.totalRow = http.response.metadata.pagination.totalCount;
-
-          // this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1;
-          // // +1 si booleen hasNext (page) est true. CurrentPage commence à 1 et non 0 donc aucun probleme à la premiere page
           if(http.response.metadata.pagination.hasNextPage){
               this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1
           }else{
-              this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)
+            this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)
           }
 
           // totalCount = le total de datas
@@ -634,6 +618,7 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
             this.hasResults = false
           }
 
+          this.nbOfResultsOnCurrentPage = http.response.result.length;
           this.pageSize = http.response.metadata.pagination.pageSize;
           this.isSearching = false;
           this.$opensilex.enableLoader();
@@ -666,7 +651,17 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
   }
 
   getCurrentItemOffset() : number {
-    return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+    // results but less than pageSize: display count of elements on this page
+    if(this.hasResults && this.nbOfResultsOnCurrentPage < this.pageSize){
+      return this.$i18n.n(this.nbOfResultsOnCurrentPage)
+    }
+    // results but count is equal or bigger than pageSize: display number equal to pagesize
+    if(this.hasResults && ((this.nbOfResultsOnCurrentPage >= this.pageSize) || (this.nbOfResultsOnCurrentPage === undefined))){
+      return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+    } else {
+      // has no results : counts are not rendered, replaced by a message on the template
+      return undefined
+    }
   }
 
   getTotalRow(): number {

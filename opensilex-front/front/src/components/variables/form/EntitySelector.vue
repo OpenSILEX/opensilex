@@ -1,20 +1,18 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :selected.sync="entityURI"
     :multiple="multiple"
     :searchMethod="searchEntities"
     :itemLoadingMethod="loadEntities"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.entity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -25,11 +23,13 @@ import {EntityGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class EntitySelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
+  page = 0;
 
   @PropSync("entity")
   entityURI;
@@ -41,16 +41,13 @@ export default class EntitySelector extends Vue {
   multiple;
 
   @Prop()
-  clearable;
-
-  @Prop()
   sharedResourceInstance?: string;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Watch("sharedResourceInstance")
   onSriChange() {
-    this.selectForm.refresh();
+    this.formSelector.refresh()
   }
 
   get placeholder() {
@@ -68,9 +65,9 @@ export default class EntitySelector extends Vue {
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
+  searchEntities(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchEntities(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .searchEntities(name, ["name=asc"], page, pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });
@@ -88,13 +85,6 @@ export default class EntitySelector extends Vue {
     this.$emit("handlingEnterKey")
   }
 
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.selectForm.refresh();
-    this.$nextTick(() => {
-      this.selectForm.openTreeselect();
-    })
-  }
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <opensilex-SelectForm
+        <opensilex-FormSelector
                 :label="label"
                 :selected.sync="facilitiesURI"
                 :multiple="multiple"
@@ -12,11 +12,8 @@
                 noResultsText="FacilitySelector.no-result"
                 @select="select"
                 @deselect="deselect"
-                @clear="clear"
-                :required="required"
-        ></opensilex-SelectForm>
+        ></opensilex-FormSelector>
     </div>
-
 </template>
 
 

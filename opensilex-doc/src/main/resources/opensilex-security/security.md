@@ -36,6 +36,10 @@ JWT token contains following claims:
 - name: User displayed name (email)
 - is_admin: Boolean to determine if Account is admin
 - credentials_list: Array of credentials allowed to this Account
+- experiments_list: List of experiments the user has access to, subject to a maximum limit.
+- experiments_exceed_limit: Boolean indicating if the number of experiments exceeds the maximum limit.
+
+The experiments_list field is limited to 100 experiments based on JWT size constraints. If this limit is exceeded, the experiments_exceed_limit field is set to true and replaces experiments_list.
 
 If user is admin then accept incoming request.
 

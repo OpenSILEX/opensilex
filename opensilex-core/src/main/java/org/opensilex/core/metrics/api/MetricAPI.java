@@ -119,7 +119,7 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql);
+        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> runningUserExperiments = experimentDAO.getRunningUserExperiments(currentUser);
         ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(new ArrayList<>(runningUserExperiments), startInstant, endInstant, page, pageSize, currentUser.getLanguage());
@@ -274,7 +274,7 @@ public class MetricAPI {
             }
         }
 
-        MetricDAO metricsDao = new MetricDAO(sparql, nosql);
+        MetricDAO metricsDao = new MetricDAO(sparql, nosql, currentUser);
 
         validateContextAccess(experimentURI);
         List<URI> experimentUri = Arrays.asList(experimentURI);

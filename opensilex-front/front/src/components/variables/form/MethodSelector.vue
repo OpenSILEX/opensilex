@@ -1,20 +1,18 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :selected.sync="methodURI"
     :multiple="multiple"
     :searchMethod="searchMethods"
     :itemLoadingMethod="loadMethods"
-    :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.method.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -24,12 +22,13 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {MethodGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class MethodSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
+  page = 0;
 
   @PropSync("method")
   methodURI;
@@ -41,16 +40,13 @@ export default class MethodSelector extends Vue {
   multiple;
 
   @Prop()
-  clearable;
-
-  @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Watch("sharedResourceInstance")
   onSriChange() {
-    this.selectForm.refresh();
+    this.formSelector.refresh();
   }
 
   get placeholder() {
@@ -68,9 +64,9 @@ export default class MethodSelector extends Vue {
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchMethods(name): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
+  searchMethods(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchMethods(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .searchMethods(name, ["name=asc"], page, pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });
@@ -86,14 +82,6 @@ export default class MethodSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
-  }
-
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.selectForm.refresh();
-    this.$nextTick(() => {
-      this.selectForm.openTreeselect();
-    })
   }
 }
 </script>

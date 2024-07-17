@@ -1,125 +1,156 @@
 <template>
-  <opensilex-Card
-      class="stats-card"
-      :no-footer="true"
-      :no-header="true"
-      icon="fa#sort-numeric-down"
-      label="DataMonitoring.title"
-  >
+  <opensilex-Overlay :show="isSearching">
+    <opensilex-Card
+        class="stats-card"
+        :no-footer="true"
+        :no-header="true"
+        icon="fa#sort-numeric-down"
+        label="DataMonitoring.title"
+    >
 
-    <template v-slot:body>
-      <div class="globalStatsContainer">
+      <template v-slot:body>
+        <div class="globalStatsContainer">
+          
+          <!-- show entity counts for a specific time period (added since last day or week) -->
+          <span class="stats-values">
 
-        <!-- show component icon and title -->
-        <span class="title">
-          {{ $t("DataMonitoring.title") }}
-        </span>
-
-        <!-- button group to select time period for which entity counts should be shown -->
-        <span class="button-group">
-             <div class="btn-group btn-group-toggle btnsGroup" data-toggle="buttons" :options="periods">
-              <!-- day -->
-              <label class="btn periodBtn btn-toggle greenThemeColor"
-                     :class="{
-                  active: period === 'day'
-                }"
-              >
-                <input
-                    type="radio"
-                    name="options"
-                    id="option1"
-                    value="day"
-                    checked
-                    v-model=period
+            <!-- show experiment count -->
+            <span id="popover-experiments" class="expe">
+              <opensilex-Icon icon="ik#ik-layers"/>
+              <span>{{ nbExperiments }} ({{ deltaExperiments }}) 
+                <a 
+                  href="/app/experiments" 
+                  class="metricsElementTitle" 
+                  :title="$t('DataMonitoring.redirectionToExpe')"
                 >
-                {{ $t('DataMonitoring.day') }}
-              </label>
+                  {{$t('component.menu.experiments')}}
+                </a>
+              </span>
+            </span>
 
-               <!-- week -->
-              <label class="btn periodBtn btn-toggle greenThemeColor"
-                     :class="{
-                  active: period === 'week'
-                }"
-              >
-                <input
-                    type="radio"
-                    name="options"
-                    id="option2"
-                    value="week"
-                    v-model=period
+            <!-- show scientific object count -->
+            <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so">
+              <opensilex-Icon icon="ik#ik-target"/>
+              <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }})
+                <a 
+                  href="/app/scientific-objects" 
+                  :title="$t('DataMonitoring.redirectionToOS')"
+                  class="metricsElementTitle"
                 >
-                {{ $t('DataMonitoring.week') }}
-              </label>
-
-               <!-- month -->
-              <label class="btn periodBtn btn-toggle greenThemeColor"
-                     :class="{
-                  active: period === 'month'
-                }"
-              >
-                <input
-                    type="radio"
-                    name="options"
-                    id="option3"
-                    value="month"
-                    v-model=period
-                >
-                {{ $t('DataMonitoring.month') }}
-              </label>
-
-               <!-- year -->
-              <label class="btn periodBtn btn-toggle greenThemeColor"
-                     :class="{
-                  active: period === 'year'
-                }"
-              >
-                <input
-                    type="radio"
-                    name="options"
-                    id="option4"
-                    value="year"
-                    v-model=period
-                >
-                {{ $t('DataMonitoring.year') }}
-              </label>
-          </div>
-        </span>
-        
-        <!-- show entity counts for a specific time period (added since last day or week) -->
-        <span class="stats-values">
-           <!-- show experiment count -->
-           <span id="popover-experiments" class="expe">
-            <opensilex-Icon icon="ik#ik-layers"/>
-            <span>{{ nbExperiments }} ({{ deltaExperiments }}) {{ $t("component.menu.experiments") }}</span>
-           </span>
-
-          <!-- show scientific object count -->
-           <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so">
-             <opensilex-Icon icon="ik#ik-target"/>
-              <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }}) {{ $t("component.menu.scientificObjects") }}</span>
-             <!-- handle mouse-over events on "os" -->
-               <b-popover target="popover-so" triggers="hover" placement="bottom">
+                  {{ $t("component.menu.scientificObjects") }}
+                </a>
+              </span>
+              <b-popover target="popover-so" triggers="hover" placement="bottom">
                 <template #title>{{ $t("DataMonitoring.scientificObjetcTypes") }}</template>
                 <ul style="padding-left: 10px">
                   <li v-for="item in scientificObjetcTypes" :key="item.index">
                     {{ item }}
                   </li>
                 </ul>
-               </b-popover>
-           </span>
-           <span v-else>
-             <opensilex-Icon icon="ik#ik-target"/><span>{{ nbScientificObjects }} ({{ deltaScientificObjects }}) {{ $t("component.menu.scientificObjects") }}</span>
-           </span>
+              </b-popover>
+            </span>
+            
+            <span v-else>
+              <opensilex-Icon icon="ik#ik-target"/>
+              <span>{{ nbScientificObjects }} ({{ deltaScientificObjects }}) 
+                <a 
+                  href="/app/scientific-objects" 
+                  :title="$t('DataMonitoring.redirectionToOS')" 
+                  class="metricsElementTitle"
+                >
+                  {{ $t("component.menu.scientificObjects") }}
+                </a>
+              </span>
+            </span>
 
-          <!-- show data count -->
-           <span class="data">
-             <opensilex-Icon icon="ik#ik-bar-chart"/>
-             <span>{{ nbData }} ({{ deltaData }}) {{ $t("component.menu.data.label") }}</span>
-           </span>
-        </span>
-      </div>
-    </template>
-  </opensilex-Card>
+            <!-- show data count -->
+            <span class="data">
+              <opensilex-Icon icon="ik#ik-bar-chart"/>
+              <span>{{ nbData }} ({{ deltaData }})
+                <a 
+                  href="/app/data" 
+                  class="metricsElementTitle" 
+                  :title="$t('DataMonitoring.redirectionToData')"
+                > 
+                  {{ $t("component.menu.data.label") }}
+                </a>
+              </span>
+            </span>
+
+          <!-- button group to select time period for which entity counts should be shown -->
+          <span class="button-group">
+              <div class="btn-group btn-group-toggle btnsGroup" data-toggle="buttons" :options="periods">
+                <!-- day -->
+                <label class="btn periodBtn btn-toggle greenThemeColor"
+                      :class="{
+                    active: period === 'day'
+                  }"
+                >
+                  <input
+                      type="radio"
+                      name="options"
+                      id="option1"
+                      value="day"
+                      checked
+                      v-model=period
+                  >
+                  {{ $t('DataMonitoring.day') }}
+                </label>
+
+                <!-- week -->
+                <label class="btn periodBtn btn-toggle greenThemeColor"
+                      :class="{
+                    active: period === 'week'
+                  }"
+                >
+                  <input
+                      type="radio"
+                      name="options"
+                      id="option2"
+                      value="week"
+                      v-model=period
+                  >
+                  {{ $t('DataMonitoring.week') }}
+                </label>
+
+                <!-- month -->
+                <label class="btn periodBtn btn-toggle greenThemeColor"
+                      :class="{
+                    active: period === 'month'
+                  }"
+                >
+                  <input
+                      type="radio"
+                      name="options"
+                      id="option3"
+                      value="month"
+                      v-model=period
+                  >
+                  {{ $t('DataMonitoring.month') }}
+                </label>
+
+                <!-- year -->
+                <label class="btn periodBtn btn-toggle greenThemeColor"
+                      :class="{
+                    active: period === 'year'
+                  }"
+                >
+                  <input
+                      type="radio"
+                      name="options"
+                      id="option4"
+                      value="year"
+                      v-model=period
+                  >
+                  {{ $t('DataMonitoring.year') }}
+                </label>
+            </div>
+          </span>
+                    </span>
+        </div>
+      </template>
+    </opensilex-Card>
+  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
@@ -151,6 +182,7 @@ export default class DataMonitoring extends Vue {
   week: string = "week";
   month: string = "month";
   year: string = "year";
+  isSearching = false;
 
   /*
    * initialize time period indicator for data counts (i.e. day, week, month or year)
@@ -196,38 +228,40 @@ export default class DataMonitoring extends Vue {
   }
 
   loadMetrics() {
-    this.$opensilex.enableLoader();
+    this.$opensilex.disableLoader();
+    this.isSearching = true;
     let service: MetricsService = this.$opensilex.getService("opensilex.MetricsService");
     service
-            .getSystemMetricsSummary(
-              this.period,
-              this.page,
-              this.pageSize
-              )
-            .then((http: HttpResponse<OpenSilexResponse<MetricPeriodDTO>>) => {
-              let result: MetricPeriodDTO = http.response.result;
-              this.nbScientificObjects = this.splitIntegerByThousands(result.scientific_object_list.total_items_count);
-              this.deltaScientificObjects = this.getCountDeltaWthAlgebraicSign(result.scientific_object_list.total_difference_item_count);
-              if(result.scientific_object_list.total_difference_item_count > 0) {
-                this.scientificObjetcTypes = this.getAddedTypes(result.scientific_object_list.difference_items);
-              }
-              this.nbExperiments = this.splitIntegerByThousands(result.experiment_list.total_items_count);
-              this.deltaExperiments = this.getCountDeltaWthAlgebraicSign(result.experiment_list.total_difference_item_count);
-              this.nbData = this.splitIntegerByThousands(result.data_list.total_items_count);
-              this.deltaData = this.getCountDeltaWthAlgebraicSign(result.data_list.total_difference_item_count);
-            })
-            .catch((http: HttpResponse<OpenSilexResponse<MetricPeriodDTO>>) => {
-              if (http.status === 404) {
-                this.nbScientificObjects = "N/A";
-                this.deltaScientificObjects = "N/A";
-                this.nbExperiments = "N/A";
-                this.deltaExperiments = "N/A";
-                this.nbData = "N/A";
-                this.deltaData = "N/A";
-              } else {
-                this.$opensilex.errorHandler(http);
-              }
-            });
+      .getSystemMetricsSummary(
+        this.period,
+        this.page,
+        this.pageSize
+        )
+      .then((http: HttpResponse<OpenSilexResponse<MetricPeriodDTO>>) => {
+        let result: MetricPeriodDTO = http.response.result;
+        this.nbScientificObjects = this.splitIntegerByThousands(result.scientific_object_list.total_items_count);
+        this.deltaScientificObjects = this.getCountDeltaWthAlgebraicSign(result.scientific_object_list.total_difference_item_count);
+        if(result.scientific_object_list.total_difference_item_count > 0) {
+          this.scientificObjetcTypes = this.getAddedTypes(result.scientific_object_list.difference_items);
+        }
+        this.nbExperiments = this.splitIntegerByThousands(result.experiment_list.total_items_count);
+        this.deltaExperiments = this.getCountDeltaWthAlgebraicSign(result.experiment_list.total_difference_item_count);
+        this.nbData = this.splitIntegerByThousands(result.data_list.total_items_count);
+        this.deltaData = this.getCountDeltaWthAlgebraicSign(result.data_list.total_difference_item_count);
+        this.isSearching = false;
+      })
+      .catch((http: HttpResponse<OpenSilexResponse<MetricPeriodDTO>>) => {
+        if (http.status === 404) {
+          this.nbScientificObjects = "N/A";
+          this.deltaScientificObjects = "N/A";
+          this.nbExperiments = "N/A";
+          this.deltaExperiments = "N/A";
+          this.nbData = "N/A";
+          this.deltaData = "N/A";
+        } else {
+          this.$opensilex.errorHandler(http);
+        }
+      });
   }
 
   /**
@@ -301,7 +335,6 @@ export default class DataMonitoring extends Vue {
 .stats-values {
   font-size: 1.6em;
   margin-left: 5%;
-  margin-right: 10%;
   display:flex;
   justify-content: space-evenly;
   list-style-type: none;
@@ -325,6 +358,17 @@ export default class DataMonitoring extends Vue {
   margin: 0 10px 0 10px;
 }
 
+.metricsElementTitle  {
+  color: #000 !important;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.metricsElementTitle:hover {
+  text-decoration: none !important;
+  color: #018371 !important;
+}
+
 @media only screen and (max-width: 1451px){
   .button-group {
     float: left;
@@ -340,9 +384,6 @@ export default class DataMonitoring extends Vue {
     margin-right: 0%;
   }
 
-  .globalStatsContainer {
-    display: inline-flex;
-  }
 }
 </style>
 
@@ -351,6 +392,9 @@ export default class DataMonitoring extends Vue {
 en:
   DataMonitoring:
     title: Data monitoring
+    redirectionToExpe: List of experiments
+    redirectionToOS: List of scientific objects
+    redirectionToData: Data list
     settings: Settings
     lastUpdated: update
     scientificObjetcTypes: Types
@@ -363,6 +407,9 @@ en:
 fr:
   DataMonitoring:
     title: Suivi de données
+    redirectionToExpe: Liste des expérimentations
+    redirectionToOS: Liste des objets scientifiques
+    redirectionToData:  Liste des données
     settings: Paramètres
     lastUpdated: statut
     scientificObjetcTypes: Types

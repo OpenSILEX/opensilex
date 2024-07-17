@@ -263,37 +263,6 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
 
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
 
-        list.add(new OntologyFileDefinition(
-                OesoSecurity.NS,
-                "ontologies/os-sec.owl",
-                Lang.RDFXML,
-                OesoSecurity.PREFIX,
-                null,
-                true
-        ));
-
-        list.add(new OntologyFileDefinition(
-                FOAF.NAMESPACE,
-                "ontologies/foaf.rdf",
-                Lang.RDFXML,
-                "foaf",
-                FOAF.NAMESPACE
-        ));
-
-        list.add(new OntologyFileDefinition(
-                VCARD4.NAMESPACE,
-                "ontologies/vcard.ttl",
-                Lang.TTL,
-                "vcard"
-        ));
-
-        list.add(new OntologyFileDefinition(
-                ORG.NAMESPACE,
-                "ontologies/org.ttl",
-                Lang.TTL,
-                "org"
-        ));
-
         return list;
     }
 }

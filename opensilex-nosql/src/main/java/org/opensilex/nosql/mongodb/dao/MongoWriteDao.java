@@ -5,6 +5,8 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
+import com.mongodb.client.result.UpdateResult.*;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -84,6 +86,25 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @throws MongoException If a MongoDB error occurs.
      */
     void update(@NotNull T instance) throws MongoException, NoSQLInvalidURIException;
+
+    /**
+     * Within a client session : Update an existing model instance in the database if it exists,
+     * otherwise insert it.
+     *
+     * @param session  The MongoDB client session.
+     * @param instance The model instance to update.
+     * @throws MongoException If a MongoDB error occurs.
+     */
+    void upsert(ClientSession session, @NotNull T instance) throws MongoException;
+
+    /**
+     * Update an existing model instance in the database if it exists,
+     * otherwise insert it.
+     *
+     * @param instance The model instance to update.
+     * @throws MongoException If a MongoDB error occurs.
+     */
+    void upsert(@NotNull T instance) throws MongoException;
 
     /**
      * Update an existing model instance in the database within a client session.

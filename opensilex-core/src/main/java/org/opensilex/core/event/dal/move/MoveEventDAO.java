@@ -255,7 +255,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     }
 
 
-    public Stream<MoveModel> searchMoveEvents(
+    public ListWithPagination<MoveModel> searchMoveEvents(
             URI target,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
@@ -264,7 +264,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         this.updateOrderByList(orderByList);
 
-        return sparql.searchAsStream(
+        return sparql.searchWithPagination(
                 eventGraph,
                 MoveModel.class,
                 null,
@@ -383,7 +383,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * </ul>
      * @see MoveEventDAO#searchMoveEvents(URI, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
      */
-    public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(
+    public ListWithPagination<MoveModel> getPositionsHistory(
             URI target,
             String descriptionPattern,
             OffsetDateTime start,
@@ -394,7 +394,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         Objects.requireNonNull(target);
 
         // search move history sorted with DESC order on move end, from SPARQL repository
-        Stream<MoveModel> locationHistory = searchMoveEvents(target, descriptionPattern, start, end, orderByList, page, pageSize);
+        ListWithPagination<MoveModel> locationHistory = searchMoveEvents(target, descriptionPattern, start, end, orderByList, page, pageSize);
 
         // Index of position by uri, sorted by event end time
         LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
@@ -435,11 +435,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         }
 
-        LinkedHashMap<MoveModel, PositionModel> results = new LinkedHashMap<>();
-        positionsByUri.forEach((uri, position) -> {
-            results.put(moveByURI.get(uri), position);
+        locationHistory.forEach(move -> {
+            var targetPosition = new TargetPositionModel();
+            targetPosition.setTarget(target);
+            targetPosition.setPosition(positionsByUri.get(move.getUri()));
+            var noSqlModel = new MoveEventNoSqlModel();
+            noSqlModel.setTargetPositions(Collections.singletonList(targetPosition));
+            move.setNoSqlModel(noSqlModel);
         });
-        return results;
+        return locationHistory;
     }
 
     /**

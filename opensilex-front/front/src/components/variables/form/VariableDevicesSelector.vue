@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-      ref="selectForm"
+  <opensilex-FormSelector
+      ref="formSelector"
       :label="label"
       :selected.sync="devicesURI"
       :multiple="multiple"
@@ -22,7 +22,7 @@
       :required="required"
       :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
       :defaultSelectedValue="true"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -30,7 +30,7 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {DeviceGetDTO} from "opensilex-core/index";
 import {DevicesService} from "opensilex-core/index";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class VariableDevicesSelector extends Vue {
@@ -38,7 +38,7 @@ export default class VariableDevicesSelector extends Vue {
   $i18n: any;
   $service: DevicesService;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Prop()
   actionHandler: Function;
@@ -126,10 +126,12 @@ export default class VariableDevicesSelector extends Vue {
 
   select(value) {
     this.$emit("select", value);
+  
   }
 
   deselect(value) {
     this.$emit("deselect", value);
+   
   }
 }
 </script>

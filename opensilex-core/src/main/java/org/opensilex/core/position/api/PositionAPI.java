@@ -128,9 +128,8 @@ public class PositionAPI {
 
         MoveModel moveEvent = moveDAO.getLastMoveAfter(target, null);
 
-        List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
-            LinkedHashMap<MoveModel, PositionModel> positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveDAO.getPositionsHistory(
                     target,
                     null,
                     startDate != null ? OffsetDateTime.parse(startDate) : null,
@@ -138,18 +137,17 @@ public class PositionAPI {
                     orderByList,
                     page,
                     pageSize
-            );
-
-            positionHistory.forEach((move, position) -> {
+            ).convert(PositionGetDTO.class, move -> {
                 try {
-                    resultDTOList.add(new PositionGetDTO(move, position));
+                    return new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition());
                 } catch (JsonProcessingException ex) {
                     throw new RuntimeException(ex);
                 }
             });
+            return new PaginatedListResponse<>(positionHistory).getResponse();
         }
 
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>().getResponse();
     }
 
     @POST

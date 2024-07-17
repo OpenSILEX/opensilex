@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
       :label="label"
       :selected.sync="selectedSriId"
       :multiple="false"
@@ -8,7 +8,7 @@
       @clear="$emit('clear')"
       @select="select"
       @deselect="deselect"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

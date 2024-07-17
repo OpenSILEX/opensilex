@@ -25,7 +25,7 @@
             :small="true"
             :text="$t('VariableList.display')">
 
-            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ScientificObjectList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
             <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
           </b-dropdown>
 
@@ -443,6 +443,7 @@ export default class ScientificObjectList extends Vue {
     scientificObjectsService
       .deleteScientificObject(uri)
       .then(() => {
+        this.tableRef.checkSelectedItems(uri);
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);
@@ -473,6 +474,7 @@ en:
   ScientificObjectList:
     name-placeholder: Enter name
     selected: Selected Scientific Objects
+    selected-all: All scientific objects
     description: Manage and configure scientific objects
     advancedSearch: Advanced search
     propetiesConfiguration: Properties to display
@@ -513,6 +515,7 @@ fr:
   ScientificObjectList:
     name-placeholder: Saisir un nom
     selected: Objets Scientifiques Sélectionnés
+    selected-all: Tout les objets scientifiques
     description: Gérer et configurer les objets scientifiques
     advancedSearch: Recherche avancée
     propetiesConfiguration: Propriétés à afficher

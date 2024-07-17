@@ -115,7 +115,7 @@
             :excludedProperties="this.excludedProperties"
             :baseType="this.baseType"
             :editMode="editMode"
-            :context="context ? { experimentURI: context} : undefined"
+            :context="context"
         ></opensilex-OntologyRelationsForm>
 
         <div>
@@ -135,6 +135,7 @@ import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';
 import TypeForm from "../../common/forms/TypeForm.vue";
+import EventModalForm from "./EventModalForm.vue";
 
 @Component
 export default class EventForm extends Vue {
@@ -286,7 +287,23 @@ export default class EventForm extends Vue {
     }
 
     handleSubmitError(){
-        this.moveForm.handleSubmitError()
+        let targetsPosition = this.form.targets_positions[0];
+        if(this.moveForm && !this.form.to && (!targetsPosition || EventModalForm.isPositionEmpty(targetsPosition.position))){
+            this.moveForm.handleSubmitError()
+        }else{
+            this.$opensilex.showErrorToast(this.$i18n.t("EventForm.targets-error").toString());
+        }
+
     }
 }
 </script>
+
+<i18n>
+en:
+  EventForm:
+      targets-error: URI of one or more targets is not valid
+
+fr:
+  EventForm:
+      targets-error: L'URI d'un ou plusieurs objets concernés n'est pas valide
+</i18n>

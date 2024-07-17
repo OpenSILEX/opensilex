@@ -37,7 +37,7 @@
                             <!-- Species -->
                             <div>
                                 <opensilex-FilterField>
-                                    <opensilex-SelectForm
+                                    <opensilex-FormSelector
                                         label="GermplasmList.filter.species"
                                         placeholder="GermplasmList.filter.species-placeholder"
                                         :multiple="false"
@@ -45,7 +45,7 @@
                                         :options="species"
                                         class="searchFilter"
                                         @handlingEnterKey="refresh()"
-                                    ></opensilex-SelectForm>
+                                    ></opensilex-FormSelector>
                                 </opensilex-FilterField>
                             </div>
 
@@ -246,7 +246,7 @@
                         ></opensilex-EditButton>
                         <opensilex-DeleteButton
                             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
-                            @click="$emit('onDelete', data.item.uri)"
+                            @click="deleteGermplasm(data.item.uri)"
                             label="GermplasmList.delete"
                             :small="true"
                         ></opensilex-DeleteButton>
@@ -457,6 +457,7 @@ export default class GermplasmList extends Vue {
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
         }
+        this.tableRef.refresh();
     }
 
   searchGermplasm(options) {
@@ -601,6 +602,11 @@ export default class GermplasmList extends Vue {
                 that.tableRef.selectAll = false;
             }
         }, 1);
+    }
+
+    deleteGermplasm(uri){
+        this.tableRef.checkSelectedItems(uri);
+        this.$emit('onDelete', uri);
     }
 }
 </script>

@@ -150,6 +150,9 @@ variables:
 
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
+  tags:
+    - runnermia # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
+                # to our instances through SSH.
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git

@@ -14,6 +14,7 @@ import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.ResourceDTO;
 
 /**
@@ -90,6 +91,12 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
     @Override
     public void toModel(GroupUserProfileModel model) {
         super.toModel(model);
+        //TODO Temporary fix for the Group update bug (404 error when trying to update a group). I don't know why
+        //      but using a short URI instead of a long one resolves the bug. However this is not a viable solution
+        //      for the long term.
+        if(model.getUri() != null){
+            model.setUri(URI.create(SPARQLDeserializers.getShortURI(getUri())));
+        }
 
         ProfileModel profile = new ProfileModel();
         profile.setUri(getProfileURI());

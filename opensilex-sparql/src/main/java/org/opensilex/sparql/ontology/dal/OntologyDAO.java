@@ -37,6 +37,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -44,13 +45,10 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
-
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -1057,27 +1055,33 @@ public final class OntologyDAO {
         return target;
     }
 
-    public List<ResourceTreeDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {
+    /**
+     *
+     * @param domainURI The domain on which the property applies
+     * @param propertyURI , parent property to get sub properties of
+     * @param ignoreRoot , if false then the parent propertyURI is also returned in the list
+     * @param lang
+     * @return A list of ObjectNamedResourceDTO (name and uri) of the sub properties
+     * @throws Exception
+     */
+    public List<ObjectNamedResourceDTO> getSubPropertiesOf(URI domainURI, URI propertyURI, boolean ignoreRoot, String lang) throws Exception {
         //Get root property
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, null, domainURI, lang);
-        String rootPropertyName = model.getName();
 
-        //Get resource tree
-        BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) -> SPARQLDeserializers.compareURIs(property.getUri(), propertyURI));
-        List<ResourceTreeDTO> propertiesFromRoot = ResourceTreeDTO.fromResourceTree(
-                ontologyStore.searchObjectProperties(domainURI, rootPropertyName, lang, true, objectPropFilter)
-        );
-        if(propertiesFromRoot.size()>1){
-            throw new Exception("Multiple root properties with this uri found");
-        }
-        ResourceTreeDTO rootProperty = propertiesFromRoot.get(0);
-        List<ResourceTreeDTO> result = rootProperty.getChildren();
+        List<ObjectNamedResourceDTO> result = model.getChildren().stream().map(child ->{
+            var next = new ObjectNamedResourceDTO();
+            next.setUri(child.getUri());
+            next.setName(child.getName());
+            return next;
+        }).collect(Collectors.toList());
 
-        //Add root if required, set children to empty list to get rid of duplicated information
+        //Add root if required
         if(!ignoreRoot){
-            rootProperty.setChildren(Collections.emptyList());
-            result.add(rootProperty);
+            var rootDto = new ObjectNamedResourceDTO();
+            rootDto.setUri(model.getUri());
+            rootDto.setName(model.getName());
+            result.add(rootDto);
         }
         return result;
     }

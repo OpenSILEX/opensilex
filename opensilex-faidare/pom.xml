@@ -4,7 +4,7 @@
   ~                         pom.xml
   ~ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
   ~ Copyright © INRAE 2024.
-  ~ Last Modification: 19/06/2024 13:43
+  ~ Last Modification: 15/07/2024 13:31
   ~ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
   ~ ******************************************************************************
   -->
@@ -38,36 +38,7 @@
             <version>${revision}</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.castmart</groupId>
-            <artifactId>jcountry</artifactId>
-            <version>0.0.2</version>
-        </dependency>
-
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
-                <artifactId>serviceloader-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>brapi-services</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <services>
-                                <param>org.opensilex.faidare.api.CallsAPI</param>
-                            </services>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-        </plugins>
-    </build>
 
 </project>
 

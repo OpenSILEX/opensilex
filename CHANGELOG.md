@@ -1,54 +1,57 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.2.7]](#127)
+  * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
+    * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized)
-  * [[1.2.6]](#126)
+  * [[1.2.7]](#127)
     * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.2.6]](#126)
+    * [Fixed or optimized](#fixed-or-optimized-2)
     * [Known issue](#known-issue)
   * [[1.2.5]](#125)
-    * [Fixed or optimized](#fixed-or-optimized-2)
-  * [[1.2.4]](#124)
     * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.2.4]](#124)
+    * [Fixed or optimized](#fixed-or-optimized-4)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
-    * [Changes and new features](#changes-and-new-features)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Changes and new features](#changes-and-new-features-1)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.2.2]](#122)
     * [Fixed](#fixed)
   * [[1.2.1]](#121)
     * [Fixed](#fixed-1)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
-    * [Changes and new features](#changes-and-new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Changes and new features](#changes-and-new-features-2)
+    * [Fixed or optimized](#fixed-or-optimized-6)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-2)
-    * [Fixed or optimized](#fixed-or-optimized-6)
-  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Changes and new features](#changes-and-new-features-3)
     * [Fixed or optimized](#fixed-or-optimized-7)
+  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Fixed or optimized](#fixed-or-optimized-8)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-9)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-9)
-  * [[1.0.0-rc+6]](#100-rc6)
     * [Fixed or optimized](#fixed-or-optimized-10)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-11)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-11)
-  * [[1.0.0-rc+5.1]](#100-rc51)
     * [Fixed or optimized](#fixed-or-optimized-12)
+  * [[1.0.0-rc+5.1]](#100-rc51)
+    * [Fixed or optimized](#fixed-or-optimized-13)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-13)
+    * [Fixed or optimized](#fixed-or-optimized-14)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed-2)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -64,10 +67,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-14)
+    * [Fixed or optimized](#fixed-or-optimized-15)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-15)
+    * [Fixed or optimized](#fixed-or-optimized-16)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -91,6 +94,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.3.0] - Dizzy Diamond 
+
+> WARNING : upgrading to this new version requires manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.3.0.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.3.0.md).
+
+### Changes and new features
+
+- (!1128) [GraphQL] Added a WebService to retrieve graph URIs in the triple store. This is used by the Staple API for GraphQL mapping.
+- (!1172) [GraphQL] Rectifying ontologies and adding a list of authorized experiments to the token, as well as adding a web service that returns the base URI. This is used by the GraphQL service to retrieve data and manage authorizations.
+- (!1188) [API] There are now FAIDARE compatible services. Use this service for more information : "/rest/faidare/v1/calls"
+- (!1204) [Visualization] If there are more than 50000 data in the selected time range for visualization a message warns the user that the serie was truncated.
+- (!1211) [Annotation] Added API and DAO tests for opensilex:Annotation
+
+### Fixed or optimized
+
+- (!1200) [Event] In the event creation form, if there is a URI error in the "targets" field, error messages are now displayed.
+- (!1206) [Moves] fixed pagination for tabs returning a list of positions. The first page of results is no longer the only one available.
+- (!1214) [Data] fixed number of elements and totalcount rendered on datalist, improve interface
+- (!1224) [Data] operator and device filters for data searches now work.
+- (!1229) [Facility] Optimization of the Facilities page
+- (!1233) [Interface] Allows redirection to the different sections from the dashboard metrics information.
+  When changing the selected period, the metrics only display a loader instead of the entire dashboard.
+  Fix missing global header for variables after clicking on a variable property and being redirected to the global section.
+  Fix of the "showMoreResult" message at the end of the list of selectors, which could disappear depending on the searches although there are more results
+- (!1242) [Germplasm] Germplasm POST service with checkOnly now returns valid metadata instead of null
+- (!1246) [Account] Optimization of account and group services, display is now faster
+- (!1255) [Metrics] Metrics querying has been optimized
 
 ## [1.2.7]
 

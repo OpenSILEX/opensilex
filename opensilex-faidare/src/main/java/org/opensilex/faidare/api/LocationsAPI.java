@@ -3,7 +3,7 @@
  *                         LocationsAPI.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 25/05/2024 00:00
+ * Last Modification: 15/07/2024 14:06
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -11,7 +11,6 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -23,11 +22,10 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
@@ -35,7 +33,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 
 /**

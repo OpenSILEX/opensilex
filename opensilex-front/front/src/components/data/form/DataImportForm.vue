@@ -236,7 +236,7 @@ export default class DataImportForm extends Vue {
   }
 
   successMessage(form) {
-    return this.$t("DataImportForm.provenance.success-message");
+    return this.$t("DataImportForm.provenance-success-message");
   }
 
   initForm(form) {

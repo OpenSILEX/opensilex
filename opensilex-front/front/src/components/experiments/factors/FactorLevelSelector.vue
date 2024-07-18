@@ -1,6 +1,6 @@
 <template>
   <div v-if="!disabled">
-    <opensilex-FormSelector
+    <opensilex-SelectForm
       v-if="experimentURI"
       :label="label"
       :selected.sync="internalValue"
@@ -10,7 +10,7 @@
       :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
       @keyup.enter.native="onEnter"
-    ></opensilex-FormSelector>
+    ></opensilex-SelectForm>
     
     <opensilex-FormSelector
       v-else

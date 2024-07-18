@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.security.person.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -14,18 +15,22 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -187,6 +192,33 @@ public class PersonDAO {
                 orderByList,
                 page,
                 pageSize
+        );
+    }
+
+    /**
+     *
+     * @param uriFilter
+     * @param lang
+     * @return All Person models with minimal fields loaded
+     * @throws Exception
+     */
+    public ListWithPagination<PersonModel> noProxySearch(List<URI> uriFilter, String lang) throws Exception {
+        SparqlNoProxyFetcher<PersonModel> personsFetcher = new SparqlNoProxyFetcher<>(PersonModel.class, sparql);
+
+        return sparql.searchWithPagination(
+                sparql.getDefaultGraph(PersonModel.class),
+                PersonModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    if(!CollectionUtils.isEmpty(uriFilter)){
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, uriFilter));
+                    }
+                },
+                Collections.emptyMap(),
+                (SPARQLResult result) -> personsFetcher.getInstance(result, lang),
+                Collections.emptyList(),
+                0,
+                0
         );
     }
 

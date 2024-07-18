@@ -141,6 +141,7 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
             ignoreUpdateIfNull = true
     )
     private List<URI> favorites;
+    public static final String FAVORITES_FIELD = "favorites";
 
     @SPARQLProperty(
             ontology = FOAF.class,

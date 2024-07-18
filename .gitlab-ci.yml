@@ -33,7 +33,7 @@ variables:
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
-  MVN_VERSION: 3.9.8
+  MVN_VERSION: 3.8.6
   # DEFAULT SERVER JAVA VERSION
   JAVA_VERSION: 11
   ## DEPLOY CONFIGS ##
@@ -91,7 +91,7 @@ variables:
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
   stage: build
-  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION -DskipTests=$MAVEN_SKIP_TESTS
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -458,7 +458,7 @@ opensilex-release:close:
 
 opensilex-release:publish:
   stage: release
-  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
     - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
     -   echo 'PUBLISH_RELEASE_TAG must be set'

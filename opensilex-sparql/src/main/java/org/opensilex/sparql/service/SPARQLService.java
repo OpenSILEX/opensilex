@@ -28,6 +28,7 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.lucene.util.Bits;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -70,6 +71,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -1755,7 +1757,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param <T>         the SPARQLResourceModel type
      * @return the Set of unknown or existing URI from the given URI collection
      */
-    public <T extends SPARQLResourceModel> Set<URI> getExistingUriStream(Class<T> objectClass, Stream<URI> uris,
+    public <T extends SPARQLResourceModel> Set<URI> getExistingUriStream(Class<T> objectClass, Stream<String> uris,
                                                                          int size,
                                                                          boolean checkExist, Node graph) throws Exception {
         if (size == 0) {
@@ -1787,7 +1789,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     public <T extends SPARQLResourceModel> Set<URI> getExistingUris(Class<T> objectClass, Collection<URI> uris,
                                                                     boolean checkExist) throws Exception {
-        return getExistingUriStream(objectClass, uris.stream(), uris.size(), checkExist, null);
+        return getExistingUriStream(objectClass, uris.stream().map(URI::toString), uris.size(), checkExist, null);
     }
 
     public <T extends SPARQLResourceModel> boolean uriListExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
@@ -1807,6 +1809,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         return true;
     }
+
 
     /**
      * @param rdfType the {@link RDF#type} to check
@@ -1893,6 +1896,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return select;
     }
 
+
     public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Stream<URI> uris, int streamSize) throws Exception {
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var existing = makeVar(EXISTING_VAR);
@@ -1931,14 +1935,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @return the query which return the set of existing/non-existing URIS
      */
     public <T extends SPARQLResourceModel> SelectBuilder getUnknownUrisQuery(Class<T> objectClass,
-                                                                             Stream<URI> uris,
+                                                                             Stream<String> uris,
                                                                              int size, boolean checkExist,
                                                                              Node graph) throws Exception {
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), uris, size);
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, false, size);
 
         WhereBuilder where = new WhereBuilder();
 

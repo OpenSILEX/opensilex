@@ -34,9 +34,11 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 @JsonPropertyOrder({"uri", "date","timezone", "target", "variable", "value", "confidence", "provenance",  "metadata"})
 public class DataCreationDTO {
-    
-    public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/A"};
-    public static final String[] NAN_VALUES = {"nan", "NaN", "NAN"};
+
+    public static final List<String> NA_VALUES = Arrays.asList(
+            "na", "n/a", "NA", "N/A"
+    );
+    public static final List<String> NAN_VALUES = Arrays.asList("nan", "NaN", "NAN");
     
     @ValidURI
     @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
@@ -178,9 +180,9 @@ public class DataCreationDTO {
         }
         
         if (getValue() instanceof String) {
-            if (Arrays.asList(NA_VALUES).contains(getValue())) {
+            if (NA_VALUES.contains(value)) {
                 model.setValue(null);
-            } else if (Arrays.asList(NAN_VALUES).contains(getValue())) {
+            } else if (NAN_VALUES.contains(value)) {
                 model.setValue(NaN);
             } else {
                 model.setValue(getValue());

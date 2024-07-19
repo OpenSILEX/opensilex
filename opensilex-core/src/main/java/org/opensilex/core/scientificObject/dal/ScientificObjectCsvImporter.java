@@ -348,7 +348,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         if (withinExperiment()) {
             var soToCreateUriSet = sparql.getExistingUriStream(
                     ScientificObjectModel.class,
-                    models.stream().map(SPARQLResourceModel::getUri),
+                    models.stream().map(model -> model.getUri().toString()),
                     models.size(),
                     false,
                     sparql.getDefaultGraph(ScientificObjectModel.class));

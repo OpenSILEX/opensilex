@@ -238,7 +238,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     @Override
-    public List<VariableModel> getList(List<URI> uris, String lang) throws Exception {
+    public List<VariableModel> getList(Collection<URI> uris, String lang) throws Exception {
         List<VariableModel> models = super.getList(uris, lang);
         if (CollectionUtils.isEmpty(models)) {
             return models;

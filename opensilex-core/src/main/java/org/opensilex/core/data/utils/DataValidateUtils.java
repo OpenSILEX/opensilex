@@ -351,11 +351,15 @@ public class DataValidateUtils {
     private static Object returnValidCSVDatum(URI variable, Object value, URI dataType, Integer dataIndex,
                                               Integer colIndex, DataCSVValidationModel csvValidation)
             throws CSVDataTypeException, DataTypeException {
+
+
         // Special values
-        if (Arrays.asList(NAN_VALUES).contains(value)) {
-            value = NaN;
-        } else if (Arrays.asList(NA_VALUES).contains(value)) {
-            return null;
+        if(value instanceof String){
+            if (NAN_VALUES.contains(value)) {
+                value = NaN;
+            } else if (NA_VALUES.contains(value)) {
+                return null;
+            }
         }
 
         // No datatype => no check

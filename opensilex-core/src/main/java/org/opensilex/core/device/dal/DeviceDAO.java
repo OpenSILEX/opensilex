@@ -312,8 +312,6 @@ public class DeviceDAO {
     }
 
     public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
-        List<DeviceModel> devices = new ArrayList<>();
-
         SelectBuilder select = new SelectBuilder();
 
         sparql.getDefaultGraph(MoveModel.class);
@@ -327,15 +325,14 @@ public class DeviceDAO {
             .addWhere(subject, Oeev.concerns, target);
 
         List<SPARQLResult> list = sparql.executeSelectQuery(select);
+        if (list.isEmpty())
+            return Collections.emptyList();
 
-        if (!list.isEmpty()) {
-            list.forEach(l -> System.out.println(l.getStringValue("target")));
+        List<URI> deviceUris = list.stream()
+                .map((x) -> URI.create(x.getStringValue("target")))
+                .collect(Collectors.toList());
 
-            List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
-            devices = getDevicesByURI(deviceUris, currentUser);
-        }
-
-        return devices;
+        return getDevicesByURI(deviceUris, currentUser);
     }
 
     /**

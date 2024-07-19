@@ -10,8 +10,11 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OA;
 import org.bson.conversions.Bson;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
@@ -52,6 +55,9 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.mapping.SparqlMapper;
+import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -59,6 +65,7 @@ import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -121,12 +128,11 @@ public class DataLogic {
         return dao.get(uri);
     }
 
-    public <T> ListWithPagination<T> searchWithPagination(MongoSearchQuery<DataModel, DataSearchFilter, T> query){
+    public <T> ListWithPagination<T> searchWithPagination(MongoSearchQuery<DataModel, DataSearchFilter, T> query) {
         return dao.searchWithPagination(query);
     }
 
     /**
-     *
      * @param forWideFormat if true it's for wide export, else for long format
      * @return All of the data needed to perform an export
      */
@@ -162,7 +168,7 @@ public class DataLogic {
                 dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
             }
 
-            if(!forWideFormat){
+            if (!forWideFormat) {
                 if (!dataByInstant.containsKey(dataModel.getDate())) {
                     dataByInstant.put(dataModel.getDate(), new ArrayList<>());
                 }
@@ -170,12 +176,12 @@ public class DataLogic {
             }
 
             if (dataModel.getProvenance().getExperiments() != null) {
-                for (URI exp:dataModel.getProvenance().getExperiments()) {
+                for (URI exp : dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
                         experiments.put(exp, null);
                     }
                     //Everything else in for loop is for wide format only
-                    if(!forWideFormat){
+                    if (!forWideFormat) {
                         continue;
                     }
 
@@ -190,7 +196,7 @@ public class DataLogic {
                     }
                     dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
                 }
-            } else if(forWideFormat) {
+            } else if (forWideFormat) {
                 //Everything in this else block is for wide format only
                 ExportDataIndex exportDataIndex = new ExportDataIndex(
                         null,
@@ -208,7 +214,7 @@ public class DataLogic {
         Instant data = Instant.now();
 
         Instant dataTransform = Instant.now();
-        logger.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        logger.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         //Get other stuff we have to get (variables, objects, etc...)
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
@@ -217,7 +223,7 @@ public class DataLogic {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
         Instant variableTime = Instant.now();
-        logger.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + variables.keySet().size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
 
         // Provide the experiment as context if there is only one, and only in wide format.
         URI context = null;
@@ -229,7 +235,7 @@ public class DataLogic {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         List<ProvenanceModel> provenanceModels = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : provenanceModels) {
@@ -249,12 +255,12 @@ public class DataLogic {
 
         //Handle return
         DataExportInformation result;
-        if(forWideFormat){
+        if (forWideFormat) {
             result = new DataWideExportInformation();
-            ((DataWideExportInformation)result).setDataByIndexAndInstant(dataByIndexAndInstant);
-        }else{
+            ((DataWideExportInformation) result).setDataByIndexAndInstant(dataByIndexAndInstant);
+        } else {
             result = new DataLongExportInformation();
-            ((DataLongExportInformation)result).setDataByInstant(dataByInstant);
+            ((DataLongExportInformation) result).setDataByInstant(dataByInstant);
         }
         result.setVariables(variables)
                 .setObjects(objects)
@@ -280,17 +286,17 @@ public class DataLogic {
         List<URI> provenanceURIs = dao.distinct(null, "provenance.uri", URI.class, filter);
         List<ProvenanceModel> resultList = new ArrayList<>();
 
-        if(!provenanceURIs.isEmpty()){
+        if (!provenanceURIs.isEmpty()) {
             resultList = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenanceURIs.stream(), provenanceURIs.size());
         }
         return resultList;
     }
 
-    public long countData(DataSearchFilter filter, CountOptions countOptions){
+    public long countData(DataSearchFilter filter, CountOptions countOptions) {
         return dao.count(null, filter, countOptions);
     }
 
-    public long countData(DataSearchFilter filter){
+    public long countData(DataSearchFilter filter) {
         return dao.count(filter);
     }
 
@@ -298,23 +304,23 @@ public class DataLogic {
         dao.delete(uri);
     }
 
-    public void updateConfidence(URI dataUri, Float confidence) throws NoSQLInvalidURIException{
+    public void updateConfidence(URI dataUri, Float confidence) throws NoSQLInvalidURIException {
         DataModel data = dao.get(dataUri);
         data.setConfidence(confidence);
         dao.update(data);
     }
 
-    public Stream<VariableModel> getUsedVariablesAsStream(DataSearchFilter filter){
+    public Stream<VariableModel> getUsedVariablesAsStream(DataSearchFilter filter) {
         return dao.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
                 .stream();
     }
 
-    public void update(DataModel model) throws Exception{
+    public void update(DataModel model) throws Exception {
         validData(Collections.singletonList(model));
         dao.update(model);
     }
 
-    public DeleteResult deleteManyByFilter(DataSearchFilter filter){
+    public DeleteResult deleteManyByFilter(DataSearchFilter filter) {
         return dao.deleteMany(filter);
     }
 
@@ -339,7 +345,7 @@ public class DataLogic {
         }
 
         // test exp
-        if(experiment != null) {
+        if (experiment != null) {
             new ExperimentDAO(sparql, nosql).validateExperimentAccess(experiment, user);
         }
 
@@ -349,9 +355,9 @@ public class DataLogic {
 
         //Set DataCSVValidationModel attributes
         validation.setValidCSV(!validation.hasErrors());
-        if(forInsertion){
+        if (forInsertion) {
             validation.setInsertionStep(true);
-        }else{
+        } else {
             validation.setValidationStep(true);
         }
 
@@ -370,22 +376,22 @@ public class DataLogic {
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
         Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
         String userLanguage = null;
-        if(user != null){
+        if (user != null) {
             userLanguage = user.getLanguage();
         }
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
-    public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
+    public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects);
         return new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
     }
 
     //TODO this next function would make more sense being in the future ScientificObjectLogic class
+
     /**
-     *
      * @param criteriaDTO
      * @return Null if criteria dto had no valid criteria, Object containing empty list if valid criteria but no results,
      * or a list of object uris if criteria were valid and results were found
@@ -399,13 +405,13 @@ public class DataLogic {
         boolean everyLineIsNotMeausured =
                 criteriaDTO.getCriteriaList().stream().allMatch(dto -> dto.getCriteria() == MathematicalOperator.NotMeasured);
 
-        if(!atLeastOneCompleteSingle){
+        if (!atLeastOneCompleteSingle) {
             return null;
         }
 
         //If every line is "NotMeausured" then we perform a different operation
         //We simply get all the objects that are measured and return that we need to exclude them
-        if(everyLineIsNotMeausured){
+        if (everyLineIsNotMeausured) {
             return new ExcludableUriList(
                     true,
                     getUsedTargets(
@@ -416,10 +422,10 @@ public class DataLogic {
             );
         }
         //If every line wasn't "NotMeasured" :
-        List<Bson> aggregationDocs = dao.createCriteriaSearchAggregation(criteriaDTO, experiment,user, new VariableDAO(sparql, nosql, fs, user));
+        List<Bson> aggregationDocs = dao.createCriteriaSearchAggregation(criteriaDTO, experiment, user, new VariableDAO(sparql, nosql, fs, user));
 
         //If aggregationDocs is null then it means there was a contradiction
-        if(aggregationDocs == null){
+        if (aggregationDocs == null) {
             return new ExcludableUriList(false, Collections.emptyList());
         }
 
@@ -427,7 +433,7 @@ public class DataLogic {
         //If result is empty return an empty list otherwise take first and only element's targets value because of the
         // mongo request always returns a single Document with a list of targets validating the criteria
 
-        if(criteriaSearchedResult.isEmpty()){
+        if (criteriaSearchedResult.isEmpty()) {
             return new ExcludableUriList(false, Collections.emptyList());
         } else if (criteriaSearchedResult.size() > 1) {
             throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
@@ -514,8 +520,7 @@ public class DataLogic {
 
         if (!calculatedOnly) {
             dto.setDataSeries(dataSeriesDTOs);
-        }
-        else if (dataSeriesDTOs.size() == 1) {
+        } else if (dataSeriesDTOs.size() == 1) {
             dto.setCalculatedSeries(dataSeriesDTOs);
         }
 
@@ -554,9 +559,11 @@ public class DataLogic {
         return dto;
     }
 
+
     //#endregion
 
     //#region PRIVATE METHODS
+
     /**
      * Check variable data list before creation
      * Complete the prov_was_associated_with provenance attribut
@@ -564,146 +571,148 @@ public class DataLogic {
      * @param dataList
      * @throws Exception
      */
-    private List<DataModel> validData(List<DataModel> dataList) throws Exception {
+    private void validData(List<DataModel> dataList) throws Exception {
 
-        Map<URI, VariableModel> variableURIs = new HashMap<>();
-        Set<URI> notFoundedVariableURIs = new HashSet<>();
-        Set<URI> targetURIs = new HashSet<>();
-        Set<URI> notFoundedTargetURIs = new HashSet<>();
-        Set<URI> provenanceURIs = new HashSet<>();
-        Set<URI> notFoundedProvenanceURIs = new HashSet<>();
-        Set<URI> expURIs = new HashSet<>();
-        Set<URI> notFoundedExpURIs = new HashSet<>();
-        Map<DeviceModel, URI> variableCheckedDevice =  new HashMap<>();
-        Map<URI, DeviceModel> provenanceToDevice =  new HashMap<>();
+        Map<URI, VariableModel> variablesByUri = new HashMap<>();
+        Map<String, Boolean> targets = new PatriciaTrie<>();
+        Map<URI, ProvenanceModel> provenancesByUri = new HashMap<>();
+        Map<String, Boolean> provenanceXps = new PatriciaTrie<>();
 
-        List<DataModel> validData = new ArrayList<>();
+        Map<String, Boolean> deviceUris = new PatriciaTrie<>();
+        Set<URI> provUrisWithNoDevices = new HashSet<>();
+
+        Map<String, List<URI>> targetByXps = new PatriciaTrie<>();
+        Map<DeviceModel, URI> variableCheckedDevice = new HashMap<>();
+        Map<URI, DeviceModel> provenanceToDevice = new HashMap<>();
+
+
         for (DataModel data : dataList) {
 
-            boolean hasTarget = false;
+//            if(!notFoundedProvenanceURIs.contains(data.getProvenance().getUri())){
+//                variablesDeviceAssociation(provDAO, data, hasTarget, variableCheckedDevice, provenanceToDevice);
+//            }
+//
+//            }
+
+            variablesByUri.put(data.getVariable(), null);
+
+            DataProvenanceModel provenance = data.getProvenance();
+            provenancesByUri.put(provenance.getUri(), null);
+
+            if (!CollectionUtils.isEmpty(provenance.getProvWasAssociatedWith())) {
+                provenance.getProvWasAssociatedWith().forEach(agent -> deviceUris.put(agent.getUri().toString(), Boolean.FALSE));
+            } else {
+                provUrisWithNoDevices.add(provenance.getUri());
+            }
+
+            if(provenance.getExperiments() != null){
+                provenance.getExperiments().forEach(xp ->
+                        targetByXps.computeIfAbsent(xp.toString(), key -> new ArrayList<>()).add(data.getTarget())
+                );
+            }else if(data.getTarget() != null){
+                targetByXps.computeIfAbsent(null, key -> new ArrayList<>()).add(data.getTarget());
+            }
+        }
+
+        List<VariableModel> variables = new VariableDAO(sparql, null, null, user).getList(variablesByUri.keySet());
+        if (variables.size() < variablesByUri.size()) {
+            // compute difference : delete existing variable from all variables
+            variables.forEach(model -> variablesByUri.remove(model.getUri()));
+            throw new NoSQLInvalidUriListException("wrong variable uris: ", variablesByUri.keySet());// NOSQL Exception ? come from sparql request
+        }
+
+        // Directly check for unknown experiment (don't retrieve models) -> fewer data to transfer (I/O, network) and process (CPU)
+        Set<URI> unknownXps = sparql.getExistingUriStream(
+                ExperimentModel.class,
+                targetByXps.keySet().stream().filter(Objects::nonNull).map(SPARQLDeserializers::getExpandedURI),
+                provenanceXps.size(),
+                false,
+                null
+        );
+        if (!unknownXps.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", unknownXps);
+        }
+
+        // Directly check for unknown target (don't retrieve models) -> fewer data to transfer (I/O, network) and process (CPU)
+        // TODO also handle query permissions : if no present (just indicate that the target don't exist for the given xp)
+        Set<URI> unknownTargets = sparql.getExistingUriStream(
+                ScientificObjectModel.class,
+                targets.keySet().stream().map(SPARQLDeserializers::getExpandedURI),
+                targets.size(),
+                false,
+                null
+        );
+        if (!unknownTargets.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong target uris", unknownTargets); // NOSQL Exception ? come from sparql request
+        }
+
+        // Check provenance, keep models for device/provenance coherence checking
+        List<ProvenanceModel> provenances = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(
+                provenancesByUri.keySet().stream(), provenancesByUri.size()
+        );
+        if (provenances.size() < provenancesByUri.size()) {
+            // compute difference : delete existing variable from all variables
+            provenances.forEach(model -> provenancesByUri.remove(model.getUri()));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", provenancesByUri.keySet()); // NOSQL Exception ? come from sparql request
+        }
+
+
+
+        // Perform 2nd step of validation
+        for(DataModel data : dataList){
+
             // check variable uri and datatype
-            if (data.getVariable() != null) {  // and if null ?
-                VariableModel variable = null;
-                URI variableURI = data.getVariable();
-                if (!variableURIs.containsKey(variableURI)) {
-                    variable = new VariableDAO(sparql, nosql, fs, user).get(variableURI);
-                    if (variable == null) {
-                        notFoundedVariableURIs.add(variableURI);
-                    } else {
-                        if (variable.getDataType() == null) {
-                            throw new NoVariableDataTypeException(variableURI);
-                        }
-                        variableURIs.put(variableURI, variable);
-                    }
-                } else {
-                    variable = variableURIs.get(variableURI);
-
-                }
-                if(!notFoundedVariableURIs.contains(variableURI)) {
-                    setDataValidValue(variable, data);
-                }
-            }
-
-
-            //check targets uri
-            if (data.getTarget() != null) {
-                hasTarget = true ;
-                if (!targetURIs.contains(data.getTarget())) {
-                    targetURIs.add(data.getTarget());
-                    if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        hasTarget = false ;
-                        notFoundedTargetURIs.add(data.getTarget());
-                    }
-                }
-            }
-
-            //check provenance uri and variables device association
-            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
-            if (!provenanceURIs.contains(data.getProvenance().getUri())) {
-                provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.exists(data.getProvenance().getUri())) {
-                    notFoundedProvenanceURIs.add(data.getProvenance().getUri());
-                }
-            }
-
-            if(!notFoundedProvenanceURIs.contains(data.getProvenance().getUri())){
-                variablesDeviceAssociation(provDAO, data, hasTarget, variableCheckedDevice, provenanceToDevice);
-            }
-
-            // check experiments uri
-            if (data.getProvenance().getExperiments() != null) {
-                for (URI exp : data.getProvenance().getExperiments()) {
-                    if (!expURIs.contains(exp)) {
-                        expURIs.add(exp);
-                        if (!sparql.uriExists(ExperimentModel.class, exp)) {
-                            notFoundedExpURIs.add(exp);
-                        }
-                    }
-                }
-            }
-            validData.add(data);
+            VariableModel variable = variablesByUri.get(data.getVariable());
+            setDataValidValue(variable, data);
         }
-
-        if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));// NOSQL Exception ? come from sparql request
-        }
-        if (!notFoundedTargetURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedTargetURIs)); // NOSQL Exception ? come from sparql request
-        }
-        if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
-        }
-        if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs)); // NOSQL Exception ? come from sparql request
-        }
-
-        return validData;
     }
 
     /**
-     *
      * Validates - throws or inserts the models
      * Handles setting of publisher
      * Handles Annotation creation in the case of import
-     * @param modelList models to insert
-     * @param variablesToDevices device, variable map to add the links to devices
-     * @param calledFromImport so we know to run any extra code
-     * @param csvValidation null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
-     * @return a list of uris if it the caller wasn't the import function
+     *
+     * @param modelList          models to insert
+     * @param deviceToVariables device, variable map to add the links to devices
+     * @param calledFromImport   so we know to run any extra code
+     * @param csvValidation      null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
+     * @return a list of uris if the caller wasn't the import function
      */
-    private List<URI> addListDataInnerCode(List<DataModel> modelList, Map<DeviceModel, List<URI>> variablesToDevices, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception{
+    private List<URI> addListDataInnerCode(List<DataModel> modelList, Map<DeviceModel, List<URI>> deviceToVariables, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception {
 
         //TODO can the validations done for import be refactord with the validData method ?
-        if(!calledFromImport){
-            modelList = validData(modelList);
+        if (!calledFromImport) {
+             validData(modelList);
         }
         //Set publisher
         modelList.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
 
         //Transaction to add data and to add link to device
-        List<DataModel> finalModelList = modelList;
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session->{
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             //Create data
-            dao.create(session, finalModelList);
+            dao.create(session, modelList);
             //Create device links
-            if(!variablesToDevices.isEmpty()) {
-                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    new DeviceDAO(sparql, nosql, fs).associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+            if (!deviceToVariables.isEmpty()) {
+                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+                for (var deviceVariables : deviceToVariables.entrySet()) {
+                    deviceDAO.associateVariablesToDevice(deviceVariables.getKey(), deviceVariables.getValue(), user);
                 }
             }
             //In the case of import set number of imported lines and create any annotations that were imported on the targets
-            if(calledFromImport){
-                csvValidation.setNbLinesImported(finalModelList.size());
+            if (calledFromImport) {
+                csvValidation.setNbLinesImported(modelList.size());
                 //If the data import was successful, post the annotations on objects
                 AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
                 annotationDAO.create(csvValidation.getAnnotationsOnObjects());
             }
             return 0;
         });
-        if(!calledFromImport){
-            return finalModelList.stream().map(MongoModel::getUri).collect(Collectors.toList());
+        if (calledFromImport) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        return modelList.stream()
+                .map(MongoModel::getUri)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -725,14 +734,14 @@ public class DataLogic {
         Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 
-        Map<String,DeviceModel> nameURIDevices = new HashMap<>();
+        Map<String, DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();
 
         List<AgentModel> agents = provenance.getAgents();
         boolean sensingDeviceFoundFromProvenance = false;
-        if (agents !=  null) {
-            for (AgentModel agent:agents) {
+        if (agents != null) {
+            for (AgentModel agent : agents) {
                 if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
                     sensingDeviceFoundFromProvenance = true;
                     break;
@@ -740,7 +749,7 @@ public class DataLogic {
             }
         }
 
-        Map<String,DeviceModel> variableCheckedProvDevice =  new HashMap<>();
+        Map<String, DeviceModel> variableCheckedProvDevice = new HashMap<>();
         List<String> checkedVariables = new ArrayList<>();
 
         Map<String, DeviceModel> variableCheckedDevice = new HashMap<>();
@@ -753,7 +762,7 @@ public class DataLogic {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
-            logger.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+            logger.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat() + "'");
 
             // Line 1
             String[] ids = csvReader.parseNext();
@@ -762,7 +771,7 @@ public class DataLogic {
                 csvValidation.addMissingHeaders(Arrays.asList(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
             // Check that there is an SCIENTIFICOBJ_HEADER or a TARGET_HEADER if there is an ANNOTATION_HEADER otherwise create error
-            if(headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER)){
+            if (headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER)) {
                 csvValidation.addMissingHeaders(Arrays.asList(TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
 
@@ -774,7 +783,7 @@ public class DataLogic {
                 for (int i = 0; i < ids.length; i++) {
                     String header = ids[i];
                     if (header == null) {
-                        csvValidation.addEmptyHeader(i+1);
+                        csvValidation.addEmptyHeader(i + 1);
                     } else {
 
                         if (header.equalsIgnoreCase(EXPERIMENT_HEADER) || header.equalsIgnoreCase(TARGET_HEADER)
@@ -866,7 +875,7 @@ public class DataLogic {
             }
         }
 
-        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
+        if (csvValidation.getData().keySet().size() > DataAPI.SIZE_MAX) {
             csvValidation.setTooLargeDataset(true);
         }
 
@@ -879,7 +888,7 @@ public class DataLogic {
             URI experiment,
             boolean sensingDeviceFoundFromProvenance,
             Map<String, DeviceModel> variableCheckedDevice,
-            Map<String,DeviceModel> variableCheckedProvDevice,
+            Map<String, DeviceModel> variableCheckedProvDevice,
             List<String> checkedVariables,
             String[] values,
             int rowIndex,
@@ -922,7 +931,7 @@ public class DataLogic {
 
         DeviceModel deviceFromDeviceColumn = null;
         SPARQLNamedResourceModel object = null;
-        if( experiment != null) {
+        if (experiment != null) {
             experiments.add(experiment);
         }
 
@@ -982,7 +991,7 @@ public class DataLogic {
                 String targetNameOrUri = values[colIndex];
                 targetColIndex = colIndex;
 
-                if (!StringUtils.isEmpty(targetNameOrUri)){
+                if (!StringUtils.isEmpty(targetNameOrUri)) {
                     if (nameURITargets.containsKey(targetNameOrUri)) {
                         target = nameURITargets.get(targetNameOrUri);
                     } else {
@@ -1037,13 +1046,13 @@ public class DataLogic {
                         existingOs = testNameOrURI(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
                     }
 
-                    if(existingOs == null){
+                    if (existingOs == null) {
                         validRow = false;
                         scientificObjectsNotInXp.add(objectNameOrUri);
-                    }else{
+                    } else {
                         object = existingOs;
                         // object exist, put it into name/URI cache
-                        nameURIScientificObjects.put(objectNameOrUri,existingOs);
+                        nameURIScientificObjects.put(objectNameOrUri, existingOs);
                     }
                 }
 
@@ -1058,7 +1067,7 @@ public class DataLogic {
                     break;
                 }
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(DEVICE_HEADER)){
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(DEVICE_HEADER)) {
                 // check device column
                 String deviceNameOrUri = values[colIndex];
                 deviceColIndex = colIndex;
@@ -1104,10 +1113,10 @@ public class DataLogic {
             }
             //If we are at the annotation column, and the cell isn't empty, create a new Annotation Model.
             //Set the motivation to commenting, and leave the target for now until we're sure that the target column has already been imported
-            else if (headerByIndex.get(colIndex).equalsIgnoreCase(ANNOTATION_HEADER)){
+            else if (headerByIndex.get(colIndex).equalsIgnoreCase(ANNOTATION_HEADER)) {
                 String annotation = values[colIndex];
                 annotationIndex = colIndex;
-                if(!StringUtils.isEmpty(annotation)){
+                if (!StringUtils.isEmpty(annotation)) {
                     annotationFromAnnotationColumn = new AnnotationModel();
                     annotationFromAnnotationColumn.setDescription(annotation.trim());
                     annotationFromAnnotationColumn.setPublisher(user.getUri());
@@ -1115,7 +1124,7 @@ public class DataLogic {
                     motivationModel.setUri(URI.create(OA.commenting.getURI()));
                     annotationFromAnnotationColumn.setMotivation(motivationModel);
                 }
-            }else if (!headerByIndex.get(colIndex).equalsIgnoreCase(RAWDATA_HEADER)) { // Variable/Value column
+            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(RAWDATA_HEADER)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
@@ -1125,7 +1134,7 @@ public class DataLogic {
             }
         }
         //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
-        for(Integer colIndex : colsToDoAtEnd){
+        for (Integer colIndex : colsToDoAtEnd) {
             if (validRow) {
                 String variable = headerByIndex.get(colIndex);
                 URI varURI = URI.create(variable);
@@ -1202,7 +1211,7 @@ public class DataLogic {
                         }
                     }
                 }
-                if(validRow) {
+                if (validRow) {
                     DataModel dataModel = new DataModel();
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
@@ -1264,7 +1273,7 @@ public class DataLogic {
                     if (object != null) {
                         targetUri = object.getUri();
                     }
-                    if(deviceFromDeviceColumn != null) {
+                    if (deviceFromDeviceColumn != null) {
                         deviceUri = deviceFromDeviceColumn.getUri();
                     }
                     ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
@@ -1282,14 +1291,14 @@ public class DataLogic {
             }
         }
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
-        if( annotationFromAnnotationColumn != null ){
-            if(target == null && object == null){
+        if (annotationFromAnnotationColumn != null) {
+            if (target == null && object == null) {
                 CSVCell annotationCell = new CSVCell(rowIndex, annotationIndex, annotationFromAnnotationColumn.getDescription(), ANNOTATION_HEADER);
                 csvValidation.addInvalidAnnotationError(annotationCell);
                 validRow = false;
-            }else{
-                if(validRow){
-                    annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
+            } else {
+                if (validRow) {
+                    annotationFromAnnotationColumn.setTargets(Collections.singletonList(target == null ? object.getUri() : target.getUri()));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }
@@ -1312,7 +1321,7 @@ public class DataLogic {
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
-            SPARQLNamedResourceModel existingObject = sparql.getByURI(experiment, ScientificObjectModel.class,objectUri,null);
+            SPARQLNamedResourceModel existingObject = sparql.getByURI(experiment, ScientificObjectModel.class, objectUri, null);
             if (existingObject == null) {
                 validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));
                 return null;
@@ -1361,67 +1370,68 @@ public class DataLogic {
      * @param hasTarget
      * @param variableCheckedDevice
      * @param provenanceToDevice
-
      * @throws Exception
      */
-    private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
+    private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception {
 
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         URI provenanceURI = data.getProvenance().getUri();
         DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO);
-        if (deviceFromProvWasAssociated == null) {
-
-            DeviceModel device = null;
-            if(provenanceToDevice.containsKey(provenanceURI)) {
-                device = provenanceToDevice.get(provenanceURI);
-                //check
-            } else {
-                device = checkAndReturnDeviceFromProvenance(deviceDAO, provDAO, data);
-                provenanceToDevice.put(provenanceURI,device);
-            }
-
-            if (device != null) {
-
-                if (!variableDAO.variableIsAssociatedToDevice(device, data.getVariable())) {
-                    DataCSVValidationModel.addVariableToDeviceMap(device,data.getVariable(), variablesToDevices); // add variable/device
-                }
-
-                if (rootDeviceTypes == null) {
-                    rootDeviceTypes = deviceDAO.getRootDeviceTypes(user);
-                }
-
-                DataProvenanceModel provMod = data.getProvenance();
-                List<ProvEntityModel> agents = null;
-                if (provMod.getProvWasAssociatedWith() == null) {
-                    agents = new ArrayList<>();
-                } else {
-                    agents = provMod.getProvWasAssociatedWith();
-                }
-
-                ProvEntityModel agent = new ProvEntityModel();
-                agent.setUri(device.getUri());
-                URI rootType = rootDeviceTypes.get(device.getType());
-                agent.setType(rootType);
-                agents.add(agent);
-                provMod.setProvWasAssociatedWith(agents);
-                data.setProvenance(provMod);
-            } else {
-                if(!hasTarget) {
-                    throw new DeviceOrTargetToDataException(data);
-                }
-            }
-
-        } else {
-            boolean deviceIsChecked = variableCheckedDevice.containsKey(deviceFromProvWasAssociated) && variableCheckedDevice.get(deviceFromProvWasAssociated) == data.getVariable() ;
-            if(!deviceIsChecked){
+        if (deviceFromProvWasAssociated != null) {
+            boolean deviceIsChecked = variableCheckedDevice.containsKey(deviceFromProvWasAssociated) && variableCheckedDevice.get(deviceFromProvWasAssociated) == data.getVariable();
+            if (!deviceIsChecked) {
+                // #TODO perform an update without checking if already associated (without duplicate relations)
                 if (!variableDAO.variableIsAssociatedToDevice(deviceFromProvWasAssociated, data.getVariable())) {
-                    DataCSVValidationModel.addVariableToDeviceMap(deviceFromProvWasAssociated,data.getVariable(), variablesToDevices); // add variable/device
+                    DataCSVValidationModel.addVariableToDeviceMap(deviceFromProvWasAssociated, data.getVariable(), variablesToDevices); // add variable/device
                 }
-                variableCheckedDevice.put(deviceFromProvWasAssociated,data.getVariable());
+                variableCheckedDevice.put(deviceFromProvWasAssociated, data.getVariable());
 
+            }
+            return;
+        }
+
+        DeviceModel device;
+        if (provenanceToDevice.containsKey(provenanceURI)) {
+            device = provenanceToDevice.get(provenanceURI);
+            //check
+        } else {
+            device = checkAndReturnDeviceFromProvenance(deviceDAO, provDAO, data);
+            provenanceToDevice.put(provenanceURI, device);
+        }
+
+        if (device != null) {
+
+            // #TODO perform an update without checking if already associated (without duplicate relations)
+            if (!variableDAO.variableIsAssociatedToDevice(device, data.getVariable())) {
+                DataCSVValidationModel.addVariableToDeviceMap(device, data.getVariable(), variablesToDevices); // add variable/device
+            }
+
+            if (rootDeviceTypes == null) {
+                rootDeviceTypes = deviceDAO.getRootDeviceTypes(user);
+            }
+
+            DataProvenanceModel provMod = data.getProvenance();
+            List<ProvEntityModel> agents = null;
+            if (provMod.getProvWasAssociatedWith() == null) {
+                agents = new ArrayList<>();
+            } else {
+                agents = provMod.getProvWasAssociatedWith();
+            }
+
+            ProvEntityModel agent = new ProvEntityModel();
+            agent.setUri(device.getUri());
+            URI rootType = rootDeviceTypes.get(device.getType());
+            agent.setType(rootType);
+            agents.add(agent);
+            provMod.setProvWasAssociatedWith(agents);
+            data.setProvenance(provMod);
+        } else {
+            if (!hasTarget) {
+                throw new DeviceOrTargetToDataException(data);
             }
         }
+
     }
 
     /**
@@ -1432,33 +1442,34 @@ public class DataLogic {
      * @param data
      * @throws Exception
      */
-    private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
+    private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception {
 
         boolean deviceIsLinked = false; // to test if there are 2 devices
         URI agentToReturn = null;
-        DeviceModel device = null;
-        if(data.getProvenance().getProvWasAssociatedWith()!= null && !data.getProvenance().getProvWasAssociatedWith().isEmpty()){
-            for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
+        if (CollectionUtils.isEmpty(data.getProvenance().getProvWasAssociatedWith())) {
+            return null;
+        }
+        for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
 
-                if(agent.getType() == null) {
-                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
+            // #TODO remove : already handled by @valid or type should not be provided by client : no need to test it
+//            if (agent.getType() == null) {
+//                throw new ProvenanceAgentTypeException(agent.getUri().toString());
+//            }
+
+            // #TODO remove : what the matter if there are two different device type ?
+            if (deviceDAO.isDeviceType(agent.getType())) {
+                if (!deviceIsLinked) {
+                    deviceIsLinked = true;
+                    agentToReturn = agent.getUri();
+                } else {
+                    throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
                 }
-
-                if (deviceDAO.isDeviceType(agent.getType())) {
-                    if(!deviceIsLinked) {
-                        deviceIsLinked = true;
-                        agentToReturn = agent.getUri();
-
-                    } else {
-                        throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
-                    }
-                }
-            }
-            if(agentToReturn != null){
-                device = deviceDAO.getDeviceByURI(agentToReturn, user);
             }
         }
-        return device;
+        if (agentToReturn != null) {
+            return deviceDAO.getDeviceByURI(agentToReturn, user);
+        }
+        return null;
     }
 
     /**
@@ -1474,28 +1485,31 @@ public class DataLogic {
         ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
 
-        DeviceModel deviceToReturn = null ;
+        DeviceModel deviceToReturn = null;
         List<DeviceModel> devices = new ArrayList<>();
         List<DeviceModel> linkedDevices = new ArrayList<>();
 
         if (provenance.getAgents() != null && !provenance.getAgents().isEmpty()) {
 
             for (AgentModel agent : provenance.getAgents()) {
-                if(agent.getRdfType() == null) {
-                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
-                }
+                // #TODO remove : already handled by @valid or  type should not be provided by client : no need to test it
+                // #TODO : device from provenance should already be OK
+//                if (agent.getRdfType() == null) {
+//                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
+//                }
                 if (deviceDAO.isDeviceType(agent.getRdfType())) {
                     DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
                     if (device != null) {
                         devices.add(device);
 
-                        if(variableDAO.variableIsAssociatedToDevice(device, data.getVariable())){
+                        if (variableDAO.variableIsAssociatedToDevice(device, data.getVariable())) {
                             linkedDevices.add(device);
                         }
                     }
                 }
             }
 
+            // #TODO remove : what the matter if there are two different device type ?
             switch (linkedDevices.size()) {
                 case 0:
                     if (devices.size() > 1) {
@@ -1509,7 +1523,7 @@ public class DataLogic {
                 case 1:
                     deviceToReturn = linkedDevices.get(0);
                     break;
-                default :
+                default:
                     throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
 
             }
@@ -1520,13 +1534,13 @@ public class DataLogic {
 
     /**
      * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
-     * @detail
-     * Analyze the provenance from the data model and do as follows:
-     *  if there is one agent (device or operator), retrieve the uri and name of the agent
-     *  otherwise, take the uri and name from the provenance model
+     *
      * @param dataProvModel
      * @return a simple data provenance with uri and name attributes
      * @throws Exception
+     * @detail Analyze the provenance from the data model and do as follows:
+     * if there is one agent (device or operator), retrieve the uri and name of the agent
+     * otherwise, take the uri and name from the provenance model
      */
     private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
             throws Exception {
@@ -1538,14 +1552,51 @@ public class DataLogic {
             URI uri = provEntityList.get(0).getUri();
             dto.setUri(uri);
             dto.setName(new OntologyDAO(sparql).getURILabel(uri, user.getLanguage()));
-        }
-        else {
+        } else {
             ProvenanceModel provModel = new ProvenanceDaoV2(nosql.getServiceV2()).get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());
         }
 
         return dto;
+    }
+
+
+    private void checkProvenances(List<DataModel> models) throws Exception {
+        Map<String, Boolean> provenanceXps = new PatriciaTrie<>();
+        Set<URI> provenanceUris = new HashSet<>();
+        Set<URI> agentsUris = new HashSet<>();
+        Set<URI> provenancesWithDevicesToCheck = new HashSet<>();
+
+        // Collect provenance URI, agents (from provenance or data provenance) and experiment
+        models.stream().map(DataModel::getProvenance).forEach(provenance -> {
+            provenanceUris.add(provenance.getUri());
+
+            // Check agent from data provenance, else retrieve list of provenance for which we need to get the associated devices
+            if (!CollectionUtils.isEmpty(provenance.getProvWasAssociatedWith())) {
+                provenance.getProvWasAssociatedWith().forEach(agent -> agentsUris.add(agent.getUri()));
+            } else {
+                provenancesWithDevicesToCheck.add(provenance.getUri());
+            }
+
+            if(provenance.getExperiments() != null){
+                provenance.getExperiments().forEach(xp -> provenanceXps.putIfAbsent(xp.toString(), Boolean.FALSE));
+            }
+        });
+
+        final SparqlMapper<DeviceModel> fetcher = new SparqlMinimalFetcher<>(DeviceModel.class);
+        try{
+            List<DeviceModel> devices = sparql.getListByURIs(
+                    sparql.getDefaultGraph(DeviceModel.class),
+                    DeviceModel.class,
+                    agentsUris,
+                    user.getLanguage(),
+                    result -> fetcher.getInstance(result, user.getLanguage()),
+                    Collections.emptySet()
+            );
+        }catch (SPARQLInvalidUriListException e){
+            e.getUris();
+        }
     }
 
     //#endregion

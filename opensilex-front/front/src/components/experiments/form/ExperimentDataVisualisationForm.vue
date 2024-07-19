@@ -14,7 +14,7 @@
           <template v-slot:filters>
 
             <!-- Scientific Objects -->
-            <div>
+            <div id="scientificObjectSelector">
               <opensilex-FilterField>
                 <opensilex-UsedScientificObjectSelector
                   ref="soSelector"
@@ -36,7 +36,7 @@
             </div>
 
             <!-- Variables -->
-            <div>
+            <div id="variableSelector">
               <opensilex-FilterField>
                 <opensilex-VariableSelectorWithFilter
                   label="ExperimentDataVisualisationForm.search.variable.label"

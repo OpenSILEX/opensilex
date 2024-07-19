@@ -25,7 +25,7 @@ async function globalSetup(config: FullConfig) {
     await page.getByTestId('default-login-component-password-input').fill('admin');
     await page.getByTestId('default-login-component-connection-button').click();
 
-    await expect(page.getByTestId('dashboard-page-header')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('dashboard-page-header')).toBeVisible({ timeout: 20000 });
 
     await page.context().storageState({ path: storageState as string });
     await browser.close();

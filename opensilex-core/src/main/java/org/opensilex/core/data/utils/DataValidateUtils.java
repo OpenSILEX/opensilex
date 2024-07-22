@@ -8,6 +8,7 @@ package org.opensilex.core.data.utils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.XSD;
+import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.exception.*;
@@ -180,7 +181,6 @@ public class DataValidateUtils {
             DateTimeFormatter offsetLDTwithMS =  DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSZ.toString()); //"2020-11-21T11:12:02.123+0100"
             DateTimeFormatter offsetLDT =  DateTimeFormatter.ofPattern(DateFormat.YMDTHMSZ.toString()); //"2020-11-21T11:12:02+0100"
             DateTimeFormatter[] offsetFormats = {DateTimeFormatter.ISO_OFFSET_DATE_TIME, offsetLDT, offsetLDTwithMS};
-
             for (DateTimeFormatter dateTimeFormat : offsetFormats) {
                 try {
                     OffsetDateTime odt = OffsetDateTime.from(dateTimeFormat.parse(date));                    

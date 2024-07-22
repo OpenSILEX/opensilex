@@ -1,5 +1,6 @@
 package org.opensilex.sparql.mapping;
 
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 
@@ -16,13 +17,13 @@ public class SparqlMinimalFetcher<T extends SPARQLResourceModel> implements Spar
     @Override
     public T getInstance(SPARQLResult result, String lang) throws Exception {
         T instance = getConstructor().newInstance();
-        instance.setUri(URI.create(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
-        instance.setType(URI.create(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+        instance.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+        instance.setType(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
         return instance;
     }
 
     @Override
     public Constructor<T> getConstructor() {
-        return null;
+        return constructor;
     }
 }

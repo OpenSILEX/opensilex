@@ -1,5 +1,6 @@
 package org.opensilex.sparql.mapping;
 
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 
@@ -12,8 +13,8 @@ public interface SparqlMapper<T extends SPARQLResourceModel> {
 
         T instance = getConstructor().newInstance();
 
-        instance.setUri(URI.create(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
-        instance.setType(URI.create(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+        instance.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+        instance.setType(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
 
         setLabel(instance, result, lang);
         setLabelProperties(instance, result, lang);

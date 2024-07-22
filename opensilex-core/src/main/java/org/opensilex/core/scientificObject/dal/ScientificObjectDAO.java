@@ -117,7 +117,7 @@ public class ScientificObjectDAO {
         return sparql.loadListByURIs(
                 SPARQLDeserializers.nodeURI(contextURI),
                 ScientificObjectModel.class,
-                objectsURI,
+                objectsURI.stream(),
                 currentUser.getLanguage(),
                 fromResult(currentUser.getLanguage()),
 

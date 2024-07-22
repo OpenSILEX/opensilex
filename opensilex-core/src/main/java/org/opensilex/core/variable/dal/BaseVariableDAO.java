@@ -24,6 +24,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  *
@@ -136,7 +137,11 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
     }
 
     public List<T> getList(Collection<URI> uris, String lang) throws Exception {
-        return sparql.getListByURIs(
+        return loadListByURIs(uris.stream(), lang);
+    }
+
+    public List<T> loadListByURIs(Stream<URI> uris, String lang) throws Exception {
+        return sparql.loadListByURIs(
                 defaultGraph,
                 objectClass,
                 uris,
@@ -145,6 +150,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
                 null
         );
     }
+
 
     /**
      *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded

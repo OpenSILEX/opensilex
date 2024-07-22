@@ -213,6 +213,17 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return model;
     }
 
+    /**
+     * Fetches a list of move NoSQL models by their URIs. The result is represented as a Map to facilitate the
+     * integration with, for example, a list of {@link MoveModel}s. See for example
+     * {@link #getMoveEventByURIList(List, AccountModel)}.
+     *
+     * @param uris The list of move URIs
+     * @return A map associating the move URIs to their respective NoSQL models. Note that the map size can be smaller
+     *         than the size of the URI list as moves do not always have an associated NoSQL model. The URI is formatted
+     *         using {@link SPARQLDeserializers#formatURI(URI)}, so you SHOULD query this map using
+     *         <code>map.get(SPARQLDeserializers.formatURI(uri))</code>.
+     */
     public Map<URI, MoveEventNoSqlModel> getMoveEventNoSqlModelMap(List<URI> uris) {
         var iterableResult = moveEventCollection.find(getEventIdInFilter(uris.stream()));
         var resultMap = new HashMap<URI, MoveEventNoSqlModel>();

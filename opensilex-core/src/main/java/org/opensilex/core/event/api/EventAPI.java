@@ -638,7 +638,7 @@ public class EventAPI {
         //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
         //      to all services that need it.
         var publisherMap = new HashMap<URI, AccountModel>();
-        var dtoList = new ArrayList<MoveDetailsDTO>();
+        var dtoList = new ArrayList<MoveDetailsDTO>(uris.size());
 
         for (var model : dao.getMoveEventByURIList(uris, currentUser)) {
             var dto = new MoveDetailsDTO(model);
@@ -651,7 +651,7 @@ public class EventAPI {
         }
 
         //@todo Find a better way to fetch accounts for a list of model. Propagate this to all APIs.
-        for (var publisher : accountDao.getList(new ArrayList<>(publisherMap.keySet()))) {
+        for (var publisher : accountDao.getList((publisherMap.keySet()))) {
             publisherMap.put(publisher.getUri(), publisher);
         }
 

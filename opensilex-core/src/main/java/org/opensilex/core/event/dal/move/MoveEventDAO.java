@@ -184,6 +184,18 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return model;
     }
 
+    public List<MoveModel> getMoveEventByURIList(List<URI> uriList, AccountModel user) throws Exception {
+        var modelList = sparql.getListByURIs(MoveModel.class, uriList, user.getLanguage());
+        var noSqlModelMap = getMoveEventNoSqlModelMap(uriList);
+        for (var model : modelList) {
+            var noSqlModel = noSqlModelMap.get(SPARQLDeserializers.formatURI(model.getUri()));
+            if (noSqlModel != null) {
+                model.setNoSqlModel(noSqlModel);
+            }
+        }
+        return modelList;
+    }
+
     public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws URISyntaxException {
 
         Objects.requireNonNull(uri);
@@ -199,6 +211,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         model.setUri(uri);
         return model;
+    }
+
+    public Map<URI, MoveEventNoSqlModel> getMoveEventNoSqlModelMap(List<URI> uris) {
+        var iterableResult = moveEventCollection.find(getEventIdInFilter(uris.stream()));
+        var resultMap = new HashMap<URI, MoveEventNoSqlModel>();
+        for (var result : iterableResult) {
+            resultMap.put(SPARQLDeserializers.formatURI(result.getUri()), result);
+        }
+        return resultMap;
     }
 
     /**

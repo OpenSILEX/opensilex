@@ -48,9 +48,11 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -616,6 +618,50 @@ public class EventAPI {
             dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
         return new SingleObjectResponse<>(dto).getResponse();
+    }
+
+    @GET
+    @Path(MOVE_PATH_PREFIX + "/by_uris")
+    @ApiOperation("Get a list of moves with all positional information")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Move retrieved", response = MoveDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMoveEventByUris(
+            @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        var dao = new MoveEventDAO(sparql, nosql);
+        var accountDao = new AccountDAO(sparql);
+        //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
+        //      to all services that need it.
+        var publisherMap = new HashMap<URI, AccountModel>();
+        var dtoList = new ArrayList<MoveDetailsDTO>();
+
+        for (var model : dao.getMoveEventByURIList(uris, currentUser)) {
+            var dto = new MoveDetailsDTO(model);
+            if (model.getPublisher() != null) {
+                publisherMap.put(model.getPublisher(), null);
+                dto.setPublisher(new UserGetDTO());
+                dto.getPublisher().setUri(model.getPublisher());
+            }
+            dtoList.add(dto);
+        }
+
+        //@todo Find a better way to fetch accounts for a list of model. Propagate this to all APIs.
+        for (var publisher : accountDao.getList(new ArrayList<>(publisherMap.keySet()))) {
+            publisherMap.put(publisher.getUri(), publisher);
+        }
+
+        for (var dto : dtoList) {
+            if (dto.getPublisher() != null) {
+                dto.setPublisher(UserGetDTO.fromModel(publisherMap.get(dto.getPublisher().getUri())));
+            }
+        }
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @DELETE

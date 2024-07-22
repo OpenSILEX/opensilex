@@ -219,6 +219,10 @@ public class EventDAO<T extends EventModel> {
         return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
     }
 
+    public List<EventModel> getList(List<URI> uris, AccountModel user) throws Exception {
+        return sparql.getListByURIs(EventModel.class, uris, user.getLanguage());
+    }
+
     protected void appendInTargetsValues(SelectBuilder select, Stream<URI> targets, int size) {
 
         ElementGroup rootElementGroup = select.getWhereHandler().getClause();

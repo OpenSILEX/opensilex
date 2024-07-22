@@ -2,10 +2,11 @@
 * [Changelog](#changelog)
   * [[1.3.2]](#132)
     * [Fixed](#fixed)
+    * [Changes and new features](#changes-and-new-features)
   * [[1.3.1]](#131)
     * [Fixed](#fixed-1)
   * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
-    * [Changes and new features](#changes-and-new-features)
+    * [Changes and new features](#changes-and-new-features-1)
     * [Fixed or optimized](#fixed-or-optimized)
   * [[1.2.7]](#127)
     * [Fixed or optimized](#fixed-or-optimized-1)
@@ -18,7 +19,7 @@
     * [Fixed or optimized](#fixed-or-optimized-4)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
-    * [Changes and new features](#changes-and-new-features-1)
+    * [Changes and new features](#changes-and-new-features-2)
     * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.2.2]](#122)
     * [Fixed](#fixed-2)
@@ -26,13 +27,13 @@
     * [Fixed](#fixed-3)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
-    * [Changes and new features](#changes-and-new-features-2)
+    * [Changes and new features](#changes-and-new-features-3)
     * [Fixed or optimized](#fixed-or-optimized-6)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-3)
+    * [Changes and new features](#changes-and-new-features-4)
     * [Fixed or optimized](#fixed-or-optimized-7)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
     * [Fixed or optimized](#fixed-or-optimized-8)
@@ -99,13 +100,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [1.3.2]
 
 ### Fixed
 
 - (!1260) Fixed the link to swagger for the specific case where a "/" is at the end of server uri in the config file.
 
+### Changes and new features
+
+- (!1261) You can now fetch a list of moves at once using the new service GET /moves/by_uris
 
 ## [1.3.1]
 

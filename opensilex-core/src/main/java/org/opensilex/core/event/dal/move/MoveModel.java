@@ -22,13 +22,6 @@ import java.util.List;
 public class MoveModel extends EventModel {
 
     @SPARQLProperty(
-        ontology = OA.class,
-        property = "hasTarget"
-    )
-    private List<URI> target;
-    public static final String TARGET_FIELD = "target";
-
-    @SPARQLProperty(
             ontology = Oeev.class,
             property = "to"
     )
@@ -62,15 +55,6 @@ public class MoveModel extends EventModel {
     public void setFrom(FacilityModel from) {
         this.from = from;
     }
-
-    public List<URI> getTarget() {
-        return target;
-    }
-
-    public void setTarget(List<URI> target) {
-        this.target = target;
-    }
-
 
     public MoveNosqlModel getNoSqlModel() {
         return noSqlModel;

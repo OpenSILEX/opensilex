@@ -182,14 +182,14 @@ public class PositionAPI {
             // search all moves between the start (and end) date of the experiment for an event type (move) and a target type
             ListWithPagination<MoveModel> moveList = moveLogic.search(searchFilter);
             //get last move by unique target uri
-             Map<List<URI>,Optional<EventModel>> uniqueTargetLastMoveList = moveList.getList().stream()
+             Map<List<URI>,Optional<MoveModel>> uniqueTargetLastMoveList = moveList.getList().stream()
                                                                                     //group by unique target URI
                                                                                     .collect(Collectors.groupingBy(EventModel::getTargets,
                                                                                     // get the last move by the property end
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
             //for each unique target uri, get the mongoDB Model move linked (and the target detail?)
-            for (Optional<EventModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
+            for (Optional<MoveModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
 
                 MoveNosqlModel lastTargetPosition = moveLogic.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
                 if(lastTargetPosition != null){

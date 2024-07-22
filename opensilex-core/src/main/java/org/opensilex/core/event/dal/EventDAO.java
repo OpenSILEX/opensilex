@@ -49,7 +49,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -64,7 +63,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     protected final OntologyDAO ontologyDAO;
     protected final Class<T> clazz;
 
-    protected final Node eventGraph;
+    protected final Node graph;
 
     // SPARQL vars
     protected static final Var uriVar;
@@ -102,7 +101,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         isInstantVar = SPARQLQueryHelper.makeVar(EventModel.IS_INSTANT_FIELD);
         fromVar = SPARQLQueryHelper.makeVar(MoveModel.FROM_FIELD);
         toVar = SPARQLQueryHelper.makeVar(MoveModel.TO_FIELD);
-        
+
         descriptionTriple = Triple.create(uriVar, RDFS.comment.asNode(), descriptionVar);
         targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);
 
@@ -127,28 +126,28 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         this.clazz = clazz;
 
         ontologyDAO = new OntologyDAO(sparql);
-        eventGraph = sparql.getDefaultGraph(clazz);
+        graph = sparql.getDefaultGraph(clazz);
         timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
     }
 
     //#region PUBLIC METHODS
 
     public T create(T model) throws Exception {
-        sparql.create(eventGraph, model, false, true);
+        sparql.create(graph, model, false, true);
         return model;
     }
 
     public List<T> create(List<T> models) throws Exception {
-        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.create(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
         return models;
     }
 
     public Node getGraphAsNode(){
-        return eventGraph;
+        return graph;
     }
 
     public URI getGraphUri() throws URISyntaxException {
-        return new URI(eventGraph.toString());
+        return new URI(graph.toString());
     }
 
     public T update(T model) throws Exception {
@@ -161,7 +160,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     }
 
     public T get(URI uri, AccountModel user) throws Exception {
-        return sparql.loadByURI(eventGraph, clazz, uri, user.getLanguage());
+        return sparql.loadByURI(graph, clazz, uri, user.getLanguage());
     }
 
 
@@ -182,12 +181,12 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         appendTypeFilter(customHandlerByFields, searchFilter.getType());
 
         ListWithPagination<T> results = sparql.searchWithPagination(
-                eventGraph,
+                graph,
                 clazz,
                 searchFilter.getLang(),
                 (select -> {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
 
                     //append filter for baseType
                     if (searchFilter.getBaseType() != null) {
@@ -220,7 +219,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                 sparql,
                 clazz,
-                eventGraph,
+                graph,
                 Collections.singleton(EventModel.TARGETS_FIELD),
                 results.getList()
         );
@@ -232,8 +231,8 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     public int countForTargets(List<URI> targets) throws Exception {
 
         return sparql.count(
-                eventGraph,
-                EventModel.class,
+                graph,
+                clazz,
                 null,
                 select -> appendInTargetsValues(select, targets.stream(), targets.size()),
                 null
@@ -248,10 +247,16 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
 
     //#region PRIVATE/PROTECTED METHODS
 
+    /**
+     *
+     * @param select The SelectBuilder to modify
+     * @param targets list of targets to filter by
+     * @param size of the targets stream
+     */
     protected void appendInTargetsValues(SelectBuilder select, Stream<URI> targets, int size) {
 
         ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
         eventGraphGroupElem.addTriplePattern(targetTriple);
 
         SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets, size);

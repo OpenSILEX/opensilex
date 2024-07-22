@@ -32,14 +32,11 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingFunction;
-
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Projections.excludeId;
 
 /**

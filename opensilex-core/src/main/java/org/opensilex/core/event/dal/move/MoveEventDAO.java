@@ -67,7 +67,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
     @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
-        sparql.createWithoutTransaction(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.createWithoutTransaction(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
         return models;
     }
 
@@ -147,7 +147,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         SelectBuilder innerSelect = new SelectBuilder()
                 .addVar(targetVar)
                 .addVar(maxEndTsAggregator.asSparqlExpr(null), lastEndTimeStampVar)
-                .addGraph(eventGraph, new WhereBuilder()
+                .addGraph(graph, new WhereBuilder()
                         .addWhere(targetTriple)
                         .addWhere(moveTypeTriple)
                         .addWhere(moveToTriple)
@@ -161,7 +161,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         SelectBuilder outerSelect = new SelectBuilder()
                 .addVar(targetVar)
                 .addVar(toVar)
-                .addGraph(eventGraph, new WhereBuilder()
+                .addGraph(graph, new WhereBuilder()
                         .addWhere(lastEndTimeStampMatchingTriple)  // match with inner ?last_end_ts
                         .addWhere(targetTriple) // match with inner ?targets
                         .addWhere(endTriple)
@@ -185,46 +185,9 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
     }
 
-    /**
-     * Count total of moves associated to a target URI
-     *
-     * @param target the URI on which find associated move
-     * @return the number of moves associated to a target
-     */
-    @Override
-    public int countForTarget(URI target) throws Exception {
-
-        Node moveGraph = sparql.getDefaultGraph(MoveModel.class);
-        return sparql.count(
-                moveGraph,
-                MoveModel.class,
-                null,
-                countBuilder -> {
-                    ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
-                    ElementGroup moveGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,moveGraph);
-                    appendTargetFilter(moveGraphGroupElem, target);
-                },
-                null);
-    }
-
     //#endregion
 
     //#region PRIVATE METHODS
-
-    private void appendTargetFilter(ElementGroup targetGraphGroupElem, URI target) throws Exception {
-        if (target != null) {
-
-            Var uriVar = SPARQLQueryHelper.makeVar(MoveModel.URI_FIELD);
-            Var targetVar = SPARQLQueryHelper.makeVar(MoveModel.TARGET_FIELD);
-
-            Triple targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);
-
-            targetGraphGroupElem.addTriplePattern(targetTriple);
-
-            Expr targetEqExpr = SPARQLQueryHelper.eq(MoveModel.TARGET_FIELD, target);
-            targetGraphGroupElem.addElementFilter(new ElementFilter(targetEqExpr));
-        }
-    }
 
     /**
      *
@@ -254,12 +217,12 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         this.updateOrderByList(orderByList);
 
         return sparql.searchWithPagination(
-                eventGraph,
+                graph,
                 MoveModel.class,
                 null,
                 (select -> {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
 
                     // description is an optional field, so the filtering must be done outside of the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);

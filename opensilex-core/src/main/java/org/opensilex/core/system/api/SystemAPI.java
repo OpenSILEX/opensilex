@@ -106,7 +106,7 @@ public class SystemAPI {
         versionInfoDTO.setApiDocs( 
             new ApiExternalDocsDTO(
                 "Opensilex API documentation",
-                this.serverModule.getBaseURL() + "api-docs"
+                this.serverModule.getBaseURL() + "/api-docs"
             )
         );
         

@@ -5,14 +5,15 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
+import org.opensilex.server.rest.serialization.UriFormater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
 
 /**
@@ -36,66 +37,27 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     }
 
     public static URI formatURI(URI uri) {
-        if (uri == null || prefixes == null) {
-            return uri;
-        }
-        try {
-            if (usePrefixes) {
-                return new URI(prefixes.shortForm(uri.toString()));
-            } else {
-                return new URI(prefixes.expandPrefix(uri.toString()));
-            }
-        } catch (URISyntaxException ex) {
-            // TODO log error
-        }
-
-        return null;
+       return UriFormater.formatURI(uri);
     }
 
     public static URI formatURI(String uri) {
-        if (StringUtils.isEmpty(uri)) {
-            return null;
-        }
-        try {
-            if (usePrefixes) {
-                return new URI(prefixes.shortForm(uri));
-            } else {
-                return new URI(prefixes.expandPrefix(uri));
-            }
-        } catch (URISyntaxException ex) {
-            // TODO log error
-        }
-
-        return null;
+        return UriFormater.formatURI(uri);
     }
 
     public static String formatURIAsStr(String uri){
-        if (StringUtils.isEmpty(uri)) {
-            return null;
-        }
-
-        return usePrefixes ? prefixes.shortForm(uri) : prefixes.expandPrefix(uri);
+        return UriFormater.formatURIAsStr(uri);
     }
 
     public static String getShortURI(String value) {
-        if (value == null || value.isEmpty() || prefixes == null) {
-            return value;
-        }
-        return prefixes.shortForm(value);
+        return UriFormater.getShortURI(value);
     }
 
     public static String getExpandedURI(URI value) {
-        if (value == null) {
-            return null;
-        }
-        return getExpandedURI(value.toString());
+        return UriFormater.getExpandedURI(value);
     }
 
     public static String getExpandedURI(String value) {
-        if (prefixes == null || value == null) {
-            return value;
-        }
-        return prefixes.expandPrefix(value);
+        return UriFormater.getExpandedURI(value);
     }
 
     @Override
@@ -112,6 +74,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     public static void setPrefixes(PrefixMapping prefixesMap, boolean usePrefixes) {
         URIDeserializer.prefixes = prefixesMap;
         URIDeserializer.usePrefixes = usePrefixes;
+        UriFormater.setPrefixes(prefixesMap,usePrefixes);
     }
 
     public static PrefixMapping getPrefixes() {

@@ -1,5 +1,7 @@
 package org.opensilex.server.rest.serialization;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -72,14 +74,16 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    private static final ParamConverter<URI> uriConverter = new ParamConverter<URI>() {
+    public static final ParamConverter<URI> uriConverter = new ParamConverter<URI>() {
+
         @Override
         public URI fromString(final String value) {
-            if (value == null || value.isEmpty()) {
+            if (StringUtils.isEmpty(value)){
                 return null;
             }
             try {
-                return new URI(URLDecoder.decode(value, StandardCharsets.UTF_8.name()));
+                String url = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+                return new URI(UriFormater.formatURIAsStr(url));
             } catch (URISyntaxException | UnsupportedEncodingException ex) {
                 throw new IllegalArgumentException(ex);
             }

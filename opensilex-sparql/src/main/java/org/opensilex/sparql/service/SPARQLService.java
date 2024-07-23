@@ -1919,7 +1919,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, false, size);
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, size);
 
         WhereBuilder where = new WhereBuilder();
 

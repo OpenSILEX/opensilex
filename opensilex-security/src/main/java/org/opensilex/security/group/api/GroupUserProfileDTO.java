@@ -9,12 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.ResourceDTO;
+
+import java.net.URI;
 
 /**
  *

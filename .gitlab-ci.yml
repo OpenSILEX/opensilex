@@ -150,6 +150,9 @@ variables:
 
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
+  tags:
+    - runnermia # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
+                # to our instances through SSH.
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -540,7 +543,7 @@ update:nightly:builds:branch:
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
     - apt-get update && apt-get install -y git
   stage: build
-  image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   script:
     - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -554,22 +557,18 @@ update:nightly:builds:branch:
 .with_java11: &java11
   variables:
     JAVA_VERSION: 11
-
-.with_java14: &java14
+ 
+.with_java17: &java17
   variables:
-    JAVA_VERSION: 14
-
-#.with_java17: &java17
-#  variables:
-#    JAVA_VERSION: 17
+    JAVA_VERSION: 17
 
 
 test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java14:
-  <<: *java14
+test:build:java17:
+  <<: *java17
   <<: *test_build_on_schedules
 
 #test:build:java17:

@@ -8,6 +8,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import static java.lang.Double.NaN;
 import java.net.URI;
@@ -25,6 +26,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -49,6 +51,7 @@ public class DataCreationDTO {
     private String date;
     
     @ApiModelProperty(value = "target URI on which the data have been collected (e.g. a scientific object)", example = "http://plot01")
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI target;
     
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
@@ -57,6 +60,7 @@ public class DataCreationDTO {
     @ValidURI
     @NotNull
     @ApiModelProperty(value = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, required = true)
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI variable;
 
     @NotNull

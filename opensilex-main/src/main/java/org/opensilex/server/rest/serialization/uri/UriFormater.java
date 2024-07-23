@@ -1,4 +1,4 @@
-package org.opensilex.server.rest.serialization;
+package org.opensilex.server.rest.serialization.uri;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.shared.PrefixMapping;
@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Object which centralize operations about URI formatting
+ */
 public class UriFormater {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UriFormater.class);

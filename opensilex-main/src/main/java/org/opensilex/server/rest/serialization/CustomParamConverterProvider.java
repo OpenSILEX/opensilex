@@ -1,6 +1,7 @@
 package org.opensilex.server.rest.serialization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.server.rest.serialization.uri.UriFormater;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
@@ -36,7 +37,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         return null;
     }
 
-    public static final ParamConverter<LocalDate> localDateConverter = new ParamConverter<LocalDate>() {
+    public static final ParamConverter<LocalDate> localDateConverter = new ParamConverter<>() {
         @Override
         public LocalDate fromString(final String value) {
             if (value == null || value.isEmpty()) {
@@ -55,7 +56,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    public static final ParamConverter<OffsetDateTime> offsetDateTimeConverter = new ParamConverter<OffsetDateTime>() {
+    public static final ParamConverter<OffsetDateTime> offsetDateTimeConverter = new ParamConverter<>() {
         @Override
         public OffsetDateTime fromString(final String value) {
             if (value == null || value.isEmpty()) {
@@ -74,7 +75,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    public static final ParamConverter<URI> uriConverter = new ParamConverter<URI>() {
+    public static final ParamConverter<URI> uriConverter = new ParamConverter<>() {
 
         @Override
         public URI fromString(final String value) {
@@ -82,9 +83,8 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
                 return null;
             }
             try {
-                String url = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-                return new URI(UriFormater.formatURIAsStr(url));
-            } catch (URISyntaxException | UnsupportedEncodingException ex) {
+                return new URI(URLDecoder.decode(value, StandardCharsets.UTF_8));
+            } catch (URISyntaxException ex) {
                 throw new IllegalArgumentException(ex);
             }
         }

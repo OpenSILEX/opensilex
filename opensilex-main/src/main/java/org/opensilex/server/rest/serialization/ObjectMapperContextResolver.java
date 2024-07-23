@@ -11,12 +11,16 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
+
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import java.net.URI;
 
 /**
  * Jackson serialization mapper initialization.
@@ -56,6 +60,10 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
         mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
         // TODO: Uncomment this line to avoid serialization of null fields
 //        mapper.setSerializationInclusion(Include.NON_NULL);
+
+        SimpleModule uriJsonModule = new SimpleModule();
+        uriJsonModule.addDeserializer(URI.class, new UriJsonDeserializer());
+        mapper.registerModule(uriJsonModule);
         return mapper;
     }
     

@@ -9,9 +9,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
-import org.opensilex.server.rest.serialization.UriFormater;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opensilex.server.rest.serialization.uri.UriFormater;
 
 import java.net.URI;
 import java.util.Objects;

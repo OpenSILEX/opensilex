@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core;
 
+import com.auth0.jwt.JWTCreator;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.jena.riot.Lang;
@@ -14,6 +15,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.core.config.SharedResourceInstanceItem;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFileDaoV2;
@@ -39,6 +41,9 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
@@ -58,6 +63,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +73,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
+
 
     @Override
     public Class<?> getConfigClass() {
@@ -161,12 +168,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 Lang.RDFXML,
                 "peco"
         ));
-        list.add(new OntologyFileDefinition(
-                OA.NS,
-                ONTOLOGIES_DIRECTORY + "/oa.rdf",
-                Lang.RDFXML,
-                "oa"
-        ));
+
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY + "/oeso-core.owl",
@@ -175,32 +177,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 null,
                 true
         ));
-        list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeev#",
-                ONTOLOGIES_DIRECTORY + "/oeev.owl",
-                Lang.RDFXML,
-                "oeev",
-                null,
-                true
-        ));
-        list.add(new OntologyFileDefinition(
-                OWL.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/owl2.ttl",
-                Lang.TURTLE,
-                OWL.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                Time.NS,
-                ONTOLOGIES_DIRECTORY + "/time.ttl",
-                Lang.TURTLE,
-                Time.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                DCTERMS.NAMESPACE,
-                ONTOLOGIES_DIRECTORY + "/dublin_core_terms.ttl",
-                Lang.TTL,
-                DCTERMS.PREFIX
-        ));
+
         return list;
     }
 
@@ -343,6 +320,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
         }
     }
+
 
     @Override
     public boolean accountIsLinkedWithANosqlEntity(URI accountURI) {

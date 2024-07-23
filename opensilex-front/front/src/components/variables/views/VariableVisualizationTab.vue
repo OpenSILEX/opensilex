@@ -68,6 +68,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import DataVisuGraphic from "../../visualization/DataVisuGraphic.vue";
+import VueI18n from "vue-i18n";
 
 @Component
 export default class VariableVisualizationTab extends Vue {
@@ -95,6 +96,7 @@ export default class VariableVisualizationTab extends Vue {
   isGraphicLoaded: boolean = true;
   target = [];
   eventCreatedTime = "";
+  $i18n: VueI18n;
 
   form;
   selectedVariable;

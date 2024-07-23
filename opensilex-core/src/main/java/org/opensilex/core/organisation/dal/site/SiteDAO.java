@@ -1,10 +1,19 @@
+/*
+ * *****************************************************************************
+ *                         SiteDAO.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/06/2024 10:10
+ * Contact: gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
+
 package org.opensilex.core.organisation.dal.site;
 
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.ORG;
@@ -24,9 +33,9 @@ import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressExcep
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -40,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -96,7 +104,6 @@ public class SiteDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
         ListWithPagination<SiteModel> models = sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
             Var uriVar = makeVar(SiteModel.URI_FIELD);
             Var organizationsVar = makeVar("__" + SiteModel.ORGANIZATION_FIELD);
@@ -119,8 +126,6 @@ public class SiteDAO {
             if (Objects.nonNull(filter.getFacility())) {
                 select.addWhere(SPARQLDeserializers.nodeURI(filter.getFacility()), Oeso.withinSite, uriVar);
             }
-
-            initialSelect.set(select);
         }, filter.getOrderByList(), filter.getPage(), filter.getPageSize());
 
         SPARQLListFetcher<SiteModel> listFetcher = new SPARQLListFetcher<>(
@@ -229,6 +234,8 @@ public class SiteDAO {
 
         createSiteGeospatialModel(siteModel);
 
+
+        organizationDAO.invalidateCache();
         return siteModel;
     }
 
@@ -263,6 +270,8 @@ public class SiteDAO {
 
         sparql.deleteByURI(sparql.getDefaultGraph(SiteModel.class), existingModel.getUri());
         sparql.create(siteModel);
+
+        organizationDAO.invalidateCache();
         return siteModel;
     }
 
@@ -282,6 +291,8 @@ public class SiteDAO {
         deleteSiteGeospatialModel(siteModel);
 
         sparql.delete(SiteModel.class, uri);
+
+        organizationDAO.invalidateCache();
     }
 
     protected void deleteSiteGeospatialModel(SiteModel siteModel) throws Exception {
@@ -334,15 +345,21 @@ public class SiteDAO {
 
         for (FacilityModel facilityModel : facilityModelList) {
             if (facilityModel.getAddress() != null) {
-                FacilityAddressDTO facilityAddress = new FacilityAddressDTO();
-                facilityAddress.fromModel(facilityModel.getAddress());
+                assertEqualsFacilityAndSiteAddresses(siteModel, facilityModel);
+            }
+        }
+    }
 
-                SiteAddressDTO siteAddress = new SiteAddressDTO();
-                siteAddress.fromModel(siteModel.getAddress());
+    public static void assertEqualsFacilityAndSiteAddresses(SiteModel siteModel, FacilityModel facilityModel) {
+        if (facilityModel.getAddress() != null) {
+            FacilityAddressDTO facilityAddress = new FacilityAddressDTO();
+            facilityAddress.fromModel(facilityModel.getAddress());
 
-                if (!Objects.equals(facilityAddress, siteAddress)) {
-                    throw new SiteFacilityInvalidAddressException(siteModel.getName(), facilityModel.getName());
-                }
+            SiteAddressDTO siteAddress = new SiteAddressDTO();
+            siteAddress.fromModel(siteModel.getAddress());
+
+            if (!Objects.equals(facilityAddress, siteAddress)) {
+                throw new SiteFacilityInvalidAddressException(siteModel.getName(), facilityModel.getName());
             }
         }
     }

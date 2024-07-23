@@ -1,4 +1,4 @@
-package org.opensilex.security.group.api;
+package org.opensilex.core.group;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
@@ -9,6 +9,7 @@ import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.group.api.*;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;

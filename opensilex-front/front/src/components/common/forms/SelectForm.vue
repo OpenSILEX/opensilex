@@ -11,7 +11,7 @@
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
 
-        <!-- First case : modal search-->
+        <!-- modal search-->
         <treeselect
           v-if="isModalSearch"
           class="multiselect-popup modalSearchLabel"
@@ -40,6 +40,7 @@
           </template>
 
         </treeselect>
+        <!-- FIN modal search  -->
 
         <!-- Second case : not modal -->
         <treeselect
@@ -91,9 +92,14 @@
             </div>
           </template>
         </treeselect>
+        <!-- FIN not modal search  -->
+
+        <!-- MODAL CONDITION  -->
         <b-input-group-append v-if="isModalSearch">
           <b-button class="createButton greenThemeColor" @click="showModal">>></b-button>
         </b-input-group-append>
+
+        <!-- NOT MODAL CONDITION  -> détail view-->
         <b-input-group-append v-else-if="!actionHandler && viewHandler">
            <opensilex-DetailButton
             v-if="viewHandler"
@@ -104,6 +110,8 @@
             class="greenThemeColor"
           ></opensilex-DetailButton>
         </b-input-group-append>
+
+        <!-- NOT MODAL CONDITION  -> create entity view-->
         <b-input-group-append v-else-if="actionHandler">
           <b-button class="greenThemeColor" @click="actionHandler">+</b-button>
           <opensilex-DetailButton
@@ -114,7 +122,12 @@
             :small="true"
           ></opensilex-DetailButton>
         </b-input-group-append>
+
       </b-input-group>
+
+
+
+      <!-- MODAL CONDITION  -->
       <component
         v-if="isModalSearch"
         :is="modalComponent"
@@ -139,6 +152,7 @@
       ></component>
 
     </template>
+    <!-------------------------------------------------------------------->
   </opensilex-FormField>
 </template>
 

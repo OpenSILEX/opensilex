@@ -29,11 +29,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
-import org.opensilex.sparql.response.CreatedUriResponse;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.response.*;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -57,6 +53,9 @@ public class OntologyAPI {
 
     public static final String PATH = "/ontology";
     public static final String GET_NAMESPACE_PATH = "/name_space";
+
+    public static final String GET_BASEURI_PATH = "/base_uri";
+
     public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
@@ -323,7 +322,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property model definition ", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return property model definition ", response = ObjectNamedResourceDTO.class, responseContainer = "List")
     })
     public Response getSubPropertiesOf(
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
@@ -331,8 +330,8 @@ public class OntologyAPI {
             @ApiParam(value = "Flag to determine if only sub-properties must be included in result") @DefaultValue("false") @QueryParam("ignoreRootProperty") boolean ignoreRootProperty
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
-        List<ResourceTreeDTO> result = dao.getSubPropertiesOf(domainURI, propertyURI, ignoreRootProperty, currentUser.getLanguage());
-        return new ResourceTreeResponse(result).getResponse();
+        List<ObjectNamedResourceDTO> result = dao.getSubPropertiesOf(domainURI, propertyURI, ignoreRootProperty, currentUser.getLanguage());
+        return new PaginatedListResponse<>(result).getResponse();
     }
 
     @DELETE
@@ -745,6 +744,19 @@ public class OntologyAPI {
     public Response getNameSpace() {
         Map<String, String> nameSpaces = SPARQLService.getPrefixes();
         return new SingleObjectResponse<>(nameSpaces).getResponse();
+    }
+
+    @GET
+    @Path(GET_BASEURI_PATH)
+    @ApiOperation("Return base uri")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return base uri", response = String.class)
+    })
+    public Response getBaseURI() {
+        String base_uri = sparql.getBaseURI().toString();
+        return new SingleObjectResponse<>(base_uri).getResponse();
     }
 
     @PUT

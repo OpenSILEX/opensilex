@@ -388,7 +388,6 @@ export default class DataView extends Vue {
   }
 
   updateSOFilter() {
-
     this.refreshComponent();
     this.soFilter.experiment = this.filter.experiments[0];
     this.soSelector.refreshModalSearch();

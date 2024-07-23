@@ -1,7 +1,7 @@
 <template>
   <div>
-    <opensilex-SelectForm
-        ref="selectForm"
+    <opensilex-FormSelector v-if="!isModalSearch"
+        ref="personSelector"
         :label="label"
         :helpMessage="helpMessage"
         :selected.sync="personsURI"
@@ -15,7 +15,25 @@
         :actionHandler="allowAddPerson && user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID) ? showCreateForm : null"
         @select="select"
         @deselect="deselect"
+    ></opensilex-FormSelector>
+
+    <opensilex-SelectForm v-else
+      ref="personSelector"
+      :label="label"
+      :helpMessage="helpMessage"
+      :selected.sync="personsURI"
+      :multiple="multiple"
+      :itemLoadingMethod="loadPersons"
+      :required="required"
+      :searchMethod="searchPersons"
+      :conversionMethod="personToSelectNode"
+      placeholder="component.person.filter-placeholder"
+      noResultsText="component.person.filter-search-no-result"
+      :actionHandler="allowAddPerson && user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID) ? showCreateForm : null"
+      @select="select"
+      @deselect="deselect"
     ></opensilex-SelectForm>
+
     <opensilex-ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
         :static="false"
@@ -35,7 +53,8 @@ import Vue from "vue";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
+import SelectForm from "../common/forms/SelectForm.vue"
 import {OpenSilexStore} from "../../models/Store";
 import ModalForm from "../common/forms/ModalForm.vue";
 import PersonForm from "./PersonForm.vue";
@@ -68,12 +87,14 @@ export default class PersonSelector extends Vue {
   @Prop()
   personPropertyExistsCondition: string;
 
-  @Prop()
+  //this condition has been added until the selectForm modal is refactored
+  @Prop({default: false})
+  isModalSearch;
 
   @Prop({default: false})
   allowAddPerson: boolean;
 
-  @Ref("selectForm") selectForm!: SelectForm;
+  @Ref("personSelector") personSelector!: any;
   @Ref("PersonForm") readonly personForm!: ModalForm<PersonForm, PersonDTO, PersonDTO>;
 
   get user() {
@@ -100,7 +121,6 @@ export default class PersonSelector extends Vue {
   async searchPersons(searchQuery, page) {
     let searchResponse = await this.service
         .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0)
-
     return searchResponse
   }
 
@@ -122,7 +142,7 @@ export default class PersonSelector extends Vue {
 
   async setCreatedPerson(createdPersonUri: HttpResponse<OpenSilexResponse<string>>) {
     let createdPerson = ( await this.service.getPerson(createdPersonUri.response.result) ).response.result
-    this.selectForm.select(this.personToSelectNode(createdPerson));
+    this.personSelector.select(this.personToSelectNode(createdPerson));
     this.$emit("onCreate")
   }
 

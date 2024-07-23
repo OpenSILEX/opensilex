@@ -17,7 +17,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 @SPARQLResource(
         ontology = OA.class,
         resource = "Motivation",
-        graph = "http://www.w3.org/ns/oa"
+        graph = "http://www.opensilex.org/vocabulary/oeso"
 )
 public class MotivationModel extends SPARQLNamedResourceModel<MotivationModel> {
 

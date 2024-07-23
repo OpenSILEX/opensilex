@@ -1256,7 +1256,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
                 }
             } else if (oldFieldValue != null) {
-                if (!oldFieldValue.getUri().equals(newFieldValue.getUri())) {
+                if (!SPARQLDeserializers.compareURIs(oldFieldValue.getUri(), newFieldValue.getUri())) {
                     autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
                 } else {
                     autoUpdateFieldsToUpdate.add(newFieldValue);
@@ -1277,13 +1277,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 Map<URI, Class<? extends SPARQLResourceModel>> oldURIs = new HashMap<>();
                 if (oldFieldValue != null) {
                     for (SPARQLResourceModel ofValue : oldFieldValue) {
-                        oldURIs.put(ofValue.getUri(), ofValue.getClass());
+                        oldURIs.put(SPARQLDeserializers.formatURI(ofValue.getUri()), ofValue.getClass());
                     }
                 }
                 for (SPARQLResourceModel nfValue : newFieldValue) {
-                    if (nfValue != null && nfValue.getUri() != null && oldURIs.containsKey(nfValue.getUri())) {
+                    if (nfValue != null && nfValue.getUri() != null && oldURIs.containsKey(SPARQLDeserializers.formatURI(nfValue.getUri()))) {
                         autoUpdateFieldsToUpdate.add(nfValue);
-                        oldURIs.remove(nfValue.getUri());
+                        oldURIs.remove(SPARQLDeserializers.formatURI(nfValue.getUri()));
                     }
                 }
                 autoUpdateFieldsToDelete.putAll(oldURIs);

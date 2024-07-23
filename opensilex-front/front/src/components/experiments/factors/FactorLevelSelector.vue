@@ -11,7 +11,8 @@
       placeholder="FactorLevelSelector.placeholder"
       @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
-    <opensilex-SelectForm
+    
+    <opensilex-FormSelector
       v-else
       :label="label"
       :selected.sync="internalValue"
@@ -22,7 +23,7 @@
       :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
       @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
   </div>
 </template>
 
@@ -74,7 +75,7 @@ export default class FactorLevelSelector extends Vue {
               let factorNode = {
                 id: factor.uri,
                 label: factor.name,
-                isDisabled: this.multiple,
+                isDisabled: false,
                 children: [],
               };
               for (let j in factor.levels) {
@@ -114,7 +115,7 @@ export default class FactorLevelSelector extends Vue {
     let factorNode = {
       id: factor.uri,
       label: factor.name,
-      isDisabled: this.multiple,
+      isDisabled: false,
       children: [],
     };
     for (let j in factor.levels) {
@@ -122,6 +123,7 @@ export default class FactorLevelSelector extends Vue {
       factorNode.children.push({
         id: factorLevel.uri,
         label: factorLevel.name,
+        isDisabled: false
       });
     }
     return factorNode;

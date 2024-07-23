@@ -1,23 +1,44 @@
 <template>
-  <opensilex-SelectForm v-if="renderComponent"
-    ref="deviceSelector"
-    :label="label"
-    placeholder="DeviceSelector.placeholder"
-    noResultsText="DeviceSelector.no-results-text"
-    :selected.sync="deviceURIs"
-    :multiple="multiple"
-    :required="required"
-    :searchMethod="search"
-    :itemLoadingMethod="load"
-    :conversionMethod="dtoToSelectNode"
-    :key="lang"
-    @clear="$emit('clear')"
-    @select="$emit('select')"
-    @deselect="$emit('deselect')"
-    :showCount="true"
-    @keyup.enter.native="onEnter"
-    @loadMoreItems="loadMoreItems"
-  ></opensilex-SelectForm>
+    <div v-if="renderComponent">
+        <opensilex-FormSelector v-if="!isModalSearch"
+            ref="deviceSelector"
+            :label="label"
+            placeholder="DeviceSelector.placeholder"
+            noResultsText="DeviceSelector.no-results-text"
+            :selected.sync="deviceURIs"
+            :multiple="multiple"
+            :required="required"
+            :searchMethod="search"
+            :itemLoadingMethod="load"
+            :conversionMethod="dtoToSelectNode"
+            :key="lang"
+            @clear="$emit('clear')"
+            @select="$emit('select')"
+            @deselect="$emit('deselect')"
+            :showCount="true"
+            @keyup.enter.native="onEnter"
+        ></opensilex-FormSelector>
+
+        <opensilex-SelectForm v-else
+          ref="deviceSelector"
+          :label="label"
+          placeholder="DeviceSelector.placeholder"
+          noResultsText="DeviceSelector.no-results-text"
+          :selected.sync="deviceURIs"
+          :multiple="multiple"
+          :required="required"
+          :searchMethod="search"
+          :itemLoadingMethod="load"
+          :conversionMethod="dtoToSelectNode"
+          :key="lang"
+          @clear="$emit('clear')"
+          @select="$emit('select')"
+          @deselect="$emit('deselect')"
+          :showCount="true"
+          @keyup.enter.native="onEnter"
+          @loadMoreItems="loadMoreItems"
+        ></opensilex-SelectForm>
+    </div>
 </template>
 
 <script lang="ts">
@@ -35,6 +56,7 @@ export default class DeviceSelector extends Vue {
   $service: DevicesService;
   $store: any;
   pageSize = 10;
+  page = 0;
 
   renderComponent = true;
 
@@ -52,6 +74,10 @@ export default class DeviceSelector extends Vue {
 
   @Prop({default: "component.menu.devices"})
   label;
+
+    //this condition has been added until the selectForm modal is refactored
+    @Prop({default: false})
+    isModalSearch;
 
   @Watch("type")
   onTypeChange() {
@@ -87,7 +113,7 @@ export default class DeviceSelector extends Vue {
         undefined, //metadata filter
         ["name=asc"],
         page,
-        this.pageSize,
+        pageSize,
     ).then((http) => {
 
         if (http && http.response) {
@@ -128,9 +154,10 @@ export default class DeviceSelector extends Vue {
     this.pageSize = 0;
     this.deviceSelector.refresh();
     this.$nextTick(() => {
-      this.deviceSelector.openTreeselect();
+        this.deviceSelector.openTreeselect();
     })
   }
+
 }
 </script>
 

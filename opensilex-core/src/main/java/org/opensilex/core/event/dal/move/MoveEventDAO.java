@@ -614,21 +614,6 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return moveEventCollection.find(query);
     }
 
-    private void appendTargetFilter(ElementGroup targetGraphGroupElem, URI target) throws Exception {
-        if (target != null) {
-
-            Var uriVar = SPARQLQueryHelper.makeVar(MoveModel.URI_FIELD);
-            Var targetVar = SPARQLQueryHelper.makeVar(MoveModel.TARGET_FIELD);
-
-            Triple targetTriple = new Triple(uriVar, Oeev.concerns.asNode(), targetVar);
-
-            targetGraphGroupElem.addTriplePattern(targetTriple);
-
-            Expr targetEqExpr = SPARQLQueryHelper.eq(MoveModel.TARGET_FIELD, target);
-            targetGraphGroupElem.addElementFilter(new ElementFilter(targetEqExpr));
-        }
-        
-    }
 
     /**
      * Count total of moves associated to a target URI
@@ -640,11 +625,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         Node moveGraph = sparql.getDefaultGraph(MoveModel.class);
         return sparql.count(moveGraph, MoveModel.class,null,countBuilder -> {
-
-            ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
-            ElementGroup moveGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,moveGraph);
-
-            appendTargetFilter(moveGraphGroupElem, target);
+            super.appendInTargetsValuesInner(countBuilder, Stream.of(target), 1, moveGraph);
         },null);
     }
 }

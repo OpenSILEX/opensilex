@@ -224,9 +224,19 @@ public class EventDAO<T extends EventModel> {
     }
 
     protected void appendInTargetsValues(SelectBuilder select, Stream<URI> targets, int size) {
+        appendInTargetsValuesInner(select, targets, size, eventGraph);
+    }
+
+    /**
+     *
+     *Temporary function, the inTargets filter will be handled in a cleaner way when the events logic layer gets merged
+     * For now just call this protected function from either appendInTargetsValues or MoveDao's appendTargetFilter
+     * TODO delete this
+     */
+    protected void appendInTargetsValuesInner(SelectBuilder select, Stream<URI> targets, int size, Node graph) {
 
         ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
         eventGraphGroupElem.addTriplePattern(targetTriple);
 
         SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets, size);

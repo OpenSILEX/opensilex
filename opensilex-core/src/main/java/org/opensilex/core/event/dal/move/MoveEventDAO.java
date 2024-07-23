@@ -184,6 +184,18 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return model;
     }
 
+    public List<MoveModel> getMoveEventByURIList(List<URI> uriList, AccountModel user) throws Exception {
+        var modelList = sparql.getListByURIs(MoveModel.class, uriList, user.getLanguage());
+        var noSqlModelMap = getMoveEventNoSqlModelMap(uriList);
+        for (var model : modelList) {
+            var noSqlModel = noSqlModelMap.get(SPARQLDeserializers.formatURI(model.getUri()));
+            if (noSqlModel != null) {
+                model.setNoSqlModel(noSqlModel);
+            }
+        }
+        return modelList;
+    }
+
     public MoveEventNoSqlModel getMoveEventNoSqlModel(URI uri) throws URISyntaxException {
 
         Objects.requireNonNull(uri);
@@ -199,6 +211,26 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         model.setUri(uri);
         return model;
+    }
+
+    /**
+     * Fetches a list of move NoSQL models by their URIs. The result is represented as a Map to facilitate the
+     * integration with, for example, a list of {@link MoveModel}s. See for example
+     * {@link #getMoveEventByURIList(List, AccountModel)}.
+     *
+     * @param uris The list of move URIs
+     * @return A map associating the move URIs to their respective NoSQL models. Note that the map size can be smaller
+     *         than the size of the URI list as moves do not always have an associated NoSQL model. The URI is formatted
+     *         using {@link SPARQLDeserializers#formatURI(URI)}, so you SHOULD query this map using
+     *         <code>map.get(SPARQLDeserializers.formatURI(uri))</code>.
+     */
+    public Map<URI, MoveEventNoSqlModel> getMoveEventNoSqlModelMap(List<URI> uris) {
+        var iterableResult = moveEventCollection.find(getEventIdInFilter(uris.stream()));
+        var resultMap = new HashMap<URI, MoveEventNoSqlModel>();
+        for (var result : iterableResult) {
+            resultMap.put(SPARQLDeserializers.formatURI(result.getUri()), result);
+        }
+        return resultMap;
     }
 
     /**

@@ -130,7 +130,7 @@ public final class AccountDAO {
     }
 
 
-    public List<AccountModel> getList(List<URI> uri) throws Exception {
+    public List<AccountModel> getList(Collection<URI> uri) throws Exception {
         return sparql.getListByURIs(AccountModel.class, uri, null);
     }
 

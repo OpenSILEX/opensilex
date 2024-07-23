@@ -77,6 +77,7 @@
         :value="true"
         :unchecked-value="false"
         @change="onAddressToggled"
+        data-testid="facility-adress-checkbox"
         switches
     >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
 

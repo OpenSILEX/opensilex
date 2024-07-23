@@ -230,12 +230,12 @@ public class SPARQLDeserializers {
     }
 
     public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
-        SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
+        SPARQLDeserializer<URI> uriParser = new URIDeserializer();
 
         Node[] uriNodes = new Node[uris.size()];
         int i=0;
         for (URI uri : uris) {
-            uriNodes[i++] = uriParser.getNodeFromString(uri.toString());
+            uriNodes[i++] = uriParser.getNode(uri);
         }
         return uriNodes;
     }

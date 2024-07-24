@@ -5,20 +5,20 @@ import java.util.Collection;
 
 public class SPARQLInvalidUriListException extends SPARQLException {
 
-    private final Collection<URI> uris;
+    private final Collection<?> uris;
     protected String field;
 
-    public SPARQLInvalidUriListException(String message, Collection<URI> uris) {
+    public SPARQLInvalidUriListException(String message, Collection<?> uris) {
         super(message + uris.toString());
         this.uris = uris;
     }
 
-    public SPARQLInvalidUriListException(String message, Collection<URI> uris, String field) {
+    public SPARQLInvalidUriListException(String message, Collection<?> uris, String field) {
        this(message,uris);
        setField(field);
     }
 
-    public Collection<URI> getUris() {
+    public Collection<?> getUris() {
         return uris;
     }
 

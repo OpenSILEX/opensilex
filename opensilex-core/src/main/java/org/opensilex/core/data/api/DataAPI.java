@@ -128,10 +128,7 @@ public class DataAPI {
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
-    public static final int SIZE_MAX = 50000;
-    
-    Map<URI, URI> rootDeviceTypes = null;
-    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    public static final int SIZE_MAX = 10000;
     
     @Inject
     private MongoDBService nosql;
@@ -162,32 +159,27 @@ public class DataAPI {
 
         try {
             if (dtoList.size() > SIZE_MAX) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", "Single data import limit reached").getResponse();
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", "Single data import limit reached. limit: "+SIZE_MAX).getResponse();
             }
-            List<DataModel> dataList = new ArrayList<>();
-
+            List<DataModel> dataList = new ArrayList<>(dtoList.size());
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-            List<URI> createdResources = dataBLL.createMany(dataList);
 
+            List<URI> createdResources = dataBLL.createMany(dataList);
             return new CreatedUriResponse(createdResources).getResponse();
 
         } catch (MongoDbUniqueIndexConstraintViolation duplicateError){
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
+            return new ErrorResponse(Response.Status.CONFLICT, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
                     .getResponse();
         }
         catch (MongoBulkWriteException someWriteException) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "WRITE_ERROR", someWriteException.getMessage())
+            return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "WRITE_ERROR", someWriteException.getMessage())
                     .getResponse();
         }
         catch (MongoException mongoException) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "MONGO_EXCEPTION", mongoException.getMessage())
-                    .getResponse();
-        }
-        catch(NoSQLAlreadyExistingUriException noSQLAlreadyExistingUriException){
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_URI", noSQLAlreadyExistingUriException.getMessage())
+            return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "DATABASE_ERROR", mongoException.getMessage())
                     .getResponse();
         }
         catch(URISyntaxException uriSyntaxException){

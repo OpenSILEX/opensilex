@@ -11,7 +11,6 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
@@ -44,7 +43,6 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
@@ -54,9 +52,6 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
-import org.opensilex.sparql.mapping.SparqlMapper;
-import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -315,7 +310,8 @@ public class DataLogic {
     }
 
     public void update(DataModel model) throws Exception {
-        validData(Collections.singletonList(model));
+        DataValidation validation = new DataValidation(Collections.singletonList(model), sparql, nosql, user);
+        validation.run();
         dao.update(model);
     }
 
@@ -564,157 +560,30 @@ public class DataLogic {
     //#region PRIVATE METHODS
 
     /**
-     * Check variable data list before creation
-     * Complete the prov_was_associated_with provenance attribut
-     *
-     * @param dataList
-     * @throws Exception
-     */
-    private void validData(List<DataModel> dataList) throws Exception {
-
-        // Prefer the user of PatriciaTrie instead of Map with URI as key due to faster string compare and lower memory space
-        Map<String, VariableModel> variableByUri = new PatriciaTrie<>();
-        Map<String, Map<String, Boolean>> targetsByXp = new PatriciaTrie<>();
-        Map<String, ProvenanceModel> provenancesByUri = new PatriciaTrie<>();
-        Map<String, DeviceModel> deviceByUri = new PatriciaTrie<>();
-
-        // collect fields for which a validation is required : variable, provenance, xp, target, device
-        for (DataModel data : dataList) {
-
-            variableByUri.put(data.getVariable().toString(), null);
-
-            DataProvenanceModel provenance = data.getProvenance();
-            provenancesByUri.put(provenance.getUri().toString(), null);
-
-            if (!CollectionUtils.isEmpty(provenance.getProvWasAssociatedWith())) {
-                provenance.getProvWasAssociatedWith().forEach(agent -> deviceByUri.put(agent.getUri().toString(), null));
-            }
-
-            if(provenance.getExperiments() != null){
-                provenance.getExperiments().forEach(xp ->
-                        targetsByXp.computeIfAbsent(xp.toString(), key -> new PatriciaTrie<>()).put(data.getTarget().toString(), Boolean.TRUE)
-                );
-            }else if(data.getTarget() != null){
-                targetsByXp.computeIfAbsent("", key -> new PatriciaTrie<>()).put(data.getTarget().toString(), Boolean.TRUE);
-            }
-        }
-
-        // Load variable list -> throw Exception if any variable is unknown
-        List<VariableModel> variables = new VariableDAO(sparql, null, null, user).loadListByURIs(
-                variableByUri.keySet().stream().map(URIDeserializer::formatURI),
-                user.getLanguage()
-        );
-        variables.forEach(model -> variableByUri.put(model.getUri().toString(), model));
-
-        // Validate user permissions with experiment and existence of targets according experiment
-        // Validate both target and xp existence
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        for(var xpTargets : targetsByXp.entrySet()){
-
-            String xp = xpTargets.getKey();
-            Set<String> targets = xpTargets.getValue().keySet();
-            Node graph = null;
-
-            if(! xp.isEmpty()){
-                xpDao.validateExperimentAccess(URI.create(xp), user);
-                graph = SPARQLDeserializers.nodeURI(SPARQLDeserializers.getExpandedURI(xp));
-            }
-
-            Set<URI> unknownTargets = sparql.getExistingUriStream(
-                    ScientificObjectModel.class,
-                    targets.stream().map(SPARQLDeserializers::getExpandedURI),
-                    targets.size(),
-                    false,
-                    graph
-            );
-            if (!unknownTargets.isEmpty()) {
-                throw new SPARQLInvalidUriListException("These targets are unknown from the experiment : "+xp, unknownTargets); // NOSQL Exception ? come from sparql request
-            }
-        }
-
-        // Check provenance, keep models for device/provenance coherence checking
-        List<ProvenanceModel> provenances = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(
-                provenancesByUri.keySet().stream().map(URIDeserializer::formatURI),
-                provenancesByUri.size()
-        );
-        if (provenances.size() < provenancesByUri.size()) {
-            // compute difference : delete existing provenance from all provenance
-            provenances.forEach(model -> provenancesByUri.remove(model.getUri().toString()));
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", provenancesByUri
-                    .keySet()
-                    .stream()
-                    .map(URIDeserializer::formatURI)
-                    .collect(Collectors.toSet()));
-        }else{
-            provenances.forEach(model -> provenancesByUri.put(model.getUri().toString(), model));
-        }
-
-
-        // Check devices and fetch models
-        // #TODO -> use DeviceDao instead of generic sparql. Here we don't want to fetch other device properties
-        //  (this should be available for any sparql dao to apply a custom projection/fetching)
-        SparqlMapper<DeviceModel> sparqlMapper = new SparqlMinimalFetcher<>(DeviceModel.class);
-        List<DeviceModel> devices = sparql.loadListByURIs(
-                sparql.getDefaultGraph(DeviceModel.class),
-                DeviceModel.class,
-                deviceByUri.keySet().stream().map(URIDeserializer::formatURI),
-                user.getLanguage(),
-                result -> sparqlMapper.getInstance(result, user.getLanguage()),
-                Collections.emptySet()
-        );
-        devices.forEach(model -> deviceByUri.put(model.getUri().toString(), model));
-
-        // Perform 2nd step of validation
-        for(DataModel data : dataList){
-
-            // check variable uri and datatype
-            VariableModel variable = variableByUri.get(data.getVariable().toString());
-            setDataValidValue(variable, data);
-
-            // Complete agent with type from associated device
-            DataProvenanceModel dataProvenance = data.getProvenance();
-            if (!CollectionUtils.isEmpty(dataProvenance.getProvWasAssociatedWith())) {
-                dataProvenance.getProvWasAssociatedWith().forEach(agent -> {
-                    DeviceModel device = deviceByUri.get(agent.getUri().toString());
-                    agent.setType(device.getType());
-                });
-            } else {
-                // #TODO : add local cache of entity -> agent
-                ProvenanceModel provenance = provenancesByUri.get(dataProvenance.getUri().toString());
-                dataProvenance.setProvWasAssociatedWith(provenance.getAgents().stream().map(agent -> {
-                    ProvEntityModel provEntityModel = new ProvEntityModel();
-                    provEntityModel.setUri(agent.getUri());
-                    provEntityModel.setType(agent.getRdfType());
-                    return provEntityModel;
-                }).collect(Collectors.toList()));
-            }
-        }
-    }
-
-    /**
      * Validates - throws or inserts the models
      * Handles setting of publisher
      * Handles Annotation creation in the case of import
      *
-     * @param modelList          models to insert
+     * @param models          models to insert
      * @param deviceToVariables device, variable map to add the links to devices
      * @param calledFromImport   so we know to run any extra code
      * @param csvValidation      null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
      * @return a list of uris if the caller wasn't the import function
      */
-    private List<URI> createMany(List<DataModel> modelList, Map<DeviceModel, List<URI>> deviceToVariables, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception {
+    private List<URI> createMany(List<DataModel> models, Map<DeviceModel, List<URI>> deviceToVariables, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception {
 
-        //TODO can the validations done for import be refactord with the validData method ?
+        //TODO can the validations done for import be refactored with the validData method ?
         if (!calledFromImport) {
-             validData(modelList);
+            DataValidation validation = new DataValidation(models, sparql, nosql, user);
+            validation.run();
         }
         //Set publisher
-        modelList.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
+        models.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
 
         //Transaction to add data and to add link to device
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             //Create data
-            dao.create(session, modelList);
+            dao.create(session, models);
             //Create device links
             if (!deviceToVariables.isEmpty()) {
                 DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
@@ -724,7 +593,7 @@ public class DataLogic {
             }
             //In the case of import set number of imported lines and create any annotations that were imported on the targets
             if (calledFromImport) {
-                csvValidation.setNbLinesImported(modelList.size());
+                csvValidation.setNbLinesImported(models.size());
                 //If the data import was successful, post the annotations on objects
                 AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
                 annotationDAO.create(csvValidation.getAnnotationsOnObjects());
@@ -734,7 +603,7 @@ public class DataLogic {
         if (calledFromImport) {
             return Collections.emptyList();
         }
-        return modelList.stream()
+        return models.stream()
                 .map(MongoModel::getUri)
                 .collect(Collectors.toList());
     }
@@ -1365,22 +1234,6 @@ public class DataLogic {
             // so there are no guarantee that a unique OS URI will be found with this name
             validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT"));
             return null;
-        }
-    }
-
-    /**
-     * check that value is coherent with the variable datatype
-     *
-     * @param variable
-     * @param data
-     * @throws Exception
-     */
-    private void setDataValidValue(VariableModel variable, DataModel data) throws Exception {
-        if (data.getValue() != null) {
-            URI variableUri = variable.getUri();
-            URI dataType = variable.getDataType();
-            Object value = data.getValue();
-            DataValidateUtils.checkAndConvertValue(data, variableUri, value, dataType);
         }
     }
 

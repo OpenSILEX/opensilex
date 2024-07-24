@@ -146,7 +146,6 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     @Override
     public @NotNull T get(ClientSession session, @Valid @Required @NotNull URI uri) throws NoSQLInvalidURIException {
         Objects.requireNonNull(uri);
-
         T instance = session == null ?
                 collection.find(eq(idField(), uri)).first() :
                 collection.find(session, eq(idField(), uri)).first();

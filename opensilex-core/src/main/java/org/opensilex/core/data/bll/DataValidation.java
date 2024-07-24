@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  *     </li>
  *     <li>Re-read the models by updating field if required or by applying more complex validation which required a previous call to database. Complexity O(n)</li>
  * </ul>
- *
+ * <p>
  * The field group (the field or list of field which are validated are the following) :
  * <br><br>
  * <ul>
@@ -97,10 +97,12 @@ public class DataValidation {
         deviceByUri = new PatriciaTrie<>();
     }
 
-    public void run() throws Exception {
+    public DataPostInsert validate() throws Exception {
+        DataPostInsert postInsert = new DataPostInsert();
         collectValidation();
         batchValidations();
-        updateModels();
+        updateModels(postInsert);
+        return postInsert;
     }
 
     private void collectValidation() {
@@ -197,7 +199,7 @@ public class DataValidation {
 
     /**
      * Check that value is coherent with the variable datatype
-    */
+     */
     private void setDataValidValue(VariableModel variable, DataModel data) throws CSVDataTypeException, DataTypeException {
         URI variableUri = variable.getUri();
         URI dataType = variable.getDataType();
@@ -205,13 +207,18 @@ public class DataValidation {
         DataValidateUtils.checkAndConvertValue(data, variableUri, value, dataType);
     }
 
-    private void updateModels() throws CSVDataTypeException, DataTypeException {
+    private void updateModels(DataPostInsert postInsert) throws CSVDataTypeException, DataTypeException {
+
+        Map<String, List<ProvEntityModel>> agentsToProvEntity = new PatriciaTrie<>();
+
         // Perform 2nd step of validation
         for (DataModel data : models) {
 
             // check variable uri and datatype
             VariableModel variable = variableByUri.get(data.getVariable().toString());
             setDataValidValue(variable, data);
+
+            Set<URI> variableDevices = postInsert.variableToDevices.computeIfAbsent(variable.getUri(), key -> new HashSet<>());
 
             // Complete agent with type from associated device
             DataProvenanceModel dataProvenance = data.getProvenance();
@@ -221,15 +228,30 @@ public class DataValidation {
                     agent.setType(device.getType());
                 });
             } else {
-                // #TODO : add local cache of entity -> agent
                 ProvenanceModel provenance = provenancesByUri.get(dataProvenance.getUri().toString());
-                dataProvenance.setProvWasAssociatedWith(provenance.getAgents().stream().map(agent -> {
-                    ProvEntityModel provEntityModel = new ProvEntityModel();
-                    provEntityModel.setUri(agent.getUri());
-                    provEntityModel.setType(agent.getRdfType());
-                    return provEntityModel;
-                }).collect(Collectors.toList()));
+
+                // convert agents from global provenance to data provenance agents (only if not done before)
+                String provenanceURI = provenance.getUri().toString();
+                List<ProvEntityModel> provEntities = agentsToProvEntity.get(provenanceURI);
+                if (provEntities == null) {
+                    provEntities = provenance
+                            .getAgents()
+                            .stream()
+                            .map(agent -> {
+                                ProvEntityModel provEntityModel = new ProvEntityModel();
+                                provEntityModel.setUri(agent.getUri());
+                                provEntityModel.setType(agent.getRdfType());
+                                return provEntityModel;
+                            })
+                            .collect(Collectors.toList());
+
+                    agentsToProvEntity.put(provenanceURI, provEntities);
+                }
+                dataProvenance.setProvWasAssociatedWith(provEntities);
             }
+
+            dataProvenance.getProvWasAssociatedWith().forEach(device -> variableDevices.add(device.getUri()));
+            data.setPublisher(user.getUri());
         }
     }
 

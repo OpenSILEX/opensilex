@@ -7,6 +7,13 @@ import org.opensilex.sparql.service.SPARQLResult;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 
+/**
+ * A minimal {@link SparqlMapper} which only retrieve {@link SPARQLResourceModel#URI_FIELD} and {@link SPARQLResourceModel#TYPE_FIELD}
+ * @param <T> The type of {@link SPARQLResourceModel}
+ *
+ * @apiNote URI are formatted using the {@link URIDeserializer#formatURI(URI)} method
+ * @author rcolin
+ */
 public class SparqlMinimalFetcher<T extends SPARQLResourceModel> implements SparqlMapper<T>{
 
     private final Constructor<T> constructor;

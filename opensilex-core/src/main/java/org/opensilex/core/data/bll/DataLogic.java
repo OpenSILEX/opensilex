@@ -10,7 +10,6 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
@@ -106,15 +105,14 @@ public class DataLogic {
     }
 
     //Private stored data
-    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     private Map<URI, URI> rootDeviceTypes = null;
-    private final String EXPERIMENT_HEADER = "experiment";
-    private final String TARGET_HEADER = "target";
-    private final String DATE_HEADER = "date";
-    private final String DEVICE_HEADER = "device";
-    private final String RAWDATA_HEADER = "raw_data";
-    private final String SCIENTIFICOBJ_HEADER = "scientific_object";
-    private final String ANNOTATION_HEADER = "object_annotation";
+    private static final String EXPERIMENT_HEADER = "experiment";
+    private static final String TARGET_HEADER = "target";
+    private static final String DATE_HEADER = "date";
+    private static final String DEVICE_HEADER = "device";
+    private static final String RAWDATA_HEADER = "raw_data";
+    private static final String SCIENTIFIC_OBJECT_HEADER = "scientific_object";
+    private static final String ANNOTATION_HEADER = "object_annotation";
 
     //#region PUBLIC METHODS
 
@@ -311,7 +309,7 @@ public class DataLogic {
 
     public void update(DataModel model) throws Exception {
         DataValidation validation = new DataValidation(Collections.singletonList(model), sparql, nosql, user);
-        validation.run();
+        validation.validate();
         dao.update(model);
     }
 
@@ -320,11 +318,11 @@ public class DataLogic {
     }
 
     public List<URI> createMany(List<DataModel> modelList) throws Exception {
-        return createMany(modelList, variablesToDevices, false, null);
+        return createMany(modelList, false, null);
     }
 
     public void createManyFromImport(List<DataModel> modelList, DataCSVValidationModel csvValidationModel) throws Exception {
-        createMany(modelList, csvValidationModel.getVariablesToDevices(), true, csvValidationModel);
+        createMany(modelList, true, csvValidationModel);
     }
 
     /**
@@ -565,32 +563,31 @@ public class DataLogic {
      * Handles Annotation creation in the case of import
      *
      * @param models          models to insert
-     * @param deviceToVariables device, variable map to add the links to devices
      * @param calledFromImport   so we know to run any extra code
      * @param csvValidation      null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
      * @return a list of uris if the caller wasn't the import function
      */
-    private List<URI> createMany(List<DataModel> models, Map<DeviceModel, List<URI>> deviceToVariables, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception {
+    private List<URI> createMany(List<DataModel> models, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception {
 
-        //TODO can the validations done for import be refactored with the validData method ?
+        DataPostInsert postInsert;
         if (!calledFromImport) {
             DataValidation validation = new DataValidation(models, sparql, nosql, user);
-            validation.run();
+            postInsert = validation.validate();
+        }else{
+            postInsert = new DataPostInsert();
+            postInsert.variableToDevices = new HashMap<>();
+            csvValidation.getVariablesToDevices().forEach((device, variables) -> {
+                    postInsert.variableToDevices.computeIfAbsent(device.getUri(), key -> new HashSet<>()).addAll(variables);
+            });
+            models.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
         }
-        //Set publisher
-        models.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
 
         //Transaction to add data and to add link to device
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-            //Create data
+            //Create data and device links
             dao.create(session, models);
-            //Create device links
-            if (!deviceToVariables.isEmpty()) {
-                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                for (var deviceVariables : deviceToVariables.entrySet()) {
-                    deviceDAO.associateVariablesToDevice(deviceVariables.getKey(), deviceVariables.getValue(), user);
-                }
-            }
+            new DeviceDAO(sparql, nosql, fs).associateVariablesToDevice(postInsert.variableToDevices);
+
             //In the case of import set number of imported lines and create any annotations that were imported on the targets
             if (calledFromImport) {
                 csvValidation.setNbLinesImported(models.size());
@@ -651,7 +648,7 @@ public class DataLogic {
 
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -660,12 +657,12 @@ public class DataLogic {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(DEVICE_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(Arrays.asList(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
+            if (!headers.contains(DEVICE_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFIC_OBJECT_HEADER) && !sensingDeviceFoundFromProvenance) {
+                csvValidation.addMissingHeaders(Arrays.asList(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFIC_OBJECT_HEADER));
             }
             // Check that there is an SCIENTIFICOBJ_HEADER or a TARGET_HEADER if there is an ANNOTATION_HEADER otherwise create error
-            if (headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER)) {
-                csvValidation.addMissingHeaders(Arrays.asList(TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
+            if (headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFIC_OBJECT_HEADER)) {
+                csvValidation.addMissingHeaders(Arrays.asList(TARGET_HEADER + " or " + SCIENTIFIC_OBJECT_HEADER));
             }
 
             // 1. check variables
@@ -680,7 +677,7 @@ public class DataLogic {
                     } else {
 
                         if (header.equalsIgnoreCase(EXPERIMENT_HEADER) || header.equalsIgnoreCase(TARGET_HEADER)
-                                || header.equalsIgnoreCase(DATE_HEADER) || header.equalsIgnoreCase(DEVICE_HEADER) || header.equalsIgnoreCase(SCIENTIFICOBJ_HEADER)
+                                || header.equalsIgnoreCase(DATE_HEADER) || header.equalsIgnoreCase(DEVICE_HEADER) || header.equalsIgnoreCase(SCIENTIFIC_OBJECT_HEADER)
                                 || header.equalsIgnoreCase(RAWDATA_HEADER) || header.equalsIgnoreCase(ANNOTATION_HEADER)) {
                             headerByIndex.put(i, header);
 
@@ -923,7 +920,7 @@ public class DataLogic {
                     }
                 }
 
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(SCIENTIFICOBJ_HEADER)) {
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(SCIENTIFIC_OBJECT_HEADER)) {
 
                 String objectNameOrUri = values[colIndex];
                 // check if the object name/uri has been previously referenced -> if so, no need to re-perform a check with the Dao
@@ -1235,178 +1232,6 @@ public class DataLogic {
             validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT"));
             return null;
         }
-    }
-
-    /**
-     * First check in the data provenance if there is a device
-     * Then check in the provenance and fill the data provenance with the device
-     * If no device and no target return an exception
-     *
-     * @param provDAO
-     * @param data
-     * @param hasTarget
-     * @param variableCheckedDevice
-     * @param provenanceToDevice
-     * @throws Exception
-     */
-    private void variablesDeviceAssociation(ProvenanceDaoV2 provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception {
-
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
-        URI provenanceURI = data.getProvenance().getUri();
-        DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO);
-        if (deviceFromProvWasAssociated != null) {
-            boolean deviceIsChecked = variableCheckedDevice.containsKey(deviceFromProvWasAssociated) && variableCheckedDevice.get(deviceFromProvWasAssociated) == data.getVariable();
-            if (!deviceIsChecked) {
-                // #TODO perform an update without checking if already associated (without duplicate relations)
-                if (!variableDAO.variableIsAssociatedToDevice(deviceFromProvWasAssociated, data.getVariable())) {
-                    DataCSVValidationModel.addVariableToDeviceMap(deviceFromProvWasAssociated, data.getVariable(), variablesToDevices); // add variable/device
-                }
-                variableCheckedDevice.put(deviceFromProvWasAssociated, data.getVariable());
-
-            }
-            return;
-        }
-
-        DeviceModel device;
-        if (provenanceToDevice.containsKey(provenanceURI)) {
-            device = provenanceToDevice.get(provenanceURI);
-            //check
-        } else {
-            device = checkAndReturnDeviceFromProvenance(deviceDAO, provDAO, data);
-            provenanceToDevice.put(provenanceURI, device);
-        }
-
-        if (device != null) {
-
-            // #TODO perform an update without checking if already associated (without duplicate relations)
-            if (!variableDAO.variableIsAssociatedToDevice(device, data.getVariable())) {
-                DataCSVValidationModel.addVariableToDeviceMap(device, data.getVariable(), variablesToDevices); // add variable/device
-            }
-
-            if (rootDeviceTypes == null) {
-                rootDeviceTypes = deviceDAO.getRootDeviceTypes(user);
-            }
-
-            DataProvenanceModel provMod = data.getProvenance();
-            List<ProvEntityModel> agents = null;
-            if (provMod.getProvWasAssociatedWith() == null) {
-                agents = new ArrayList<>();
-            } else {
-                agents = provMod.getProvWasAssociatedWith();
-            }
-
-            ProvEntityModel agent = new ProvEntityModel();
-            agent.setUri(device.getUri());
-            URI rootType = rootDeviceTypes.get(device.getType());
-            agent.setType(rootType);
-            agents.add(agent);
-            provMod.setProvWasAssociatedWith(agents);
-            data.setProvenance(provMod);
-        } else {
-            if (!hasTarget) {
-                throw new DeviceOrTargetToDataException(data);
-            }
-        }
-
-    }
-
-    /**
-     * check and return Device from Data Provenance if no ambiguity
-     * Exception if two devices as provenance agent
-     *
-     * @param deviceDAO
-     * @param data
-     * @throws Exception
-     */
-    private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception {
-
-        boolean deviceIsLinked = false; // to test if there are 2 devices
-        URI agentToReturn = null;
-        if (CollectionUtils.isEmpty(data.getProvenance().getProvWasAssociatedWith())) {
-            return null;
-        }
-        for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
-
-            // #TODO remove : already handled by @valid or type should not be provided by client : no need to test it
-//            if (agent.getType() == null) {
-//                throw new ProvenanceAgentTypeException(agent.getUri().toString());
-//            }
-
-            // #TODO remove : what the matter if there are two different device type ?
-            if (deviceDAO.isDeviceType(agent.getType())) {
-                if (!deviceIsLinked) {
-                    deviceIsLinked = true;
-                    agentToReturn = agent.getUri();
-                } else {
-                    throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
-                }
-            }
-        }
-        if (agentToReturn != null) {
-            return deviceDAO.getDeviceByURI(agentToReturn, user);
-        }
-        return null;
-    }
-
-    /**
-     * check and return Device from Provenance if no ambiguity
-     *
-     * @param deviceDAO
-     * @param provDAO
-     * @param data
-     * @throws Exception
-     */
-    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDaoV2 provDAO, DataModel data) throws Exception {
-
-        ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
-
-        DeviceModel deviceToReturn = null;
-        List<DeviceModel> devices = new ArrayList<>();
-        List<DeviceModel> linkedDevices = new ArrayList<>();
-
-        if (provenance.getAgents() != null && !provenance.getAgents().isEmpty()) {
-
-            for (AgentModel agent : provenance.getAgents()) {
-                // #TODO remove : already handled by @valid or  type should not be provided by client : no need to test it
-                // #TODO : device from provenance should already be OK
-//                if (agent.getRdfType() == null) {
-//                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
-//                }
-                if (deviceDAO.isDeviceType(agent.getRdfType())) {
-                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                    if (device != null) {
-                        devices.add(device);
-
-                        if (variableDAO.variableIsAssociatedToDevice(device, data.getVariable())) {
-                            linkedDevices.add(device);
-                        }
-                    }
-                }
-            }
-
-            // #TODO remove : what the matter if there are two different device type ?
-            switch (linkedDevices.size()) {
-                case 0:
-                    if (devices.size() > 1) {
-                        throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
-                    } else {
-                        if (!devices.isEmpty()) {
-                            deviceToReturn = devices.get(0);
-                        }
-                    }
-                    break;
-                case 1:
-                    deviceToReturn = linkedDevices.get(0);
-                    break;
-                default:
-                    throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
-
-            }
-
-        }
-        return deviceToReturn;
     }
 
     /**

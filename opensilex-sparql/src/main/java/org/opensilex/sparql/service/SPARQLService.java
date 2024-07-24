@@ -1822,7 +1822,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             executeUpdateQuery(insertQuery);
         }
-
     }
 
     public void insertPrimitive(Node graph, List<URI> uris, Property property, Object value) throws Exception {

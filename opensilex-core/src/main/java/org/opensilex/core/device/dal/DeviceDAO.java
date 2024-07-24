@@ -6,6 +6,7 @@
 package org.opensilex.core.device.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.jena.arq.querybuilder.*;
@@ -15,6 +16,8 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.update.Update;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -251,41 +254,32 @@ public class DeviceDAO {
     }
     
     /**
-     * Link variables to a device by the 'oeso:measures' relation
-     * @param device device
-     * @param variables variables to associate
-     * @throws Exception if some error is encountered 
+     * Link variables to a device by the {@link Oeso#measures} relation
+     * @param variableToDevices Map of variable -> device
+     * @throws SPARQLException if SPARQL Update query execution fails
      *
-     * **/
-    public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
-        List<SPARQLModelRelation> relations = device.getRelations();
-        
-        // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
-        // Works only if all relations are measure relations .. 
-        List<SPARQLModelRelation> newRelations = new ArrayList<>();
-        for (SPARQLModelRelation relation : relations) {
-            SPARQLModelRelation rel = new SPARQLModelRelation();
-            rel.setProperty(relation.getProperty());
-            rel.setValue(relation.getValue());
-            if(relation.getType() == null) {
-                rel.setType(URI.class);
-            }
-            newRelations.add(rel);
-        }
-        // Fix
-       
-        for (URI variable : variables) {
-            SPARQLModelRelation relation = new SPARQLModelRelation();
-            relation.setProperty(Oeso.measures);
-            relation.setValue(variable.toString());
-            relation.setType(URI.class);
-            newRelations.add(relation);
-        }
-       device.setRelations(newRelations);
+     */
+    public void associateVariablesToDevice(Map<URI, Set<URI>> variableToDevices) throws SPARQLException {
 
-       device = update(device, user);
-       return device;
+        if(variableToDevices.isEmpty()){
+            return;
+        }
+        UpdateBuilder update = new UpdateBuilder();
+
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
+        Node measuresNode = Oeso.measures.asNode();
+
+        // delete (device, measures, variable) triple and insert new (device, measures, variable) to avoid duplicate
+        variableToDevices.forEach((variable, devices) -> {
+            Node variableNode = NodeFactory.createURI(variable.toString());
+            devices.forEach(device -> {
+                Node deviceNode = NodeFactory.createURI(device.toString());
+                update.addDelete(graph, deviceNode, measuresNode, variableNode);
+                update.addInsert(graph, deviceNode, measuresNode, variableNode);
+           });
+        });
+
+        sparql.executeUpdateQuery(update);
     }
 
     public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {

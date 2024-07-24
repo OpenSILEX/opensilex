@@ -11,6 +11,7 @@
 
 package org.opensilex.core.event.bll;
 
+import com.apicatalog.jsonld.StringUtils;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -19,6 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
@@ -35,6 +37,7 @@ import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static com.mongodb.client.model.Projections.excludeId;
@@ -89,7 +92,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
-        MoveNosqlModel noSqlModel = noSqlDao.get(uri);
+        MoveNosqlModel noSqlModel = noSqlDao.get(clientSession, uri);
         if (noSqlModel != null) {
             noSqlModel.setUri(uri);
             model.setNoSqlModel(noSqlModel);
@@ -139,20 +142,13 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return wrapWithTransaction(session -> createMultipleNoTransaction(models, noSqlModels, session));
     }
 
-    public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException {
+    public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
 
         Objects.requireNonNull(uri);
 
-        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
-        filter.setUri(uri);
+        Bson projection = Projections.fields(excludeId());
 
-        MongoSearchQuery<MoveNosqlModel, MoveNoSqlSearchFilter, MoveNosqlModel> mongoSearchQuery = new MongoSearchQuery<>();
-        mongoSearchQuery.setFilter(filter);
-        mongoSearchQuery.setProjection(Projections.fields(
-                excludeId() //  don't fetch concernedItem and position of other item
-        ));
-
-        MoveNosqlModel model = noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().findFirst().orElseThrow();
+        MoveNosqlModel model = noSqlDao.get(clientSession, uri, projection);
 
         model.setUri(uri);
         return model;
@@ -195,7 +191,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         // search move history sorted with DESC order on move end, from SPARQL repository
         MoveSearchFilter searchFilter = new MoveSearchFilter();
-        searchFilter.setTarget(target.toString()).setDescriptionPattern(descriptionPattern).setStart(start).setEnd(end);
+        if(!StringUtils.isBlank(target.toString())){
+            searchFilter.setTargets(Collections.singletonList(target));
+        }
+        searchFilter.setDescriptionPattern(descriptionPattern).setStart(start).setEnd(end);
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
@@ -228,6 +227,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             MongoSearchQuery<MoveNosqlModel, MoveNoSqlSearchFilter, MoveNosqlModel> mongoSearchQuery = new MongoSearchQuery<>();
             mongoSearchQuery.setFilter(noSqlSearchFilter);
             mongoSearchQuery.setProjection(Projections.fields(concernedItemPositionProjection));
+            mongoSearchQuery.setConvertFunction(Function.identity());
 
 
             noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().forEach(moveNoSqlModel -> {
@@ -271,7 +271,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         MoveSearchFilter searchFilter = new MoveSearchFilter().setAfterEnd(dateTime);
         searchFilter.setPage(0);
-        searchFilter.setTarget(target.toString());
+        if(!StringUtils.isBlank(target.toString())){
+            searchFilter.setTargets(Collections.singletonList(target));
+        }
         searchFilter.setPageSize(1);
         ListWithPagination<MoveModel> moves = dao.search(searchFilter);
 
@@ -287,20 +289,16 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @return the position of the given object at a given time, null if no move event was found.
      * @apiNote if time is null, then the last known position will be returned
      */
-    public PositionModel getPosition(URI objectUri) throws Exception {
+    public PositionModel getPosition(URI objectUri, URI moveURI) throws Exception {
 
-        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
-        filter.setUri(objectUri);
-        MongoSearchQuery<MoveNosqlModel, MoveNoSqlSearchFilter, MoveNosqlModel> mongoSearchQuery = new MongoSearchQuery<>();
-        mongoSearchQuery.setFilter(filter);
-        mongoSearchQuery.setProjection(Projections.fields(
+        Bson projection = Projections.fields(
                 excludeId(), // don't fetch position _id field
                 getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
-        ));
+        );
 
-        MoveNosqlModel moveNoSqlModel = noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().findFirst().orElseThrow();
+        MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
 
-        if (moveNoSqlModel.getTargetPositions().isEmpty()) {
+        if (moveNoSqlModel==null || moveNoSqlModel.getTargetPositions().isEmpty()) {
             return null;
         }
 

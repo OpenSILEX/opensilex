@@ -10,10 +10,8 @@ package org.opensilex.core.event.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
@@ -176,40 +174,13 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
 
         this.updateOrderByList(searchFilter.getOrderByList());
 
-        // set the custom filter on type
-        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
-        appendTypeFilter(customHandlerByFields, searchFilter.getType());
-
         ListWithPagination<T> results = sparql.searchWithPagination(
                 graph,
                 clazz,
                 searchFilter.getLang(),
-                (select -> {
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
-
-                    //append filter for baseType
-                    if (searchFilter.getBaseType() != null) {
-                        Var baseTypeVar = makeVar("baseType");
-                        Var targetTypeVar = makeVar("target");
-
-                        eventGraphGroupElem.addTriplePattern(Triple.create(uriVar, Oeev.concerns.asNode(), targetTypeVar));
-                        select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(searchFilter.getBaseType()));
-                        select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
-                    }
-
-                    // match on list of URIs
-                    if(! CollectionUtils.isEmpty(searchFilter.getTargets())){
-                        appendInTargetsValues(select, searchFilter.getTargets().stream(), searchFilter.getTargets().size());
-                    }
-
-                    // for each optional field, the filtering must be applied outside the OPTIONAL
-                    appendDescriptionFilter(eventGraphGroupElem, searchFilter.getDescriptionPattern());
-                    appendTimeFilter(eventGraphGroupElem, searchFilter.getStart(), searchFilter.getEnd());
-
-                }),
-                customHandlerByFields,
-                (result -> fromResult(result, searchFilter.getLang(), ((T)new EventModel()))),  // custom result handler, direct convert SPARQLResult to EventModel
+                (select -> appendAllFilters(select, searchFilter)),
+                getCustomHandlerForFields(searchFilter),
+                (result -> fromResult(result, searchFilter.getLang(), clazz.getDeclaredConstructor().newInstance())),
                 searchFilter.getOrderByList(),
                 searchFilter.getPage(),
                 searchFilter.getPageSize()
@@ -248,6 +219,48 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     //#region PRIVATE/PROTECTED METHODS
 
     /**
+     * Appends all sparql filters, override this in subclasses to handle specific filters
+     *
+     * @param select to append to
+     * @param filter
+     */
+    protected void appendAllFilters(SelectBuilder select, F filter) throws Exception {
+        ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
+
+        //append filter for baseType
+        if (filter.getBaseType() != null) {
+            Var baseTypeVar = makeVar("baseType");
+            Var targetTypeVar = makeVar("target");
+
+            eventGraphGroupElem.addTriplePattern(Triple.create(uriVar, Oeev.concerns.asNode(), targetTypeVar));
+            select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(filter.getBaseType()));
+            select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
+        }
+
+        // match on list of URIs
+        if(! CollectionUtils.isEmpty(filter.getTargets())){
+            appendInTargetsValues(select, filter.getTargets().stream(), filter.getTargets().size());
+        }
+
+        // for each optional field, the filtering must be applied outside the OPTIONAL
+        appendDescriptionFilter(eventGraphGroupElem, filter.getDescriptionPattern());
+        appendTimeFilter(eventGraphGroupElem, filter.getStart(), filter.getEnd());
+    }
+
+    /**
+     *
+     * @param filter
+     * @return custom handler by fields for search function, override in subclasses to custom handle specific fields
+     */
+    protected Map<String, WhereHandler> getCustomHandlerForFields(F filter) throws Exception {
+        // set the custom filter on type
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+        appendTypeFilter(customHandlerByFields, filter.getType());
+        return customHandlerByFields;
+    }
+
+    /**
      *
      * @param select The SelectBuilder to modify
      * @param targets list of targets to filter by
@@ -261,62 +274,6 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
 
         SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets, size);
     }
-
-    /**
-     * Handle filtering on target
-     *
-     * @param eventGraphGroupElem {@link ElementGroup} in which handle target filtering
-     * @param target              string representation of a URI (exact target matching) or a part of a URI(partial target matching)
-     * @param orderByList         List of {@link OrderBy} used by the query. Used to check if sort on target field is asked
-     * @return true if the triple <?uri,oeev:concerns,?targets> is added to the {@link ElementGroup}
-     */
-    protected boolean appendTargetEqFilter(ElementGroup eventGraphGroupElem, String target, List<OrderBy> orderByList) throws Exception {
-
-        boolean targetFiltering = !StringUtils.isEmpty(target);
-
-        if (!targetFiltering) {
-            boolean targetInOrders = orderByList != null && orderByList.stream().anyMatch(order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD));
-            if (!targetInOrders) {
-                return false;
-            }else{
-                // append where between event uri and the multi-valued EventModel.TARGETS_FIELD property because
-                // the sparql service don't fetch multi-valued property during the search call, so the ORDER will no works else
-                eventGraphGroupElem.addTriplePattern(targetTriple);
-                return true;
-            }
-        }
-
-        boolean exactTargetMatching = false;
-
-        try {
-            // full URI/exact matching
-            URI targetUri = new URI(target);
-            exactTargetMatching = targetUri.isAbsolute();
-        } catch (URISyntaxException ignored) {
-            // partial matching
-        }
-
-        if (exactTargetMatching) {
-            String expandedTarget = SPARQLDeserializers.getExpandedURI(new URI(target));
-            Node targetNode = NodeFactory.createURI(expandedTarget);
-            eventGraphGroupElem.addTriplePattern(Triple.create(uriVar, Oeev.concerns.asNode(), targetNode));
-        } else {
-            /* create EXISTS clause and filter on event with a target matching with the partial string filter.
-            It allows the retrieval, for each event matching with target filter, of the full target list(not only URIs which match) */
-
-            WhereBuilder existsWhere = new WhereBuilder();
-            existsWhere.addWhere(partialTargetMatchTriple);
-            Expr targetStrFilterExpr = SPARQLQueryHelper.regexStrFilter(partialTargetMatchVar.getVarName(), target);
-            existsWhere.addFilter(targetStrFilterExpr);
-
-            Expr partialTargetMatchExpr = SPARQLQueryHelper.getExprFactory().exists(existsWhere);
-            eventGraphGroupElem.addElementFilter(new ElementFilter(partialTargetMatchExpr));
-        }
-
-        // return false, indeed if a partial/exact match is specified, the triple  <?uri,oeev:concerns,?targets> is not needed here
-        return false;
-    }
-
 
     /**
      * Append a REGEX filter on {@link EventModel#DESCRIPTION_FIELD}

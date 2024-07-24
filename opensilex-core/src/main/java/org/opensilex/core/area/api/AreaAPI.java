@@ -203,7 +203,7 @@ public class AreaAPI {
         if (model != null) {
             //create search filter
             EventSearchFilter searchFilter = new EventSearchFilter();
-            searchFilter.setTarget(areaURI.toString())
+            searchFilter.setTargets(Collections.singletonList(areaURI))
                     .setLang(currentUser.getLanguage());
 
             // Check if an event is linked to the area
@@ -277,7 +277,7 @@ public class AreaAPI {
         try {
             //create search filter
             EventSearchFilter searchFilter = new EventSearchFilter();
-            searchFilter.setTarget(areaDTO.getUri().toString())
+            searchFilter.setTargets(Collections.singletonList(areaDTO.getUri()))
                     .setLang(currentUser.getLanguage());
 
             // Check if an event is linked to the area
@@ -362,7 +362,7 @@ public class AreaAPI {
 
             //create search filter
             EventSearchFilter searchFilter = new EventSearchFilter();
-            searchFilter.setTarget(areaURI.toString())
+            searchFilter.setTargets(Collections.singletonList(areaURI))
                     .setLang(currentUser.getLanguage());
 
             //search if an event is linked

@@ -341,34 +341,34 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetPosition() throws Exception {
 
-        MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
+        MoveCreationDTO moveCreationDTO = getCreationDto();
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(moveCreationDTO));
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // get last move concerning first scientific object
-        Response getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), creationDTO.getTargets().get(0).toString());
+        Response getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), moveCreationDTO.getTargets().get(0).toString());
         JsonNode node = getPositionResult.readEntity(JsonNode.class);
         SingleObjectResponse<PositionGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
         PositionGetDTO dtoFromDb = getResponse.getResult();
 
-        testEquals(creationDTO, 0,dtoFromDb, moveEventUri);
+        testEquals(moveCreationDTO, 0,dtoFromDb, moveEventUri);
 
         // get last move concerning second scientific object
-        getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), creationDTO.getTargets().get(1).toString());
+        getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), moveCreationDTO.getTargets().get(1).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
         dtoFromDb = getResponse.getResult();
 
-        testEquals(creationDTO, 1,dtoFromDb, moveEventUri);
+        testEquals(moveCreationDTO, 1,dtoFromDb, moveEventUri);
 
 
         // create a newer event
         MoveCreationDTO newEventCreationDto = getCreationDto();
-        OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDTO.getEnd()).plusDays(2);
+        OffsetDateTime newerEndTime = OffsetDateTime.parse(moveCreationDTO.getEnd()).plusDays(2);
         newEventCreationDto.setEnd(newerEndTime.toString());
-        newEventCreationDto.setFrom(creationDTO.getTo());
+        newEventCreationDto.setFrom(moveCreationDTO.getTo());
         newEventCreationDto.setTo(facilityC.getUri());
 
         postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(newEventCreationDto));

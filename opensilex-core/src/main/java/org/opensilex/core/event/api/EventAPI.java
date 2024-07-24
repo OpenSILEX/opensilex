@@ -7,7 +7,9 @@
 
 package org.opensilex.core.event.api;
 
+import com.apicatalog.jsonld.StringUtils;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -331,8 +333,11 @@ public class EventAPI {
         EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
         //create search filter
         EventSearchFilter searchFilter = new EventSearchFilter();
-        searchFilter.setTarget(target)
-                .setDescriptionPattern(descriptionPattern)
+
+        if(!StringUtils.isBlank(target)){
+            searchFilter.setTargets(Collections.singletonList(URI.create(target)));
+        }
+        searchFilter.setDescriptionPattern(descriptionPattern)
                 .setType(type)
                 .setStart(start != null ? OffsetDateTime.parse(start) : null)
                 .setEnd(end != null ? OffsetDateTime.parse(end) : null)

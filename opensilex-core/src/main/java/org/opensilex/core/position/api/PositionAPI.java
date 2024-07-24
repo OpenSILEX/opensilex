@@ -83,22 +83,22 @@ public class PositionAPI {
 
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel model = moveLogic.getLastMoveAfter(
+        MoveModel moveModel = moveLogic.getLastMoveAfter(
                 uri,
                 time != null ? OffsetDateTime.parse(time) : null
         );
 
-        if (model == null) {
-            //if an object has move,it's not an exception. Just no move is associated with this object
+        if (moveModel == null) {
+            //if an object has no move,it's not an exception. Just no move is associated with this object
             return new SingleObjectResponse<>(new PositionGetDTO()).getResponse();
         }
         else {
-            PositionModel position = moveLogic.getPosition(uri);
+            PositionModel position = moveLogic.getPosition(uri, moveModel.getUri());
 
-            if (model.getTo() == null && model.getFrom() == null && position == null) {
+            if (moveModel.getTo() == null && moveModel.getFrom() == null && position == null) {
                 throw new NotFoundURIException("No position found", uri);
             }
-            return new SingleObjectResponse<>(new PositionGetDTO(model, position)).getResponse();
+            return new SingleObjectResponse<>(new PositionGetDTO(moveModel, position)).getResponse();
         }
     }
 

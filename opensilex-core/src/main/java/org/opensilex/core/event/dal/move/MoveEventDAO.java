@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
@@ -30,8 +31,6 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URI;
@@ -82,7 +81,8 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         return sparql.getByURI(MoveModel.class, eventUri, user.getLanguage());
     }
 
-    public MoveModel fromResult(SPARQLResult result, String lang, MoveModel model) throws Exception {
+    @Override
+    protected MoveModel fromResult(SPARQLResult result, String lang, MoveModel model) throws Exception {
 
         super.fromResult(result, lang, model);
 
@@ -103,26 +103,6 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         }
 
         return model;
-    }
-
-    /**
-     *
-     * @param searchFilter, if orderBy is null then the default is by endInstant descending
-     * @return
-     * @throws Exception
-     */
-    @Override
-    public ListWithPagination<MoveModel> search(MoveSearchFilter searchFilter) throws Exception {
-        return searchMoveEvents(
-                new URI(searchFilter.getTarget()),
-                searchFilter.getDescriptionPattern(),
-                searchFilter.getStart(),
-                searchFilter.getEnd(),
-                searchFilter.getAfterEnd(),
-                searchFilter.getOrderByList(),
-                searchFilter.getPage(),
-                searchFilter.getPageSize()
-        );
     }
 
     @Override
@@ -187,7 +167,23 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
     //#endregion
 
-    //#region PRIVATE METHODS
+    //#region PROTECTED/PRIVATE METHODS
+
+    @Override
+    protected void appendAllFilters(SelectBuilder select, MoveSearchFilter filter) throws Exception {
+        super.appendAllFilters(select, filter);
+        ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+        ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
+        appendTimeAfterFilter(eventGraphGroupElem, filter.getAfterEnd());
+        if (CollectionUtils.isEmpty(filter.getOrderByList())) {
+            select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
+        }
+    }
+
+    @Override
+    protected Map<String, WhereHandler> getCustomHandlerForFields(MoveSearchFilter filter) throws Exception {
+        return null;
+    }
 
     /**
      *
@@ -203,45 +199,6 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
         }
     }
 
-    /**
-     *
-     * Private method used by the overridden search method
-     */
-    private ListWithPagination<MoveModel> searchMoveEvents(
-            URI target,
-            String descriptionPattern,
-            OffsetDateTime start, OffsetDateTime end, OffsetDateTime endAfter,
-            List<OrderBy> orderByList,
-            Integer page, Integer pageSize) throws Exception {
-
-        this.updateOrderByList(orderByList);
-
-        return sparql.searchWithPagination(
-                graph,
-                MoveModel.class,
-                null,
-                (select -> {
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, graph);
-
-                    // description is an optional field, so the filtering must be done outside of the OPTIONAL
-                    appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
-
-                    appendTargetEqFilter(eventGraphGroupElem, target.toString(), orderByList);
-                    appendTimeFilter(eventGraphGroupElem, start, end);
-                    appendTimeAfterFilter(eventGraphGroupElem, endAfter);
-
-                    if (CollectionUtils.isEmpty(orderByList)) {
-                        select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
-                    }
-                }),
-                null,
-                (result -> fromResult(result, null, new MoveModel())),
-                orderByList,
-                page,
-                pageSize
-        );
-    }
     //#endregion
 
 }

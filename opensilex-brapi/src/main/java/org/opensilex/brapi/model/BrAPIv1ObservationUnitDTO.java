@@ -394,7 +394,7 @@ public class BrAPIv1ObservationUnitDTO {
             }
         } else if (moveEventLogic.countForTarget(model.getUri()) >= 1){
             MoveModel moveModel = moveEventLogic.getLastMoveEvent(model.getUri());
-            PositionModel movePosition = moveEventLogic.getPosition(model.getUri());
+            PositionModel movePosition = moveEventLogic.getPosition(model.getUri(), moveModel.getUri());
 
             if (Objects.nonNull(movePosition)){
                 //if the Object has a move with a geometry take its centroid coordinates as long/lat

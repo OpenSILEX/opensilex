@@ -69,7 +69,7 @@ public class LocationsAPI extends FaidareCall {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
         Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityDAO, organizationDAO);

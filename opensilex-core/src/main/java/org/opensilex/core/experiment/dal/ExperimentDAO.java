@@ -552,7 +552,7 @@ public class ExperimentDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
         if (!organizationUriFilter.isEmpty()) {

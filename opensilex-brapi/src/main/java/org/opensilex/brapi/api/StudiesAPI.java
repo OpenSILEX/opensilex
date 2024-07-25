@@ -205,7 +205,7 @@ public class StudiesAPI extends BrapiCall {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organisationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
@@ -319,7 +319,7 @@ public class StudiesAPI extends BrapiCall {
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);

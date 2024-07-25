@@ -18,7 +18,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -234,11 +233,11 @@ public class OrganizationSPARQLHelper {
      * </ul>
      *
      * Please note that you will need to fetch the organizations the user has access to first. The recommended way of doing
-     * that is by calling {@link OrganizationDAO#search(String, List, AccountModel)}.
+     * that is by calling {@link OrganizationDAO#search(OrganizationSearchFilter)}.
      *
      * @param where The where clause (can be added to a SELECT or ADD query for example)
      * @param siteURIVar The Var representing the URI of the site
-     * @param userOrganizations The list of organizations the user has access to. Must be retrieved by calling {@link OrganizationDAO#search(String, List, AccountModel)} first.
+     * @param userOrganizations The list of organizations the user has access to. Must be retrieved by calling {@link OrganizationDAO#search(OrganizationSearchFilter)} first.
      * @param userURI The URI of the user
      */
     public void addSiteAccessClause(WhereClause<?> where, Var siteURIVar, Collection<URI> userOrganizations, URI userURI) {
@@ -276,12 +275,12 @@ public class OrganizationSPARQLHelper {
      * </ul>
      *
      * Please note that you will need to fetch the organizations and sites the user has access to first. The recommended
-     * way of doing that is by calling {@link OrganizationDAO#search(String, List, AccountModel)} and {@link SiteDAO#search(SiteSearchFilter)}.
+     * way of doing that is by calling {@link OrganizationDAO#search(OrganizationSearchFilter)} and {@link SiteDAO#search(SiteSearchFilter, List<URI>)}.
      *
      * @param where The where clause (can be added to a SELECT or ADD query for example)
      * @param facilityURIVar The Var representing the URI of the facility
-     * @param userOrganizations The list of organizations the user has access to. Must be retrieved by calling {@link OrganizationDAO#search(String, List, AccountModel)} first.
-     * @param userSites The list of sites the user has access to. Must be retrieved by calling {@link SiteDAO#search(SiteSearchFilter)} first.
+     * @param userOrganizations The list of organizations the user has access to. Must be retrieved by calling {@link OrganizationDAO#search(OrganizationSearchFilter)} first.
+     * @param userSites The list of sites the user has access to. Must be retrieved by calling {@link SiteDAO#search(SiteSearchFilter, List<URI>)} first.
      * @param userURI The URI of the user
      */
     public void addFacilityAccessClause(WhereClause<?> where, Var facilityURIVar, Collection<URI> userOrganizations, Collection<URI> userSites, URI userURI) throws Exception {

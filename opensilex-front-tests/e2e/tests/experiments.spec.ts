@@ -18,8 +18,8 @@ test('experiment visualisation', async ({ page }) => {
 
 
   // Clicking on Scientific Organization link
-    const scientificOrgLink = page.getByRole('link', { name: '  Scientific Organization' });
-    await expect(scientificOrgLink).toBeVisible({ timeout: 20000 }); 
+    const scientificOrgLink = page.getByTestId('component.menu.scientific-organisation');
+    await expect(scientificOrgLink).toBeVisible({ timeout: 20000 });
     await scientificOrgLink.click();
 
 
@@ -87,12 +87,15 @@ test('experiment visualisation', async ({ page }) => {
  
 
   // Clicking on visualisation button
-    const visualizeButton = page.getByRole('button', { name: 'Visualize' });
-    await expect(visualizeButton).toBeVisible({ timeout: 20000 });
+    // const visualizeButton = page.getByRole('button', { name: 'Visualize' });
+    // await expect(visualizeButton).toBeVisible({ timeout: 20000 });
+    await page.waitForTimeout(5000);
+    const visualizeButton = page.getByText('Visualize').locator('..');
     await visualizeButton.click();
 
 
   // Graphic container must be visible
+    await page.waitForTimeout(5000);
     const graph = page.locator('.graphContainer'); 
     await expect(graph).toBeVisible({ timeout: 20000 });
 });

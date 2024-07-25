@@ -10,6 +10,7 @@
         :successMessage="successMessage"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
+        data-testid="deviceModalForm"
     ></opensilex-ModalForm>
 </template>
 

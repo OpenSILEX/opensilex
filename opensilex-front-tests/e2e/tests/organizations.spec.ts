@@ -72,25 +72,22 @@ test('CRUD of an organization facility', async ({ page }) => {
     const elementName = 'TestAuto';
     
     // Target the URI link and click her
-    // pas besoin de remonter au <a> ? direct clic sur la span de testauto ?
-    
-    const elementLink = page.locator(`text=${elementName}`).locator('..');
-    await expect(elementLink).toBeVisible({ timeout: 20000});
-    await elementLink.click();
+      const elementLink = page.locator(`text=${elementName}`).locator('..');
+      await expect(elementLink).toBeVisible({ timeout: 20000});
+      await elementLink.click();
     
     // Expect to be on facility details page
-    const facilityDetailPage = page.locator('.facilityDescription');
-    await expect(facilityDetailPage).toBeVisible({ timeout: 20000});
-    
+      const facilityDetailPage = page.locator('.facilityDescription');
+      await expect(facilityDetailPage).toBeVisible({ timeout: 20000});
     
     // Go back to the organizations list
-    const returnToOrganizationsButton = page.locator('.back-button');
-    await expect(returnToOrganizationsButton).toBeVisible({ timeout: 20000 });
-    await returnToOrganizationsButton.click();
+      const returnToOrganizationsButton = page.locator('.back-button');
+      await expect(returnToOrganizationsButton).toBeVisible({ timeout: 20000 });
+      await returnToOrganizationsButton.click();
     
     // Select again the same organization
-    await expect(organization).toBeVisible({ timeout: 20000 });
-    await organization.click();
+      await expect(organization).toBeVisible({ timeout: 20000 });
+      await organization.click();
     
 
   // Target the line containing the facility to update / delet
@@ -107,7 +104,7 @@ test('CRUD of an organization facility', async ({ page }) => {
     await expect(updateButton).toBeVisible( { timeout: 20000});
     await updateButton.click();
 
-  // Update facility adress : 
+  // Update facility adress
     await page.waitForTimeout(5000); // necessary because cant use toBeVisible on checkbox pseudo-elements (::before ::after)
     const updateFacilityAdressCheckbox = page.getByTestId('facility-adress-checkbox');
     await updateFacilityAdressCheckbox.dispatchEvent("click");

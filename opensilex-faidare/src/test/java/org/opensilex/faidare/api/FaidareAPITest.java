@@ -76,7 +76,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         FileStorageService fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         AccountModel user = sparql.search(AccountModel.class, null).get(0);
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         PersonDAO personDAO = new PersonDAO(sparql);
         ProjectDAO projectDAO = new ProjectDAO(sparql);

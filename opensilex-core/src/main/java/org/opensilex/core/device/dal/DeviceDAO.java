@@ -495,7 +495,7 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                OrganizationDAO orgaDAO = new OrganizationDAO(sparql, nosql);
+                OrganizationDAO orgaDAO = new OrganizationDAO(sparql);
                 FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
                 facility = infraDAO.get(facilityUri, currentUser);
             }

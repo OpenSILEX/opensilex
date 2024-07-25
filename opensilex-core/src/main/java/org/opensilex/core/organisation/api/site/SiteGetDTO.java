@@ -10,11 +10,15 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.security.account.api.AccountGetDTO;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

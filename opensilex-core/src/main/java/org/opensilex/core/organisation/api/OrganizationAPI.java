@@ -9,7 +9,6 @@ import io.swagger.annotations.*;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -62,9 +61,6 @@ public class OrganizationAPI {
     @Inject
     private SPARQLService sparql;
 
-    @Inject
-    private MongoDBService nosql;
-
     @CurrentUser
     AccountModel currentUser;
 
@@ -86,7 +82,7 @@ public class OrganizationAPI {
             @ApiParam("Organisation description") @Valid OrganizationCreationDTO dto
     ) throws Exception {
         try {
-            OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+            OrganizationDAO dao = new OrganizationDAO(sparql);
             OrganizationModel model = dto.newModel();
             model.setPublisher(currentUser.getUri());
 
@@ -112,7 +108,7 @@ public class OrganizationAPI {
     public Response getOrganization(
             @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
         OrganizationModel model = dao.get(uri, currentUser);
         OrganizationGetDTO dto = OrganizationGetDTO.getDTOFromModel(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -138,7 +134,7 @@ public class OrganizationAPI {
     public Response deleteOrganization(
             @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -155,7 +151,7 @@ public class OrganizationAPI {
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
 
         List<OrganizationModel> organizations = dao.search(new OrganizationSearchFilter()
                 .setNameFilter(pattern)
@@ -182,7 +178,7 @@ public class OrganizationAPI {
             @ApiParam("Organisation description")
             @Valid OrganizationUpdateDTO dto
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
 
         OrganizationModel organization = dao.update(dto.newModel(), currentUser);
         Response response = new ObjectUriResponse(Response.Status.OK, organization.getUri()).getResponse();

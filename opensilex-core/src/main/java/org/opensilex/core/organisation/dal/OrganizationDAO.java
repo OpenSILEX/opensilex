@@ -20,7 +20,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -46,7 +45,6 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class OrganizationDAO {
 
     protected final SPARQLService sparql;
-    protected final MongoDBService nosql;
     protected final OrganizationSPARQLHelper organizationSPARQLHelper;
 
     /**
@@ -62,9 +60,8 @@ public class OrganizationDAO {
         userOrganizationCache.invalidateAll();
     }
 
-    public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
+    public OrganizationDAO(SPARQLService sparql) throws Exception {
         this.sparql = sparql;
-        this.nosql = nosql;
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }
@@ -258,6 +255,13 @@ public class OrganizationDAO {
         validateOrganizationAccess(uri, user);
 
         return sparql.getByURI(OrganizationModel.class, uri, user.getLanguage());
+    }
+
+    public List<OrganizationModel> getByURIs(List<URI> uris, String lang) throws Exception {
+        return sparql.getListByURIs(
+                OrganizationModel.class,
+                uris,
+                lang);
     }
 
     /**

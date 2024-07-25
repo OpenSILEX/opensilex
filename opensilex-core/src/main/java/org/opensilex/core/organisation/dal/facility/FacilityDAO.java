@@ -22,11 +22,11 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
+import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
@@ -61,7 +61,7 @@ public class FacilityDAO {
     private final GeospatialDAO geospatialDAO;
 
     private final OrganizationDAO organizationDAO;
-    private final SiteDAO siteDAO;
+    private final SiteLogic siteLogic;
     private final URI geometryGraphUri;
 
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
@@ -72,7 +72,7 @@ public class FacilityDAO {
         this.geocodingService = new OpenStreetMapGeocodingService();
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = organizationDAO;
-        this.siteDAO = new SiteDAO(sparql, nosql, organizationDAO);
+        this.siteLogic = new SiteLogic(sparql,nosql);
         this.geometryGraphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
@@ -220,7 +220,7 @@ public class FacilityDAO {
                         .collect(Collectors.toList());
 
         List<URI> userSites = filter.getUser().isAdmin() ? null :
-                siteDAO.search(new SiteSearchFilter()
+                siteLogic.search(new SiteSearchFilter()
                                 .setUser(filter.getUser())
                                 .setOrganizations(filter.getOrganizations())
                                 .setUserOrganizations(userOrganizations)
@@ -372,7 +372,7 @@ public class FacilityDAO {
                         .stream().map(SPARQLResourceModel::getUri)
                         .collect(Collectors.toList());
 
-        final List<URI> userSites = siteDAO.search(new SiteSearchFilter()
+        final List<URI> userSites = siteLogic.search(new SiteSearchFilter()
                             .setUser(accountModel)
                             .setUserOrganizations(userOrganizations)
                             .setSkipUserOrganizationFetch(true))
@@ -409,7 +409,7 @@ public class FacilityDAO {
 
         List<SiteModel> siteModelList = facilityModel.getSites().stream().map(site -> {
             try {
-                return this.siteDAO.get(site.getUri(), user);
+                return this.siteLogic.get(site.getUri(), user);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -417,7 +417,7 @@ public class FacilityDAO {
 
         for (SiteModel siteModel : siteModelList) {
             if (siteModel.getAddress() != null) {
-                SiteDAO.assertEqualsFacilityAndSiteAddresses(siteModel, facilityModel);
+                SiteLogic.assertEqualsFacilityAndSiteAddresses(siteModel, facilityModel);
             }
         }
     }

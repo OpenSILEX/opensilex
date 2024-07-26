@@ -97,6 +97,9 @@ public class DataValidation {
         deviceByUri = new PatriciaTrie<>();
     }
 
+    /**
+     * Validate the input models and return validation results
+     */
     public DataPostInsert validate() throws Exception {
         DataPostInsert postInsert = new DataPostInsert();
         collectValidation();

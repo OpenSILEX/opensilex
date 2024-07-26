@@ -14,12 +14,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * An object which store
+ * An object which store information which are useful for running post data-insert actions
+ * @author rcolin
  */
 public class DataPostInsert {
 
     Map<URI, Set<URI>> variableToDevices;
 
-    public DataPostInsert() {
-    }
 }

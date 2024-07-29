@@ -115,9 +115,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             }
         }
 
+        check(models, true);
+
         if(validationOnly){
-            check(models, true);
-            return models;
+            return  models;
         }
 
         List<MoveNosqlModel> noSqlModels = new ArrayList<>();

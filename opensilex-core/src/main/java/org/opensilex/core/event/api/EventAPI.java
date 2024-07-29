@@ -123,7 +123,7 @@ public class EventAPI {
             EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
 
             List<EventModel> models = getEventModels(dtoList, logic);
-            models = logic.create(models, true);
+            models = logic.create(models, false);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();

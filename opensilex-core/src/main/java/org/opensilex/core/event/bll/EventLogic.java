@@ -88,11 +88,10 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
      * @throws Exception if validation fails
      */
     public List<T> create(List<T> models, boolean validationOnly) throws Exception {
-        if(validationOnly){
-            check(models, true);
-            return models;
+        check(models, true);
+        if(!validationOnly){
+            models.forEach(model -> model.setPublisher(currentUser.getUri()));
         }
-        models.forEach(model -> model.setPublisher(currentUser.getUri()));
         return dao.create(models);
     }
 

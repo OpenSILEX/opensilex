@@ -107,20 +107,22 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     @Override
-    public List<MoveModel> create(List<MoveModel> models, boolean doValidate) throws Exception {
+    public List<MoveModel> create(List<MoveModel> models, boolean validationOnly) throws Exception {
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         for (var move : models) {
             if (move.getFrom() != null && move.getTo() == null) {
                 throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
             }
         }
-        List<MoveNosqlModel> noSqlModels = new ArrayList<>();
 
-        if(doValidate){
+        if(validationOnly){
             check(models, true);
+            return models;
         }
 
-        // build streams of sparql and no models from main model stream
+        List<MoveNosqlModel> noSqlModels = new ArrayList<>();
+
+        // build nosql models
         for (MoveModel model : models) {
 
             URI uri = model.getUri();

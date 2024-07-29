@@ -378,7 +378,7 @@ public class EventAPI {
         try {
             MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
-            models = logic.create(models, true);
+            models = logic.create(models, false);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();

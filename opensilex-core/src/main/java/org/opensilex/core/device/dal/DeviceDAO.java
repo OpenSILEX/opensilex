@@ -17,7 +17,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
@@ -83,7 +83,7 @@ public class DeviceDAO {
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI prop = SPARQLDeserializers.formatURI(relation.getProperty());
-                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
+                if (!ontologyDAO.validateThenAddObjectRelationValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
@@ -465,14 +465,15 @@ public class DeviceDAO {
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        MoveModel moveEvent = moveDAO.getLastMoveAfter(deviceURI, null);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+
+        MoveModel moveEvent = moveLogic.getLastMoveAfter(deviceURI, null);
 
         FacilityModel facility = null;
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
-            var positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveLogic.getPositionsHistory(
                     deviceURI,
                     null,
                     null,

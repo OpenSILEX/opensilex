@@ -158,6 +158,20 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
+    public T get(ClientSession session, URI uri, Bson projection) throws NoSQLInvalidURIException {
+        Objects.requireNonNull(uri);
+
+        T instance = session == null ?
+                collection.find(eq(idField(), uri)).projection(projection).first() :
+                collection.find(session, eq(idField(), uri)).projection(projection).first();
+
+        if (instance == null) {
+            throw new NoSQLInvalidURIException(uri);
+        }
+        return instance;
+    }
+
+    @Override
     public List<T> findByUris(@NotNull Stream<URI> uris, int size) {
         Objects.requireNonNull(uris);
         if (size <= 0) {

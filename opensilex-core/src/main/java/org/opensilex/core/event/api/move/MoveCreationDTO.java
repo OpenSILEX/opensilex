@@ -10,7 +10,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 
 import java.net.URI;
 import java.util.List;
@@ -72,14 +72,14 @@ public class MoveCreationDTO extends EventCreationDTO {
             model.setTo(toModel);
         }
 
-        MoveEventNoSqlModel noSqlModel = toNoSqlModel();
+        MoveNosqlModel noSqlModel = toNoSqlModel();
         if(noSqlModel != null){
             model.setNoSqlModel(noSqlModel);
         }
         return model;
     }
 
-    public MoveEventNoSqlModel toNoSqlModel() {
+    public MoveNosqlModel toNoSqlModel() {
 
         if (CollectionUtils.isEmpty(targetsPositions)) {
             return null;
@@ -89,7 +89,7 @@ public class MoveCreationDTO extends EventCreationDTO {
                 .map(TargetPositionCreationDTO::toModel)
                 .collect(Collectors.toList());
 
-        MoveEventNoSqlModel moveNoSql = new MoveEventNoSqlModel();
+        MoveNosqlModel moveNoSql = new MoveNosqlModel();
         moveNoSql.setTargetPositions(itemPositions);
         return moveNoSql;
     }

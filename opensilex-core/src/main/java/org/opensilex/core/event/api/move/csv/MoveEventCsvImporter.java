@@ -8,7 +8,7 @@ import org.locationtech.jts.io.ParseException;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -68,7 +68,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         // then fill move specific properties
 
         boolean anyMoveFieldNonNull = false;
-        MoveEventNoSqlModel noSqlModel = new MoveEventNoSqlModel();
+        MoveNosqlModel noSqlModel = new MoveNosqlModel();
 
         // parse from and to properties
         String from = row[colIndex.getAndIncrement()];

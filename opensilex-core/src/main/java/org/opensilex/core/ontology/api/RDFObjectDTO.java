@@ -6,7 +6,6 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -19,7 +18,6 @@ import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -96,7 +94,7 @@ public class RDFObjectDTO {
     public static void validatePropertiesAndAddToObject(URI contextUri, ClassModel classModel, SPARQLResourceModel object, List<RDFObjectRelationDTO> relations, OntologyDAO ontologyDAO) throws URISyntaxException {
         for (RDFObjectRelationDTO relation : relations) {
             URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
-            if (!ontologyDAO.validateObjectValue(contextUri, classModel, propertyShortURI, relation.getValue(), object)) {
+            if (!ontologyDAO.validateThenAddObjectRelationValue(contextUri, classModel, propertyShortURI, relation.getValue(), object)) {
                 throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
             }
         }

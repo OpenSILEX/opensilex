@@ -13,9 +13,8 @@ import org.opensilex.brapi.model.*;
 import org.opensilex.brapi.responses.*;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
@@ -323,7 +322,7 @@ public class StudiesAPI extends BrapiCall {
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventDAO moveEventDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         GeospatialDAO geospatialDAO = new GeospatialDAO(nosql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
@@ -346,7 +345,7 @@ public class StudiesAPI extends BrapiCall {
                         dataDAO,
                         xpDao.get(studyDbId, currentUser),
                         ontologyDAO,
-                        moveEventDAO,
+                        moveLogic,
                         geospatialDAO,
                         germplasmDAO,
                         sparql);

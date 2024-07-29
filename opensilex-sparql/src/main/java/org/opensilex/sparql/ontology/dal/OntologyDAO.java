@@ -420,11 +420,16 @@ public final class OntologyDAO {
     }
 
     /**
-     *
      * Validates the relation, then adds it to the object.
-     * TODO Rename this function ??
+     *
+     * @param graph that relation applies in.
+     * @param model Model of class required to identify restrictions
+     * @param propertyURI Uri of the property
+     * @param value of property for object, can be null
+     * @param object to modify if valid
+     * @return true if valid triple, false otherwise
      */
-    public boolean validateObjectValue(
+    public boolean validateThenAddObjectRelationValue(
             URI graph,
             ClassModel model,
             URI propertyURI,

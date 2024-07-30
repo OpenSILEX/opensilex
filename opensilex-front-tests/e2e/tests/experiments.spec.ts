@@ -13,6 +13,17 @@ test.beforeEach(async ({ page }, testInfo) => {
 test('experiment visualisation', async ({ page }) => {
   await expect(page).toHaveURL('http://localhost:8080/app');
 
+  // Clicking on language options dropdown
+    const dropdownButton = page.locator('#__BVID__31__BV_toggle_');
+    await dropdownButton.click();
+
+  // Clicking on first option (english)
+    const dropdownMenu = page.locator('.dropdown-menu.show');
+    await expect(dropdownMenu).toBeVisible({ timeout: 20000 });
+    const firstLanguageOption = dropdownMenu.locator('li').first();
+    await firstLanguageOption.click();
+
+
   // Clicking on global menu button
     await page.locator('#menu-container').getByRole('button').click();
 

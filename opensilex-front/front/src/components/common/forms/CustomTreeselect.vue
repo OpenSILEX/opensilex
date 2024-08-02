@@ -1,7 +1,6 @@
 <template>
   <treeselect
     ref="treeref"
-    v-bind="$attrs"
     v-bind:class="{
     'multiselect-action': actionHandler,
     'multiselect-view': viewHandler, // class if viewHandler = function
@@ -15,6 +14,7 @@
     :load-options="loadOptions"
     :options="options || internalOption"
     :multiple="multiple"
+    :disabled="disabled"
     :show-count="showCount"
     :limit="limit"
     :clearable="true"
@@ -111,6 +111,9 @@ export default class CustomTreeselect extends Vue {
     default: false,
   })
   showCount;
+
+  @Prop()
+  disabled: boolean;
 
   @Prop({
     type: Function,

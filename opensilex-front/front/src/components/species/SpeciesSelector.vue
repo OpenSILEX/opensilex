@@ -34,7 +34,7 @@ export default class SpeciesSelector extends Vue {
 
   refreshKey = 0;
 
-  @PropSync("species")
+  @PropSync("selected")
   speciesURI;
 
   @Prop({

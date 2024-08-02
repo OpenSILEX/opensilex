@@ -7,6 +7,10 @@
     :searchMethod="searchEntities"
     :itemLoadingMethod="loadEntities"
     :placeholder="placeholder"
+    :conversionMethod="conversionMethod"
+    :actionHandler="actionHandler"
+    :required="required"
+    :helpMessage="helpMessage"
     noResultsText="component.entity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -31,7 +35,7 @@ export default class EntitySelector extends Vue {
   pageSize = 10;
   page = 0;
 
-  @PropSync("entity")
+  @PropSync("selected")
   entityURI;
 
   @Prop()
@@ -39,6 +43,18 @@ export default class EntitySelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  required;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  helpMessage;
+
+  @Prop()
+  conversionMethod;
 
   @Prop()
   sharedResourceInstance?: string;

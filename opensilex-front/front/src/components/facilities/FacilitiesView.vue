@@ -301,7 +301,7 @@ export default class FacilitiesView extends Vue {
 
 .scrollable-container {
     width: 100%;
-    height: 600px;
+    max-height: 285px;
     overflow-y: auto; /* Enables vertical scrolling */
 }
 

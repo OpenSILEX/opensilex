@@ -92,6 +92,11 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
+
+        //A move can exist that does not have any positions, if the noSqlModel does not exist then return our Move instead of throwing an error
+        if(!noSqlDao.exists(clientSession, uri)) {
+            return model;
+        }
         MoveNosqlModel noSqlModel = noSqlDao.get(clientSession, uri);
         if (noSqlModel != null) {
             noSqlModel.setUri(uri);

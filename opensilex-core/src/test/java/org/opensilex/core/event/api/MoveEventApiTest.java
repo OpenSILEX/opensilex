@@ -11,12 +11,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.*;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.integration.test.ServiceDescription;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -35,16 +38,17 @@ import static org.junit.Assert.*;
 
 public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
-    public String path = EventAPI.MOVE_PATH;
+    public static String path = EventAPI.MOVE_PATH;
 
-    public String getByUriPath = path + "/{uri}";
-    public String createPath = path;
-    public String updatePath = path ;
-    public String deletePath = path+ "/{uri}";
+    public static String getByUriPath = path + "/{uri}";
+    public static String getByUriListPath = path + "/by_uris";
+    public static String createPath = path;
+    public static String updatePath = path ;
+    public static String deletePath = path+ "/{uri}";
 
-    public String positionPath = PositionAPI.PATH;
-    public String getPositionPath = positionPath + "/{uri}";
-    public String getPositionHistoryPath = positionPath + "/history";
+    public static String positionPath = PositionAPI.PATH;
+    public static String getPositionPath = positionPath + "/{uri}";
+    public static String getPositionHistoryPath = positionPath + "/history";
 
     private FacilityModel facilityA;
     private FacilityModel facilityB;
@@ -58,6 +62,24 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     private List<FacilityModel> fromFacilities;
     private List<FacilityModel> toFacilities;
     private final static int nbMoveMax = 10;
+
+    private static final ServiceDescription create;
+    private static final ServiceDescription getByUriList;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    EventAPI.class.getMethod("createMoves", List.class),
+                    path
+            );
+            getByUriList = new ServiceDescription(
+                    EventAPI.class.getMethod("getMoveEventByUris", List.class),
+                    getByUriListPath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Before
     public void createFacilities() throws Exception {
@@ -122,9 +144,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     }
 
-
-    private MoveCreationDTO getCreationDto() {
-
+    private MoveCreationDTO getCreationDtoWithoutPosition() {
         MoveCreationDTO dto = new MoveCreationDTO();
         dto.setDescription("A test event");
         dto.setIsInstant(false);
@@ -140,6 +160,12 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         dto.setFrom(facilityA.getUri());
         dto.setTo(facilityB.getUri());
+
+        return dto;
+    }
+
+    private MoveCreationDTO getCreationDto() {
+        var dto = getCreationDtoWithoutPosition();
 
         // first position
         PositionCreationDTO k2Summit = new PositionCreationDTO();
@@ -284,7 +310,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertNull(dtoFromDb.getTargetsPositions());
     }
 
-//    @Test
+    @Test
     public void testGetByUri() throws Exception {
 
         MoveCreationDTO creationDTO = getCreationDto();
@@ -301,6 +327,55 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertNotNull(dtoFromDb);
 
         testEquals(dtoFromDb,creationDTO);
+    }
+
+    @Test
+    public void testGetListByUri() throws Exception {
+        // This move MUST NOT be returned by the service
+        var creationDto1 = getCreationDto();
+        // This move MUST be returned by the service with its position information
+        var creationDto2 = getCreationDto();
+        // This move MUST be returned by the service even if its position information is non existant
+        var creationDto3 = getCreationDtoWithoutPosition();
+
+        var uriList = new UserCallBuilder(create)
+                .setBody(List.of(creationDto1, creationDto2, creationDto3))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<URI>>() {})
+                .getDeserializedResponse();
+
+        var uri1 = uriList.getResult().get(0);
+        var uri2 = uriList.getResult().get(1);
+        var uri3 = uriList.getResult().get(2);
+
+        // Retrieve the moves 2 and 3
+        var result23 = new UserCallBuilder(getByUriList)
+                .addParam("uris", List.of(uri2, uri3))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
+                .getDeserializedResponse();
+
+        // The service MUST return the moves 2 and 3
+        assertEquals(2, result23.getResult().size());
+        assertTrue(result23.getResult().stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)));
+        assertTrue(result23.getResult().stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)));
+
+        var result2 = result23.getResult().stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)).findFirst()
+                .orElseThrow();
+        var result3 = result23.getResult().stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)).findFirst()
+                .orElseThrow();
+
+        // Move 2 MUST have its position information. Move 3 MUST NOT have any position information.
+        assertNotNull(result2.getTargetsPositions());
+        assertEquals(2, result2.getTargetsPositions().size());
+        assertEquals("A", result2.getTargetsPositions().get(0).getPosition().getX());
+        assertNull(result3.getTargetsPositions());
+
+        // Both moves MUST have their metadata
+        assertNotNull(result2.getPublisher());
+        assertEquals(SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL, result2.getPublisher().getEmail());
+        assertNotNull(result3.getPublisher());
+        assertEquals(SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL, result3.getPublisher().getEmail());
     }
 
     private void testEquals(MoveGetDTO dtoFromDb, MoveCreationDTO creationDTO){

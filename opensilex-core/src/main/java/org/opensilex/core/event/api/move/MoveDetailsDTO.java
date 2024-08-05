@@ -21,6 +21,13 @@ public class MoveDetailsDTO extends MoveGetDTO{
 
     private List<RDFObjectRelationDTO> relations;
 
+    /**
+     * Public constructor necessary for deserialization (e.g. for deserializing responses in automatic API tests)
+     */
+    public MoveDetailsDTO() {
+
+    }
+
     public MoveDetailsDTO(MoveModel model) throws URISyntaxException, JsonProcessingException {
         super(model);
 

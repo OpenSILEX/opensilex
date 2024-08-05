@@ -82,6 +82,11 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
     }
 
     @Override
+    public List<MoveModel> getList(List<URI> uris, AccountModel user) throws Exception {
+        return sparql.getListByURIs(MoveModel.class, uris, user.getLanguage());
+    }
+
+    @Override
     protected MoveModel fromResult(SPARQLResult result, String lang, MoveModel model) throws Exception {
 
         super.fromResult(result, lang, model);

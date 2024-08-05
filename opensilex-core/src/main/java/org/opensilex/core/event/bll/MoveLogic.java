@@ -27,6 +27,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -88,7 +89,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public MoveModel get(URI uri) throws Exception {
-        MoveModel model = (MoveModel)(dao.get(uri, currentUser));
+        MoveModel model = dao.get(uri, currentUser);
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
@@ -98,6 +99,18 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             model.setNoSqlModel(noSqlModel);
         }
         return model;
+    }
+
+    public List<MoveModel> getList(List<URI> uriList) throws Exception {
+        var modelList = dao.getList(uriList, currentUser);
+        var noSqlModelMap = noSqlDao.getMoveEventNoSqlModelMap(uriList);
+        for (var model : modelList) {
+            var noSqlModel = noSqlModelMap.get(SPARQLDeserializers.formatURI(model.getUri()));
+            if (noSqlModel != null) {
+                model.setNoSqlModel(noSqlModel);
+            }
+        }
+        return modelList;
     }
 
     @Override

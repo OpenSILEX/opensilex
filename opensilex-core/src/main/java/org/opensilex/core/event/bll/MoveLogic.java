@@ -153,6 +153,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
 
         Objects.requireNonNull(uri);
+        if(!noSqlDao.exists(clientSession, uri)){
+            return null;
+        }
 
         Bson projection = Projections.fields(excludeId());
 

@@ -8,6 +8,7 @@ package org.opensilex.nosql.mongodb.service.v2;
 
 import com.mongodb.*;
 import com.mongodb.client.*;
+import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import org.apache.commons.lang3.StringUtils;
@@ -284,6 +285,16 @@ public class MongoDBServiceV2 extends BaseService {
         }
         // Register index
         indexes.forEach((indexKeys, indexOptions) -> indexRegister.computeIfAbsent(collectionName, (newKey) -> new HashMap<>()).putIfAbsent(indexKeys, indexOptions));
+    }
+
+    public void registerCollection(String collectionName) {
+        Objects.requireNonNull(collectionName);
+        if(StringUtils.isEmpty(collectionName)){
+            throw new IllegalArgumentException("collectionName is null or empty");
+        }
+        if (!getDatabase().listCollectionNames().into(new HashSet<>()).contains(collectionName)) {
+            getDatabase().createCollection(collectionName);
+        }
     }
 
     public void createIndexes(){

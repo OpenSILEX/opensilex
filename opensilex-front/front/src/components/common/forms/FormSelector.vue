@@ -102,7 +102,6 @@ export default class FormSelector extends Vue {
   totalCount = 0;
   resultCount = 0;
   resultLimit = 10;
-  flat: boolean = true;
   //#endregion
 
   //#region Refs
@@ -121,9 +120,6 @@ export default class FormSelector extends Vue {
 
   @Prop()
   multiple;
-
-  @Prop()
-  disabled;
 
   @Prop()
   itemLoadingMethod;

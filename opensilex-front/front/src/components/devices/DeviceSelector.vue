@@ -1,6 +1,6 @@
 <template>
     <div v-if="renderComponent">
-        <opensilex-FormSelector v-if="!isModalSearch"
+        <opensilex-FormSelector
             ref="deviceSelector"
             :label="label"
             placeholder="DeviceSelector.placeholder"
@@ -18,26 +18,6 @@
             :showCount="true"
             @keyup.enter.native="onEnter"
         ></opensilex-FormSelector>
-
-        <opensilex-SelectForm v-else
-          ref="deviceSelector"
-          :label="label"
-          placeholder="DeviceSelector.placeholder"
-          noResultsText="DeviceSelector.no-results-text"
-          :selected.sync="deviceURIs"
-          :multiple="multiple"
-          :required="required"
-          :searchMethod="search"
-          :itemLoadingMethod="load"
-          :conversionMethod="dtoToSelectNode"
-          :key="lang"
-          @clear="$emit('clear')"
-          @select="$emit('select')"
-          @deselect="$emit('deselect')"
-          :showCount="true"
-          @keyup.enter.native="onEnter"
-          @loadMoreItems="loadMoreItems"
-        ></opensilex-SelectForm>
     </div>
 </template>
 
@@ -74,10 +54,6 @@ export default class DeviceSelector extends Vue {
 
   @Prop({default: "component.menu.devices"})
   label;
-
-    //this condition has been added until the selectForm modal is refactored
-    @Prop({default: false})
-    isModalSearch;
 
   @Watch("type")
   onTypeChange() {
@@ -149,15 +125,6 @@ export default class DeviceSelector extends Vue {
   onEnter() {
     this.$emit("handlingEnterKey")
   }
-
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.deviceSelector.refresh();
-    this.$nextTick(() => {
-        this.deviceSelector.openTreeselect();
-    })
-  }
-
 }
 </script>
 

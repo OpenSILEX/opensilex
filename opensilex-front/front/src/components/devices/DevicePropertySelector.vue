@@ -6,7 +6,6 @@
       :multiple="property.is_list"
       :required="property.is_required"
       :type="property.target_property"
-      :isModalSearch="true"
   ></opensilex-DeviceSelector>
 </template>
 

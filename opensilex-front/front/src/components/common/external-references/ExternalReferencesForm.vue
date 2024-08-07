@@ -37,14 +37,14 @@
                         </div>
                         <div class="col">
                              <opensilex-FilterField :fullWidth="true">
-                                <opensilex-SelectForm
+                                <opensilex-FormSelector
                                 label="component.skos.relation"
                                 helpMessage="component.skos.relation-help"
                                 placeholder="component.skos.no-relation"
                                 :selected.sync="currentRelation"
                                 :options="options"
                                 :requiredBlue="true"
-                                ></opensilex-SelectForm>
+                                ></opensilex-FormSelector>
                             </opensilex-FilterField>
                              <!-- URI -->
                             <opensilex-FilterField :fullWidth="true">

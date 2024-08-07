@@ -23,7 +23,7 @@
                 <!-- Entity -->
                 <div class="col-lg-6" id="v-step-entity">
                     <opensilex-EntitySelector
-                        ref="entitySelectForm"
+                        ref="entitySelector"
                         label="VariableView.entity"
                         placeholder="VariableForm.entity-placeholder"
                         helpMessage="VariableForm.entity-help"
@@ -47,7 +47,7 @@
                 <!-- Entity of interest -->
                 <div class="col-lg-6" id="v-step-interestEntity">
                     <opensilex-InterestEntitySelector
-                        ref="interestEntitySelectForm"
+                        ref="interestEntitySelector"
                         label="VariableForm.interestEntity-label"
                         placeholder="VariableForm.interestEntity-placeholder"
                         :selected.sync="form.entity_of_interest"
@@ -70,7 +70,7 @@
                 <!-- Characteristic -->
                 <div class="col-lg-6" id="v-step-characteristic"> 
                     <opensilex-CharacteristicSelector
-                        ref="characteristicSelectForm"
+                        ref="characteristicSelector"
                         label="VariableView.characteristic"
                         placeholder="VariableForm.characteristic-placeholder"
                         :selected.sync="form.characteristic"
@@ -105,7 +105,7 @@
                 <!-- Method -->
                 <div class="col-lg-6" id="v-step-method">
                     <opensilex-MethodSelector
-                        ref="methodSelectForm"
+                        ref="methodSelector"
                         label="VariableView.method"
                         placeholder="VariableForm.method-placeholder"
                         :multiple="false"
@@ -275,6 +275,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import VueI18n from "vue-i18n";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class VariableForm extends Vue {
@@ -301,10 +302,10 @@ export default class VariableForm extends Vue {
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelectForm") entitySelectForm!: SelectForm;
-    @Ref("interestEntitySelectForm") interestEntitySelectForm!: any;
-    @Ref("characteristicSelectForm") characteristicSelectForm!: any;
-    @Ref("methodSelectForm") methodSelectForm!: any;
+    @Ref("entitySelector") entitySelector!: FormSelector;
+    @Ref("interestEntitySelector") interestEntitySelector!: any;
+    @Ref("characteristicSelector") characteristicSelector!: any;
+    @Ref("methodSelector") methodSelector!: any;
     @Ref("unitSelectForm") unitSelectForm!: any;
 
     @Ref("entityForm") readonly entityForm!: any;
@@ -512,7 +513,7 @@ export default class VariableForm extends Vue {
 
     setLoadedEntity(created: EntityCreationDTO) {
         this.form.entity = created.uri;
-        this.entitySelectForm.select({id: created.uri, label: created.name});
+        this.entitySelector.select({id: created.uri, label: created.name});
     }
 
     searchInterestEntities(name: string, page, pageSize){
@@ -539,7 +540,7 @@ export default class VariableForm extends Vue {
 
     setLoadedInterestEntity(created: InterestEntityCreationDTO) {
         this.form.entity_of_interest = created.uri;
-        this.interestEntitySelectForm.select({id: created.uri, label: created.name});
+        this.interestEntitySelector.select({id: created.uri, label: created.name});
     }
     
     searchCharacteristics(name: string, page, pageSize){
@@ -566,7 +567,7 @@ export default class VariableForm extends Vue {
 
     setLoadedCharacteristic(created: CharacteristicCreationDTO) {
         this.form.characteristic = created.uri;
-        this.characteristicSelectForm.select({id: created.uri, label: created.name});
+        this.characteristicSelector.select({id: created.uri, label: created.name});
     }
 
     searchMethods(name: string, page, pageSize){
@@ -593,7 +594,7 @@ export default class VariableForm extends Vue {
 
     setLoadedMethod(created: MethodCreationDTO) {
         this.form.method = created.uri;
-        this.methodSelectForm.select({id: created.uri, label: created.name});
+        this.methodSelector.select({id: created.uri, label: created.name});
     }
 
     searchUnits(name: string ,page, pageSize){

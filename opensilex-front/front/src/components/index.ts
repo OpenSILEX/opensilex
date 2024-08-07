@@ -753,8 +753,6 @@ components["opensilex-ImageSingle"] = ImageSingle;
 
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
-import VisuForm from './visualization/VisuForm.vue';
-components["opensilex-VisuForm"] = VisuForm;
 import VisuImageGrid from './visualization/VisuImageGrid.vue';
 components["opensilex-VisuImageGrid"] = VisuImageGrid;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';

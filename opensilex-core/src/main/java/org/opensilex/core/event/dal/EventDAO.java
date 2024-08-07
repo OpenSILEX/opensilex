@@ -161,7 +161,9 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         return sparql.loadByURI(graph, clazz, uri, user.getLanguage());
     }
 
-
+    public List<T> getList(List<URI> uris, AccountModel user) throws Exception {
+        return sparql.getListByURIs(clazz, uris, user.getLanguage());
+    }
 
     /**
      *

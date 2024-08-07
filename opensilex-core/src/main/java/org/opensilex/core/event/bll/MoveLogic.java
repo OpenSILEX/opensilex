@@ -320,6 +320,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
         );
 
+        if(!noSqlDao.exists(clientSession, moveURI)) {
+            return null;
+        }
+
         MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
 
         if (moveNoSqlModel==null || moveNoSqlModel.getTargetPositions().isEmpty()) {

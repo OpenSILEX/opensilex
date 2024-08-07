@@ -19,9 +19,8 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFileDaoV2;
-import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
@@ -346,7 +345,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         results.add(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
         results.add(LogsDAO.LOGS_COLLECTION_NAME);
         results.add(MetricDAO.METRICS_COLLECTION);
-        results.add(MoveEventDAO.MOVE_COLLECTION_NAME);
+        results.add(MoveEventNoSqlDao.COLLECTION_NAME);
         results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
 
         return results;

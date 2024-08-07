@@ -3,6 +3,7 @@ package org.opensilex.core.event.api.csv;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class EventCsvImporter extends AbstractCsvImporter<EventModel> {
 
-    private final EventDAO<EventModel> eventDao;
+    private final EventDAO<EventModel, EventSearchFilter> eventDao;
 
     /**
      * @param sparql     SPARQL service
@@ -45,7 +46,7 @@ public class EventCsvImporter extends AbstractCsvImporter<EventModel> {
         Objects.requireNonNull(user);
         Objects.requireNonNull(mongoDB);
 
-        eventDao = new EventDAO<>(sparql, mongoDB);
+        eventDao = new EventDAO<>(sparql, mongoDB, EventModel.class);
 
     }
 

@@ -10,7 +10,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.api.facility.FacilityNamedDTO;
 import org.opensilex.core.position.api.TargetPositionGetDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class MoveGetDTO extends EventGetDTO {
             to = new FacilityNamedDTO(model.getTo());
         }
 
-        MoveEventNoSqlModel moveEventNoSqlModel = model.getNoSqlModel();
+        MoveNosqlModel moveEventNoSqlModel = model.getNoSqlModel();
         if(moveEventNoSqlModel == null){
             return;
         }

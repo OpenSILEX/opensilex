@@ -13,7 +13,7 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -316,7 +316,7 @@ public class BrAPIv1ObservationUnitDTO {
             DataDAO dataDAO, 
             ExperimentModel experimentModel, 
             OntologyDAO ontologyDAO,
-            MoveEventDAO moveEventDAO,
+            MoveLogic moveEventLogic,
             GeospatialDAO geospatialDAO,
             GermplasmDAO germplasmDAO,
             SPARQLService sparql
@@ -392,9 +392,9 @@ public class BrAPIv1ObservationUnitDTO {
                 observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
                 observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
             }
-        } else if (moveEventDAO.countMoves(model.getUri()) >= 1){
-            MoveModel moveModel = moveEventDAO.getLastMoveEvent(model.getUri());
-            PositionModel movePosition = moveEventDAO.getPosition(model.getUri(), moveModel.getUri());
+        } else if (moveEventLogic.countForTarget(model.getUri()) >= 1){
+            MoveModel moveModel = moveEventLogic.getLastMoveEvent(model.getUri());
+            PositionModel movePosition = moveEventLogic.getPosition(model.getUri(), moveModel.getUri());
 
             if (Objects.nonNull(movePosition)){
                 //if the Object has a move with a geometry take its centroid coordinates as long/lat

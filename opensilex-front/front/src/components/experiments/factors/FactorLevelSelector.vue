@@ -1,23 +1,11 @@
 <template>
   <div v-if="!disabled">
-    <opensilex-SelectForm
-      v-if="experimentURI"
+    <opensilex-FormSelector
       :label="label"
       :selected.sync="internalValue"
       :multiple="multiple"
       :required="required"
       :optionsLoadingMethod="loadFactorLevels"
-      :disableBranchNodes="true"
-      placeholder="FactorLevelSelector.placeholder"
-      @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
-    
-    <opensilex-FormSelector
-      v-else
-      :label="label"
-      :selected.sync="internalValue"
-      :multiple="multiple"
-      :required="required"
       :searchMethod="searchFactorLevels"
       :conversionMethod="convertDetail"
       :disableBranchNodes="true"

@@ -5,6 +5,7 @@
     :label="label"
     :placeholder="placeholder"
     :selected.sync="variablesURI"
+    :selectedInJsonFormat="this.editMode ? variablesAsSelectableItems : null"
     :experiment="experiment"
     :objects="objects"
     :devices="devices"
@@ -13,7 +14,7 @@
     :multiple="true"
     :maximumSelectedItems="maximumSelectedRows"
     :withAssociatedData="withAssociatedData"
-    :limit="1"
+    :limit="4"
     @clear="refreshVariableSelector"
     @select="select"
     @deselect="deselect"
@@ -28,16 +29,25 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse"
+import {SelectableItem} from '../../common/forms/SelectForm.vue';
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class VariableSelectorWithFilter extends Vue {
   $opensilex: any;
 
-  @Ref("variableSelector") readonly variableSelector!: any;
+  @Ref("variableSelector") readonly variableSelector!: SelectForm;
 
   @PropSync("variables")
   variablesURI;
+
+  //Needed if elements were already present to correctly show their labels
+  @PropSync("variablesWithLabels")
+  variablesAsSelectableItems: Array<SelectableItem>;
+
+  //To say if some elements can already be present when we open this selector
+  @Prop()
+  editMode: boolean;
 
   @Prop()
   placeholder;
@@ -73,6 +83,11 @@ export default class VariableSelectorWithFilter extends Vue {
 
   onValidate(value) {
     this.$emit("validate", value);
+  }
+
+  //Function to load in the already present variables if this is the first time we are opening this selector
+  setVariableSelectorToFirstTimeOpen(){
+    this.variableSelector.setSelectorToFirstTimeOpen();
   }
 
   refreshVariableSelector() {

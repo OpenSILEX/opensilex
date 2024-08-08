@@ -22,7 +22,6 @@
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import SelectForm, {SelectableItem} from '../common/forms/SelectForm.vue';
-import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component

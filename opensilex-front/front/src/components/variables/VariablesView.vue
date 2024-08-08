@@ -448,7 +448,6 @@ export default class VariablesView extends Vue {
         }
         copy.variables = variables_uris;
       }
-      console.debug("FUCK fUCK FUCK, ", {updateDto : (copy as VariablesGroupUpdateDTO), variableModels : new_variable_list});
       return {updateDto : (copy as VariablesGroupUpdateDTO), variableModels : new_variable_list};
     }
 

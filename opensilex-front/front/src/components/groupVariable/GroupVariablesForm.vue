@@ -79,7 +79,6 @@ export default class GroupVariablesForm extends Vue {
   variablesWithLabels : Array<NamedResourceDTOVariableModel> = [];
 
   setSelectorsToFirstTimeOpenAndSetLabels(variablesWithLabels){
-    console.debug("going by here you wanker", variablesWithLabels);
     this.variablesSelectorRef.setVariableSelectorToFirstTimeOpen();
     this.variablesWithLabels = variablesWithLabels;
   }

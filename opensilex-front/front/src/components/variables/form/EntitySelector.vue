@@ -26,7 +26,6 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {EntityGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
 import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component

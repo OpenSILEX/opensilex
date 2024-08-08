@@ -154,7 +154,7 @@
                 <!-- Unit -->
                 <div class="col-lg-6" id="v-step-unit">
                     <opensilex-UnitSelector
-                        ref="unitSelectForm"
+                        ref="unitSelector"
                         label="VariableView.unit"
                         placeholder="VariableForm.unit-placeholder"
                         :multiple="false"
@@ -272,7 +272,6 @@ import {
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import VueI18n from "vue-i18n";
 import FormSelector from "../../common/forms/FormSelector.vue";
@@ -306,7 +305,7 @@ export default class VariableForm extends Vue {
     @Ref("interestEntitySelector") interestEntitySelector!: any;
     @Ref("characteristicSelector") characteristicSelector!: any;
     @Ref("methodSelector") methodSelector!: any;
-    @Ref("unitSelectForm") unitSelectForm!: any;
+    @Ref("unitSelector") unitSelector!: any;
 
     @Ref("entityForm") readonly entityForm!: any;
     @Ref("interestEntityForm") readonly interestEntityForm!: any;
@@ -620,7 +619,7 @@ export default class VariableForm extends Vue {
 
     setLoadedUnit(created: UnitCreationDTO) {
         this.form.unit = created.uri;
-        this.unitSelectForm.select({id: created.uri, label: created.name});
+        this.unitSelector.select({id: created.uri, label: created.name});
     }
 
     objectToSelectNode(dto) {

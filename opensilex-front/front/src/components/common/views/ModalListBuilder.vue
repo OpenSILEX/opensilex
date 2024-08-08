@@ -115,7 +115,7 @@ import { BModal } from 'bootstrap-vue';
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import { Prop, Ref } from 'vue-property-decorator';
-import { SelectableItem } from '../forms/SelectForm.vue';
+import { SelectableItem } from '../forms/FormSelector.vue';
 
 interface LineData{
   id: string

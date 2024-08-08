@@ -51,7 +51,7 @@
           :disabled="criteriaOperatorIsNotMeasured()"
           :required="false"
       ></opensilex-DateTimeForm>
-      <opensilex-SelectForm
+      <opensilex-FormSelector
           v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.BOOLEAN)"
           label="CriteriaSearchModalLine.value"
           :selected.sync="lineData.value"
@@ -61,7 +61,7 @@
           :required="false"
           :disabled="criteriaOperatorIsNotMeasured()"
           :options="trueFalseList"
-      ></opensilex-SelectForm>
+      ></opensilex-FormSelector>
       <!--  Disabledfilter if no variable has been selected or if the variable's datatype isn't registered yet, non disabled string filter if variable's datatype is deciaml or int -->
       <opensilex-InputForm
           v-else
@@ -81,7 +81,7 @@ import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import Xsd from "../../ontologies/Xsd";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import { SingleCriteriaAttributesUsedInFront } from './CriteriaSearchModalCreator.vue';
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";

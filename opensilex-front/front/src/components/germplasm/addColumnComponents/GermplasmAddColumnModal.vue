@@ -40,7 +40,7 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from 'vue-property-decorator';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
+import { SelectableItem } from 'src/components/common/forms/FormSelector.vue';
 import InputForm from "@/components/common/forms/InputForm.vue";
 import GermplasmControlledAttributesSelector from './GermplasmControlledAttributesSelector.vue';
 

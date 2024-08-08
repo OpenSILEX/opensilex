@@ -23,7 +23,7 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import { Prop, PropSync, Ref } from 'vue-property-decorator';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import ModalListBuilder from "../common/views/ModalListBuilder.vue";
 
 interface SingleCriteriaDTO {

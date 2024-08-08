@@ -99,13 +99,13 @@
             </span>
 
             <!-- Form -->
-            <opensilex-SelectForm
+            <opensilex-FormSelector
               v-if="connectionOptions.length > 1"
               :label="$t('LoginComponent.selectLoginMethod')"
               :options="connectionOptions"
               :selected.sync="loginMethod"
               @select="loginMethodChange"
-            ></opensilex-SelectForm>
+            ></opensilex-FormSelector>
             <ValidationObserver v-if="loginMethod == 'password'" ref="validatorRef">
               <b-form @submit.prevent="onLogin" class="fullmodal-form">
                 <b-form-group id="login-group" required>

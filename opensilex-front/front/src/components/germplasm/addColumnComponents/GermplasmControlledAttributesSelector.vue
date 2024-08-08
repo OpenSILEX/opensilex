@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-      ref="selectForm"
+  <opensilex-FormSelector
+      ref="formSelector"
       label="GermplasmControlledAttributesSelector.label"
       :selected.sync="propertyURI"
       :multiple="false"
@@ -11,7 +11,7 @@
       placeholder="GermplasmControlledAttributesSelector.placeholder"
       @clear="$emit('clear')"
       @select="$emit('select')"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 
@@ -23,13 +23,13 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {Prop, PropSync, Ref} from 'vue-property-decorator';
-import {SelectableItem} from "../../../components/common/forms/SelectForm.vue";
-import SelectForm from "@/components/common/forms/SelectForm.vue";
+import {SelectableItem} from "../../../components/common/forms/FormSelector.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 @Component({})
 export default class GermplasmControlledAttributesSelector extends Vue {
 
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   $opensilex: OpenSilexVuePlugin;
 

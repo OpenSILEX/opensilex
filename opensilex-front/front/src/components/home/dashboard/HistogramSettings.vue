@@ -115,13 +115,13 @@
     </b-form-group>
 
     <!-- Devices selection filter -->
-    <opensilex-SelectForm
+    <opensilex-FormSelector
       :multiple="true"
       :selected.sync="selectedDevices"
       :disabled="selectorAccess"
       :options="devicesLoaded"
       placeholder="HistogramSettings.select_devices"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 
     <!-- footer buttons -->
     <template v-slot:modal-footer> 
@@ -163,8 +163,7 @@ export default class HistogramSettings extends Vue {
   dSelected = null;
   selectedDevices : Array<{text: string; value: string}> = [];
   selectAll : Boolean = true;
-  selectorAccess : Boolean = true; // indicate prop "disabled" of selectform = true
-  
+  selectorAccess : Boolean = true; // indicate prop "disabled" of formSelector = true
   variable: VariableDetailsDTO;
 
   @PropSync("period")

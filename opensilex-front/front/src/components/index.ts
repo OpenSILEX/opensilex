@@ -179,6 +179,8 @@ components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 
+import ModalFormSelector from './common/forms/ModalFormSelector.vue'
+components["opensilex-ModalFormSelector"] = ModalFormSelector;
 import FormSelector from './common/forms/FormSelector.vue'
 components["opensilex-FormSelector"] = FormSelector;
 import CustomTreeselect from './common/forms/CustomTreeselect.vue'

@@ -57,7 +57,7 @@
               <!-- Scientific objects -->
               <div>
               <opensilex-FilterField halfWidth="true">
-                <opensilex-SelectForm
+                <opensilex-ModalFormSelector
                   ref="soSelector"
                   label="DataView.filter.scientificObjects"
                   placeholder="DataView.filter.scientificObjects-placeholder"
@@ -72,7 +72,7 @@
                   @onClose="refreshProvComponent"
                   :limit="1"
                   class="searchFilter"
-                ></opensilex-SelectForm>
+                ></opensilex-ModalFormSelector>
               </opensilex-FilterField>
               </div>
 

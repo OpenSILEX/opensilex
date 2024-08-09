@@ -88,7 +88,7 @@ export interface SelectableItem {
 }
 
 @Component
-export default class SelectForm extends Vue {
+export default class ModalFormSelector extends Vue {
 
   //#region Plugins and Datas
     $opensilex: any;
@@ -719,26 +719,7 @@ i.more-results-info {
   overflow: hidden;
   width: 170px;
 }
-
-.refineSearchMessage {
-  font-weight: bold;
-  background-color: #00A28C;
-  color: #FFFFFF ;
-  cursor:pointer;
-}
 </style>
 
 <i18n>
-en:
-  SelectorForm:
-    refineSearchMessage: "{0} / {1} results displayed, please refine your search or click HERE to display all results"
-    showDetails : "Show details"
-    hideDetails : "Hide details"
-  
-fr:
-  SelectorForm:
-    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche ou de cliquer ICI pour afficher tous les résultats"
-    showDetails : "Afficher les détails"
-    hideDetails : "Masquer les détails"
-
 </i18n>

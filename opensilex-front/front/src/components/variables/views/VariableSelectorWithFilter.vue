@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-ModalFormSelector
     ref="variableSelector"
     modalComponent="opensilex-VariableModalList"
     :label="label"
@@ -20,7 +20,7 @@
     @onValidate="onValidate"
     @hide='$emit("hideSelector")'
     @shown='$emit("shownSelector")'
-  ></opensilex-SelectForm>
+  ></opensilex-ModalFormSelector>
 </template>
 
 <script lang="ts">

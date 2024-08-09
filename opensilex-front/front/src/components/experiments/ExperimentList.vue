@@ -102,7 +102,7 @@
               <!-- Projects -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-ModalFormSelector
                     ref="projectSelector"
                     label="ExperimentList.filter-project"
                     placeholder="ExperimentList.filter-project-placeholder"
@@ -115,7 +115,7 @@
                     :limit="1"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-ModalFormSelector>
                 </opensilex-FilterField>
               </div>
 

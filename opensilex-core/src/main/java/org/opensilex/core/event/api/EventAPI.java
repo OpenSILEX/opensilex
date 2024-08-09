@@ -9,7 +9,6 @@ package org.opensilex.core.event.api;
 
 import com.apicatalog.jsonld.StringUtils;
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -528,6 +527,50 @@ public class EventAPI {
             dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
         return new SingleObjectResponse<>(dto).getResponse();
+    }
+
+    @GET
+    @Path(MOVE_PATH_PREFIX + "/by_uris")
+    @ApiOperation("Get a list of moves with all positional information")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Moves retrieved", response = MoveDetailsDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMoveEventByUris(
+            @ApiParam(value = "Move URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        var logic = new MoveLogic(sparql, nosql, currentUser);
+        var accountDao = new AccountDAO(sparql);
+        //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
+        //      to all services that need it.
+        var publisherMap = new HashMap<URI, AccountModel>();
+        var dtoList = new ArrayList<MoveDetailsDTO>(uris.size());
+
+        for (var model : logic.getList(uris)) {
+            var dto = new MoveDetailsDTO(model);
+            if (model.getPublisher() != null) {
+                publisherMap.put(model.getPublisher(), null);
+                dto.setPublisher(new UserGetDTO());
+                dto.getPublisher().setUri(model.getPublisher());
+            }
+            dtoList.add(dto);
+        }
+
+        //@todo Find a better way to fetch accounts for a list of model. Propagate this to all APIs.
+        for (var publisher : accountDao.getList((publisherMap.keySet()))) {
+            publisherMap.put(publisher.getUri(), publisher);
+        }
+
+        for (var dto : dtoList) {
+            if (dto.getPublisher() != null) {
+                dto.setPublisher(UserGetDTO.fromModel(publisherMap.get(dto.getPublisher().getUri())));
+            }
+        }
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @DELETE

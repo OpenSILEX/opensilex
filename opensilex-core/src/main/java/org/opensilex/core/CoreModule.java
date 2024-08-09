@@ -201,12 +201,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         mongoDBServiceV2.registerIndexes(DeviceAPI.METADATA_COLLECTION_NAME, MetaDataDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(ProvenanceDaoV2.PROVENANCE_COLLECTION_NAME, DataFileDaoV2.getIndexes());
-
-        // Ensure the creation of the move collection. This is necessary because the automatic creation of the
-        // collection fails if the first operation performed on a non-existing collection concerns multiple documents
-        // (e.g. when creating multiple documents at the same time).
-        // @todo Maybe find a better architecture to ensure that all collections that are needed by OpenSILEX are
-        //       correctly created at install or startup...
         mongoDBServiceV2.registerCollection(MoveEventNoSqlDao.COLLECTION_NAME);
 
         // Ensure index creation on application start (only in production)

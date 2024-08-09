@@ -1,6 +1,6 @@
 <template>
-    <opensilex-SelectForm
-        ref="selectForm"
+    <opensilex-FormSelector
+        ref="formSelector"
         :label="label"
         :selected.sync="variablesURI"
         :multiple="multiple"
@@ -15,7 +15,7 @@
         @clear="$emit('clear')"
         @select="select"
         @deselect="deselect"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

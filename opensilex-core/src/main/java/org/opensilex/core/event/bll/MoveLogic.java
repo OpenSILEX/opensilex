@@ -27,6 +27,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -88,9 +89,14 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public MoveModel get(URI uri) throws Exception {
-        MoveModel model = (MoveModel)(dao.get(uri, currentUser));
+        MoveModel model = dao.get(uri, currentUser);
         if (model == null) {
             throw new NotFoundURIException(uri);
+        }
+
+        //A move can exist that does not have any positions, if the noSqlModel does not exist then return our Move instead of throwing an error
+        if(!noSqlDao.exists(clientSession, uri)) {
+            return model;
         }
         MoveNosqlModel noSqlModel = noSqlDao.get(clientSession, uri);
         if (noSqlModel != null) {
@@ -98,6 +104,18 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             model.setNoSqlModel(noSqlModel);
         }
         return model;
+    }
+
+    public List<MoveModel> getList(List<URI> uriList) throws Exception {
+        var modelList = dao.getList(uriList, currentUser);
+        var noSqlModelMap = noSqlDao.getMoveEventNoSqlModelMap(uriList);
+        for (var model : modelList) {
+            var noSqlModel = noSqlModelMap.get(SPARQLDeserializers.formatURI(model.getUri()));
+            if (noSqlModel != null) {
+                model.setNoSqlModel(noSqlModel);
+            }
+        }
+        return modelList;
     }
 
     @Override
@@ -148,6 +166,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
 
         Objects.requireNonNull(uri);
+        if(!noSqlDao.exists(clientSession, uri)){
+            return null;
+        }
 
         Bson projection = Projections.fields(excludeId());
 
@@ -298,6 +319,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 excludeId(), // don't fetch position _id field
                 getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
         );
+
+        if(!noSqlDao.exists(clientSession, moveURI)) {
+            return null;
+        }
 
         MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
 

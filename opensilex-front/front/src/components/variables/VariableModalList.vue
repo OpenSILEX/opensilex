@@ -70,6 +70,10 @@ export default class VariableModalList extends Vue {
     this.variableSelection.onItemUnselected(row);
   }
 
+  setInitiallySelectedItems(initiallySelectedItems:Array<any>){
+    this.variableSelection.setInitiallySelectedItems(initiallySelectedItems);
+  }
+
   show() {
     this.$emit("shown");
     this.modalRef.show();

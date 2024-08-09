@@ -63,7 +63,7 @@ export default class GroupGermplasmForm extends Vue {
 
   @Ref("germplasmSelector") readonly germplasmSelector!: GermplasmSelectorWithFilter;
 
-    germplasmsWithLabels : Array<GermplasmGetAllDTO>;
+  germplasmsWithLabels : Array<GermplasmGetAllDTO>;
 
   setSelectorsToFirstTimeOpenAndSetLabels(germplasmsWithLabels){
     this.germplasmSelector.setGermplasmSelectorToFirstTimeOpen();

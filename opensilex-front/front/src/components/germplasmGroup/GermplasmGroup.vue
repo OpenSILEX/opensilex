@@ -180,8 +180,8 @@ export default class GermplasmGroup extends Vue {
   showEditForm(uri) {
       this.service.getGermplasmGroupWithGermplasms(uri).then((http: HttpResponse<OpenSilexResponse<GermplasmGroupGetWithDetailsDTO>>) => {
       this.$nextTick(() => {
-          let updateDtoAndExtractedGermplasms = this.convertUpdateDtoAndExtractGermplasms(http.response.result);
-          this.groupGermplasmForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedGermplasms.germplasmModels);
+        let updateDtoAndExtractedGermplasms = this.convertUpdateDtoAndExtractGermplasms(http.response.result);
+        this.groupGermplasmForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedGermplasms.germplasmModels);
         this.groupGermplasmForm.showEditForm(updateDtoAndExtractedGermplasms.updateDto);
       });
     });

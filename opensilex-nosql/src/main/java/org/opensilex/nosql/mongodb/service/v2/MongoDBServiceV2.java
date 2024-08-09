@@ -287,13 +287,6 @@ public class MongoDBServiceV2 extends BaseService {
         indexes.forEach((indexKeys, indexOptions) -> indexRegister.computeIfAbsent(collectionName, (newKey) -> new HashMap<>()).putIfAbsent(indexKeys, indexOptions));
     }
 
-    /**
-     * Creates a collection if it does not already exist. This method is not very efficient because MongoDB does not
-     * provide a way to find out if a collection already exists ; we have to retrieve the list of all collections to
-     * check if the given parameter is one of them.
-     *
-     * @param collectionName
-     */
     public void registerCollection(String collectionName) {
         Objects.requireNonNull(collectionName);
         if(StringUtils.isEmpty(collectionName)){

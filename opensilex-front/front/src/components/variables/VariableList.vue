@@ -658,6 +658,10 @@ export default class VariableList extends Vue {
         this.groupVariableSelection.show();
     }
 
+    setInitiallySelectedItems(initiallySelectedItems:any){
+      this.tableRef.setInitiallySelectedItems(initiallySelectedItems);
+    }
+
     private variableGroupsList = {};
 
     loadVariablesGroupFromVariable(data) {

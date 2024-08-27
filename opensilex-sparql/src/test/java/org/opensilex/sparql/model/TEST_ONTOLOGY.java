@@ -28,6 +28,7 @@ public class TEST_ONTOLOGY {
     public static final Path DATA_FILE_PATH = Paths.get("ontologies", "test_data.ttl");
     public static final Lang DATA_FILE_FORMAT = RDFLanguages.TURTLE;
     public static final String GRAPH_SUFFIX = "test_data";
+    public static final String ANOTHER_GRAPH = "another_graph";
 
 
     public static final Path SHACL_FAIL_FILE_PATH = Paths.get("ontologies", "test_shacl_fail.ttl");
@@ -49,6 +50,8 @@ public class TEST_ONTOLOGY {
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
     public static final Resource C = Ontology.resource(NAMESPACE, "C");
     public static final Resource D = Ontology.resource(NAMESPACE, "D");
+    public static final Resource inverse = Ontology.resource(NAMESPACE, "inverse");
+    public static final Resource anotherResource = Ontology.resource(NAMESPACE, "anotherResource");
     public static final Resource Fail = Ontology.resource(NAMESPACE, "Fail");
 
     public static final Property hasRelationToA = Ontology.property(NAMESPACE, "hasRelationToA");

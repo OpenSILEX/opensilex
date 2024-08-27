@@ -232,7 +232,7 @@ class SPARQLClassQueryBuilder {
                     // if no handler found, then create and attach it to the builder
                     graphElementGroup = new ElementGroup();
                     ElementNamedGraph elementNamedGraph = new ElementNamedGraph(NodeFactory.createURI(handlerGraph), graphElementGroup);
-                    builder.getWhereHandler().getClause().addElement(elementNamedGraph);
+                    builder.getWhereHandler().getClause().addElement(new ElementOptional(elementNamedGraph));
                 }
 
                 // insert all optional element into the graph element

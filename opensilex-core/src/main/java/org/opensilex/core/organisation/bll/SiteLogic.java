@@ -1,11 +1,27 @@
+/*
+ * *****************************************************************************
+ *                         SiteLogic.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 26/07/2024 14:09
+ * Contact: alexia.chiavarino@inrae.fr
+ * *****************************************************************************
+ *
+ */
+
 package org.opensilex.core.organisation.bll;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.site.SiteAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -13,21 +29,25 @@ import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
+import javax.naming.SizeLimitExceededException;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -40,9 +60,7 @@ public class SiteLogic {
 
     private final SiteDAO siteDAO;
     private final OrganizationDAO organizationDAO;
-    private final GeospatialDAO geospatialDAO;
 
-    private final URI addressGraphURI;
     private final GeocodingService geocodingService;
 
     //#region constructor
@@ -53,9 +71,6 @@ public class SiteLogic {
 
         this.siteDAO = new SiteDAO(sparql);
         this.organizationDAO = new OrganizationDAO(sparql);
-        this.geospatialDAO = new GeospatialDAO(mongodb);
-
-        this.addressGraphURI = sparql.getDefaultGraphURI(OrganizationModel.class);
         this.geocodingService = new OpenStreetMapGeocodingService();
     }
     //#endregion
@@ -71,15 +86,27 @@ public class SiteLogic {
      * @throws Exception If any other problem occurs
      */
     public SiteModel create(SiteModel siteModel, AccountModel currentUser) throws Exception {
+
+        //Validate rdfType
+        if(siteModel.getType() != null){
+            try{
+                SPARQLModule.getOntologyStoreInstance().getClassModel(
+                        siteModel.getType(),
+                        URI.create(ORG.Site.getURI()),
+                        currentUser.getLanguage()
+                );
+            } catch (SPARQLInvalidURIException e){
+                throw new NotFoundURIException("rdfType URI not found :", siteModel.getType());
+            }
+        }
+
         if (CollectionUtils.isEmpty(siteModel.getOrganizations())) {
             throw new BadRequestException("A site must be attached to at least one organization");
         }
 
         validateSiteFacilityAddress(siteModel, currentUser);
 
-        siteModel.setPublisher(currentUser.getUri());
-
-        if (!currentUser.isAdmin()) {
+        if (Boolean.FALSE.equals(currentUser.isAdmin())) {
             List<URI> siteOrganizationUriList = siteModel.getOrganizationURIListOrEmpty();
 
             if (siteOrganizationUriList.isEmpty()) {
@@ -98,12 +125,18 @@ public class SiteLogic {
         List<OrganizationModel> organizations = organizationDAO.getByURIs(siteModel.getOrganizationURIListOrEmpty(),currentUser.getLanguage());
 
         siteModel.setOrganizations(organizations);
+        siteModel.setPublisher(currentUser.getUri());
 
-        siteDAO.create(siteModel);
+        new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session ->{
+            siteDAO.create(siteModel);
 
-        createSiteGeospatialModel(siteModel);
+            if (siteModel.getAddress() != null) {
+                createSiteLocation(session,siteModel);
+            }
+            return null;
+        });
+
         organizationDAO.invalidateCache();
-
         return siteModel;
     }
     /**
@@ -180,10 +213,22 @@ public class SiteLogic {
             throw new NotFoundException("Site URI not found : " + siteModel.getUri());
         }
 
-        updateSiteGeospatialModel(siteModel);
-        siteDAO.update(siteModel);
-        organizationDAO.invalidateCache();
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
 
+            siteDAO.update(siteModel);
+
+            if (existingModel.getAddress() != null && siteModel.getAddress() != null) {
+                updateSiteLocation(session, siteModel);
+            } else if (existingModel.getAddress() == null && siteModel.getAddress() != null) {
+                createSiteLocation(session, siteModel);
+            } else if (existingModel.getAddress() != null && siteModel.getAddress() == null) {
+                deleteSiteLocation(session, siteModel);
+            }
+
+            return null;
+        });
+
+        organizationDAO.invalidateCache();
         return siteModel;
     }
 
@@ -197,21 +242,33 @@ public class SiteLogic {
      */
     public void delete(URI uri, AccountModel currentUser) throws Exception {
         SiteModel siteModel = siteDAO.get(uri, currentUser);
-        deleteSiteGeospatialModel(siteModel);
 
-        siteDAO.delete(uri);
+        new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session ->{
+            siteDAO.delete(uri);
+            deleteSiteLocation(session, siteModel);
+            return null;
+        });
         organizationDAO.invalidateCache();
     }
 
     /**
-     * Gets the geospatial model corresponding to the given site. There is no access check in this method, so please
+     * Gets the observation model corresponding to the given site. There is no access check in this method, so please
      * make sure that the user has access to the given site by calling {@link #get(URI, AccountModel)} for example.
      *
-     * @param siteUri The URI of the site
-     * @return The geospatial model
+     * @param siteModel the site to get
+     * @return The location observation model
      */
-    public GeospatialModel getSiteGeospatialModel(URI siteUri) {
-        return geospatialDAO.getGeometryByURI(siteUri, addressGraphURI);
+    public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
+        if(siteModel.getLocationObservationCollection() != null) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            try {
+            return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
+            } catch (NoSQLInvalidURIException e) {
+                throw new NotFoundURIException("Invalid or unknown data URI ", siteModel.getLocationObservationCollection().getUri());
+            }
+        } else {
+            return new LocationObservationModel();
+        }
     }
 
     /**
@@ -242,7 +299,6 @@ public class SiteLogic {
             }
         }
     }
-
     //#endregion
 
     //#region private
@@ -286,7 +342,7 @@ public class SiteLogic {
      * @param currentUser The current user
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      */
-    protected void validateSiteFacilityAddress(SiteModel siteModel, AccountModel currentUser) throws Exception {
+    private void validateSiteFacilityAddress(SiteModel siteModel, AccountModel currentUser) throws Exception {
         if (siteModel.getFacilities() == null || siteModel.getFacilities().isEmpty() || siteModel.getAddress() == null) {
             return;
         }
@@ -304,57 +360,82 @@ public class SiteLogic {
         }
     }
 
-    protected List<URI> getListOrganizationUris(OrganizationSearchFilter filter) throws Exception {
+    private List<URI> getListOrganizationUris(OrganizationSearchFilter filter) throws Exception {
 
        return organizationDAO.search(filter)
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
     }
 
-    protected void createSiteGeospatialModel(SiteModel site) {
-        if (site.getAddress() == null) {
-            return;
+    private void createSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
+        Geometry geom = convertAddressToGeometry(siteModel);
+
+        if (geom != null) {
+            //Create the LocationObservationCollection
+            LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
+            URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(siteModel.getUri());
+            //Create the LocationObservation
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+
+            checkUniqueObservation(locationObservationCollectionUri);
+
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, locationModel);
         }
-
-        SiteAddressDTO addressDto = new SiteAddressDTO();
-        addressDto.fromModel(site.getAddress());
-
-        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
-
-        if (geom == null) {
-            return;
-        }
-
-        this.geospatialDAO.create(new GeospatialModel(site, addressGraphURI, geom));
     }
 
-    protected void updateSiteGeospatialModel(SiteModel site) throws Exception {
-        if (site.getAddress() == null) {
-            return;
+    private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
+        Geometry geom = convertAddressToGeometry(siteModel);
+
+        if (geom != null) {
+            //Update the LocationObservation
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
         }
-
-        SiteAddressDTO addressDto = new SiteAddressDTO();
-        addressDto.fromModel(site.getAddress());
-
-        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
-
-        if (geom == null) {
-            return;
-        }
-
-        this.geospatialDAO.update(new GeospatialModel(site, addressGraphURI, geom),site.getUri(),sparql.getDefaultGraphURI(SiteModel.class));
     }
 
-    private void deleteSiteGeospatialModel(SiteModel siteModel) throws Exception {
-        if (siteModel.getAddress() == null) {
+    private Geometry convertAddressToGeometry(SiteModel siteModel) {
+        SiteAddressDTO addressDto = new SiteAddressDTO();
+        addressDto.fromModel(siteModel.getAddress());
+
+        return geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+    }
+
+    private void deleteSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
+        if (siteModel.getAddress() == null && siteModel.getLocationObservationCollection() == null) {
             return;
         }
 
-        if (this.geospatialDAO.getGeometryByURI(siteModel.getUri(), addressGraphURI) != null) {
-            this.geospatialDAO.delete(siteModel.getUri(), addressGraphURI);
-        }
+        if (siteModel.getLocationObservationCollection() != null) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
-        sparql.delete(SiteAddressModel.class, siteModel.getAddress().getUri());
+            try {
+                LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
+                if (locationObservationModel != null) {
+                    locationObservationLogic.delete(session, siteModel.getLocationObservationCollection().getUri());
+                    locationObservationCollectionLogic.deleteLocationObservationCollection(siteModel.getLocationObservationCollection().getUri());
+                }
+            } catch (NoSQLInvalidURIException e) {
+                throw new NotFoundURIException("Invalid or unknown data URI ", siteModel.getLocationObservationCollection().getUri());
+            }
+
+        }
+    }
+
+    private void checkUniqueObservation(URI observationCollectionUri) throws Exception {
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+
+        try {
+            LocationObservationModel model = locationObservationLogic.getLocationObservationByURI(observationCollectionUri);
+
+            if (model != null) {
+                throw new SizeLimitExceededException("a site can have only one location observation");
+            }
+        } catch (NoSQLInvalidURIException e) {
+            // Ignore exception
+        }
     }
     //#endregion
 

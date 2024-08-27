@@ -21,6 +21,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -28,11 +29,7 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -43,12 +40,19 @@ public class SiteDAO {
 
     protected final SPARQLService sparql;
 
-    private final OrganizationSPARQLHelper organizationSPARQLHelper;
+    protected final OrganizationSPARQLHelper organizationSPARQLHelper;
 
+    //#region constructor
     public SiteDAO(SPARQLService sparql) {
         this.sparql = sparql;
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
+    }
+    //#endregion
+
+    //#region public
+    public void create(SiteModel siteModel) throws Exception {
+        sparql.create(siteModel);
     }
 
     /**
@@ -103,24 +107,18 @@ public class SiteDAO {
         return sparql.getByURI(SiteModel.class, siteUri, user.getLanguage());
     }
 
-    public boolean exists(URI siteUri) throws Exception {
-        return sparql.uriExists(SiteModel.class, siteUri);
-    }
-
     public SiteModel update(SiteModel siteModel) throws Exception {
         Node graph = sparql.getDefaultGraph(SiteModel.class);
-        siteModel.setLastUpdateDate(OffsetDateTime.now());
         sparql.update(graph, siteModel);
         return siteModel;
     }
 
-    public void create(SiteModel siteModel) throws Exception {
-        siteModel.setPublicationDate(OffsetDateTime.now());
-        sparql.create(siteModel);
-    }
-
     public void delete(URI uri) throws Exception {
         sparql.delete(SiteModel.class, uri);
+    }
+
+    public boolean exists(URI siteUri) throws SPARQLException {
+        return sparql.uriExists(SiteModel.class, siteUri);
     }
 
     /**
@@ -165,6 +163,7 @@ public class SiteDAO {
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(siteURI)));
         organizationSPARQLHelper.addSiteAccessClause(ask, uriVar, userOrganizations, currentUser.getUri());
 
-        return  sparql.executeAskQuery(ask);
+        return sparql.executeAskQuery(ask);
     }
+    //#endregion
 }

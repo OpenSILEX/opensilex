@@ -1,7 +1,9 @@
 package org.opensilex.core.organisation.dal.site;
 
 import org.apache.jena.vocabulary.ORG;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -60,6 +62,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     protected List<FacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
 
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+    public static final String OBSERVATION_COLLECTION_FIELD = "LocationObservationCollection";
 
     public SiteAddressModel getAddress() {
         return address;
@@ -91,6 +101,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
 
     public void setFacilities(List<FacilityModel> facilities) {
         this.facilities = facilities;
+    }
+
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection( LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
     }
 
     public List<URI> getOrganizationURIListOrEmpty() {

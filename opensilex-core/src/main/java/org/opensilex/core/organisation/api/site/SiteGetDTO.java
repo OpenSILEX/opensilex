@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
@@ -163,10 +165,10 @@ public class SiteGetDTO extends SiteDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(SiteModel siteModel, GeospatialModel geospatialModel) throws JsonProcessingException {
+    public void fromModelWithGeospatialInfo(SiteModel siteModel, LocationModel locationModel) throws JsonProcessingException {
         fromModel(siteModel);
-        if (geospatialModel != null) {
-            setGeometry(GeospatialDAO.geometryToGeoJson(geospatialModel.getGeometry()));
+        if (locationModel != null) {
+            setGeometry(LocationLogic.geometryToGeoJson(locationModel.getGeometry()));
         }
     }
 }

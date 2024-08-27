@@ -1,6 +1,7 @@
 package org.opensilex.core.organisation.api.site;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.OrganizationAPI;
 import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -57,6 +58,7 @@ public class SiteAPI {
     @Inject
     private SPARQLService sparql;
 
+    //TODO: waiting for MongoDBServiceV2 - FacilityDAO in SiteLogic need MongoDBService
     @Inject
     private MongoDBService nosql;
 
@@ -114,10 +116,12 @@ public class SiteAPI {
             @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
     ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+
         SiteModel model = siteLogic.get(siteUri, currentUser);
+        LocationObservationModel locationModel= siteLogic.getSiteLocationObservationModel(model);
 
         SiteGetDTO siteDto = new SiteGetDTO();
-        siteDto.fromModelWithGeospatialInfo(model, siteLogic.getSiteGeospatialModel(siteUri));
+        siteDto.fromModelWithGeospatialInfo(model, locationModel.getLocation());
 
         //@TODO : refactoring publisher check for all models (from API to Logic) - 'getPublisher' in superClass 'AbstractLogic' or 'AccountLogic' ??
         if (Objects.nonNull(model.getPublisher())){
@@ -125,7 +129,6 @@ public class SiteAPI {
         }
 
         return new SingleObjectResponse<>(siteDto).getResponse();
-
     }
 
     @GET
@@ -169,8 +172,8 @@ public class SiteAPI {
 
         try {
             SiteLogic siteLogic = new SiteLogic(sparql, nosql);
-
             SiteModel created = siteCreationDto.newModel();
+
             created = siteLogic.create(created, currentUser);
 
             return new CreatedUriResponse(created.getUri()).getResponse();

@@ -79,6 +79,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
 | 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3        |           |
 | 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
+| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b> | 1.3.0 |   |
 
 # Descriptions
 
@@ -197,6 +198,14 @@ Consequently, the migration script `UpdateOntologyContexts` removes the followin
 - `http://purl.org/dc/terms/`
 
 Additionally, it removes the `oeso-ext` graph, which has been renamed to `oeso-phis`.
+
+## org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel
+
+### Description
+This migration refactors site locations with the new location model:
+
+- In RDF4J, add ObservationCollection properties for each Site with address.
+- In MongoDB, get sites from the Geospatial collection and copy them to the new Location collection with the new model and observationCollection URI.
 
 # Create an update command (For developers)
 

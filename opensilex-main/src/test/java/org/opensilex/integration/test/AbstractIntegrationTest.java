@@ -46,6 +46,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -142,6 +143,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         public TestContainer create(URI baseUri, DeploymentContext context) {
             if (globalTestContainer == null) {
                 globalTestContainer = super.create(baseUri, context);
+                //@todo find a better way to configure this
+                java.util.logging.Logger.getLogger("org.glassfish").setLevel(Level.SEVERE);
             }
             return globalTestContainer;
         }
@@ -402,7 +405,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws UnsupportedOperationException if the HTTP method is not supported
          */
         protected Response executeRequest(Invocation.Builder requestBuilder) {
-            LOGGER.debug(String.valueOf(this));
             if(Objects.equals(httpMethod, HttpMethod.GET)) {
                 return requestBuilder.get();
             } else if(Objects.equals(httpMethod, HttpMethod.POST)) {

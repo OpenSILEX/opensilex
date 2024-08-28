@@ -273,7 +273,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            LOGGER.info("SPARQL TRANSACTION START");
+            LOGGER.debug("SPARQL TRANSACTION START");
             connection.startTransaction();
         }
         transactionLevel++;
@@ -283,7 +283,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
-            LOGGER.info("SPARQL TRANSACTION COMMIT");
+            LOGGER.debug("SPARQL TRANSACTION COMMIT");
             connection.commitTransaction();
         }
     }
@@ -292,7 +292,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
             if(ex != null){
-                LOGGER.info("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+                LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
             }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
@@ -1181,7 +1181,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         long durationMs = Duration.between(start, Instant.now()).toMillis();
-        LOGGER.info("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
+        LOGGER.debug("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
     }
 
     /**

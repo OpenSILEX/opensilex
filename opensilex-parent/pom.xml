@@ -96,7 +96,7 @@
         <mockito.version>4.3.1</mockito.version>
         <!--for ubuntu 22.04 : https://askubuntu.com/a/1403683  MongoDb has no official build for ubuntu 22.04 at the moment.
 Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
-        <embed.mongo.version>3.5.4</embed.mongo.version>
+        <embed.mongo.version>4.16.1</embed.mongo.version>
         <awaitability.version>4.2.0</awaitability.version>
 
         <!-- maven plugins versions -->

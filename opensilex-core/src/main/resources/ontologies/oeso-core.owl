@@ -145,6 +145,15 @@ OESO</rdfs:label>
      -->
 
 
+    <!-- http://www.w3.org/2002/07/owl#topObjectProperty -->
+
+    <owl:ObjectProperty rdf:about="http://www.w3.org/2002/07/owl#topObjectProperty">
+        <rdfs:label xml:lang="en">topObjectProperty</rdfs:label>
+        <rdfs:comment xml:lang="en">The object property that relates every two individuals.</rdfs:comment>
+        <rdfs:isDefinedBy rdf:resource="http://www.w3.org/2002/07/owl#"/>
+    </owl:ObjectProperty>
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">

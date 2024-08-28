@@ -36,6 +36,7 @@ public abstract class MongoDBServiceTest extends AbstractUnitTest {
     public static void setUp(){
         try{
             embedMongoClient = EmbedMongoClient.getInstance();
+            embedMongoClient.start();
             mongoDBv2 = getOpensilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
             sparql = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         }catch (IOException | InterruptedException e){

@@ -93,7 +93,7 @@ public class MongoLogger {
     }
 
     /**
-     * Write a log entry with INFO level with the following key/value :
+     * Write a log entry with DEBUG level with the following key/value :
      *
      * <ul>
      *     <li>type: the value of {@code type} param </li>
@@ -108,15 +108,15 @@ public class MongoLogger {
      */
     public Instant logOperationStart(String type, String key, Object value) {
         if (key != null) {
-            logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument, kv(key, value));
+            logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument, kv(key, value));
         } else {
-            logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument);
+            logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument);
         }
         return Instant.now();
     }
 
     /**
-     * Write a log entry with INFO level with the following key/value :
+     * Write a log entry with DEBUG level with the following key/value :
      *
      * <ul>
      *     <li>type: the value of {@code type} param </li>
@@ -134,13 +134,13 @@ public class MongoLogger {
      * @return the current {@link Instant}, pass this one to {@link #logOperationOk(String, Instant, String, Object)} method, for duration compute and write inside log
      */
     public Instant logOperationStart(String type, String key, Object value, String key2, Object value2) {
-        logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument, kv(key, value), kv(key2, value2));
+        logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_START_LOG_ARG, collectionLogArgument, kv(key, value), kv(key2, value2));
         return Instant.now();
     }
 
 
     /**
-     * Write a log entry with INFO level with the following key/value :
+     * Write a log entry with DEBUG level with the following key/value :
      * <ul>
      *     <li>type: the value of {@code type} param </li>
      *     <li>status: OK</li>
@@ -157,15 +157,15 @@ public class MongoLogger {
         long durationMs = Duration.between(start, Instant.now()).toMillis();
         if(key != null){
             if(collectionLogArgument != null){
-                logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value));
+                logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value));
             }else{
-                logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value));
+                logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value));
             }
         }else{
             if(collectionLogArgument != null) {
-                logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs));
+                logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs));
             }else{
-                logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs));
+                logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs));
             }
         }
     }
@@ -186,7 +186,7 @@ public class MongoLogger {
     }
 
     /**
-     * Write a log entry with INFO level with the following key/value :
+     * Write a log entry with DEBUG level with the following key/value :
      * <ul>
      *     <li>type: the value of {@code type} param </li>
      *     <li>status: OK</li>
@@ -205,9 +205,9 @@ public class MongoLogger {
     public void logOperationOk(String type, Instant start, String key, Object value, String key2, Object value2) {
         long durationMs = Duration.between(start, Instant.now()).toMillis();
         if(collectionLogArgument != null){
-            logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value), kv(key2, value2));
+            logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, collectionLogArgument, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value), kv(key2, value2));
         }else{
-            logger.info(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value), kv(key2, value2));
+            logger.debug(DEFAULT_MESSAGE_FORMAT, kv(LOG_TYPE_KEY, type), STATUS_OK_LOG_ARG, kv(LOG_DURATION_MS_KEY, durationMs), kv(key, value), kv(key2, value2));
         }
     }
 

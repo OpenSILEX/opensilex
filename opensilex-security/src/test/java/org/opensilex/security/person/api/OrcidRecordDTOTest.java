@@ -32,7 +32,6 @@ public class OrcidRecordDTOTest {
 
         Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
         String jsonContent = scanner.hasNext() ? scanner.next() : "";
-        System.out.println(jsonContent);
 
         JsonReader jsonReader = Json.createReader(new StringReader(jsonContent));
         JsonObject recordJsonObject = jsonReader.readObject();

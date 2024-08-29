@@ -310,10 +310,6 @@ public class DataLogic {
         return getUsedVariablesByFilter(dataSearchFilter);
     }
 
-    public Stream<VariableModel> getUsedVariablesAsStream(DataSearchFilter filter) throws Exception {
-        return getUsedVariablesByFilter(filter).stream();
-    }
-
     public void update(DataModel model) throws Exception{
         validData(Collections.singletonList(model));
         dao.update(model);
@@ -653,10 +649,7 @@ public class DataLogic {
         return validData;
     }
 
-    /**
-     * Function to remove duplicated code in {@link #getUsedVariables} and {@link #getUsedVariablesAsStream}
-     */
-    private List<VariableModel> getUsedVariablesByFilter(DataSearchFilter filter) throws Exception {
+    public List<VariableModel> getUsedVariablesByFilter(DataSearchFilter filter) throws Exception {
         Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, filter));
         String userLanguage = null;
         if(user != null){

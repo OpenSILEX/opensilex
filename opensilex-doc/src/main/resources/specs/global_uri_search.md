@@ -42,6 +42,8 @@ Scientific objects can have a same URI across multiple experiments so they will 
 - Use case #3: Inside the result box the default returned elements will be type, label, metadata and a link to details page or popup.
 - Use case #4: For elements where multiple URIs can exist (for now only Scientific Objects), the same data will be shown with an added pop-up box to select which experiment to show from
 
+> Valentin : Pour les objets scientifiques, on peut aussi imaginer simplement afficher le label global (et pas les labels par XP), et le lien vers la page de détail globale. De cette manière pas besoin de dupliquer la logique d'affichage de l'OS par expé (c'est géré par la page de détail globale)
+
 
 ## Design specifications
 

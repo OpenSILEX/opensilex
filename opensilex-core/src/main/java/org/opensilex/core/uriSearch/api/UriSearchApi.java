@@ -8,7 +8,72 @@
  * ******************************************************************************
  */
 package org.opensilex.core.uriSearch.api;
+//TODO delete unused imports
+import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.uriSearch.bll.UriSearchLogic;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.server.response.ErrorDTO;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.service.SPARQLService;
 
+import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.List;
+
+@Api("UriSearch")
+@Path("/core/uri_search")
 public class UriSearchApi {
 
+    @Inject
+    private SPARQLService sparql;
+
+    @Inject
+    private MongoDBServiceV2 nosql;
+
+    @CurrentUser
+    AccountModel currentUser;
+
+    /**
+     *
+     * @param uri
+     * @return a list of dtos containing label, type, typeLabel and metadata (publisher, published, creator) that correspond to the given uri
+     * @throws Exception
+     */
+    @GET
+    @Path("{uri}")
+    @ApiOperation("Get a list of objects that match the passed URI")
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return dto list", response = BasicMongoSparqlDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+    })
+    public Response searchByUri(
+            @ApiParam(value = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
+    ) throws Exception {
+        UriSearchLogic logic = new UriSearchLogic(sparql);
+
+        //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
+        List<BasicMongoSparqlDTO> results = logic.searchByUri(uri);
+
+        if (CollectionUtils.isEmpty(results)) {
+            return new PaginatedListResponse<>(results).getResponse();
+        } else {
+            throw new NotFoundURIException("No elements matching this URI were found : ", uri);
+        }
+    }
 }

@@ -3,12 +3,10 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator';
-import Vue from 'vue';
+import Vue, { defineComponent } from 'vue';
 
-@Component
-export default class DefaultNotFoundComponent extends Vue {
-}
+export default defineComponent({})
+
 </script>
 
 <style scoped lang="scss">

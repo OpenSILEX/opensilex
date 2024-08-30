@@ -9,23 +9,27 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 // @ts-ignore
 import { versionInfoDTO } from "opensilex-core/index";
 
-@Component
-export default class DefaultFooterComponent extends Vue {
-  $opensilex: any;
-  $store: any;
+export default defineComponent({
+    data() {
+        const versionInfo: versionInfoDTO = undefined;
+        const $store: any = undefined;
+        const $opensilex: any = undefined;
 
-  versionInfo: versionInfoDTO;
+        return {
+            $opensilex,
+            $store,
+            versionInfo
+        };
+    },
+    created() {
+        this.versionInfo = this.$opensilex.versionInfo;
+    }
+})
 
-  created() {
-    this.versionInfo = this.$opensilex.versionInfo;
-  }
-
-}
 </script>
 
 <style scoped lang="scss">

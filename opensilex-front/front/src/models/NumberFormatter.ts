@@ -6,9 +6,9 @@ import VueI18n from "vue-i18n";
  * @author Sebastien Prado
  */
 export default class NumberFormatter {
-    $i18n: VueI18n;
+    $i18n;
 
-    constructor(i18n: VueI18n) {
+    constructor(i18n) {
         this.$i18n = i18n;
     }
 

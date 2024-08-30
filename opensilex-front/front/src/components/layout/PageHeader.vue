@@ -16,34 +16,41 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent, PropType } from "vue";
 
-@Component
-export default class PageHeader extends Vue {
-  $opensilex: any;
+export default defineComponent({
+    data() {
+        const $opensilex: any = undefined;
 
-  @Prop()
-  icon;
+        return {
+            $opensilex
+        };
+    },
+    props: {
+        icon: {
+            type: Object as PropType<any>
+        },
+        title: {
+            type: Object as PropType<any>
+        },
+        description: {
+            type: Object as PropType<any>
+        },
+        isExperimentalFeature: {default: false,
+            type: Boolean
+        },
+        hasIcon: {default: true,
+            type: Boolean
+        },
+        hasImage: {default: false,
+            type: Boolean
+        },
+        imageSrc: {
+            type: String
+        }
+    }
+})
 
-  @Prop()
-  title;
-
-  @Prop()
-  description;
-
-  @Prop({default: false})
-  isExperimentalFeature: boolean;
-
-  @Prop({default: true})
-  hasIcon: boolean;
-
-  @Prop({default: false})
-  hasImage: boolean;
-
-  @Prop()
-  imageSrc: string;
-}
 </script>
 
 <style scoped lang="scss">

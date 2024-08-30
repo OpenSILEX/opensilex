@@ -41,43 +41,41 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  Model,
-  Provide,
-  PropSync
-} from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 
-@Component
-export default class PageActions extends Vue {
-  get returnTo() {
-    if (this.$store.state.previousPage.length > 0) {
-      return this.$store.state.previousPage[
-        this.$store.state.previousPage.length - 1
-      ];
-    } else {
-      return false;
+export default defineComponent({
+    computed: {
+        returnTo() {
+            if (this.$store.state.previousPage.length > 0) {
+              return this.$store.state.previousPage[
+                this.$store.state.previousPage.length - 1
+              ];
+            } else {
+              return false;
+            }
+        }
+    },
+    methods: {
+        goBack() {
+            this.$store.commit("goBack");
+        }
+    },
+    props: {
+        returnToTitle: { default: "component.pageActions.returnToTitle",
+            type: String
+        },
+        returnButton: { default: false,
+            type: Boolean
+        },
+        tabs: { default: false,
+            type: Boolean
+        },
+        small: { default: false,
+            type: Boolean
+        }
     }
-  }
+})
 
-  goBack() {
-    this.$store.commit("goBack");
-  }
-
-  @Prop({ default: "component.pageActions.returnToTitle" })
-  returnToTitle: string;
-
-  @Prop({ default: false })
-  returnButton: boolean;
-
-  @Prop({ default: false })
-  tabs: boolean;
-
-  @Prop({ default: false })
-  small: boolean;
-}
 </script>
 
 <style scoped lang="scss">

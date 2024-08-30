@@ -18,31 +18,29 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent, PropType } from "vue";
 
-@Component
-export default class Overlay extends Vue {
-  @Prop({
-    default: false,
-  })
-  show;
+export default defineComponent({
+    props: {
+        show: {
+                default: false,
+            type: Object as PropType<any>
+        },
+        noFade: {
+                default: true,
+            type: Object as PropType<any>
+        },
+        zIndex: {
+                default: 10,
+            type: Object as PropType<any>
+        },
+        fullscreen: {
+                default: false,
+            type: Object as PropType<any>
+        }
+    }
+})
 
-  @Prop({
-    default: true,
-  })
-  noFade;
-
-  @Prop({
-    default: 10,
-  })
-  zIndex;
-
-  @Prop({
-    default: false,
-  })
-  fullscreen;
-}
 </script>
 
 <style scoped lang="scss">

@@ -184,174 +184,133 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch} from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
 
 
-@Component
-export default class DefaultHeaderComponent extends Vue {
-  $i18n: any;
-  $store: any;
-  $opensilex: any;
-  $route: any;
-  $t: any;
-  icon: any;
-  title: any;
-  description: any;
+export default defineComponent({
+    data() {
+        const description: any = undefined;
+        const title: any = undefined;
+        const icon: any = undefined;
+        const $t: any = undefined;
+        const $route: any = undefined;
+        const $opensilex: any = undefined;
+        const $store: any = undefined;
+        const $i18n: any = undefined;
 
-  @Prop()
-  searchBoxIsActive: boolean;
+        return {
+          HeaderBurgerToggle : false,
+            $i18n,
+            $store,
+            $opensilex,
+            $route,
+            $t,
+            icon,
+            title,
+            description,
+            width: undefined
+        }
+    },
+    computed: {
+        user() {
+            return this.$store.state.user;
+        },
+        iconvalue() {
+            const pathicon = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
+            if (!pathicon) {
+              return ""
+            }
+            else {
+              return pathicon.icon;
+            }
+        },
+        titlevalue() {
+            let pathtitle = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
+            if (!pathtitle) {
+              return undefined
+            }
+            else {
+              return pathtitle.title;
+            }
+        },
+        descriptionevalue() {
+            let pathdescription = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
+            if (!pathdescription) {
+              return undefined
+            }
+            else {
+              return pathdescription.description;
+            }
+        },
+        language() {
+            return this.$i18n.locale;
+        },
+        languages() {
+            return Object.keys(this.$i18n.messages);
+        },
+        versionLabel(): string {
+            if (!this.$opensilex.getConfig().versionLabel) {
+                  return undefined;
+                }
 
-  /**
-   * Return the current connected user
-   */
-  get user() {
-    return this.$store.state.user;
-  }
+                return this.$t("component.header.version-label." + this.$opensilex.getConfig().versionLabel.toLowerCase())
+                    .toString();
+        },
+        versionLabelClass(): string {
+            if (!this.$opensilex.getConfig().versionLabel) {
+                  return undefined;
+                }
 
-  /**
-   * Return the section path icon
-   */
-  get iconvalue() {
-    const pathicon = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-    if (!pathicon) {
-      return ""
+                return this.$opensilex.getConfig().versionLabel.toLowerCase();
+        },
+        applicationName(): string {
+            if (!this.$opensilex.getConfig().applicationName) {
+                  return undefined;
+                }
+
+                return this.$opensilex.getConfig().applicationName;
+        }
+    },
+    created() {
+        window.addEventListener("resize", this.handleResize);
+        this.handleResize();
+    },
+    methods: {
+        setLanguage(lang: string) {
+            this.$i18n.locale = lang;
+            this.$store.commit("lang", lang);
+        },
+        logout() {
+            this.$store.commit("logout");
+        },
+        beforeDestroy() {
+            window.removeEventListener("resize", this.handleResize);
+        },
+        handleResize() {
+            const minSize = 1025;
+            if (
+              document.body.clientWidth <= minSize &&
+              (this.width == null || this.width > minSize)
+            ) {
+              this.width = document.body.clientWidth;
+              this.$store.commit("hideMenu");
+            } else if (
+              document.body.clientWidth > minSize &&
+              (this.width == null || this.width <= minSize)
+            ) {
+              this.width = document.body.clientWidth;
+              this.$store.commit("showMenu");
+            }
+        }
     }
-    else {
-      return pathicon.icon;
-    }
-  }
+})
 
-  /**
-   * Return the section path title
-   */
-  get titlevalue() {
-    let pathtitle = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-    if (!pathtitle) {
-      return undefined
-    }
-    else {
-      return pathtitle.title;
-    }
-  }
-
-  /**
-   * Return the section path description
-   */
-  get descriptionevalue() {
-    let pathdescription = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-    if (!pathdescription) {
-      return undefined
-    }
-    else {
-      return pathdescription.description;
-    }
-  }
-
-  /**
-   * Return the current i18n language
-   */
-  get language() {
-    return this.$i18n.locale;
-  }
-
-  /**
-   * Return all available languages
-   */
-  get languages() {
-    return Object.keys(this.$i18n.messages);
-  }
-
-  /**
-   * Gets the version label string
-   */
-  get versionLabel(): string {
-    if (!this.$opensilex.getConfig().versionLabel) {
-      return undefined;
-    }
-
-    return this.$t("component.header.version-label." + this.$opensilex.getConfig().versionLabel.toLowerCase())
-        .toString();
-  }
-
-  /**
-   * Gets the class to use for the version label
-   */
-  get versionLabelClass(): string {
-    if (!this.$opensilex.getConfig().versionLabel) {
-      return undefined;
-    }
-
-    return this.$opensilex.getConfig().versionLabel.toLowerCase();
-  }
-
-  /**
-   * Set the current i18n language
-   */
-  setLanguage(lang: string) {
-    this.$i18n.locale = lang;
-    this.$store.commit("lang", lang);
-  }
-
-  /**
-   * Hide the header burger at start
-   */
-  data(){
-    return {
-      HeaderBurgerToggle : false,
-    }
-  }
-
-  /**
-   * Logout the current connected user -> have to redirected to the login page
-   */
-  logout() {
-    this.$store.commit("logout");
-  }
-
-  /**
-   * Gets the name of the application to display
-   */
-  get applicationName(): string {
-    if (!this.$opensilex.getConfig().applicationName) {
-      return undefined;
-    }
-
-    return this.$opensilex.getConfig().applicationName;
-  }
-
-  width;
-
-  created() {
-    window.addEventListener("resize", this.handleResize);
-    this.handleResize();
-  }
-
-  beforeDestroy() {
-    window.removeEventListener("resize", this.handleResize);
-  }
-
-  handleResize() {
-    const minSize = 1025;
-    if (
-      document.body.clientWidth <= minSize &&
-      (this.width == null || this.width > minSize)
-    ) {
-      this.width = document.body.clientWidth;
-      this.$store.commit("hideMenu");
-    } else if (
-      document.body.clientWidth > minSize &&
-      (this.width == null || this.width <= minSize)
-    ) {
-      this.width = document.body.clientWidth;
-      this.$store.commit("showMenu");
-    }
-  }
-}
 </script>
+
+
 
 <style scoped lang="scss">
 

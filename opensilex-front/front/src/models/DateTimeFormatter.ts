@@ -20,9 +20,9 @@ const DAYS_IN_A_MONTH = DAYS_IN_A_YEAR / 12;
  * @author Valentin Rigolle
  */
 export default class DateTimeFormatter {
-    $i18n: VueI18n;
+    $i18n;
 
-    constructor(i18n: VueI18n) {
+    constructor(i18n) {
         this.$i18n = i18n;
     }
 

@@ -65,7 +65,7 @@ export default class OpenSilexVuePlugin {
     private themeConfig: ThemeConfigDTO;
 
     public $store: Store<any>;
-    public $i18n: VueI18n;
+    public $i18n;
     public $bvToast: any;
     public $dateTimeFormatter: DateTimeFormatter;
     public $numberFormatter: NumberFormatter;
@@ -77,7 +77,7 @@ export default class OpenSilexVuePlugin {
     public Time = Time;
     public Rdfs = Rdfs;
 
-    constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
+    constructor(baseApi: string, store: Store<any>, i18n) {
         this.container = new Container();
         this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);
         this.container.bind<IHttpClient>("IApiHttpClient").toConstantValue(new OpenSilexHttpClient(this));

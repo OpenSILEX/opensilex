@@ -187,8 +187,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
 import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
@@ -197,216 +196,205 @@ import { FrontConfigDTO } from "../../lib";
 import { SystemService, VersionInfoDTO } from "opensilex-core/index";
 import VueRouter from 'vue-router';
 
-@Component
-export default class DefaultLoginComponent extends Vue { 
-  service: SystemService;
-  versionInfo: VersionInfoDTO = {};
-  $store: any;
-  $router: VueRouter;
-  $t: any;
-  $i18n: any;
-  $opensilex: OpenSilexVuePlugin;
-  private langUnwatcher;
+export default defineComponent({
+    data() {
+        const $opensilex: OpenSilexVuePlugin = undefined;
+        const $i18n: any = undefined;
+        const $t: any = undefined;
+        const $router: VueRouter = undefined;
+        const $store: any = undefined;
+        const versionInfo: VersionInfoDTO = {};
+        const service: SystemService = undefined;
 
-  get form() {
-    return {
-      email: "",
-      password: ""
-    };
-  }
+        return {
+            service,
+            versionInfo,
+            $store,
+            $router,
+            $t,
+            $i18n,
+            $opensilex,
+            langUnwatcher: undefined,
+            loginMethod: "password",
+            forceRefresh: false
+        };
+    },
+    computed: {
+        form() {
+            return {
+              email: "",
+              password: ""
+            };
+        },
+        language() {
+            return this.$i18n.locale;
+        },
+        languages() {
+            return Object.keys(this.$i18n.messages);
+        },
+        user() {
+            return this.$store.state.user;
+        },
+        connectAsGuest(): boolean {
+            let config: FrontConfigDTO = this.$opensilex.getConfig();
+            if (config.connectAsGuest === true) {
+              return true;
+            } 
+            return false;
+        },
+        connectionOptions() {
+            let options = [
+                  {
+                    id: "password",
+                    label: this.$t("LoginComponent.passwordConnectionTitle")
+                  }
+                ];
 
-  /**
-   * Return the current i18n language
-   */
-  get language() {
-    return this.$i18n.locale;
-  }
+                let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
 
-  /**
-   * Return all available languages
-   */
-  get languages() {
-    return Object.keys(this.$i18n.messages);
-  }
+                if (opensilexConfig.openIDAuthenticationURI) {
+                  options.push({
+                    id: "openid",
+                    label: opensilexConfig.openIDConnectionTitle ?? this.$t("LoginComponent.defaultOpenIDConnectionTitle")
+                  });
+                }
 
-  /**
-   * Set the current i18n language
-   */
-  setLanguage(lang: string) {
-    this.$i18n.locale = lang;
-    this.$store.commit("lang", lang);
-  }
+                if (opensilexConfig.samlProxyLoginURI) {
+                  options.push({
+                    id: "shibboleth",
+                    label: opensilexConfig.samlConnectionTitle ?? this.$t("LoginComponent.defaultSAMLConnectionTitle")
+                  })
+                }
 
-  get user() {
-    return this.$store.state.user;
-  }
-
-  /**
-   * Ability to be logged as guest
-   */
-  get connectAsGuest(): boolean {
-    let config: FrontConfigDTO = this.$opensilex.getConfig();
-    if (config.connectAsGuest === true) {
-      return true;
-    } 
-    return false;
-  }
-
-  getPHISModuleVersion(){
-    for(let module_version_index in this.versionInfo.modules_version){
-      let module = this.versionInfo.modules_version[module_version_index]
-
-      console.log(module)
-      if(module.name.includes("PhisWsModule")){
-        return module.version;
-      }
-    }
-    return 'Version undefined'
-  }
-
-  loginMethod = "password";
-
-  get connectionOptions() {
-    let options = [
-      {
-        id: "password",
-        label: this.$t("LoginComponent.passwordConnectionTitle")
-      }
-    ];
-
-    let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
-
-    if (opensilexConfig.openIDAuthenticationURI) {
-      options.push({
-        id: "openid",
-        label: opensilexConfig.openIDConnectionTitle ?? this.$t("LoginComponent.defaultOpenIDConnectionTitle")
-      });
-    }
-
-    if (opensilexConfig.samlProxyLoginURI) {
-      options.push({
-        id: "shibboleth",
-        label: opensilexConfig.samlConnectionTitle ?? this.$t("LoginComponent.defaultSAMLConnectionTitle")
-      })
-    }
-
-    return options;
-  }
-
-  created() {
-    this.versionInfo = this.$opensilex.versionInfo;
-  }
-
-  loginMethodChange(loginMethod) {
-    let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
-    if (loginMethod.id === "openid") {
-      window.location.href = opensilexConfig.openIDAuthenticationURI;
-    } else if (loginMethod.id === "shibboleth") {
-      window.location.href = opensilexConfig.samlProxyLoginURI;
-    } else if (loginMethod.id === "password") {
-      this.validatorRef.reset();
-    }
-  }
-
-  isResetPassword() {
-    let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
-    return opensilexConfig.activateResetPassword;
-  }
-
-  get resetPasswordPath() {
-    return this.$router.resolve("/forgot-password").href;
-  }
-
-  static async asyncInit($opensilex: OpenSilexVuePlugin) {
-    await $opensilex.loadService("opensilex-security.AuthenticationService");
-  }
-
-  logout() {
-    this.$store.commit("logout");
-    this.$router.push("/");
-  }
-
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  forceRefresh = false;
-  onLogin() {
-    let validatorRef: any = this.validatorRef;
-    validatorRef.validate().then(isValid => {
-      if (isValid) {
-        this.$opensilex.showLoader();
-        this.$opensilex
-          .getService<AuthenticationService>(
-            "opensilex-security.AuthenticationService"
-          )
-          .authenticate({
-            identifier: this.form.email,
-            password: this.form.password
-          })
-          .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
-            let user = User.fromToken(http.response.result.token);
-            this.$opensilex.setCookieValue(user);
-            this.forceRefresh = true;
-            this.$store.commit("login", user);
-            this.$store.commit("refresh");
-          })
-          .catch(error => {
-            if (error.status == 403) {
-              console.error("Invalid credentials", error);
-              this.$opensilex.errorHandler(
-                error,
-                this.$t("component.login.errors.invalid-credentials")
-              );
-            } else {
-              this.$opensilex.errorHandler(error);
+                return options;
+        },
+        resetPasswordPath() {
+            return this.$router.resolve("/forgot-password").href;
+        },
+        validatorRef: {
+            cache: false,
+            get() {
+                return this.$refs["validatorRef"] as any;
             }
-            this.$opensilex.hideLoader();
-          });
-      }
-    });
-  }
-
-  onLoginAsGuest() {
-    this.form.email = "guest@opensilex.org";
-    this.form.password = "guest";
-    console.log("this.form", this.form)
-    this.login().then(() => {
-      this.form.email = "";
-      this.form.password = "";
-    });
-  }
-
-  login() {
-    this.$opensilex.showLoader();
-    return this.$opensilex
-      .getService<AuthenticationService>(
-        "opensilex-security.AuthenticationService"
-      )
-      .authenticate({
-        identifier: this.form.email,
-        password: this.form.password,
-      })
-      .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
-        let user = this.$opensilex.fromToken(http.response.result.token);
-        this.$opensilex.setCookieValue(user);
-        this.forceRefresh = true;
-        this.$store.commit("login", user);
-        this.$store.commit("refresh");
-      })
-      .catch((error) => {
-        if (error.status == 403) {
-          console.error("Invalid credentials", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t("component.login.errors.invalid-credentials")
-          );
-        } else {
-          this.$opensilex.errorHandler(error);
         }
-        this.$opensilex.hideLoader();
-      });
-  }
+    },
+    created() {
+        this.versionInfo = this.$opensilex.versionInfo;
+    },
+    methods: {
+        setLanguage(lang: string) {
+            this.$i18n.locale = lang;
+            this.$store.commit("lang", lang);
+        },
+        getPHISModuleVersion() {
+            for(let module_version_index in this.versionInfo.modules_version){
+                  let module = this.versionInfo.modules_version[module_version_index]
 
-}
+                  console.log(module)
+                  if(module.name.includes("PhisWsModule")){
+                    return module.version;
+                  }
+                }
+                return 'Version undefined'
+        },
+        loginMethodChange(loginMethod) {
+            let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
+            if (loginMethod.id === "openid") {
+              window.location.href = opensilexConfig.openIDAuthenticationURI;
+            } else if (loginMethod.id === "shibboleth") {
+              window.location.href = opensilexConfig.samlProxyLoginURI;
+            } else if (loginMethod.id === "password") {
+              this.validatorRef.reset();
+            }
+        },
+        isResetPassword() {
+            let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
+            return opensilexConfig.activateResetPassword;
+        },
+        async asyncInit($opensilex: OpenSilexVuePlugin) {
+            await $opensilex.loadService("opensilex-security.AuthenticationService");
+        },
+        logout() {
+            this.$store.commit("logout");
+            this.$router.push("/");
+        },
+        onLogin() {
+            let validatorRef: any = this.validatorRef;
+            validatorRef.validate().then(isValid => {
+              if (isValid) {
+                this.$opensilex.showLoader();
+                this.$opensilex
+                  .getService<AuthenticationService>(
+                    "opensilex-security.AuthenticationService"
+                  )
+                  .authenticate({
+                    identifier: this.form.email,
+                    password: this.form.password
+                  })
+                  .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
+                    let user = User.fromToken(http.response.result.token);
+                    this.$opensilex.setCookieValue(user);
+                    this.forceRefresh = true;
+                    this.$store.commit("login", user);
+                    this.$store.commit("refresh");
+                  })
+                  .catch(error => {
+                    if (error.status == 403) {
+                      console.error("Invalid credentials", error);
+                      this.$opensilex.errorHandler(
+                        error,
+                        this.$t("component.login.errors.invalid-credentials")
+                      );
+                    } else {
+                      this.$opensilex.errorHandler(error);
+                    }
+                    this.$opensilex.hideLoader();
+                  });
+              }
+            });
+        },
+        onLoginAsGuest() {
+            this.form.email = "guest@opensilex.org";
+            this.form.password = "guest";
+            console.log("this.form", this.form)
+            this.login().then(() => {
+              this.form.email = "";
+              this.form.password = "";
+            });
+        },
+        login() {
+            this.$opensilex.showLoader();
+            return this.$opensilex
+              .getService<AuthenticationService>(
+                "opensilex-security.AuthenticationService"
+              )
+              .authenticate({
+                identifier: this.form.email,
+                password: this.form.password,
+              })
+              .then((http: HttpResponse<OpenSilexResponse<TokenGetDTO>>) => {
+                let user = this.$opensilex.fromToken(http.response.result.token);
+                this.$opensilex.setCookieValue(user);
+                this.forceRefresh = true;
+                this.$store.commit("login", user);
+                this.$store.commit("refresh");
+              })
+              .catch((error) => {
+                if (error.status == 403) {
+                  console.error("Invalid credentials", error);
+                  this.$opensilex.errorHandler(
+                    error,
+                    this.$t("component.login.errors.invalid-credentials")
+                  );
+                } else {
+                  this.$opensilex.errorHandler(error);
+                }
+                this.$opensilex.hideLoader();
+              });
+        }
+    }
+})
+
 </script>
 
 <style scoped lang="scss">

@@ -8,6 +8,7 @@ import {injectable} from "inversify";
 import { Headers } from "./Headers";
 
 declare var window: any;
+declare var require: any;
 
 @injectable()
 class HttpClient implements IHttpClient {

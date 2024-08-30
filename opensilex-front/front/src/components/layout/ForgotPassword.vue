@@ -63,74 +63,87 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 // @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
-@Component
-export default class ForgotPassword extends Vue {
-  email: string = null;
-  $t: any;
-  $store: any;
-  $router: any;
-  $opensilex: OpenSilexVuePlugin;
+export default defineComponent({
+    data() {
+        const $opensilex: OpenSilexVuePlugin = undefined;
+        const $router: any = undefined;
+        const $store: any = undefined;
+        const $t: any = undefined;
+        const email: string = null;
 
-  get user() {
-    return this.$store.state.user;
-  }
-
-  static async asyncInit($opensilex: OpenSilexVuePlugin) {
-    await $opensilex.loadService("opensilex-security.AuthenticationService");
-  }
-
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  onResetPasswordByEmail() {
-    let validatorRef: any = this.validatorRef;
-    validatorRef.validate().then((isValid) => {
-      if (isValid) {
-        this.resetPasswordByEmail();
-      }
-    });
-  }
-
-  resetPasswordByEmail() {
-    this.$opensilex
-      .getService<AuthenticationService>(
-        "opensilex-security.AuthenticationService"
-      )
-      .forgotPassword(this.email)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        this.$opensilex.showSuccessToastWithDelay(
-          this.$t("ForgotPasswordComponent.link-email"),
-          5000
-        );
-      })
-      .catch((error) => {
-        if (error.status == 503) {
-          console.error("Service not available", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t("ForgotPasswordComponent.service-not-available")
-          );
-        } else if (error.status == 403 || error.status == 500) {
-          console.error("Invalid credentials", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t("ForgotPasswordComponent.invalid-identifier")
-          );
-        } else {
-          console.log(error);
-          this.$opensilex.errorHandler(error);
+        return {
+            email,
+            $t,
+            $store,
+            $router,
+            $opensilex
+        };
+    },
+    computed: {
+        user() {
+            return this.$store.state.user;
+        },
+        validatorRef: {
+            cache: false,
+            get() {
+                return this.$refs["validatorRef"] as any;
+            }
         }
-        this.$opensilex.hideLoader();
-      });
-  }
-}
+    },
+    methods: {
+        async asyncInit($opensilex: OpenSilexVuePlugin) {
+            await $opensilex.loadService("opensilex-security.AuthenticationService");
+        },
+        onResetPasswordByEmail() {
+            let validatorRef: any = this.validatorRef;
+            validatorRef.validate().then((isValid) => {
+              if (isValid) {
+                this.resetPasswordByEmail();
+              }
+            });
+        },
+        resetPasswordByEmail() {
+            this.$opensilex
+            .getService<AuthenticationService>(
+            "opensilex-security.AuthenticationService"
+            )
+            .forgotPassword(this.email)
+            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            this.$opensilex.showSuccessToastWithDelay(
+              this.$t("ForgotPasswordComponent.link-email"),
+              5000
+            );
+            })
+            .catch((error) => {
+            if (error.status == 503) {
+              console.error("Service not available", error);
+              this.$opensilex.errorHandler(
+                error,
+                this.$t("ForgotPasswordComponent.service-not-available")
+              );
+            } else if (error.status == 403 || error.status == 500) {
+              console.error("Invalid credentials", error);
+              this.$opensilex.errorHandler(
+                error,
+                this.$t("ForgotPasswordComponent.invalid-identifier")
+              );
+            } else {
+              console.log(error);
+              this.$opensilex.errorHandler(error);
+            }
+            this.$opensilex.hideLoader();
+            });
+        }
+    }
+})
+
 </script>
 
 <style scoped lang="scss">

@@ -20,7 +20,7 @@ module.exports = {
         resolve: {
             extensions: ['.md'],
             alias: {
-                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                'Vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
                 "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
                 "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),
                 "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src")
@@ -61,6 +61,17 @@ module.exports = {
             .loader('vue-markdown-loader/lib/markdown-compiler')
             .options({
                 raw: true
+            })
+            config.module.rule('vue')
+            .test(/\.vue$/)
+            .use('vue-loader')
+            .loader('vue-loader') 
+            .options({
+                compilerOptions: {
+                    compatConfig: {
+                      MODE: 2
+                    }
+                  }
             })
 
         if (process.env.NODE_ENV === 'production') {

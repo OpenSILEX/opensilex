@@ -5,17 +5,10 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  Model,
-  Provide,
-  PropSync
-} from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 
-@Component
-export default class PageContent extends Vue {}
+export default defineComponent({})
+
 </script>
 
 <style scoped lang="scss">

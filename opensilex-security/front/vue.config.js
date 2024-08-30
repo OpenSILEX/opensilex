@@ -1,5 +1,6 @@
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
+const { hashFunction } = require('../../opensilex-front/front/vue.config');
 
 module.exports = {
     configureWebpack: {
@@ -13,7 +14,7 @@ module.exports = {
         },
         resolve: {
             alias: {
-                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
+                'vue$': path.resolve('../../node_modules/@vue/compat/dist/vue.runtime.esm-bundler.js')
             }
         },
         performance: {

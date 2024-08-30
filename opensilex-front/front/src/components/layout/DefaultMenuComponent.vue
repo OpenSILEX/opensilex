@@ -84,68 +84,70 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { defineComponent } from "vue";
 import { Menu } from "../../models/Menu";
 
 // @ts-ignore
 import { versionInfoDTO } from "opensilex-core/index";
-@Component
-export default class DefaultMenuComponent extends Vue {
-  $route: any;
-  $store: any;
-  $opensilex: any;
-  $t : any;
+export default defineComponent({
+    data() {
+        const versionInfo: versionInfoDTO = undefined;
+        const $t: any = undefined;
+        const $opensilex: any = undefined;
+        const $store: any = undefined;
+        const $route: any = undefined;
 
-  versionInfo: versionInfoDTO;
-
-  get menu(): Array<Menu> {
-    return this.$store.state.menu;
-  }
-
-  get user() {
-    return this.$store.state.user;
-  }
-
-  get menuVisible(): boolean {
-    return this.$store.state.menuVisible;
-  }
-
-  created() {
-      this.versionInfo = this.$opensilex.versionInfo;
-  }
-
-  toggleMenu(): void {
-    this.$store.commit("toggleMenu");
-  }
-
-  /*hide menu on category selected*/
-  toggleMenuOnSelect(): void {
-    if (document.body.clientWidth < 1040) {
-      this.$store.commit("toggleMenuOnSelect");
+        return {
+            $route,
+            $store,
+            $opensilex,
+            $t,
+            versionInfo
+        };
+    },
+    computed: {
+        menu(): Array<Menu> {
+            return this.$store.state.menu;
+        },
+        user() {
+            return this.$store.state.user;
+        },
+        menuVisible(): boolean {
+            return this.$store.state.menuVisible;
+        }
+    },
+    created() {
+        this.versionInfo = this.$opensilex.versionInfo;
+    },
+    methods: {
+        toggleMenu(): void {
+            this.$store.commit("toggleMenu");
+        },
+        toggleMenuOnSelect(): void {
+            if (document.body.clientWidth < 1040) {
+              this.$store.commit("toggleMenuOnSelect");
+            }
+        },
+        toogle(item: Menu, event: MouseEvent): void {
+            if (item.hasChildren()) {
+              console.info("toogle menu, old value = " + item.showChildren);
+              item.showChildren = !item.showChildren;
+            }
+        },
+        getIcon(item: Menu): string {
+            var code = "icon." + item.label;
+            var result = this.$t(code);
+            if (code != result) {
+              return result.toString();
+            }
+            return "ik-folder";
+        },
+        isActive(item: Menu): boolean {
+            return item.route && this.$route.path.indexOf(item.route.path) === 0;
+        }
     }
-  }
+})
 
-  toogle(item: Menu, event: MouseEvent): void {
-    if (item.hasChildren()) {
-      console.info("toogle menu, old value = " + item.showChildren);
-      item.showChildren = !item.showChildren;
-    }
-  }
-
-  getIcon(item: Menu): string {
-    var code = "icon." + item.label;
-    var result = this.$t(code);
-    if (code != result) {
-      return result.toString();
-    }
-    return "ik-folder";
-  }
-
-  isActive(item: Menu): boolean {
-    return item.route && this.$route.path.indexOf(item.route.path) === 0;
-  }
-}
 </script>
 
 <style scoped lang="scss">

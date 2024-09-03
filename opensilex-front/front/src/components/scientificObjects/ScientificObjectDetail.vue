@@ -87,6 +87,7 @@
                 :objectByContext="objectByContext"
                 :experiment="experiment"
                 @onUpdate="$emit('onUpdate', $event)"
+                data-testid="scientificObjectDetailProperties"
             ></opensilex-ScientificObjectDetailProperties>
         </div>
 

@@ -112,7 +112,7 @@ test('CRUD of a device', async ({ page }) => {
   // READ a selected device
   ///////////////////////////
 
-    // Target the URI link and click her
+    // Target the URI link and click her. Locator ".." target direct parent
       const elementLink = page.locator(`text=${elementName}`).locator('..');
       await expect(elementLink).toBeVisible({ timeout: 20000});
       await elementLink.click();

@@ -69,6 +69,7 @@
                   placeholder="ScientificObjectList.name-placeholder"
                   class="searchFilter"
                   @handlingEnterKey="soList.refresh()"
+                  data-testid="scientificObjectsView-nameSelector"
                 ></opensilex-StringFilter>
                 <br>
               </opensilex-FilterField>
@@ -84,6 +85,7 @@
                   class="searchFilter"
                   @handlingEnterKey="soList.refresh()"
                   :key="resetExperimentSelectorKey"
+                  data-testid="scientificObjectsView-experimentSelector"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
               </div>
@@ -97,6 +99,7 @@
                   :types.sync="filter.types"
                   :multiple="true"
                   class="searchFilter"
+                  data-testid="scientificObjectsView-typeSelector"
                 ></opensilex-ScientificObjectTypeSelector>
               </opensilex-FilterField>
               </div>
@@ -109,6 +112,7 @@
                 <opensilex-FilterField quarterWidth="false">
                   <opensilex-GermplasmSelectorWithFilter
                       :germplasmsUris.sync="filter.germplasm"
+                      data-testid="scientificObjectsView-germplasmSelector"
                   ></opensilex-GermplasmSelectorWithFilter>
                 </opensilex-FilterField>
               </div>
@@ -127,6 +131,7 @@
                     :required="false"
                     :key="resetFactorLevelSelectorKey"
                     class="searchFilter"
+                    data-testid="scientificObjectsView-factorLevelSelector"
                   ></opensilex-FactorLevelSelector>
                 </b-form-group>
               </opensilex-FilterField>
@@ -139,6 +144,7 @@
                   :value.sync="filter.existenceDate"
                   label="ScientificObjectList.existenceDate"
                   class="searchFilter"
+                  data-testid="scientificObjectsView-existSelector"
                 ></opensilex-DateForm>
               </opensilex-FilterField>
               </div>
@@ -150,6 +156,7 @@
                   :value.sync="filter.creationDate"
                   label="ScientificObjectList.creationDate"
                   class="searchFilter"
+                  data-testid="scientificObjectsView-createdSelector"
                 ></opensilex-DateForm>
               </opensilex-FilterField>
               </div>
@@ -163,6 +170,7 @@
                       :criteria_dto.sync="filter.criteriaDto"
                       :required="false"
                       :requiredBlue="false"
+                      data-testid="scientificObjectsView-criteriaSelector"
                   ></opensilex-CriteriaSearchModalCreator>
                 </opensilex-FilterField>
               </div>

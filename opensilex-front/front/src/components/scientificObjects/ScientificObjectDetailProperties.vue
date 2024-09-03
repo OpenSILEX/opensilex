@@ -17,6 +17,7 @@
               @click="soForm.editScientificObject(selected.uri)"
               label="ExperimentScientificObjects.edit-scientific-object"
               :small="true"
+              data-testid="scientificObjectDetail-updateButton"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="
@@ -27,6 +28,7 @@
               label="ExperimentScientificObjects.delete-scientific-object"
               @click="deleteScientificObject(selected.uri)"
               :small="true"
+              data-testid="scientificObjectDetail-deleteButton"
             ></opensilex-DeleteButton>
           </b-button-group>
           <opensilex-ScientificObjectForm

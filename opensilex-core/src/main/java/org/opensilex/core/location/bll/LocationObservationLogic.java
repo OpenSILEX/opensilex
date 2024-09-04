@@ -55,7 +55,7 @@ public class LocationObservationLogic {
             locationObservationModel.setLocation(locationModel);
             locationObservationModel.setHasGeometry(hasGeometry);
 
-            locationObservationDAO.update(session, locationObservationModel);
+            locationObservationDAO.upsert(session, locationObservationModel);
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", locationObservationCollectionURI);
         }

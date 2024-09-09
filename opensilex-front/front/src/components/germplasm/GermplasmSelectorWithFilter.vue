@@ -5,7 +5,6 @@
       placeholder="GermplasmSelectorWithFilter.placeholder-multiple"
       :selected.sync="germplasmUris"
       modalComponent="opensilex-GermplasmModalList"
-      :isModalSearch="true"
       :clearable="true"
       :multiple="true"
       :selectedInJsonFormat="this.editMode ? germplasm : null"

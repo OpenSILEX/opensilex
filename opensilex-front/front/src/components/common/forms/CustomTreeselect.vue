@@ -38,12 +38,7 @@ import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-
-export interface SelectableItem {
-  id: string,
-  label: string,
-  isDisabled?: boolean
-}
+import {SelectableItem} from "./FormSelector.vue";
 
 @Component
 export default class CustomTreeselect extends Vue {

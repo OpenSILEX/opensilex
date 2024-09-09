@@ -9,7 +9,6 @@
     :experiment="experiment"
     :objects="objects"
     :devices="devices"
-    :isModalSearch="true"
     :required="required"
     :multiple="true"
     :maximumSelectedItems="maximumSelectedRows"

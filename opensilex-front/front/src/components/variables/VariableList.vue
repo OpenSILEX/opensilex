@@ -330,7 +330,6 @@
                     v-if="!noActions"
                     label="label"
                     ref="groupVariableSelection"
-                    :isModalSearch="true"
                     :required="true"
                     :multiple="true"
                     @onValidate="editGroupVariable"

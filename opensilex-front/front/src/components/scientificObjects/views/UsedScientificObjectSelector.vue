@@ -13,7 +13,6 @@
       :maximumSelectedItems="maximumSelectedRows"
       :clearable="true"
       :required="required"
-      :isModalSearch="true"
       :limit="1"
       @clear="reset"
       @onValidate="refreshProvComponent"
@@ -60,8 +59,6 @@ export default class UsedScientificObjectSelector extends Vue {
   experiment;
   @Prop()
   objects;
-  @Prop()
-  isModalSearch;
   @Prop()
   modalComponent;
   @Prop()

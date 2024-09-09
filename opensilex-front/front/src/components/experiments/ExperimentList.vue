@@ -108,7 +108,6 @@
                     placeholder="ExperimentList.filter-project-placeholder"
                     :selected.sync="filter.projects"
                     modalComponent="opensilex-ProjectModalList"
-                    :isModalSearch="true"
                     :clearable="true"
                     :multiple="true"
                     @clear="refreshProjectSelector"

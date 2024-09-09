@@ -103,7 +103,6 @@
                         modalComponent="opensilex-ScientificObjectModalList"
                         class="searchFilter"
                         :filter.sync="soFilter"
-                        :isModalSearch="true"
                         :clearable="true"
                         :multiple="true"
                         @clear="refreshSoSelector"

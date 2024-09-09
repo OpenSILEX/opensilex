@@ -76,7 +76,6 @@
                 :selected.sync="filter.scientificObjects"
                 modalComponent="opensilex-ScientificObjectModalList"
                 :filter.sync="soFilter"
-                :isModalSearch="true"
                 :clearable="true"
                 :multiple="true"
                 @onValidate="refreshProvComponent"

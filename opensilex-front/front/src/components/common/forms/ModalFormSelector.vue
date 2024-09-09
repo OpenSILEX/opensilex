@@ -78,7 +78,12 @@ import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {SelectableItem} from "./FormSelector.vue";
+
+export interface SelectableItem {
+  id: string,
+  label: string,
+  isDisabled?: boolean
+}
 
 @Component
 export default class ModalFormSelector extends Vue {
@@ -95,6 +100,12 @@ export default class ModalFormSelector extends Vue {
     selectedTmp = [];
 
     firstTimeOpening = false;
+
+     /**
+     * Refresh key for the Treeselect component. Used by the {@link refresh} method.
+     */
+    treeselectRefreshKey: number = 0;
+
 
 
     get hiddenValue() {

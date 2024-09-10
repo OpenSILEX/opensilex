@@ -778,7 +778,7 @@ public class DataLogic {
 
                         if (header.equalsIgnoreCase(EXPERIMENT_HEADER) || header.equalsIgnoreCase(TARGET_HEADER)
                                 || header.equalsIgnoreCase(DATE_HEADER) || header.equalsIgnoreCase(DEVICE_HEADER) || header.equalsIgnoreCase(SCIENTIFICOBJ_HEADER)
-                                || header.equalsIgnoreCase(RAWDATA_HEADER) || header.equalsIgnoreCase(ANNOTATION_HEADER)) {
+                                || header.equalsIgnoreCase(RAWDATA_HEADER) || header.equalsIgnoreCase(ANNOTATION_HEADER) || header.equalsIgnoreCase("used")) {
                             headerByIndex.put(i, header);
 
                         } else {
@@ -924,6 +924,7 @@ public class DataLogic {
         if( experiment != null) {
             experiments.add(experiment);
         }
+        ProvEntityModel provUsed = null;
 
         //Set to remember which columns to do at end of row iteration (in case required columns like target are at the end).
         Set<Integer> colsToDoAtEnd = new HashSet<>();
@@ -1121,6 +1122,9 @@ public class DataLogic {
                         colsToDoAtEnd.add(colIndex);
                     }
                 }
+            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase("used")) {
+                //récupérer le type ou avoir une colonne supplémentaire pour le type
+                provUsed = new ProvEntityModel();
             }
         }
         //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
@@ -1232,6 +1236,10 @@ public class DataLogic {
                         agent.setUri(checkedDevice.getUri());
                         provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
 
+                    }
+
+                    if (provUsed != null) {
+                        provenanceModel.setProvUsed(List.of(provUsed));
                     }
 
                     dataModel.setDate(parsedDateTimeMongo.getInstant());

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <opensilex-SelectForm
+        <opensilex-FormSelector
             :label="property.name"
             :selected.sync="internalValue"
             :multiple="property.is_list"
@@ -8,7 +8,7 @@
             :searchMethod="searchParents"
             :itemLoadingMethod="getParentsByURI"
             placeholder="ScientificObjectParentPropertySelector.parent-placeholder"
-        ></opensilex-SelectForm>
+        ></opensilex-FormSelector>
     </div>
 </template>
 

@@ -102,20 +102,19 @@
               <!-- Projects -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-ModalFormSelector
                     ref="projectSelector"
                     label="ExperimentList.filter-project"
                     placeholder="ExperimentList.filter-project-placeholder"
                     :selected.sync="filter.projects"
                     modalComponent="opensilex-ProjectModalList"
-                    :isModalSearch="true"
                     :clearable="true"
                     :multiple="true"
                     @clear="refreshProjectSelector"
                     :limit="1"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-ModalFormSelector>
                 </opensilex-FilterField>
               </div>
 

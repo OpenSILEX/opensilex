@@ -23,7 +23,7 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import { GermplasmParentsAttributesUsedInFront } from './GermplasmParentsModalFormField.vue';
-import {SelectableItem} from "../common/forms/SelectForm.vue"
+import {SelectableItem} from "../common/forms/FormSelector.vue"
 
 @Component({})
 export default class GermplasmParentsModalFormFieldLine extends Vue {

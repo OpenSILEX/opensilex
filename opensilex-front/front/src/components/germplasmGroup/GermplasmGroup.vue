@@ -90,7 +90,7 @@ import GroupGermplasmForm from './GroupGermplasmForm.vue';
 import {OpenSilexStore} from "../../models/Store";
 import {Route} from "vue-router";
 import {GermplasmGroupGetWithDetailsDTO} from "opensilex-core/model/germplasmGroupGetWithDetailsDTO";
-import {SelectableItem} from "../common/forms/SelectForm.vue";
+import {SelectableItem} from "../common/forms/FormSelector.vue";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 
 interface UpdateDtoAndGermplasmModels {

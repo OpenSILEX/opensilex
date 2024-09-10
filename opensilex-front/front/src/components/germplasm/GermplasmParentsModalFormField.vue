@@ -21,7 +21,7 @@
 import { Prop, PropSync, Ref, Component } from 'vue-property-decorator';
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import Oeso from "../../ontologies/Oeso";

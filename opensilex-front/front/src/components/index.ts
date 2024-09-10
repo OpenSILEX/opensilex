@@ -179,6 +179,8 @@ components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 
+import ModalFormSelector from './common/forms/ModalFormSelector.vue'
+components["opensilex-ModalFormSelector"] = ModalFormSelector;
 import FormSelector from './common/forms/FormSelector.vue'
 components["opensilex-FormSelector"] = FormSelector;
 import CustomTreeselect from './common/forms/CustomTreeselect.vue'
@@ -535,8 +537,6 @@ import ScientificObjectVisualizationForm from './scientificObjects/visualization
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
-import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
-components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
@@ -670,8 +670,6 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
-import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
-components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import DataProvenanceSelector from './data/DataProvenanceSelector.vue';
@@ -753,8 +751,6 @@ components["opensilex-ImageSingle"] = ImageSingle;
 
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
-import VisuForm from './visualization/VisuForm.vue';
-components["opensilex-VisuForm"] = VisuForm;
 import VisuImageGrid from './visualization/VisuImageGrid.vue';
 components["opensilex-VisuImageGrid"] = VisuImageGrid;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';

@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
     :label="label"
     :required="required"
     :selected.sync="organizationsURI"
@@ -8,7 +8,7 @@
     placeholder="OrganizationTree.filter-placeholder"
     @select="select"
     @deselect="deselect"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

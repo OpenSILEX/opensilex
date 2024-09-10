@@ -7,6 +7,10 @@
     :searchMethod="searchEntities"
     :itemLoadingMethod="loadEntities"
     :placeholder="placeholder"
+    :conversionMethod="conversionMethod"
+    :actionHandler="actionHandler"
+    :required="required"
+    :helpMessage="helpMessage"
     noResultsText="component.entity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -22,7 +26,6 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {EntityGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
 import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
@@ -31,7 +34,7 @@ export default class EntitySelector extends Vue {
   pageSize = 10;
   page = 0;
 
-  @PropSync("entity")
+  @PropSync("selected")
   entityURI;
 
   @Prop()
@@ -39,6 +42,18 @@ export default class EntitySelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  required;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  helpMessage;
+
+  @Prop()
+  conversionMethod;
 
   @Prop()
   sharedResourceInstance?: string;

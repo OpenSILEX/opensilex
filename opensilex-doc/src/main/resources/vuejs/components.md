@@ -344,7 +344,7 @@ Properties:
 
 ### Select form field
 
-Identifier: **opensilex-SelectForm**
+Identifier: **opensilex-FormSelector**
 
 Description:
 

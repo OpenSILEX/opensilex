@@ -182,7 +182,7 @@ import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import VueRouter from "vue-router";
 import {OpenSilexStore} from "../../models/Store";

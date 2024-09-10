@@ -38,7 +38,6 @@
             :multiple="true"
             :type="agent.rdf_type"
             helpMessage="ProvenanceForm.agent-help"
-            :isModalSearch="true"
         ></opensilex-DeviceSelector>
       </div>
     </div>

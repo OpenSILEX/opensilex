@@ -7,6 +7,9 @@
     :searchMethod="searchUnits"
     :itemLoadingMethod="loadUnits"
     :placeholder="placeholder"
+    :helpMessage="helpMessage"
+    :actionHandler="actionHandler"
+    :required="required"
     noResultsText="component.unit.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -30,7 +33,7 @@ export default class UnitSelector extends Vue {
   pageSize = 10;
   page = 0;
 
-  @PropSync("unit")
+  @PropSync("selected")
   unitURI;
 
   @Prop()
@@ -38,6 +41,15 @@ export default class UnitSelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  helpMessage;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  required;
 
   @Prop()
   sharedResourceInstance;

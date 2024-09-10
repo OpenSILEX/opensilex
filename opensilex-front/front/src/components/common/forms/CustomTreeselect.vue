@@ -1,7 +1,6 @@
 <template>
   <treeselect
     ref="treeref"
-    v-bind="$attrs"
     v-bind:class="{
     'multiselect-action': actionHandler,
     'multiselect-view': viewHandler, // class if viewHandler = function
@@ -11,10 +10,12 @@
     :value="selectedValues"
     valueFormat="node"
     :placeholder="$t(placeholder)"
+    :flat="true"
     :default-options="searchMethod != null" 
     :load-options="loadOptions"
     :options="options || internalOption"
     :multiple="multiple"
+    :disabled="disabled"
     :show-count="showCount"
     :limit="limit"
     :clearable="true"
@@ -111,6 +112,9 @@ export default class CustomTreeselect extends Vue {
     default: false,
   })
   showCount;
+
+  @Prop()
+  disabled: boolean;
 
   @Prop({
     type: Function,
@@ -302,23 +306,25 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
     }
   }
 
-  public findListInTree(tree, ids, list?) {
-    list = list || [];
-    for (let i in tree) {
-      let item = tree[i];
+  public findListInTree(tree, ids, map?: Map<string, any>) {
+    map = map || new Map();
 
+    for (let item of tree) {
       if (ids.indexOf(item.id) >= 0) {
-        list.push(item);
-        if (list.length == ids.length) {
-          return list;
+        map.set(item.id, item);
+        if (map.size == ids.length) {
+          break;
         }
       }
 
-      if (list.length == ids.length) {
-        return list;
+      if (item.children) {
+        this.findListInTree(item.children, ids, map);
+      }
+      if (map.size == ids.length) {
+        break;
       }
     }
-    return list;
+    return Array.from(map.values());
   }
 
   loadOptions({ action, searchQuery, callback }) {

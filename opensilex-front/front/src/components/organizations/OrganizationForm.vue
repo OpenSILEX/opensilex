@@ -28,13 +28,13 @@
     ></opensilex-TypeForm>
 
     <!-- Parents -->
-    <opensilex-SelectForm
+    <opensilex-FormSelector
       :selected.sync="form.parents"
       :options="parentOptions"
       :multiple="true"
       label="component.common.parent"
       placeholder="OrganizationForm.form-parent-placeholder"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 
     <!-- Groupes -->
     <opensilex-GroupSelector

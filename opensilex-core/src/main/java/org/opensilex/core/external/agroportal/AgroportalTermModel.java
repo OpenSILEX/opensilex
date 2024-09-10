@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AgroportalTermModel {
 
-    private String[] prefLabel;
+    private String prefLabel;
     private String[] synonym;
     @JsonProperty("definition")
     private String[] definitions;
@@ -17,11 +17,11 @@ public class AgroportalTermModel {
     private String type;
     private AgroportalLinksModel links;
 
-    public String[] getPrefLabel() {
+    public String getPrefLabel() {
         return prefLabel;
     }
 
-    public void setPrefLabel(String[] prefLabel) {
+    public void setPrefLabel(String prefLabel) {
         this.prefLabel = prefLabel;
     }
 

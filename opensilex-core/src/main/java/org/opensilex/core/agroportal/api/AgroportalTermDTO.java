@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.agroportal.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.external.agroportal.AgroportalTermModel;
 import org.opensilex.core.external.agroportal.AgroportalLinksModel;
 
@@ -24,7 +22,7 @@ public class AgroportalTermDTO {
 
     @NotNull
     private String id;
-    private String[] name;
+    private String name;
     private List<String> synonym;
     private List<String> definitions;
     @NotNull
@@ -42,11 +40,11 @@ public class AgroportalTermDTO {
         this.id = id;
     }
 
-    public String[] getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(String[] name) {
+    public void setName(String name) {
         this.name = name;
     }
 

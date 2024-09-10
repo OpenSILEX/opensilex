@@ -304,9 +304,10 @@ public class DataLogic {
         dao.update(data);
     }
 
-    public Stream<VariableModel> getUsedVariablesAsStream(DataSearchFilter filter){
-        return dao.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
-                .stream();
+    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
+        return getUsedVariablesByFilter(dataSearchFilter);
     }
 
     public void update(DataModel model) throws Exception{
@@ -363,18 +364,6 @@ public class DataLogic {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
         return dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
-    }
-
-    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
-        DataSearchFilter dataSearchFilter = new DataSearchFilter();
-        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
-        Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
-        String userLanguage = null;
-        if(user != null){
-            userLanguage = user.getLanguage();
-        }
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
-        return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
@@ -658,6 +647,16 @@ public class DataLogic {
         }
 
         return validData;
+    }
+
+    public List<VariableModel> getUsedVariablesByFilter(DataSearchFilter filter) throws Exception {
+        Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, filter));
+        String userLanguage = null;
+        if(user != null){
+            userLanguage = user.getLanguage();
+        }
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
+        return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
     /**

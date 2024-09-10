@@ -1,11 +1,10 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-ModalFormSelector
       ref="germplasmSelector"
       :label="label"
       placeholder="GermplasmSelectorWithFilter.placeholder-multiple"
       :selected.sync="germplasmUris"
       modalComponent="opensilex-GermplasmModalList"
-      :isModalSearch="true"
       :clearable="true"
       :multiple="true"
       :selectedInJsonFormat="this.editMode ? germplasm : null"
@@ -15,20 +14,21 @@
       @hide='$emit("hideSelector")'
       @shown='$emit("shownSelector")'
       class="searchFilter"
-  ></opensilex-SelectForm>
+  ></opensilex-ModalFormSelector>
 </template>
 
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import SelectForm, {SelectableItem} from '../common/forms/SelectForm.vue';
+import ModalFormSelector, {SelectableItem} from '../common/forms/ModalFormSelector.vue';
+import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GermplasmSelectorWithFilter extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  @Ref("germplasmSelector") readonly germplasmSelector!: SelectForm;
+  @Ref("germplasmSelector") readonly germplasmSelector!: ModalFormSelector;
 
   @Prop()
   editMode: boolean;

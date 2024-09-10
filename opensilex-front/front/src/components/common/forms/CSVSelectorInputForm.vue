@@ -1,13 +1,13 @@
 <template>
   <div>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
       :label="label"
       :helpMessage="helpMessage"
       :selected.sync="selectedSeparator"
       :options="delimiterOptions"
       :required="required"
       :rules="rules"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
   </div>
 </template>
 

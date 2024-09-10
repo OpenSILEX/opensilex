@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
     :label="label"
     :selected.sync="groupsURI"
     :multiple="multiple"
@@ -10,7 +10,7 @@
     :noResultsText="noResultsText"
     @select="select"
     @deselect="deselect"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">

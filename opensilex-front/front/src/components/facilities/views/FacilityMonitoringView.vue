@@ -19,7 +19,7 @@
                   class="variable-group-help"
                   v-b-tooltip.hover.top="$t('FacilityMonitoringView.variable-group-help')"
               />
-              <opensilex-SelectForm
+              <opensilex-FormSelector
                   id="variableGroupSelector"
                   :selected.sync="selectedVariableGroup"
                   :searchMethod="searchVariableGroups"
@@ -30,7 +30,7 @@
                   @onClose="loadVariables"
                   @select="loadVariables"
                   @handlingEnterKey="loadVariables"
-              ></opensilex-SelectForm>
+              ></opensilex-FormSelector>
             </div>
           </div>
         </div>

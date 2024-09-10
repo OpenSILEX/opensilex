@@ -31,13 +31,13 @@
     ></opensilex-InputForm>
 
     <!-- Default language -->
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :selected.sync="form.language"
         :options="languages"
         :required="true"
         label="component.account.default-lang"
         placeholder="component.common.select-lang"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 
     <!-- Admin flag -->
     <opensilex-CheckboxForm

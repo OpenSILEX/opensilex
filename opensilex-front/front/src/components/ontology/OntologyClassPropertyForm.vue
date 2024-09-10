@@ -9,14 +9,14 @@
         ></opensilex-InputForm>
 
         <!-- Parent -->
-        <opensilex-SelectForm
+        <opensilex-FormSelector
             :selected.sync="form.property"
             :options="propertiesOptions"
             :required="true"
             label="OntologyClassPropertyForm.property"
             helpMessage="OntologyClassPropertyForm.property-help"
             @update:selected="updateIsListProperty"
-        ></opensilex-SelectForm>
+        ></opensilex-FormSelector>
 
 
         <!-- is_required -->

@@ -1,12 +1,12 @@
 <template>
-  <opensilex-SelectForm
-      ref="selectForm"
+  <opensilex-FormSelector
+      ref="formSelector"
       label="props-label"
       :multiple="true"
       placeholder="props-placeholder"
       :selected.sync="selectedProps"
       :options="optionsProps"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -17,7 +17,7 @@ import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} fro
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
-export default class ScientificObjectPropertiesSelector extends Vue {
+export default class ItemsPropertiesSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $store: any;
   vueOntologyService: VueJsOntologyExtensionService

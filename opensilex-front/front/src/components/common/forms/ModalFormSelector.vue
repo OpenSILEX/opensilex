@@ -62,7 +62,7 @@
         @shown="onModalSearchShown"
         @clear='$emit("clear")'
         @select="onSelect(conversionMethod($event))"
-        @unselect="deselect(conversionMethod($event))"
+        @unselect="onModalComponentUnselect(conversionMethod($event))"
         @selectall="onSelectAll"
         @hide='$emit("hide")'
         class="isModalSearchComponent"
@@ -468,30 +468,34 @@ export default class ModalFormSelector extends Vue {
         this.searchModal.refresh();
       }
     }
+
+    deselect(item) {
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
+      if (this.multiple) {
+        this.selection = this.selection.filter((id) => id !== item.id);
+      } else {
+        this.selection = null;
+      }
+      this.$emit("deselect", item);
+    }
   //#endregion
 
   //#region Events Handlers
     onSelect(value) {
-        // copy selected items in local variable to wait validate action and then, change the selection
-        this.selectedTmp.push(value);
-        this.$emit("select", value, this.selectedTmp);
-        if (this.multiple) {
-          this.selection.push(value.id);
-        } else {
-          this.selection = value.id;
-        }
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedTmp.push(value);
+      this.$emit("select", value, this.selectedTmp);
+      if (this.multiple) {
+        this.selection.push(value.id);
+      } else {
+        this.selection = value.id;
+      }
       this.$emit("select", value, this.selectedTmp);
     }
 
-    deselect(item) {
-        // copy selected items in local variable to wait validate action and then, change the selection
-        this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
-        if (this.multiple) {
-          this.selection = this.selection.filter((id) => id !== item.id);
-        } else {
-          this.selection = null;
-        }
-      this.$emit("deselect", item);
+    onModalComponentUnselect(item) {
+      this.deselect(item)
     }
 
     onEnter() {

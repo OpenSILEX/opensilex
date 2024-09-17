@@ -205,6 +205,7 @@
             "experiments": "Expérimentations",
             "facilities": "Installations (environnement)",
             "organization": "Organisations",
+            "site": "Sites",
             "installations": "Installations",
             "projects": "Projets",
             "variables": "Variables",
@@ -362,6 +363,7 @@
         },
         "profile": {
             "description": "Gérer et configurer les profils",
+            "view-profiles": "Voir les profils",
             "profile-uri": "URI du profil",
             "form-name-placeholder": "Saisir le nom du profil",
             "label": "profil",
@@ -378,6 +380,7 @@
         },
         "group": {
             "description": "Gérer et configurer les groupes",
+            "view-groups": "voir les groupes",
             "group-uri": "URI du groupe",
             "form-name-placeholder": "Saisir le nom du groupe",
             "form-description-placeholder": "Saisir la description du groupe",

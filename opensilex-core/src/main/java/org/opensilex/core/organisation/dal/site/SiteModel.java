@@ -1,6 +1,7 @@
 package org.opensilex.core.organisation.dal.site;
 
 import org.apache.jena.vocabulary.ORG;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
@@ -35,6 +36,12 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     )
     protected SiteAddressModel address;
     public static final String ADDRESS_FIELD = "address";
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    String description;
 
     @SPARQLProperty(
             ontology = ORG.class,
@@ -79,6 +86,10 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         this.address = address;
     }
 
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
+
     public List<OrganizationModel> getOrganizations() {
         return organizations;
     }
@@ -119,5 +130,13 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         return getOrganizations().stream()
                 .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String[] getInstancePathSegments(SiteModel instance) {
+        return new String[]{
+                "site",
+                instance.getName()
+        };
     }
 }

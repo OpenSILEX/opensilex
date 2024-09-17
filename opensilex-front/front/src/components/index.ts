@@ -90,14 +90,21 @@ import OrganizationDetail from './organizations/OrganizationDetail.vue';
 components["opensilex-OrganizationDetail"] = OrganizationDetail;
 import OrganizationSelector from './organizations/OrganizationSelector.vue';
 components["opensilex-OrganizationSelector"] = OrganizationSelector;
+
+//sites
+import SiteView from './organizations/site/SiteView.vue';
+components["opensilex-SiteView"] = SiteView;
+import SiteDetailView from './organizations/site/SiteDetailView.vue';
+components["opensilex-SiteDetailView"] = SiteDetailView;
 import SiteDetail from './organizations/site/SiteDetail.vue';
 components["opensilex-SiteDetail"] = SiteDetail;
 import SiteForm from './organizations/site/SiteForm.vue';
 components["opensilex-SiteForm"] = SiteForm;
-import SiteView from './organizations/site/SiteView.vue';
-components["opensilex-SiteView"] = SiteView;
 import SiteSelector from './organizations/site/SiteSelector.vue';
 components["opensilex-SiteSelector"] = SiteSelector;
+import SiteList from './organizations/site/SiteList.vue';
+components["opensilex-SiteList"] = SiteList;
+
 
 // Facilities
 import FacilityModalForm from './facilities/FacilityModalForm.vue';
@@ -124,6 +131,9 @@ import FacilityMonitoringView from "./facilities/views/FacilityMonitoringView.vu
 components["opensilex-FacilityMonitoringView"] = FacilityMonitoringView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
+import FacilitiesModalList from "./facilities/FacilitiesModalList.vue";
+components["opensilex-FacilitiesModalList"] = FacilitiesModalList;
+
 
 import DatePeriodPicker from "./facilities/DatePeriodPicker.vue";
 components["opensilex-DatePeriodPicker"] = DatePeriodPicker;
@@ -414,14 +424,16 @@ import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
 import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
 components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
-import ExperimentModalList from './experiments/ExperimentModalList.vue';
-components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
+import ExperimentSimpleList from "./experiments/ExperimentSimpleList.vue";
+components["opensilex-ExperimentSimpleList"] = ExperimentSimpleList;
 import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisation.vue';
 components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
+import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
+components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
 
 
 // Germplasm

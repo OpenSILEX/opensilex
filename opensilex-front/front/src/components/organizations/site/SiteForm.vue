@@ -1,3 +1,15 @@
+<!--
+  - ******************************************************************************
+  -                         SiteForm.vue
+  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  - Copyright © INRAE 2024.
+  - Last Modification: 23/08/2024 11:34
+  - Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
+  -
+  -
+  - ******************************************************************************
+  -->
+
 <template>
   <b-form>
     <!-- URI -->
@@ -16,6 +28,14 @@
         type="text"
         :required="true"
         placeholder="OntologyObjectForm.form-name-placeholder"
+    ></opensilex-InputForm>
+
+    <!-- Description -->
+    <opensilex-InputForm
+        :value.sync="form.description"
+        label="component.common.description"
+        type="text"
+        placeholder="component.common.description"
     ></opensilex-InputForm>
 
     <!-- Organizations -->
@@ -39,6 +59,7 @@
         label="SiteForm.groups"
         :groups.sync="form.groups"
         :multiple="true"
+        helpMessage="SiteForm.groups-help-message"
     ></opensilex-GroupSelector>
 
     <!-- Address toggle -->
@@ -48,7 +69,8 @@
         :unchecked-value="false"
         @change="onAddressToggled"
         switches
-    >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
+    >{{ $t("FacilityForm.toggleAddress") }}
+    </b-form-checkbox>
 
     <!-- Address -->
     <opensilex-AddressForm
@@ -96,6 +118,7 @@ export default class SiteForm extends Vue {
       uri: undefined,
       rdf_type: undefined,
       name: undefined,
+      description: undefined,
       address: undefined,
       organizations: [],
       groups: []
@@ -123,6 +146,7 @@ export default class SiteForm extends Vue {
   }
 
   create(form: SiteCreationDTO) {
+    this.$opensilex.showLoader()
     return this.$opensilex
         .getService<OrganizationsService>("opensilex.OrganizationsService")
         .createSite(form)
@@ -142,20 +166,24 @@ export default class SiteForm extends Vue {
           } else {
             this.$opensilex.errorHandler(error);
           }
-        });
+        })
+        .finally(() => {
+          this.$opensilex.hideLoader();
+        })
   }
 
   update(form: SiteUpdateDTO) {
+    this.$opensilex.enableLoader()
+    this.$opensilex.showLoader()
+
     delete form.rdf_type_name;
-    console.log(form);
     return this.$opensilex
         .getService<OrganizationsService>("opensilex.OrganizationsService")
         .updateSite(form)
-        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          let uri = http.response.result;
-          console.debug("Site updated", uri);
-        })
-        .catch(this.$opensilex.errorHandler);
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.hideLoader();
+        });
   }
 }
 </script>
@@ -170,6 +198,7 @@ en:
     organizations: Organizations
     facilities: Facilities
     groups: Groups
+    groups-help-message: "Selected groups will have access to this site"
     toggleAddress: "Address"
     siteAlreadyExists: Site already exists
 fr:
@@ -177,6 +206,7 @@ fr:
     organizations: Organisations
     facilities: Installations environnementales
     groups: Groupes
+    groups-help-message: "Les groupes sélectionnés auront accès à ce site"
     toggleAddress: "Adresse"
     siteAlreadyExists: Ce site existe déjà
 </i18n>

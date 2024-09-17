@@ -1,3 +1,14 @@
+<!--
+  - ******************************************************************************
+  -                         GroupSelector.vue
+  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  - Copyright © INRAE 2024.
+  - Last Modification: 23/08/2024 11:18
+  - Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+  -
+  - ******************************************************************************
+  -->
+
 <template>
   <opensilex-FormSelector
     :label="label"
@@ -8,6 +19,7 @@
     :conversionMethod="groupToSelectNode"
     :placeholder="placeholder"
     :noResultsText="noResultsText"
+    :helpMessage="helpMessage"
     @select="select"
     @deselect="deselect"
   ></opensilex-FormSelector>
@@ -26,27 +38,33 @@ export default class GroupSelector extends Vue {
   $opensilex: any;
   service: SecurityService;
 
+  //#region Props
   @PropSync("groups")
-  groupsURI;
+  private groupsURI;
 
   @Prop()
-  label;
+  private readonly label;
 
   @Prop({
-        default: "component.group.filter-placeholder"
+    default: "component.group.filter-placeholder"
   })
-  placeholder;
+  private readonly placeholder;
 
   @Prop()
-  noResultsText;
+  private readonly noResultsText;
 
   @Prop()
-  multiple;
+  private readonly multiple;
+
+  @Prop()
+  private readonly helpMessage: string;
+
+  //#endregion
 
   searchGroups(searchQuery, page, pageSize) {
     return this.$opensilex
-      .getService("opensilex.SecurityService")
-      .searchGroups(searchQuery, undefined, page, pageSize)
+        .getService("opensilex.SecurityService")
+        .searchGroups(searchQuery, undefined, page, pageSize)
   }
 
   loadGroups(groupsURI) {

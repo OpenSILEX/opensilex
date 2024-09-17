@@ -272,7 +272,7 @@ export default class ExperimentList extends Vue {
   $store: any;
   SearchFiltersToggle: boolean = false;
   
-  @Ref("documentForm") readonly documentForm!: any;
+  @Ref("documentForm") private readonly documentForm!: any;
 
   @Prop({
     default: false,

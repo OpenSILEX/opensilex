@@ -207,6 +207,7 @@
             "facilities": "Facilities",
             "variables": "Variables",
             "organization": "Organizations",
+            "site": "Sites",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
@@ -363,6 +364,7 @@
         },
         "profile": {
             "description": "Manage and configure profiles",
+            "view-profiles": "View profiles",
             "profile-uri": "Profile URI",
             "form-name-placeholder": "Enter profile name",
             "label": "profile",
@@ -379,6 +381,7 @@
         },
         "group": {
             "description": "Manage and configure groups",
+            "view-groups": "View groups",
             "group-uri": "Group URI",
             "form-name-placeholder": "Enter group name",
             "form-description-placeholder": "Enter group description",

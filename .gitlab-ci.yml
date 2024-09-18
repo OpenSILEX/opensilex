@@ -33,9 +33,9 @@ variables:
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
-  MVN_VERSION: 3.8.6
+  MVN_VERSION: 3.9.9
   # DEFAULT SERVER JAVA VERSION
-  JAVA_VERSION: 11
+  JAVA_VERSION: 17
   ## DEPLOY CONFIGS ##
   # REMOTE SERVER CONFIG
   RSYNC_INSTANCES_OPTIONS: "--progress --delete"
@@ -90,10 +90,14 @@ variables:
       if [ ! -z "$COMMIT_SHA_OPENSILEX_DEV" ]; then
         git checkout $COMMIT_SHA_OPENSILEX_DEV
       fi
+    - if [ ! -z $MVN_PROFILE ]; then
+    -   MVN_PROFILE="-P $MVN_PROFILE"
+    -   echo "$MVN_PROFILE will be used"
+    - fi
   stage: build
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION-focal
   script:
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION -DskipTests=$MAVEN_SKIP_TESTS
+    - mvn clean install $MVN_PROFILE $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION -DskipTests=$MAVEN_SKIP_TESTS
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - if [ -d "artifacts" ]; then rm -r artifacts; fi
     - mkdir artifacts
@@ -461,7 +465,7 @@ opensilex-release:close:
 
 opensilex-release:publish:
   stage: release
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION-focal
   script:
     - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
     -   echo 'PUBLISH_RELEASE_TAG must be set'
@@ -478,7 +482,7 @@ opensilex-release:publish:
     - git fetch origin --tags
     # Checkout the release tag & build with the correct revision
     - git checkout $PUBLISH_RELEASE_TAG
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG -DskipTests=true
+    - mvn clean install $MVN_PROFILE $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG -DskipTests=true
     # Extract release description from changelog
     # The CHANGELOG.md file should have a section starting with "## [$PUBLISH_RELEASE_TAG]", for example "## [1.0.0-rc+4]"
     # Otherwise, "Missing release notes" will be set as the release description
@@ -540,12 +544,16 @@ update:nightly:builds:branch:
   before_script:
     - if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
     - if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
+    - if [ ! -z $MVN_PROFILE ]; then
+    -   MVN_PROFILE="-P $MVN_PROFILE"
+    -   echo "$MVN_PROFILE will be used"
+    - fi
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
     - apt-get update && apt-get install -y git
   stage: build
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   script:
-    - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MVN_PROFILE $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:
@@ -557,18 +565,19 @@ update:nightly:builds:branch:
 .with_java11: &java11
   variables:
     JAVA_VERSION: 11
- 
-.with_java17: &java17
+    MVN_PROFILE: "for-java-11" 
+    
+.with_java21: &java21
   variables:
-    JAVA_VERSION: 17
+    JAVA_VERSION: 21  
 
-
-test:build:java11:
+test:build:java11: 
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java17:
-  <<: *java17
+
+test:build:java21:
+  <<: *java21
   <<: *test_build_on_schedules
 
 #test:build:java17:

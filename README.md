@@ -45,11 +45,11 @@ NOTE: OpenSILEX Production's installation available in : [production.md](./opens
 
 First you need to have this software installed :
 
-- [Java JDK 11+](https://jdk.java.net/) (Our project is tested with JDK versions 11, 13 and 14)
-- [Maven 3.6+](https://maven.apache.org/install.html)
-- [Git 2.17.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [docker 19.03.1+](https://docs.docker.com/install/)
-- [docker-compose 1.24.1+](https://docs.docker.com/compose/install/)
+- [Java JDK 11+](https://jdk.java.net/) (Our project is tested with JDK versions 11 and 17)
+- [Maven 3.9+](https://maven.apache.org/install.html)
+- [Git 2.34.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [docker 27.1.1+](https://docs.docker.com/install/)
+- [docker compose plugin 2+](https://docs.docker.com/compose/install/)
 
 Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation where your specific user must have read and write permissions.
 

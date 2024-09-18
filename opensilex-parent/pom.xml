@@ -130,7 +130,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
-        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <csv.parser.version>2.9.1</csv.parser.version>
         <email.simple.java.mail>6.7.6</email.simple.java.mail>
         <mustache.compiler.version>0.9.14</mustache.compiler.version>

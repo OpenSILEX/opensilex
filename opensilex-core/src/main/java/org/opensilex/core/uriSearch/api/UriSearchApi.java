@@ -65,7 +65,7 @@ public class UriSearchApi {
     public Response searchByUri(
             @ApiParam(value = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
-        UriSearchLogic logic = new UriSearchLogic(sparql, currentUser);
+        UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser);
 
         //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
         List<BasicMongoSparqlDTO> results = logic.searchByUri(uri);

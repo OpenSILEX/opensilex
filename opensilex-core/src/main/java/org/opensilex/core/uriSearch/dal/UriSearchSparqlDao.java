@@ -1,5 +1,6 @@
 package org.opensilex.core.uriSearch.dal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -7,66 +8,92 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ThrowingConsumer;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class UriSearchSparqlDao {
     private final SPARQLService sparql;
+    private final AccountModel currentUser;
 
-    public UriSearchSparqlDao(SPARQLService sparql) {
+    public UriSearchSparqlDao(SPARQLService sparql, AccountModel currentUser) {
         this.sparql = sparql;
+        this.currentUser = currentUser;
     }
 
     //#region: PUBLIC METHODS
 
-    public List<SPARQLNamedResourceModel> searchByUri(URI uri) {
-        sparql.executeSelectQuery()
-        return new ArrayList<SPARQLNamedResourceModel>() {};
+    public List<SPARQLNamedResourceModel> searchByUri(URI uri) throws Exception {
+        List<SPARQLNamedResourceModel> resultsAsModels = new ArrayList<>();
+        sparql.executeSelectQueryAsStream(
+                generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));
+        return resultsAsModels;
     }
-    /*
-    sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            String expandedFactorURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(FactorLevelModel.URI_FIELD));
-            if (!loadedFactors.containsKey(expandedFactorURI)) {
-                loadedFactors.put(expandedFactorURI, mapper.createInstance(graph, result, language, sparql));
-            }
-            String expandedSoURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(soVar.getVarName()));
-            if (!resultMap.containsKey(expandedSoURI)) {
-                resultMap.put(expandedSoURI, new ArrayList<>());
-            }
-            resultMap.get(expandedSoURI).add(loadedFactors.get(expandedFactorURI));
-        }, Exception.class));
-     */
 
     //#endregion
     //#region: PRIVATE METHODS
 
     private SPARQLNamedResourceModel buildModelFromSparqlResult(SPARQLResult result) {
         SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+        //uri
         String expandedURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLNamedResourceModel.URI_FIELD));
         model.setUri(URI.create(expandedURI));
+        //name
         model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
-        model.setTypeLabel();
+        //type
+        String typeUri = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD));
+        model.setType(URI.create(typeUri));
+        //typename
+        SPARQLLabel typeLabel = new SPARQLLabel();
+        typeLabel.setDefaultLang(currentUser.getLanguage());
+        typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+        model.setTypeLabel(typeLabel);
+        //publisher, published, updated
+        //TODO This is duplicated, in ontology store loader, not sure where to put this
+        String publisherUri = SPARQLDeserializers.getShortURI(result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD));
+        String publicationDate = result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+        String lastUpdateDate = result.getStringValue(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
+        if (Objects.nonNull(publisherUri)) {
+            model.setPublisher(URI.create(publisherUri));
+        }
+        if (Objects.nonNull(publicationDate)) {
+            try {
+                model.setPublicationDate(OffsetDateTime.parse(publicationDate));
+            } catch (DateTimeParseException e) {
+                model.setPublicationDate(null);
+            }
+        }
+        if (Objects.nonNull(lastUpdateDate)) {
+            try {
+                model.setLastUpdateDate(OffsetDateTime.parse(lastUpdateDate));
+            } catch (DateTimeParseException e) {
+                model.setLastUpdateDate(null);
+            }
+        }
+
+        return model;
     }
 
     /**
      *
-     * @return A sparql request that will fetche, name, type, typename and metadata for the passed uri.
+     * @return A sparql request that will fetch, name, type, typename and metadata for the passed uri.
      */
-    private SelectBuilder generateSparqlRequest(URI uri, AccountModel currentUser) throws Exception {
+    private SelectBuilder generateSparqlRequest(URI uri) throws Exception {
         String lang = currentUser.getLanguage();
         SelectBuilder result = new SelectBuilder();
         //Vars

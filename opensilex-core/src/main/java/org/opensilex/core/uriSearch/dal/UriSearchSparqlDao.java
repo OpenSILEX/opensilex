@@ -55,7 +55,11 @@ public class UriSearchSparqlDao {
     //#region: PRIVATE METHODS
 
     private SPARQLNamedResourceModel buildModelFromSparqlResult(SPARQLResult result) {
-        return ne
+        SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+        String expandedURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLNamedResourceModel.URI_FIELD));
+        model.setUri(URI.create(expandedURI));
+        model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+        model.setTypeLabel();
     }
 
     /**

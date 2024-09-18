@@ -13,6 +13,8 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.uriSearch.bll.UriSearchLogic;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
@@ -42,7 +44,10 @@ public class UriSearchApi {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBServiceV2 nosql;
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -65,7 +70,7 @@ public class UriSearchApi {
     public Response searchByUri(
             @ApiParam(value = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
-        UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser);
+        UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser, fs);
 
         //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
         List<BasicMongoSparqlDTO> results = logic.searchByUri(uri);

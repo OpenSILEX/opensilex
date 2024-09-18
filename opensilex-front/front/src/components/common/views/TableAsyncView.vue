@@ -239,7 +239,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       localStorage.setItem("tabPath", this.routeArr[2]);
       localStorage.setItem("tabPage", "1");
       this.currentPage = 1;
-      this.tableRef.refresh()
+      this.$nextTick( () => this.tableRef.refresh())
     }
   }
 

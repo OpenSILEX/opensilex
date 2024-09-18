@@ -4,7 +4,6 @@
 target/
 node_modules/
 **/nb-configuration.xml
-**/site/
 **/front/dist
 **/front/src/lib
 **/front/types

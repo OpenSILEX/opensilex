@@ -128,22 +128,23 @@
             >
               <template v-slot:body>
                 <opensilex-TableView
-                    v-if="device.relations.length !== 0"
-                    :items="device.relations.filter(relation => isVariableRelation(relation))"
+                    v-if="device.relations.length !== 0 && linkedVariables.length > 0"
+                    :items="linkedVariables"
                     :fields="relationsFields"
                     :globalFilterField="true"
                 >
-                  <template v-slot:cell(uri)="{ data }">
+                  <template v-slot:cell(name)="{data}">
                     <opensilex-UriLink
-                        :uri="data.item.value"
-                        :value="data.item.value"
-                        :to="{
-                      path:
-                        '/variable/details/' +
-                        encodeURIComponent(data.item.value),
-                    }"
-                    ></opensilex-UriLink>
-                  </template>
+                      :uri="data.item.uri"
+                      :value="data.item.name"
+                      :to="{
+                        path:
+                         '/variable/details/'+ 
+                         encodeURIComponent(data.item.uri)
+                      }"
+                    >
+                    </opensilex-UriLink>
+                  </template> 
                 </opensilex-TableView>
 
                 <p v-else>
@@ -194,18 +195,20 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {DeviceGetDetailsDTO, DevicesService, RDFObjectRelationDTO} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import Oeev from "../../../ontologies/Oeev";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import * as http from "http";
+import {DeviceGetDetailsDTO, DevicesService, RDFObjectRelationDTO} from "opensilex-core/index";
 import DeviceModalForm from "../form/DeviceModalForm.vue";
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {EventsService} from "opensilex-core/api/events.service";
-import Oeev from "../../../ontologies/Oeev";
 import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
 import {PositionsService} from "opensilex-core/api/positions.service";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
-import * as http from "http";
+import {VariableDetailsDTO} from 'opensilex-core/index';
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class DeviceDescription extends Vue {
@@ -215,6 +218,7 @@ export default class DeviceDescription extends Vue {
   $t: any;
   $i18n: any;
   service: DevicesService;
+  variablesService: VariablesService;
   vueJsOntologyService: VueJsOntologyExtensionService;
 
   uri: string = null;
@@ -227,14 +231,16 @@ export default class DeviceDescription extends Vue {
   @Ref("tableAtt") readonly tableAtt!: any;
 
   renderModalForm: boolean = false;
+  linkedVariablesURIs : Array<string> = [];
+  linkedVariables : Array<VariableDetailsDTO> = [];
 
   eventsService: EventsService;
   positionService: PositionsService;
 
   relationsFields: any[] = [
     {
-      key: "uri",
-      label: "DeviceDescription.uri",
+      key: "name",
+      label: "DeviceDescription.name",
       sortable: true,
     },
   ];
@@ -295,6 +301,7 @@ export default class DeviceDescription extends Vue {
 
   created() {
     this.service = this.$opensilex.getService<DevicesService>("opensilex.DevicesService");
+    this.variablesService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
     this.vueJsOntologyService = this.$opensilex.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService");
     //Get Events Service
     this.eventsService = this.$opensilex.getService<EventsService>("opensilex.EventsService");
@@ -309,16 +316,39 @@ export default class DeviceDescription extends Vue {
 
   loadDevice() {
     this.service
-        .getDevice(this.uri)
-        .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
-          this.device = http.response.result;
-          this.getAddInfo();
-          this.loadProperties();
-          this.loadLastCalibrationEvent();
-          this.loadLastPosition();
-          this.loadPersonInCharge();
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getDevice(this.uri)
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+        this.device = http.response.result;
+        this.getAddInfo();
+        this.loadProperties();
+        this.loadLastCalibrationEvent();
+        this.loadLastPosition();
+        this.loadPersonInCharge();
+        this.getLinkedVariablesURIs(this.device)
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  getLinkedVariablesURIs(device){
+    for (const relation of device.relations) {
+      if(this.isVariableRelation(relation)){
+        this.linkedVariablesURIs.push(relation.value);
+      }
+    }
+    if (device.relations.length > 0) {
+      this.getLinkedVariables(this.linkedVariablesURIs) 
+    }
+  }
+
+  getLinkedVariables(linkedVariablesURIs){
+    this.variablesService
+      .getVariablesByURIs(this.linkedVariablesURIs)
+      .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
+        for (const variable of http.response.result) {
+          this.linkedVariables.push(variable)
+        }
+      })
+    .catch(this.$opensilex.errorHandler);
   }
 
   loadProperties() {

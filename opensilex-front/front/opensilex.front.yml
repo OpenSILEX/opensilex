@@ -57,6 +57,16 @@ menu:
           icon: ik#ik-thermometer
           title: Device.title
           description: Device.description
+      -   id: sites
+          label: component.menu.site
+          route:
+            path: /sites
+            component: opensilex-SiteView
+            credentials:
+              - organization-access
+            icon: ik#ik-map-pin
+            title: SiteView.title
+            description: SiteView.description
       - id: persons
         label: component.menu.security.persons
         route:
@@ -244,6 +254,7 @@ menu:
           icon: ik#ik-settings
           title: component.menu.namespaces
           description: Namespaces.description
+
   - id: configuration
     label: component.menu.configuration
     children:
@@ -317,7 +328,7 @@ routes:
     component: opensilex-OrganizationDetailView
     icon: ik#ik-globe
   - path: /organization/site/details/:uri
-    component: opensilex-SiteView
+    component: opensilex-SiteDetailView
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     rdfType: vocabulary:Experiment

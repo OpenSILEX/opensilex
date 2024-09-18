@@ -24,6 +24,8 @@ public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
     }
 
     public static Repository getInMemoryRepository() {
+        //@todo To resoluve the `GroupConcat` errors, maybe change the repo config after updating RDF4J to 5.x.x.
+        //      See https://rdf4j.org/documentation/programming/repository/#the-repositorymanager-and-repositoryprovider
         MemoryStore memoryStore = new MemoryStore();
         ShaclSail shacl = new ShaclSail(memoryStore);
         SailRepository repository = new SailRepository(shacl);

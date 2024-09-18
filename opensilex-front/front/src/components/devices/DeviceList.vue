@@ -231,7 +231,6 @@
             v-if="showVariableForm"
             label="label"
             ref="variableSelection"
-            :isModalSearch="true"
             :required="true"
             :multiple="true"
             @onValidate="editDeviceVar"

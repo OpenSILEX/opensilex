@@ -1304,7 +1304,7 @@ public class DataAPI {
         filter.setProvenances(provenances);
         filter.setDevices(devices);
 
-        List<VariableGetDTO> dtoList = dataLogic.getUsedVariablesAsStream(filter)
+        List<VariableGetDTO> dtoList = dataLogic.getUsedVariablesByFilter(filter).stream()
                 .map(e -> VariableGetDTO.fromModel(e, null))
                 .collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

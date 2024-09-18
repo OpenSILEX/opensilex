@@ -111,25 +111,25 @@ the filter list of each of these classes. For this filter 2 new files were added
 
 ### New files :
 
-- `CriteriaOperatorSelector`, a simple file containing a SelectForm that allows the user
+- `CriteriaOperatorSelector`, a simple file containing a FormSelector that allows the user
 to select a mathematical operator, from the ones mentioned in the Ontology section of this documentation (<,>,<=,>= and =).
 
-- `CriteriaSearchModalCreator`, is a field that has a similar way of functioning as a SelectForm,
-I decided not to use a SelectForm as the "request builder" idea behind this field is too diferent from the
-"select some items" idea behind the SelectForm, even if the final display is quite similar.
+- `CriteriaSearchModalCreator`, is a field that has a similar way of functioning as a FormSelector,
+I decided not to use a FormSelector as the "request builder" idea behind this field is too diferent from the
+"select some items" idea behind the FormSelector, even if the final display is quite similar.
 
 ### CriteriaSearchModalCreator
 
 **Outer appearance :**
 
-When the field is empty, so when no criteria have been created, it looks exactly the same as a SelectForm. 
+When the field is empty, so when no criteria have been created, it looks exactly the same as a FormSelector. 
 Hitting the two little arrows will take us to a pop-up where we can start building are criteria.
 
-When some criteria have been added, they are recapitulated in the same manor as a SelectForm. The variable's labels are
+When some criteria have been added, they are recapitulated in the same manor as a FormSelector. The variable's labels are
 used instead of their uris, same for the mathmatical operator and then the value goes at the end. For example :
 TailleDePlante > 12.5.
 
-Finally, just like for a SelectForm, we can clear and clear-all. In fact for now this is the only way to remove criteria from the list,
+Finally, just like for a FormSelector, we can clear and clear-all. In fact for now this is the only way to remove criteria from the list,
 the inner part of the modal only allows us to modify criteria already present in the list.
 
 **Inside the modal :**

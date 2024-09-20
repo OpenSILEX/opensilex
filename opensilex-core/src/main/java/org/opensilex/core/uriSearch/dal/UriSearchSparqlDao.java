@@ -112,26 +112,32 @@ public class UriSearchSparqlDao {
         result.addVar(publishedVar);
         result.addVar(updated);
 
-        //Type
-        result.addWhere(uriVar, RDF.type, typeVar);
-
-        //Rdf type label
+        //Rdf type label outside of graph as this information is stored in global graph
         WhereHandler optionalTypeLabelHandler = new WhereHandler();
         optionalTypeLabelHandler.addWhere(result.makeTriplePath(typeVar, RDFS.label, typeNameVar));
         Locale locale = Locale.forLanguageTag(lang);
         optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         result.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
+        //Everything that concerns our uri needs to be by distinct graph to avoid duplicates when same uri is present in multiple graphs
+        //To do this make a subwhere to put in an addGraph operation
+        WhereBuilder inGraphWhere = new WhereBuilder();
+
+        //Type
+        inGraphWhere.addWhere(uriVar, RDF.type, typeVar);
+
         //label
         WhereHandler optionalLabelHandler = new WhereHandler();
         optionalLabelHandler.addWhere(result.makeTriplePath(uriVar, RDFS.label, nameVar));
         optionalLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLNamedResourceModel.NAME_FIELD, locale.getLanguage()));
-        result.getWhereHandler().addOptional(optionalLabelHandler);
+        inGraphWhere.getWhereHandler().addOptional(optionalLabelHandler);
 
         //publisher, published, updated
-        result.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.publisher, publisherVar));
-        result.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
-        result.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.publisher, publisherVar));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
+
+        result.addGraph(makeVar("g"), inGraphWhere);
 
         //uri value
         Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));

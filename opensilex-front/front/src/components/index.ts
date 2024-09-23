@@ -90,14 +90,21 @@ import OrganizationDetail from './organizations/OrganizationDetail.vue';
 components["opensilex-OrganizationDetail"] = OrganizationDetail;
 import OrganizationSelector from './organizations/OrganizationSelector.vue';
 components["opensilex-OrganizationSelector"] = OrganizationSelector;
+
+//sites
+import SiteView from './organizations/site/SiteView.vue';
+components["opensilex-SiteView"] = SiteView;
+import SiteDetailView from './organizations/site/SiteDetailView.vue';
+components["opensilex-SiteDetailView"] = SiteDetailView;
 import SiteDetail from './organizations/site/SiteDetail.vue';
 components["opensilex-SiteDetail"] = SiteDetail;
 import SiteForm from './organizations/site/SiteForm.vue';
 components["opensilex-SiteForm"] = SiteForm;
-import SiteView from './organizations/site/SiteView.vue';
-components["opensilex-SiteView"] = SiteView;
 import SiteSelector from './organizations/site/SiteSelector.vue';
 components["opensilex-SiteSelector"] = SiteSelector;
+import SiteList from './organizations/site/SiteList.vue';
+components["opensilex-SiteList"] = SiteList;
+
 
 // Facilities
 import FacilityModalForm from './facilities/FacilityModalForm.vue';
@@ -124,6 +131,9 @@ import FacilityMonitoringView from "./facilities/views/FacilityMonitoringView.vu
 components["opensilex-FacilityMonitoringView"] = FacilityMonitoringView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
+import FacilitiesModalList from "./facilities/FacilitiesModalList.vue";
+components["opensilex-FacilitiesModalList"] = FacilitiesModalList;
+
 
 import DatePeriodPicker from "./facilities/DatePeriodPicker.vue";
 components["opensilex-DatePeriodPicker"] = DatePeriodPicker;
@@ -179,6 +189,8 @@ components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 
+import ModalFormSelector from './common/forms/ModalFormSelector.vue'
+components["opensilex-ModalFormSelector"] = ModalFormSelector;
 import FormSelector from './common/forms/FormSelector.vue'
 components["opensilex-FormSelector"] = FormSelector;
 import CustomTreeselect from './common/forms/CustomTreeselect.vue'
@@ -412,14 +424,16 @@ import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
 import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
 components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
-import ExperimentModalList from './experiments/ExperimentModalList.vue';
-components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
+import ExperimentSimpleList from "./experiments/ExperimentSimpleList.vue";
+components["opensilex-ExperimentSimpleList"] = ExperimentSimpleList;
 import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisation.vue';
 components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
+import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
+components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
 
 
 // Germplasm
@@ -535,8 +549,6 @@ import ScientificObjectVisualizationForm from './scientificObjects/visualization
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
-import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
-components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
@@ -670,8 +682,6 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
-import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
-components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import DataProvenanceSelector from './data/DataProvenanceSelector.vue';
@@ -753,8 +763,6 @@ components["opensilex-ImageSingle"] = ImageSingle;
 
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
-import VisuForm from './visualization/VisuForm.vue';
-components["opensilex-VisuForm"] = VisuForm;
 import VisuImageGrid from './visualization/VisuImageGrid.vue';
 components["opensilex-VisuImageGrid"] = VisuImageGrid;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';

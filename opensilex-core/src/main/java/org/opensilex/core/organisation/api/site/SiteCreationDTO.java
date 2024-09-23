@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 public class SiteCreationDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
+    protected String description;
+
     protected List<URI> organizations;
 
     protected List<URI> facilities;
@@ -35,6 +37,10 @@ public class SiteCreationDTO extends SiteDTO {
     public void setAddress(SiteAddressDTO address) {
         this.address = address;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     public List<URI> getOrganizations() {
         return organizations;
@@ -74,6 +80,8 @@ public class SiteCreationDTO extends SiteDTO {
             model.setAddress(getAddress().newModel());
         }
 
+        model.setDescription(getDescription());
+
         if (getOrganizations() != null) {
             List<OrganizationModel> organizationModels = getOrganizations().stream().map(organizationUri -> {
                 OrganizationModel organizationModel = new OrganizationModel();
@@ -99,39 +107,6 @@ public class SiteCreationDTO extends SiteDTO {
                 return groupModel;
             }).collect(Collectors.toList());
             model.setGroups(groupModels);
-        }
-    }
-
-    @Override
-    public void fromModel(SiteModel model) {
-        super.fromModel(model);
-
-        SiteAddressModel addressModel = model.getAddress();
-        if (addressModel != null) {
-            SiteAddressDTO addressDTO = new SiteAddressDTO();
-            addressDTO.fromModel(addressModel);
-            setAddress(addressDTO);
-        }
-
-        List<OrganizationModel> organizationModels = model.getOrganizations();
-        if (organizationModels != null) {
-            setOrganizations(organizationModels.stream()
-                    .map(OrganizationModel::getUri)
-                    .collect(Collectors.toList()));
-        }
-
-        List<FacilityModel> facilityModels = model.getFacilities();
-        if (facilityModels != null) {
-            setOrganizations(facilityModels.stream()
-                    .map(FacilityModel::getUri)
-                    .collect(Collectors.toList()));
-        }
-
-        List<GroupModel> groupModels = model.getGroups();
-        if (groupModels != null) {
-            setGroups(groupModels.stream()
-                    .map(GroupModel::getUri)
-                    .collect(Collectors.toList()));
         }
     }
 }

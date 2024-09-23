@@ -10,12 +10,12 @@
     ></opensilex-InputForm>
 
     <!-- Parent -->
-    <opensilex-SelectForm
+    <opensilex-FormSelector
       :selected.sync="form.parent"
       :options="parentOptions"
       :required="true"
       label="component.common.parent"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 
     <opensilex-InputForm
       :value.sync="form.name_translations.en"

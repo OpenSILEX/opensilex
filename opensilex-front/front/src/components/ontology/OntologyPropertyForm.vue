@@ -40,32 +40,32 @@
                 </b-form-group>
             </div>
             <div class="col-lg-6">
-                <opensilex-SelectForm
+                <opensilex-FormSelector
                     v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
                     label="OntologyPropertyForm.data-type"
                     :required="true"
                     :selected.sync="form.range"
                     :options="dataTypes"
                     helpMessage="OntologyPropertyForm.dataProperty-help"
-                ></opensilex-SelectForm>
+                ></opensilex-FormSelector>
 
-                <opensilex-SelectForm
+                <opensilex-FormSelector
                     v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
                     label="OntologyPropertyForm.object-type"
                     :required="true"
                     :selected.sync="form.range"
                     :options="objectTypes"
                     helpMessage="OntologyPropertyForm.objectProperty-help"
-                ></opensilex-SelectForm>
+                ></opensilex-FormSelector>
 
-                <opensilex-SelectForm
+                <opensilex-FormSelector
                     v-if="form.rdf_type == null"
                     label="component.common.parent"
                     :required="true"
                     :selected.sync="form.parent"
                     :options="availableParents"
                     helpMessage="OntologyPropertyForm.parent-help"
-                ></opensilex-SelectForm>
+                ></opensilex-FormSelector>
 
                 <opensilex-TypeForm
                     :type.sync="form.domain"

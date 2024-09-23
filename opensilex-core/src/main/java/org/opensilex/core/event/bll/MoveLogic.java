@@ -93,6 +93,11 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
+
+        //A move can exist that does not have any positions, if the noSqlModel does not exist then return our Move instead of throwing an error
+        if(!noSqlDao.exists(clientSession, uri)) {
+            return model;
+        }
         MoveNosqlModel noSqlModel = noSqlDao.get(clientSession, uri);
         if (noSqlModel != null) {
             noSqlModel.setUri(uri);
@@ -161,6 +166,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
 
         Objects.requireNonNull(uri);
+        if(!noSqlDao.exists(clientSession, uri)){
+            return null;
+        }
 
         Bson projection = Projections.fields(excludeId());
 
@@ -311,6 +319,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 excludeId(), // don't fetch position _id field
                 getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
         );
+
+        if(!noSqlDao.exists(clientSession, moveURI)) {
+            return null;
+        }
 
         MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
 

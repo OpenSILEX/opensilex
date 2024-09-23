@@ -1,27 +1,20 @@
 package org.opensilex.nosql;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.Defaults;
-import de.flapdoodle.embed.mongo.config.MongoCmdOptions;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
+import de.flapdoodle.embed.mongo.client.ClientActions;
+import de.flapdoodle.embed.mongo.client.SyncClientAdapter;
+import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.mongo.packageresolver.Command;
-import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.process.ProcessOutput;
-import org.bson.Document;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.embed.process.io.ProcessOutput;
+import de.flapdoodle.reverse.TransitionWalker;
+import de.flapdoodle.reverse.transitions.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
@@ -30,13 +23,16 @@ public class EmbedMongoClient {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(EmbedMongoClient.class);
 
-    private final MongodExecutable mongoExec;
-    private final MongodProcess mongod;
+    private TransitionWalker.ReachedState<RunningMongodProcess> runningMongoDb;
+
     public static final int MONGO_PORT = 28018;
-    public static final String MONGO_DATABASE = "admin";
     public static final String MONGO_HOST = "localhost";
+    public static final String REPLICA_SET_NAME = "rs0";
+    public static final Version MONGOD_VERSION = Version.V6_0_2;
+    public static final Boolean SILENT_OUTPUT = true;
 
     private static EmbedMongoClient INSTANCE;
+
     public static EmbedMongoClient getInstance() throws IOException, InterruptedException {
         if (INSTANCE == null) {
             INSTANCE = new EmbedMongoClient();
@@ -44,55 +40,31 @@ public class EmbedMongoClient {
         return INSTANCE;
     }
 
-    private EmbedMongoClient() throws IOException {
+    public void start() {
+        var storage = Storage.of(REPLICA_SET_NAME, 5000);
+        var mongod = Mongod.instance()
+                .withNet(Start.to(Net.class)
+                        .initializedWith(Net.defaults().withPort(MONGO_PORT)))
+                .withMongodArguments(Start.to(MongodArguments.class)
+                        .initializedWith(MongodArguments.defaults()
+                                .withReplication(storage)
+                                .withUseNoJournal(false)
+                        ));
 
-        RuntimeConfig runtimeConfig = Defaults.runtimeConfigFor(Command.MongoD)
-                .processOutput(ProcessOutput.silent())
-                .build();
-
-        MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-        int nodePort = MONGO_PORT;
-        Map<String, String> args = new HashMap<>();
-        String replicaName = "rs0";
-        args.put("--replSet", replicaName);
-        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V6_0_2)
-                .args(args)
-                .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
-                .net(new Net("127.0.0.1", nodePort, false)).build());
-        mongod = mongoExec.start();
-
-        try (MongoClient mongo = MongoClients.create("mongodb://127.0.0.1:" + nodePort)) {
-            MongoDatabase adminDatabase = mongo.getDatabase(MONGO_DATABASE);
-
-            Document config = new Document("_id", replicaName);
-            BasicDBList members = new BasicDBList();
-            members.add(new Document("_id", 0)
-                    .append("host", MONGO_HOST + ":" + nodePort));
-            config.put("members", members);
-
-            adminDatabase.runCommand(new Document("replSetInitiate", config));
+        if (SILENT_OUTPUT) {
+            mongod = mongod.withProcessOutput(Start.to(ProcessOutput.class)
+                    .initializedWith(ProcessOutput.silent()));
         }
+
+        runningMongoDb = mongod.start(MONGOD_VERSION, ClientActions.initReplicaSet(new SyncClientAdapter(), MONGOD_VERSION, storage));
 
         await().atMost(5, TimeUnit.SECONDS);
     }
 
     public void stop() {
-        if (mongod != null) {
-            try {
-                mongod.stopInternal();
-            } catch (IllegalStateException e) {
-                LOGGER.error(e.getMessage());
-            } finally {
-                try {
-                    mongod.stop();
-                } catch (IllegalStateException e) {
-                    await().atMost(1, TimeUnit.MINUTES).until(() -> !mongod.isProcessRunning());
-                }
-            }
-        }
-
-        if (mongoExec != null) {
-            mongoExec.stop();
+        if (runningMongoDb != null) {
+            runningMongoDb.close();
+            runningMongoDb = null;
         }
     }
 

@@ -1,14 +1,14 @@
 <template>
   <div>
-    <opensilex-SelectForm
-      ref="selectForm"
+    <opensilex-FormSelector
+      ref="formSelector"
       :label="property.name"
       :selected.sync="internalValue"
       :multiple="property.is_list"
       :required="property.is_required"
       :optionsLoadingMethod="loadFacilities"
       placeholder="FacilityPropertySelector.placeholder"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
   </div>
 </template>
 

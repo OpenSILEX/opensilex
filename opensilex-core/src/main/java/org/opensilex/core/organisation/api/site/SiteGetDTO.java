@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 public class SiteGetDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
+    protected String description;
+
     protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
     protected List<NamedResourceDTO<GroupModel>> groups;
@@ -50,6 +54,10 @@ public class SiteGetDTO extends SiteDTO {
     public void setAddress(SiteAddressDTO address) {
         this.address = address;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
         return organizations;
@@ -92,42 +100,6 @@ public class SiteGetDTO extends SiteDTO {
     }
 
     @Override
-    public void toModel(SiteModel model) {
-        super.toModel(model);
-
-        if (getAddress() != null) {
-            model.setAddress(getAddress().newModel());
-        }
-
-        if (getOrganizations() != null) {
-            List<OrganizationModel> organizationModels = getOrganizations().stream().map(organizationDto -> {
-                OrganizationModel organizationModel = new OrganizationModel();
-                organizationModel.setUri(organizationDto.getUri());
-                return organizationModel;
-            }).collect(Collectors.toList());
-            model.setOrganizations(organizationModels);
-        }
-
-        if (getFacilities() != null) {
-            List<FacilityModel> facilityModels = getFacilities().stream().map(facilityDto -> {
-                FacilityModel facilityModel = new FacilityModel();
-                facilityModel.setUri(facilityDto.getUri());
-                return facilityModel;
-            }).collect(Collectors.toList());
-            model.setFacilities(facilityModels);
-        }
-
-        if (getGroups() != null) {
-            List<GroupModel> groupModels = getGroups().stream().map(groupDto -> {
-                GroupModel groupModel = new GroupModel();
-                groupModel.setUri(groupDto.getUri());
-                return groupModel;
-            }).collect(Collectors.toList());
-            model.setGroups(groupModels);
-        }
-    }
-
-    @Override
     public void fromModel(SiteModel model) {
         super.fromModel(model);
 
@@ -136,6 +108,10 @@ public class SiteGetDTO extends SiteDTO {
             SiteAddressDTO addressDTO = new SiteAddressDTO();
             addressDTO.fromModel(addressModel);
             setAddress(addressDTO);
+        }
+
+        if (model.getDescription() != null) {
+            setDescription(model.getDescription());
         }
 
         List<OrganizationModel> organizationModels = model.getOrganizations();
@@ -163,10 +139,10 @@ public class SiteGetDTO extends SiteDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(SiteModel siteModel, GeospatialModel geospatialModel) throws JsonProcessingException {
+    public void fromModelWithGeospatialInfo(SiteModel siteModel, LocationModel locationModel) throws JsonProcessingException {
         fromModel(siteModel);
-        if (geospatialModel != null) {
-            setGeometry(GeospatialDAO.geometryToGeoJson(geospatialModel.getGeometry()));
+        if (locationModel != null) {
+            setGeometry(LocationLogic.geometryToGeoJson(locationModel.getGeometry()));
         }
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
      <b-input-group size="sm">
-        <slot name="export" v-if="this.computedTotalRows > 0" >          
+        <slot name="export" v-if="this.computedTotalRows > 0" >
         </slot>
       </b-input-group>
     <div class="card">
@@ -18,7 +18,13 @@
       <div v-if="showCount">
         <div v-if="totalRows > 0">
           <strong>
-            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.totalRows})}}
+            <span class="ml-1"> {{
+                $t('component.common.list.pagination.nbEntries', {
+                  limit: getCurrentItemLimit(),
+                  offset: getCurrentItemOffset(),
+                  totalRow: this.totalRows
+                })
+              }}
               </span>
           </strong>
         </div>
@@ -30,21 +36,24 @@
         </div>
       </div>
       <b-table
-        :id="this.uuid"
-        ref="tableRef"
-        :current-page="currentPage"
-        :fields="fields"
-        :filter="filter"
-        :items="items"
-        :per-page="pageSize"
-        :sort-by="sortBy"
-        hover
-        primary-key="uri"
-        responsive
-        small
-        sort-icon-left
-        striped
-        @filtered="onFiltered"
+          :current-page="currentPage"
+          :fields="fields"
+          :filter="filter"
+          :items="items"
+          :per-page="pageSize"
+          :sort-by="sortBy"
+          :sort-desc="sortDesc"
+          :selectable="selectable"
+          select-mode="single"
+          hover
+          primary-key="uri"
+          responsive
+          small
+          sort-icon-left
+          striped
+          @filtered="onFiltered"
+          @row-selected="emitRowSelected"
+          ref="tableRef"
       >
         <template
           v-for="(field, index) in fields"
@@ -73,7 +82,6 @@
       <b-pagination
         v-if="withPagination"
         v-model="currentPage"
-        :aria-controls="this.uuid"
         :per-page="pageSize"
         :total-rows="computedTotalRows"
       ></b-pagination>
@@ -84,100 +92,113 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-
-let table_uuid = 0;
+import {BTable} from "bootstrap-vue";
 
 @Component
 export default class TableView extends Vue {
-  $opensilex: any;
-  $route: any;
-  $store: any;
-  @Ref("tableRef") readonly tableRef!: any;
 
-  @PropSync("items", { default: [] })
-  data: any[];
+  //#region Props
+  @PropSync("items", {default: []})
+  private data: any[];
 
   @Prop()
-  fields: any[];
+  private readonly fields: any[];
 
-  @Prop({
-    default: "name",
-  })
-  defaultSortBy;
+  @Prop({default: "name"})
+  private readonly defaultSortBy;
 
-  @Prop({
-    default: "TableView.filter.placeholder",
-  })
-  filterPlaceholder: string;
+  @Prop({default: "TableView.filter.placeholder"})
+  private readonly filterPlaceholder: string;
 
-  placeholder;
+  @Prop({default: 10})
+  private readonly pageSize: number;
 
-  currentPage: number = 1;
+  @Prop({default: false})
+  private readonly globalFilterField: boolean;
 
-  @Prop({
-    default: 10,
-  })
-  pageSize: number;
+  @Prop({default: true})
+  private readonly showCount: boolean;
 
-  @Prop({
-    default: false,
-  })
-  globalFilterField: boolean;
-
-  @Prop({
-    default: true
-  })
-  showCount: boolean;
-
-  @Prop({
-    default: true
-  })
-  withPagination: boolean;
+  @Prop({default: true})
+  private readonly withPagination: boolean;
 
   @Prop()
-  sortBy;
+  private readonly sortBy: string;
 
-  filter: string = null;
+  @Prop({default: false})
+  private readonly sortDesc: boolean;
 
-  uuid: string;
+  @Prop({default: false})
+  private readonly selectable: boolean;
+  //#endregion
 
-  totalRows: number = 1;
+  //#region Refs
+  @Ref("tableRef") private readonly tableRef!: BTable;
+  //#endregion
 
-  beforeCreate() {
-    this.uuid = "tableView_" + table_uuid.toString();
-    table_uuid += 1;
+  //#region data
+  private currentPage: number = 1;
+
+  private filter: string = null;
+
+  private totalRows: number = 1;
+  //#endregion
+
+  //#region Computed
+  private get computedTotalRows() {
+    return this.filter == null ? (this.totalRows = this.data.length) : this.totalRows
   }
 
-  getHeadTemplateName(key) {
-    return "head(" + key + ")";
+  //#endregion
+
+  //#region Events
+  private emitRowSelected(selected: Array<any>) {
+    this.$emit('row-selected', selected[0]);
   }
 
-  getCellTemplateName(key) {
-    return "cell(" + key + ")";
-  }
+  //#endregion
 
-  mounted() {
-    // Set the initial number of items
-    this.totalRows = this.data.length;
-  }
-
-  onFiltered(filteredItems) {
+  //#region Event handlers
+  private onFiltered(filteredItems) {
     // Trigger pagination to update the number of buttons/pages due to filtering
     this.totalRows = filteredItems.length;
     this.currentPage = 1;
   }
 
-  get computedTotalRows() {
-    return this.filter == null ? (this.totalRows = this.data.length) : this.totalRows
+  //#endregion
+
+  //#region Public methods
+  public selectRow(rowNumber: number) {
+    this.tableRef.selectRow(rowNumber);
   }
 
-  getCurrentItemLimit() : number {
-    return (this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
+  //#endregion
+
+  private mounted() {
+    // Set the initial number of items
+    this.totalRows = this.data.length;
   }
 
-  getCurrentItemOffset() : number {
-    return (this.pageSize * (this.currentPage ) < this.totalRows ? this.pageSize * (this.currentPage )  :  this.totalRows )
+  //#endregion
+
+  //#region Private methods
+  private getHeadTemplateName(key) {
+    return "head(" + key + ")";
   }
+
+  private getCellTemplateName(key) {
+    return "cell(" + key + ")";
+  }
+
+  private getCurrentItemLimit(): number {
+    return (this.pageSize * (this.currentPage - 1) < 0 ? 0 : this.pageSize * (this.currentPage - 1))
+  }
+
+  private getCurrentItemOffset(): number {
+    return (this.pageSize * (this.currentPage) < this.totalRows ? this.pageSize * (this.currentPage) : this.totalRows)
+  }
+
+  //#endregion
 }
 </script>
 

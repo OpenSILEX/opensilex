@@ -188,7 +188,8 @@
                 "develop": "Develop",
                 "release": "Release"
             },
-            "bad-notification-end-date": "The end date format set for the notification is incorrect."
+            "bad-notification-end-date": "The end date format set for the notification is incorrect.",
+            "uri-search-placeholder": "Search by URI"
         },
         "menu": {
             "dashboard": "Dashboard",

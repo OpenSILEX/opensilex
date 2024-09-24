@@ -106,6 +106,21 @@
     </Transition>
     <!-- Burger menu end -->
 
+          <!-- UriSearch -->
+          <b-input-group class="uriSearchContainer">
+            <opensilex-StringFilter
+              :filter.sync="uriSearchValue"
+              placeholder="component.header.uri-search-placeholder"
+              class="searchFilter"
+              @handlingEnterKey="handleUriGlobalSearch"
+            ></opensilex-StringFilter>
+            <b-input-group-append>
+              <b-button class="greenThemeColor" @click="handleUriGlobalSearch">
+                <i class="icon ik ik-search"></i>
+              </b-button>
+            </b-input-group-append>
+          </b-input-group>
+
           <!--help button-->
           <opensilex-HelpButton
             class="topbarBtnHelp"
@@ -113,7 +128,7 @@
             label="component.header.user-guide"
           ></opensilex-HelpButton>
 
-          <span class="headerMenuIcons">
+          <div class="headerMenuIcons">
 
             <!--language button -->
             <b-dropdown
@@ -156,7 +171,7 @@
                 {{ $t("component.header.account.logout") }}
               </b-dropdown-item>
             </b-dropdown>
-          </span>
+          </div>
         </div>
       </div>
     </div>
@@ -182,6 +197,7 @@ export default class DefaultHeaderComponent extends Vue {
   icon: any;
   title: any;
   description: any;
+  uriSearchValue: String = "";
 
   /**
    * Return the current connected user
@@ -310,6 +326,10 @@ export default class DefaultHeaderComponent extends Vue {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.handleResize);
+  }
+
+  handleUriGlobalSearch(){
+
   }
 
   handleResize() {
@@ -655,7 +675,50 @@ export default class DefaultHeaderComponent extends Vue {
   }
 
   .headerMenuIcons, .topbarBtnHelp {
-    display: none;
+    display: none
   }
+
+  /*::v-deep .b-input-group {
+    //flex-wrap: nowrap;
+    width: 70%;
+  }*/
+  ::v-deep .input-group{
+    flex-wrap: nowrap;
+    width: 20%;
+  }
+
+
+  //TODO delete this bullshit
+
+  /*.uriSearchContainer {
+    white-space: nowrap; !* Prevents elements from wrapping to the next line *!
+  }
+
+  .inline-input, .inline-button {
+    display: inline-block; !* Ensures both elements are inline *!
+    vertical-align: middle; !* Aligns them properly *!
+    margin-right: 10px; !* Adds some space between them *!
+  }*/
+
+
+  .uriSearchContainer {
+    //display: flex;
+    //align-items: center; //!* Vertically center both elements *!
+    //gap: 10px; //!* Space between elements *!
+  }
+/*
+  .searchFilter {
+    flex: 1; !* Make the custom component take up available space *!
+    display: flex; !* Ensure it's treated as a flex item *!
+    max-width: 100%; !* Prevents it from overflowing *!
+    width: auto; !* Avoid forcing full width if this is being inherited *!
+  }
+
+  .icon {
+    font-size: 20px; !* Adjust size as needed *!
+    cursor: pointer;
+    flex-shrink: 0; !* Prevents the icon from shrinking *!
+  }*/
+
 }
 </style>

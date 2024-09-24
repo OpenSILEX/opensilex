@@ -104,6 +104,7 @@ public class UriSearchSparqlDao {
         Var publisherVar = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
         Var publishedVar = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Var updated = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
+        Var graphVar = makeVar("g");
         result.addVar(uriVar);
         result.addVar(nameVar);
         result.addVar(typeVar);
@@ -111,6 +112,7 @@ public class UriSearchSparqlDao {
         result.addVar(publisherVar);
         result.addVar(publishedVar);
         result.addVar(updated);
+        result.addVar(graphVar);
 
         //Rdf type label outside of graph as this information is stored in global graph
         WhereHandler optionalTypeLabelHandler = new WhereHandler();
@@ -137,7 +139,7 @@ public class UriSearchSparqlDao {
         inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
         inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
 
-        result.addGraph(makeVar("g"), inGraphWhere);
+        result.addGraph(graphVar, inGraphWhere);
 
         //uri value
         Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));

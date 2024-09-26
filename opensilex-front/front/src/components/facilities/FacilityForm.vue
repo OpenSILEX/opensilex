@@ -105,37 +105,81 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
 import { FacilityCreationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 @Component
 export default class FacilityForm extends Vue {
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  $opensilex: any;
+  //#region Plugins and services
+  $opensilex: OpenSilexVuePlugin;
   ontologyService: OntologyService;
   vueOntologyService: VueJsOntologyExtensionService;
-  uriGenerated = true;
+  //endregion
 
+  //#region Props
   @Prop({default: false})
-  editMode: boolean;
+  private readonly editMode: boolean;
 
-  @Prop({
-    default: FacilityForm.getEmptyForm()
-  })
-  form: FacilityCreationDTO;
-  hasAddress: boolean;
+  @Prop({default: FacilityForm.getEmptyForm()})
+  private readonly form: FacilityCreationDTO;
+  //endregion
 
-  baseType: string;
-  typeModel = null;
-  propertyComponents = [];
-
+  //#region Refs
+  @Ref("validatorRef")
+  private readonly validatorRef!: any;
   @Ref("ontologyRelationsForm")
-  ontologyRelationsForm: OntologyRelationsForm;
+  private readonly ontologyRelationsForm: OntologyRelationsForm;
+  //endregion
 
-  getEmptyForm() {
+  //#region Data
+  private uriGenerated = true;
+  private hasAddress: boolean;
+  private baseType: string;
+  private typeModel = null;
+  private propertyComponents = [];
+  //endregion
+
+  //#region Computed
+  @Watch("form")
+  onFacilityChanged() {
+    // Update hasAddress checkbox
+    this.hasAddress = !!this.form.address;
+    // Reset the type model
+    this.resetTypeModel();
+  }
+  //endregion
+
+  //#region Events
+  //endregion
+
+  //#region Events handlers
+  private onAddressToggled() {
+    this.form.address = this.hasAddress
+            ? {}
+            : undefined;
+  }
+  //endregion
+
+  //#region Public methods
+  public setBaseType(baseType: string) {
+    this.baseType = baseType;
+  }
+  //endregion
+
+  //#region Hooks
+  private created() {
+    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+    this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+    this.baseType = this.$opensilex.Oeso.FACILITY_TYPE_URI;
+    this.hasAddress = !!this.form.address;
+  }
+  //endregion
+
+  //#region Private methods
+  private getEmptyForm() {
     return FacilityForm.getEmptyForm();
   }
 
-  static getEmptyForm(): FacilityCreationDTO {
+  private static getEmptyForm(): FacilityCreationDTO {
     return {
       uri: undefined,
       rdf_type: undefined,
@@ -149,52 +193,37 @@ export default class FacilityForm extends Vue {
     };
   }
 
-  created() {
-    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-    this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
-    this.baseType = this.$opensilex.Oeso.FACILITY_TYPE_URI;
-    this.hasAddress = !!this.form.address;
-  }
-
-  @Watch("form")
-  onFacilityChanged() {
-    // Update hasAddress checkbox
-    this.hasAddress = !!this.form.address;
-    // Reset the type model
-    this.resetTypeModel();
-  }
-
-  onAddressToggled() {
-    this.form.address = this.hasAddress
-      ? {}
-      : undefined;
-  }
-
   // Manage dynamic fields depending on the type
   // For now, there is no concrete difference between types
   // But might be useful in the future
   // taken from EventFrom.vue
-
-  getInputComponent(property) {
+  private getInputComponent(property) {
     if (property.input_components_by_property && property.input_components_by_property[property.property]) {
       return property.input_components_by_property[property.property];
     }
     return property.input_component;
   }
 
-  resetTypeModel(){
+  private resetTypeModel(){
     this.typeModel = undefined;
   }
 
-  setBaseType(baseType: string) {
-    this.baseType = baseType;
-  }
-
-  typeSwitch(type: string, initialLoad: boolean) {
+  private typeSwitch(type: string, initialLoad: boolean) {
     if (this.ontologyRelationsForm) {
       this.ontologyRelationsForm.typeSwitch(type, initialLoad);
     }
   }
+  //endregion
+
+
+
+
+
+
+
+
+
+
 }
 </script>
 

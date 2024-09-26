@@ -30,6 +30,34 @@
         placeholder="OntologyObjectForm.form-name-placeholder"
     ></opensilex-InputForm>
 
+    <!-- Description -->
+    <opensilex-TextAreaForm
+            :value.sync="form.description"
+            label="component.common.description"
+            helpMessage="component.common.description"
+            placeholder="component.common.description"
+            @keydown.native.enter.stop
+    >
+    </opensilex-TextAreaForm>
+
+    <!-- Group of variables -->
+    <opensilex-GroupVariablesSelector
+            label="VariableView.groupVariable"
+            :variableGroup.sync="form.variableGroups"
+            :multiple="true"
+    >
+    </opensilex-GroupVariablesSelector>
+
+    <!-- Custom properties -->
+    <opensilex-OntologyRelationsForm
+            ref="ontologyRelationsForm"
+            :rdfType="this.form.rdf_type"
+            :relations="this.form.relations"
+            :baseType="this.baseType"
+            :editMode="editMode"
+    ></opensilex-OntologyRelationsForm>
+    <slot v-if="form.rdf_type" v-bind:form="form"></slot>
+
     <!-- Organizations -->
     <opensilex-OrganizationSelector
         label="component.experiment.organizations"
@@ -45,56 +73,78 @@
     >
     </opensilex-SiteSelector>
 
-    <opensilex-GroupVariablesSelector
-        label="VariableView.groupVariable"
-        :variableGroup.sync="form.variableGroups"
-        :multiple="true"
-    >
-    </opensilex-GroupVariablesSelector>
-
     <!-- Warning iff more than one site is associated to the facility. While it is currently accepted in the model,
      we don't currently have any use cases requiring a single facility to belong to multiple sites. This should change
      in the future. -->
     <b-alert
-        v-if="Array.isArray(form.sites) && form.sites.length > 1"
-        variant="warning"
-        show
+            v-if="Array.isArray(form.sites) && form.sites.length > 1"
+            variant="warning"
+            show
     >
       {{$t("component.facility.warning.facility-should-have-unique-site")}}
     </b-alert>
 
-    <!-- Geometry -->
-    <opensilex-GeometryForm
-      :value.sync="form.geometry"
-      label="component.common.geometry"
-      helpMessage="component.common.geometry-help"
-    >
-    </opensilex-GeometryForm>
-
     <!-- Address toggle -->
     <b-form-checkbox
-        v-model="hasAddress"
-        :value="true"
-        :unchecked-value="false"
-        @change="onAddressToggled"
-        switches
+            v-model="hasAddress"
+            :value="true"
+            :unchecked-value="false"
+            @change="onAddressToggled"
+            switches
     >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
 
     <!-- Address -->
     <opensilex-AddressForm
-      :address.sync="form.address"
+            :address.sync="form.address"
     >
     </opensilex-AddressForm>
 
-    <!-- Custom properties -->
-    <opensilex-OntologyRelationsForm
-        ref="ontologyRelationsForm"
-        :rdfType="this.form.rdf_type"
-        :relations="this.form.relations"
-        :baseType="this.baseType"
-        :editMode="editMode"
-    ></opensilex-OntologyRelationsForm>
-    <slot v-if="form.rdf_type" v-bind:form="form"></slot>
+    <!-- POSITION -->
+    <br/>
+    <p>
+      <b>Positions</b>
+    </p>
+    <hr/>
+
+    <div class="row">
+      <div class="col">
+        <!-- Geometry -->
+        <opensilex-GeometryForm
+                :value.sync="form.geometry"
+                label="component.common.geometry"
+                helpMessage="component.common.geometry-help"
+        >
+        </opensilex-GeometryForm>
+      </div>
+      <!-- Add position - only for update -->
+            <div class="col-2">
+              <opensilex-AddChildButton
+                      v-if="editMode"
+                      label="FacilityForm.add-position"
+                      :small="true"
+              ></opensilex-AddChildButton>
+            </div>
+    </div>
+
+    <!-- Dates -->
+    <div class="row">
+      <div class="col">
+        <opensilex-DateTimeForm
+                :value.sync="form.date"
+                label="Event.start"
+                :maxDate="form.end"
+                :required="true"
+        ></opensilex-DateTimeForm>
+      </div>
+      <div class="col">
+        <opensilex-DateTimeForm
+                :value.sync="form.endDate"
+                label="Event.end"
+                :minDate="form.date"
+                :required="false"
+        ></opensilex-DateTimeForm>
+      </div>
+    </div>
   </b-form>
 </template>
 
@@ -105,7 +155,7 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
 import { FacilityCreationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class FacilityForm extends Vue {
@@ -163,6 +213,33 @@ export default class FacilityForm extends Vue {
   public setBaseType(baseType: string) {
     this.baseType = baseType;
   }
+
+  public typeSwitch(type: string, initialLoad: boolean) {
+    if (this.ontologyRelationsForm) {
+      this.ontologyRelationsForm.typeSwitch(type, initialLoad);
+    }
+  }
+
+  public getEmptyForm() {
+    return FacilityForm.getEmptyForm();
+  }
+
+  public static getEmptyForm(): FacilityCreationDTO {
+    return {
+      uri: undefined,
+      rdf_type: undefined,
+      name: undefined,
+      description: undefined,
+      geometry: undefined,
+      address: undefined,
+      organizations: [],
+      sites: [],
+      variableGroups: [],
+      relations: [],
+      date: undefined,
+      endDate: undefined
+    };
+  }
   //endregion
 
   //#region Hooks
@@ -175,23 +252,6 @@ export default class FacilityForm extends Vue {
   //endregion
 
   //#region Private methods
-  private getEmptyForm() {
-    return FacilityForm.getEmptyForm();
-  }
-
-  private static getEmptyForm(): FacilityCreationDTO {
-    return {
-      uri: undefined,
-      rdf_type: undefined,
-      name: undefined,
-      geometry: undefined,
-      address: undefined,
-      organizations: [],
-      sites: [],
-      variableGroups: [],
-      relations: []
-    };
-  }
 
   // Manage dynamic fields depending on the type
   // For now, there is no concrete difference between types
@@ -206,12 +266,6 @@ export default class FacilityForm extends Vue {
 
   private resetTypeModel(){
     this.typeModel = undefined;
-  }
-
-  private typeSwitch(type: string, initialLoad: boolean) {
-    if (this.ontologyRelationsForm) {
-      this.ontologyRelationsForm.typeSwitch(type, initialLoad);
-    }
   }
   //endregion
 

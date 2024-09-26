@@ -14,6 +14,7 @@ import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,9 +32,15 @@ public class FacilityDTO extends RDFObjectDTO {
 
     protected String name;
 
+    protected String description;
+
     protected FacilityAddressDTO address;
 
     protected GeoJsonObject geometry;
+
+    protected Instant date;
+
+    protected Instant endDate;
 
     public String getName() {
         return name;
@@ -51,6 +58,14 @@ public class FacilityDTO extends RDFObjectDTO {
         this.typeLabel = typeLabel;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public FacilityAddressDTO getAddress() {
         return address;
     }
@@ -65,6 +80,22 @@ public class FacilityDTO extends RDFObjectDTO {
 
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
+    }
+
+    public Instant getDate() {
+        return date;
+    }
+
+    public void setDate(Instant date) {
+        this.date = date;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
     }
 
     public void toModel(FacilityModel model) {

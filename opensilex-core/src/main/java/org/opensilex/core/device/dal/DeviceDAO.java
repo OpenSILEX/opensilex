@@ -23,6 +23,7 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -495,9 +496,8 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                OrganizationDAO orgaDAO = new OrganizationDAO(sparql);
-                FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
-                facility = infraDAO.get(facilityUri, currentUser);
+                FacilityLogic infraLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+                facility = infraLogic.get(facilityUri, currentUser);
             }
         }
 

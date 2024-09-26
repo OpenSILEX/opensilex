@@ -87,6 +87,13 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private List<VariablesGroupModel> variableGroups;
     public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
 
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+
     public String getDescription() {
         return description;
     }
@@ -135,6 +142,14 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     public void setVariableGroups(List<VariablesGroupModel> variableGroups) {
         this.variableGroups = variableGroups;
+    }
+
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection(LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
     }
 
     @Override

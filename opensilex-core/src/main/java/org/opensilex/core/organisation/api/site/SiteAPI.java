@@ -7,6 +7,7 @@ import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -58,9 +59,8 @@ public class SiteAPI {
     @Inject
     private SPARQLService sparql;
 
-    //TODO: waiting for MongoDBServiceV2 - FacilityDAO in SiteLogic need MongoDBService
     @Inject
-    private MongoDBService nosql;
+    private MongoDBServiceV2 nosql;
 
     @CurrentUser
     AccountModel currentUser;

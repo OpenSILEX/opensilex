@@ -24,6 +24,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
@@ -552,11 +553,10 @@ public class ExperimentDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
 
         if (!organizationUriFilter.isEmpty()) {
-            facilityDAO.search(new FacilitySearchFilter()
+            facilityLogic.search(new FacilitySearchFilter()
                     .setUser(user)
                     .setOrganizations(organizationUriFilter)
             ).getList().forEach(facility -> availableFacilities.put(facility.getUri(), facility));

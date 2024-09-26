@@ -36,6 +36,7 @@ import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressExcep
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -56,7 +57,7 @@ import java.util.stream.Collectors;
 public class SiteLogic {
 
     private final SPARQLService sparql;
-    private final MongoDBService nosql;
+    private final MongoDBServiceV2 nosql;
 
     private final SiteDAO siteDAO;
     private final OrganizationDAO organizationDAO;
@@ -65,7 +66,7 @@ public class SiteLogic {
 
     //#region constructor
 
-    public SiteLogic(SPARQLService sparql, MongoDBService mongodb) throws Exception {
+    public SiteLogic(SPARQLService sparql, MongoDBServiceV2 mongodb) throws Exception {
         this.sparql = sparql;
         this.nosql = mongodb;
 
@@ -127,7 +128,7 @@ public class SiteLogic {
         siteModel.setOrganizations(organizations);
         siteModel.setPublisher(currentUser.getUri());
 
-        new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session ->{
+        new SparqlMongoTransaction(sparql,nosql).execute(session ->{
             siteDAO.create(siteModel);
 
             if (siteModel.getAddress() != null) {
@@ -213,7 +214,7 @@ public class SiteLogic {
             throw new NotFoundException("Site URI not found : " + siteModel.getUri());
         }
 
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+        new SparqlMongoTransaction(sparql, nosql).execute(session -> {
 
             siteDAO.update(siteModel);
 
@@ -243,7 +244,7 @@ public class SiteLogic {
     public void delete(URI uri, AccountModel currentUser) throws Exception {
         SiteModel siteModel = siteDAO.get(uri, currentUser);
 
-        new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session ->{
+        new SparqlMongoTransaction(sparql,nosql).execute(session ->{
             siteDAO.delete(uri);
             deleteSiteLocation(session, siteModel);
             return null;
@@ -260,7 +261,7 @@ public class SiteLogic {
      */
     public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
         if(siteModel.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             try {
             return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
             } catch (NoSQLInvalidURIException e) {
@@ -351,7 +352,7 @@ public class SiteLogic {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        List<FacilityModel> facilityModelList = new FacilityDAO(sparql,nosql,organizationDAO).getList(facilityUriList,currentUser);
+        List<FacilityModel> facilityModelList = new FacilityLogic(sparql,nosql).getList(facilityUriList,currentUser);
 
         for (FacilityModel facilityModel : facilityModelList) {
             if (facilityModel.getAddress() != null) {
@@ -375,7 +376,7 @@ public class SiteLogic {
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
             URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(siteModel.getUri());
             //Create the LocationObservation
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
 
             checkUniqueObservation(locationObservationCollectionUri);
 
@@ -389,7 +390,7 @@ public class SiteLogic {
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
             locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
         }
@@ -408,7 +409,7 @@ public class SiteLogic {
         }
 
         if (siteModel.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
@@ -425,7 +426,7 @@ public class SiteLogic {
     }
 
     private void checkUniqueObservation(URI observationCollectionUri) throws Exception {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
 
         try {
             LocationObservationModel model = locationObservationLogic.getLocationObservationByURI(observationCollectionUri);

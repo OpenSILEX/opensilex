@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -116,14 +118,14 @@ public class FacilityGetDTO extends FacilityDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, GeospatialModel geospatialModel) throws JsonProcessingException {
+    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, LocationModel locationModel) throws JsonProcessingException {
         fromModel(facilityModel);
-        fromGeospatialModel(geospatialModel);
+        fromLocationModel(locationModel);
     }
 
-    public void fromGeospatialModel(GeospatialModel geospatialModel) throws JsonProcessingException {
-        if (geospatialModel != null) {
-            setGeometry(GeospatialDAO.geometryToGeoJson(geospatialModel.getGeometry()));
+    public void fromLocationModel(LocationModel locationModel) throws JsonProcessingException {
+        if (locationModel != null) {
+            setGeometry(LocationLogic.geometryToGeoJson(locationModel.getGeometry()));
         }
     }
 }

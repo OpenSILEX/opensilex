@@ -14,12 +14,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.geojson.GeoJsonObject;
 import org.junit.BeforeClass;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.project.api.ProjectCreationDTO;
@@ -76,8 +79,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         FileStorageService fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         AccountModel user = sparql.search(AccountModel.class, null).get(0);
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         PersonDAO personDAO = new PersonDAO(sparql);
         ProjectDAO projectDAO = new ProjectDAO(sparql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
@@ -95,10 +97,12 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
                 new Position(4.075160959464115, 43.484780209220666),
                 new Position(3.6466941625891147, 43.50868910423751)
         ));
-        facilityBuilder.setGeometry(geometryToGeoJson(polygon));
+
+        GeoJsonObject geojson = LocationLogic.geometryToGeoJson(polygon);
+        facilityBuilder.setGeometry(geojson);
         for (int i=0; i<5; i++) {
             FacilityCreationDTO dto = facilityBuilder.createDTO();
-            facilityDAO.create(dto.newModel(), polygon, user);
+            facilityLogic.create(dto.newModel(), geojson, user);
         }
 
         personBuilder = new TestPersonBuilder();

@@ -34,11 +34,12 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
+        locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
 
         locationObservationDAO.create(session, locationObservationModel);

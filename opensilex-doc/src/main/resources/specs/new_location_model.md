@@ -1,6 +1,7 @@
-| Date      |Author|Developer(s)| Version OpenSilex | Comment                             |
-|-----------|------|------------|-------------------|-------------------------------------|
-| 7/08/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case |
+| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                    |
+|------------|------|------------|-------------------|------------------------------------------------------------|
+| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case                        |
+| 20/09/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add featureOfInterest field in Mongo + add Improvements |
 
 ## Table of contents
 * [Needs](#needs)
@@ -74,6 +75,7 @@ The new model location in MongoDB (location collection) is :
 
      {
         “observationCollection” : URI,
+        "featureOfInterest": URI,
         “hasGeometry” : boolean,
         “location”: {
               "geometry" : optionnel {
@@ -126,6 +128,7 @@ As a site is only located by one address, the localization model must be adjuste
 
      {
         “observationCollection” : URI,
+        "featureOfInterest": URI,
         “hasGeometry” : boolean,
         “location”: {
               "geometry" : {

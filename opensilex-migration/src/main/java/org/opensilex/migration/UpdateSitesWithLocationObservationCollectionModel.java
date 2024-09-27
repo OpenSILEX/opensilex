@@ -20,6 +20,7 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.ORG;
 import org.apache.jena.vocabulary.RDF;
@@ -129,6 +130,10 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
      *   		      org:siteAddress ?address ;
      *       		  a ?type ;
      *       		  rdfs:label ?name .
+     *       	FILTER NOT EXISTS {
+     *          	GRAPH <http://opensilex.test/set/ObservationCollection>
+     *       		         {?s sosa:hasFeatureOfInterest ?site}
+     *     			}
      *   }
      *   BIND(REPLACE(?name, " ", "") AS ?nameFormated)
      *   BIND (URI(CONCAT("http://opensilex.test/id/ObservationCollection/site/",STR(?nameFormated))) AS ?newURI)
@@ -151,6 +156,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
             Var addressVar = makeVar(SiteModel.ADDRESS_FIELD);
             Var typeVar = makeVar(SiteModel.TYPE_FIELD);
             Var nameVar = makeVar(SiteModel.NAME_FIELD);
+            Var subject = makeVar("subject");
             Var nameFormatedVar = makeVar("nameFormated");
             Var randomVar = makeVar("random");
 
@@ -167,6 +173,11 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
                     .addWhere(siteVar, ORG.siteAddress, addressVar)
                     .addWhere(siteVar, RDF.type.asNode(), typeVar)
                     .addWhere(siteVar, RDFS.label.asNode(),nameVar);
+
+            //add not exists filter to avoid duplicates
+            WhereBuilder whereObservationCollection = new WhereBuilder();
+            whereObservationCollection.addGraph(graphObservationCollection, subject, SOSA.hasFeatureOfInterest.asNode(), siteVar);
+            whereOrganization.addFilter(new E_NotExists(whereObservationCollection.getHandlerBlock().getWhereHandler().getElement()));
 
             WhereBuilder insertWhereOrganization = new WhereBuilder().addGraph(graphOrganization, whereOrganization);
             WhereBuilder where = new WhereBuilder().addWhere(insertWhereOrganization);
@@ -235,25 +246,42 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
      *           }
      *       },
      *       collectionObservation : site observationCollection
+     *       featureOfInterest: site uri
      *     }
      *
      * </pre>
      */
     private void mongoSitesFromGeospatialToLocationCollection(Map<URI,URI> sparqlSiteObservationCollectionMap) {
         MongoDatabase db = mongodb.getDatabase();
-        db.getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME).drop();
+        MongoCollection<LocationObservationModel> locationCollection = db.getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
         // 1- Get Sites from Geospatial Collection
         MongoCollection<GeospatialModel> geospatialCollection = db.getCollection(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
-        List<GeospatialModel> mongoSiteList = geospatialCollection.find(Filters.eq("rdfType","http://www.w3.org/ns/org#Site")).into(new ArrayList<>());
+        List<GeospatialModel> mongoSiteList = geospatialCollection.find(Filters.eq("rdfType", "http://www.w3.org/ns/org#Site")).into(new ArrayList<>());
 
-        // 2- Format Sites according to the new model
+        // 2- Check existing locations to avoid duplicates
+        List<LocationObservationModel> existingLocations = locationCollection.find(Filters.empty()).into(new ArrayList<>());
+        if(!existingLocations.isEmpty()){
+            List<URI> existingLocationURI = existingLocations.stream().map(LocationObservationModel::getObservationCollection).collect(Collectors.toList());
+            sparqlSiteObservationCollectionMap.forEach((feature,collection) ->{
+               boolean match = existingLocationURI.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, collection));
+                if(match){
+                  GeospatialModel siteToExclude = mongoSiteList.stream().filter(mongoSite -> SPARQLDeserializers.compareURIs(mongoSite.getUri(), feature)).reduce((a, b) -> {
+                              throw new IllegalStateException("Multiple elements: " + a + ", " + b);
+                          })
+                          .orElse(null);
+                  mongoSiteList.remove(siteToExclude);
+                }
+            });
+        }
+        // 3- Format Sites according to the new model
         List<LocationObservationModel> locationObservationModelList = mongoSiteList.stream().map(mongoSite -> {
             LocationObservationModel locationObservationModel = new LocationObservationModel();
 
             URI observationCollectionURI = sparqlSiteObservationCollectionMap.get(URI.create(SPARQLDeserializers.getExpandedURI(mongoSite.getUri())));
 
             locationObservationModel.setObservationCollection(observationCollectionURI);
+            locationObservationModel.setFeatureOfInterest(mongoSite.getUri());
             locationObservationModel.setHasGeometry(true);
 
             LocationModel locationModel = new LocationModel();
@@ -264,9 +292,10 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
 
             return locationObservationModel;
         }).collect(Collectors.toList());
-        // 3- Insert Sites into new location Collection
-        MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
-        locationCollection.insertMany(locationObservationModelList);
+        // 4- Insert Sites into new location Collection
+        if(!locationObservationModelList.isEmpty()){
+            locationCollection.insertMany(locationObservationModelList);
+        }
 
         logger.info("Locations were added and saved in the mongo database");
     }

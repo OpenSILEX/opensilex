@@ -380,11 +380,11 @@ public class SiteLogic {
             checkUniqueObservation(locationObservationCollectionUri);
 
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, locationModel);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, locationModel);
         }
     }
 
-    private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
+    private void updateSiteLocation(ClientSession session, SiteModel siteModel) {
         Geometry geom = convertAddressToGeometry(siteModel);
 
         if (geom != null) {

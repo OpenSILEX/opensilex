@@ -102,7 +102,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         facilityBuilder.setGeometry(geojson);
         for (int i=0; i<5; i++) {
             FacilityCreationDTO dto = facilityBuilder.createDTO();
-            facilityLogic.create(dto.newModel(), geojson, user);
+            facilityLogic.create(dto.newModel(), geojson,null, null, user);
         }
 
         personBuilder = new TestPersonBuilder();

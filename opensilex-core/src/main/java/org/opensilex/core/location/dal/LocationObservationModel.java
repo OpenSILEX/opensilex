@@ -11,8 +11,10 @@ public class LocationObservationModel extends MongoModel {
 
     public static final String OBSERVATION_COLLECTION_FIELD = "observationCollection";
     private URI observationCollection;
-    public static final String DATE_FIELD = "time";
+    public static final String DATE_FIELD = "date";
     private Instant date;
+    public static final String END_DATE_FIELD = "date";
+    private Instant endDate;
     public static final String HAS_GEOMETRY_FIELD = "hasGeometry";
     private boolean hasGeometry;
     private LocationModel location;
@@ -37,6 +39,14 @@ public class LocationObservationModel extends MongoModel {
 
     public void setDate(Instant date) {
         this.date = date;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
     }
 
     public boolean isHasGeometry() {

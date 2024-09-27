@@ -34,7 +34,6 @@
     <opensilex-TextAreaForm
             :value.sync="form.description"
             label="component.common.description"
-            helpMessage="component.common.description"
             placeholder="component.common.description"
             @keydown.native.enter.stop
     >
@@ -48,6 +47,7 @@
     >
     </opensilex-GroupVariablesSelector>
 
+<!-- TODO: ajoute "name" ?-->
     <!-- Custom properties -->
     <opensilex-OntologyRelationsForm
             ref="ontologyRelationsForm"

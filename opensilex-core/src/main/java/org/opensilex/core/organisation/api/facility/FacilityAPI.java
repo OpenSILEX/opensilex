@@ -114,6 +114,8 @@ public class FacilityAPI {
             facility = facilityLogic.create(
                     facility,
                     Objects.isNull(dto.getGeometry()) ? null : dto.getGeometry(),
+                    Objects.isNull(dto.getDate()) ? null : dto.getDate(),
+                    Objects.isNull(dto.getEndDate()) ? null : dto.getEndDate(),
                     currentUser
             );
 
@@ -307,6 +309,8 @@ public class FacilityAPI {
         facility = facilityLogic.update(
                 facility,
                 Objects.isNull(dto.getGeometry()) ? null : dto.getGeometry(),
+                Objects.isNull(dto.getDate()) ? null : dto.getDate(),
+                Objects.isNull(dto.getEndDate()) ? null : dto.getEndDate(),
                 currentUser
         );
 

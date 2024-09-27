@@ -381,7 +381,7 @@ public class SiteLogic {
             checkUniqueObservation(locationObservationCollectionUri);
 
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, locationModel);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, null, null, locationModel);
         }
     }
 

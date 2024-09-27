@@ -51,8 +51,10 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import javax.ws.rs.NotAllowedException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -91,8 +93,7 @@ public class FacilityLogic {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception If any other problem occurs
      */
-    public FacilityModel create(FacilityModel instance, GeoJsonObject geometry, AccountModel user) throws Exception {
-        //TODO : Add date
+    public FacilityModel create(FacilityModel instance, GeoJsonObject geometry, Instant date, Instant endDate, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
         validateFacilityRelations(instance, user);
 
@@ -107,7 +108,7 @@ public class FacilityLogic {
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.create(instance);
-            createFacilityLocationModel(session, instance, geometry);
+            createFacilityLocationModel(session, instance, geometry, date, endDate);
 
             return null;
         });
@@ -234,7 +235,7 @@ public class FacilityLogic {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance, GeoJsonObject geometry, AccountModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance, GeoJsonObject geometry,Instant date, Instant endDate, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
         validateFacilityRelations(instance, user);
@@ -254,7 +255,7 @@ public class FacilityLogic {
                 }*/
             }
 
-            createFacilityLocationModel(session, instance, geometry);
+            createFacilityLocationModel(session, instance, geometry,date,endDate);
             facilityDAO.update(instance);
 
             return null;
@@ -419,7 +420,7 @@ public class FacilityLogic {
      * @param facilityModel The facility
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      */
-    protected void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) {
+    private void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) {
 
         if (facilityModel.getAddress() == null) {
             return;
@@ -458,12 +459,30 @@ public class FacilityLogic {
         }
     }
 
-    private void createFacilityLocationModel(ClientSession session, FacilityModel facility, GeoJsonObject geojson) throws Exception {
+    /**
+     * Checks if a facility with geometry (not from an address) is valid :
+     *  - it must have one observation date;
+     *  - if there is a endDate, it must be after the "begin" date.
+     *
+     * @param date observation date of the geometry
+     * @param endDate end observation date of the geometry
+     * @throws NotAllowedException If dates are invalid
+     */
+    private void validateDates(Instant date, Instant endDate){
+        if(Objects.isNull(date)){
+            throw new NotAllowedException("Date cannot be null");
+        }
+        if(!Objects.isNull(endDate) && endDate.isBefore(date)){
+            throw new NotAllowedException("Date cannot be before endDate");
+        }
+    }
+
+    private void createFacilityLocationModel(ClientSession session, FacilityModel facility, GeoJsonObject geojson, Instant date, Instant endDate) throws Exception {
         Geometry geometry = LocationLogic.geoJsonToGeometry(geojson);
 
         if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
             //TODO: pourquoi delete si pas encore créé?
-//            deleteFacilityGeospatialModel(facility.getUri());
+            //deleteFacilityGeospatialModel(facility.getUri());
             return;
         }
 
@@ -475,6 +494,8 @@ public class FacilityLogic {
             if (Objects.isNull(geometry)) {
                 return;
             }
+        } else {
+            validateDates(date, endDate);
         }
         //Create the LocationObservationCollection
         LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
@@ -483,7 +504,7 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         LocationModel locationModel = LocationLogic.buildLocationModel(geometry, null, null, null, null);
 
-        locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, locationModel);
+        locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, date, endDate, locationModel);
     }
 
     private void deleteFacilityLocationModel(ClientSession session, FacilityModel facility) {

@@ -22,6 +22,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 
 public class LocationObservationLogic {
 
@@ -34,10 +35,17 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, Instant date, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
+
+        if(date != null) {
+            locationObservationModel.setDate(date);
+            if(endDate != null) {
+                locationObservationModel.setEndDate(endDate);
+            }
+        }
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
         locationObservationModel.setHasGeometry(hasGeometry);
 

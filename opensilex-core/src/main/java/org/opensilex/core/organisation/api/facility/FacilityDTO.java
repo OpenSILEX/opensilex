@@ -102,6 +102,11 @@ public class FacilityDTO extends RDFObjectDTO {
         model.setUri(getUri());
         model.setType(getType());
         model.setName(getName());
+
+        if (getDescription() != null) {
+            model.setDescription(getDescription());
+        }
+
         if (getAddress() != null) {
             model.setAddress(getAddress().newModel());
         }

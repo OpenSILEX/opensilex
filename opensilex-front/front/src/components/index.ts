@@ -883,5 +883,9 @@ components["opensilex-SystemView"] = SystemView;
 import GDPR from './tools/GDPR.vue'
 components["opensilex-GDPR"] = GDPR;
 
+//GlobalUriSearch
+import GlobalUriSearchResult from "./globalUriSearch/GlobalUriSearchResult.vue";
+components["opensilex-GlobalUriSearchResult"] = GlobalUriSearchResult;
+
 
 export default components;

@@ -8,9 +8,12 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -38,8 +41,8 @@ public class UriSearchSparqlDao {
 
     //#region: PUBLIC METHODS
 
-    public List<SPARQLNamedResourceModel> searchByUri(URI uri) throws Exception {
-        List<SPARQLNamedResourceModel> resultsAsModels = new ArrayList<>();
+    public List<SparqlNamedResourceModelWithPublisher> searchByUri(URI uri) throws Exception {
+        List<SparqlNamedResourceModelWithPublisher> resultsAsModels = new ArrayList<>();
         sparql.executeSelectQueryAsStream(
                 generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));
         return resultsAsModels;
@@ -48,7 +51,8 @@ public class UriSearchSparqlDao {
     //#endregion
     //#region: PRIVATE METHODS
 
-    private SPARQLNamedResourceModel buildModelFromSparqlResult(SPARQLResult result) {
+    private SparqlNamedResourceModelWithPublisher buildModelFromSparqlResult(SPARQLResult result) {
+        PersonModel publisher = new PersonModel();
         SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
         //uri
         String expandedURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLNamedResourceModel.URI_FIELD));
@@ -64,12 +68,13 @@ public class UriSearchSparqlDao {
         typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
         model.setTypeLabel(typeLabel);
         //publisher, published, updated
-        //TODO This is duplicated, in ontology store loader, not sure where to put this
         String publisherUri = SPARQLDeserializers.getShortURI(result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD));
         String publicationDate = result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         String lastUpdateDate = result.getStringValue(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
         if (Objects.nonNull(publisherUri)) {
             model.setPublisher(URI.create(publisherUri));
+            publisher.setFirstName(result.getStringValue(PersonModel.FIRST_NAME_FIELD));
+            publisher.setLastName(result.getStringValue(PersonModel.LAST_NAME_FIELD));
         }
         if (Objects.nonNull(publicationDate)) {
             try {
@@ -86,30 +91,37 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return model;
+        return new SparqlNamedResourceModelWithPublisher(model, publisher);
     }
 
     /**
      *
      * @return A sparql request that will fetch, name, type, typename and metadata for the passed uri.
+     * Includes publisher first and last name to be able to show immediately without making another request
      */
     private SelectBuilder generateSparqlRequest(URI uri) throws Exception {
         String lang = currentUser.getLanguage();
         SelectBuilder result = new SelectBuilder();
-        //Vars
+        //Vars returned
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
         Var publisherVar = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
+        Var publisherFirstName = makeVar(PersonModel.FIRST_NAME_FIELD);
+        Var publisherLastName = makeVar(PersonModel.LAST_NAME_FIELD);
         Var publishedVar = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Var updated = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
         Var graphVar = makeVar("g");
+        //Other vars used
+        Var publisherPersonVar = makeVar("person");
         result.addVar(uriVar);
         result.addVar(nameVar);
         result.addVar(typeVar);
         result.addVar(typeNameVar);
         result.addVar(publisherVar);
+        result.addVar(publisherFirstName);
+        result.addVar(publisherLastName);
         result.addVar(publishedVar);
         result.addVar(updated);
         result.addVar(graphVar);
@@ -140,12 +152,42 @@ public class UriSearchSparqlDao {
         inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
 
         result.addGraph(graphVar, inGraphWhere);
+        result.addGraph(
+                sparql.getDefaultGraph(AccountModel.class),
+                new WhereBuilder()
+                        .addWhere(publisherPersonVar, FOAF.account.asNode(), publisherVar)
+                        .addWhere(publisherPersonVar, FOAF.firstName.asNode(), publisherFirstName)
+                        .addWhere(publisherPersonVar, FOAF.lastName.asNode(), publisherLastName)
+        );
 
         //uri value
         Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));
         result.addValueVar(SPARQLResourceModel.URI_FIELD, uriNodes);
 
         return result;
+    }
+    //#endregion
+    //#region: Classes used as return types
+
+    /**
+     * Class used as return type for search instead of making a Model class just for this
+     */
+    public static class SparqlNamedResourceModelWithPublisher {
+        private SPARQLNamedResourceModel model;
+        private PersonModel publisher;
+
+        public SparqlNamedResourceModelWithPublisher(SPARQLNamedResourceModel model, PersonModel publisher) {
+            this.model = model;
+            this.publisher = publisher;
+        }
+
+        public SPARQLNamedResourceModel getModel() {
+            return model;
+        }
+
+        public PersonModel getPublisher() {
+            return publisher;
+        }
     }
     //#endregion
 }

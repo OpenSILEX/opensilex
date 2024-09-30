@@ -23,6 +23,7 @@
           <component
             v-bind:is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
+            @uriGlobalSearch="handleUriGlobalSearch"
           ></component>
 
             
@@ -48,6 +49,18 @@
                 @click="closeNotification()"
               ></opensilex-Button>
             </span>
+          </div>
+
+          <!-- URI search result -->
+          <div
+            v-if="uriSearchResultVisible"
+            class="floating-box">
+            <opensilex-GlobalUriSearchResult
+              ref="globalUriSearchResultComponent"
+              :searchResult="uriSearchResult"
+              @hideUriSearch="handleHideUriSearch"
+            ></opensilex-GlobalUriSearchResult>
+
           </div>
 
           <section 
@@ -77,13 +90,18 @@
 </template>
 
 <script lang="ts">
-import { Component as ComponentAnnotation, Prop, Watch } from "vue-property-decorator";
+import {Component as ComponentAnnotation, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import AsyncComputed from "vue-async-computed-decorator";
+import GlobalUriSearchResult from "./components/globalUriSearch/GlobalUriSearchResult.vue";
+import {UriSearchService} from "opensilex-core/api/uriSearch.service";
+import { BasicMongoSparqlDTO } from "opensilex-core/index";
 
 @ComponentAnnotation
 export default class App extends Vue {
+
+  //#region: props
   @Prop() embed: boolean;
 
   @Prop() headerComponent!: string | Component;
@@ -91,6 +109,13 @@ export default class App extends Vue {
   @Prop() menuComponent!: string | Component;
   @Prop() footerComponent!: string | Component;
 
+  //#endregion
+
+  //#region Refs
+  @Ref("globalUriSearchResultComponent") globalUriSearchResultComponent!: GlobalUriSearchResult;
+  //#endregion
+
+  //#region: data
   $opensilex: OpenSilexVuePlugin;
   $i18n: any;
   $bvToast: any;
@@ -100,8 +125,14 @@ export default class App extends Vue {
   notificationEndDate: string = "";
   notificationColorTheme: string = "";
   displayNotificationMessage: boolean = false;
-
   private langUnwatcher;
+  //The following concerns the URI global search functionality
+  private uriSearchResultVisible: boolean = false;
+  private uriSearchResult: BasicMongoSparqlDTO = null;
+  private uriSearchService: UriSearchService;
+
+  //#endregion
+  //#region: hooks
 
   mounted() {
     this.langUnwatcher = this.$store.watch(
@@ -136,7 +167,12 @@ export default class App extends Vue {
     } catch {
       this.$opensilex.showErrorToast(this.$i18n.t("component.header.bad-notification-end-date"));
     }
+
+    this.uriSearchService = this.$opensilex.getService("opensilex.UriSearchService");
   }
+
+  //#endregion
+  //#region: AsyncComputed
 
   @AsyncComputed()
   notificationColorClass() {
@@ -151,9 +187,31 @@ export default class App extends Vue {
     }
   }
 
+  //#endregion
+  //#region: EventHandlers
+
+  private handleUriGlobalSearch(uri: string){
+    this.uriSearchService.searchByUri(uri).then( res => {
+        this.uriSearchResult = res.response.result.pop();
+      }
+    )
+    this.uriSearchResultVisible = true;
+  }
+
+  private handleHideUriSearch(){
+    this.uriSearchResultVisible = false;
+  }
+
   closeNotification(){
     this.displayNotificationMessage = false;
   }
+
+  keydownEnter(event) {
+    console.debug("Keydown enter");
+  }
+
+  //#endregion
+  //#region: computed
 
   get lang() {
     return this.$store.state.lang;
@@ -174,10 +232,7 @@ export default class App extends Vue {
   get menuVisible(): boolean {
     return this.$store.state.menuVisible;
   }
-
-  keydownEnter(event) {
-    console.debug("Keydown enter");
-  }  
+  //#endregion
 }
 </script>
 
@@ -232,6 +287,18 @@ main {
   padding: 15px;
 }
 
+//My changes start here TODO delete this comment
+
+.floating-box {
+  position: fixed; //Keeps it floating
+  top: 70px;
+  left: 65%;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1030;      /* Ensures it's on top of other elements */
+}
 
 .notificationMessageContainer{
   display: flex;

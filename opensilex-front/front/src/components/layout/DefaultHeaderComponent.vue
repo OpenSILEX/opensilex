@@ -112,10 +112,10 @@
               :filter.sync="uriSearchValue"
               placeholder="component.header.uri-search-placeholder"
               class="searchFilter"
-              @handlingEnterKey="handleUriGlobalSearch"
+              @handlingEnterKey="launchUriGlobalSearch"
             ></opensilex-StringFilter>
             <b-input-group-append>
-              <b-button class="greenThemeColor" @click="handleUriGlobalSearch">
+              <b-button class="greenThemeColor" @click="launchUriGlobalSearch">
                 <i class="icon ik ik-search"></i>
               </b-button>
             </b-input-group-append>
@@ -175,7 +175,8 @@
         </div>
       </div>
     </div>
-  </div> 
+  </div>
+
 </div>
 </template>
 
@@ -328,8 +329,11 @@ export default class DefaultHeaderComponent extends Vue {
     window.removeEventListener("resize", this.handleResize);
   }
 
-  handleUriGlobalSearch(){
-
+  /**
+   * Launches the uri search and transmits the information to App.vue
+   */
+  launchUriGlobalSearch(){
+    this.$emit("uriGlobalSearch", this.uriSearchValue);
   }
 
   handleResize() {
@@ -687,6 +691,19 @@ export default class DefaultHeaderComponent extends Vue {
     width: 20%;
   }
 
+  //My changes start here TODO delete this comment
+
+  .floating-box {
+    position: fixed;    /* Keeps it floating */
+    top: 20%;           /* Adjust to your preferred position */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: red;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    z-index: 1000;      /* Ensures it's on top of other elements */
+  }
 
   //TODO delete this bullshit
 

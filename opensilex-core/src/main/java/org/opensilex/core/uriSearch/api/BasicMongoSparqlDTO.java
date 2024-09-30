@@ -10,13 +10,17 @@
 package org.opensilex.core.uriSearch.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.ontology.api.URITypesDTO;
+import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * This dto is essentially the same as a NamedResourceDTO, or a dto directly translating a MongoModel's basic parameters.
@@ -35,7 +39,7 @@ public class BasicMongoSparqlDTO {
     private String typeLabel;
 
     @JsonProperty("publisher")
-    private URI publisher;
+    private UserGetDTO publisher;
 
     @JsonProperty("publication_date")
     private String publicationDate;
@@ -43,20 +47,27 @@ public class BasicMongoSparqlDTO {
     @JsonProperty("last_updated_date")
     private String lastUpdatedDate;
 
+    @JsonProperty("super_types")
+    private List<URITypesDTO> superTypes;
+
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
 
-    public static BasicMongoSparqlDTO fromSparqlNamedResourceModel(SPARQLNamedResourceModel model){
+    public static BasicMongoSparqlDTO fromUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher result){
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setName(model.getName());
-        dto.setPublisher(model.getPublisher());
-        if(model.getPublicationDate() != null){
-            dto.setPublicationDate(model.getPublicationDate().format(dateTimeFormatter));
+        dto.setUri(result.getModel().getUri());
+        dto.setType(result.getModel().getType());
+        dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
+        dto.setName(result.getModel().getName());
+        UserGetDTO publisherAsUser = new UserGetDTO();
+        publisherAsUser.setFirstName(result.getPublisher().getFirstName());
+        publisherAsUser.setLastName(result.getPublisher().getLastName());
+        publisherAsUser.setUri(result.getModel().getPublisher());
+        dto.setPublisher(publisherAsUser);
+        if(result.getModel().getPublicationDate() != null){
+            dto.setPublicationDate(result.getModel().getPublicationDate().format(dateTimeFormatter));
         }
-        if(model.getLastUpdateDate() != null){
-            dto.setLastUpdatedDate(model.getLastUpdateDate().format(dateTimeFormatter));
+        if(result.getModel().getLastUpdateDate() != null){
+            dto.setLastUpdatedDate(result.getModel().getLastUpdateDate().format(dateTimeFormatter));
         }
         return dto;
     }
@@ -70,7 +81,8 @@ public class BasicMongoSparqlDTO {
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
-        dto.setPublisher(model.getPublisher());
+        //TODO handle publisher UserDTO creation for mongo models
+        //dto.setPublisher(model.getPublisher());
         if(model.getPublicationDate() != null){
             dto.setPublicationDate(model.getPublicationDate().toString());
         }
@@ -105,11 +117,11 @@ public class BasicMongoSparqlDTO {
         return this;
     }
 
-    public URI getPublisher() {
+    public UserGetDTO getPublisher() {
         return publisher;
     }
 
-    public void setPublisher(URI publisher) {
+    public void setPublisher(UserGetDTO publisher) {
         this.publisher = publisher;
     }
 
@@ -136,5 +148,13 @@ public class BasicMongoSparqlDTO {
     public BasicMongoSparqlDTO setName(String name) {
         this.name = name;
         return this;
+    }
+
+    public List<URITypesDTO> getSuperTypes() {
+        return superTypes;
+    }
+
+    public void setSuperTypes(List<URITypesDTO> superTypes) {
+        this.superTypes = superTypes;
     }
 }

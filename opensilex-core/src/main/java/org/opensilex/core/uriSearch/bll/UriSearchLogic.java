@@ -10,17 +10,15 @@
 package org.opensilex.core.uriSearch.bll;
 
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.uriSearch.api.BasicMongoSparqlDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -46,9 +44,20 @@ public class UriSearchLogic {
 
     public List<BasicMongoSparqlDTO> searchByUri(URI uri) throws Exception {
         //Start by searching in sparql global graph
-        List<SPARQLNamedResourceModel> sparqlMatches = sparqlDao.searchByUri(uri);
+        List<UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher> sparqlMatches = sparqlDao.searchByUri(uri);
         if(!sparqlMatches.isEmpty()){
-            return sparqlMatches.stream().map(BasicMongoSparqlDTO::fromSparqlNamedResourceModel).collect(Collectors.toList());
+            List<BasicMongoSparqlDTO> results = sparqlMatches.stream().map(BasicMongoSparqlDTO::fromUriGlobalSearchResult).collect(Collectors.toList());
+
+            //Get super types, needed to identify details page path in front
+            //TODO dont invoke ontology dao here
+            OntologyDAO dao = new OntologyDAO(sparql);
+
+            List<URITypesDTO> types = dao.getSuperClassesByURI(Collections.singletonList(uri))
+                    .stream().map(URITypesDTO::fromModel)
+                    .collect(Collectors.toList());
+
+            results.forEach(e -> e.setSuperTypes(types));
+            return results;
         }
 
         //If no matches search in Provenance

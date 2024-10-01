@@ -151,6 +151,10 @@ public class FacilityDTO extends RDFObjectDTO {
             dto.setRelations(relationsDTO);
         }
 
+        if(model.getDescription() != null) {
+            dto.setDescription(model.getDescription());
+        }
+
         return dto;
     }
 }

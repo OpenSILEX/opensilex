@@ -108,8 +108,9 @@ public class FacilityLogic {
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.create(instance);
-            createFacilityLocationModel(session, instance, geometry, date, endDate);
-
+            if(geometry != null || instance.getAddress() != null) {
+                createFacilityLocationModel(session, instance, geometry, date, endDate);
+            }
             return null;
         });
 
@@ -306,20 +307,21 @@ public class FacilityLogic {
     }
 
     /**
-     * Gets the Location Observation model corresponding to the given facility. There is no access check in this method, so please
+     * Gets the last Location Observation model corresponding to the given facility. There is no access check in this method, so please
      * make sure that the user has access to the given facility (by calling {@link #get(URI, AccountModel)}, for example.
      *
      * @param facilityModel The facility
      * @return The Location Observation model
      */
     public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
-        if(facilityModel.getLocationObservationCollection() != null) {
+        if (facilityModel.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-            try {
-                return locationObservationLogic.getLocationObservationByURI(facilityModel.getLocationObservationCollection().getUri());
-            } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown data URI ", facilityModel.getLocationObservationCollection().getUri());
-            }
+
+            return locationObservationLogic.getLastLocationObservation(
+                    Collections.singletonList(facilityModel.getLocationObservationCollection()),
+                    true,
+                    Instant.now(),
+                    null).get(0);
         } else {
             return new LocationObservationModel();
         }
@@ -478,15 +480,15 @@ public class FacilityLogic {
     }
 
     private void createFacilityLocationModel(ClientSession session, FacilityModel facility, GeoJsonObject geojson, Instant date, Instant endDate) throws Exception {
-        Geometry geometry = LocationLogic.geoJsonToGeometry(geojson);
+        Geometry geometry;
 
-        if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
+        /*if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
             //TODO: pourquoi delete si pas encore créé?
             //deleteFacilityGeospatialModel(facility.getUri());
             return;
-        }
+        }*/
 
-        if (Objects.isNull(geometry)) {
+        if (Objects.isNull(geojson) && !Objects.isNull(facility.getAddress())) {
             FacilityAddressDTO addressDto = new FacilityAddressDTO();
             addressDto.fromModel(facility.getAddress());
 
@@ -496,6 +498,7 @@ public class FacilityLogic {
             }
         } else {
             validateDates(date, endDate);
+            geometry = LocationLogic.geoJsonToGeometry(geojson);
         }
         //Create the LocationObservationCollection
         LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);

@@ -132,8 +132,8 @@
         <opensilex-DateTimeForm
                 :value.sync="form.date"
                 label="Event.start"
-                :maxDate="form.end"
-                :required="true"
+                :maxDate="form.endDate"
+                :required="!!form.geometry"
         ></opensilex-DateTimeForm>
       </div>
       <div class="col">

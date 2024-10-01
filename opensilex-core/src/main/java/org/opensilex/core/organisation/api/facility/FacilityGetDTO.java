@@ -13,6 +13,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -118,14 +119,20 @@ public class FacilityGetDTO extends FacilityDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, LocationModel locationModel) throws JsonProcessingException {
+    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, LocationObservationModel locationModel) throws JsonProcessingException {
         fromModel(facilityModel);
         fromLocationModel(locationModel);
     }
 
-    public void fromLocationModel(LocationModel locationModel) throws JsonProcessingException {
-        if (locationModel != null) {
-            setGeometry(LocationLogic.geometryToGeoJson(locationModel.getGeometry()));
+    public void fromLocationModel(LocationObservationModel locationObservationModel) throws JsonProcessingException {
+        if (locationObservationModel.getLocation() != null) {
+            setGeometry(LocationLogic.geometryToGeoJson(locationObservationModel.getLocation().getGeometry()));
+        }
+        if(locationObservationModel.getDate() != null) {
+            setDate(locationObservationModel.getDate());
+        }
+        if(locationObservationModel.getEndDate() != null) {
+            setEndDate(locationObservationModel.getEndDate());
         }
     }
 }

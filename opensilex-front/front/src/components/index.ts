@@ -753,6 +753,10 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
+import LocationModalForm from "./geometry/LocationModalForm.vue";
+components["opensilex-LocationModalForm"] = LocationModalForm;
+import LocationForm from "./geometry/LocationForm.vue";
+components["opensilex-LocationForm"] = LocationForm;
 
 // VISUALIZATION
 

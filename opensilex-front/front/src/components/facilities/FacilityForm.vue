@@ -99,7 +99,7 @@
     >
     </opensilex-AddressForm>
 
-    <!-- POSITION -->
+    <!-- POSITIONS -->
     <br/>
     <p>
       <b>Positions</b>
@@ -107,44 +107,82 @@
     <hr/>
 
     <div class="row">
-      <div class="col">
-        <!-- Geometry -->
+      <!-- Add position -->
+      <div class="col-4">
+        <opensilex-AddChildButton
+            @click="addPosition"
+            label="FacilityForm.add-position"
+            :small="true"
+        ></opensilex-AddChildButton>
+        <span> {{ $t('FacilityForm.add-position') }}</span>
+      </div>
+
+      <!-- Geometry -->
+      <div class="col-8">
         <opensilex-GeometryForm
-                :value.sync="form.geometry"
-                label="component.common.geometry"
-                helpMessage="component.common.geometry-help"
+            :value.sync="position.geometry"
+            label="component.common.geometry"
+            helpMessage="component.common.geometry-help"
         >
         </opensilex-GeometryForm>
       </div>
-      <!-- Add position - only for update -->
-            <div class="col-2">
-              <opensilex-AddChildButton
-                      v-if="editMode"
-                      label="FacilityForm.add-position"
-                      :small="true"
-              ></opensilex-AddChildButton>
-            </div>
     </div>
 
     <!-- Dates -->
     <div class="row">
       <div class="col">
         <opensilex-DateTimeForm
-                :value.sync="form.date"
-                label="Event.start"
-                :maxDate="form.endDate"
-                :required="!!form.geometry"
+            :value.sync="position.beginDate"
+            label="component.common.begin"
+            :maxDate="position.endDate"
+            :required="!!position.geometry"
         ></opensilex-DateTimeForm>
       </div>
       <div class="col">
         <opensilex-DateTimeForm
-                :value.sync="form.endDate"
-                label="Event.end"
-                :minDate="form.date"
-                :required="false"
+            :value.sync="position.endDate"
+            label="component.common.end"
+            :minDate="position.beginDate"
+            :required="false"
         ></opensilex-DateTimeForm>
       </div>
     </div>
+
+    <!-- Position list -->
+    <opensilex-TableView v-if="form.locations && form.locations.length !==0" :fields="fields" :items="form.locations">
+      <template v-slot:cell(beginDate)="{ data }">
+        <opensilex-DateView :value="data.item.beginDate"></opensilex-DateView>
+      </template>
+
+      <template v-slot:cell(endDate)="{ data }">
+        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+      </template>
+
+      <template v-slot:cell(geometry)="{data}">
+        <opensilex-GeometryCopy
+            label="" :value="data.item.geometry">
+        </opensilex-GeometryCopy>
+      </template>
+
+      <template v-slot:cell(actions)="{ data }">
+        <!-- TODO: CREDENTIALS Update/delete Facility? Location?-->
+        <b-button-group size="sm">
+          <opensilex-EditButton
+              @click="updatePosition(data)"
+              label="component.common.list.buttons.update"
+              :small="true"
+          ></opensilex-EditButton>
+
+          <opensilex-DeleteButton
+              @click="deletePosition(data)"
+              label="component.common.list.buttons.delete"
+          ></opensilex-DeleteButton>
+        </b-button-group>
+      </template>
+    </opensilex-TableView>
+    <opensilex-LocationModalForm
+        ref="locationModalForm"
+    ></opensilex-LocationModalForm>
   </b-form>
 </template>
 
@@ -156,13 +194,14 @@ import {VueJsOntologyExtensionService} from "../../lib";
 import { FacilityCreationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import LocationModalForm from "@/components/geometry/LocationModalForm.vue";
 
 @Component
 export default class FacilityForm extends Vue {
   //#region Plugins and services
-  $opensilex: OpenSilexVuePlugin;
-  ontologyService: OntologyService;
-  vueOntologyService: VueJsOntologyExtensionService;
+  private readonly $opensilex: OpenSilexVuePlugin;
+  private ontologyService: OntologyService;
+  private vueOntologyService: VueJsOntologyExtensionService;
   //endregion
 
   //#region Props
@@ -178,6 +217,8 @@ export default class FacilityForm extends Vue {
   private readonly validatorRef!: any;
   @Ref("ontologyRelationsForm")
   private readonly ontologyRelationsForm: OntologyRelationsForm;
+  @Ref("locationModalForm")
+  private readonly locationModalForm: LocationModalForm;
   //endregion
 
   //#region Data
@@ -186,6 +227,27 @@ export default class FacilityForm extends Vue {
   private baseType: string;
   private typeModel = null;
   private propertyComponents = [];
+  private position: {geometry: {}, beginDate : string, endDate: string} = this.getPositionEmpty();
+  private fields = [
+    {
+      key: "beginDate",
+      label: "component.common.begin",
+      sortable: true,
+    },
+    {
+      key: "endDate",
+      label: "component.common.end",
+      sortable: true,
+    },
+    {
+      key: "geometry",
+      label: "component.common.geometry",
+    },
+    {
+      key: "actions",
+      label: "component.common.actions",
+    },
+  ]
   //endregion
 
   //#region Computed
@@ -206,6 +268,21 @@ export default class FacilityForm extends Vue {
     this.form.address = this.hasAddress
             ? {}
             : undefined;
+  }
+
+  private addPosition(){
+    if(this.position.geometry !== undefined){
+      this.form.locations.push(this.position)
+      this.position = this.getPositionEmpty();
+    }
+  }
+
+  private updatePosition(data){
+    this.locationModalForm.showEditForm(data.item);
+  }
+
+  private deletePosition(data){
+    this.form.locations.splice(this.form.locations.indexOf(data.item),1)
   }
   //endregion
 
@@ -230,14 +307,12 @@ export default class FacilityForm extends Vue {
       rdf_type: undefined,
       name: undefined,
       description: undefined,
-      geometry: undefined,
       address: undefined,
       organizations: [],
       sites: [],
       variableGroups: [],
       relations: [],
-      date: undefined,
-      endDate: undefined
+      locations: []
     };
   }
   //endregion
@@ -267,17 +342,15 @@ export default class FacilityForm extends Vue {
   private resetTypeModel(){
     this.typeModel = undefined;
   }
+
+  private getPositionEmpty(){
+    return {
+      geometry: undefined,
+      beginDate: undefined,
+      endDate: undefined
+    }
+  }
   //endregion
-
-
-
-
-
-
-
-
-
-
 }
 </script>
 
@@ -288,8 +361,10 @@ export default class FacilityForm extends Vue {
 <i18n>
 en:
   FacilityForm:
-    toggleAddress: "Address"
+    toggleAddress: Address
+    add-position: Add position
 fr:
   FacilityForm:
-    toggleAddress: "Adresse"
+    toggleAddress: Adresse
+    add-position: Ajouter une position
 </i18n>

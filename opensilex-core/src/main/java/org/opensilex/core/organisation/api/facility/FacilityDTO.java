@@ -6,9 +6,9 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -35,6 +35,8 @@ public class FacilityDTO extends RDFObjectDTO {
     protected String description;
 
     protected FacilityAddressDTO address;
+
+    protected List<LocationObservationDTO> locations;
 
     protected GeoJsonObject geometry;
 
@@ -96,6 +98,14 @@ public class FacilityDTO extends RDFObjectDTO {
 
     public void setEndDate(Instant endDate) {
         this.endDate = endDate;
+    }
+
+    public List<LocationObservationDTO> getLocationsList() {
+        return locations;
+    }
+
+    public void setLocationsList(List<LocationObservationDTO> locationsList) {
+        this.locations = locationsList;
     }
 
     public void toModel(FacilityModel model) {

@@ -753,6 +753,10 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
+import GlobalMapView from "./geometry/GlobalMapView.vue";
+components["opensilex-GlobalMapView"] = GlobalMapView;
+import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
+components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
 
 // VISUALIZATION
 

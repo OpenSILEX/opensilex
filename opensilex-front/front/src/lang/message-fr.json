@@ -201,6 +201,10 @@
                 "images": "Images",
                 "visualization":"Visualisation"
             },
+            "spatial": {
+                "label": "Spatial",
+                "map" : "Carte"
+            },
             "homepage": "Accueil",
             "experiments": "Expérimentations",
             "facilities": "Installations (environnement)",
@@ -752,7 +756,8 @@
         "provenance": "Provenances",
         "vocabulary": "Vocabulaire",
         "packages": "Librairies",
-        "accounts": "Comptes"
+        "accounts": "Comptes",
+        "spatial" : "Spatial"
     },
     "credential": {
         "default": {

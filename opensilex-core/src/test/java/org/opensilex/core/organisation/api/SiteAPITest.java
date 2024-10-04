@@ -1,6 +1,7 @@
 package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,8 +57,13 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
     );
 
     protected final ServiceDescription delete = new ServiceDescription(
-            AreaAPI.class.getMethod("deleteArea", URI.class),
+            SiteAPI.class.getMethod("deleteSite", URI.class),
             PATH + "/{uri}"
+    );
+
+    protected final ServiceDescription getSites = new ServiceDescription(
+            SiteAPI.class.getMethod("getSitesWithLocation"),
+            PATH +"/with_location"
     );
 
     public SiteAPITest() throws NoSuchMethodException {
@@ -239,6 +245,31 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
 
         UserCall getCall = new UserCallBuilder(getByUri).setUriInPath(uri).buildAdmin();
         getCall.executeCallAndAssertStatus(Response.Status.NOT_FOUND);
+    }
+
+    @Test
+    public void testGetSites() throws Exception {
+        //create several sites with address and without
+        new UserCallBuilder(create).setBody(getCreationDTO(1)).buildAdmin().executeCallAndAssertStatus(Response.Status.CREATED);
+        new UserCallBuilder(create).setBody(getCreationDTO(2)).buildAdmin().executeCallAndAssertStatus(Response.Status.CREATED);
+        URI siteWith3 = new UserCallBuilder(create).setBody(getCreationDTOWithAddress("withAddress",getSiteAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                "Occitanie",
+                "2 place Pierre Viala"
+        ))).buildAdmin().executeCallAndReturnURI();
+
+        //search sites with spatial coordinates
+        PaginatedListResponse<SiteGetWithGeometryDTO> sitelist = new UserCallBuilder(getSites)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<SiteGetWithGeometryDTO>>() {})
+                .getDeserializedResponse();
+
+        assertEquals(sitelist.getResult().size(), 1);
+
+        URI resultURI = URI.create(SPARQLDeserializers.getExpandedURI(sitelist.getResult().get(0).getUri()));
+        assertEquals(resultURI, siteWith3);
     }
 
 }

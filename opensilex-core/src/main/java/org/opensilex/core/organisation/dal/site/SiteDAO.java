@@ -23,6 +23,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -64,8 +65,7 @@ public class SiteDAO {
      * @param userOrganizations List of organization URI
      * @return The list of sites
      */
-    public ListWithPagination<SiteModel> search(SiteSearchFilter filter, List<URI> userOrganizations)
-            throws Exception {
+    public ListWithPagination<SiteModel> search(SiteSearchFilter filter, List<URI> userOrganizations) throws Exception {
 
         ListWithPagination<SiteModel> models = sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
             Var uriVar = makeVar(SiteModel.URI_FIELD);
@@ -96,6 +96,41 @@ public class SiteDAO {
                 SiteModel.class,
                 sparql.getDefaultGraph(SiteModel.class),
                 Collections.singleton(SiteModel.ORGANIZATION_FIELD),
+                models.getList()
+        );
+        listFetcher.updateModels();
+
+        return models;
+    }
+
+    /**
+     * Use {@link SparqlNoProxyFetcher} to improve performance.
+     *
+     * @param currentUser The current user
+     * @param userOrganizations List of organization URI
+     * @return sites (not proxy) with their facility list associated
+     * @throws Exception
+     */
+    public ListWithPagination<SiteModel> getSiteListWithFacilities(AccountModel currentUser, List<URI> userOrganizations) throws Exception {
+
+        SparqlNoProxyFetcher<SiteModel> customFetcher = new SparqlNoProxyFetcher<>(SiteModel.class, sparql);
+
+        ListWithPagination<SiteModel> models = sparql.searchWithPagination(
+                sparql.getDefaultGraph(SiteModel.class),
+                SiteModel.class,
+                currentUser.getLanguage(),
+                select -> organizationSPARQLHelper.addSiteAccessClause(select, makeVar(SiteModel.URI_FIELD), userOrganizations, currentUser.getUri()),
+                Collections.emptyMap(),
+                result -> customFetcher.getInstance(result,currentUser.getLanguage()),
+                null,
+                0,
+                0);
+
+        SPARQLListFetcher<SiteModel> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                SiteModel.class,
+                sparql.getDefaultGraph(SiteModel.class),
+                Collections.singleton(SiteModel.FACILITY_FIELD),
                 models.getList()
         );
         listFetcher.updateModels();

@@ -23,7 +23,7 @@
           <component
             v-bind:is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
-            @uriGlobalSearch="handleUriGlobalSearch"
+            @uriGlobalSearch="handleUriGlobalSearchPressed"
           ></component>
 
             
@@ -52,7 +52,7 @@
           </div>
 
           <!-- URI search result -->
-          <div
+<!--          <div
             v-if="uriSearchResultVisible"
             class="floating-box">
             <opensilex-GlobalUriSearchResult
@@ -61,8 +61,15 @@
               @hideUriSearch="handleHideUriSearch"
             ></opensilex-GlobalUriSearchResult>
 
-          </div>
+          </div>-->
+          <div
+            v-show="uriSearchBoxVisible"
+            class="floating-box">
+            <opensilex-GlobalUriSearchBox
+              @hideUriSearch="handleHideUriSearch"
+            ></opensilex-GlobalUriSearchBox>
 
+          </div>
           <section 
             id="content-wrapper" 
             class="page-wrap"  
@@ -112,7 +119,7 @@ export default class App extends Vue {
   //#endregion
 
   //#region Refs
-  @Ref("globalUriSearchResultComponent") globalUriSearchResultComponent!: GlobalUriSearchResult;
+  //@Ref("globalUriSearchResultComponent") globalUriSearchResultComponent!: GlobalUriSearchResult;
   //#endregion
 
   //#region: data
@@ -127,9 +134,9 @@ export default class App extends Vue {
   displayNotificationMessage: boolean = false;
   private langUnwatcher;
   //The following concerns the URI global search functionality
-  private uriSearchResultVisible: boolean = false;
-  private uriSearchResult: BasicMongoSparqlDTO = null;
-  private uriSearchService: UriSearchService;
+  private uriSearchBoxVisible: boolean = false;
+  //private uriSearchResult: BasicMongoSparqlDTO = {};
+  //private uriSearchService: UriSearchService;
 
   //#endregion
   //#region: hooks
@@ -167,8 +174,6 @@ export default class App extends Vue {
     } catch {
       this.$opensilex.showErrorToast(this.$i18n.t("component.header.bad-notification-end-date"));
     }
-
-    this.uriSearchService = this.$opensilex.getService("opensilex.UriSearchService");
   }
 
   //#endregion
@@ -190,16 +195,12 @@ export default class App extends Vue {
   //#endregion
   //#region: EventHandlers
 
-  private handleUriGlobalSearch(uri: string){
-    this.uriSearchService.searchByUri(uri).then( res => {
-        this.uriSearchResult = res.response.result.pop();
-      }
-    )
-    this.uriSearchResultVisible = true;
+  private handleUriGlobalSearchPressed(){
+    this.uriSearchBoxVisible = !this.uriSearchBoxVisible;
   }
 
   private handleHideUriSearch(){
-    this.uriSearchResultVisible = false;
+    this.uriSearchBoxVisible = false;
   }
 
   closeNotification(){

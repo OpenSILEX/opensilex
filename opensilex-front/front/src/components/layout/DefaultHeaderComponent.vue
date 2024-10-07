@@ -107,7 +107,7 @@
     <!-- Burger menu end -->
 
           <!-- UriSearch -->
-          <b-input-group class="uriSearchContainer">
+<!--          <b-input-group class="uriSearchContainer">
             <opensilex-StringFilter
               :filter.sync="uriSearchValue"
               placeholder="component.header.uri-search-placeholder"
@@ -119,7 +119,7 @@
                 <i class="icon ik ik-search"></i>
               </b-button>
             </b-input-group-append>
-          </b-input-group>
+          </b-input-group>-->
 
           <!--help button-->
           <opensilex-HelpButton
@@ -130,6 +130,10 @@
 
           <div class="headerMenuIcons">
 
+            <i
+              class="icon ik ik-search"
+              @click="handleUriSearchIconHit"
+            ></i>
             <!--language button -->
             <b-dropdown
               class="langDropdown" 
@@ -198,7 +202,7 @@ export default class DefaultHeaderComponent extends Vue {
   icon: any;
   title: any;
   description: any;
-  uriSearchValue: String = "";
+  //uriSearchValue: String = "";
 
   /**
    * Return the current connected user
@@ -329,11 +333,12 @@ export default class DefaultHeaderComponent extends Vue {
     window.removeEventListener("resize", this.handleResize);
   }
 
-  /**
-   * Launches the uri search and transmits the information to App.vue
-   */
-  launchUriGlobalSearch(){
+
+  /*launchUriGlobalSearch(){
     this.$emit("uriGlobalSearch", this.uriSearchValue);
+  }*/
+  handleUriSearchIconHit(){
+    this.$emit("uriGlobalSearch")
   }
 
   handleResize() {
@@ -679,50 +684,52 @@ export default class DefaultHeaderComponent extends Vue {
   }
 
   .headerMenuIcons, .topbarBtnHelp {
-    display: none
+    display: none;
   }
 
-  /*::v-deep .b-input-group {
+}
+
+//My changes start here TODO delete this comment
+
+/*::v-deep .b-input-group {
     //flex-wrap: nowrap;
-    width: 70%;
   }*/
-  ::v-deep .input-group{
-    flex-wrap: nowrap;
-    width: 20%;
-  }
-
-  //My changes start here TODO delete this comment
-
-  .floating-box {
-    position: fixed;    /* Keeps it floating */
-    top: 20%;           /* Adjust to your preferred position */
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    background-color: red;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    z-index: 1000;      /* Ensures it's on top of other elements */
-  }
-
-  //TODO delete this bullshit
-
-  /*.uriSearchContainer {
-    white-space: nowrap; !* Prevents elements from wrapping to the next line *!
-  }
-
-  .inline-input, .inline-button {
-    display: inline-block; !* Ensures both elements are inline *!
-    vertical-align: middle; !* Aligns them properly *!
-    margin-right: 10px; !* Adds some space between them *!
-  }*/
+::v-deep .input-group-append{
+  width: 100%;
+}
 
 
-  .uriSearchContainer {
-    //display: flex;
-    //align-items: center; //!* Vertically center both elements *!
-    //gap: 10px; //!* Space between elements *!
-  }
+
+.floating-box {
+  position: fixed;    /* Keeps it floating */
+  top: 20%;           /* Adjust to your preferred position */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: red;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  z-index: 1000;      /* Ensures it's on top of other elements */
+}
+
+//TODO delete this bullshit
+
+/*.uriSearchContainer {
+  white-space: nowrap; !* Prevents elements from wrapping to the next line *!
+}
+
+.inline-input, .inline-button {
+  display: inline-block; !* Ensures both elements are inline *!
+  vertical-align: middle; !* Aligns them properly *!
+  margin-right: 10px; !* Adds some space between them *!
+}*/
+
+
+.uriSearchContainer {
+  //display: flex;
+  //align-items: center; //!* Vertically center both elements *!
+  //gap: 10px; //!* Space between elements *!
+}
 /*
   .searchFilter {
     flex: 1; !* Make the custom component take up available space *!
@@ -736,6 +743,4 @@ export default class DefaultHeaderComponent extends Vue {
     cursor: pointer;
     flex-shrink: 0; !* Prevents the icon from shrinking *!
   }*/
-
-}
 </style>

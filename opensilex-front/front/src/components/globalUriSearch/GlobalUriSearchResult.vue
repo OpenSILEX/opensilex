@@ -1,19 +1,12 @@
 <template>
   <div>
     <!-- Title-->
-    <h3>{{ $t("GlobalUriSearch.generalInformation") }}:</h3>
-    <span class="notificationButtonContainer">
-              <opensilex-Button
-                label="component.common.close"
-                icon="ik#ik-x"
-                class="closeNotificationButton"
-                @click="$emit('hideUriSearch')"
-              ></opensilex-Button>
-            </span>
+    <h3>{{ $t("GlobalUriSearch.resultTitle") }}:</h3>
     <!-- URI -->
     <opensilex-UriView
       :uri="uri"
       :value="this.$opensilex.getShortUri(uri)"
+      class="uriLinkGlobalUriSearchRes"
       :to="{
         path: detailsPath
       }"
@@ -58,7 +51,7 @@ export default class GlobalUriSearchResult extends Vue {
 
   //#region: props
   @Prop()
-  searchResult: BasicMongoSparqlDTO = {}
+  searchResult: BasicMongoSparqlDTO;
   //#endregion
   
   //#region: data
@@ -113,7 +106,7 @@ export default class GlobalUriSearchResult extends Vue {
     return this.searchResult.publisher;
   }
   get publicationDate() {
-    return this.searchResult.publication_datesearchResult.publication_date;
+    return this.searchResult.publication_date;
   }
   get updatedDate() {
     return this.searchResult.last_updated_date;
@@ -128,23 +121,17 @@ export default class GlobalUriSearchResult extends Vue {
 
 <style scoped lang="scss">
 
-.notificationButtonContainer {
-  position: inherit;
+.close-button-container {
+  //position: inherit;
   right: 0;
 }
 
-.closeNotificationButton{
-  border: none;
-  padding: 1px 8px;
-  margin: 4px;
-  font-size: 1.5em !important;
-  color:rgba(101, 101, 101, 0.5);
-  font-weight: bolder;
-  cursor: pointer;
-  background: none;
+.uriLinkGlobalUriSearchRes{
+
 }
 
-.closeNotificationButton:hover{
+
+.closeResultBox:hover{
   color : #00A28C;
   background: none;
 }
@@ -153,12 +140,12 @@ export default class GlobalUriSearchResult extends Vue {
 <i18n>
 en:
   GlobalUriSearch:
-    generalInformation: Global information
+    resultTitle: Search Result
     seeDetails: See details
 
 fr:
   GlobalUriSearch:
-    generalInformation: Informations globales
+    resultTitle: Résultat de recherche
     seeDetails: Voir détails
 
 </i18n>

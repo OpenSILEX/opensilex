@@ -193,6 +193,10 @@
     color: #007bff;
 }
 
+.uriLinkGlobalUriSearchRes a{
+    color: #007bff;
+}
+
 .card .card-header .card-options a.view-nav {
     width: inherit;
     color: #3C76F4;

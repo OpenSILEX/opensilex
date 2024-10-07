@@ -151,14 +151,16 @@ public class UriSearchSparqlDao {
         inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
         inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
 
+        //Extra details for publisher info, search in user graph and in an optional for the admin use-case (no first or last name)
         result.addGraph(graphVar, inGraphWhere);
-        result.addGraph(
+        WhereBuilder foafDetails = new WhereBuilder().addGraph(
                 sparql.getDefaultGraph(AccountModel.class),
                 new WhereBuilder()
                         .addWhere(publisherPersonVar, FOAF.account.asNode(), publisherVar)
                         .addWhere(publisherPersonVar, FOAF.firstName.asNode(), publisherFirstName)
                         .addWhere(publisherPersonVar, FOAF.lastName.asNode(), publisherLastName)
         );
+        result.addOptional(foafDetails);
 
         //uri value
         Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));

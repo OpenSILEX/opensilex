@@ -27,12 +27,12 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
 
         //Has Geometry
         filters.add(Filters.eq(LocationObservationModel.HAS_GEOMETRY_FIELD, searchQuery.isHasGeometry()));
-        //URI Collection
+        //Collection URI
         if(searchQuery.getObservationCollection() != null){
             filters.add(Filters.eq(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollection()));
         }
-        // Collection List
-        if(searchQuery.getObservationCollectionList() != null){
+        //Collection List
+        if(!searchQuery.getObservationCollectionList().isEmpty()){
             filters.add(Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollectionList()));
         }
         // Date

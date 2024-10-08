@@ -12,16 +12,24 @@
 package org.opensilex.core.location.bll;
 
 import com.mongodb.client.ClientSession;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
+import org.opensilex.core.location.dal.LocationObservationModel;
+import com.mongodb.client.model.geojson.Geometry;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.core.location.dal.*;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +45,7 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, Instant date, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant date, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
@@ -49,6 +57,7 @@ public class LocationObservationLogic {
             }
         }
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
+        locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
 
         locationObservationDAO.create(session, locationObservationModel);

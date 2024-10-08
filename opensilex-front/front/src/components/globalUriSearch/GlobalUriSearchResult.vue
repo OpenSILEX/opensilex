@@ -2,25 +2,30 @@
   <div>
     <!-- Title-->
     <h3>{{ $t("GlobalUriSearch.resultTitle") }}:</h3>
-    <!-- URI -->
-    <opensilex-UriView
-      :uri="uri"
-      :value="this.$opensilex.getShortUri(uri)"
-      class="uriLinkGlobalUriSearchRes"
-      :to="{
+
+    <!-- All main info (non metadata stuff) -->
+    <div class="main-info-style">
+      <!-- URI -->
+      <opensilex-UriView
+        class="uriLinkGlobalUriSearchRes"
+        :uri="uri"
+        :value="this.$opensilex.getShortUri(uri)"
+        :to="{
         path: detailsPath
       }"
-    ></opensilex-UriView>
-    <!-- Name -->
-    <opensilex-StringView
-      :value="name"
-      label="component.common.name"
-    ></opensilex-StringView>
-    <!-- Type -->
-    <opensilex-TypeView
-      :type="type"
-      :typeLabel="typeName"
-    ></opensilex-TypeView>
+      ></opensilex-UriView>
+      <!-- Name -->
+      <opensilex-StringView
+        :value="name"
+        label="component.common.name"
+      ></opensilex-StringView>
+      <!-- Type -->
+      <opensilex-TypeView
+        :type="type"
+        :typeLabel="typeName"
+      ></opensilex-TypeView>
+    </div>
+
     <!-- Metadata -->
     <opensilex-MetadataView
       v-if="publisher"
@@ -126,8 +131,8 @@ export default class GlobalUriSearchResult extends Vue {
   right: 0;
 }
 
-.uriLinkGlobalUriSearchRes{
-
+.main-info-style{
+  margin-bottom: 15px;
 }
 
 

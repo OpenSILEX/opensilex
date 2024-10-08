@@ -106,21 +106,6 @@
     </Transition>
     <!-- Burger menu end -->
 
-          <!-- UriSearch -->
-<!--          <b-input-group class="uriSearchContainer">
-            <opensilex-StringFilter
-              :filter.sync="uriSearchValue"
-              placeholder="component.header.uri-search-placeholder"
-              class="searchFilter"
-              @handlingEnterKey="launchUriGlobalSearch"
-            ></opensilex-StringFilter>
-            <b-input-group-append>
-              <b-button class="greenThemeColor" @click="launchUriGlobalSearch">
-                <i class="icon ik ik-search"></i>
-              </b-button>
-            </b-input-group-append>
-          </b-input-group>-->
-
           <!--help button-->
           <opensilex-HelpButton
             class="topbarBtnHelp"
@@ -130,10 +115,13 @@
 
           <div class="headerMenuIcons">
 
-            <i
-              class="icon ik ik-search"
+            <opensilex-Button
               @click="handleUriSearchIconHit"
-            ></i>
+              :label="$t('component.header.uriSearchHoverMessage')"
+              class="searchicon ik ik-search"
+              :class="{ 'selected-searchicon': searchBoxIsActive }"
+              icon="ik-search"
+            ></opensilex-Button>
             <!--language button -->
             <b-dropdown
               class="langDropdown" 
@@ -203,6 +191,9 @@ export default class DefaultHeaderComponent extends Vue {
   title: any;
   description: any;
   //uriSearchValue: String = "";
+
+  @Prop()
+  searchBoxIsActive: boolean;
 
   /**
    * Return the current connected user
@@ -698,7 +689,28 @@ export default class DefaultHeaderComponent extends Vue {
   width: 100%;
 }
 
+//For some annoying reason the search icon is smaller so this makes it slightly bigger than other icons in header
+.searchicon {
+  font-size: 1.3em;
+  color: #212121;
+  vertical-align: middle;
+  //transition: color 0.3s ease, background-color 0.3s ease;
+  padding: 5px;
+  //border-radius: 8px;
+  background-color: #FFFFFF;
+  border-color: #FFFFFF;
+}
 
+.searchicon:hover {
+  color: #007bff; /* Blue color on hover */
+  //background-color: #A9A9A9;
+  background-color: #F0F1F5;
+  border-color: #F0F1F5;
+}
+
+.selected-searchicon {
+  color: #007bff;
+}
 
 .floating-box {
   position: fixed;    /* Keeps it floating */

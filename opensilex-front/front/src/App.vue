@@ -23,6 +23,7 @@
           <component
             v-bind:is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
+            :searchBoxIsActive="uriSearchBoxVisible"
             @uriGlobalSearch="handleUriGlobalSearchPressed"
           ></component>
 
@@ -293,7 +294,7 @@ main {
 .floating-box {
   position: fixed; //Keeps it floating
   top: 70px;
-  left: 65%;
+  right: 5%;
   padding: 20px;
   background-color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);

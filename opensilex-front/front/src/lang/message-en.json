@@ -189,7 +189,8 @@
                 "release": "Release"
             },
             "bad-notification-end-date": "The end date format set for the notification is incorrect.",
-            "uri-search-placeholder": "Search by URI"
+            "uri-search-placeholder": "Search by URI",
+            "uriSearchHoverMessage": "Search by any URI"
         },
         "menu": {
             "dashboard": "Dashboard",

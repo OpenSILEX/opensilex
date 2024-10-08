@@ -15,7 +15,7 @@ public class LocationObservationModel extends MongoModel {
     private URI featureOfInterest;
     public static final String DATE_FIELD = "date";
     private Instant date;
-    public static final String END_DATE_FIELD = "date";
+    public static final String END_DATE_FIELD = "end_date";
     private Instant endDate;
     public static final String HAS_GEOMETRY_FIELD = "hasGeometry";
     private boolean hasGeometry;

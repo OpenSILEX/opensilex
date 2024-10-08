@@ -100,12 +100,12 @@ public class FacilityDTO extends RDFObjectDTO {
         this.endDate = endDate;
     }
 
-    public List<LocationObservationDTO> getLocationsList() {
+    public List<LocationObservationDTO> getLocations() {
         return locations;
     }
 
-    public void setLocationsList(List<LocationObservationDTO> locationsList) {
-        this.locations = locationsList;
+    public void setLocations(List<LocationObservationDTO> locations) {
+        this.locations = locations;
     }
 
     public void toModel(FacilityModel model) {

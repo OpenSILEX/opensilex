@@ -17,7 +17,7 @@
     <div class="row">
       <div class="col">
         <opensilex-DateTimeForm
-                :value.sync="form.beginDate"
+                :value.sync="form.date"
                 label="component.common.begin"
                 :maxDate="form.endDate"
                 :required="true"
@@ -27,7 +27,7 @@
         <opensilex-DateTimeForm
                 :value.sync="form.endDate"
                 label="component.common.end"
-                :minDate="form.beginDate"
+                :minDate="form.date"
                 :required="false"
         ></opensilex-DateTimeForm>
       </div>
@@ -90,7 +90,7 @@ export default class LocationForm extends Vue {
   static getEmptyForm() : LocationObservationDTO{
     return {
       geometry: undefined,
-      beginDate: undefined,
+      date: undefined,
       endDate: undefined
     };
   }

@@ -18,20 +18,19 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationSearchFilter;
-import com.mongodb.client.model.geojson.Geometry;
-import org.opensilex.core.location.dal.*;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 
+import javax.ws.rs.NotAllowedException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class LocationObservationLogic {
@@ -61,6 +60,23 @@ public class LocationObservationLogic {
         locationObservationModel.setHasGeometry(hasGeometry);
 
         locationObservationDAO.create(session, locationObservationModel);
+    }
+
+    public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+
+        models.forEach(model -> {
+            validateDates(model.getDate(), model.getEndDate());
+
+            model.setObservationCollection(locationObservationCollectionURI);
+            model.setFeatureOfInterest(featureOfInterest);
+            model.setHasGeometry(hasGeometry);
+        });
+
+        if(models.size() >= 2 ) {
+            validateConsistencyObservationList(models);
+        }
+
+        locationObservationDAO.create(session, models);
     }
 
     public LocationObservationModel getLocationObservationByURI(URI uri) throws NoSQLInvalidURIException {
@@ -112,5 +128,67 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region private
+    /**
+     * Checks if an object with location (not from an address) is valid :
+     *     - it must have one observation date;
+     *     - if there is a endDate, it must be after the "begin" date.
+     *
+     *
+     * @param date observation date of the geometry
+     * @param endDate end observation date of the geometry
+     * @throws NotAllowedException If dates are invalid
+     */
+    private void validateDates(Instant date, Instant endDate){
+        if(Objects.isNull(date)){
+            throw new NotAllowedException("Date cannot be null");
+        }
+        if(!Objects.isNull(endDate) && endDate.isBefore(date)){
+            throw new NotAllowedException("Date ("+ date +") cannot be after endDate ("+ endDate + ")");
+        }
+    }
+
+    /**
+     * Checks if the all observation dates are consistency
+     * The object can't have 2 locations in the same time
+     *
+     * @param models list of location observations
+     */
+    private void validateConsistencyObservationList(List<LocationObservationModel> models){
+        //TODO : a optimiser - stream ? boucle while models.size() <2 ? refactoring?
+        //TODO: message d'erreur lisible
+            List<LocationObservationModel> modelsToCompare = new ArrayList<>(models);
+
+            models.forEach(model -> {
+                modelsToCompare.remove(model);
+
+                NotAllowedException ex = new NotAllowedException( model.getObservationCollection().toString() + "can't be at 2 different locations in the same time (" + model.getDate() + ")");
+
+                if(Objects.isNull(model.getEndDate())){  // Instant
+                    modelsToCompare.forEach(m -> {
+                        if(Objects.isNull(m.getEndDate())){
+                           if(m.getDate().equals(model.getDate())){
+                               throw ex;
+                           }
+                        } else {
+                            if(model.getDate().isBefore(m.getEndDate()) && model.getDate().isAfter(m.getDate())){
+                                throw ex;
+                            }
+                        }
+                    });
+                } else {  // Interval
+                    modelsToCompare.forEach(m -> {
+                        if(Objects.isNull(m.getEndDate())){
+                            if(m.getDate().isBefore(model.getEndDate()) && m.getDate().isAfter(model.getDate())){
+                                throw ex;
+                            }
+                        } else {
+                            if(!m.getEndDate().isBefore(model.getDate()) && !model.getEndDate().isBefore(m.getDate())){
+                                throw ex;
+                            }
+                        }
+                    });
+                }
+            });
+    }
     //#endregion
 }

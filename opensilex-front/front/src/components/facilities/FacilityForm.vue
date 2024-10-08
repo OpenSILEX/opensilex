@@ -120,7 +120,7 @@
       <!-- Geometry -->
       <div class="col-8">
         <opensilex-GeometryForm
-            :value.sync="position.geometry"
+            :value.sync="position.geojson"
             label="component.common.geometry"
             helpMessage="component.common.geometry-help"
         >
@@ -132,17 +132,17 @@
     <div class="row">
       <div class="col">
         <opensilex-DateTimeForm
-            :value.sync="position.beginDate"
+            :value.sync="position.date"
             label="component.common.begin"
             :maxDate="position.endDate"
-            :required="!!position.geometry"
+            :required="!!position.geojson"
         ></opensilex-DateTimeForm>
       </div>
       <div class="col">
         <opensilex-DateTimeForm
             :value.sync="position.endDate"
             label="component.common.end"
-            :minDate="position.beginDate"
+            :minDate="position.date"
             :required="false"
         ></opensilex-DateTimeForm>
       </div>
@@ -150,8 +150,8 @@
 
     <!-- Position list -->
     <opensilex-TableView v-if="form.locations && form.locations.length !==0" :fields="fields" :items="form.locations">
-      <template v-slot:cell(beginDate)="{ data }">
-        <opensilex-DateView :value="data.item.beginDate"></opensilex-DateView>
+      <template v-slot:cell(date)="{ data }">
+        <opensilex-DateView :value="data.item.date"></opensilex-DateView>
       </template>
 
       <template v-slot:cell(endDate)="{ data }">
@@ -160,7 +160,7 @@
 
       <template v-slot:cell(geometry)="{data}">
         <opensilex-GeometryCopy
-            label="" :value="data.item.geometry">
+            label="" :value="data.item.geojson">
         </opensilex-GeometryCopy>
       </template>
 
@@ -180,9 +180,10 @@
         </b-button-group>
       </template>
     </opensilex-TableView>
-    <opensilex-LocationModalForm
+<!--    TODO: demander à Seb : validation et  ergonomie du form-->
+<!--    <opensilex-LocationModalForm
         ref="locationModalForm"
-    ></opensilex-LocationModalForm>
+    ></opensilex-LocationModalForm>-->
   </b-form>
 </template>
 
@@ -195,6 +196,7 @@ import { FacilityCreationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import LocationModalForm from "@/components/geometry/LocationModalForm.vue";
+import {LocationObservationDTO} from "opensilex-core/lib";
 
 @Component
 export default class FacilityForm extends Vue {
@@ -227,10 +229,10 @@ export default class FacilityForm extends Vue {
   private baseType: string;
   private typeModel = null;
   private propertyComponents = [];
-  private position: {geometry: {}, beginDate : string, endDate: string} = this.getPositionEmpty();
+  private position: {geojson: {}, date : string, endDate: string} = this.getPositionEmpty();
   private fields = [
     {
-      key: "beginDate",
+      key: "date",
       label: "component.common.begin",
       sortable: true,
     },
@@ -271,7 +273,7 @@ export default class FacilityForm extends Vue {
   }
 
   private addPosition(){
-    if(this.position.geometry !== undefined){
+    if(this.position.geojson !== undefined){
       this.form.locations.push(this.position)
       this.position = this.getPositionEmpty();
     }
@@ -343,10 +345,10 @@ export default class FacilityForm extends Vue {
     this.typeModel = undefined;
   }
 
-  private getPositionEmpty(){
+  private getPositionEmpty(): LocationObservationDTO {
     return {
-      geometry: undefined,
-      beginDate: undefined,
+      geojson: undefined,
+      date: undefined,
       endDate: undefined
     }
   }

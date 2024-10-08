@@ -17,6 +17,8 @@ package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -54,6 +56,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -111,11 +114,15 @@ public class FacilityAPI {
             FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
             FacilityModel facility = dto.newModel();
 
+            List<LocationObservationModel> locations = new ArrayList<>();
+
+            if(!dto.getLocations().isEmpty()){
+               locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
+            }
+
             facility = facilityLogic.create(
                     facility,
-                    Objects.isNull(dto.getGeometry()) ? null : dto.getGeometry(),
-                    Objects.isNull(dto.getDate()) ? null : dto.getDate(),
-                    Objects.isNull(dto.getEndDate()) ? null : dto.getEndDate(),
+                    locations.isEmpty() ? null : locations,
                     currentUser
             );
 
@@ -306,13 +313,13 @@ public class FacilityAPI {
 
         FacilityModel facility = dto.newModel();
 
-        facility = facilityLogic.update(
+        /*facility = facilityLogic.update(
                 facility,
                 Objects.isNull(dto.getGeometry()) ? null : dto.getGeometry(),
                 Objects.isNull(dto.getDate()) ? null : dto.getDate(),
                 Objects.isNull(dto.getEndDate()) ? null : dto.getEndDate(),
                 currentUser
-        );
+        );*/
 
         return new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
     }

@@ -292,9 +292,9 @@ main {
 //My changes start here TODO delete this comment
 
 .floating-box {
-  position: fixed; //Keeps it floating
+  position: fixed;
   top: 70px;
-  right: 5%;
+  right: 8%;
   padding: 20px;
   background-color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);

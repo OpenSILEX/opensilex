@@ -374,6 +374,7 @@ routes:
 
   - path: /variable/details/:uri
     component: opensilex-VariableView
+    rdfType: vocabulary:Variable
     credentials: [ ]
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
@@ -478,6 +479,7 @@ routes:
     credentials: []
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
+    rdfType: vocabulary:Provenance
     credentials: [ ]
   - path: /provenances/annotations/:uri
     component: opensilex-ProvenanceDetailsPage

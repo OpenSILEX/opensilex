@@ -3,7 +3,7 @@
   <!-- UriSearch bar and close buttonn-->
   <div class="header-container">
     <div>
-      <b-input-group class="uriSearchContainer">
+      <b-input-group>
         <opensilex-StringFilter
           :filter.sync="uriSearchValue"
           placeholder="component.header.uri-search-placeholder"

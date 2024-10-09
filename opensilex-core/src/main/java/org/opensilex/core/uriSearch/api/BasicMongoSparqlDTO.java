@@ -10,13 +10,13 @@
 package org.opensilex.core.uriSearch.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
@@ -50,9 +50,13 @@ public class BasicMongoSparqlDTO {
     @JsonProperty("super_types")
     private List<URITypesDTO> superTypes;
 
+    //To be able to show data details if the uri was a data
+    @JsonProperty("data_dto")
+    private DataGetSearchDTO dataDto;
+
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
 
-    public static BasicMongoSparqlDTO fromUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher result){
+    public static BasicMongoSparqlDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher result){
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
         dto.setUri(result.getModel().getUri());
         dto.setType(result.getModel().getType());
@@ -81,8 +85,7 @@ public class BasicMongoSparqlDTO {
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
-        //TODO handle publisher UserDTO creation for mongo models
-        //dto.setPublisher(model.getPublisher());
+
         if(model.getPublicationDate() != null){
             dto.setPublicationDate(model.getPublicationDate().toString());
         }
@@ -157,4 +160,13 @@ public class BasicMongoSparqlDTO {
     public void setSuperTypes(List<URITypesDTO> superTypes) {
         this.superTypes = superTypes;
     }
+
+    public DataGetSearchDTO getDataDto() {
+        return dataDto;
+    }
+
+    public void setDataDto(DataGetSearchDTO dataDto) {
+        this.dataDto = dataDto;
+    }
+
 }

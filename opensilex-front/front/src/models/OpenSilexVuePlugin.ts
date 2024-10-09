@@ -128,7 +128,7 @@ export default class OpenSilexVuePlugin {
     getPathFromUriTypes(types) {
         let path = "";
         types.forEach(type => {
-            let route = this.config.routes.find(route => route.rdfType == type)
+            let route = this.config.routes.find(route => this.checkURIs(route.rdfType, type))
             if (route) {
                 path = route.path;
             }

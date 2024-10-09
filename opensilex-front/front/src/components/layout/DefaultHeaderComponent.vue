@@ -65,6 +65,14 @@
             label="component.header.user-guide"
           ></opensilex-HelpButton>
         </div>
+        <!--Uri global search-->
+        <opensilex-Button
+          @click="handleUriSearchIconHit"
+          :label="$t('component.header.uriSearchHoverMessage')"
+          class="searchicon-cheeseburger ik ik-search"
+          :class="{ 'selected-searchicon': searchBoxIsActive }"
+          icon="ik-search"
+        ></opensilex-Button>
         <div>
           <div>
             <b-dropdown
@@ -115,6 +123,7 @@
 
           <div class="headerMenuIcons">
 
+            <!--Uri global search-->
             <opensilex-Button
               @click="handleUriSearchIconHit"
               :label="$t('component.header.uriSearchHoverMessage')"
@@ -694,16 +703,19 @@ export default class DefaultHeaderComponent extends Vue {
   font-size: 1.3em;
   color: #212121;
   vertical-align: middle;
-  //transition: color 0.3s ease, background-color 0.3s ease;
   padding: 5px;
-  //border-radius: 8px;
-  background-color: #FFFFFF;
-  border-color: #FFFFFF;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
 }
 
-.searchicon:hover {
+.searchicon-cheeseburger{
+  color: #212121;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+}
+
+.searchicon:hover, searchicon-cheeseburger:hover {
   color: #007bff; /* Blue color on hover */
-  //background-color: #A9A9A9;
   background-color: #F0F1F5;
   border-color: #F0F1F5;
 }
@@ -737,11 +749,6 @@ export default class DefaultHeaderComponent extends Vue {
 }*/
 
 
-.uriSearchContainer {
-  //display: flex;
-  //align-items: center; //!* Vertically center both elements *!
-  //gap: 10px; //!* Space between elements *!
-}
 /*
   .searchFilter {
     flex: 1; !* Make the custom component take up available space *!

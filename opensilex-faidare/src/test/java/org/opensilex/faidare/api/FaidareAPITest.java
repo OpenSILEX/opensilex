@@ -20,11 +20,12 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.project.api.ProjectCreationDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
@@ -39,10 +40,11 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
+import java.util.stream.Collectors;
 
 
 public class FaidareAPITest extends AbstractMongoIntegrationTest {
@@ -97,12 +99,14 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
                 new Position(4.075160959464115, 43.484780209220666),
                 new Position(3.6466941625891147, 43.50868910423751)
         ));
+        LocationObservationDTO location = new LocationObservationDTO();
+        location.setGeojson(LocationLogic.geometryToGeoJson(polygon));
 
-        GeoJsonObject geojson = LocationLogic.geometryToGeoJson(polygon);
-        facilityBuilder.setGeometry(geojson);
+        facilityBuilder.setLocations(List.of(location));
+
         for (int i=0; i<5; i++) {
             FacilityCreationDTO dto = facilityBuilder.createDTO();
-            facilityLogic.create(dto.newModel(), geojson,null, null, user);
+            facilityLogic.create(dto.newModel(), dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList()), user);
         }
 
         personBuilder = new TestPersonBuilder();

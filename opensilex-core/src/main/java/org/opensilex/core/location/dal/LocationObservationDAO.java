@@ -37,10 +37,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         }
         // Date
         Bson filterDate = Filters.and(
-                Filters.exists(LocationObservationModel.DATE_FIELD,true),
-                Filters.lte(LocationObservationModel.DATE_FIELD,searchQuery.getDate()));
+                Filters.exists(LocationObservationModel.END_DATE_FIELD,true),
+                Filters.lte(LocationObservationModel.END_DATE_FIELD,searchQuery.getDate()));
 
-        Bson filterNoDate= Filters.exists(LocationObservationModel.DATE_FIELD,false);
+        Bson filterNoDate= Filters.exists(LocationObservationModel.END_DATE_FIELD,false);
 
         filters.add(Filters.or(filterDate,filterNoDate));
 

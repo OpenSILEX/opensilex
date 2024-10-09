@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.organisation.api.facility.*;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -89,7 +91,11 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityCreationDTO dto = new FacilityCreationDTO();
         dto.setName(name);
         dto.setAddress(address);
-        dto.setGeometry(geoJson);
+
+        LocationObservationDTO location = new LocationObservationDTO();
+        location.setGeojson(geoJson);
+        dto.setLocations(List.of(location));
+
         return dto;
     }
 
@@ -97,7 +103,11 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityUpdateDTO dto = new FacilityUpdateDTO();
         dto.setUri(uri);
         dto.setAddress(address);
-        dto.setGeometry(geoJson);
+
+        LocationObservationDTO location = new LocationObservationDTO();
+        location.setGeojson(geoJson);
+        dto.setLocations(List.of(location));
+
         return dto;
     }
 
@@ -196,7 +206,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNotNull(singleObjectResponse.getResult().getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getLocations().get(0).getGeojson());
         assertNotNull(singleObjectResponse.getResult().getAddress());
     }
 
@@ -210,7 +220,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
@@ -231,7 +241,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNotNull(singleObjectResponse.getResult().getAddress());
     }
@@ -246,7 +256,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNull(singleObjectResponse.getResult().getGeometry());
+        assertNull(singleObjectResponse.getResult().getLocations().get(0).getGeojson());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
 
@@ -264,7 +274,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
     }
 
@@ -288,7 +298,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNotNull(singleObjectResponse.getResult().getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getLocations().get(0).getGeojson());
         assertNotNull(singleObjectResponse.getResult().getAddress());
     }
 

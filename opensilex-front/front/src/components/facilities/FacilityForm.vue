@@ -132,26 +132,26 @@
     <div class="row">
       <div class="col">
         <opensilex-DateTimeForm
-            :value.sync="position.date"
+            :value.sync="position.startDate"
             label="component.common.begin"
             :maxDate="position.endDate"
-            :required="!!position.geojson"
+            :required="false"
         ></opensilex-DateTimeForm>
       </div>
       <div class="col">
         <opensilex-DateTimeForm
             :value.sync="position.endDate"
             label="component.common.end"
-            :minDate="position.date"
-            :required="false"
+            :minDate="position.startDate"
+            :required="!!position.geojson"
         ></opensilex-DateTimeForm>
       </div>
     </div>
 
     <!-- Position list -->
     <opensilex-TableView v-if="form.locations && form.locations.length !==0" :fields="fields" :items="form.locations">
-      <template v-slot:cell(date)="{ data }">
-        <opensilex-DateView :value="data.item.date"></opensilex-DateView>
+      <template v-slot:cell(startDate)="{ data }">
+        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
       </template>
 
       <template v-slot:cell(endDate)="{ data }">
@@ -192,11 +192,10 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
-import { FacilityCreationDTO } from 'opensilex-core/index';
+import { FacilityCreationDTO, LocationObservationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import LocationModalForm from "@/components/geometry/LocationModalForm.vue";
-import {LocationObservationDTO} from "opensilex-core/lib";
 
 @Component
 export default class FacilityForm extends Vue {
@@ -229,7 +228,7 @@ export default class FacilityForm extends Vue {
   private baseType: string;
   private typeModel = null;
   private propertyComponents = [];
-  private position: {geojson: {}, date : string, endDate: string} = this.getPositionEmpty();
+  private position: LocationObservationDTO = this.getPositionEmpty();
   private fields = [
     {
       key: "date",
@@ -348,7 +347,7 @@ export default class FacilityForm extends Vue {
   private getPositionEmpty(): LocationObservationDTO {
     return {
       geojson: undefined,
-      date: undefined,
+      startDate: undefined,
       endDate: undefined
     }
   }

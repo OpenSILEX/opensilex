@@ -102,11 +102,21 @@
       >
       </opensilex-UriListView>
 
-      <!-- Geometry -->
-      <opensilex-GeometryCopy
-        v-if="selected.geometry"
-        :value="selected.geometry"
-      ></opensilex-GeometryCopy>
+      <!--Last Position-->
+      <opensilex-StringView v-if="selected.geometry" label="FacilityDescription.lastPosition">
+        <!-- Position detail -->
+        <div v-if="selected.date">
+          <span v-if="selected.endDate">{{ new Date(selected.endDate).toLocaleString() }}</span>
+        </div>
+        <ul>
+          <li>
+            <opensilex-GeometryCopy
+                label=""
+                :value="selected.geometry">
+            </opensilex-GeometryCopy>
+          </li>
+        </ul>
+      </opensilex-StringView>
 
       <!-- Address -->
       <opensilex-AddressView
@@ -320,6 +330,7 @@ en:
     devices: Devices
     site: "Site"
     address: "Address"
+    lastPosition: Last position
 
 fr:
   FacilityDescription:
@@ -329,4 +340,5 @@ fr:
     devices: Appareils
     site: "Site"
     address: "Adresse"
+    lastPosition: Dernière position
 </i18n>

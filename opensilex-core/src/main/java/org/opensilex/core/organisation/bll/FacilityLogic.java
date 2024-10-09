@@ -321,8 +321,8 @@ public class FacilityLogic {
             return locationObservationLogic.getLastLocationObservation(
                     Collections.singletonList(facilityModel.getLocationObservationCollection()),
                     true,
-                    Instant.now(),
-                    null).get(0);
+                    Instant.now()
+                    ).get(0);
         } else {
             return new LocationObservationModel();
         }

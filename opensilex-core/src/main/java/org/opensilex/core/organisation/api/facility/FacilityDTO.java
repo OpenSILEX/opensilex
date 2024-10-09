@@ -38,11 +38,11 @@ public class FacilityDTO extends RDFObjectDTO {
 
     protected List<LocationObservationDTO> locations;
 
-    protected GeoJsonObject geometry;
+    /*protected GeoJsonObject geometry;
 
-    protected Instant date;
+    protected Instant startDate;
 
-    protected Instant endDate;
+    protected Instant endDate;*/
 
     public String getName() {
         return name;
@@ -76,7 +76,7 @@ public class FacilityDTO extends RDFObjectDTO {
         this.address = address;
     }
 
-    public GeoJsonObject getGeometry() {
+    /*public GeoJsonObject getGeometry() {
         return geometry;
     }
 
@@ -84,12 +84,12 @@ public class FacilityDTO extends RDFObjectDTO {
         this.geometry = geometry;
     }
 
-    public Instant getDate() {
-        return date;
+    public Instant getStartDate() {
+        return startDate;
     }
 
-    public void setDate(Instant date) {
-        this.date = date;
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
     }
 
     public Instant getEndDate() {
@@ -98,7 +98,7 @@ public class FacilityDTO extends RDFObjectDTO {
 
     public void setEndDate(Instant endDate) {
         this.endDate = endDate;
-    }
+    }*/
 
     public List<LocationObservationDTO> getLocations() {
         return locations;

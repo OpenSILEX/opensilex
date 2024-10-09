@@ -17,18 +17,18 @@
     <div class="row">
       <div class="col">
         <opensilex-DateTimeForm
-                :value.sync="form.date"
+                :value.sync="form.startDate"
                 label="component.common.begin"
                 :maxDate="form.endDate"
-                :required="true"
+                :required="false"
         ></opensilex-DateTimeForm>
       </div>
       <div class="col">
         <opensilex-DateTimeForm
                 :value.sync="form.endDate"
                 label="component.common.end"
-                :minDate="form.date"
-                :required="false"
+                :minDate="form.startDate"
+                :required="true"
         ></opensilex-DateTimeForm>
       </div>
     </div>
@@ -50,8 +50,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from "vue-property-decorator";
-import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
-import {LocationObservationDTO} from "opensilex-core/lib";
+import {LocationObservationDTO} from "opensilex-core/index";
 
 @Component({})
 export default class LocationForm extends Vue {
@@ -89,8 +88,8 @@ export default class LocationForm extends Vue {
   //#region Private methods
   static getEmptyForm() : LocationObservationDTO{
     return {
-      geometry: undefined,
-      date: undefined,
+      geojson: undefined,
+      startDate: undefined,
       endDate: undefined
     };
   }

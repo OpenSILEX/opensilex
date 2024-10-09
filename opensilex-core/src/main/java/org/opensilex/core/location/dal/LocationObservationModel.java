@@ -13,8 +13,8 @@ public class LocationObservationModel extends MongoModel {
     private URI observationCollection;
     public static final String FEATURE_OF_INTEREST_FIELD = "featureOfInterest";
     private URI featureOfInterest;
-    public static final String DATE_FIELD = "date";
-    private Instant date;
+    public static final String START_DATE_FIELD = "start_date";
+    private Instant startDate;
     public static final String END_DATE_FIELD = "end_date";
     private Instant endDate;
     public static final String HAS_GEOMETRY_FIELD = "hasGeometry";
@@ -43,12 +43,12 @@ public class LocationObservationModel extends MongoModel {
         this.featureOfInterest = featureOfInterest;
     }
 
-    public Instant getDate() {
-        return date;
+    public Instant getStartDate() {
+        return startDate;
     }
 
-    public void setDate(Instant date) {
-        this.date = date;
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
     }
 
     public Instant getEndDate() {

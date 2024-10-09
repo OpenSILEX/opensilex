@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -22,6 +23,8 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -125,14 +128,9 @@ public class FacilityGetDTO extends FacilityDTO {
     }
 
     public void fromLocationModel(LocationObservationModel locationObservationModel) throws JsonProcessingException {
-        if (locationObservationModel.getLocation() != null) {
-            setGeometry(LocationLogic.geometryToGeoJson(locationObservationModel.getLocation().getGeometry()));
-        }
-        if(locationObservationModel.getDate() != null) {
-            setDate(locationObservationModel.getDate());
-        }
-        if(locationObservationModel.getEndDate() != null) {
-            setEndDate(locationObservationModel.getEndDate());
-        }
+       LocationObservationDTO locationDto = new LocationObservationDTO();
+       locationDto.fromModel(locationObservationModel);
+
+       setLocations(Collections.singletonList(locationDto));
     }
 }

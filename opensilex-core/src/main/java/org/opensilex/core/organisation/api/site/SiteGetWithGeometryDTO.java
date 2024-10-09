@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  *
  */
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "publisher", "publication_date", "last_updated_date",
-        "name", "facilities",  "geometry"})
+        "name", "facilities", "geometry"})
 public class SiteGetWithGeometryDTO extends SiteDTO {
 
     protected List<URI> facilities;

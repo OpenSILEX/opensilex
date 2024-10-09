@@ -20,12 +20,13 @@ import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 
 import java.time.Instant;
+import java.util.Objects;
 
 public class LocationObservationDTO {
 
     protected GeoJsonObject geojson;
 
-    protected Instant date;
+    protected Instant startDate;
 
     protected Instant endDate;
 
@@ -37,12 +38,12 @@ public class LocationObservationDTO {
         this.geojson = geojson;
     }
 
-    public Instant getDate() {
-        return date;
+    public Instant getStartDate() {
+        return startDate;
     }
 
-    public void setDate(Instant date) {
-        this.date = date;
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
     }
 
     public Instant getEndDate() {
@@ -61,8 +62,8 @@ public class LocationObservationDTO {
             throw new RuntimeException(e);
         }
 
-        if (getDate() != null) {
-            model.setDate(getDate());
+        if (getStartDate() != null) {
+            model.setStartDate(getStartDate());
         }
         if (getEndDate() != null) {
             model.setEndDate(getEndDate());
@@ -74,5 +75,21 @@ public class LocationObservationDTO {
         toModel(instance);
 
         return instance;
+    }
+
+    public void fromModel(LocationObservationModel model) {
+        if (!Objects.isNull(model.getLocation())) {
+            try {
+                setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(!Objects.isNull(model.getStartDate())) {
+            setStartDate(model.getStartDate());
+        }
+        if(!Objects.isNull(model.getEndDate() )) {
+            setEndDate(model.getEndDate());
+        }
     }
 }

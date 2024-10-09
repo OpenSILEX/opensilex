@@ -17,6 +17,8 @@
           @onDelete="deleteOrganization"
           @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
+        <opensilex-MapCard/>
+
       </div>
       <div class="col-md-6">
         <!-- Organization facilities -->

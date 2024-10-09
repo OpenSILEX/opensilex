@@ -757,6 +757,8 @@ import GlobalMapView from "./geometry/GlobalMapView.vue";
 components["opensilex-GlobalMapView"] = GlobalMapView;
 import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
 components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
+import MapCard from "./geometry/MapCard.vue";
+components["opensilex-MapCard"] = MapCard;
 
 // VISUALIZATION
 

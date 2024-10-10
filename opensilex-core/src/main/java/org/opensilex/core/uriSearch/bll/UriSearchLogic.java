@@ -16,7 +16,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.uriSearch.api.BasicMongoSparqlDTO;
+import org.opensilex.core.uriSearch.api.URIGlobalSearchDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.fs.service.FileStorageService;
@@ -50,11 +50,11 @@ public class UriSearchLogic {
         this.fs = fs;
     }
 
-    public BasicMongoSparqlDTO searchByUri(URI uri) throws Exception {
+    public URIGlobalSearchDTO searchByUri(URI uri) throws Exception {
         //Start by searching in sparql global graph
         UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff sparqlMatch = sparqlDao.searchByUri(uri);
         if(!(sparqlMatch == null)){
-            BasicMongoSparqlDTO result = BasicMongoSparqlDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
+            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
 
             //Get super types, needed to identify details page path in front
             List<URITypesDTO> types = getSuperTypesFromUri(uri);
@@ -72,7 +72,7 @@ public class UriSearchLogic {
         }catch(Exception ignore){}
 
         if(provenanceModel != null){
-            BasicMongoSparqlDTO result = BasicMongoSparqlDTO.fromMongoModel(provenanceModel).setName(provenanceModel.getName());
+            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(provenanceModel).setName(provenanceModel.getName());
             //prepare publisher info
             loadPublisherInfoIntoDtoFromMongoModel(provenanceModel, result);
 
@@ -82,8 +82,7 @@ public class UriSearchLogic {
             type.setRdfTypes(Collections.singletonList(URI.create(Oeso.Provenance.getURI())));
             result.setSuperTypes(Collections.singletonList(type));
 
-            //setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, provenanceModel.getRdfType());
-            //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, replace with above line when this is no longer the case
+            //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, done same for Data but is even worse because i couldn't find a Data RdfType, temporary forcing of Type label in front for Data.
             result.setType(URI.create(Oeso.Provenance.getURI()));
             setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, URI.create(Oeso.Provenance.getURI()));
 
@@ -98,7 +97,7 @@ public class UriSearchLogic {
         }catch(Exception ignore){}
 
         if(dataModel != null){
-            BasicMongoSparqlDTO result = BasicMongoSparqlDTO.fromMongoModel(dataModel);
+            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataModel);
 
             //prepare publisher info
             loadPublisherInfoIntoDtoFromMongoModel(dataModel, result);
@@ -107,16 +106,13 @@ public class UriSearchLogic {
             Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
             result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
 
-            //setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, dataModel.getRdfType());
-            //TODO above line if Data will have an rdfType
-
             return result;
         }
 
         return null;
     }
 
-    private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, BasicMongoSparqlDTO result) throws Exception {
+    private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, URIGlobalSearchDTO result) throws Exception {
         AccountModel publisherAccount = new AccountDAO(sparql).get(model.getPublisher());
         UserGetDTO publisherAsUser = new UserGetDTO();
         publisherAsUser.setUri(publisherAccount.getUri());
@@ -148,14 +144,13 @@ public class UriSearchLogic {
 
     /**
      * Function to set type label from a rdfType, used for mongoModels
-     * TODO pointless? both data and provenance dont seem to have a rdfType, should we instead manually force a typeLabel?
+     *
      */
-    private void setTypeLabelOfBasicMongoSparqlDTOfromRdfType(BasicMongoSparqlDTO dto, URI rdfType) throws Exception {
+    private void setTypeLabelOfBasicMongoSparqlDTOfromRdfType(URIGlobalSearchDTO dto, URI rdfType) throws Exception {
         if(rdfType != null){
             //TODO dont invoke dao here when ontol logic class exists
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
             dto.setTypeLabel(ontologyDAO.getURILabel(rdfType, currentUser.getLanguage()));
-            //dto.setTypeLabel(ontologyDAO.getRdfType(rdfType, currentUser.getLanguage()).getTypeLabel().getDefaultValue());
         }
     }
 }

@@ -76,7 +76,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { BasicMongoSparqlDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO} from "opensilex-core/index";
+import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Prop, Ref} from "vue-property-decorator";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -90,7 +90,7 @@ export default class GlobalUriSearchResult extends Vue {
 
   //#region: props
   @Prop()
-  searchResult: BasicMongoSparqlDTO;
+  searchResult: URIGlobalSearchDTO;
   //#endregion
   
   //#region: data
@@ -220,7 +220,6 @@ export default class GlobalUriSearchResult extends Vue {
 <style scoped lang="scss">
 
 .close-button-container {
-  //position: inherit;
   right: 0;
 }
 

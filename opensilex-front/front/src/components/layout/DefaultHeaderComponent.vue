@@ -199,7 +199,6 @@ export default class DefaultHeaderComponent extends Vue {
   icon: any;
   title: any;
   description: any;
-  //uriSearchValue: String = "";
 
   @Prop()
   searchBoxIsActive: boolean;
@@ -333,10 +332,6 @@ export default class DefaultHeaderComponent extends Vue {
     window.removeEventListener("resize", this.handleResize);
   }
 
-
-  /*launchUriGlobalSearch(){
-    this.$emit("uriGlobalSearch", this.uriSearchValue);
-  }*/
   handleUriSearchIconHit(){
     this.$emit("uriGlobalSearch")
   }
@@ -689,15 +684,6 @@ export default class DefaultHeaderComponent extends Vue {
 
 }
 
-//My changes start here TODO delete this comment
-
-/*::v-deep .b-input-group {
-    //flex-wrap: nowrap;
-  }*/
-::v-deep .input-group-append{
-  width: 100%;
-}
-
 //For some annoying reason the search icon is smaller so this makes it slightly bigger than other icons in header
 .searchicon {
   font-size: 1.3em;
@@ -715,7 +701,7 @@ export default class DefaultHeaderComponent extends Vue {
 }
 
 .searchicon:hover, searchicon-cheeseburger:hover {
-  color: #007bff; /* Blue color on hover */
+  color: #007bff;
   background-color: #F0F1F5;
   border-color: #F0F1F5;
 }
@@ -724,42 +710,4 @@ export default class DefaultHeaderComponent extends Vue {
   color: #007bff;
 }
 
-.floating-box {
-  position: fixed;    /* Keeps it floating */
-  top: 20%;           /* Adjust to your preferred position */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 20px;
-  background-color: red;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  z-index: 1000;      /* Ensures it's on top of other elements */
-}
-
-//TODO delete this bullshit
-
-/*.uriSearchContainer {
-  white-space: nowrap; !* Prevents elements from wrapping to the next line *!
-}
-
-.inline-input, .inline-button {
-  display: inline-block; !* Ensures both elements are inline *!
-  vertical-align: middle; !* Aligns them properly *!
-  margin-right: 10px; !* Adds some space between them *!
-}*/
-
-
-/*
-  .searchFilter {
-    flex: 1; !* Make the custom component take up available space *!
-    display: flex; !* Ensure it's treated as a flex item *!
-    max-width: 100%; !* Prevents it from overflowing *!
-    width: auto; !* Avoid forcing full width if this is being inherited *!
-  }
-
-  .icon {
-    font-size: 20px; !* Adjust size as needed *!
-    cursor: pointer;
-    flex-shrink: 0; !* Prevents the icon from shrinking *!
-  }*/
 </style>

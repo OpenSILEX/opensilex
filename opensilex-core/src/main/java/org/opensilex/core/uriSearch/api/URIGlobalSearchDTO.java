@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *                                     BasicMongoSparqlDTO.java
+ *                                     URIGlobalSearchDTO.java
  *  OpenSILEX
  *  Copyright © INRAE 2024
  *  Creation date:  26 august, 2024
@@ -25,7 +25,7 @@ import java.util.List;
  * Object returned for UriSearch, contains everything needed from publication info to the data-dto in-case the uri was a data.
  * Dates are in String format as MongoModels use Instant whereas SPARQL uses OffsetDateTime
  */
-public class BasicMongoSparqlDTO {
+public class URIGlobalSearchDTO {
     private URI uri;
 
     private String name;
@@ -57,8 +57,8 @@ public class BasicMongoSparqlDTO {
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
 
-    public static BasicMongoSparqlDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff result){
-        BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
+    public static URIGlobalSearchDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff result){
+        URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
         dto.setUri(result.getModel().getUri());
         dto.setType(result.getModel().getType());
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
@@ -85,10 +85,10 @@ public class BasicMongoSparqlDTO {
     /**
      *
      * @param model
-     * @return a BasicMongoSparqlDTO with all fields completed except name and typename
+     * @return a URIGlobalSearchDTO with all fields completed except name and typename
      */
-    public static BasicMongoSparqlDTO fromMongoModel(MongoModel model){
-        BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
+    public static URIGlobalSearchDTO fromMongoModel(MongoModel model){
+        URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
         dto.setTotalMatches(1);
@@ -121,7 +121,7 @@ public class BasicMongoSparqlDTO {
         return typeLabel;
     }
 
-    public BasicMongoSparqlDTO setTypeLabel(String typeLabel) {
+    public URIGlobalSearchDTO setTypeLabel(String typeLabel) {
         this.typeLabel = typeLabel;
         return this;
     }
@@ -154,7 +154,7 @@ public class BasicMongoSparqlDTO {
         return name;
     }
 
-    public BasicMongoSparqlDTO setName(String name) {
+    public URIGlobalSearchDTO setName(String name) {
         this.name = name;
         return this;
     }

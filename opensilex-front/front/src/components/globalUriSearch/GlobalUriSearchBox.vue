@@ -47,7 +47,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {BasicMongoSparqlDTO} from "opensilex-core/index";
+import {URIGlobalSearchDTO} from "opensilex-core/index";
 import {UriSearchService} from "opensilex-core/api/uriSearch.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
@@ -55,7 +55,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 export default class GlobalUriSearchBox extends Vue {
   //#region: data
   $opensilex: OpenSilexVuePlugin;
-  private uriSearchResult: BasicMongoSparqlDTO = {};
+  private uriSearchResult: URIGlobalSearchDTO = {};
   private uriSearchValue: string = "";
   private uriSearchService: UriSearchService;
   //To keep track of if the actual result, or message to say nothing found is visible

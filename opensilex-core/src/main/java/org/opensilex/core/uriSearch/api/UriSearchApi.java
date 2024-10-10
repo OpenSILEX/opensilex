@@ -8,20 +8,16 @@
  * ******************************************************************************
  */
 package org.opensilex.core.uriSearch.api;
-//TODO delete unused imports
 import io.swagger.annotations.*;
-import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
@@ -35,7 +31,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.List;
 
 @Api("UriSearch")
 @Path("/core/uri_search")
@@ -65,7 +60,7 @@ public class UriSearchApi {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return dto list", response = BasicMongoSparqlDTO.class),
+            @ApiResponse(code = 200, message = "Return dto list", response = URIGlobalSearchDTO.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response searchByUri(
@@ -74,7 +69,7 @@ public class UriSearchApi {
         UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser, fs);
 
         //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
-        BasicMongoSparqlDTO result = logic.searchByUri(uri);
+        URIGlobalSearchDTO result = logic.searchByUri(uri);
 
         if (!(result==null)) {
             return new SingleObjectResponse<>(result).getResponse();

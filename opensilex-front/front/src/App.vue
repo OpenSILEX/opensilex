@@ -52,20 +52,10 @@
             </span>
           </div>
 
-          <!-- URI search result -->
-<!--          <div
-            v-if="uriSearchResultVisible"
-            class="floating-box">
-            <opensilex-GlobalUriSearchResult
-              ref="globalUriSearchResultComponent"
-              :searchResult="uriSearchResult"
-              @hideUriSearch="handleHideUriSearch"
-            ></opensilex-GlobalUriSearchResult>
-
-          </div>-->
+          <!-- URI search box -->
           <div
             v-show="uriSearchBoxVisible"
-            class="floating-box">
+            class="uri-search-box">
             <opensilex-GlobalUriSearchBox
               @hideUriSearch="handleHideUriSearch"
             ></opensilex-GlobalUriSearchBox>
@@ -98,13 +88,10 @@
 </template>
 
 <script lang="ts">
-import {Component as ComponentAnnotation, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component as ComponentAnnotation, Prop} from "vue-property-decorator";
 import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import AsyncComputed from "vue-async-computed-decorator";
-import GlobalUriSearchResult from "./components/globalUriSearch/GlobalUriSearchResult.vue";
-import {UriSearchService} from "opensilex-core/api/uriSearch.service";
-import { BasicMongoSparqlDTO } from "opensilex-core/index";
 
 @ComponentAnnotation
 export default class App extends Vue {
@@ -118,12 +105,8 @@ export default class App extends Vue {
   @Prop() footerComponent!: string | Component;
 
   //#endregion
-
-  //#region Refs
-  //@Ref("globalUriSearchResultComponent") globalUriSearchResultComponent!: GlobalUriSearchResult;
-  //#endregion
-
   //#region: data
+
   $opensilex: OpenSilexVuePlugin;
   $i18n: any;
   $bvToast: any;
@@ -136,8 +119,6 @@ export default class App extends Vue {
   private langUnwatcher;
   //The following concerns the URI global search functionality
   private uriSearchBoxVisible: boolean = false;
-  //private uriSearchResult: BasicMongoSparqlDTO = {};
-  //private uriSearchService: UriSearchService;
 
   //#endregion
   //#region: hooks
@@ -289,9 +270,7 @@ main {
   padding: 15px;
 }
 
-//My changes start here TODO delete this comment
-
-.floating-box {
+.uri-search-box {
   position: fixed;
   top: 70px;
   right: 8%;
@@ -299,7 +278,7 @@ main {
   background-color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
-  z-index: 1030;      /* Ensures it's on top of other elements */
+  z-index: 1030;
 }
 
 .notificationMessageContainer{

@@ -195,7 +195,7 @@ import {VueJsOntologyExtensionService} from "../../lib";
 import { FacilityCreationDTO, LocationObservationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import LocationModalForm from "@/components/geometry/LocationModalForm.vue";
+import LocationModalForm from "@/components/location/form/LocationModalForm.vue";
 
 @Component
 export default class FacilityForm extends Vue {

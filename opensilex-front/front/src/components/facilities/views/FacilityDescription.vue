@@ -102,28 +102,28 @@
       >
       </opensilex-UriListView>
 
-      <!--Last Position-->
-      <opensilex-StringView v-if="selected.geometry" label="FacilityDescription.lastPosition">
-        <!-- Position detail -->
-        <div v-if="selected.date">
-          <span v-if="selected.endDate">{{ new Date(selected.endDate).toLocaleString() }}</span>
-        </div>
-        <ul>
-          <li>
-            <opensilex-GeometryCopy
-                label=""
-                :value="selected.geometry">
-            </opensilex-GeometryCopy>
-          </li>
-        </ul>
-      </opensilex-StringView>
-
       <!-- Address -->
       <opensilex-AddressView
           v-if="selected.address"
           :address="selected.address"
       >
       </opensilex-AddressView>
+
+      <!--Last Position-->
+      <opensilex-StringView v-if="selected.locations.length > 0" label="FacilityDescription.lastPosition">
+        <!-- Position detail -->
+        <div v-if="selected.locations[0].endDate">
+          <span >{{ new Date(selected.locations[0].endDate).toLocaleString() }}</span>
+        </div>
+        <ul>
+          <li>
+            <opensilex-GeometryCopy
+                label=""
+                :value="selected.locations[0].geojson">
+            </opensilex-GeometryCopy>
+          </li>
+        </ul>
+      </opensilex-StringView>
 
       <opensilex-OntologyObjectProperties
         :selected="selected"

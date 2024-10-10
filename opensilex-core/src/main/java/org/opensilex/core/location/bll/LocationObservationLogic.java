@@ -23,7 +23,7 @@ import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.pagination.StreamWithPagination;
+import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.NotAllowedException;
 import java.net.URI;
@@ -98,7 +98,7 @@ public class LocationObservationLogic {
         searchFilter.setHasGeometry(hasGeometry);
 
         if(date != null) {
-            searchFilter.setDate(date);
+            searchFilter.setEndDate(date);
         }
 
         ListWithPagination<LocationObservationModel> resultSearch = locationObservationDAO.searchWithPagination(searchFilter);
@@ -112,6 +112,27 @@ public class LocationObservationLogic {
                                 Optional::get)
                 ))
                 .values());
+    }
+
+    public ListWithPagination<LocationObservationModel> getLocationsHistory(
+            URI collection,
+            Instant startDate,
+            Instant endDate,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize) throws Exception {
+
+        Objects.requireNonNull(collection);
+
+        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+        searchFilter.setObservationCollection(collection);
+        searchFilter.setStartDate(startDate);
+        searchFilter.setEndDate(endDate);
+        searchFilter.setOrderByList(orderByList);
+        searchFilter.setPage(page);
+        searchFilter.setPageSize(pageSize);
+
+       return locationObservationDAO.searchWithPagination(searchFilter);
     }
 
     public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry,LocationModel locationModel) {
@@ -129,6 +150,14 @@ public class LocationObservationLogic {
 
     public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {
         locationObservationDAO.delete(session, locationObservationCollectionURI);
+    }
+
+    public int countLocationsForURI(URI locationObservationCollectionURI) {
+        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+        searchFilter.setObservationCollection(locationObservationCollectionURI);
+
+        return (int) locationObservationDAO.count(searchFilter);
+
     }
     //#endregion
 

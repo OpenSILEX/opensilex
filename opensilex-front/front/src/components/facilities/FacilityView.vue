@@ -38,6 +38,18 @@
                   :to="{path: '/facility/document/' + encodeURIComponent(uri)}"
                 >{{ $t('FacilityView.document') }}
                 </b-nav-item>
+
+              <b-nav-item
+                  :active="isPositionsTab()"
+                  :to="{path: '/facility/positions/' + encodeURIComponent(uri)}"
+              >{{ $t('Position.list-title') }}
+                <span
+                    v-if="!positionsCountIsLoading && positions > 0"
+                    class="tabWithElements"
+                >
+                  {{ $opensilex.$numberFormatter.formateResponse(positions) }}
+                </span>
+              </b-nav-item>
             </template>
         </opensilex-PageActions>
 
@@ -54,6 +66,11 @@
                   :uri="uri"
               ></opensilex-FacilityMonitoringView>
 
+              <opensilex-LocationList
+                  v-if="isPositionsTab()"
+                  :target="uri"
+              ></opensilex-LocationList>
+
                 <opensilex-DocumentTabList
                         v-else-if="isDocumentTab()"
                         :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
@@ -69,7 +86,6 @@
                         :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
                         :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
                 ></opensilex-AnnotationList>
-
             </template>
         </opensilex-PageContent>
     </div>
@@ -83,21 +99,25 @@
     import AnnotationList from "../annotations/list/AnnotationList.vue";
     import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
     import {Route} from "vue-router";
+    import {LocationsService} from "opensilex-core/api/locations.service";
 
     @Component
     export default class FacilityView extends Vue {
         $route: Route;
         $opensilex: OpenSilexVuePlugin;
-
-        service: OrganizationsService;
+      service: OrganizationsService;
+      locationsService: LocationsService;
 
         uri = null;
         name: string = "";
+        positionsCountIsLoading: boolean = true;
+      positions: number;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
         created() {
-            this.service = this.$opensilex.getService("opensilex.OrganizationsService");
+          this.service = this.$opensilex.getService("opensilex.OrganizationsService");
+          this.locationsService = this.$opensilex.getService<LocationsService>("opensilex.LocationsService");
 
             this.uri = decodeURIComponent(this.$route.params.uri);
             if (this.uri) {
@@ -110,6 +130,8 @@
                         this.$opensilex.errorHandler(error);
                     });
             }
+
+          this.searchCountPositions();
         }
 
         get user() {
@@ -136,6 +158,21 @@
             return this.$route.path.startsWith("/facility/annotations/");
         }
 
+        isPositionsTab() {
+            return this.$route.path.startsWith("/facility/positions/");
+        }
+
+      searchCountPositions(){
+        return this.locationsService
+            .countLocations(this.uri)
+            .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+              if (http && http.response){
+                this.positions = http.response.result as number;
+                this.positionsCountIsLoading = false;
+                return this.positions
+              }
+            }).catch(this.$opensilex.errorHandler);
+      }
     }
 </script>
 

@@ -303,13 +303,17 @@ public class FacilityAPI {
 
         FacilityModel facility = dto.newModel();
 
-        /*facility = facilityLogic.update(
+        List<LocationObservationModel> locations = new ArrayList<>();
+
+        if(!dto.getLocations().isEmpty()){
+            locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
+        }
+
+        facility = facilityLogic.update(
                 facility,
-                Objects.isNull(dto.getGeometry()) ? null : dto.getGeometry(),
-                Objects.isNull(dto.getDate()) ? null : dto.getDate(),
-                Objects.isNull(dto.getEndDate()) ? null : dto.getEndDate(),
+                locations.isEmpty() ? null : locations,
                 currentUser
-        );*/
+        );
 
         return new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
     }

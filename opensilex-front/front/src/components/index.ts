@@ -757,10 +757,14 @@ import GlobalMapView from "./geometry/GlobalMapView.vue";
 components["opensilex-GlobalMapView"] = GlobalMapView;
 import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
 components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
-import LocationModalForm from "./geometry/LocationModalForm.vue";
+
+//LOCATION
+import LocationModalForm from "./location/form/LocationModalForm.vue";
 components["opensilex-LocationModalForm"] = LocationModalForm;
-import LocationForm from "./geometry/LocationForm.vue";
+import LocationForm from "./location/form/LocationForm.vue";
 components["opensilex-LocationForm"] = LocationForm;
+import LocationList from "./location/list/LocationList.vue";
+components["opensilex-LocationList"] = LocationList;
 
 // VISUALIZATION
 

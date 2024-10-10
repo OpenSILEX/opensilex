@@ -15,14 +15,11 @@ package org.opensilex.core.organisation.bll;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
-import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
@@ -42,7 +39,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -52,12 +48,10 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import javax.ws.rs.NotAllowedException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {
@@ -237,7 +231,7 @@ public class FacilityLogic {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance, GeoJsonObject geometry,Instant date, Instant endDate, AccountModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance,  List<LocationObservationModel> locations, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
         validateFacilityRelations(instance, user);
@@ -248,17 +242,18 @@ public class FacilityLogic {
         FacilityModel existingModel = facilityDAO.get(instance.getUri(), user.getLanguage());
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
-            if (Objects.nonNull(existingModel.getAddress()) || Objects.nonNull(geometry)) {
+            if (Objects.nonNull(existingModel.getAddress()) || !locations.isEmpty()) {
                 deleteFacilityLocationModel(session, instance);
 
                 //TODO: utile?
+
                 /* if (Objects.nonNull(existingModel.getAddress())) {
                     sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
                 }*/
             }
 
-            /*createFacilityLocationModel(session, instance, geometry,date,endDate);
-            facilityDAO.update(instance);*/
+            createFacilityLocationModel(session, instance, locations);
+            facilityDAO.update(instance);
 
             return null;
         });

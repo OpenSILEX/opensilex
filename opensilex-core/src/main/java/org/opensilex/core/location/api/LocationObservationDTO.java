@@ -92,4 +92,11 @@ public class LocationObservationDTO {
             setEndDate(model.getEndDate());
         }
     }
+
+    public static LocationObservationDTO getDTOFromModel(LocationObservationModel model) {
+        LocationObservationDTO dto = new LocationObservationDTO();
+        dto.fromModel(model);
+
+        return dto;
+    }
 }

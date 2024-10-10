@@ -9,6 +9,7 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -29,6 +30,13 @@ public class LocationObservationCollectionDAO {
 
     public LocationObservationCollectionModel get(URI collectionURI) throws Exception {
         return sparql.getByURI(LocationObservationCollectionModel.class,collectionURI, null);
+    }
+
+    public URI getCollection(URI featureOfInterest) throws SPARQLException {
+        SelectBuilder select = new SelectBuilder().addWhere(makeVar(LocationObservationCollectionModel.GRAPH), SOSA.hasFeatureOfInterest, SPARQLDeserializers.nodeURI(featureOfInterest));
+        List<SPARQLResult> result = sparql.executeSelectQuery(select);
+
+        return result.stream().map(x -> URI.create(x.getStringValue(LocationObservationCollectionModel.GRAPH))).findFirst().orElse(null);
     }
 
     public void delete(URI collectionURI) throws Exception {

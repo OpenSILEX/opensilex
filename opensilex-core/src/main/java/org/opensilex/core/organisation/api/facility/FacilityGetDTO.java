@@ -128,8 +128,7 @@ public class FacilityGetDTO extends FacilityDTO {
     }
 
     public void fromLocationModel(LocationObservationModel locationObservationModel) throws JsonProcessingException {
-       LocationObservationDTO locationDto = new LocationObservationDTO();
-       locationDto.fromModel(locationObservationModel);
+       LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(locationObservationModel);
 
        setLocations(Collections.singletonList(locationDto));
     }

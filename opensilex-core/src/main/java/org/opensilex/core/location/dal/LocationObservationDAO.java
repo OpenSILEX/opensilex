@@ -25,24 +25,42 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     public List<Bson> getBsonFilters(LocationObservationSearchFilter searchQuery) {
         List<Bson> filters = new ArrayList<>();
 
-        //Has Geometry
-        filters.add(Filters.eq(LocationObservationModel.HAS_GEOMETRY_FIELD, searchQuery.isHasGeometry()));
+        //Has Geometry - if equal at "true", get only objects that can be displayed on a map (with a geometry)
+        if(searchQuery.isHasGeometry()){
+            filters.add(Filters.eq(LocationObservationModel.HAS_GEOMETRY_FIELD, searchQuery.isHasGeometry()));
+        }
         //Collection URI
         if(searchQuery.getObservationCollection() != null){
             filters.add(Filters.eq(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollection()));
         }
         //Collection List
-        if(!searchQuery.getObservationCollectionList().isEmpty()){
+        if(searchQuery.getObservationCollectionList() != null && !searchQuery.getObservationCollectionList().isEmpty()){
             filters.add(Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollectionList()));
         }
-        // Date
-        Bson filterDate = Filters.and(
-                Filters.exists(LocationObservationModel.END_DATE_FIELD,true),
-                Filters.lte(LocationObservationModel.END_DATE_FIELD,searchQuery.getDate()));
+        //No end Date - case date no exists = address
+        Bson filterNoEndDate = Filters.exists(LocationObservationModel.END_DATE_FIELD,false);
+        //End Date
+        if(searchQuery.getEndDate() != null){
+            Bson filterOnEndDate = Filters.and(
+                    Filters.exists(LocationObservationModel.END_DATE_FIELD,true),
+                    Filters.lte(LocationObservationModel.END_DATE_FIELD,searchQuery.getEndDate()));
 
-        Bson filterNoDate= Filters.exists(LocationObservationModel.END_DATE_FIELD,false);
+            Bson filterOnStartDate = Filters.and(
+                    Filters.exists(LocationObservationModel.START_DATE_FIELD,true),
+                    Filters.lte(LocationObservationModel.START_DATE_FIELD,searchQuery.getEndDate()));
 
-        filters.add(Filters.or(filterDate,filterNoDate));
+            Bson filtersEnDate = Filters.or(filterOnEndDate, filterOnStartDate);
+
+            filters.add(Filters.or(filtersEnDate,filterNoEndDate));
+        }
+        // Start Date
+        if(searchQuery.getStartDate() != null){
+            Bson filterStartDate = Filters.and(
+                    Filters.exists(LocationObservationModel.END_DATE_FIELD,true),
+                    Filters.gte(LocationObservationModel.END_DATE_FIELD,searchQuery.getStartDate()));
+
+            filters.add(Filters.or(filterStartDate,filterNoEndDate));
+        }
 
         return filters;
     }

@@ -11,6 +11,7 @@
 
 package org.opensilex.core.location.bll;
 
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionDAO;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -43,6 +44,10 @@ public class LocationObservationCollectionLogic {
         locationObservationCollectionModel.setFeatureOfInterest(featureOfInterest);
 
         return locationObservationCollectionDAO.create(locationObservationCollectionModel);
+    }
+
+    public URI getLocationObservationCollection(URI featureOfInterest) throws Exception {
+        return locationObservationCollectionDAO.getCollection(featureOfInterest);
     }
 
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {

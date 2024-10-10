@@ -3,7 +3,7 @@
   -                         LocationForm.vue
   - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
   - Copyright © INRAE 2024.
-  - Last Modification: 02/10/2024 15:26
+  - Last Modification: 09/10/2024 13:52
   - Contact: alexia.chiavarino@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
   -
   -

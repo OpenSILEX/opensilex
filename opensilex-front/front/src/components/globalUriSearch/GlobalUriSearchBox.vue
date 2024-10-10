@@ -110,13 +110,13 @@ export default class GlobalUriSearchBox extends Vue {
 }
 
 .no-results {
-  font-style: italic; /* Makes the text italic */
-  font-size: 2em; /* Adjusts the size of the text (large) */
-  text-align: center; /* Centers the text within the container */
-  padding: 20px; /* Adds a lot of padding around the text */
-  display: flex; /* Use flexbox for centering */
-  justify-content: center; /* Centers text horizontally */
-  align-items: center; /* Centers text vertically */
+  font-style: italic;
+  font-size: 2em;
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #666666;
 }
 

@@ -26,6 +26,7 @@ import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
+import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
@@ -278,10 +279,9 @@ public class FacilityLogic {
         new SparqlMongoTransaction(sparql,mongodb).execute(session ->{
             deleteFacilityLocationModel(session, model);
 
-            //TODO : utile?
-            /*if (Objects.nonNull(model.getAddress())) {
+            if (Objects.nonNull(model.getAddress())) {
                 sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
-            }*/
+            }
 
             facilityDAO.delete(uri);
             return null;
@@ -495,13 +495,8 @@ public class FacilityLogic {
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
-                LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(facility.getLocationObservationCollection().getUri());
-                if (locationObservationModel != null) {
-                    locationObservationLogic.delete(session, facility.getLocationObservationCollection().getUri());
-                    locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
-                }
-            } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown data URI ", facility.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
+                locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

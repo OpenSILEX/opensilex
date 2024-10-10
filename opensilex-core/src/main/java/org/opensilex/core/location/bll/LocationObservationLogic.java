@@ -151,6 +151,12 @@ public class LocationObservationLogic {
     public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {
         locationObservationDAO.delete(session, locationObservationCollectionURI);
     }
+    public void deleteLocationObservations(ClientSession session, URI locationObservationCollectionURI) {
+        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+        searchFilter.setObservationCollection(locationObservationCollectionURI);
+
+        locationObservationDAO.deleteMany(session, searchFilter);
+    }
 
     public int countLocationsForURI(URI locationObservationCollectionURI) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();

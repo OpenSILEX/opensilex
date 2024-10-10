@@ -22,6 +22,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -64,7 +65,7 @@ public class UriSearchApi {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return dto list", response = BasicMongoSparqlDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return dto list", response = BasicMongoSparqlDTO.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response searchByUri(
@@ -73,10 +74,10 @@ public class UriSearchApi {
         UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser, fs);
 
         //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
-        List<BasicMongoSparqlDTO> results = logic.searchByUri(uri);
+        BasicMongoSparqlDTO result = logic.searchByUri(uri);
 
-        if (!CollectionUtils.isEmpty(results)) {
-            return new PaginatedListResponse<>(results).getResponse();
+        if (!(result==null)) {
+            return new SingleObjectResponse<>(result).getResponse();
         } else {
             throw new NotFoundURIException("No elements matching this URI were found : ", uri);
         }

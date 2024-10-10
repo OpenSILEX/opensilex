@@ -31,6 +31,7 @@
   <opensilex-GlobalUriSearchResult
     v-if="uriSearchResultVisible"
     :searchResult="uriSearchResult"
+    @hideUriSearch="$emit('hideUriSearch')"
   ></opensilex-GlobalUriSearchResult>
 </div>
 </template>
@@ -61,9 +62,8 @@ export default class GlobalUriSearchBox extends Vue {
 
   //#region: EventHandlers
   launchUriGlobalSearch(){
-    //TODO handle no search results, and multiple results?
     this.uriSearchService.searchByUri(this.uriSearchValue).then( res => {
-        this.uriSearchResult = res.response.result.pop();
+        this.uriSearchResult = res.response.result;
       }
     );
     this.uriSearchResultVisible = true;

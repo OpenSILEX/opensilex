@@ -14,7 +14,6 @@ import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 
@@ -23,9 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * This dto is essentially the same as a NamedResourceDTO, or a dto directly translating a MongoModel's basic parameters.
+ * Object returned for UriSearch, contains everything needed from publication info to the data-dto in-case the uri was a data.
  * Dates are in String format as MongoModels use Instant whereas SPARQL uses OffsetDateTime
- * I couldn't find anything to fill this role already TODO Make some kind of super model or super dto in a more suited location?
  */
 public class BasicMongoSparqlDTO {
     private URI uri;
@@ -34,6 +32,9 @@ public class BasicMongoSparqlDTO {
 
     @JsonProperty("rdf_type")
     private URI type;
+
+    @JsonProperty("number_total_matches")
+    private int totalMatches;
 
     @JsonProperty("rdf_type_name")
     private String typeLabel;
@@ -56,17 +57,22 @@ public class BasicMongoSparqlDTO {
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
 
-    public static BasicMongoSparqlDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher result){
+    public static BasicMongoSparqlDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff result){
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
         dto.setUri(result.getModel().getUri());
         dto.setType(result.getModel().getType());
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
         dto.setName(result.getModel().getName());
-        UserGetDTO publisherAsUser = new UserGetDTO();
-        publisherAsUser.setFirstName(result.getPublisher().getFirstName());
-        publisherAsUser.setLastName(result.getPublisher().getLastName());
-        publisherAsUser.setUri(result.getModel().getPublisher());
-        dto.setPublisher(publisherAsUser);
+        dto.setTotalMatches(result.getTotalMatches());
+
+        if(result.getPublisher()!=null && result.getPublisher().getUri() != null){
+            UserGetDTO publisherAsUser = new UserGetDTO();
+            publisherAsUser.setFirstName(result.getPublisher().getFirstName());
+            publisherAsUser.setLastName(result.getPublisher().getLastName());
+            publisherAsUser.setUri(result.getModel().getPublisher());
+            dto.setPublisher(publisherAsUser);
+        }
+
         if(result.getModel().getPublicationDate() != null){
             dto.setPublicationDate(result.getModel().getPublicationDate().format(dateTimeFormatter));
         }
@@ -85,7 +91,7 @@ public class BasicMongoSparqlDTO {
         BasicMongoSparqlDTO dto = new BasicMongoSparqlDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
-
+        dto.setTotalMatches(1);
         if(model.getPublicationDate() != null){
             dto.setPublicationDate(model.getPublicationDate().toString());
         }
@@ -169,4 +175,11 @@ public class BasicMongoSparqlDTO {
         this.dataDto = dataDto;
     }
 
+    public int getTotalMatches() {
+        return totalMatches;
+    }
+
+    public void setTotalMatches(int totalMatches) {
+        this.totalMatches = totalMatches;
+    }
 }

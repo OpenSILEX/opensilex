@@ -1,6 +1,5 @@
 package org.opensilex.core.uriSearch.dal;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -9,9 +8,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.OpenSilex;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -21,7 +18,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ThrowingConsumer;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -31,6 +27,8 @@ import java.util.*;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class UriSearchSparqlDao {
+
+    //#region: attributes/constructor
     private final SPARQLService sparql;
     private final AccountModel currentUser;
 
@@ -38,20 +36,44 @@ public class UriSearchSparqlDao {
         this.sparql = sparql;
         this.currentUser = currentUser;
     }
+    //#endregion
+
+    //#region: static stuff
+    private static String contextStringVar = "g";
+    //#endregion
 
     //#region: PUBLIC METHODS
 
-    public List<SparqlNamedResourceModelWithPublisher> searchByUri(URI uri) throws Exception {
-        List<SparqlNamedResourceModelWithPublisher> resultsAsModels = new ArrayList<>();
+    /**
+     *
+     * Precondition: if multiple elements have same uri then we suppose they are SCIENTIFIC OBJECTS
+     */
+    public SparqlNamedResourceModelWithExtraStuff searchByUri(URI uri) throws Exception {
+        List<SparqlNamedResourceModelWithExtraStuff> resultsAsModels = new ArrayList<>();
         sparql.executeSelectQueryAsStream(
                 generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));
-        return resultsAsModels;
+        //If multiple found then keep only default graph one
+        if(resultsAsModels.isEmpty()) {
+            return null;
+        }else if(resultsAsModels.size() == 1) {
+            return resultsAsModels.get(0).setTotalMatches(1);
+        }else{
+            //TODO if elements other than Scientific objects can be in multiple graphs then we would need to replace the below line with a fetching of the correct graph URI by looking at which Super type has a graph associated to it
+            URI defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+            for(SparqlNamedResourceModelWithExtraStuff next : resultsAsModels){
+                if(SPARQLDeserializers.compareURIs(defaultGraph, next.getContext())) {
+                    return next.setTotalMatches(resultsAsModels.size());
+                }
+            }
+            //If no default graph found throw an exception because this will need to be debugged
+            throw new Exception("No element from a default graph found!");
+        }
     }
 
     //#endregion
     //#region: PRIVATE METHODS
 
-    private SparqlNamedResourceModelWithPublisher buildModelFromSparqlResult(SPARQLResult result) {
+    private SparqlNamedResourceModelWithExtraStuff buildModelFromSparqlResult(SPARQLResult result) {
         PersonModel publisher = new PersonModel();
         SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
         //uri
@@ -67,6 +89,12 @@ public class UriSearchSparqlDao {
         typeLabel.setDefaultLang(currentUser.getLanguage());
         typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
         model.setTypeLabel(typeLabel);
+        // context
+        String contextStringUri = result.getStringValue(contextStringVar);
+        URI contextUri = null;
+        if (Objects.nonNull(contextStringUri)) {
+            contextUri = URI.create(contextStringUri);
+        }
         //publisher, published, updated
         String publisherUri = SPARQLDeserializers.getShortURI(result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD));
         String publicationDate = result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
@@ -91,7 +119,7 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return new SparqlNamedResourceModelWithPublisher(model, publisher);
+        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri);
     }
 
     /**
@@ -112,7 +140,7 @@ public class UriSearchSparqlDao {
         Var publisherLastName = makeVar(PersonModel.LAST_NAME_FIELD);
         Var publishedVar = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Var updated = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
-        Var graphVar = makeVar("g");
+        Var graphVar = makeVar(contextStringVar);
         //Other vars used
         Var publisherPersonVar = makeVar("person");
         result.addVar(uriVar);
@@ -174,13 +202,17 @@ public class UriSearchSparqlDao {
     /**
      * Class used as return type for search instead of making a Model class just for this
      */
-    public static class SparqlNamedResourceModelWithPublisher {
+    public static class SparqlNamedResourceModelWithExtraStuff {
         private SPARQLNamedResourceModel model;
         private PersonModel publisher;
+        private URI context;
+        private int totalMatches;
 
-        public SparqlNamedResourceModelWithPublisher(SPARQLNamedResourceModel model, PersonModel publisher) {
+        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context) {
             this.model = model;
             this.publisher = publisher;
+            this.context = context;
+            this.totalMatches = totalMatches;
         }
 
         public SPARQLNamedResourceModel getModel() {
@@ -189,6 +221,19 @@ public class UriSearchSparqlDao {
 
         public PersonModel getPublisher() {
             return publisher;
+        }
+
+        public URI getContext() {
+            return context;
+        }
+
+        public int getTotalMatches() {
+            return totalMatches;
+        }
+
+        public SparqlNamedResourceModelWithExtraStuff setTotalMatches(int totalMatches) {
+            this.totalMatches = totalMatches;
+            return this;
         }
     }
     //#endregion

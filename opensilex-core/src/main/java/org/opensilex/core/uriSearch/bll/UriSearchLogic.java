@@ -24,7 +24,6 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -32,7 +31,6 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,17 +50,17 @@ public class UriSearchLogic {
         this.fs = fs;
     }
 
-    public List<BasicMongoSparqlDTO> searchByUri(URI uri) throws Exception {
+    public BasicMongoSparqlDTO searchByUri(URI uri) throws Exception {
         //Start by searching in sparql global graph
-        List<UriSearchSparqlDao.SparqlNamedResourceModelWithPublisher> sparqlMatches = sparqlDao.searchByUri(uri);
-        if(!sparqlMatches.isEmpty()){
-            List<BasicMongoSparqlDTO> results = sparqlMatches.stream().map(BasicMongoSparqlDTO::fromSparqlUriGlobalSearchResult).collect(Collectors.toList());
+        UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff sparqlMatch = sparqlDao.searchByUri(uri);
+        if(!(sparqlMatch == null)){
+            BasicMongoSparqlDTO result = BasicMongoSparqlDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
 
             //Get super types, needed to identify details page path in front
             List<URITypesDTO> types = getSuperTypesFromUri(uri);
 
-            results.forEach(e -> e.setSuperTypes(types));
-            return results;
+            result.setSuperTypes(types);
+            return result;
         }
 
         //If no matches search in Provenance
@@ -89,7 +87,7 @@ public class UriSearchLogic {
             result.setType(URI.create(Oeso.Provenance.getURI()));
             setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, URI.create(Oeso.Provenance.getURI()));
 
-            return Collections.singletonList(result);
+            return result;
         }
 
         //If still no matches then search in Data
@@ -112,10 +110,10 @@ public class UriSearchLogic {
             //setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, dataModel.getRdfType());
             //TODO above line if Data will have an rdfType
 
-            return Collections.singletonList(result);
+            return result;
         }
 
-        return Collections.emptyList();
+        return null;
     }
 
     private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, BasicMongoSparqlDTO result) throws Exception {

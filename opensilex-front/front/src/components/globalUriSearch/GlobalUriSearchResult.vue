@@ -13,7 +13,8 @@
         :value="this.shortUri"
         :to="{
         path: detailsPath
-      }"
+        }"
+        @linkClicked="$emit('hideUriSearch')"
       ></opensilex-UriView>
       <span
         v-else
@@ -30,6 +31,17 @@
           label="GlobalUriSearch.seeDetails"
         ></opensilex-DetailButton>
       </span>
+
+      <!-- Multiple Results message -->
+      <div v-if="numberOfResults > 1" class="multiple-results-message-box">
+        <div class="multiple-results-message">
+          {{numberOfResults + " " + this.$t('GlobalUriSearch.multipleResultsMessage')}}
+        </div>
+      </div>
+
+<!--      <div v-if="numberOfResults > 1" class="multiple-results-message-box">
+        {{numberOfResults + " " + this.$t('GlobalUriSearch.multipleResultsMessage')}}
+      </div>-->
 
       <!-- Name -->
       <opensilex-StringView
@@ -149,7 +161,6 @@ export default class GlobalUriSearchResult extends Vue {
         let type = this.searchResult.super_types[typeIndex];
         let unformattedPath = this.$opensilex.getPathFromUriTypes(type.rdf_types);
         formattedPath = this.$opensilex.getTargetPath(this.searchResult.uri, undefined, unformattedPath);
-        console.debug("FUCK you!", JSON.stringify(unformattedPath), JSON.stringify(formattedPath));
       }
     }
     return formattedPath;
@@ -158,6 +169,14 @@ export default class GlobalUriSearchResult extends Vue {
 
   get hasResult() : boolean{
     return this.searchResult != null;
+  }
+
+  get numberOfResults() : number{
+    let resultQuantity = 0;
+    if(this.hasResult && this.searchResult.number_total_matches){
+      resultQuantity = this.searchResult.number_total_matches;
+    }
+    return resultQuantity;
   }
 
   get name() : string {
@@ -231,6 +250,22 @@ export default class GlobalUriSearchResult extends Vue {
   color : #00A28C;
   background: none;
 }
+
+.multiple-results-message-box{
+  display: flex;
+  justify-content: flex-end;
+}
+
+.multiple-results-message {
+  background-color: #f0f8f5;
+  border: 1px solid #d4e6d5;
+  display: inline-block;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-align: right;
+  margin: 10px 0 10px 0;
+}
+
 </style>
 
 <i18n>
@@ -239,11 +274,15 @@ en:
     resultTitle: Search Result
     seeDetails: See details
     dataTypeName: Data
+    multipleResultsMessage: objects with this URI found. Click link to see which
+    noResultsMessage: No results
 
 fr:
   GlobalUriSearch:
     resultTitle: Résultat de recherche
     seeDetails: Voir détails
     dataTypeName: Donnée
+    multipleResultsMessage: objets trouvés avec cette URI. Visitez le lien pour voir lesquels.
+    noResultsMessage: Pas de résultats
 
 </i18n>

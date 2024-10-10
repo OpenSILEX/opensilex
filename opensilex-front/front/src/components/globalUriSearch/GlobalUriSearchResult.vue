@@ -39,10 +39,6 @@
         </div>
       </div>
 
-<!--      <div v-if="numberOfResults > 1" class="multiple-results-message-box">
-        {{numberOfResults + " " + this.$t('GlobalUriSearch.multipleResultsMessage')}}
-      </div>-->
-
       <!-- Name -->
       <opensilex-StringView
         v-if="!isData"
@@ -275,7 +271,6 @@ en:
     seeDetails: See details
     dataTypeName: Data
     multipleResultsMessage: objects with this URI found. Click link to see which
-    noResultsMessage: No results
 
 fr:
   GlobalUriSearch:
@@ -283,6 +278,5 @@ fr:
     seeDetails: Voir détails
     dataTypeName: Donnée
     multipleResultsMessage: objets trouvés avec cette URI. Visitez le lien pour voir lesquels.
-    noResultsMessage: Pas de résultats
 
 </i18n>

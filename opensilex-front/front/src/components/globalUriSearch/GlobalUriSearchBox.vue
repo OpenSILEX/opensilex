@@ -28,11 +28,19 @@
   <hr class="dashed-separator" v-if="uriSearchResultVisible"/>
 
   <!-- Result-->
-  <opensilex-GlobalUriSearchResult
+  <div
     v-if="uriSearchResultVisible"
-    :searchResult="uriSearchResult"
-    @hideUriSearch="$emit('hideUriSearch')"
-  ></opensilex-GlobalUriSearchResult>
+  >
+    <opensilex-GlobalUriSearchResult
+      v-if="resultsFound"
+      :searchResult="uriSearchResult"
+      @hideUriSearch="$emit('hideUriSearch')"
+    ></opensilex-GlobalUriSearchResult>
+    <div v-else class="no-results">
+      {{this.$t('GlobalUriSearchBox.noResultsMessage')}}
+    </div>
+  </div>
+
 </div>
 </template>
 
@@ -71,6 +79,9 @@ export default class GlobalUriSearchBox extends Vue {
   //#endregion
 
   //#region: computed
+  get resultsFound(): boolean{
+    return this.uriSearchResult && this.uriSearchResult.number_total_matches && this.uriSearchResult.number_total_matches > 0;
+  }
   //#endregion
 }
 </script>
@@ -97,4 +108,27 @@ export default class GlobalUriSearchBox extends Vue {
   border-top: 1px dashed #000;
   margin: 20px 0;
 }
+
+.no-results {
+  font-style: italic; /* Makes the text italic */
+  font-size: 2em; /* Adjusts the size of the text (large) */
+  text-align: center; /* Centers the text within the container */
+  padding: 20px; /* Adds a lot of padding around the text */
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Centers text horizontally */
+  align-items: center; /* Centers text vertically */
+  color: #666666;
+}
+
 </style>
+
+<i18n>
+en:
+  GlobalUriSearchBox:
+    noResultsMessage: No results
+
+fr:
+  GlobalUriSearchBox:
+    noResultsMessage: Pas de résultats
+
+</i18n>

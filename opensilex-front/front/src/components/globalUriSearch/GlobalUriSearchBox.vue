@@ -72,9 +72,12 @@ export default class GlobalUriSearchBox extends Vue {
   launchUriGlobalSearch(){
     this.uriSearchService.searchByUri(this.uriSearchValue).then( res => {
         this.uriSearchResult = res.response.result;
+        this.uriSearchResultVisible = true;
       }
-    );
-    this.uriSearchResultVisible = true;
+    ).catch(error =>{
+      this.uriSearchResult = {};
+      this.uriSearchResultVisible = true;
+    });
   }
   //#endregion
 

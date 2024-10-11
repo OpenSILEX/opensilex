@@ -92,6 +92,7 @@ public class URIGlobalSearchDTO {
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
         dto.setTotalMatches(1);
+        //TODO publicationDate and updateDate have been put to toString for now, the format isn't the same as in SPARQLResourceModel and these fields are currently always empty anyway
         if(model.getPublicationDate() != null){
             dto.setPublicationDate(model.getPublicationDate().toString());
         }

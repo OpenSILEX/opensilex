@@ -190,7 +190,19 @@ menu:
       #       route:
       #         path: /users
       #         component: opensilex-AccountView
-
+  - id: spatial
+    label: component.menu.spatial.label
+    children:
+      - id: map
+        label: component.menu.spatial.map
+        route:
+          path: /global-map
+          component: opensilex-GlobalMapView
+          credentials:
+            - spatial-access
+          icon: fa#fa-earth-africa
+          title: GlobalMapView.title
+          description: GlobalMapView.description
   - id: vocabulary
     label: component.menu.vocabulary
     children:

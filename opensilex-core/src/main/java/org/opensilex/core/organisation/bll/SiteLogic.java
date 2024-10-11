@@ -21,6 +21,7 @@ import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.site.SiteAddressDTO;
@@ -49,8 +50,8 @@ import org.opensilex.utils.ListWithPagination;
 
 import javax.naming.SizeLimitExceededException;
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SiteLogic {
@@ -272,6 +273,55 @@ public class SiteLogic {
     }
 
     /**
+     * Search sites only with location and with facility list.
+     *
+     * @param currentUser The current user
+     * @throws Exception If some error is encountered during the search
+     *
+     * @return a Map of sites with or without corresponding location
+     */
+    public Map<SiteModel, LocationObservationModel> getSitesWithPosition(AccountModel currentUser) throws Exception {
+        Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = new HashMap<>();
+
+
+        List<URI> userOrganizations = organizationDAO.search(new OrganizationSearchFilter()
+                        .setUser(currentUser))
+                .stream().map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toList());
+
+        List<SiteModel> siteList = siteDAO.getSiteListWithFacilities(currentUser, userOrganizations).getList();
+
+        //Get site list with location
+        Map<SiteModel, LocationObservationCollectionModel> sitesWithLocationMap = siteList.stream()
+                .filter(site -> site.getLocationObservationCollection() != null)
+                .collect(Collectors.toMap(Function.identity(), SiteModel::getLocationObservationCollection));
+
+        if (!sitesWithLocationMap.isEmpty()) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            // filter only on the List URI because there is only one "geometry" type location and no date required
+            //the 'hasGeometry' parameter must be set to 'true' because this is the only type of location stored in mongo that is allowed for the site
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(sitesWithLocationMap.values()), true, null, null);
+
+            if (locationObservationModels.isEmpty()) {
+                throw new NotFoundException("No location found");
+            } else if (locationObservationModels.size() < sitesWithLocationMap.size()) {
+                throw new NegativeArraySizeException("Missing location(s)");
+            } else if (locationObservationModels.size() > sitesWithLocationMap.size()) {
+                throw new SizeLimitExceededException("authorized location number for site is exceed");
+            }
+
+            var locationObservationMap = locationObservationModels.stream()
+                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+
+            sitesWithLocationMap.forEach((site, collection) -> {
+                var observation = locationObservationMap.get(collection.getUri());
+                sitesAndLocationsMap.put(site, observation);
+            });
+        }
+        return sitesAndLocationsMap;
+    }
+
+    /**
      * Gets a site by a facility. Equivalent to calling {@link #search(SiteSearchFilter)} and using the {@link SiteSearchFilter#setFacility(URI)}
      * filter field.
      *
@@ -380,11 +430,11 @@ public class SiteLogic {
             checkUniqueObservation(locationObservationCollectionUri);
 
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, true, locationModel);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, locationModel);
         }
     }
 
-    private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
+    private void updateSiteLocation(ClientSession session, SiteModel siteModel) {
         Geometry geom = convertAddressToGeometry(siteModel);
 
         if (geom != null) {

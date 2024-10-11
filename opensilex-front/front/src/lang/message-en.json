@@ -204,6 +204,10 @@
                 "images": "Images",
                 "visualization":"Visualization"
             },
+            "spatial": {
+                "label": "Spatial",
+                "map" : "Map"
+            },
             "homepage": "Home",
             "experiments": "Experiments",
             "facilities": "Facilities",
@@ -702,7 +706,8 @@
         "provenance": "Provenances",
         "vocabulary": "Vocabulary",
         "packages": "Packages",
-        "accounts": "Accounts"
+        "accounts": "Accounts",
+        "spatial" : "Spatial"
     },
     "credential": {
         "default": {
@@ -809,6 +814,9 @@
                 },
                 "equipments": {
                     "label": "ik-aperture"
+                },
+                "spatial": {
+                    "label": "ik-map-pin"
                 },
                 "experiments": "ik-layers",
                 "image": "ik-bar-chart-line",

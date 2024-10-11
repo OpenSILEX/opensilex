@@ -35,7 +35,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -236,5 +238,29 @@ public class SiteAPI {
         siteLogic.delete(siteUri, currentUser);
 
         return new ObjectUriResponse(Response.Status.OK, siteUri).getResponse();
+    }
+
+    @GET
+    @Path("/with_location")
+    @ApiOperation("Get only the list of sites with a location")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sites retrieved", response =  SiteGetWithGeometryDTO.class, responseContainer = "List")
+    })
+    public Response getSitesWithLocation() throws Exception {
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        List<SiteGetWithGeometryDTO> siteDTOList = new ArrayList<>();
+
+        Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = siteLogic.getSitesWithPosition(currentUser);
+
+        sitesAndLocationsMap.forEach((k, v) -> {
+            SiteGetWithGeometryDTO siteDTO = new SiteGetWithGeometryDTO();
+            siteDTO.fromModel(k, v);
+            siteDTOList.add(siteDTO);
+        });
+
+        return new PaginatedListResponse<>(siteDTOList).getResponse();
     }
 }

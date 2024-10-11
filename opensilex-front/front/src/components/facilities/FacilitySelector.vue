@@ -22,12 +22,13 @@
     import Vue from "vue";
     import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
     import {OrganizationsService} from "opensilex-core/api/organizations.service";
-    import { NamedResourceDTO } from 'opensilex-core/index';
+    import { NamedResourceDTO, FacilityGetDTO } from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
     @Component
     export default class FacilitySelector extends Vue {
 
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $service: OrganizationsService;
 
         @PropSync("facilities", {default: () => []})
@@ -52,30 +53,30 @@
             this.$service = this.$opensilex.getService("opensilex.OrganizationsService");
         }
 
-        searchFacilities(searchQuery, page, pageSize) {
-
-            return this.$service.searchFacilities(
-                searchQuery, //name
+        searchFacilities(searchQuery) {
+            return this.$service.minimalSearchFacilities(
+                searchQuery,
                 undefined,
                 undefined,
-                page,
-                pageSize
+                undefined,
+                0
             ).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             }).catch(this.$opensilex.errorHandler);
         }
+        
 
         loadFacilities(facilitiesUris) {
             if (!facilitiesUris || facilitiesUris.length == 0) {
                 return undefined;
             }
-
             return this.$service
                 .getFacilitiesByURI(facilitiesUris)
                 .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) =>
                     (http && http.response) ? http.response.result : undefined
                 );
         }
+
 
         facilityToSelectNode(dto: NamedResourceDTO) {
             if(! dto){

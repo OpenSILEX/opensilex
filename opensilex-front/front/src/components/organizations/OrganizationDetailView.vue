@@ -17,7 +17,9 @@
           @onDelete="deleteOrganization"
           @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
-        <opensilex-MapCard/>
+        <opensilex-MapCard
+            :features="siteFeatures"
+        />
 
       </div>
       <div class="col-md-6">
@@ -38,11 +40,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { OrganizationGetDTO } from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {OrganizationGetDTO} from "opensilex-core/index";
+import {SiteGetWithGeometryDTO} from "opensilex-core/model/siteGetWithGeometryDTO";
+import {feature} from "../geometry/MapCard.vue";
 
 @Component
 export default class OrganizationDetailView extends Vue {
@@ -51,6 +54,7 @@ export default class OrganizationDetailView extends Vue {
   selected: OrganizationGetDTO = null;
   uri = null;
   service;
+  siteFeatures: feature[] = [];
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -67,6 +71,7 @@ export default class OrganizationDetailView extends Vue {
         let detailDTO: OrganizationGetDTO = http.response.result;
         this.selected = detailDTO;
       });
+    this.getSitesFeatures();
   }
 
   deleteOrganization() {
@@ -78,6 +83,29 @@ export default class OrganizationDetailView extends Vue {
         });
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  private getSitesFeatures() {
+    this.service.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
+      let results: SiteGetWithGeometryDTO[] = http.response.result;
+      if (http.response.result.length > 0) {
+        this.siteFeatures = this.convertObjectIntoGeoJson(results);
+      }
+    })
+  }
+
+  private convertObjectIntoGeoJson(results): feature[] {
+    const features: feature[] = [];
+
+    results.forEach(result => {
+      let feature = result.geometry;
+      feature.properties = result;
+      feature.id = result.uri;
+      delete feature.properties.geometry;
+      features.push(feature)
+    })
+
+    return features;
   }
 }
 </script>

@@ -17,7 +17,7 @@
       </vl-layer-tile>
       <!-- SITE layer -->
       <vl-layer-vector v-if="isMapMounted" id="site-layer-vector" ref="siteLayerVector" render-mode="image">
-        <vl-source-vector :features="siteFeaturesDisplay" @mounted="focusOnSites"></vl-source-vector>
+        <vl-source-vector :features="features" @mounted="focusOnFeatures"></vl-source-vector>
         <vl-style-box>
           <vl-style-circle :radius="8">
             <vl-style-stroke
@@ -42,23 +42,25 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {SiteGetWithGeometryDTO} from "opensilex-core/model/siteGetWithGeometryDTO";
 import {Layer} from "vuelayers/src/component/vector-layer";
-import {Ref} from "vue-property-decorator";
+import {Prop, Ref} from "vue-property-decorator";
 import {View} from "vuelayers/src/component/map";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 
-interface feature {
+export interface feature {
   id: string;
   properties: { geometry };
   geometry: object;
   type: "Feature";
 }
 
+
 @Component
 export default class MapCard extends Vue {
-  //#region Plugin & Services
-  public $opensilex: OpenSilexVuePlugin;
-  private organizationsService: OrganizationsService;
+  //#region Prop
+  @Prop()
+  private features: feature[];
   //#endregion
+
 
   //#region Refs
   @Ref("globalMapView")
@@ -67,19 +69,12 @@ export default class MapCard extends Vue {
   private readonly siteLayerVector!: Layer;
   //#endregion
 
-  //#region Data
-  siteFeaturesDisplay: feature[] = [];
-  isMapMounted: boolean = false;
+  //#region computed
+  get isMapMounted(){
+    return this.features?.length > 0;
+  }
   //#endregion
 
-  //#region Hooks
-  private mounted() {
-    this.organizationsService = this.$opensilex.getService("opensilex.OrganizationsService");
-
-    this.getSitesFeatures();
-  }
-
-  //endregion
 
   //#region Private Methods
   private getCurrentExtent() {
@@ -90,33 +85,9 @@ export default class MapCard extends Vue {
     );
   }
 
-  private getSitesFeatures() {
-    this.organizationsService.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
-      let results: SiteGetWithGeometryDTO[] = http.response.result;
-      if (http.response.result.length > 0) {
-        this.siteFeaturesDisplay = this.convertObjectIntoGeoJson(results);
-        this.isMapMounted = true;
-      }
-    })
-  }
-
-  private convertObjectIntoGeoJson(results): feature[] {
-    const features: feature[] = [];
-
-    results.forEach(result => {
-      let feature = result.geometry;
-      feature.properties = result;
-      feature.id = result.uri;
-      delete feature.properties.geometry;
-      features.push(feature)
-    })
-
-    return features;
-  }
-
-  private focusOnSites(){
+  private focusOnFeatures(){
     setTimeout(()=>{
-      if(this.siteFeaturesDisplay.length > 0 && this.siteLayerVector.getSource()){
+      if(this.features.length > 0 && this.siteLayerVector.getSource()){
         this.fitViewWithFeaturesExtent(this.siteLayerVector.getSource().getExtent());
       }
     },1)

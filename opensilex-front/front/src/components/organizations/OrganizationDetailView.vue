@@ -44,7 +44,6 @@ import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {OrganizationGetDTO} from "opensilex-core/index";
-import {SiteGetWithGeometryDTO} from "opensilex-core/model/siteGetWithGeometryDTO";
 import {feature} from "../geometry/MapCard.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
@@ -79,7 +78,7 @@ export default class OrganizationDetailView extends Vue {
   }
 
   private async getOrganization(): Promise<void> {
-    this.service
+    await this.service
         .getOrganization(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
           let detailDTO: OrganizationGetDTO = http.response.result;
@@ -99,22 +98,22 @@ export default class OrganizationDetailView extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  private getSitesFeatures(): void {
-    this.service.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
-      let results: SiteGetWithGeometryDTO[] = http.response.result;
-      if (http.response.result.length > 0) {
-        this.siteFeatures = this.convertObjectIntoGeoJson(results);
-      }
-    })
+  private async getSitesFeatures(): Promise<void> {
+    const sites = this.selected.sites;
+    if (sites.length > 0) {
+      const sitesUri: Array<string> = sites.map((site) => site.uri);
+      const sitesWithLocation = await this.service.getSitesWithLocation(sitesUri);
+      this.siteFeatures = this.convertSiteModelsIntoFeatures(sitesWithLocation.response.result);
+    }
   }
 
-  private convertObjectIntoGeoJson(results): feature[] {
+  private convertSiteModelsIntoFeatures(sites): feature[] {
     const features: feature[] = [];
 
-    results.forEach(result => {
-      let feature = result.geometry;
-      feature.properties = result;
-      feature.id = result.uri;
+    sites.forEach(siteModel => {
+      let feature = siteModel.geometry;
+      feature.properties = siteModel;
+      feature.id = siteModel.uri;
       delete feature.properties.geometry;
       features.push(feature)
     })

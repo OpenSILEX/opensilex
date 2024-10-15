@@ -46,16 +46,23 @@ import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {OrganizationGetDTO} from "opensilex-core/index";
 import {SiteGetWithGeometryDTO} from "opensilex-core/model/siteGetWithGeometryDTO";
 import {feature} from "../geometry/MapCard.vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class OrganizationDetailView extends Vue {
-  $opensilex: any;
+  //#region Plugin and service
+  private $opensilex: OpenSilexVuePlugin;
+  private service: OrganizationsService;
+  //#endregion
 
+  //#region Data
   selected: OrganizationGetDTO = null;
   uri = null;
-  service;
   siteFeatures: feature[] = [];
+  //#endregion
 
+  //#region Hook
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.service = this.$opensilex.getService(
@@ -63,18 +70,25 @@ export default class OrganizationDetailView extends Vue {
     );
     this.refresh();
   }
+  //#endregion
 
-  refresh() {
-    this.service
-      .getOrganization(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
-        let detailDTO: OrganizationGetDTO = http.response.result;
-        this.selected = detailDTO;
-      });
-    this.getSitesFeatures();
+  //#region Private methods
+  private refresh(): void {
+    this.getOrganization().then( () => {
+      this.getSitesFeatures(); });
   }
 
-  deleteOrganization() {
+  private async getOrganization(): Promise<void> {
+    this.service
+        .getOrganization(this.uri)
+        .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+          let detailDTO: OrganizationGetDTO = http.response.result;
+          this.selected = detailDTO;
+        })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  private deleteOrganization(): void {
     this.service
       .deleteOrganization(this.uri)
       .then(() => {
@@ -85,7 +99,7 @@ export default class OrganizationDetailView extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  private getSitesFeatures() {
+  private getSitesFeatures(): void {
     this.service.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
       let results: SiteGetWithGeometryDTO[] = http.response.result;
       if (http.response.result.length > 0) {
@@ -107,6 +121,7 @@ export default class OrganizationDetailView extends Vue {
 
     return features;
   }
+  //#endregion
 }
 </script>
 

@@ -20,6 +20,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -240,6 +241,12 @@ public class SiteAPI {
         return new ObjectUriResponse(Response.Status.OK, siteUri).getResponse();
     }
 
+    /**
+     * @param uris
+     * @return all sites with a location if uris parameter is null or empty, otherwise return only the sites with a location in the list.
+     * Returned sites has a geometry field.
+     * @throws Exception
+     */
     @GET
     @Path("/with_location")
     @ApiOperation("Get only the list of sites with a location")
@@ -249,11 +256,18 @@ public class SiteAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Sites retrieved", response =  SiteGetWithGeometryDTO.class, responseContainer = "List")
     })
-    public Response getSitesWithLocation() throws Exception {
+    public Response getSitesWithLocation(
+            @ApiParam(value = "Site URIs") @QueryParam("uris") @ValidURI List<URI> uris
+    ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
         List<SiteGetWithGeometryDTO> siteDTOList = new ArrayList<>();
 
         Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = siteLogic.getSitesWithPosition(currentUser);
+        if (Objects.nonNull(uris) && !uris.isEmpty()) {
+            sitesAndLocationsMap = sitesAndLocationsMap.entrySet().stream()
+                    .filter(entry -> uriIsInList(entry.getKey().getUri(), uris))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
 
         sitesAndLocationsMap.forEach((k, v) -> {
             SiteGetWithGeometryDTO siteDTO = new SiteGetWithGeometryDTO();
@@ -262,5 +276,9 @@ public class SiteAPI {
         });
 
         return new PaginatedListResponse<>(siteDTOList).getResponse();
+    }
+
+    private boolean uriIsInList(URI uri, List<URI> uriList) {
+        return uriList.stream().anyMatch(uri1 -> SPARQLDeserializers.compareURIs(uri, uri1));
     }
 }

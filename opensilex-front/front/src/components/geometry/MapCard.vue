@@ -16,13 +16,17 @@
         <vl-source-osm/>
       </vl-layer-tile>
       <!-- SITE layer -->
-      <vl-layer-vector id="site-layer-vector" ref="siteLayerVector" :max-resolution="18" render-mode="image">
+      <vl-layer-vector v-if="isMapMounted" id="site-layer-vector" ref="siteLayerVector" render-mode="image">
         <vl-source-vector :features="siteFeaturesDisplay" @mounted="focusOnSites"></vl-source-vector>
         <vl-style-box>
           <vl-style-circle :radius="8">
             <vl-style-stroke
-                :width="3"
+                :width="4"
+                color="red"
             ></vl-style-stroke>
+            <vl-style-fill
+                color="white"
+            ></vl-style-fill>
           </vl-style-circle>
         </vl-style-box>
       </vl-layer-vector>
@@ -44,8 +48,9 @@ import {transformExtent} from "vuelayers/src/ol-ext/proj";
 
 interface feature {
   id: string;
-  properties: object;
+  properties: { geometry };
   geometry: object;
+  type: "Feature";
 }
 
 @Component
@@ -64,6 +69,7 @@ export default class MapCard extends Vue {
 
   //#region Data
   siteFeaturesDisplay: feature[] = [];
+  isMapMounted: boolean = false;
   //#endregion
 
   //#region Hooks
@@ -87,27 +93,21 @@ export default class MapCard extends Vue {
   private getSitesFeatures() {
     this.organizationsService.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
       let results: SiteGetWithGeometryDTO[] = http.response.result;
-      console.log(JSON.stringify(http.response));
       if (http.response.result.length > 0) {
         this.siteFeaturesDisplay = this.convertObjectIntoGeoJson(results);
+        this.isMapMounted = true;
       }
-      console.log(this.siteFeaturesDisplay);
     })
   }
 
-  private convertObjectIntoGeoJson(results: SiteGetWithGeometryDTO[]): feature[] {
+  private convertObjectIntoGeoJson(results): feature[] {
     const features: feature[] = [];
 
     results.forEach(result => {
-      const feature: feature = {
-        id: null,
-        properties: {},
-        geometry: {}
-      };
-
+      let feature = result.geometry;
       feature.properties = result;
       feature.id = result.uri;
-      feature.geometry = result.geometry;
+      delete feature.properties.geometry;
       features.push(feature)
     })
 
@@ -123,7 +123,7 @@ export default class MapCard extends Vue {
   }
 
   private fitViewWithFeaturesExtent(extent){
-    this.globalMapView.$view.fit(extent, {maxZoom: 17});
+    this.globalMapView.$view.fit(extent, {maxZoom: 10});
   }
   //#endregion
 }

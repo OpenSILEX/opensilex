@@ -17,7 +17,9 @@
           @onDelete="deleteOrganization"
           @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
+
         <opensilex-MapCard
+            class="site-map"
             :features="siteFeatures"
         />
 
@@ -125,5 +127,8 @@ export default class OrganizationDetailView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.site-map {
+  height: 20vh;
+}
 </style>
 

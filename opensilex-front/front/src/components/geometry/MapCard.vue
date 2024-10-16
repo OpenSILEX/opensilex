@@ -98,6 +98,6 @@ export default class MapCard extends Vue {
 
 <style scoped lang="scss">
 .site-map {
-  height: 20vh;
+  min-height: 5vh;
 }
 </style>

@@ -37,10 +37,6 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {SiteGetWithGeometryDTO} from "opensilex-core/model/siteGetWithGeometryDTO";
 import {Layer} from "vuelayers/src/component/vector-layer";
 import {Prop, Ref} from "vue-property-decorator";
 import {View} from "vuelayers/src/component/map";

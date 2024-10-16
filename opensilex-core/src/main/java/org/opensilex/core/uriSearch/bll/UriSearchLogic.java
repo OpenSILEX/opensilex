@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.uriSearch.bll;
 
+import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
@@ -52,89 +53,121 @@ public class UriSearchLogic {
         this.fs = fs;
     }
 
+    /**
+     *
+     * @param uri to search by
+     * @return a URIGlobalSearchDTO or null if no result, to create the result we look in sparql and different mongo
+     * collections, these steps are divided into private functions for readability
+     * @throws Exception
+     */
     public URIGlobalSearchDTO searchByUri(URI uri) throws Exception {
         //Start by searching in sparql global graph
-        UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff sparqlMatch = sparqlDao.searchByUri(uri);
-        if(!(sparqlMatch == null)){
-            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
-
-            //Get super types, needed to identify details page path in front
-            List<URITypesDTO> types = getSuperTypesFromUri(uri);
-
-            result.setSuperTypes(types);
-            return result;
+        URIGlobalSearchDTO real = this.searchInSparql(uri);
+        if(real != null){
+            return real;
         }
 
         //If no matches search in Provenance
+        real = this.searchInProvenances(uri);
+        if(real != null){
+            return real;
+        }
+
+        //If still no matches then search in Data
+        real = this.searchInData(uri);
+        if(real != null){
+            return real;
+        }
+
+        //If still no match then search in Datafile
+        real = this.searchInDataFiles(uri);
+
+        return real;
+    }
+
+    private URIGlobalSearchDTO searchInSparql(URI uri) throws Exception {
+        UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff sparqlMatch = sparqlDao.searchByUri(uri);
+        if(sparqlMatch == null){
+            return null;
+        }
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
+
+        //Get super types, needed to identify details page path in front
+        List<URITypesDTO> types = getSuperTypesFromUri(uri);
+
+        result.setSuperTypes(types);
+        return result;
+    }
+
+    private URIGlobalSearchDTO searchInProvenances(URI uri) throws Exception {
         ProvenanceModel provenanceModel = null;
         try{
             //TODO dont invoke dao here when prov logic class exists
             ProvenanceDaoV2 provenanceDaoV2 = new ProvenanceDaoV2(nosql.getServiceV2());
             provenanceModel = provenanceDaoV2.get(uri);
-        }catch(Exception ignore){}
-
-        if(provenanceModel != null){
-            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(provenanceModel).setName(provenanceModel.getName());
-            //prepare publisher info
-            loadPublisherInfoIntoDtoFromMongoModel(provenanceModel, result);
-
-            //Create a singleton list for provenance type, needed for redirection in front
-            URITypesDTO type = new URITypesDTO();
-            type.setUri(uri);
-            type.setRdfTypes(Collections.singletonList(URI.create(Oeso.Provenance.getURI())));
-            result.setSuperTypes(Collections.singletonList(type));
-
-            //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, done same for Data but is even worse because i couldn't find a Data RdfType, temporary forcing of Type label in front for Data.
-            result.setType(URI.create(Oeso.Provenance.getURI()));
-            setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, URI.create(Oeso.Provenance.getURI()));
-
-            return result;
+        }catch(Exception notFound){
+            return null;
         }
 
-        //If still no matches then search in Data
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(provenanceModel).setName(provenanceModel.getName());
+        //prepare publisher info
+        loadPublisherInfoIntoDtoFromMongoModel(provenanceModel, result);
+
+        //Create a singleton list for provenance type, needed for redirection in front
+        URITypesDTO type = new URITypesDTO();
+        type.setUri(uri);
+        type.setRdfTypes(Collections.singletonList(URI.create(Oeso.Provenance.getURI())));
+        result.setSuperTypes(Collections.singletonList(type));
+
+        //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, done same for Data but is even worse because i couldn't find a Data RdfType, temporary forcing of Type label in front for Data.
+        result.setType(URI.create(Oeso.Provenance.getURI()));
+        setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, URI.create(Oeso.Provenance.getURI()));
+
+        return result;
+    }
+
+    private URIGlobalSearchDTO searchInData(URI uri) throws Exception {
         DataModel dataModel = null;
         try{
             DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
             dataModel = dataLogic.get(uri);
-        }catch(Exception ignore){}
-
-        if(dataModel != null){
-            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataModel);
-
-            //prepare publisher info
-            loadPublisherInfoIntoDtoFromMongoModel(dataModel, result);
-
-            //Set DataDto
-            Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
-            result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
-
-            return result;
+        }catch(Exception notFound){
+            return null;
         }
 
-        //If still no match then search in Datafile
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataModel);
+
+        //prepare publisher info
+        loadPublisherInfoIntoDtoFromMongoModel(dataModel, result);
+
+        //Set DataDto
+        Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
+        result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+
+        return result;
+    }
+
+    private URIGlobalSearchDTO searchInDataFiles(URI uri) throws Exception {
         DataFileModel dataFileModel = null;
         try{
             DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
             dataFileModel = dataFileDaoV2.get(uri);
-        }catch(Exception ignore){}
-
-        if(dataFileModel != null){
-            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataFileModel);
-
-            //prepare publisher info
-            loadPublisherInfoIntoDtoFromMongoModel(dataFileModel, result);
-
-            //Type label TODO does this work because or does it need to be forced
-            setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, result.getType());
-
-            //Set DataDto thing TODO ,this was from Data
-            /*Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
-            result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));*/
-
-            return result;
+        }catch(Exception notFound){
+            return null;
         }
 
-        return null;
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataFileModel);
+
+        //prepare publisher info
+        loadPublisherInfoIntoDtoFromMongoModel(dataFileModel, result);
+
+        //Type label
+        setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, result.getType());
+
+        //Set DatafileDto
+        result.setDatafileDto(DataFileGetDTO.fromModel(dataFileModel));
+
+        return result;
     }
 
     private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, URIGlobalSearchDTO result) throws Exception {

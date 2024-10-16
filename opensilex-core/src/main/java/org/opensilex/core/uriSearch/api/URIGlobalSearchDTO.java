@@ -10,6 +10,7 @@
 package org.opensilex.core.uriSearch.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
@@ -54,6 +55,10 @@ public class URIGlobalSearchDTO {
     //To be able to show data details if the uri was a data
     @JsonProperty("data_dto")
     private DataGetSearchDTO dataDto;
+
+    //To be able to show datafile
+    @JsonProperty("datafile_dto")
+    private DataFileGetDTO datafileDto;
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
 
@@ -182,5 +187,13 @@ public class URIGlobalSearchDTO {
 
     public void setTotalMatches(int totalMatches) {
         this.totalMatches = totalMatches;
+    }
+
+    public DataFileGetDTO getDatafileDto() {
+        return datafileDto;
+    }
+
+    public void setDatafileDto(DataFileGetDTO datafileDto) {
+        this.datafileDto = datafileDto;
     }
 }

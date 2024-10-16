@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid" v-if="selected">
     <opensilex-PageHeader
-      icon="ik#ik-globe"
-      :title="selected.name"
-      :description="selected.rdf_type_name"
-      class="detail-element-header"
+        icon="ik#ik-globe"
+        :title="selected.name"
+        :description="selected.rdf_type_name"
+        class="detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
@@ -12,29 +12,47 @@
       <div class="col-md-6">
         <!-- Organization detail -->
         <opensilex-OrganizationDetail
-          :selected="selected"
-          :withActions="true"
-          @onDelete="deleteOrganization"
-          @onUpdate="refresh"
+            :selected="selected"
+            :withActions="true"
+            @onDelete="deleteOrganization"
+            @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
 
-        <opensilex-MapCard
-            class="site-map"
-            :features="siteFeatures"
-        />
+        <opensilex-Card
+            :noFooter="true"
+          >
+          <template v-slot:header>
+            <h3>
+              <opensilex-Icon icon="ik#ik-map-pin" size="lg" />
+              {{ $t("OrganizationDetailView.site-map") }}
+              &nbsp;
+              <font-awesome-icon
+                  icon="question-circle"
+                  class="help-label"
+                  v-b-tooltip.hover.top="$t('OrganizationDetailView.site-map-help')"
+              />
+            </h3>
+          </template>
+          <template v-slot:body>
+            <opensilex-MapCard
+                class="site-map"
+                :features="siteFeatures"
+            />
+          </template>
+        </opensilex-Card>
 
       </div>
       <div class="col-md-6">
         <!-- Organization facilities -->
         <opensilex-FacilitiesView
-          :facilities="selected.facilities"
-          :organization="selected"
-          :selected="selected"
-          :withActions="true"
-          :isSelectable="false"
-          @onUpdate="refresh"
-          @onCreate="refresh"
-          @onDelete="refresh"
+            :facilities="selected.facilities"
+            :organization="selected"
+            :selected="selected"
+            :withActions="true"
+            :isSelectable="false"
+            @onUpdate="refresh"
+            @onCreate="refresh"
+            @onDelete="refresh"
         ></opensilex-FacilitiesView>
       </div>
     </div>
@@ -67,16 +85,18 @@ export default class OrganizationDetailView extends Vue {
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.service = this.$opensilex.getService(
-      "opensilex-core.OrganizationsService"
+        "opensilex-core.OrganizationsService"
     );
     this.refresh();
   }
+
   //#endregion
 
   //#region Private methods
   private refresh(): void {
-    this.getOrganization().then( () => {
-      this.getSitesFeatures(); });
+    this.getOrganization().then(() => {
+      this.getSitesFeatures();
+    });
   }
 
   private async getOrganization(): Promise<void> {
@@ -86,18 +106,18 @@ export default class OrganizationDetailView extends Vue {
           let detailDTO: OrganizationGetDTO = http.response.result;
           this.selected = detailDTO;
         })
-      .catch(this.$opensilex.errorHandler);
+        .catch(this.$opensilex.errorHandler);
   }
 
   private deleteOrganization(): void {
     this.service
-      .deleteOrganization(this.uri)
-      .then(() => {
-        this.$router.push({
-          path: "/organizations",
-        });
-      })
-      .catch(this.$opensilex.errorHandler);
+        .deleteOrganization(this.uri)
+        .then(() => {
+          this.$router.push({
+            path: "/organizations",
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
   }
 
   private async getSitesFeatures(): Promise<void> {
@@ -122,6 +142,7 @@ export default class OrganizationDetailView extends Vue {
 
     return features;
   }
+
   //#endregion
 }
 </script>
@@ -130,5 +151,23 @@ export default class OrganizationDetailView extends Vue {
 .site-map {
   height: 20vh;
 }
+
+.help-label {
+  font-size: 1.3em;
+  background: #f1f1f1;
+  color: #00A38D;
+  border-radius: 50%;
+}
 </style>
+
+<i18n>
+en:
+    OrganizationDetailView:
+        site-map: "Sites"
+        site-map-help: "Display only the sites with a location (address field)"
+fr:
+    OrganizationDetailView:
+        site-map: "Sites"
+        site-map-help: "Affiche uniquement les sites avec une localisation (champ adresse)"
+</i18n>
 

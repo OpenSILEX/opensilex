@@ -69,7 +69,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO} from "opensilex-core/index";
+import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO, DataFileGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Prop, Ref} from "vue-property-decorator";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -192,7 +192,7 @@ export default class GlobalUriSearchResult extends Vue {
   /**
    * Like the isDataOrDataFile computed, this will get the dto of either data or datafile (both can never not be null at same time
    */
-  get dataDto() : DataGetSearchDTO{
+  get dataDto() : DataGetSearchDTO | DataFileGetDTO{
     if(!this.searchResult){
       return null;
     }

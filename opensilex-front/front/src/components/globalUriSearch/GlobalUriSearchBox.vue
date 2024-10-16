@@ -75,7 +75,7 @@ export default class GlobalUriSearchBox extends Vue {
         this.uriSearchResultVisible = true;
       }
     ).catch(error =>{
-      this.uriSearchResult = {};
+      this.uriSearchResult = null;
       this.uriSearchResultVisible = true;
     });
   }
@@ -83,7 +83,7 @@ export default class GlobalUriSearchBox extends Vue {
 
   //#region: computed
   get resultsFound(): boolean{
-    return this.uriSearchResult && this.uriSearchResult.number_total_matches && this.uriSearchResult.number_total_matches > 0;
+    return this.uriSearchResult !== null;
   }
   //#endregion
 }

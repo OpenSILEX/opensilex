@@ -11,6 +11,8 @@ package org.opensilex.core.uriSearch.bll;
 
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.dal.DataFileDaoV2;
+import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -105,6 +107,29 @@ public class UriSearchLogic {
             //Set DataDto
             Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
             result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+
+            return result;
+        }
+
+        //If still no match then search in Datafile
+        DataFileModel dataFileModel = null;
+        try{
+            DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
+            dataFileModel = dataFileDaoV2.get(uri);
+        }catch(Exception ignore){}
+
+        if(dataFileModel != null){
+            URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(dataFileModel);
+
+            //prepare publisher info
+            loadPublisherInfoIntoDtoFromMongoModel(dataFileModel, result);
+
+            //Type label TODO does this work because or does it need to be forced
+            setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, result.getType());
+
+            //Set DataDto thing TODO ,this was from Data
+            /*Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
+            result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));*/
 
             return result;
         }

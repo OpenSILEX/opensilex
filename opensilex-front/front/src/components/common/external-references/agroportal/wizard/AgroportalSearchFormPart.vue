@@ -168,7 +168,8 @@ export default class AgroportalSearchFormPart extends Vue {
   private onTermImported(term: AgroportalTermDTO) {
     this.selectedTerm = term;
     this.formDto.uri = term.id;
-    this.formDto.name = term.name[0];
+    this.formDto.name = term.name;
+    this.formDto.description = term.definitions[0];
   }
   //#endregion
 

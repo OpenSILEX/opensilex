@@ -17,6 +17,7 @@ import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
@@ -80,6 +81,18 @@ public class URIGlobalSearchDTO {
         if(result.getModel().getLastUpdateDate() != null){
             dto.setLastUpdatedDate(result.getModel().getLastUpdateDate().format(dateTimeFormatter));
         }
+        return dto;
+    }
+
+    /**
+     * To be used when a vocabulary from ontology matched the searched uri
+     */
+    public static URIGlobalSearchDTO fromClassModel(ClassModel model){
+        URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
+        dto.setUri(model.getUri());
+        dto.setName(model.getLabel().getDefaultValue());
+        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
+        dto.setType(model.getType());
         return dto;
     }
 

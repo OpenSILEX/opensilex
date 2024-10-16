@@ -29,7 +29,10 @@ import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
@@ -62,27 +65,33 @@ public class UriSearchLogic {
      */
     public URIGlobalSearchDTO searchByUri(URI uri) throws Exception {
         //Start by searching in sparql global graph
-        URIGlobalSearchDTO real = this.searchInSparql(uri);
-        if(real != null){
-            return real;
+        URIGlobalSearchDTO result = this.searchInSparql(uri);
+        if(result != null){
+            return result;
+        }
+
+        //If no matches search in Vocabulary
+        result = this.searchInOntologies(uri);
+        if(result != null){
+            return result;
         }
 
         //If no matches search in Provenance
-        real = this.searchInProvenances(uri);
-        if(real != null){
-            return real;
+        result = this.searchInProvenances(uri);
+        if(result != null){
+            return result;
         }
 
         //If still no matches then search in Data
-        real = this.searchInData(uri);
-        if(real != null){
-            return real;
+        result = this.searchInData(uri);
+        if(result != null){
+            return result;
         }
 
         //If still no match then search in Datafile
-        real = this.searchInDataFiles(uri);
+        result = this.searchInDataFiles(uri);
 
-        return real;
+        return result;
     }
 
     private URIGlobalSearchDTO searchInSparql(URI uri) throws Exception {
@@ -96,6 +105,21 @@ public class UriSearchLogic {
         List<URITypesDTO> types = getSuperTypesFromUri(uri);
 
         result.setSuperTypes(types);
+        return result;
+    }
+
+    private URIGlobalSearchDTO searchInOntologies(URI uri) throws Exception {
+        ClassModel model = null;
+
+        try{
+            //these two lines were taken from OntologyApi, i don't understand if i should be using OntologyDao or the OntologyStore
+            OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+            model = ontologyStore.getClassModel(uri, null, currentUser.getLanguage());
+        }catch(Exception e){
+            return null;
+        }
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromClassModel(model);
+
         return result;
     }
 

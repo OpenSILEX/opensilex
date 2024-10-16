@@ -66,13 +66,13 @@ public class UriSearchSparqlDao {
         if(resultsAsModels.isEmpty()) {
             return null;
         }else if(resultsAsModels.size() == 1) {
-            return resultsAsModels.get(0).setTotalMatches(1);
+            return resultsAsModels.get(0);
         }else{
             //TODO if elements other than Scientific objects can be in multiple graphs then we would need to replace the below line with a fetching of the correct graph URI by looking at which Super type has a graph associated to it
             URI defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
             for(SparqlNamedResourceModelWithExtraStuff next : resultsAsModels){
                 if(SPARQLDeserializers.compareURIs(defaultGraph, next.getContext())) {
-                    return next.setTotalMatches(resultsAsModels.size());
+                    return next;
                 }
             }
             //If no default graph found throw an exception because this will need to be debugged
@@ -216,7 +216,6 @@ public class UriSearchSparqlDao {
         private SPARQLNamedResourceModel model;
         private PersonModel publisher;
         private URI context;
-        private int totalMatches;
 
         public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context) {
             this.model = model;
@@ -236,14 +235,6 @@ public class UriSearchSparqlDao {
             return context;
         }
 
-        public int getTotalMatches() {
-            return totalMatches;
-        }
-
-        public SparqlNamedResourceModelWithExtraStuff setTotalMatches(int totalMatches) {
-            this.totalMatches = totalMatches;
-            return this;
-        }
     }
     //#endregion
 }

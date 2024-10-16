@@ -34,9 +34,6 @@ public class URIGlobalSearchDTO {
     @JsonProperty("rdf_type")
     private URI type;
 
-    @JsonProperty("number_total_matches")
-    private int totalMatches;
-
     @JsonProperty("rdf_type_name")
     private String typeLabel;
 
@@ -68,7 +65,6 @@ public class URIGlobalSearchDTO {
         dto.setType(result.getModel().getType());
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
         dto.setName(result.getModel().getName());
-        dto.setTotalMatches(result.getTotalMatches());
 
         if(result.getPublisher()!=null && result.getPublisher().getUri() != null){
             UserGetDTO publisherAsUser = new UserGetDTO();
@@ -96,7 +92,6 @@ public class URIGlobalSearchDTO {
         URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
         dto.setUri(model.getUri());
         dto.setType(model.getRdfType());
-        dto.setTotalMatches(1);
         //TODO publicationDate and updateDate have been put to toString for now, the format isn't the same as in SPARQLResourceModel and these fields are currently always empty anyway
         if(model.getPublicationDate() != null){
             dto.setPublicationDate(model.getPublicationDate().toString());
@@ -179,14 +174,6 @@ public class URIGlobalSearchDTO {
 
     public void setDataDto(DataGetSearchDTO dataDto) {
         this.dataDto = dataDto;
-    }
-
-    public int getTotalMatches() {
-        return totalMatches;
-    }
-
-    public void setTotalMatches(int totalMatches) {
-        this.totalMatches = totalMatches;
     }
 
     public DataFileGetDTO getDatafileDto() {

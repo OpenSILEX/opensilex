@@ -7,7 +7,7 @@
     <div class="main-info-style">
       <!-- URI -->
       <opensilex-UriView
-        v-if="!isData"
+        v-if="!isDataOrDataFile"
         class="uriLinkGlobalUriSearchRes"
         :uri="uri"
         :value="this.shortUri"
@@ -32,16 +32,9 @@
         ></opensilex-DetailButton>
       </span>
 
-      <!-- Multiple Results message -->
-      <div v-if="numberOfResults > 1" class="multiple-results-message-box">
-        <div class="multiple-results-message">
-          {{numberOfResults + " " + this.$t('GlobalUriSearch.multipleResultsMessage')}}
-        </div>
-      </div>
-
       <!-- Name -->
       <opensilex-StringView
-        v-if="!isData"
+        v-if="!isDataOrDataFile"
         :value="name"
         label="component.common.name"
       ></opensilex-StringView>
@@ -67,7 +60,7 @@
 
     <!-- Data details -->
     <opensilex-DataProvenanceModalView
-      v-if="isData"
+      v-if="isDataOrDataFile"
       ref="dataProvenanceModalView"
     ></opensilex-DataProvenanceModalView>
   </div>
@@ -111,8 +104,7 @@ export default class GlobalUriSearchResult extends Vue {
 
   //#region: event handlers
   /**
-   * For now handles data
-   * TODO data files or anything else that doesnt have a details page?
+   * For now handles data and datafiles
    */
   private handleSeeDetails(){
     this.$opensilex.enableLoader();
@@ -167,14 +159,6 @@ export default class GlobalUriSearchResult extends Vue {
     return this.searchResult != null;
   }
 
-  get numberOfResults() : number{
-    let resultQuantity = 0;
-    if(this.hasResult && this.searchResult.number_total_matches){
-      resultQuantity = this.searchResult.number_total_matches;
-    }
-    return resultQuantity;
-  }
-
   get name() : string {
     return this.searchResult.name;
   }
@@ -205,8 +189,24 @@ export default class GlobalUriSearchResult extends Vue {
     }
   }
 
+  /**
+   * Like the isDataOrDataFile computed, this will get the dto of either data or datafile (both can never not be null at same time
+   */
   get dataDto() : DataGetSearchDTO{
-    return this.searchResult.data_dto;
+    if(!this.searchResult){
+      return null;
+    }
+    if(this.searchResult.data_dto){
+      return this.searchResult.data_dto;
+    }
+    return this.searchResult.datafile_dto;
+  }
+
+  /**
+   * isDataOrDataFile = is data OR datafile
+   */
+  get isDataOrDataFile(): boolean{
+    return this.searchResult.data_dto !== null || this.searchResult.datafile_dto !== null;
   }
 
   get isData(): boolean{
@@ -244,21 +244,6 @@ export default class GlobalUriSearchResult extends Vue {
 .closeResultBox:hover{
   color : #00A28C;
   background: none;
-}
-
-.multiple-results-message-box{
-  display: flex;
-  justify-content: flex-end;
-}
-
-.multiple-results-message {
-  background-color: #f0f8f5;
-  border: 1px solid #d4e6d5;
-  display: inline-block;
-  padding: 10px 15px;
-  border-radius: 8px;
-  text-align: right;
-  margin: 10px 0 10px 0;
 }
 
 </style>

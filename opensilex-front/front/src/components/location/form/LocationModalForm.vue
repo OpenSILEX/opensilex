@@ -23,7 +23,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import LocationForm from "@/components/location/form/LocationForm.js";
+import LocationForm from "../../location/form/LocationForm.js";
 import {Ref} from "vue-property-decorator";
 
 @Component({})

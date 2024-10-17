@@ -1,7 +1,7 @@
 <template>
-  <opensilex-ModalForm
+  <opensilex-WizardForm
     ref="facilityForm"
-    component="opensilex-FacilityForm"
+    :steps="steps"
     createTitle="FacilitiesView.add"
     editTitle="FacilitiesView.update"
     icon="ik#ik-map"
@@ -9,14 +9,13 @@
     :updateAction="callOrganizationFacilityUpdate"
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
-    :initForm="initForm"
-    :doNotHideOnError="true"
-    :lazy="lazy"
-  ></opensilex-ModalForm>
+    :initForm="getEmptyForm"
+    modalSize="lg"
+  ></opensilex-WizardForm>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
@@ -24,120 +23,152 @@ import {FacilityCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
-import ModalForm from "../common/forms/ModalForm.vue";
-import FacilityForm from "./FacilityForm.vue";
 import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
 import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
 
 @Component
 export default class FacilityModalForm extends Vue {
-  $opensilex: OpenSilexVuePlugin;
+    //#region Plugins and services
+    private readonly $opensilex: OpenSilexVuePlugin;
+    //endregion
 
-  @Prop()
-  lazy: boolean;
+    //#region Props
+    //endregion
 
-  @Prop({
-    default: () => {}
-  })
-  initForm: (f: FacilityCreationDTO) => {};
+    //#region Refs
+    @Ref("facilityForm")
+    private readonly facilityForm!: any;
+    //endregion
 
-  @Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
-
-  showEditForm(uri) {
-    this.$opensilex
-      .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .getFacility(uri)
-      .then((http) => {
-        let dto: FacilityGetDTO = http.response.result;
-        let publisher: UserGetDTO = dto.publisher;
-        this.facilityForm
-          .getFormRef()
-          .typeSwitch(dto.rdf_type, true);
-        let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
-        editDto.publisher = publisher;       
-        this.facilityForm.showEditForm(editDto);
-      }).catch(this.$opensilex.errorHandler);
-  }
-
-  showCreateForm() {
-    this.facilityForm.showCreateForm();
-    this.$nextTick(() => {
-        this.facilityForm
-            .getFormRef()
-            .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
-    });
-  }
-
-  callOrganizationFacilityCreation(form: FacilityCreationDTO) {
-    let definedRelations = [];
-    for (let i in form.relations) {
-      let relation = form.relations[i];
-      if (relation.value != null) {
-        if (Array.isArray(relation.value)) {
-          for (let j in relation.value) {
-            definedRelations.push({
-              property: relation.property,
-              value: relation.value[j],
-            });
-          }
-        } else {
-          definedRelations.push(relation);
+    //#region Data
+    private steps = [
+        {
+            component: "opensilex-FacilityForm",
+        },
+        {
+            component: "opensilex-LocationsForm",
         }
-      }
+    ];
+    //endregion
+    //#region Computed
+    //endregion
+
+    //#region Events
+    //endregion
+    //#region Events handlers
+    //endregion
+
+    //#region Public methods
+    showEditForm(uri) {
+        this.$opensilex
+                .getService<OrganizationsService>("opensilex.OrganizationsService")
+                .getFacility(uri)
+                .then((http) => {
+                    let dto: FacilityGetDTO = http.response.result;
+                    let publisher: UserGetDTO = dto.publisher;
+                    let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
+                    editDto.publisher = publisher;
+                    this.facilityForm.showEditForm(editDto);
+                }).catch(this.$opensilex.errorHandler);
     }
 
-    form.relations = definedRelations;
+    showCreateForm() {
+        this.facilityForm.showCreateForm();
+    }
+    //endregion
 
-    return this.$opensilex
-      .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .createFacility(form)
-      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-        let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch((error) => {
-        if (error.status === 409) {
-          console.error("Organization facility already exists", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t(
-              "OrganizationFacilityForm.organization-facility-already-exists"
-            )
-          );
-        } else {
-          this.$opensilex.errorHandler(error);
-        }
-      });
-  }
+    //#region Hooks
+    //endregion
 
-  callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
-    let definedRelations = [];
-    for (let i in form.relations) {
-      let relation = form.relations[i];
-      if (relation.value != null) {
-        if (Array.isArray(relation.value)) {
-          for (let j in relation.value) {
-            definedRelations.push({
-              property: relation.property,
-              value: relation.value[j],
-            });
-          }
-        } else {
-          definedRelations.push(relation);
-        }
-      }
+    //#region Private methods
+    getEmptyForm() {
+        return {
+            uri: undefined,
+            rdf_type: undefined,
+            name: undefined,
+            description: undefined,
+            address: undefined,
+            organizations: [],
+            sites: [],
+            variableGroups: [],
+            relations: [],
+            locations: []
+        };
     }
 
-    form.relations = definedRelations;
-    return this.$opensilex
-      .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .updateFacility(form)
-      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-        let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+    callOrganizationFacilityCreation(form: FacilityCreationDTO) {
+        console.log("create",form)
+        let definedRelations = [];
+        for (let i in form.relations) {
+            let relation = form.relations[i];
+            if (relation.value != null) {
+                if (Array.isArray(relation.value)) {
+                    for (let j in relation.value) {
+                        definedRelations.push({
+                            property: relation.property,
+                            value: relation.value[j],
+                        });
+                    }
+                } else {
+                    definedRelations.push(relation);
+                }
+            }
+        }
+
+        form.relations = definedRelations;
+
+        return this.$opensilex
+                .getService<OrganizationsService>("opensilex.OrganizationsService")
+                .createFacility(form)
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+                    console.log("http",http)
+                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                })
+                .catch((error) => {
+                    if (error.status === 409) {
+                        console.error("Organization facility already exists", error);
+                        this.$opensilex.errorHandler(
+                                error,
+                                this.$t(
+                                        "OrganizationFacilityForm.organization-facility-already-exists"
+                                )
+                        );
+                    } else {
+                        this.$opensilex.errorHandler(error);
+                    }
+                });
+    }
+
+    callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
+        let definedRelations = [];
+        for (let i in form.relations) {
+            let relation = form.relations[i];
+            if (relation.value != null) {
+                if (Array.isArray(relation.value)) {
+                    for (let j in relation.value) {
+                        definedRelations.push({
+                            property: relation.property,
+                            value: relation.value[j],
+                        });
+                    }
+                } else {
+                    definedRelations.push(relation);
+                }
+            }
+        }
+
+        form.relations = definedRelations;
+        return this.$opensilex
+                .getService<OrganizationsService>("opensilex.OrganizationsService")
+                .updateFacility(form)
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                })
+                .catch(this.$opensilex.errorHandler);
+    }
+    //endregion
 }
 </script>
 

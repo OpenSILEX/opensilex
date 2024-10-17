@@ -763,6 +763,8 @@ import LocationModalForm from "./location/form/LocationModalForm.vue";
 components["opensilex-LocationModalForm"] = LocationModalForm;
 import LocationForm from "./location/form/LocationForm.vue";
 components["opensilex-LocationForm"] = LocationForm;
+import LocationsForm from "./location/form/LocationsForm.vue";
+components["opensilex-LocationsForm"] = LocationsForm;
 import LocationList from "./location/list/LocationList.vue";
 components["opensilex-LocationList"] = LocationList;
 

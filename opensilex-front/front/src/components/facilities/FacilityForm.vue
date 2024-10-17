@@ -1,8 +1,8 @@
 <template>
-  <b-form>
+<ValidationObserver ref="validatorRef">
     <!-- URI -->
     <opensilex-UriForm
-        :uri.sync="form.uri"
+        :uri.sync="facility.uri"
         label="OntologyObjectForm.uri-label"
         helpMessage="component.common.uri-help-message"
         :editMode="editMode"
@@ -12,7 +12,7 @@
     <!-- Type -->
     <opensilex-TypeForm
         v-if="baseType"
-        :type.sync="form.rdf_type"
+        :type.sync="facility.rdf_type"
         :baseType="baseType"
         :ignoreRoot="false"
         :required="true"
@@ -23,7 +23,7 @@
 
     <!-- Name -->
     <opensilex-InputForm
-        :value.sync="form.name"
+        :value.sync="facility.name"
         label="component.common.name"
         type="text"
         :required="true"
@@ -32,7 +32,7 @@
 
     <!-- Description -->
     <opensilex-TextAreaForm
-            :value.sync="form.description"
+            :value.sync="facility.description"
             label="component.common.description"
             placeholder="component.common.description"
             @keydown.native.enter.stop
@@ -42,7 +42,7 @@
     <!-- Group of variables -->
     <opensilex-GroupVariablesSelector
             label="VariableView.groupVariable"
-            :variableGroup.sync="form.variableGroups"
+            :variableGroup.sync="facility.variableGroups"
             :multiple="true"
     >
     </opensilex-GroupVariablesSelector>
@@ -51,17 +51,17 @@
     <!-- Custom properties -->
     <opensilex-OntologyRelationsForm
             ref="ontologyRelationsForm"
-            :rdfType="this.form.rdf_type"
-            :relations="this.form.relations"
+            :rdfType="this.facility.rdf_type"
+            :relations="this.facility.relations"
             :baseType="this.baseType"
             :editMode="editMode"
     ></opensilex-OntologyRelationsForm>
-    <slot v-if="form.rdf_type" v-bind:form="form"></slot>
+    <slot v-if="facility.rdf_type" v-bind:form="facility"></slot>
 
     <!-- Organizations -->
     <opensilex-OrganizationSelector
         label="component.experiment.organizations"
-        :organizations.sync="form.organizations"
+        :organizations.sync="facility.organizations"
         :multiple="true"
     ></opensilex-OrganizationSelector>
 
@@ -69,7 +69,7 @@
     <opensilex-SiteSelector
         label="component.common.organization.site"
         :multiple="true"
-        :sites.sync="form.sites"
+        :sites.sync="facility.sites"
     >
     </opensilex-SiteSelector>
 
@@ -77,7 +77,7 @@
      we don't currently have any use cases requiring a single facility to belong to multiple sites. This should change
      in the future. -->
     <b-alert
-            v-if="Array.isArray(form.sites) && form.sites.length > 1"
+            v-if="Array.isArray(facility.sites) && facility.sites.length > 1"
             variant="warning"
             show
     >
@@ -95,107 +95,21 @@
 
     <!-- Address -->
     <opensilex-AddressForm
-            :address.sync="form.address"
+            :address.sync="facility.address"
     >
     </opensilex-AddressForm>
-
-    <!-- POSITIONS -->
-    <br/>
-    <p>
-      <b>Positions</b>
-    </p>
-    <hr/>
-
-    <div class="row">
-      <!-- Add position -->
-      <div class="col-4">
-        <opensilex-AddChildButton
-            @click="addPosition"
-            label="FacilityForm.add-position"
-            :small="true"
-        ></opensilex-AddChildButton>
-        <span> {{ $t('FacilityForm.add-position') }}</span>
-      </div>
-
-      <!-- Geometry -->
-      <div class="col-8">
-        <opensilex-GeometryForm
-            :value.sync="position.geojson"
-            label="component.common.geometry"
-            helpMessage="component.common.geometry-help"
-        >
-        </opensilex-GeometryForm>
-      </div>
-    </div>
-
-    <!-- Dates -->
-    <div class="row">
-      <div class="col">
-        <opensilex-DateTimeForm
-            :value.sync="position.startDate"
-            label="component.common.begin"
-            :maxDate="position.endDate"
-            :required="false"
-        ></opensilex-DateTimeForm>
-      </div>
-      <div class="col">
-        <opensilex-DateTimeForm
-            :value.sync="position.endDate"
-            label="component.common.end"
-            :minDate="position.startDate"
-            :required="!!position.geojson"
-        ></opensilex-DateTimeForm>
-      </div>
-    </div>
-
-    <!-- Position list -->
-    <opensilex-TableView v-if="form.locations && form.locations.length !==0" :fields="fields" :items="form.locations">
-      <template v-slot:cell(startDate)="{ data }">
-        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
-      </template>
-
-      <template v-slot:cell(endDate)="{ data }">
-        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
-      </template>
-
-      <template v-slot:cell(geometry)="{data}">
-        <opensilex-GeometryCopy
-            label="" :value="data.item.geojson">
-        </opensilex-GeometryCopy>
-      </template>
-
-      <template v-slot:cell(actions)="{ data }">
-        <!-- TODO: CREDENTIALS Update/delete Facility? Location?-->
-        <b-button-group size="sm">
-          <opensilex-EditButton
-              @click="updatePosition(data)"
-              label="component.common.list.buttons.update"
-              :small="true"
-          ></opensilex-EditButton>
-
-          <opensilex-DeleteButton
-              @click="deletePosition(data)"
-              label="component.common.list.buttons.delete"
-          ></opensilex-DeleteButton>
-        </b-button-group>
-      </template>
-    </opensilex-TableView>
-<!--    TODO: demander à Seb : validation et  ergonomie du form-->
-<!--    <opensilex-LocationModalForm
-        ref="locationModalForm"
-    ></opensilex-LocationModalForm>-->
-  </b-form>
+    <br>
+    </ValidationObserver>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
 import { FacilityCreationDTO, LocationObservationDTO } from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import LocationModalForm from "@/components/location/form/LocationModalForm.vue";
 
 @Component
 export default class FacilityForm extends Vue {
@@ -208,9 +122,10 @@ export default class FacilityForm extends Vue {
   //#region Props
   @Prop({default: false})
   private readonly editMode: boolean;
-
-  @Prop({default: FacilityForm.getEmptyForm()})
-  private readonly form: FacilityCreationDTO;
+  @Prop({default: true})
+  private readonly uriGenerated: boolean;
+  @PropSync("form",{default: FacilityForm.getEmptyForm()})
+  private readonly facility: FacilityCreationDTO;
   //endregion
 
   //#region Refs
@@ -218,44 +133,19 @@ export default class FacilityForm extends Vue {
   private readonly validatorRef!: any;
   @Ref("ontologyRelationsForm")
   private readonly ontologyRelationsForm: OntologyRelationsForm;
-  @Ref("locationModalForm")
-  private readonly locationModalForm: LocationModalForm;
   //endregion
 
   //#region Data
-  private uriGenerated = true;
   private hasAddress: boolean;
   private baseType: string;
   private typeModel = null;
   private propertyComponents = [];
-  private position: LocationObservationDTO = this.getPositionEmpty();
-  private fields = [
-    {
-      key: "date",
-      label: "component.common.begin",
-      sortable: true,
-    },
-    {
-      key: "endDate",
-      label: "component.common.end",
-      sortable: true,
-    },
-    {
-      key: "geometry",
-      label: "component.common.geometry",
-    },
-    {
-      key: "actions",
-      label: "component.common.actions",
-    },
-  ]
-  //endregion
 
   //#region Computed
-  @Watch("form")
+  @Watch("facility")
   onFacilityChanged() {
     // Update hasAddress checkbox
-    this.hasAddress = !!this.form.address;
+    this.hasAddress = !!this.facility.address;
     // Reset the type model
     this.resetTypeModel();
   }
@@ -266,32 +156,20 @@ export default class FacilityForm extends Vue {
 
   //#region Events handlers
   private onAddressToggled() {
-    this.form.address = this.hasAddress
+    this.facility.address = this.hasAddress
             ? {}
             : undefined;
-  }
-
-  private addPosition(){
-    if(this.position.geojson !== undefined){
-      this.form.locations.push(this.position)
-      this.position = this.getPositionEmpty();
-    }
-  }
-
-  private updatePosition(data){
-    this.locationModalForm.showEditForm(data.item);
-  }
-
-  private deletePosition(data){
-    this.form.locations.splice(this.form.locations.indexOf(data.item),1)
   }
   //endregion
 
   //#region Public methods
-  public setBaseType(baseType: string) {
-    this.baseType = baseType;
-  }
+    public reset() {
+        this.validatorRef.reset();
+    }
 
+    public validate() {
+        return this.validatorRef.validate();
+    }
   public typeSwitch(type: string, initialLoad: boolean) {
     if (this.ontologyRelationsForm) {
       this.ontologyRelationsForm.typeSwitch(type, initialLoad);
@@ -323,7 +201,7 @@ export default class FacilityForm extends Vue {
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
     this.baseType = this.$opensilex.Oeso.FACILITY_TYPE_URI;
-    this.hasAddress = !!this.form.address;
+    this.hasAddress = !!this.facility.address;
   }
   //endregion
 
@@ -343,14 +221,6 @@ export default class FacilityForm extends Vue {
   private resetTypeModel(){
     this.typeModel = undefined;
   }
-
-  private getPositionEmpty(): LocationObservationDTO {
-    return {
-      geojson: undefined,
-      startDate: undefined,
-      endDate: undefined
-    }
-  }
   //endregion
 }
 </script>
@@ -363,9 +233,7 @@ export default class FacilityForm extends Vue {
 en:
   FacilityForm:
     toggleAddress: Address
-    add-position: Add position
 fr:
   FacilityForm:
     toggleAddress: Adresse
-    add-position: Ajouter une position
 </i18n>

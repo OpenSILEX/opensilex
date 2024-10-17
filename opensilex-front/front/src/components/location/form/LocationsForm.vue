@@ -1,0 +1,207 @@
+<!--
+  - ******************************************************************************
+  -                         LocationsForm.vue
+  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  - Copyright © INRAE 2024.
+  - Last Modification: 16/10/2024 14:58
+  - Contact: alexia.chiavarino@inrae.fr
+  - ******************************************************************************
+  -
+  -->
+
+<template>
+    <ValidationObserver ref="validatorRef">
+        <!-- POSITIONS -->
+        <br/>
+        <p>
+            <b>{{ $t('LocationsForm.positions-geospatial') }} </b>
+        </p>
+        <hr/>
+
+        <!-- Dates -->
+        <div class="row">
+            <div class="col">
+                <opensilex-DateTimeForm
+                        :value.sync="position.startDate"
+                        label="component.common.begin"
+                        :maxDate="position.endDate"
+                        :required="false"
+                ></opensilex-DateTimeForm>
+            </div>
+            <div class="col">
+<!--                TODO: required validation fonctinne pas!!!-->
+                <opensilex-DateTimeForm
+                        :value.sync="position.endDate"
+                        label="component.common.end"
+                        :minDate="position.startDate"
+                        :required="!!position.geojson || !!position.startDate"
+                ></opensilex-DateTimeForm>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Geometry -->
+            <div class="col-8">
+                <opensilex-GeometryForm
+                        :value.sync="position.geojson"
+                        label="component.common.geometry"
+                >
+                </opensilex-GeometryForm>
+            </div>
+
+            <!-- Add position -->
+            <div class="col-4" style="padding-top: 25px">
+                <opensilex-AddChildButton
+                        @click="addPosition"
+                        label="LocationsForm.add-position"
+                        :small="true"
+                ></opensilex-AddChildButton>
+                <span> {{ $t('LocationsForm.add-position') }}</span>
+            </div>
+        </div>
+
+        <!-- Position list -->
+        <opensilex-TableView :fields="fields" :items="facility.locations">
+            <template v-slot:cell(startDate)="{ data }">
+                <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+            </template>
+
+            <template v-slot:cell(endDate)="{ data }">
+                <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+            </template>
+
+            <template v-slot:cell(geometry)="{data}">
+                <opensilex-GeometryCopy
+                        label="" :value="data.item.geojson">
+                </opensilex-GeometryCopy>
+            </template>
+
+            <template v-slot:cell(actions)="{ data }">
+                <!-- TODO: CREDENTIALS Update/delete Facility? Location?-->
+                <b-button-group size="sm">
+                    <opensilex-EditButton
+                            @click="updatePosition(data)"
+                            label="component.common.list.buttons.update"
+                            :small="true"
+                    ></opensilex-EditButton>
+
+                    <opensilex-DeleteButton
+                            @click="deletePosition(data)"
+                            label="component.common.list.buttons.delete"
+                    ></opensilex-DeleteButton>
+                </b-button-group>
+            </template>
+        </opensilex-TableView>
+        <!--    TODO: demander à Seb : validation-->
+        <!--opensilex-LocationModalForm
+                ref="locationModalForm"
+        ></opensilex-LocationModalForm>-->
+    </ValidationObserver>
+</template>
+
+<script lang="ts">
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {PropSync, Ref} from "vue-property-decorator";
+
+@Component({})
+export default class LocationsForm extends Vue {
+    //#region Plugins and services
+    //endregion
+
+    //#region Props
+    @PropSync("form")
+    facility: any;
+    //endregion
+
+    //#region Refs
+    @Ref("validatorRef") readonly validatorRef!: any;
+    //endregion
+
+    //#region Data
+    private position: LocationObservationDTO = this.getPositionEmpty();
+    private fields = [
+        {
+            key: "startDate",
+            label: "component.common.begin",
+            sortable: true,
+        },
+        {
+            key: "endDate",
+            label: "component.common.end",
+            sortable: true,
+        },
+        {
+            key: "geometry",
+            label: "component.common.geometry",
+        },
+        {
+            key: "actions",
+            label: "component.common.actions",
+        },
+    ]
+    //endregion
+
+    //#region Computed
+    //endregion
+
+    //#region Events
+    //endregion
+
+    //#region Events handlers
+    private addPosition(){
+        if(this.position.geojson){
+            this.facility.locations.push(this.position)
+            this.position = this.getPositionEmpty();
+        }
+    }
+
+    private updatePosition(data){
+        this.locationModalForm.showEditForm(data.item);
+    }
+
+    private deletePosition(data){
+        this.facility.locations.splice(this.facility.locations.indexOf(data.item),1)
+    }
+    //endregion
+
+    //#region Public methods
+    public reset() {
+        this.validatorRef.reset();
+    }
+
+    public validate() {
+        return this.validatorRef.validate();
+    }
+    //endregion
+
+    //#region Hooks
+    //endregion
+
+    //#region Private methods
+    private getPositionEmpty(): LocationObservationDTO {
+        return {
+            geojson: undefined,
+            startDate: undefined,
+            endDate: undefined
+        }
+    }
+    //endregion
+}
+</script>
+
+<style scoped lang="scss">
+
+</style>
+
+<i18n>
+en:
+    LocationsForm:
+        positions-geospatial: Positions geospatial
+        add-position: Add position
+fr:
+    LocationsForm:
+        positions-geospatial: Positions géospatiales
+        add-position: Ajouter une position
+</i18n>

@@ -46,7 +46,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from "vue-property-decorator";
-import LocationModalForm from "@/components/location/form/LocationModalForm.js";
+import LocationModalForm from "../../location/form/LocationModalForm.js";
 import {LocationsService} from "opensilex-core/api/locations.service";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
@@ -114,7 +114,7 @@ export default class LocationList extends Vue {
         undefined,
         options.orderBy,
         options.currentPage,
-        options.pageSize < this.minPageSize ? this.minPageSize : options.pageSize
+        undefined
     );
   }
   //endregion

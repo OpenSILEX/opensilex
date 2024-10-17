@@ -119,6 +119,9 @@ public class UriSearchLogic {
             return null;
         }
         URIGlobalSearchDTO result = URIGlobalSearchDTO.fromClassModel(model);
+        //Get super types, needed to identify details page path in front
+        List<URITypesDTO> types = getSuperTypesFromUri(uri);
+        result.setSuperTypes(types);
 
         return result;
     }

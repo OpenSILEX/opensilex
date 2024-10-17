@@ -1,7 +1,5 @@
 <template>
   <div>
-    <!-- Title-->
-    <h3>{{ $t("GlobalUriSearch.resultTitle") }}:</h3>
 
     <!-- All main info (non metadata stuff) -->
     <div class="main-info-style">
@@ -16,20 +14,27 @@
         }"
         @linkClicked="$emit('hideUriSearch')"
       ></opensilex-UriView>
+
       <span
         v-else
         class="data-uri-details"
       >
         <opensilex-UriView
-          class="data-uri-details-item"
           :uri="uri"
           :value="this.shortUri"
         ></opensilex-UriView>
-        <opensilex-DetailButton
-          class="data-uri-details-item"
+
+        <opensilex-Button
+          :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"
-        ></opensilex-DetailButton>
+          class="data-uri-details-item"
+        >
+          <template v-slot:icon>
+            <opensilex-Icon icon="fa#eye" />
+          </template>
+        </opensilex-Button>
+
       </span>
 
       <!-- Name -->
@@ -224,21 +229,23 @@ export default class GlobalUriSearchResult extends Vue {
 }
 
 .main-info-style{
-  margin-bottom: 15px;
-}
-
-.data-uri-details{
-  display: inline;
+  margin-bottom: 5px;
 }
 
 .data-uri-details {
   display: flex;
-  gap: 10px;
+  gap: 5px;
   align-items: center;
 }
 
 .data-uri-details-item {
-  padding: 5px;
+  background: none;
+  border: none;
+  color: #00A38D;
+}
+
+.data-uri-details-item:hover {
+  color: #02c5ab
 }
 
 .closeResultBox:hover{
@@ -251,16 +258,12 @@ export default class GlobalUriSearchResult extends Vue {
 <i18n>
 en:
   GlobalUriSearch:
-    resultTitle: Search Result
     seeDetails: See details
     dataTypeName: Data
-    multipleResultsMessage: objects with this URI found. Click link to see which
 
 fr:
   GlobalUriSearch:
-    resultTitle: Résultat de recherche
     seeDetails: Voir détails
     dataTypeName: Donnée
-    multipleResultsMessage: objets trouvés avec cette URI. Visitez le lien pour voir lesquels.
 
 </i18n>

@@ -25,7 +25,7 @@
     ></opensilex-Button>
   </div>
 
-  <hr class="dashed-separator" v-if="uriSearchResultVisible"/>
+  <br>
 
   <!-- Result-->
   <div
@@ -104,12 +104,6 @@ export default class GlobalUriSearchBox extends Vue {
   font-weight: bolder;
   cursor: pointer;
   background: none;
-}
-
-.dashed-separator {
-  border: none;
-  border-top: 1px dashed #000;
-  margin: 20px 0;
 }
 
 .no-results {

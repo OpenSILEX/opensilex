@@ -64,8 +64,6 @@ public class LocationObservationLogic {
     public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
 
         models.forEach(model -> {
-            validateDates(model.getEndDate(), model.getStartDate());
-
             model.setObservationCollection(locationObservationCollectionURI);
             model.setFeatureOfInterest(featureOfInterest);
             model.setHasGeometry(hasGeometry);
@@ -158,16 +156,6 @@ public class LocationObservationLogic {
         locationObservationDAO.deleteMany(session, searchFilter);
     }
 
-    public int countLocationsForURI(URI locationObservationCollectionURI) {
-        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
-        searchFilter.setObservationCollection(locationObservationCollectionURI);
-
-        return (int) locationObservationDAO.count(searchFilter);
-
-    }
-    //#endregion
-
-    //#region private
     /**
      * Checks if an object with location (not from an address) is valid :
      *     - it must have one observation date;
@@ -178,7 +166,7 @@ public class LocationObservationLogic {
      * @param endDate end observation date of the geometry
      * @throws NotAllowedException If dates are invalid
      */
-    private void validateDates(Instant endDate, Instant startDate){
+    public void validateDates(Instant endDate, Instant startDate){
         if(Objects.isNull(endDate)){
             throw new NotAllowedException("endDate cannot be null");
         }
@@ -187,6 +175,22 @@ public class LocationObservationLogic {
         }
     }
 
+    public int countLocationsForURI(URI locationObservationCollectionURI) {
+        int count = 0;
+
+        if(!Objects.isNull(locationObservationCollectionURI)){
+            LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+            searchFilter.setObservationCollection(locationObservationCollectionURI);
+
+            count = (int) locationObservationDAO.count(searchFilter);
+        }
+
+        return count;
+
+    }
+    //#endregion
+
+    //#region private
     /**
      * Checks if the all observation dates are consistency
      * The object can't have 2 locations in the same time

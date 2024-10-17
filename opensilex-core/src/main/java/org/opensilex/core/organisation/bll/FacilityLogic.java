@@ -104,8 +104,8 @@ public class FacilityLogic {
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.create(instance);
-            if(!locations.isEmpty() || !Objects.isNull(instance.getAddress())) {
-                createFacilityLocationModel(session, instance, locations);
+            if(!Objects.isNull(locations) || !Objects.isNull(instance.getAddress())) {
+                createFacilityLocations(session, instance, locations);
             }
             return null;
         });
@@ -243,18 +243,18 @@ public class FacilityLogic {
         FacilityModel existingModel = facilityDAO.get(instance.getUri(), user.getLanguage());
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
-            if (Objects.nonNull(existingModel.getAddress()) || !locations.isEmpty()) {
-                deleteFacilityLocationModel(session, instance);
 
-                //TODO: utile?
+//            instance.setLocationObservationCollection(existingModel.getLocationObservationCollection());
 
-                /* if (Objects.nonNull(existingModel.getAddress())) {
-                    sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
-                }*/
-            }
-
-            createFacilityLocationModel(session, instance, locations);
             facilityDAO.update(instance);
+
+            if (existingModel.getLocationObservationCollection() != null && (!Objects.isNull(locations) || !Objects.isNull(instance.getAddress()))) {
+                updateFacilityLocations(session, instance, existingModel, locations);
+            } else if (existingModel.getLocationObservationCollection() == null && (!Objects.isNull(locations) || !Objects.isNull(instance.getAddress()))) {
+                createFacilityLocations(session, instance,locations);
+            } else if (existingModel.getLocationObservationCollection() != null && (Objects.isNull(locations) && Objects.isNull(instance.getAddress()))) {
+                deleteFacilityLocations(session, instance);
+            }
 
             return null;
         });
@@ -277,13 +277,9 @@ public class FacilityLogic {
         FacilityModel model = facilityDAO.get(uri, user.getLanguage());
 
         new SparqlMongoTransaction(sparql,mongodb).execute(session ->{
-            deleteFacilityLocationModel(session, model);
-
-            if (Objects.nonNull(model.getAddress())) {
-                sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
-            }
-
+            deleteFacilityLocations(session, model);
             facilityDAO.delete(uri);
+
             return null;
         });
         organizationDAO.invalidateCache();
@@ -310,17 +306,13 @@ public class FacilityLogic {
      * @return The Location Observation model
      */
     public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
-        if (facilityModel.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
-            return locationObservationLogic.getLastLocationObservation(
-                    Collections.singletonList(facilityModel.getLocationObservationCollection()),
-                    true,
-                    Instant.now()
-                    ).get(0);
-        } else {
-            return new LocationObservationModel();
-        }
+        return locationObservationLogic.getLastLocationObservation(
+                Collections.singletonList(facilityModel.getLocationObservationCollection()),
+                true,
+                Instant.now()
+        ).get(0);
     }
     //#endregion
 
@@ -457,16 +449,11 @@ public class FacilityLogic {
         }
     }
 
-    private void createFacilityLocationModel(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
+    private void createFacilityLocations(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         List<LocationObservationModel> locations = new ArrayList<>();
 
-        /*if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
-            //TODO: pourquoi delete si pas encore créé?
-            //deleteFacilityGeospatialModel(facility.getUri());
-            return;
-        }*/
-
-        if (locationObservationModels.isEmpty() && !Objects.isNull(facility.getAddress())) {
+        if (Objects.isNull(locationObservationModels) && !Objects.isNull(facility.getAddress())) {
             FacilityAddressDTO addressDto = new FacilityAddressDTO();
             addressDto.fromModel(facility.getAddress());
 
@@ -479,17 +466,49 @@ public class FacilityLogic {
 
             locations.add(locationObservationModel);
         } else {
+            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(),location.getStartDate()));
             locations = locationObservationModels;
         }
         //Create the LocationObservationCollection
         LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(facility.getUri());
         //Create LocationObservations
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations,true);
     }
 
-    private void deleteFacilityLocationModel(ClientSession session, FacilityModel facility) {
+    private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
+        //Delete existing
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        locationObservationLogic.deleteLocationObservations(session, existingModel.getLocationObservationCollection().getUri());
+
+       /* if (Objects.nonNull(existingModel.getAddress())) {
+            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+        }*/
+        //Create new locations
+        List<LocationObservationModel> locations = new ArrayList<>();
+
+        if (locationObservationModels.isEmpty() && !Objects.isNull(instance.getAddress())) {
+            FacilityAddressDTO addressDto = new FacilityAddressDTO();
+            addressDto.fromModel(instance.getAddress());
+
+            Geometry geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+            if (Objects.isNull(geometry)) {
+                return;
+            }
+
+            LocationObservationModel locationObservationModel = new LocationObservationModel();
+            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
+
+            locations.add(locationObservationModel);
+        } else {
+            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(),location.getStartDate()));
+            locations = locationObservationModels;
+        }
+
+        locationObservationLogic.createLocationObservations(session, existingModel.getLocationObservationCollection().getUri(), existingModel.getUri(), locations,true);
+    }
+
+    private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
         if(facility.getLocationObservationCollection()  != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
@@ -497,6 +516,10 @@ public class FacilityLogic {
             try {
                 locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
                 locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
+
+                if (Objects.nonNull(facility.getAddress())) {
+                    sparql.delete(FacilityAddressModel.class, facility.getAddress().getUri());
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -56,7 +56,11 @@
           :type="selected.rdf_type"
           :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
-
+      <!-- Description -->
+      <opensilex-StringView
+          :value="selected.description"
+          label="component.common.description"
+      ></opensilex-StringView>
       <!-- Organisations -->
       <opensilex-UriListView
           v-if="hasOrganizations"
@@ -110,7 +114,7 @@
       </opensilex-AddressView>
 
       <!--Last Position-->
-      <opensilex-StringView v-if="selected.locations.length > 0" label="FacilityDescription.lastPosition">
+      <opensilex-StringView v-if="selected.locations" label="FacilityDescription.lastPosition">
         <!-- Position detail -->
         <div v-if="selected.locations[0].endDate">
           <span >{{ new Date(selected.locations[0].endDate).toLocaleString() }}</span>

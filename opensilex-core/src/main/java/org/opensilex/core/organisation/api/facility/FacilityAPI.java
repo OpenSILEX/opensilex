@@ -171,7 +171,10 @@ public class FacilityAPI {
         if (Objects.nonNull(model.getPublisher())){
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
-        facilityGetDTO.fromLocationModel(facilityLogic.getFacilityLocationModel(model));
+        if(!Objects.isNull(model.getLocationObservationCollection())){
+            facilityGetDTO.fromLocationModel(facilityLogic.getFacilityLocationModel(model));
+        }
+
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }
 
@@ -305,7 +308,7 @@ public class FacilityAPI {
 
         List<LocationObservationModel> locations = new ArrayList<>();
 
-        if(!dto.getLocations().isEmpty()){
+        if(!Objects.isNull(dto.getLocations())){
             locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
         }
 

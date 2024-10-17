@@ -90,7 +90,8 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     @SPARQLProperty(
             ontology = SOSA.class,
             property = "hasFeatureOfInterest",
-            inverse = true
+            inverse = true,
+            ignoreUpdateIfNull = true
     )
     protected LocationObservationCollectionModel locationObservationCollection;
 

@@ -37,8 +37,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Api(LocationAPI.CREDENTIAL_LOCATION_GROUP_ID)
@@ -81,22 +82,25 @@ public class LocationAPI {
     ) throws Exception {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+        List<LocationObservationDTO> locationObservationDTOList = new ArrayList<>();
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
 
-        //TODO: search with featureOfInterest or with collection URI????
-        ListWithPagination<LocationObservationModel> locationHistory = locationObservationLogic.getLocationsHistory(
-                collectionURI,
-                startDate != null ? Instant.parse(startDate) : null,
-                endDate != null ? Instant.parse(endDate) : null,
-                orderByList,
-                page,
-                pageSize
-        );
+        if(!Objects.isNull(collectionURI)) {
 
-        List<LocationObservationDTO> locationObservationDTOList = locationHistory.getList().stream()
-                .map(LocationObservationDTO::getDTOFromModel)
-                .collect(Collectors.toList());
+            ListWithPagination<LocationObservationModel> locationHistory = locationObservationLogic.getLocationsHistory(
+                    collectionURI,
+                    startDate != null ? Instant.parse(startDate) : null,
+                    endDate != null ? Instant.parse(endDate) : null,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+
+            locationObservationDTOList = locationHistory.getList().stream()
+                    .map(LocationObservationDTO::getDTOFromModel)
+                    .collect(Collectors.toList());
+        }
 
         return new PaginatedListResponse<>(locationObservationDTOList).getResponse();
     }

@@ -25,11 +25,14 @@ import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
 import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
 import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
+import {LocationsService} from "opensilex-core/api/locations.service";
+import {LocationObservationDTO} from "opensilex-core/lib";
 
 @Component
 export default class FacilityModalForm extends Vue {
     //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin;
+    private locationsService: LocationsService;
     //endregion
 
     //#region Props
@@ -60,16 +63,37 @@ export default class FacilityModalForm extends Vue {
 
     //#region Public methods
     showEditForm(uri) {
+        let editDto;
         this.$opensilex
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .getFacility(uri)
                 .then((http) => {
                     let dto: FacilityGetDTO = http.response.result;
                     let publisher: UserGetDTO = dto.publisher;
-                    let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
+                    editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
                     editDto.publisher = publisher;
                     this.facilityForm.showEditForm(editDto);
-                }).catch(this.$opensilex.errorHandler);
+                    console.log("editDTO",editDto)
+                }).catch(this.$opensilex.errorHandler)
+                .finally(()=>{
+                    if(editDto.locations){
+                        this.locationsService.searchLocationHistory(
+                                uri,
+                                undefined,
+                                undefined,
+                                [],
+                                0,
+                                20
+                        ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) =>{
+                            console.log("htt^p",http)
+                            editDto.locations = http.response.result
+                            this.facilityForm.showEditForm(editDto);
+                            console.log("editDTO2",editDto)
+                        });
+                    }else{
+                        this.facilityForm.showEditForm(editDto);
+                    }
+                });
     }
 
     showCreateForm() {
@@ -78,6 +102,9 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Hooks
+    created() {
+        this.locationsService = this.$opensilex.getService<LocationsService>("opensilex.LocationsService")
+    }
     //endregion
 
     //#region Private methods

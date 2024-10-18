@@ -61,7 +61,7 @@
         </div>
 
         <!-- Position list -->
-        <opensilex-TableView :fields="fields" :items="facility.locations">
+        <opensilex-TableView :fields="fields" :items="form.locations">
             <template v-slot:cell(startDate)="{ data }">
                 <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
             </template>
@@ -152,7 +152,7 @@ export default class LocationsForm extends Vue {
     //#region Events handlers
     private addPosition(){
         if(this.position.geojson){
-            this.facility.locations.push(this.position)
+            this.form.locations.push(this.position)
             this.position = this.getPositionEmpty();
         }
     }
@@ -162,7 +162,7 @@ export default class LocationsForm extends Vue {
     }
 
     private deletePosition(data){
-        this.facility.locations.splice(this.facility.locations.indexOf(data.item),1)
+        this.form.locations.splice(this.form.locations.indexOf(data.item),1)
     }
     //endregion
 

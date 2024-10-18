@@ -13,7 +13,6 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     private Instant startDate;
     private Instant endDate;
     private boolean hasGeometry;
-    private List<Document> locationObservationModelList;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -53,13 +52,5 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setHasGeometry(boolean hasGeometry) {
         this.hasGeometry = hasGeometry;
-    }
-
-    public List<Document> getLocationObservationModelList() {
-        return locationObservationModelList;
-    }
-
-    public void setLocationObservationModelList(List<Document> locationObservationModelList) {
-        this.locationObservationModelList = locationObservationModelList;
     }
 }

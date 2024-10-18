@@ -72,7 +72,7 @@ export default class FacilityModalForm extends Vue {
                     let publisher: UserGetDTO = dto.publisher;
                     editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
                     editDto.publisher = publisher;
-                    this.facilityForm.showEditForm(editDto);
+                    // this.facilityForm.showEditForm(editDto);
                     console.log("editDTO",editDto)
                 }).catch(this.$opensilex.errorHandler)
                 .finally(()=>{
@@ -91,6 +91,7 @@ export default class FacilityModalForm extends Vue {
                             console.log("editDTO2",editDto)
                         });
                     }else{
+                        editDto.locations = [];
                         this.facilityForm.showEditForm(editDto);
                     }
                 });

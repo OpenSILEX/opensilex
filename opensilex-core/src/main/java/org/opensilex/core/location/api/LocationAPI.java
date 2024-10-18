@@ -31,12 +31,14 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -76,9 +78,9 @@ public class LocationAPI {
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI featureOfInterest,
             @ApiParam(value = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDate") @ValidOffsetDateTime String startDate,
             @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDate") @ValidOffsetDateTime String endDate,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
@@ -86,8 +88,7 @@ public class LocationAPI {
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
 
-        if(!Objects.isNull(collectionURI)) {
-
+        if(!Objects.isNull(collectionURI)){
             ListWithPagination<LocationObservationModel> locationHistory = locationObservationLogic.getLocationsHistory(
                     collectionURI,
                     startDate != null ? Instant.parse(startDate) : null,
@@ -97,11 +98,10 @@ public class LocationAPI {
                     pageSize
             );
 
-            locationObservationDTOList = locationHistory.getList().stream()
+           locationObservationDTOList = locationHistory.getList().stream()
                     .map(LocationObservationDTO::getDTOFromModel)
                     .collect(Collectors.toList());
         }
-
         return new PaginatedListResponse<>(locationObservationDTOList).getResponse();
     }
 

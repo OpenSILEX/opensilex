@@ -123,9 +123,12 @@ public class LocationObservationLogic {
         Objects.requireNonNull(collection);
 
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+
+        searchFilter.setHasGeometry(false);
         searchFilter.setObservationCollection(collection);
         searchFilter.setStartDate(startDate);
         searchFilter.setEndDate(endDate);
+        searchFilter.setHasGeometry(false);
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
@@ -180,6 +183,7 @@ public class LocationObservationLogic {
 
         if(!Objects.isNull(locationObservationCollectionURI)){
             LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+            searchFilter.setHasGeometry(false);
             searchFilter.setObservationCollection(locationObservationCollectionURI);
 
             count = (int) locationObservationDAO.count(searchFilter);

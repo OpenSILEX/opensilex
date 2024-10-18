@@ -26,7 +26,6 @@ import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
@@ -34,7 +33,6 @@ import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -83,7 +81,7 @@ public class FacilityLogic {
      * See {@link #validateFacilityAddress(FacilityModel, AccountModel)}.
      *
      * @param instance The facility to create
-     * @param geometry geometry linked to the facility
+     * @param locations geometry list linked to the facility
      * @param user The current user
      * @return The created instance
      * @throws SiteFacilityInvalidAddressException If the address is invalid
@@ -308,11 +306,17 @@ public class FacilityLogic {
     public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
-        return locationObservationLogic.getLastLocationObservation(
+       List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
                 Collections.singletonList(facilityModel.getLocationObservationCollection()),
-                true,
+                false,
                 Instant.now()
-        ).get(0);
+        );
+
+       if(lastLocationByFacility.isEmpty()) {
+           return new LocationObservationModel();
+       } else{
+           return lastLocationByFacility.get(0);
+       }
     }
     //#endregion
 
@@ -481,13 +485,10 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         locationObservationLogic.deleteLocationObservations(session, existingModel.getLocationObservationCollection().getUri());
 
-       /* if (Objects.nonNull(existingModel.getAddress())) {
-            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
-        }*/
         //Create new locations
         List<LocationObservationModel> locations = new ArrayList<>();
 
-        if (locationObservationModels.isEmpty() && !Objects.isNull(instance.getAddress())) {
+        if ((Objects.isNull(locationObservationModels) || locationObservationModels.isEmpty()) && !Objects.isNull(instance.getAddress())) {
             FacilityAddressDTO addressDto = new FacilityAddressDTO();
             addressDto.fromModel(instance.getAddress());
 
@@ -516,10 +517,6 @@ public class FacilityLogic {
             try {
                 locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
                 locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
-
-                if (Objects.nonNull(facility.getAddress())) {
-                    sparql.delete(FacilityAddressModel.class, facility.getAddress().getUri());
-                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

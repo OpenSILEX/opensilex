@@ -12,43 +12,44 @@
   -->
 
 <template>
-  <div class="card">
-    <opensilex-PageContent>
-      <template v-slot>
-        <div class="card-body">
-          <opensilex-TableAsyncView
-            :searchMethod="search"
-            :fields="fields"
-            defaultSortBy="endDate"
-            :defaultSortDesc="true"
-            >
-            <template v-slot:cell(startDate)="{ data }">
-              <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
-            </template>
+    <div class="card">
+        <opensilex-PageContent>
+            <template v-slot>
+                <div class="card-body">
+                    <opensilex-TableAsyncView
+                            ref="tableRef"
+                            :searchMethod="search"
+                            :fields="fields"
+                            defaultSortBy="endDate"
+                            :defaultSortDesc="true"
+                    >
+                        <template v-slot:cell(startDate)="{ data }">
+                            <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+                        </template>
 
-            <template v-slot:cell(endDate)="{ data }">
-              <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
-            </template>
+                        <template v-slot:cell(endDate)="{ data }">
+                            <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+                        </template>
 
-            <template v-slot:cell(geometry)="{data}">
-              <opensilex-GeometryCopy
-                  label="" :value="data.item.geojson">
-              </opensilex-GeometryCopy>
+                        <template v-slot:cell(geometry)="{data}">
+                            <opensilex-GeometryCopy
+                                    label="" :value="data.item.geojson">
+                            </opensilex-GeometryCopy>
+                        </template>
+                    </opensilex-TableAsyncView>
+                </div>
             </template>
-        </opensilex-TableAsyncView>
-        </div>
-      </template>
-    </opensilex-PageContent>
-  </div>
+        </opensilex-PageContent>
+    </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from "vue-property-decorator";
-import LocationModalForm from "../../location/form/LocationModalForm.js";
+import LocationModalForm from "../../../components/location/form/LocationModalForm.vue";
 import {LocationsService} from "opensilex-core/api/locations.service";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component({})
 export default class LocationList extends Vue {

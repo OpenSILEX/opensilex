@@ -18,6 +18,7 @@
         </p>
         <hr/>
 
+        <b-form>
         <!-- Dates -->
         <div class="row">
             <div class="col">
@@ -29,7 +30,6 @@
                 ></opensilex-DateTimeForm>
             </div>
             <div class="col">
-<!--                TODO: required validation fonctinne pas!!!-->
                 <opensilex-DateTimeForm
                         :value.sync="position.endDate"
                         label="component.common.end"
@@ -45,6 +45,7 @@
                 <opensilex-GeometryForm
                         :value.sync="position.geojson"
                         label="component.common.geometry"
+                        :required="!!position.endDate"
                 >
                 </opensilex-GeometryForm>
             </div>
@@ -59,9 +60,10 @@
                 <span> {{ $t('LocationsForm.add-position') }}</span>
             </div>
         </div>
+        </b-form>
 
         <!-- Position list -->
-        <opensilex-TableView :fields="fields" :items="form.locations">
+        <opensilex-TableView :fields="fields" :items="facility.locations">
             <template v-slot:cell(startDate)="{ data }">
                 <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
             </template>
@@ -92,10 +94,10 @@
                 </b-button-group>
             </template>
         </opensilex-TableView>
-        <!--    TODO: demander à Seb : validation-->
-        <!--opensilex-LocationModalForm
+        <opensilex-LocationModalForm
                 ref="locationModalForm"
-        ></opensilex-LocationModalForm>-->
+                @onUpdate="onUpdate"
+        ></opensilex-LocationModalForm>
     </ValidationObserver>
 </template>
 
@@ -117,6 +119,7 @@ export default class LocationsForm extends Vue {
 
     //#region Refs
     @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("locationModalForm") readonly locationModalForm!: any;
     //endregion
 
     //#region Data
@@ -147,13 +150,22 @@ export default class LocationsForm extends Vue {
     //endregion
 
     //#region Events
+    private onUpdate() {
+        this.$emit("onUpdate");
+    }
     //endregion
 
     //#region Events handlers
     private addPosition(){
-        if(this.position.geojson){
-            this.form.locations.push(this.position)
-            this.position = this.getPositionEmpty();
+       let isValid=  this.validatorRef.validate().then(isValid =>{
+            return isValid
+        });
+
+        if(isValid){
+            if(this.position.geojson && this.position.endDate){
+                        this.facility.locations.push(this.position)
+                        this.position = this.getPositionEmpty();
+            }
         }
     }
 
@@ -162,7 +174,7 @@ export default class LocationsForm extends Vue {
     }
 
     private deletePosition(data){
-        this.form.locations.splice(this.form.locations.indexOf(data.item),1)
+        this.facility.locations.splice(this.facility.locations.indexOf(data.item),1)
     }
     //endregion
 

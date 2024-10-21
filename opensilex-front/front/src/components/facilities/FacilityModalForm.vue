@@ -19,14 +19,10 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
-import {FacilityCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
-import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
-import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
 import {LocationsService} from "opensilex-core/api/locations.service";
-import {LocationObservationDTO} from "opensilex-core/lib";
+import {LocationObservationDTO,FacilityCreationDTO, FacilityGetDTO, FacilityUpdateDTO, UserGetDTO} from "opensilex-core/index";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -53,11 +49,13 @@ export default class FacilityModalForm extends Vue {
         }
     ];
     //endregion
+
     //#region Computed
     //endregion
 
     //#region Events
     //endregion
+
     //#region Events handlers
     //endregion
 
@@ -72,8 +70,6 @@ export default class FacilityModalForm extends Vue {
                     let publisher: UserGetDTO = dto.publisher;
                     editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
                     editDto.publisher = publisher;
-                    // this.facilityForm.showEditForm(editDto);
-                    console.log("editDTO",editDto)
                 }).catch(this.$opensilex.errorHandler)
                 .finally(()=>{
                     if(editDto.locations){
@@ -85,10 +81,8 @@ export default class FacilityModalForm extends Vue {
                                 0,
                                 20
                         ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) =>{
-                            console.log("htt^p",http)
                             editDto.locations = http.response.result
                             this.facilityForm.showEditForm(editDto);
-                            console.log("editDTO2",editDto)
                         });
                     }else{
                         editDto.locations = [];
@@ -125,7 +119,6 @@ export default class FacilityModalForm extends Vue {
     }
 
     callOrganizationFacilityCreation(form: FacilityCreationDTO) {
-        console.log("create",form)
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];

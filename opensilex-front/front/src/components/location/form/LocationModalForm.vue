@@ -23,8 +23,8 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import LocationForm from "../../location/form/LocationForm.js";
 import {Ref} from "vue-property-decorator";
+import LocationForm from "../../../components/location/form/LocationForm.vue";
 
 @Component({})
 export default class LocationModalForm extends Vue {

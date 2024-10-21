@@ -12,7 +12,7 @@
   -->
 
 <template>
-  <ValidationObserver ref="validatorRef">
+      <b-form>
     <!-- Dates -->
     <div class="row">
       <div class="col">
@@ -37,13 +37,14 @@
     <div class="row">
       <div class="col-lg-9">
         <opensilex-GeometryForm
-                :value.sync="form.geometry"
+                :value.sync="form.geojson"
                 label="component.common.geometry"
                 helpMessage="component.common.geometry-help"
+                :required="true"
         ></opensilex-GeometryForm>
       </div>
     </div>
-  </ValidationObserver>
+      </b-form>
 </template>
 
 <script lang="ts">
@@ -63,8 +64,6 @@ export default class LocationForm extends Vue {
   //endregion
 
   //#region Refs
-  @Ref("validatorRef")
-  private readonly validatorRef!: any;
   //endregion
 
   //#region Data
@@ -80,6 +79,9 @@ export default class LocationForm extends Vue {
   //endregion
 
   //#region Public methods
+    public showEditForm(form) {
+        console.log("form",form)
+    }
   //endregion
 
   //#region Hooks

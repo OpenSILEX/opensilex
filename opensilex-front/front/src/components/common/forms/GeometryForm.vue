@@ -5,6 +5,7 @@
     :helpMessage="helpMessage"
     :isMove="isMove"
     :vid="vid"
+    :required="isRequired"
   >
     <template v-slot:field="field">
       <b-form-input
@@ -42,13 +43,11 @@ export default class GeometryForm extends Vue {
 
   @Watch("geoJson")
   onGeoJsonChange(value) {
-    if (value != null) {
       try {
         this.stringValue = stringify(value);
       } catch (error) {
         this.stringValue = "";
       }
-    }
   }
 
   updateValue(newValue) {

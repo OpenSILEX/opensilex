@@ -21,6 +21,7 @@
         <opensilex-SiteList
             ref="siteList"
             @onEdit="OnSiteListEdit($event)"
+            :organizationsForFilter="organizationsForFilter"
         ></opensilex-SiteList>
       </template>
     </opensilex-PageContent>
@@ -28,6 +29,7 @@
     <opensilex-ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
         ref="SiteForm"
+        lazy="true"
         component="opensilex-SiteForm"
         createTitle="SiteView.create"
         editTitle="SiteView.update"
@@ -41,7 +43,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import {OpenSilexStore} from "../../../models/Store";
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import SiteForm from "../../../components/organizations/site/SiteForm.vue";
 import SiteList from "../../../components/organizations/site/SiteList.vue";
 
@@ -56,10 +58,15 @@ export default class SiteView extends Vue {
   @Ref("siteList") private readonly siteList!: SiteList;
   //#endregion
 
-  //#region Computed
-  private get user() {
-    return this.$store.state.user;
-  }
+  //#region Props
+  @Prop({default: null})
+  private organizationsForFilter: Array<string>;
+  //#endregion
+
+    //#region Computed
+    private get user() {
+        return this.$store.state.user;
+    }
 
   private get credentials() {
     return this.$store.state.credentials;

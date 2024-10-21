@@ -23,6 +23,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
 import org.opensilex.core.scientificObject.api.ScientificObjectCreationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.response.StatusLevel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -52,9 +53,22 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
     //region Fields
 
     private static final String PATH = OntologyAPI.PATH;
+
     private static final String URIS_LABELS_PATH = PATH + "/uris_labels";
     private static final TypeReference<SingleObjectResponse<List<NamedResourceDTO<?>>>> URIS_LABELS_RETURN_TYPE =
-            new TypeReference<SingleObjectResponse<List<NamedResourceDTO<?>>>>() {};
+            new TypeReference<>() {};
+
+    public static final ServiceDescription uriLabelService;
+    static {
+        try {
+            uriLabelService = new ServiceDescription(
+                    OntologyAPI.class.getMethod("getURILabelsList", List.class, URI.class, Boolean.class),
+                    URIS_LABELS_PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static SPARQLService sparql;
 
@@ -144,11 +158,12 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetUrisLabels() throws Exception {
-        Response rawResponse = getJsonGetResponseAsAdmin(target(URIS_LABELS_PATH)
-                .queryParam("uri", FACILITY_A_URI, FACILITY_B_URI, SCIENTIFIC_OBJECT_A_URI, SCIENTIFIC_OBJECT_B_URI));
-        assertEquals(Response.Status.OK.getStatusCode(), rawResponse.getStatus());
+        var response = new UserCallBuilder(uriLabelService)
+                .setBody(List.of(FACILITY_A_URI, FACILITY_B_URI, SCIENTIFIC_OBJECT_A_URI, SCIENTIFIC_OBJECT_B_URI))
+                .buildAdmin()
+                .executeCallAndDeserialize(URIS_LABELS_RETURN_TYPE)
+                .getDeserializedResponse();
 
-        SingleObjectResponse<List<NamedResourceDTO<?>>> response = readResponse(rawResponse, URIS_LABELS_RETURN_TYPE);
         assertEquals(0, response.getMetadata().getStatus().stream().filter(status -> status.level == StatusLevel.WARNING).count());
         assertEquals(4, response.getResult().size());
         assertTrue(response.getResult().stream().anyMatch(dto -> Objects.equals(dto.getName(), FACILITY_A_LABEL)));
@@ -160,23 +175,24 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetUrisLabelsShouldReturnWarnings() throws Exception {
-        Response rawResponse = getJsonGetResponseAsAdmin(target(URIS_LABELS_PATH)
-                .queryParam("uri", URI.create("test:unknown_uri")));
-        assertEquals(Response.Status.OK.getStatusCode(), rawResponse.getStatus());
+        var response = new UserCallBuilder(uriLabelService)
+                .setBody(List.of(URI.create("test:unknown_uri")))
+                .buildAdmin()
+                .executeCallAndDeserialize(URIS_LABELS_RETURN_TYPE)
+                .getDeserializedResponse();
 
-        SingleObjectResponse<List<NamedResourceDTO<?>>> response = readResponse(rawResponse, URIS_LABELS_RETURN_TYPE);
         assertEquals(1, response.getMetadata().getStatus().stream().filter(status -> status.level == StatusLevel.WARNING).count());
     }
 
     @Test
     public void testGetUrisLabelsWithContext() throws Exception {
-        Response rawResponse = getJsonGetResponseAsAdmin(target(URIS_LABELS_PATH)
-                .queryParam("uri", FACILITY_A_URI, SCIENTIFIC_OBJECT_A_URI)
-                .queryParam("context", EXPERIMENT_URI)
-        );
-        assertEquals(Response.Status.OK.getStatusCode(), rawResponse.getStatus());
+        var response = new UserCallBuilder(uriLabelService)
+                .addParam("context", EXPERIMENT_URI)
+                .setBody(List.of(FACILITY_A_URI, SCIENTIFIC_OBJECT_A_URI))
+                .buildAdmin()
+                .executeCallAndDeserialize(URIS_LABELS_RETURN_TYPE)
+                .getDeserializedResponse();
 
-        SingleObjectResponse<List<NamedResourceDTO<?>>> response = readResponse(rawResponse, URIS_LABELS_RETURN_TYPE);
         assertEquals(1, response.getMetadata().getStatus().stream().filter(status -> status.level == StatusLevel.WARNING).count());
         assertEquals(1, response.getResult().size());
         assertTrue(response.getResult().stream().anyMatch(dto -> Objects.equals(dto.getName(), SCIENTIFIC_OBJECT_A_LABEL_IN_EXPERIMENT)));
@@ -184,14 +200,14 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetUrisLabelsWithContextAndDefault() throws Exception {
-        Response rawResponse = getJsonGetResponseAsAdmin(target(URIS_LABELS_PATH)
-                .queryParam("uri", FACILITY_A_URI, SCIENTIFIC_OBJECT_A_URI)
-                .queryParam("context", EXPERIMENT_URI)
-                .queryParam("searchDefault", true)
-        );
-        assertEquals(Response.Status.OK.getStatusCode(), rawResponse.getStatus());
+        var response = new UserCallBuilder(uriLabelService)
+                .addParam("context", EXPERIMENT_URI)
+                .addParam("searchDefault", true)
+                .setBody(List.of(FACILITY_A_URI, SCIENTIFIC_OBJECT_A_URI))
+                .buildAdmin()
+                .executeCallAndDeserialize(URIS_LABELS_RETURN_TYPE)
+                .getDeserializedResponse();
 
-        SingleObjectResponse<List<NamedResourceDTO<?>>> response = readResponse(rawResponse, URIS_LABELS_RETURN_TYPE);
         assertEquals(0, response.getMetadata().getStatus().stream().filter(status -> status.level == StatusLevel.WARNING).count());
         assertEquals(2, response.getResult().size());
         assertTrue(response.getResult().stream().anyMatch(dto -> Objects.equals(dto.getName(), FACILITY_A_LABEL)));

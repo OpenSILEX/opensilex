@@ -9,6 +9,7 @@ import java.util.List;
 public class OrganizationSearchFilter extends SearchFilter {
 
     private String nameFilter;
+    private URI typeUriFilter;
     private List<URI> restrictedOrganizations;
     private AccountModel user;
     private URI facilityURI;
@@ -24,6 +25,15 @@ public class OrganizationSearchFilter extends SearchFilter {
 
     public OrganizationSearchFilter setNameFilter(String nameFilter) {
         this.nameFilter = nameFilter;
+        return this;
+    }
+
+    public URI getTypeUriFilter() {
+        return typeUriFilter;
+    }
+
+    public OrganizationSearchFilter setTypeUriFilter(URI typeUriFilter) {
+        this.typeUriFilter = typeUriFilter;
         return this;
     }
 

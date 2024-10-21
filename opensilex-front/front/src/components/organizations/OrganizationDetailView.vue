@@ -1,61 +1,67 @@
 <template>
   <div class="container-fluid" v-if="selected">
     <opensilex-PageHeader
-        icon="ik#ik-globe"
-        :title="selected.name"
-        :description="selected.rdf_type_name"
-        class="detail-element-header"
+      icon="ik#ik-globe"
+      :title="selected.name"
+      :description="selected.rdf_type_name"
+      class="detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
-    <div class="row">
-      <div class="col-md-6">
+    <div class="detail-content">
+      <div class="left-side">
         <!-- Organization detail -->
         <opensilex-OrganizationDetail
-            :selected="selected"
-            :withActions="true"
-            @onDelete="deleteOrganization"
-            @onUpdate="refresh"
+          :selected="selected"
+          :withActions="true"
+          @onDelete="deleteOrganization"
+          @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
 
-        <opensilex-Card
-            :noFooter="true"
-          >
-          <template v-slot:header>
-            <h3>
-              <opensilex-Icon icon="ik#ik-map-pin" size="lg" />
-              {{ $t("OrganizationDetailView.site-map") }}
-              &nbsp;
-              <font-awesome-icon
-                  icon="question-circle"
-                  class="help-label"
-                  v-b-tooltip.hover.top="$t('OrganizationDetailView.site-map-help')"
-              />
-            </h3>
-          </template>
-          <template v-slot:body>
-            <opensilex-MapCard
-                class="site-map"
-                :features="siteFeatures"
-            />
-          </template>
-        </opensilex-Card>
-
+        <!-- Site list -->
+        <b-card>
+          <opensilex-SiteView
+              :organizationsForFilter="[selected.uri]"
+          />
+        </b-card>
       </div>
-      <div class="col-md-6">
+      <div class="right-side">
         <!-- Organization facilities -->
         <opensilex-FacilitiesView
-            :facilities="selected.facilities"
-            :organization="selected"
-            :selected="selected"
             :withActions="true"
+            :organization="selected"
             :isSelectable="false"
+            :facilities="selected.facilities"
+            :fetchAndShowCurrentExperiments="true"
+            createButtonLabel="SiteDetailView.create-facility"
             @onUpdate="refresh"
             @onCreate="refresh"
             @onDelete="refresh"
         ></opensilex-FacilitiesView>
       </div>
     </div>
+    <opensilex-Card
+        :noFooter="true"
+    >
+      <template v-slot:header>
+        <h3>
+          <opensilex-Icon icon="ik#ik-map-pin" size="lg" />
+          {{ $t("OrganizationDetailView.site-map") }}
+          &nbsp;
+          <font-awesome-icon
+              icon="question-circle"
+              class="help-label"
+              v-b-tooltip.hover.top="$t('OrganizationDetailView.site-map-help')"
+          />
+        </h3>
+      </template>
+      <template v-slot:body>
+        <opensilex-MapCard
+            class="site-map"
+            :features="siteFeatures"
+        />
+      </template>
+    </opensilex-Card>
   </div>
 </template>
 
@@ -148,6 +154,19 @@ export default class OrganizationDetailView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.detail-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-content>* {
+  width: 49%;
+}
+
+.left-side {
+  margin-top: 2.4vh;
+}
+
 .site-map {
   height: 20vh;
 }

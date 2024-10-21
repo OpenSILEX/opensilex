@@ -2,6 +2,7 @@ package org.opensilex.core.provenance.dal;
 
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import java.net.URI;
+import java.util.List;
 
 public class ProvenanceSearchFilter extends MongoSearchFilter {
 
@@ -10,7 +11,7 @@ public class ProvenanceSearchFilter extends MongoSearchFilter {
     private URI activityType;
     private URI activityUri;
     private URI agentType;
-    private URI agentURI;
+    private List<URI> agentURIs;
 
     public String getName() {
         return name;
@@ -57,12 +58,12 @@ public class ProvenanceSearchFilter extends MongoSearchFilter {
         return this;
     }
 
-    public URI getAgentURI() {
-        return agentURI;
+    public List<URI> getAgentURIs() {
+        return agentURIs;
     }
 
-    public ProvenanceSearchFilter setAgentURI(URI agentURI) {
-        this.agentURI = agentURI;
+    public ProvenanceSearchFilter setAgentURIs(List<URI> agentURIs) {
+        this.agentURIs = agentURIs;
         return this;
     }
 }

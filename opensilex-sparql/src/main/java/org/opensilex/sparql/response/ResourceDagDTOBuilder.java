@@ -1,3 +1,13 @@
+/*
+ * *****************************************************************************
+ *                         ResourceDagDTOBuilder.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 04/09/2024 09:15
+ * Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
+ * *****************************************************************************
+ */
+
 package org.opensilex.sparql.response;
 
 import org.opensilex.sparql.model.SPARQLDagModel;
@@ -29,7 +39,7 @@ public class ResourceDagDTOBuilder<T extends SPARQLDagModel<T>> {
 
     public List<ResourceDagDTO<T>> build() {
         List<ResourceDagDTO<T>> dtoList = dagModelList.stream().map(model -> {
-            ResourceDagDTO<T> dto = new ResourceDagDTO<T>();
+            ResourceDagDTO<T> dto = instanciateDto();
             dto.fromModelChildren(model);
             dto.getChildren().forEach(childUri -> {
                 if (!parentUriMap.containsKey(childUri)) {
@@ -49,5 +59,9 @@ public class ResourceDagDTOBuilder<T extends SPARQLDagModel<T>> {
         });
 
         return dtoList;
+    }
+
+    protected ResourceDagDTO<T> instanciateDto(){
+        return new ResourceDagDTO<>();
     }
 }

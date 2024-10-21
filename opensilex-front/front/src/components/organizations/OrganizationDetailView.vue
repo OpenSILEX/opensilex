@@ -77,7 +77,7 @@ import {OrganizationGetDTO} from "opensilex-core/index";
 import {feature} from "../geometry/MapCard.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import MapCard from "@/components/geometry/MapCard.vue";
+import MapCard from "../../components/geometry/MapCard.vue";
 
 @Component
 export default class OrganizationDetailView extends Vue {
@@ -159,9 +159,11 @@ export default class OrganizationDetailView extends Vue {
     return features;
   }
 
-  private async refrehSiteMap() {
-    await this.getSitesFeatures();
-    this.siteMap.focusOnFeatures();
+  private refrehSiteMap() {
+    this.getSitesFeatures()
+        .then(() => {
+          this.siteMap.focusOnFeatures();
+        });
   }
 
   //#endregion

@@ -132,6 +132,10 @@ export default class SiteList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
+  private emitOnDelete(){
+    this.$emit('onDelete');
+  }
+
   //#endregion
 
   //#region Event handlers
@@ -145,7 +149,8 @@ export default class SiteList extends Vue {
         .deleteSite(dto.uri)
         .then(() => {
           this.refresh();
-          this.$opensilex.showSuccessToast("component.common.delete.success")
+          this.$opensilex.showSuccessToast("component.common.delete.success");
+          this.emitOnDelete();
         })
         .catch(this.$opensilex.errorHandler);
   }

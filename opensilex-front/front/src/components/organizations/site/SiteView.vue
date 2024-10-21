@@ -21,6 +21,7 @@
         <opensilex-SiteList
             ref="siteList"
             @onEdit="OnSiteListEdit($event)"
+            @onDelete="OnSiteListDelete()"
             :organizationsForFilter="organizationsForFilter"
         ></opensilex-SiteList>
       </template>
@@ -34,8 +35,8 @@
         createTitle="SiteView.create"
         editTitle="SiteView.update"
         icon="ik#ik-map-pin"
-        @onCreate="siteList.refresh()"
-        @onUpdate="siteList.refresh()"
+        @onCreate="OnFormCreate()"
+        @onUpdate="OnFormUpdate()"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -63,10 +64,10 @@ export default class SiteView extends Vue {
   private organizationsForFilter: Array<string>;
   //#endregion
 
-    //#region Computed
-    private get user() {
-        return this.$store.state.user;
-    }
+  //#region Computed
+  private get user() {
+    return this.$store.state.user;
+  }
 
   private get credentials() {
     return this.$store.state.credentials;
@@ -79,8 +80,22 @@ export default class SiteView extends Vue {
     this.siteForm.showEditForm(dto);
   }
 
+  private OnSiteListDelete() {
+    this.$emit("onDelete");
+  }
+
   private OnCreateClick() {
     this.siteForm.showCreateForm();
+  }
+
+  private OnFormCreate() {
+    this.$emit("onCreate");
+    this.siteList.refresh();
+  }
+
+  private OnFormUpdate() {
+    this.$emit("onUpdate");
+    this.siteList.refresh();
   }
 
   //#endregion

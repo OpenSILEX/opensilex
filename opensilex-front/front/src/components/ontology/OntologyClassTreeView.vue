@@ -60,6 +60,9 @@ export default class OntologyClassTreeView extends Vue {
     @Prop()
     rdfType;
 
+    @Prop()
+    initiallySelectedUri: string;
+
     public nodes = [];
 
     public selected = null;
@@ -78,6 +81,8 @@ export default class OntologyClassTreeView extends Vue {
             lang => {
                 if (this.selected) {
                     this.displayClassDetail(this.selected.uri);
+                } else if (this.initiallySelectedUri){
+                  this.displayClassDetail(this.initiallySelectedUri);
                 }
             }
         );

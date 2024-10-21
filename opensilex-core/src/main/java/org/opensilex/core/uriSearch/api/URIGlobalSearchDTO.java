@@ -38,6 +38,9 @@ public class URIGlobalSearchDTO {
     @JsonProperty("rdf_type_name")
     private String typeLabel;
 
+    @JsonProperty("rdfs_comment")
+    private String rdfsComment;
+
     @JsonProperty("publisher")
     private UserGetDTO publisher;
 
@@ -67,6 +70,10 @@ public class URIGlobalSearchDTO {
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
         dto.setName(result.getModel().getName());
 
+        if(result.getRdfsComment() != null){
+            dto.setRdfsComment(result.getRdfsComment());
+        }
+
         if(result.getPublisher()!=null && result.getPublisher().getUri() != null){
             UserGetDTO publisherAsUser = new UserGetDTO();
             publisherAsUser.setFirstName(result.getPublisher().getFirstName());
@@ -93,6 +100,7 @@ public class URIGlobalSearchDTO {
         dto.setName(model.getLabel().getDefaultValue());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
         dto.setType(model.getType());
+        dto.setRdfsComment(model.getComment().getDefaultValue());
         return dto;
     }
 
@@ -195,5 +203,13 @@ public class URIGlobalSearchDTO {
 
     public void setDatafileDto(DataFileGetDTO datafileDto) {
         this.datafileDto = datafileDto;
+    }
+
+    public String getRdfsComment() {
+        return rdfsComment;
+    }
+
+    public void setRdfsComment(String rdfsComment) {
+        this.rdfsComment = rdfsComment;
     }
 }

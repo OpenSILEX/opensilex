@@ -168,7 +168,7 @@ export default class OrganizationDetailView extends Vue {
 }
 
 .site-map {
-  height: 20vh;
+  height: 40vh;
 }
 
 .help-label {

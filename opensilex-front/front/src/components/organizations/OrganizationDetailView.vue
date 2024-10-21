@@ -22,6 +22,9 @@
         <b-card>
           <opensilex-SiteView
               :organizationsForFilter="[selected.uri]"
+              @onCreate="refrehSiteMap()"
+              @onUpdate="refrehSiteMap()"
+              @onDelete="refrehSiteMap()"
           />
         </b-card>
       </div>
@@ -58,6 +61,7 @@
       <template v-slot:body>
         <opensilex-MapCard
             class="site-map"
+            ref="siteMap"
             :features="siteFeatures"
         />
       </template>
@@ -66,13 +70,14 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {OrganizationGetDTO} from "opensilex-core/index";
 import {feature} from "../geometry/MapCard.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import MapCard from "@/components/geometry/MapCard.vue";
 
 @Component
 export default class OrganizationDetailView extends Vue {
@@ -85,6 +90,11 @@ export default class OrganizationDetailView extends Vue {
   selected: OrganizationGetDTO = null;
   uri = null;
   siteFeatures: feature[] = [];
+  //#endregion
+
+  //#region Refs
+  @Ref("siteMap")
+  private siteMap: MapCard;
   //#endregion
 
   //#region Hook
@@ -147,6 +157,11 @@ export default class OrganizationDetailView extends Vue {
     })
 
     return features;
+  }
+
+  private async refrehSiteMap() {
+    await this.getSitesFeatures();
+    this.siteMap.focusOnFeatures();
   }
 
   //#endregion

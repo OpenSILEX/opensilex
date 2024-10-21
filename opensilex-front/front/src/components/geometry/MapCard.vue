@@ -71,6 +71,15 @@ export default class MapCard extends Vue {
   }
   //#endregion
 
+  //#region Public Methods
+  public focusOnFeatures(){
+    setTimeout(()=>{
+      if(this.features.length > 0 && this.siteLayerVector.getSource()){
+        this.fitViewWithFeaturesExtent(this.siteLayerVector.getSource().getExtent());
+      }
+    },1)
+  }
+  //#endregion
 
   //#region Private Methods
   private getCurrentExtent() {
@@ -79,14 +88,6 @@ export default class MapCard extends Vue {
         "EPSG:3857",
         "EPSG:4326"
     );
-  }
-
-  private focusOnFeatures(){
-    setTimeout(()=>{
-      if(this.features.length > 0 && this.siteLayerVector.getSource()){
-        this.fitViewWithFeaturesExtent(this.siteLayerVector.getSource().getExtent());
-      }
-    },1)
   }
 
   private fitViewWithFeaturesExtent(extent){

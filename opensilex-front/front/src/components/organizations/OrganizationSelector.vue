@@ -15,7 +15,7 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import { ResourceDagDTO } from 'opensilex-core/index';
+import { OrganizationDagDTO } from 'opensilex-core/index';
 
 @Component
 export default class OrganizationSelector extends Vue {
@@ -47,7 +47,7 @@ export default class OrganizationSelector extends Vue {
     this.$opensilex
       .getService("opensilex-core.OrganizationsService")
       .searchOrganizations()
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<OrganizationDagDTO>>>) => {
         this.organizationsOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );

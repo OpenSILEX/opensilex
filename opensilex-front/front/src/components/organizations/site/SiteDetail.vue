@@ -22,14 +22,14 @@
                 v-if="
                 user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
                 @click="editSite()"
-                label="OrganizationTree.edit"
+                label="SiteDetail.edit"
                 :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
                 v-if="
                 user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
                 @click="deleteSite()"
-                label="OrganizationTree.delete"
+                label="SiteDetail.delete"
                 :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -96,8 +96,8 @@
     <opensilex-ModalForm
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="OrganizationTree.addSite"
-        editTitle="OrganizationTree.editSite"
+        createTitle="SiteDetail.add"
+        editTitle="SiteDetail.edit"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
@@ -205,12 +205,18 @@ export default class SiteDetail extends Vue {
 
 <i18n>
 en:
+  add: Add site
+  edit: Edit site
+  delete: Delete site
   SiteDetail:
     organizations: Organizations
     facilities: Facilities
     groups: Groups
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
+  add: Ajouter un site
+  edit: Modifier un site
+  delete: Supprimer un site
   SiteDetail:
     facilities: Installations environnementales
     groups: Groupes

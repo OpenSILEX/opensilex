@@ -80,10 +80,10 @@ components["opensilex-GroupSelector"] = GroupSelector;
 // Organizations
 import OrganizationView from './organizations/OrganizationView.vue';
 components["opensilex-OrganizationView"] = OrganizationView;
+import OrganizationList from "./organizations/OrganizationList.vue";
+components["opensilex-OrganizationList"] = OrganizationList;
 import OrganizationDetailView from './organizations/OrganizationDetailView.vue';
 components["opensilex-OrganizationDetailView"] = OrganizationDetailView;
-import OrganizationTree from './organizations/OrganizationTree.vue';
-components["opensilex-OrganizationTree"] = OrganizationTree;
 import OrganizationForm from './organizations/OrganizationForm.vue';
 components["opensilex-OrganizationForm"] = OrganizationForm;
 import OrganizationDetail from './organizations/OrganizationDetail.vue';

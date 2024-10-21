@@ -8,8 +8,8 @@
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
-    <div class="row">
-      <div class="col-md-6">
+    <div class="detail-content">
+      <div class="left-side">
         <!-- Organization detail -->
         <opensilex-OrganizationDetail
           :selected="selected"
@@ -17,18 +17,26 @@
           @onDelete="deleteOrganization"
           @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
+
+        <!-- Site list -->
+        <b-card>
+          <opensilex-SiteView
+              :organizationsForFilter="[selected.uri]"
+          />
+        </b-card>
       </div>
-      <div class="col-md-6">
+      <div class="right-side">
         <!-- Organization facilities -->
         <opensilex-FacilitiesView
-          :facilities="selected.facilities"
-          :organization="selected"
-          :selected="selected"
-          :withActions="true"
-          :isSelectable="false"
-          @onUpdate="refresh"
-          @onCreate="refresh"
-          @onDelete="refresh"
+            :withActions="true"
+            :organization="selected"
+            :isSelectable="false"
+            :facilities="selected.facilities"
+            :fetchAndShowCurrentExperiments="true"
+            createButtonLabel="SiteDetailView.create-facility"
+            @onUpdate="refresh"
+            @onCreate="refresh"
+            @onDelete="refresh"
         ></opensilex-FacilitiesView>
       </div>
     </div>
@@ -81,5 +89,17 @@ export default class OrganizationDetailView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.detail-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-content>* {
+  width: 49%;
+}
+
+.left-side {
+  margin-top: 2.4vh;
+}
 </style>
 

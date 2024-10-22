@@ -48,6 +48,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -319,6 +320,30 @@ public class FacilityAPI {
         );
 
         return new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
+    }
+
+    @GET
+    @Path("/with_location")
+    @ApiOperation("Get only a list of facilities with a position (address/spatial coordinates")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Facilities retrieved", response = FacilityGetWithGeometryDTO.class, responseContainer = "List")
+    })
+    public Response getFacilitiesWithGeometry() throws Exception {
+        FacilityLogic facilityLogic = new FacilityLogic(sparql,nosql);
+        List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();
+
+        Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getSitesWithPosition(currentUser);
+
+        facilitesAndLocationsMap.forEach((k,v)->{
+            FacilityGetWithGeometryDTO facilityDTO = new FacilityGetWithGeometryDTO();
+            facilityDTO.fromModel(k,v);
+            facilityDTOList.add(facilityDTO);
+        });
+
+        return new PaginatedListResponse<>(facilityDTOList).getResponse();
     }
 
 }

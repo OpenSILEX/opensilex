@@ -282,7 +282,6 @@ public class SiteLogic {
     public Map<SiteModel, LocationObservationModel> getSitesWithPosition(AccountModel currentUser) throws Exception {
         Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = new HashMap<>();
 
-
         List<URI> userOrganizations = organizationDAO.search(new OrganizationSearchFilter()
                         .setUser(currentUser))
                 .stream().map(SPARQLResourceModel::getUri)
@@ -298,7 +297,6 @@ public class SiteLogic {
         if (!sitesWithLocationMap.isEmpty()) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             // filter only on the List URI because there is only one "geometry" type location and no date required
-            //the 'hasGeometry' parameter must be set to 'true' because this is the only type of location stored in mongo that is allowed for the site
             List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(sitesWithLocationMap.values()), true, null);
 
             if (locationObservationModels.isEmpty()) {

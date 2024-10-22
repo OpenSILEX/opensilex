@@ -30,14 +30,14 @@
                 <b-tab :title="$t('list')" active>
                     <b-container>
                         <b-row class="tab-list-header">
-                            <b-col class="cut">
+                            <b-col class="truncate">
                                 <opensilex-Icon :icon="$opensilex.getRDFIcon(items.id)" style="font-size: 2em"/>
                                 <span class="tab-list-title">{{$t(itemListTitle).toUpperCase() }}</span>
                             </b-col>
                             <b-col cols="5">
                                 <b-button-group size="sm">
                                     <!-- VISIBILITY -->
-                                    <b-check switch :checked="true" @change="updatedVisibility" style="padding-top: 5px"></b-check>
+                                    <b-check switch :checked="items.visibility" @change="updatedVisibility" style="padding-top: 5px"></b-check>
                                     <!-- COLOR -->
                                     <opensilex-InputForm type="color" :value="items.style.fill" @update:value="updatedColor" style="width: 40px"></opensilex-InputForm>
                                 </b-button-group>
@@ -50,7 +50,7 @@
                             <b-container>
                                 <b-row>
                                     <b-col style="padding-left:0">
-                                        <p class="capitalize-first-letter tab-list-group-item-label">
+                                        <p class="capitalize-first-letter tab-list-group-item-label truncate">
                                             {{ item.properties.name }}</p>
                                     </b-col>
                                     <b-col cols="2">
@@ -68,7 +68,11 @@
                                     <b-collapse :id="item.properties.uri">
                                         <!-- Address -->
                                         <opensilex-AddressView
-                                                :address="item.properties.address"></opensilex-AddressView>
+                                                v-if="item.properties.address"
+                                                :address="item.properties.address"
+                                        ></opensilex-AddressView>
+                                        <!-- Geometry -->
+                                        <opensilex-GeometryCopy v-else :value="item.geometry"></opensilex-GeometryCopy>
                                         <!-- Facilities -->
                                         <div v-if="item.properties.facilities && item.properties.facilities.length >0">
                                             <br>
@@ -156,6 +160,7 @@ import {Prop, Watch} from "vue-property-decorator";
 import { ExperimentGetListDTO, ExperimentsService, SiteGetDTO, OrganizationsService } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {FacilityGetDTO} from "opensilex-core/lib";
 
 @Component({})
 export default class GlobalMapMenu extends Vue {
@@ -197,20 +202,31 @@ export default class GlobalMapMenu extends Vue {
     //endregion
 
   //#region Events
-  private getDetails(item) {
-    if (!item.properties.address) {
-      this.$opensilex.showLoader();
+    private getDetails(item) {
+        this.$opensilex.showLoader();
+        if (this.items.title === "site") {
+            if (!item.properties.address) {
+                this.organizationsService.getSite(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
+                    let result: SiteGetDTO = http.response.result;
 
-      this.organizationsService.getSite(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
-        let result: SiteGetDTO = http.response.result;
+                    item.properties.address = result.address;
+                    item.properties.facilities = result.facilities
+                }).finally(() => {
+                    this.$opensilex.hideLoader();
+                })
+            }
+        } else if (this.items.title === "facility") {
+            if (item.properties.address && !item.properties.address.countryName) {
+                this.organizationsService.getFacility(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+                    let result: FacilityGetDTO = http.response.result;
 
-        item.properties.address = result.address;
-        item.properties.facilities = result.facilities
-      }).finally(() => {
-        this.$opensilex.hideLoader();
-      })
+                    item.properties.address = result.address;
+                }).finally(() => {
+                    this.$opensilex.hideLoader();
+                })
+            }
+        }
     }
-  }
 
     private updatedColor(event){
         this.$emit("updatedColor",event)
@@ -381,7 +397,7 @@ export default class GlobalMapMenu extends Vue {
     margin-right: -30px
 }
 
-.cut{
+.truncate{
     max-width: 230px;
     white-space: nowrap;
     overflow: hidden;

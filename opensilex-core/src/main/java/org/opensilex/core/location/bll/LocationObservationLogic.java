@@ -87,7 +87,6 @@ public class LocationObservationLogic {
      * @return list of the last locations of each feature of interest
      */
     public List<LocationObservationModel> getLastLocationObservation(List<LocationObservationCollectionModel> modelList, boolean hasGeometry, Instant date) {
-        //TODO: get last location for elements with date linked to location - not implement for the moment (OS, facilities,...). Site are a particular case: one location without linked date
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
 
         List<URI> uriList = modelList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());

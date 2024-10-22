@@ -20,6 +20,7 @@ import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
@@ -38,6 +39,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -51,6 +53,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {
@@ -173,50 +176,44 @@ public class FacilityLogic {
     /**
      * Search facilities with detail (sparql) and, if filter is at 'true', only facilities with location (mongo).
      *
-     * @param uris Facility list
-     * @param filterWithLocation Filter facilities with location
      * @param currentUser The current user
      * @throws Exception If some error is encountered during the search
      *
      * @return a Map of facilities with or without corresponding location
      */
-    public Map<FacilityModel, LocationObservationModel> getDetailsWithGeometry(List<URI> uris, boolean filterWithLocation, AccountModel currentUser) throws Exception {
+    public Map<FacilityModel, LocationObservationModel> getSitesWithPosition(AccountModel currentUser) throws Exception {
         FacilityDAO facilityDAO = new FacilityDAO(sparql,mongodb,organizationDAO);
         Map<FacilityModel, LocationObservationModel> facilitiesAndLocationsMap = new HashMap<>();
         FacilitySearchFilter facilitySearchfilter = new FacilitySearchFilter();
 
-       /* //Set searchFilter
+        //TODO : date as API parameter?
+        //Set searchFilter
         facilitySearchfilter.setUser(currentUser);
-
-        if (!uris.isEmpty()) {
-            facilitySearchfilter.setFacilities(uris);
-        }
+        facilitySearchfilter.setPageSize(0);
+        facilitySearchfilter.setPage(0);
 
         FacilitySearchRights organizationsAndSites = calculateUserSearchRights(facilitySearchfilter);
 
-        List<FacilityModel> facilityList = facilityDAO.search(facilitySearchfilter, organizationsAndSites ).getList();
+        List<FacilityModel> facilityList = facilityDAO.minimalSearch(facilitySearchfilter, organizationsAndSites).getList();
 
-        //Get only facility with location
-        if (filterWithLocation) {
-            Map<FacilityModel, URI> facilitiesWithLocationMap = facilityList.stream()
+        //Get facility with location
+        Map<FacilityModel, LocationObservationCollectionModel> facilitiesWithLocationMap = facilityList.stream()
                     .filter(facility -> facility.getLocationObservationCollection() != null)
-                    .collect(Collectors.toMap(Function.identity(), FacilityModel::getLocationObservationCollection, (oldValue, newValue) -> oldValue));
+                    .collect(Collectors.toMap(Function.identity(), FacilityModel::getLocationObservationCollection));
 
-            if (!facilitiesWithLocationMap.isEmpty()) {
-                LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-                //the 'hasGeometry' parameter must be set to 'true' because this is the only type of location stored in mongo that is allowed for the facility
-                List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(facilitiesWithLocationMap.values()), true, null, null);
+        if (!facilitiesWithLocationMap.isEmpty()) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(facilitiesWithLocationMap.values()), true, Instant.now());
 
-                facilitiesWithLocationMap.forEach((k, v) -> {
-                    LocationObservationModel value = locationObservationModels.stream()
-                            .filter(location -> SPARQLDeserializers.compareURIs(v, location.getUri()))
-                            .findAny().orElseThrow(NullPointerException::new);
-                    facilitiesAndLocationsMap.put(k, value);
-                });
-            }
-        } else {
-            facilityList.forEach(facility -> facilitiesAndLocationsMap.put(facility,null));
-        }*/
+            var locationObservationMap = locationObservationModels.stream()
+                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+
+            facilitiesWithLocationMap.forEach((site, collection) -> {
+                var observation = locationObservationMap.get(collection.getUri());
+                facilitiesAndLocationsMap.put(site, observation);
+            });
+
+        }
         return facilitiesAndLocationsMap;
     }
 

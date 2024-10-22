@@ -3,7 +3,12 @@
     <span class="field-view-title">{{$t("component.common.type")}}</span>
     <span class="static-field-line">
       <opensilex-Icon :icon="$opensilex.getRDFIcon(type)" />&nbsp;
-      <span class="capitalize-first-letter">{{typeLabel}}</span>
+      <opensilex-UriLink
+        v-if="copyableTypeUri"
+        :uri="$opensilex.getShortUri(type)"
+        :value="typeLabel"
+      ></opensilex-UriLink>
+      <span v-else class="capitalize-first-letter">{{typeLabel}}</span>
     </span>
   </div>
 </template>
@@ -19,6 +24,12 @@ export default class TypeView extends Vue {
 
   @Prop()
   typeLabel: string;
+
+  /**
+   * If this is set to true then a uri link is used instead of a simple string for the type value
+   */
+  @Prop({default: false})
+  copyableTypeUri: boolean
 }
 </script>
 

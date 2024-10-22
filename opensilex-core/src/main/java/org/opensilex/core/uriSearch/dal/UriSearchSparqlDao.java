@@ -49,7 +49,8 @@ public class UriSearchSparqlDao {
     //#endregion
 
     //#region: static stuff
-    private static String contextStringVar = "g";
+    private final static String contextStringVar = "g";
+    private final static String commentStringVar = "comment";
     //#endregion
 
     //#region: PUBLIC METHODS
@@ -91,6 +92,10 @@ public class UriSearchSparqlDao {
         model.setUri(URI.create(expandedURI));
         //name
         model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+
+        //Comment
+        String rdfsComment = result.getStringValue(commentStringVar);
+
         //type
         String typeUri = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD));
         model.setType(URI.create(typeUri));
@@ -129,7 +134,7 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri);
+        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri, rdfsComment);
     }
 
     /**
@@ -138,6 +143,7 @@ public class UriSearchSparqlDao {
      * Includes publisher first and last name to be able to show immediately without making another request
      */
     private SelectBuilder generateSparqlRequest(URI uri) throws Exception {
+        //Some stuff that gets used later in this function
         String lang = currentUser.getLanguage();
         SelectBuilder result = new SelectBuilder();
         //Vars returned
@@ -145,6 +151,7 @@ public class UriSearchSparqlDao {
         Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
+        Var rdfsCommentVar = makeVar(commentStringVar);
         Var publisherVar = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
         Var publisherFirstName = makeVar(PersonModel.FIRST_NAME_FIELD);
         Var publisherLastName = makeVar(PersonModel.LAST_NAME_FIELD);
@@ -157,6 +164,7 @@ public class UriSearchSparqlDao {
         result.addVar(nameVar);
         result.addVar(typeVar);
         result.addVar(typeNameVar);
+        result.addVar(rdfsCommentVar);
         result.addVar(publisherVar);
         result.addVar(publisherFirstName);
         result.addVar(publisherLastName);
@@ -177,6 +185,12 @@ public class UriSearchSparqlDao {
 
         //Type
         inGraphWhere.addWhere(uriVar, RDF.type, typeVar);
+
+        //Comment
+        WhereHandler optionalCommentHandler = new WhereHandler();
+        optionalCommentHandler.addWhere(result.makeTriplePath(uriVar, RDFS.comment, rdfsCommentVar));
+        optionalCommentHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(commentStringVar, locale.getLanguage()));
+        inGraphWhere.getWhereHandler().addOptional(optionalCommentHandler);
 
         //label
         WhereHandler optionalLabelHandler = new WhereHandler();
@@ -216,11 +230,13 @@ public class UriSearchSparqlDao {
         private SPARQLNamedResourceModel model;
         private PersonModel publisher;
         private URI context;
+        private String rdfsComment;
 
-        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context) {
+        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment) {
             this.model = model;
             this.publisher = publisher;
             this.context = context;
+            this.rdfsComment = rdfsComment;
         }
 
         public SPARQLNamedResourceModel getModel() {
@@ -235,6 +251,9 @@ public class UriSearchSparqlDao {
             return context;
         }
 
+        public String getRdfsComment() {
+            return rdfsComment;
+        }
     }
     //#endregion
 }

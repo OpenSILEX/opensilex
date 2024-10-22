@@ -38,6 +38,9 @@ public class URIGlobalSearchDTO {
     @JsonProperty("rdf_type_name")
     private String typeLabel;
 
+    @JsonProperty("rdfs_comment")
+    private String rdfsComment;
+
     @JsonProperty("publisher")
     private UserGetDTO publisher;
 
@@ -48,7 +51,7 @@ public class URIGlobalSearchDTO {
     private String lastUpdatedDate;
 
     @JsonProperty("super_types")
-    private List<URITypesDTO> superTypes;
+    private URITypesDTO superTypes;
 
     //To be able to show data details if the uri was a data
     @JsonProperty("data_dto")
@@ -66,6 +69,10 @@ public class URIGlobalSearchDTO {
         dto.setType(result.getModel().getType());
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
         dto.setName(result.getModel().getName());
+
+        if(result.getRdfsComment() != null){
+            dto.setRdfsComment(result.getRdfsComment());
+        }
 
         if(result.getPublisher()!=null && result.getPublisher().getUri() != null){
             UserGetDTO publisherAsUser = new UserGetDTO();
@@ -93,6 +100,7 @@ public class URIGlobalSearchDTO {
         dto.setName(model.getLabel().getDefaultValue());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
         dto.setType(model.getType());
+        dto.setRdfsComment(model.getComment().getDefaultValue());
         return dto;
     }
 
@@ -173,11 +181,11 @@ public class URIGlobalSearchDTO {
         return this;
     }
 
-    public List<URITypesDTO> getSuperTypes() {
+    public URITypesDTO getSuperTypes() {
         return superTypes;
     }
 
-    public void setSuperTypes(List<URITypesDTO> superTypes) {
+    public void setSuperTypes(URITypesDTO superTypes) {
         this.superTypes = superTypes;
     }
 
@@ -195,5 +203,13 @@ public class URIGlobalSearchDTO {
 
     public void setDatafileDto(DataFileGetDTO datafileDto) {
         this.datafileDto = datafileDto;
+    }
+
+    public String getRdfsComment() {
+        return rdfsComment;
+    }
+
+    public void setRdfsComment(String rdfsComment) {
+        this.rdfsComment = rdfsComment;
     }
 }

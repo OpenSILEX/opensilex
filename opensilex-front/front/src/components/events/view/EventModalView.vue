@@ -3,7 +3,7 @@
     <b-modal
             ref="modalRef"
             :size="modalSize"
-            :static="true"
+            :static="static"
             no-close-on-backdrop
             no-close-on-esc
             ok-only
@@ -97,6 +97,12 @@
 
         @Prop({default: "lg"})
         modalSize;
+
+        /**
+         * Renders the content of the component in-place in the DOM, rather than portalling it to be appended to the body element
+         */
+        @Prop({default: true})
+        static: boolean;
 
         @PropSync("dto")
         event: EventDetailsDTO;

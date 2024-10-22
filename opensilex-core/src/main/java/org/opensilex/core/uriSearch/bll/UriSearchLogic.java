@@ -102,7 +102,7 @@ public class UriSearchLogic {
         URIGlobalSearchDTO result = URIGlobalSearchDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
 
         //Get super types, needed to identify details page path in front
-        List<URITypesDTO> types = getSuperTypesFromUri(uri);
+        URITypesDTO types = getSuperTypesFromUri(uri);
 
         result.setSuperTypes(types);
         return result;
@@ -120,7 +120,7 @@ public class UriSearchLogic {
         }
         URIGlobalSearchDTO result = URIGlobalSearchDTO.fromClassModel(model);
         //Get super types, needed to identify details page path in front
-        List<URITypesDTO> types = getSuperTypesFromUri(uri);
+        URITypesDTO types = getSuperTypesFromUri(uri);
         result.setSuperTypes(types);
 
         return result;
@@ -144,7 +144,7 @@ public class UriSearchLogic {
         URITypesDTO type = new URITypesDTO();
         type.setUri(uri);
         type.setRdfTypes(Collections.singletonList(URI.create(Oeso.Provenance.getURI())));
-        result.setSuperTypes(Collections.singletonList(type));
+        result.setSuperTypes(type);
 
         //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, done same for Data but is even worse because i couldn't find a Data RdfType, temporary forcing of Type label in front for Data.
         result.setType(URI.create(Oeso.Provenance.getURI()));
@@ -215,16 +215,15 @@ public class UriSearchLogic {
      * Used to calculate routes in front-end
      *
      * @param uri of object
-     * @return Super types as URITypesDTO
+     * @return a URITypesDTO containing list of super types and the passed uri
      * @throws Exception
      */
-    private List<URITypesDTO> getSuperTypesFromUri(URI uri) throws Exception {
+    private URITypesDTO getSuperTypesFromUri(URI uri) throws Exception {
         //TODO dont invoke ontology dao here
         OntologyDAO dao = new OntologyDAO(sparql);
 
         return dao.getSuperClassesByURI(Collections.singletonList(uri))
-                .stream().map(URITypesDTO::fromModel)
-                .collect(Collectors.toList());
+                .stream().map(URITypesDTO::fromModel).findFirst().orElse(null);
     }
 
     /**

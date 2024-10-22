@@ -273,6 +273,7 @@ import EventModalForm from "../form/EventModalForm.vue";
 import EventCsvForm from "../form/csv/EventCsvForm.vue";
 import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import { EventDetailsDTO } from 'opensilex-core/index';
 import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
@@ -340,7 +341,7 @@ export default class EventList extends Vue {
 
     renderComponent = true;
 
-    selectedEvent: EventGetDTO = {};
+    selectedEvent: EventDetailsDTO = {};
 
     selectedEventTargetsNames = [];
 
@@ -469,7 +470,7 @@ export default class EventList extends Vue {
                   options.orderBy,
                   options.currentPage,
                   options.pageSize
-              ).then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+              ).then((http: HttpResponse<OpenSilexResponse<Array<EventDetailsDTO>>>) => {
                 let targetUris: Array<string> = Array.from(new Set(http.response.result.flatMap(event => event.targets)));
                 //Set the target paths
                 this.ontologyService
@@ -555,7 +556,7 @@ export default class EventList extends Vue {
 
     showEventView(event) {
         this.getEventPromise(event)
-        .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>> ) => {
+        .then((http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> ) => {
             this.selectedEvent = http.response.result;
 
             // retrieving target names

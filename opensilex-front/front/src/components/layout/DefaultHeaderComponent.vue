@@ -124,13 +124,14 @@
           <div class="headerMenuIcons">
 
             <!--Uri global search-->
-            <opensilex-Button
-              @click="handleUriSearchIconHit"
-              :label="$t('component.header.uriSearchHoverMessage')"
-              class="searchicon ik ik-search"
+            <b-button
+              class="searchicon"
               :class="{ 'selected-searchicon': searchBoxIsActive }"
-              icon="ik-search"
-            ></opensilex-Button>
+              :title="$t('component.header.uriSearchHoverMessage')"
+              @click="handleUriSearchIconHit"
+            >
+              URI?
+            </b-button>
             <!--language button -->
             <b-dropdown
               class="langDropdown" 
@@ -684,7 +685,6 @@ export default class DefaultHeaderComponent extends Vue {
 
 }
 
-//For some annoying reason the search icon is smaller so this makes it slightly bigger than other icons in header
 .searchicon {
   font-size: 1.3em;
   color: #212121;

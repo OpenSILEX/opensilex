@@ -5,7 +5,7 @@
     <div class="main-info-style">
       <!-- URI -->
       <opensilex-UriView
-        v-if="!isDataOrDataFile"
+        v-if="!hasNoDetailsPage"
         class="uriLinkGlobalUriSearchRes"
         :uri="uri"
         :value="this.shortUri"
@@ -39,7 +39,7 @@
 
       <!-- Name -->
       <opensilex-StringView
-        v-if="!isDataOrDataFile"
+        v-if="!hasNoDetailsPage"
         :value="name"
         label="component.common.name"
       ></opensilex-StringView>
@@ -48,11 +48,18 @@
         v-if="!isData"
         :type="type"
         :typeLabel="typeName"
+        :copyableTypeUri="true"
       ></opensilex-TypeView>
       <opensilex-TypeView
         v-else
         :typeLabel="$t('GlobalUriSearch.dataTypeName')"
       ></opensilex-TypeView>
+      <!-- rdfsComment -->
+      <opensilex-StringView
+        v-if="comment"
+        label="GlobalUriSearch.comment"
+        :value="comment"
+      ></opensilex-StringView>
     </div>
 
     <!-- Metadata -->
@@ -65,16 +72,25 @@
 
     <!-- Data details -->
     <opensilex-DataProvenanceModalView
-      v-if="isDataOrDataFile"
+      v-if="hasNoDetailsPage"
       ref="dataProvenanceModalView"
     ></opensilex-DataProvenanceModalView>
+
+    <!-- Event details -->
+    <opensilex-EventModalView
+      modalSize="lg"
+      ref="eventModalView"
+      :static="false"
+      :dto.sync="selectedEvent"
+      :type.sync="selectedEvent.rdf_type"
+    ></opensilex-EventModalView>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO, DataFileGetDTO} from "opensilex-core/index";
+import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO, DataFileGetDTO, MoveDetailsDTO, EventDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Prop, Ref} from "vue-property-decorator";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -82,6 +98,8 @@ import {UriSearchService} from "opensilex-core/api/uriSearch.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
+import {EventsService} from "opensilex-core/api/events.service";
+import EventModalView from "../events/view/EventModalView.vue";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -96,6 +114,8 @@ export default class GlobalUriSearchResult extends Vue {
   private uriSearchService: UriSearchService;
   private ontologyService: OntologyService;
   private dataService: DataService;
+  private eventsService: EventsService;
+  private selectedEvent: EventDetailsDTO | MoveDetailsDTO = {};
   //#endregion
 
   //#region: hooks
@@ -103,16 +123,24 @@ export default class GlobalUriSearchResult extends Vue {
     this.uriSearchService = this.$opensilex.getService("opensilex.UriSearchService");
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
   }
 
   //#endregion
 
   //#region: event handlers
-  /**
-   * For now handles data and datafiles
-   */
   private handleSeeDetails(){
+    //If the result is an event:
     this.$opensilex.enableLoader();
+    if(this.isSubTypeOfEvent()){
+      this.getEventPromise().then((http: HttpResponse<OpenSilexResponse>) => {
+        this.selectedEvent = http.response.result;
+        this.eventModalView.show();
+      }).catch(this.$opensilex.errorHandler);
+      return;
+    }
+
+    //If the result is a data or datafile
     this.getProvenance(this.dataDto.provenance.uri)
       .then(result => {
         let value = {
@@ -129,11 +157,12 @@ export default class GlobalUriSearchResult extends Vue {
   //#region: refs
 
   @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: DataProvenanceModalView;
+  @Ref("eventModalView") readonly eventModalView!: EventModalView;
 
   //#endregion
 
   //#region: private functions
-  getProvenance(uri) {
+  private getProvenance(uri) {
     if (uri != undefined) {
       return this.dataService
         .getProvenance(uri)
@@ -142,6 +171,28 @@ export default class GlobalUriSearchResult extends Vue {
         });
     }
   }
+
+  private isSubTypeOfEvent(){
+    if(this.searchResult.super_types){
+      for(let currentType of this.searchResult.super_types.rdf_types){
+        if(this.$opensilex.Oeev.checkURIs(currentType, this.$opensilex.Oeev.EVENT_TYPE_URI)){
+          return true;
+        }
+      }
+    }
+  }
+
+  private getEventPromise(): Promise<HttpResponse<OpenSilexResponse>> {
+    if (this.isMove()) {
+      return this.eventsService.getMoveEvent(this.uri);
+    } else {
+      return this.eventsService.getEventDetails(this.uri);
+    }
+  }
+
+  private isMove() {
+    return this.$opensilex.Oeev.checkURIs(this.type, this.$opensilex.Oeev.MOVE_TYPE_URI);
+  }
   //#endregion
 
 
@@ -149,12 +200,10 @@ export default class GlobalUriSearchResult extends Vue {
 
   get detailsPath() : string{
     let formattedPath = "";
-    if(this.hasResult && this.searchResult.super_types.length !== 0){
-      for (let typeIndex in this.searchResult.super_types) {
-        let type = this.searchResult.super_types[typeIndex];
-        let unformattedPath = this.$opensilex.getPathFromUriTypes(type.rdf_types);
+    if(this.hasResult && this.searchResult.super_types !== null){
+        let unformattedPath = this.$opensilex.getPathFromUriTypes(this.searchResult.super_types.rdf_types);
         formattedPath = this.$opensilex.getTargetPath(this.searchResult.uri, undefined, unformattedPath);
-      }
+
     }
     return formattedPath;
   }
@@ -172,6 +221,9 @@ export default class GlobalUriSearchResult extends Vue {
   }
   get type() : string{
     return this.searchResult.rdf_type;
+  }
+  get comment() : string{
+    return this.searchResult.rdfs_comment;
   }
   get publisher() : UserGetDTO{
     return this.searchResult.publisher;
@@ -208,10 +260,12 @@ export default class GlobalUriSearchResult extends Vue {
   }
 
   /**
-   * isDataOrDataFile = is data OR datafile
+   * Returns true if this is an element that has a URI link
    */
-  get isDataOrDataFile(): boolean{
-    return this.searchResult.data_dto !== null || this.searchResult.datafile_dto !== null;
+  get hasNoDetailsPage(): boolean{
+    return this.searchResult.data_dto !== null ||
+      this.searchResult.datafile_dto !== null ||
+      this.isSubTypeOfEvent();
   }
 
   get isData(): boolean{
@@ -260,10 +314,12 @@ en:
   GlobalUriSearch:
     seeDetails: See details
     dataTypeName: Data
+    comment: Description
 
 fr:
   GlobalUriSearch:
     seeDetails: Voir détails
     dataTypeName: Donnée
+    comment: Description
 
 </i18n>

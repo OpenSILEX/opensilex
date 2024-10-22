@@ -51,7 +51,7 @@ public class URIGlobalSearchDTO {
     private String lastUpdatedDate;
 
     @JsonProperty("super_types")
-    private List<URITypesDTO> superTypes;
+    private URITypesDTO superTypes;
 
     //To be able to show data details if the uri was a data
     @JsonProperty("data_dto")
@@ -181,11 +181,11 @@ public class URIGlobalSearchDTO {
         return this;
     }
 
-    public List<URITypesDTO> getSuperTypes() {
+    public URITypesDTO getSuperTypes() {
         return superTypes;
     }
 
-    public void setSuperTypes(List<URITypesDTO> superTypes) {
+    public void setSuperTypes(URITypesDTO superTypes) {
         this.superTypes = superTypes;
     }
 

@@ -108,9 +108,9 @@ export default class GlobalUriSearchBox extends Vue {
 
 .no-results {
   font-style: italic;
-  font-size: 2em;
+  font-size: 1.3em;
   text-align: center;
-  padding: 20px;
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -122,10 +122,10 @@ export default class GlobalUriSearchBox extends Vue {
 <i18n>
 en:
   GlobalUriSearchBox:
-    noResultsMessage: No results
+    noResultsMessage: Not found
 
 fr:
   GlobalUriSearchBox:
-    noResultsMessage: Pas de résultats
+    noResultsMessage: Pas trouvé
 
 </i18n>

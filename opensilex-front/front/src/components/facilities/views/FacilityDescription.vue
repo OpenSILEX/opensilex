@@ -299,7 +299,7 @@ export default class FacilityDescription extends Vue {
   }
 
   editOrganizationFacility() {
-    this.organizationFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
+    this.organizationFacilityForm.showEditForm(this.selected.uri);
   }
 
   deleteOrganizationFacility() {

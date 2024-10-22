@@ -34,8 +34,9 @@
     </b-button>
 
     <b-modal
+        class="facilities-modal"
         ref="popup"
-        :title="$t('FacilitiesModalList.title', [currentSite.name])"
+        :title="$t('FacilitiesPopUpList.title', [hostNameForTitle])"
         hide-footer
         centered>
       <div id="facility-view">
@@ -69,8 +70,11 @@ export default class FacilitiesModalList extends Vue {
   @Prop({required: true})
   facilities: Array<NamedResourceDTO>;
 
-  @Prop()
+  @Prop({default: null})
   currentSite: NamedResourceDTO;
+
+  @Prop({default: ""})
+  hostNameForTitle: string;
   //#endregion
 
   //#region Refs
@@ -108,7 +112,7 @@ export default class FacilitiesModalList extends Vue {
 }
 
 // class from bootstrap-vue
-.modal-content {
+.facilities-modal .modal-content {
   width: fit-content;
 }
 

@@ -704,10 +704,18 @@ public class DataAPI {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
-        filter.setExperiments(Collections.singletonList(experimentUri));
-        filter.setTargets(Collections.singletonList(objectUri));
-        filter.setProvenances(Collections.singletonList(provenanceUri));
-        filter.setVariables(Collections.singletonList(variableUri));
+        if (experimentUri != null) {
+            filter.setExperiments(Collections.singletonList(experimentUri));
+        }
+        if (objectUri != null) {
+            filter.setTargets(Collections.singletonList(objectUri));
+        }
+        if (provenanceUri != null) {
+            filter.setProvenances(Collections.singletonList(provenanceUri));
+        }
+        if (variableUri != null) {
+            filter.setVariables(Collections.singletonList(variableUri));
+        }
 
         DeleteResult result = dataLogic.deleteManyByFilter(filter);
         return new SingleObjectResponse<>(result).getResponse();

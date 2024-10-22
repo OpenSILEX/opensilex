@@ -3,26 +3,26 @@ package org.opensilex.utils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
+import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.SwaggerContextService;
 import io.swagger.models.Swagger;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.SwaggerExtension;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper class to generate Swagger API JSON file.
@@ -111,7 +111,7 @@ public final class SwaggerAPIGenerator {
      * @return Swagger API
      * @throws Exception
      */
-    private static synchronized Swagger generate(String source, Reflections reflection) throws Exception {
+    private static synchronized Swagger generate(String source, Reflections reflection, List<Class<?>> additionalDefinitions) throws Exception {
         Swagger swagger = null;
 
         SwaggerContextService ctx = new SwaggerContextService();
@@ -154,6 +154,16 @@ public final class SwaggerAPIGenerator {
             Reader reader = new Reader(swagger);
             swagger = reader.read(classes);
 
+            // adding missing DTOs as swagger definitions to have them generated in the typeScript client
+            if (additionalDefinitions != null) {
+                for (var model : additionalDefinitions) {
+                    var map = ModelConverters.getInstance().read(model);
+                    for (var entry : map.entrySet()) {
+                        swagger.addDefinition(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+
             return swagger;
         }
 
@@ -177,12 +187,14 @@ public final class SwaggerAPIGenerator {
         String destination = args[1];
 
         OpenSilex instance = getOpenSilex(OpenSilex.getDefaultBaseDirectory());
+        var modelList = new ArrayList<Class<?>>();
+        instance.getModulesImplementingInterface(SwaggerExtension.class).forEach(module -> modelList.addAll(module.getAdditionalSwaggerDefinitions()));
 
         Reflections localRef = new Reflections(ConfigurationBuilder.build("")
                 .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
                 .setExpandSuperTypes(false)).merge(instance.getReflections());
 
-        Swagger swagger = generate(source, localRef);
+        Swagger swagger = generate(source, localRef, modelList);
 
         if (swagger != null) {
             ObjectMapper mapper = new ObjectMapper();

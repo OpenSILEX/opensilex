@@ -9,11 +9,15 @@ package org.opensilex.core.provenance.api;
 import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.opensilex.core.data.api.DataAPI;
-import org.opensilex.core.data.api.DataGetSearchDTO;
-import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.DataDaoV2;
+import org.opensilex.core.data.dal.DataFileDaoV2;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.dal.*;
+import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -23,10 +27,10 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -36,7 +40,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -176,7 +179,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Search by description") @QueryParam("description") String description,
             @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
             @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
-            @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
+            @ApiParam(value = "Search by agent URIs") @QueryParam("agent") List<URI> agentURIs,
             @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -190,7 +193,7 @@ public class ProvenanceAPI {
                 .setActivityType(activityType)
                 .setActivityUri(activityUri)
                 .setAgentType(agentType)
-                .setAgentURI(agentURI);
+                .setAgentURIs(agentURIs);
 
         filter.setOrderByList(orderByList).setPage(page).setPageSize(pageSize);
 

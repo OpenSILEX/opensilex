@@ -697,7 +697,8 @@
         },
         "facility": {
             "warning": {
-                "facility-should-have-unique-site": "Il est déconseillé d'associer une facility à plusieurs sites. Veuillez vérifier à quel site appartient cette facility."
+                "facility-should-have-unique-site": "Il est déconseillé d'associer une facility à plusieurs sites. Veuillez vérifier à quel site appartient cette facility.",
+                "facility-default-date": "Date par défault"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
             "view": {

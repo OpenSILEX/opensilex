@@ -218,6 +218,10 @@
             ref="eventModalView"
             :dto.sync="selectedEvent"
             :type.sync="selectedEvent.rdf_type"
+            :uriLabels="uriLabels"
+            :uriPaths="uriPaths"
+            :specificPropertiesLabels="specificPropertiesLabels"
+            :specificPropertiesPaths="specificPropertiesPaths"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -285,6 +289,10 @@ export default class EventList extends Vue {
     $service: EventsService
     $i18n: any;
     $store: any;
+    uriLabels = {};
+    uriPaths = {};
+    specificPropertiesLabels = {}
+    specificPropertiesPaths = {}
 
     @Prop({
         default: false
@@ -332,7 +340,9 @@ export default class EventList extends Vue {
 
     renderComponent = true;
 
-    selectedEvent = {};
+    selectedEvent: EventGetDTO = {};
+
+    selectedEventTargetsNames = [];
 
     objectsPath : {[key : string] : string} = {};
 
@@ -523,6 +533,15 @@ export default class EventList extends Vue {
         if (this.isMove(event)) {
             return this.$service.getMoveEvent(event.uri);
         } else {
+
+            let promiseObject = this.ontologyService
+                .getURILabelsList(event.targets)
+                .then((httpObj) => {
+                    for (let target in event.target) {
+                        this.selectedEventTargetsNames.push(target)
+                    }
+                })
+                promiseObject;
             return this.$service.getEventDetails(event.uri);
         }
     }
@@ -535,8 +554,55 @@ export default class EventList extends Vue {
     }
 
     showEventView(event) {
-        this.getEventPromise(event).then((http: HttpResponse<OpenSilexResponse>) => {
+        this.getEventPromise(event)
+        .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>> ) => {
             this.selectedEvent = http.response.result;
+
+            // retrieving target names
+            let promiseObject = this.ontologyService
+                .getURILabelsList(this.selectedEvent.targets)
+                .then((httpObj) => {
+                    for (let element of httpObj.response.result){
+                        this.uriLabels[element.uri]= element.name;
+                    }
+                })
+              
+            // creation of paths according to target types
+            this.ontologyService.getURITypes(this.selectedEvent.targets)
+            .then((httpObj) => {
+                for( let element of httpObj.response.result) {
+                   let responsePath = this.$opensilex.getTargetPath(
+                        element.uri, 
+                        null, 
+                        this.$opensilex.getPathFromUriTypes(element.rdf_types)
+                    );
+                   this.uriPaths[element.uri] = responsePath;
+                }
+            })
+
+            // retrieving specific properties names
+            let specificPropertiesPromiseObject = this.ontologyService
+            .getURILabelsList(this.selectedEvent.relations.map(relation => relation.value))
+            .then((httpObj) => {
+                for (let element of httpObj.response.result){
+                    this.specificPropertiesLabels[element.uri]= element.name;
+                }
+            })
+
+            // creation of paths for specific properties
+            let relationsURIs = this.selectedEvent.relations.map(relation => relation.value);
+            this.ontologyService.getURITypes(relationsURIs)
+            .then((httpObj) => {
+                for (let element of httpObj.response.result) {
+                    let responseSpecificPropertyPath = this.$opensilex.getTargetPath(
+                        element.uri, 
+                        null, 
+                        this.$opensilex.getPathFromUriTypes(element.rdf_types)
+                    );
+                    this.specificPropertiesPaths[element.uri] = responseSpecificPropertyPath;
+                }
+            });
+
             this.eventModalView.show();
         }).catch(this.$opensilex.errorHandler);
     }

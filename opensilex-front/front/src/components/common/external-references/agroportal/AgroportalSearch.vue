@@ -6,24 +6,33 @@
           type="text"
           v-model="searchText"
           :placeholder="$t(placeholder)"
-          @change="emitChange"
           @keyup.enter.native="emitChange">
       </b-input>
       <template #append>
         <opensilex-Button
-            icon="ik#ik-search"
+            icon="ik#ik-x"
             :small="true"
             variant="outline-secondary"
-            class="agroportalSearchBarBtn"
-            @click="emitChange"
+            class="agroportalCleanSearchBtn"
+            @click="cleanSearchField"
         >
         </opensilex-Button>
+
         <opensilex-Button
             v-b-toggle.advanced-options
             icon="ik#ik-filter"
             :small="true"
             variant="outline-secondary"
             class="agroportalSearchBarBtn"
+        >
+        </opensilex-Button>
+
+        <opensilex-Button
+            icon="ik#ik-search"
+            :small="true"
+            variant="outline-secondary"
+            class="agroportalSearchBarBtn"
+            @click="emitChange"
         >
         </opensilex-Button>
       </template>
@@ -139,7 +148,13 @@ export default class AgroportalSearch extends Vue {
 
   //#region Events
   private emitChange() {
-    this.$emit("change", this.searchText);
+    if (this.searchText !== "") {
+      this.$emit("change", this.searchText);
+    }
+  }
+
+  private cleanSearchField(){
+    this.searchText = "";
   }
   //#endregion
 }
@@ -150,7 +165,7 @@ export default class AgroportalSearch extends Vue {
   padding: 10px;
 }
 
-.agroportalSearchBarBtn {
+.agroportalSearchBarBtn, .agroportalCleanSearchBtn {
   color: #00A38D;
   border-color: #00A38D;
 }
@@ -160,6 +175,11 @@ export default class AgroportalSearch extends Vue {
   color: white;
 }
 
+.agroportalCleanSearchBtn:hover {
+  color: white;
+  background: red;
+  border-color: red;
+}
 </style>
 
 <i18n>

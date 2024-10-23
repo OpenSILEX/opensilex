@@ -236,7 +236,7 @@ en:
     step1-title: Search
     step2-title: Enrich
     step3-title: Mapping
-    import-and-save: Import & Save
+    reuse: Reuse
     save: Save
     enrich: Enrich
     map: Map
@@ -260,7 +260,7 @@ en:
       step-validation:
         title: Validation
         content: >
-          If you want to import the concept as-is, click the '@:AgroportalSearchFormPart.import-and-save' button. If
+          If you want to import the concept as-is, click the '@:AgroportalSearchFormPart.reuse' button. If
           you want to use it as a basis for creating your own concept, click the '@:AgroportalSearchFormPart.enrich'
           button. Please note that for Units, you are required to enrich the concept.
       step-no-concept:
@@ -273,7 +273,7 @@ fr:
     step1-title: Chercher
     step2-title: Enrichir
     step3-title: Mapper
-    import-and-save: Importer & Enregistrer
+    reuse: Réutiliser
     save: Enregistrer
     enrich: Enrichir
     map: Mapper
@@ -300,7 +300,7 @@ fr:
         title: Validation
         content: >
           Si vous souhaitez réutiliser le concept tel quel, cliquez sur le bouton
-          '@:AgroportalSearchFormPart.import-and-save'. Si vous souhaitez l'utiliser comme base pour définir votre
+          '@:AgroportalSearchFormPart.reuse'. Si vous souhaitez l'utiliser comme base pour définir votre
           propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.enrich'. Veuillez noter que vous
           devez impérativement enrichir le concept dans le cas d'une unité.
       step-no-concept:

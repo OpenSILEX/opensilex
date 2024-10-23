@@ -30,8 +30,8 @@
           <template v-else v-slot:validationButton>
             <opensilex-CreateButton
                 class="v-step-result-import-button"
-                :label="$t('AgroportalResults.btn-choose')"
-                :title="$t('AgroportalResults.btn-choose')"
+                :label="$t('AgroportalResults.btn-select')"
+                :title="$t('AgroportalResults.btn-select')"
                 @click="emitImport(term)"
             >
             </opensilex-CreateButton>
@@ -194,9 +194,9 @@ export default class AgroportalResults extends Vue {
 en:
   AgroportalResults:
     nothing-found: No result was found
-    btn-choose: Choose
+    btn-select: Select
 fr:
   AgroportalResults:
     nothing-found: Aucun résultat n'a été trouvé
-    btn-choose: Choisir
+    btn-select: Selectionner
 </i18n>

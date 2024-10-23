@@ -117,6 +117,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         component: "opensilex-AgroportalEnrichFormPart",
         title: "AgroportalSearchFormPart.step2-title",
         finish: "AgroportalSearchFormPart.save",
+        next: "AgroportalSearchFormPart.map",
         props: {
           namePlaceholder: this.searchPlaceholder,
           descriptionPlaceholder: this.descriptionPlaceholder

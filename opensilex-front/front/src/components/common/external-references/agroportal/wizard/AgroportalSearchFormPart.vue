@@ -239,6 +239,7 @@ en:
     import-and-save: Import & Save
     save: Save
     enrich: Enrich
+    map: Map
     skip: Skip
     search-for-ontology-term: Search for ontology term
     selected-term: Selected term
@@ -275,6 +276,7 @@ fr:
     import-and-save: Importer & Enregistrer
     save: Enregistrer
     enrich: Enrichir
+    map: Mapper
     skip: Passer
     search-for-ontology-term: Rechercher un terme
     selected-term: Terme sélectionné

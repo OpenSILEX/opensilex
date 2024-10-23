@@ -9,7 +9,7 @@
       >
       </opensilex-Tutorial>
       <div class="row align-items-center">
-        <div class="col-lg-6">
+        <div class="agroportalEnrichForm">
           <!-- URI -->
           <opensilex-UriForm
               class="v-step-uri"
@@ -144,6 +144,13 @@ export default class AgroportalEnrichFormPart extends Vue {
 <style scoped lang="scss">
 a {
   color: #007bff;
+}
+
+.agroportalEnrichForm {
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
 }
 </style>
 

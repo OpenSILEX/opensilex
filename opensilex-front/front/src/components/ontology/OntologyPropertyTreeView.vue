@@ -37,11 +37,13 @@ import Vue from "vue";
 // @ts-ignore
 import {OntologyService, ResourceTreeDTO} from "opensilex-core/index";
 import OWL from "../../ontologies/OWL";
+import {Route} from "vue-router";
 
 @Component
 export default class OntologyPropertyTreeView extends Vue {
     $opensilex: any;
     $store: any;
+    $route: Route;
 
     get user() {
         return this.$store.state.user;
@@ -64,7 +66,10 @@ export default class OntologyPropertyTreeView extends Vue {
         this.ontologyService = this.$opensilex.getService(
             "opensilex-core.OntologyService"
         );
-
+      let preselected = this.$route.query.selected;
+      if(typeof preselected === "string"){
+        this.displayPropertyDetail(preselected, undefined);
+      }
         this.onDomainChange();
     }
 
@@ -125,6 +130,7 @@ export default class OntologyPropertyTreeView extends Vue {
     displayPropertyDetail(uri, type) {
         this.ontologyService.getProperty(uri, type, this.domain).then(http => {
             this.selected = http.response.result;
+            this.$opensilex.updateURLParameter("selected", this.selected.uri);
             this.$emit("selectionChange", this.selected);
         });
     }

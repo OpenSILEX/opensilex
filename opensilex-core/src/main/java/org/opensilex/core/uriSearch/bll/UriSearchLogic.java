@@ -15,6 +15,7 @@ import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
@@ -30,6 +31,8 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -37,9 +40,8 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UriSearchLogic {
     private final SPARQLService sparql;
@@ -71,7 +73,7 @@ public class UriSearchLogic {
         }
 
         //If no matches search in Vocabulary
-        result = this.searchInOntologies(uri);
+        result = this.searchInOntology(uri);
         if(result != null){
             return result;
         }
@@ -108,22 +110,74 @@ public class UriSearchLogic {
         return result;
     }
 
-    private URIGlobalSearchDTO searchInOntologies(URI uri) throws Exception {
-        ClassModel model = null;
-
+    /**
+     *
+     * @param uri
+     * @return a matched class or property model from the ontology store or null if none found
+     * @throws Exception
+     */
+    private URIGlobalSearchDTO searchInOntology(URI uri) throws Exception {
+        VocabularyModel<?> model = null;
+        boolean isProperty = false;
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        //ClassModel used for navigation route calculation
+        ClassModel nextParent = null;
         try{
-            //these two lines were taken from OntologyApi, i don't understand if i should be using OntologyDao or the OntologyStore
-            OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
-            model = ontologyStore.getClassModel(uri, null, currentUser.getLanguage());
-        }catch(Exception e){
-            return null;
+            var classModel = ontologyStore.getClassModel(uri, null, currentUser.getLanguage());
+            model = classModel;
+            nextParent = classModel;
+        }catch(Exception ignore){}
+        if(model == null){
+            try{
+                var propertyModel = ontologyStore.getProperty(uri, null, null, currentUser.getLanguage());
+                model = propertyModel;
+                //Set the start of parent to domain as the matched element is a property
+                nextParent = propertyModel.getDomain();
+                isProperty = true;
+            }catch(Exception e){
+                return null;
+            }
         }
-        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromClassModel(model);
-        //Get super types, needed to identify details page path in front
-        URITypesDTO types = getSuperTypesFromUri(uri);
-        result.setSuperTypes(types);
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromVocabularyModel(model);
+
+        //set the isProperty value
+        result.setIsProperty(isProperty);
+
+        //Calculate root class for navigation in front, from the previously set class or domain class
+        while(nextParent != null && !isRootClassModel(nextParent)){
+            nextParent = nextParent.getParent();
+        }
+        if(nextParent != null){
+            result.setRootClass(nextParent.getUri());
+        }
+
+        //Handle publisher
+        if (Objects.nonNull(model.getPublisher())) {
+            //TODO do not invoke account dao here when logic class is done
+            result.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
 
         return result;
+    }
+
+    /**
+     *
+     * @param model
+     * @return true if the model corresponds to a type that has a dedicated page in front
+     *
+     * TODO (Maximilian) This is ugly hard code, this information should be stored more cleanly somewhere, in config?
+     *  i feel that if the path was for example .../app/types/scientific_objects/...
+     *  instead of .../app/scientific_object_types
+     *  Then it would be easier to perform calculations like this without hard-code
+     */
+    private boolean isRootClassModel(ClassModel model){
+        URI modelUri = model.getUri();
+        return SPARQLDeserializers.compareURIs(modelUri, Oeso.ScientificObject.getURI()) ||
+                SPARQLDeserializers.compareURIs(modelUri, Oeev.Event.getURI()) ||
+                SPARQLDeserializers.compareURIs(modelUri, Oeso.Device.getURI()) ||
+                SPARQLDeserializers.compareURIs(modelUri, Oeso.Facility.getURI()) ||
+                SPARQLDeserializers.compareURIs(modelUri, Oeso.FactorCategory.getURI()) ||
+                SPARQLDeserializers.compareURIs(modelUri, Oeso.FactorCategory.getURI());
     }
 
     private URIGlobalSearchDTO searchInProvenances(URI uri) throws Exception {

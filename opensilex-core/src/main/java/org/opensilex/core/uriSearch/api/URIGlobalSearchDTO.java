@@ -15,19 +15,22 @@ import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
-import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * Object returned for UriSearch, contains everything needed from publication info to the data-dto in-case the uri was a data.
  * Dates are in String format as MongoModels use Instant whereas SPARQL uses OffsetDateTime
  */
 public class URIGlobalSearchDTO {
+    //#region: fields
     private URI uri;
 
     private String name;
@@ -61,7 +64,21 @@ public class URIGlobalSearchDTO {
     @JsonProperty("datafile_dto")
     private DataFileGetDTO datafileDto;
 
+    //This is used to identify which page we need to navigate to if the uri was a type or a property
+    @JsonProperty("root_class")
+    private URI rootClass;
+
+    //This is used to identify if the matched vocabulary was a class or a property
+    @JsonProperty("is_property")
+    private boolean isProperty;
+
+    //#endregion
+    //#region: private constants
+
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
+
+    //#endregion
+    //#region: Factory methods
 
     public static URIGlobalSearchDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff result){
         URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
@@ -82,25 +99,22 @@ public class URIGlobalSearchDTO {
             dto.setPublisher(publisherAsUser);
         }
 
-        if(result.getModel().getPublicationDate() != null){
-            dto.setPublicationDate(result.getModel().getPublicationDate().format(dateTimeFormatter));
-        }
-        if(result.getModel().getLastUpdateDate() != null){
-            dto.setLastUpdatedDate(result.getModel().getLastUpdateDate().format(dateTimeFormatter));
-        }
+        setMetadataDatesFromOffsetDatetimes(dto, result.getModel().getPublicationDate(), result.getModel().getLastUpdateDate());
+
         return dto;
     }
 
     /**
-     * To be used when a vocabulary from ontology matched the searched uri
+     * To be used when vocabulary for class or property from ontology matched the searched uri
      */
-    public static URIGlobalSearchDTO fromClassModel(ClassModel model){
+    public static URIGlobalSearchDTO fromVocabularyModel(VocabularyModel<?> model){
         URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
         dto.setUri(model.getUri());
         dto.setName(model.getLabel().getDefaultValue());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
         dto.setType(model.getType());
         dto.setRdfsComment(model.getComment().getDefaultValue());
+        setMetadataDatesFromOffsetDatetimes(dto, model.getPublicationDate(), model.getLastUpdateDate());
         return dto;
     }
 
@@ -122,6 +136,21 @@ public class URIGlobalSearchDTO {
         }
         return dto;
     }
+
+    //#endregion
+    //#region: private methods
+
+    private static void setMetadataDatesFromOffsetDatetimes(URIGlobalSearchDTO dto, OffsetDateTime publicationDate, OffsetDateTime updatedDate){
+        if(publicationDate != null){
+            dto.setPublicationDate(publicationDate.format(dateTimeFormatter));
+        }
+        if(updatedDate != null){
+            dto.setLastUpdatedDate(updatedDate.format(dateTimeFormatter));
+        }
+    }
+
+    //#endregion
+    //#region: getters and setters
 
     public URI getUri() {
         return uri;
@@ -212,4 +241,22 @@ public class URIGlobalSearchDTO {
     public void setRdfsComment(String rdfsComment) {
         this.rdfsComment = rdfsComment;
     }
+
+    public URI getRootClass() {
+        return rootClass;
+    }
+
+    public void setRootClass(URI rootClass) {
+        this.rootClass = rootClass;
+    }
+
+    public boolean isProperty() {
+        return isProperty;
+    }
+
+    public void setIsProperty(boolean isProperty) {
+        this.isProperty = isProperty;
+    }
+
+    //#endregion
 }

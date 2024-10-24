@@ -32,7 +32,7 @@
                         <b-row class="tab-list-header">
                             <b-col class="truncate">
                                 <opensilex-Icon :icon="$opensilex.getRDFIcon(items.id)" style="font-size: 2em"/>
-                                <span class="tab-list-title">{{$t(itemListTitle).toUpperCase() }}</span>
+                                <span class="tab-list-title">{{$t(items.title).toUpperCase() }}</span>
                             </b-col>
                             <b-col cols="5">
                                 <b-button-group size="sm">
@@ -44,12 +44,12 @@
                             </b-col>
                         </b-row>
                     </b-container>
-                    <p v-if="items.id === undefined">{{ $t("no-list", {itemType: $t(itemListTitle) }).toUpperCase() }} </p>
+                    <p v-if="items.id === undefined">{{ $t("no-list", {itemType: $t(items.title) }).toUpperCase() }} </p>
                     <b-list-group v-else>
                         <b-list-group-item button v-for="item in items.features" :key="item.id" @click="selectItem(item,$event)" class="tab-list-group-item" :class="{ 'selected' : selectedItem === item, '': selectedItem !== item}">
                             <b-container>
                                 <b-row>
-                                    <b-col style="padding-left:0">
+                                    <b-col cols="10" style="padding-left:0" class="truncate">
                                         <p class="capitalize-first-letter tab-list-group-item-label truncate">
                                             {{ item.properties.name }}</p>
                                     </b-col>
@@ -211,8 +211,6 @@ export default class GlobalMapMenu extends Vue {
 
                     item.properties.address = result.address;
                     item.properties.facilities = result.facilities
-                }).finally(() => {
-                    this.$opensilex.hideLoader();
                 })
             }
         } else if (this.items.title === "facility") {
@@ -221,11 +219,10 @@ export default class GlobalMapMenu extends Vue {
                     let result: FacilityGetDTO = http.response.result;
 
                     item.properties.address = result.address;
-                }).finally(() => {
-                    this.$opensilex.hideLoader();
                 })
             }
         }
+        this.$opensilex.hideLoader();
     }
 
     private updatedColor(event){
@@ -263,8 +260,7 @@ export default class GlobalMapMenu extends Vue {
     //endregion
 
     //#region Public methods
-    public openGlobalMapSidebar(label){
-        this.itemListTitle = label;
+    public openGlobalMapSidebar(){
         this.isSidebarOpen = true;
     }
     //endregion
@@ -302,24 +298,30 @@ export default class GlobalMapMenu extends Vue {
     if (this.filters.projects.length === 0 && this.filters.species.length === 0 && !this.filters.year) {
       this.onSearch();
     } else {
-      let sitesFacilitiesMap: Map<string, string[]> = new Map();
+        let facilitiesURI = [];
+        let sitesFacilitiesMap: Map<string, string[]> = new Map();
+        if(this.items.title === "site"){
+            this.itemsInitial.features.forEach(feature => {
+                if (feature.properties.facilities) {
+                    let facilities = feature.properties.facilities.map(facility => {
+                        if (facility.uri) {
+                            return facility.uri
+                        } else {
+                            return facility
+                        }
+                    })
 
-      this.itemsInitial.features.forEach(feature => {
-        if (feature.properties.facilities) {
-          let facilities = feature.properties.facilities.map(facility => {
-            if (facility.uri) {
-              return facility.uri
-            } else {
-              return facility
-            }
-          })
-
-          sitesFacilitiesMap.set(feature.properties.uri, facilities)
+                    sitesFacilitiesMap.set(feature.properties.uri, facilities)
+                }
+            })
+            facilitiesURI = [...new Set(sitesFacilitiesMap.values())].flat();
+        } else if(this.items.title === "facility"){
+            facilitiesURI= this.itemsInitial.features.map(facility => {
+                return facility.id
+            })
         }
-      })
 
-      let facilitiesURI = [...new Set(sitesFacilitiesMap.values())].flat();
-
+      //SEARCH
       this.experimentsService.searchExperiments(
               undefined,
               this.filters.year,
@@ -333,22 +335,26 @@ export default class GlobalMapMenu extends Vue {
               undefined,
               undefined
       ).then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {
-        let facilitiesResult = [];
-        let features = [];
+          let features = [];
         if (http.response.result) {
+            let facilitiesResult = [];
           http.response.result.forEach(xp => {
             facilitiesResult.push(xp.facilities)
           })
           let facilitiesSingle = [...new Set(facilitiesResult.flat())]
 
-          facilitiesSingle.forEach(facility => {
-            for (let [k, v] of sitesFacilitiesMap) {
-              let filter = v.filter(s => s === facility)
-              if (filter.length > 0) {
-                features.push(k)
-              }
+            if(this.items.title === "site"){
+                facilitiesSingle.forEach(facility => {
+                    for (let [k, v] of sitesFacilitiesMap) {
+                        let filter = v.filter(s => s === facility)
+                        if (filter.length > 0) {
+                            features.push(k)
+                        }
+                    }
+                })
+            } else if(this.items.title === "facility"){
+                features = facilitiesSingle.map(facility =>{ return this.$opensilex.getLongUri(facility)});
             }
-          })
         } else {
           features = [];
         }

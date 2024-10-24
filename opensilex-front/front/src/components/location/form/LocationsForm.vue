@@ -131,7 +131,7 @@ export default class LocationsForm extends Vue {
     //endregion
 
     //#region Data
-    private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00.000Z"
+    private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
     private position: LocationObservationDTO = this.getPositionEmpty();
     private fields = [
         {

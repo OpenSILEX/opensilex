@@ -98,16 +98,13 @@
              mongodb.startTransaction();
 
              // 1 Mongo : get all facilities with geometry or address geometry
-             SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
-             List<URI> facilityRdfType = sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
-
-             List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial(facilityRdfType);
+             List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
              // 2 RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
              Map<URI,URI> facilityCollectionMap = sparqlAddObservationCollectionToFacilityList(facilityPositionList);
              // 3 RDF4J : get facility addresses
              Map<URI, FacilityAddressModel> facilityAddressMap = sparqlgetAddressToFacilityList(facilityPositionList);
              // 3 Mongo : update facility geometry in geospatial collection and copy in location collection
-             mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList, facilityRdfType, facilityCollectionMap, facilityAddressMap);
+             mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList,facilityCollectionMap, facilityAddressMap);
 
              sparql.commitTransaction();
              mongodb.commitTransaction();
@@ -124,8 +121,11 @@
          }
      }
 
-     private List<GeospatialModel> mongoGetFacilitiesFromGeospatial(List<URI> facilityRdfType) {
+     private List<GeospatialModel> mongoGetFacilitiesFromGeospatial() throws SPARQLException {
          MongoDatabase db = mongodb.getDatabase();
+
+         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
+         List<URI> facilityRdfType = sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
 
          // Get Facilities from Geospatial Collection
          MongoCollection<GeospatialModel> geospatialCollection = db.getCollection(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
@@ -273,11 +273,11 @@
          return facilityAddressMap;
      }
 
-     private void mongoFacilitiesFromGeospatialToLocationCollection(List<GeospatialModel> geospatialFacilityList,List<URI> facilityRdfType, Map<URI,URI> facilityCollectionMap, Map<URI, FacilityAddressModel> facilityAddressMap) throws SPARQLException {
+     private void mongoFacilitiesFromGeospatialToLocationCollection(List<GeospatialModel> geospatialFacilityList, Map<URI,URI> facilityCollectionMap, Map<URI, FacilityAddressModel> facilityAddressMap) throws SPARQLException {
          MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
          // 1- Check existing locations to avoid duplicates
-         List<LocationObservationModel> existingLocations = locationCollection.find(Filters.in(SPARQLResourceModel.TYPE_FIELD, facilityRdfType)).into(new ArrayList<>());
+         List<LocationObservationModel> existingLocations = locationCollection.find(Filters.empty()).into(new ArrayList<>());
          if(!existingLocations.isEmpty()){
              List<URI> existingLocationURI = existingLocations.stream().map(LocationObservationModel::getObservationCollection).collect(Collectors.toList());
              facilityCollectionMap.forEach((feature,collection) ->{
@@ -285,12 +285,8 @@
                  if (match) {
                      // Exclude Location to the geospatial collection list
                      List<GeospatialModel> facilityToExclude = geospatialFacilityList.stream().filter(geospatialFacility -> SPARQLDeserializers.compareURIs(geospatialFacility.getUri(), feature)).collect(Collectors.toList());
-                     if (facilityToExclude.size() > 1) {
-                                 throw new NotAllowedException("Site can't have multiple geometry");
-                     } else {
-                         if(!facilityToExclude.isEmpty()){
+                     if(!facilityToExclude.isEmpty()){
                              geospatialFacilityList.remove(facilityToExclude.get(0));
-                         }
                      }
                  }
              });
@@ -310,7 +306,7 @@
              FacilityAddressModel address =  facilityAddressMap.get(geospatialFacility.getUri());
 
              if(Objects.isNull(address)){
-                 locationObservationModel.setEndDate(Instant.parse("1970-01-01T00:00:00.000Z"));
+                 locationObservationModel.setEndDate(Instant.parse("1970-01-01T00:00:00.00Z"));
              } else {
                  FacilityAddressDTO addressDto = new FacilityAddressDTO();
                  addressDto.fromModel(address);
@@ -319,7 +315,7 @@
                  Geometry geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
 
                  if(!geometry.equals(geospatialFacility.getGeometry())){
-                     locationObservationModel.setEndDate(Instant.parse("1970-01-01T00:00:00.000Z"));
+                     locationObservationModel.setEndDate(Instant.parse("1970-01-01T00:00:00.00Z"));
                  }
              }
 
@@ -335,6 +331,8 @@
          }).collect(Collectors.toList());
 
          // 3- Insert Sites into new location Collection
-         locationCollection.insertMany(locationObservationModelList);
+         if(!locationObservationModelList.isEmpty()){
+             locationCollection.insertMany(locationObservationModelList);
+         }
      }
  }

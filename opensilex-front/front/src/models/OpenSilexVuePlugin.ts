@@ -159,6 +159,48 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
+     * This is a function to get path for vocabulary pages from a type or domain and if the uri is a property or class
+     * TODO this isn't great , pressed for time currently, is there a way to set this path dynamically?
+     *
+     * @param uri the vocabulary we want to try and navigate to
+     * @param rootClassUri to know which page to go to
+     * @param isProperty the uri does not correspond to a class model but a property
+     *
+     */
+    getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string{
+        if(this.checkURIs(rootClassUri, Oeso.SCIENTIFIC_OBJECT_TYPE_URI)){
+            if(isProperty){
+                return "/scientific-object-types/properties?selected="+ encodeURIComponent(uri);
+            }
+            return "/scientific-object-types?selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(rootClassUri, Oeev.EVENT_TYPE_URI)){
+            if(isProperty){
+                return "/event-types/properties?selected="+ encodeURIComponent(uri);
+            }
+            return "/event-types?selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(rootClassUri, Oeso.DEVICE_TYPE_URI)){
+            if(isProperty){
+                return "/device-types/properties?selected="+ encodeURIComponent(uri);
+            }
+            return "/device-types?selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(rootClassUri, Oeso.FACILITY_TYPE_URI)){
+            if(isProperty){
+                return "/facilities-types/properties?selected="+ encodeURIComponent(uri);
+            }
+            return "/facilities-types?selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(rootClassUri, Oeso.FACTOR_CATEGORY_URI)){
+            if(isProperty){
+                return "/factor-category-types/properties?selected="+ encodeURIComponent(uri);
+            }
+            return "/factor-category-types?selected="+ encodeURIComponent(uri);
+        }
+    }
+
+    /**
      * Creates strings of format 'name (type)', places them in a uri to result map with vue.set
      *
      * @param objectsToLoad , the uris of ontology objects that we want to create labels for

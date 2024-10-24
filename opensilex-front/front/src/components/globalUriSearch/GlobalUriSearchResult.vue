@@ -200,11 +200,16 @@ export default class GlobalUriSearchResult extends Vue {
 
   get detailsPath() : string{
     let formattedPath = "";
-    if(this.hasResult && this.searchResult.super_types !== null){
+    if(!this.hasResult){
+      return formattedPath;
+    }
+    if(this.searchResult.super_types !== null){
         let unformattedPath = this.$opensilex.getPathFromUriTypes(this.searchResult.super_types.rdf_types);
         formattedPath = this.$opensilex.getTargetPath(this.searchResult.uri, undefined, unformattedPath);
-
+    }else if(this.searchResult.root_class !== null){
+      return this.$opensilex.getVocabularyPath(this.uri, this.searchResult.root_class, this.searchResult.is_property);
     }
+
     return formattedPath;
   }
 

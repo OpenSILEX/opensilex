@@ -130,7 +130,8 @@
               :title="$t('component.header.uriSearchHoverMessage')"
               @click="handleUriSearchIconHit"
             >
-              URI?
+              URI
+              <i class="icon ik ik-search"></i>
             </b-button>
             <!--language button -->
             <b-dropdown

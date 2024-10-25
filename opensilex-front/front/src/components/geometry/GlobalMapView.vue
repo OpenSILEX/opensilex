@@ -46,7 +46,7 @@
                 <vl-layer-group v-if="isSiteLoaded && siteFeaturesDisplay.id" :visible="siteFeaturesDisplay.visibility">
                     <!-- SITE layer -->
                     <vl-layer-vector id="site-layer-vector" ref="siteLayerVector" :max-resolution="18" render-mode="image">
-                        <vl-source-vector :features="siteFeaturesDisplay.features" @mounted="focusOnItems"></vl-source-vector>
+                        <vl-source-vector id="site-source-vector" :features="siteFeaturesDisplay.features" @mounted="focusOnItems"></vl-source-vector>
                         <vl-style-box>
                             <vl-style-circle :radius="8">
                                 <vl-style-stroke
@@ -72,7 +72,7 @@
                 <!-- FACILITY layer group-->
                 <vl-layer-group v-if="isFacilityLoaded" id="facility-layer-group" :visible="facilityFeaturesDisplay.visibility">
                     <!-- FACILITY layer -->
-                    <vl-layer-vector id="facility-layer-vector" :max-resolution="3" render-mode="image">
+                    <vl-layer-vector id="facility-layer-vector" ref="facilityLayerVector" :max-resolution="3" render-mode="image">
                         <vl-source-vector id="facility-source-vector" :features="facilityFeaturesDisplay.features"></vl-source-vector>
                         <vl-style-box>
                             <vl-style-stroke
@@ -104,8 +104,15 @@
                     </vl-layer-vector>
                 </vl-layer-group>
                 <!-- Interaction for selecting vector features -->
-                <vl-interaction-select ref="selectedLayerVector" @select="selectFeature" @unselect="unSelectFeature">
+                <vl-interaction-select ref="selectedLayerVector" @select="selectFeature" @unselect="unSelectFeature" :filter="filterInteraction">
                     <vl-style-box>
+                        <vl-style-stroke
+                                color="red"
+                                :width="4"
+                        ></vl-style-stroke>
+                        <vl-style-fill
+                                :color="addTransparency('#FFFFFF')"
+                        ></vl-style-fill>
                         <vl-style-circle :radius="8">
                             <vl-style-stroke
                                     color="red"
@@ -201,6 +208,7 @@ export default class GlobalMapView extends Vue {
     private selectedLayer: Layer = {};
     private selectedFeature: {} = {};
     private selectedLayerInitial: Layer = {};
+    private stopInteraction: boolean = true;
     // TOOL BUTTONS
     private buttons :{ id: string,label: string, resolution? : number, state: boolean, disabled: boolean}[] = [];
     private buttonsFeaturesMap : Map<string, {}> = new Map<string, {}>();
@@ -285,6 +293,12 @@ export default class GlobalMapView extends Vue {
         this.selectedFeature = {}
     }
 
+    private filterInteraction(vector){
+        if(!this.stopInteraction){
+            return vector;
+        }
+    }
+
     private selectFeatureFromMenu(feature){
         this.selectedLayerVector.unselectAll()
 
@@ -364,7 +378,7 @@ export default class GlobalMapView extends Vue {
         this.organizationsService.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
             let results: SiteGetWithGeometryDTO[] = http.response.result;
             if(http.response.result.length > 0){
-              this.siteFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.getShortURI(results[0].rdf_type), this.buttons.find(button => button.id === 'site').id, '#d10bdb', '#fff');
+              this.siteFeaturesInitial = this.convertObjectIntoGeoJson(results, results[0].rdf_type, this.buttons.find(button => button.id === 'site').id, '#d10bdb', '#fff');
               this.siteFeaturesDisplay = Object.assign({}, this.siteFeaturesInitial);
             }
         }).finally(() => {
@@ -383,7 +397,7 @@ export default class GlobalMapView extends Vue {
         this.organizationsService.getFacilitiesWithGeometry()
                 .then((http: HttpResponse<OpenSilexResponse<FacilityGetWithGeometryDTO>>)=>{
                     let results: FacilityGetWithGeometryDTO[] = http.response.result;
-                    this.facilityFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.FACILITY_TYPE_URI), this.buttons.find(button => button.id === 'facility').id, '#FF7300', '#fff');
+                    this.facilityFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.FACILITY_TYPE_URI, this.buttons.find(button => button.id === 'facility').id, '#FF7300', '#fff');
                     this.facilityFeaturesDisplay = Object.assign({}, this.facilityFeaturesInitial);
                 }).finally(() => {
             this.buttonsFeaturesMap.set("facility", this.facilityFeaturesDisplay)
@@ -413,21 +427,27 @@ export default class GlobalMapView extends Vue {
         return layer;
     }
 
-    private focusOnItems(){
-      setTimeout(()=>{
-          if(this.selectedLayer.features.length > 0){
-              let selectedLayer;
+    private focusOnItems() {
+        setTimeout(() => {
+            if (this.selectedLayer.features.length > 0) {
+                let selectedLayer;
 
-              switch (this.selectedLayer.id) {
-                  default: return ;
-                  case this.siteFeaturesDisplay.id: selectedLayer = this.siteLayerVector;break;
-                  case this.facilityFeaturesDisplay.id: selectedLayer = this.facilityLayerVector;break;
-              }
-          if(selectedLayer.getSource()){
-                  this.fitViewWithFeaturesExtent(selectedLayer.getSource().getExtent());
-              }
-          }
-      },1)
+                switch (this.selectedLayer.id) {
+                    default:
+                        return;
+                    case this.siteFeaturesDisplay.id:
+                        selectedLayer = this.siteLayerVector;
+                        break;
+                    case this.facilityFeaturesDisplay.id:
+                        selectedLayer = this.facilityLayerVector;
+                        break;
+                }
+
+                if (selectedLayer.getSource()) {
+                    this.fitViewWithFeaturesExtent(selectedLayer.getSource().getExtent());
+                }
+            }
+        }, 1)
     }
 
     // cluster points style
@@ -497,6 +517,9 @@ export default class GlobalMapView extends Vue {
                             }
                         })
                         this.fitViewWithFeaturesExtent(olExtent.boundingExtent(points));
+                    } else {
+                        // to avoid selecting with vl-interaction when we use the cluster when we click on the map
+                        this.stopInteraction = false;
                     }
                 }
         )

@@ -100,6 +100,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
+//import Oeso from '../../ontologies/Oeso';
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -198,9 +199,21 @@ export default class GlobalUriSearchResult extends Vue {
 
   //#region: computed
 
+  /**
+   * Gets the path if the uri can lead to some page
+   */
   get detailsPath() : string{
     let formattedPath = "";
     if(!this.hasResult){
+      return formattedPath;
+    }
+    //If type is a germplasm group then build path manually
+    if(this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
+      return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
+    }
+    //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
+    formattedPath = this.$opensilex.getVariableComponentPath(this.type, this.uri);
+    if(formattedPath !== null){
       return formattedPath;
     }
     if(this.searchResult.super_types !== null){

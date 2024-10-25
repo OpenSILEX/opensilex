@@ -30,6 +30,8 @@ let ontologies = {
     HAS_VARIABLES_GROUP: OESO_URI + "#hasVariablesGroup",
     IS_HOSTED: OESO_URI + "#isHosted",
     ENTITY_TYPE_URI: OESO_URI + "#Entity",
+    ENTITY_OF_INTEREST_TYPE_URI: OESO_URI + "#EntityOfInterest",
+    CHARACTERISTIC_TYPE_URI: OESO_URI + "#Characteristic",
     QUALITY_TYPE_URI: OESO_URI + "#Quality",
     METHOD_TYPE_URI: OESO_URI + "#Method",
     UNIT_TYPE_URI: OESO_URI + "#Unit",
@@ -58,9 +60,11 @@ let ontologies = {
     HAS_PARENT_GERMPLASM: OESO_URI+"#hasParentGermplasm",
     HAS_PARENT_GERMPLASM_M: OESO_URI+"#hasParentGermplasmM",
     HAS_PARENT_GERMPLASM_F: OESO_URI+"#hasParentGermplasmF",
+    GERMPLASM_GROUP_TYPE_URI: OESO_URI+"#GermplasmGroup",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };
+
 
 export default ontologies;

@@ -15,6 +15,7 @@ import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -105,8 +106,8 @@ public class UriSearchLogic {
 
         //Get super types, needed to identify details page path in front
         URITypesDTO types = getSuperTypesFromUri(uri);
-
         result.setSuperTypes(types);
+
         return result;
     }
 

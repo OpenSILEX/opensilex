@@ -338,9 +338,11 @@ menu:
 routes:
   - path: /organization/details/:uri
     component: opensilex-OrganizationDetailView
+    rdfType: vocabulary:LocalOrganization
     icon: ik#ik-globe
   - path: /organization/site/details/:uri
     component: opensilex-SiteDetailView
+    rdfType: org:Site
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     rdfType: vocabulary:Experiment
@@ -404,6 +406,7 @@ routes:
 
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
+    rdfType: vocabulary:Project
   - path: /project/documents/:uri
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
@@ -440,6 +443,7 @@ routes:
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
+    rdfType: vocabulary:Document
     credentials: [ ]
 
   - path: /device/details/:uri

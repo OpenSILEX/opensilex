@@ -159,6 +159,36 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
+     *
+     * @param type
+     * @param uri
+     * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
+     *
+     * TODO same as vocabulaire, completely hardcoded
+     */
+    getVariableComponentPath(type: string, uri:string): string{
+        if(this.checkURIs(type, Oeso.ENTITY_TYPE_URI)){
+            return "/variables?elementType=Entity&selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(type, Oeso.ENTITY_OF_INTEREST_TYPE_URI)){
+            return "/variables?elementType=InterestEntity&selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(type, Oeso.CHARACTERISTIC_TYPE_URI)){
+            return "/variables?elementType=Characteristic&selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(type, Oeso.METHOD_TYPE_URI)){
+            return "/variables?elementType=Method&selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(type, Oeso.UNIT_TYPE_URI)){
+            return "/variables?elementType=Unit&selected="+ encodeURIComponent(uri);
+        }
+        if(this.checkURIs(type, Oeso.VARIABLESGROUP_TYPE_URI)){
+            return "/variables?elementType=VariableGroup&selected="+ encodeURIComponent(uri);
+        }
+        return null;
+    }
+
+    /**
      * This is a function to get path for vocabulary pages from a type or domain and if the uri is a property or class
      * TODO this isn't great , pressed for time currently, is there a way to set this path dynamically?
      *

@@ -69,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Emit, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {Tour} from "vue-tour";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
@@ -199,6 +199,11 @@ export default class AgroportalSearchFormPart extends Vue {
     };
   }
 
+@Watch('selectedTerm')
+asTermSelectionChange() {
+  this.$emit(this.selectedTerm ? "agroportalTermSelected" : "agroportalTermUnselected");
+}
+
   private clearCurrentState() {
     this.agroportalTermSelector.setSearchText("");
     this.selectedTerm = undefined;
@@ -239,6 +244,7 @@ en:
     reuse: Reuse
     save: Save
     enrich: Enrich
+    create: Create
     map: Map
     skip: Skip
     search-for-ontology-term: Search for ontology term
@@ -276,6 +282,7 @@ fr:
     reuse: Réutiliser
     save: Enregistrer
     enrich: Enrichir
+    create: Créer
     map: Mapper
     skip: Passer
     search-for-ontology-term: Rechercher un terme

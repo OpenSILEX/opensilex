@@ -47,6 +47,8 @@
             :form.sync="form"
             @fill="fillForm"
             @clear="clearForm"
+            @agroportalTermSelected="agroportalTermSelected"
+            @agroportalTermUnselected="agroportalTermUnselected"
           >
             <template v-for="slot of step.slots" v-slot:[slot]="scope">
               <slot :name="slot" v-bind="scope"></slot>
@@ -160,6 +162,15 @@ export default class WizardForm extends Vue {
 
   @Prop()
   nextStepAction: Function;
+
+
+  agroportalTermSelected(){
+    this.$emit("agroportalTermSelected")
+  }
+
+  agroportalTermUnselected(){
+    this.$emit("agroportalTermUnselected")
+  }
 
   /**
    * Add a custom validation function to the form. This function will be called during the final validation, before

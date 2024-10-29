@@ -38,7 +38,7 @@
             <b-form-group
                 label-size="lg"
                 label-class="font-weight-bold pt-0"
-                class="mb-0"
+                class="mb-0 mapByUriSection"
             >
               <template v-slot:label>
                 <span id="manual-mapping">
@@ -49,6 +49,7 @@
               <!-- URI -->
               <opensilex-FilterField
                   :fullWidth="true"
+                  class="mapUriField"
               >
                 <b-form-group>
                   <div class="helperAndBlueStar">
@@ -372,6 +373,14 @@ a {
 
 ul {
   list-style-type: none;
+}
+
+.mapUriField{
+  margin-left: -15px /* neutralise "col" class default margin */
+}
+
+.mapByUriSection {
+  margin-top: 15px;
 }
 </style>
 

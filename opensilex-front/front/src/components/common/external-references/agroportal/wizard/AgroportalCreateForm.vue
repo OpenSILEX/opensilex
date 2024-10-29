@@ -14,6 +14,8 @@
       :nextStepAction="nextStep"
       :validateAction="validateCustom"
       :isBlockingStep="false"
+      @agroportalTermSelected="handleTermSelected"
+      @agroportalTermUnselected="handleTermUnselected"
   >
     <template v-slot:enrichAdditionalFields="scope">
       <slot name="enrichAdditionalFields" v-bind="scope"></slot>
@@ -32,6 +34,7 @@ import WizardForm, {WizardFormStep} from "../../../forms/WizardForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../../../lib/HttpResponse";
 import {BaseExternalReferencesDTO, BaseExternalReferencesForm} from "../../ExternalReferencesTypes";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import AgroportalSearchFormPart from "./AgroportalSearchFormPart.vue";
 
 @Component({})
 export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> extends Vue implements BaseExternalReferencesForm {
@@ -93,9 +96,18 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
 
   //#region Data
   private editMode = false;
+  private termIsSelected: boolean = false;
   //#endregion
 
   //#region Computed
+  private handleTermSelected() {
+    this.termIsSelected = true;
+  }
+
+  private handleTermUnselected(){
+    this.termIsSelected = false;
+  }
+
   /**
    * Steps of the wizard form. Computed so that it can rely on props such as `ontologiesConfig` and
    * `searchPlaceholder`.
@@ -108,7 +120,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         component: "opensilex-AgroportalSearchFormPart",
         title: "AgroportalSearchFormPart.step1-title",
         finish: this.requireEnrich ? undefined : "AgroportalSearchFormPart.reuse",
-        next: "AgroportalSearchFormPart.enrich",
+        next: this.termIsSelected ? "AgroportalSearchFormPart.create" : "AgroportalSearchFormPart.enrich",
         props: {
           ontologiesConfig: this.ontologiesConfig,
           searchPlaceholder: this.searchPlaceholder

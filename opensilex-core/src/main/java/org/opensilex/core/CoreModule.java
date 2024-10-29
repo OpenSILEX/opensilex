@@ -169,7 +169,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 ONTOLOGIES_DIRECTORY + "/peco_factors.owl",
                 Lang.RDFXML,
                 "peco"
-        ));
+        ));*/
 
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",

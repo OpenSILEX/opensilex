@@ -23,7 +23,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
-import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.response.ResourceDagDTOBuilder;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -145,19 +144,25 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return organisations", response = ResourceDagDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return organisations", response = OrganizationDagDTO.class, responseContainer = "List")
     })
     public Response searchOrganizations(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris
+            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris,
+            @ApiParam(value = "Regex pattern for filtering list by types", example = ".*") @QueryParam("type") URI type,
+            @ApiParam(value = "Organization every result will be direct child of") @QueryParam("parent_organization_uri") URI parentOrganizationUri,
+            @ApiParam(value = "Facility for filtering") @QueryParam("facility_uri") URI facilityUri
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql);
 
         List<OrganizationModel> organizations = dao.search(new OrganizationSearchFilter()
                 .setNameFilter(pattern)
+                .setTypeUriFilter(type)
+                .setDirectChildURI(parentOrganizationUri)
+                .setFacilityURI(facilityUri)
                 .setRestrictedOrganizations(restrictedOrganizationUris.isEmpty() ? null : restrictedOrganizationUris)
                 .setUser(currentUser));
-        ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
+        ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new OrganizationDagDTOBuilder(organizations);
         return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }
 

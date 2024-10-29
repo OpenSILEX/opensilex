@@ -2,51 +2,58 @@
   <div class="container-fluid">
     <opensilex-CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
-      @click="AccountForm.showCreateForm()"
-      label="AccountView.create"
-      class="createButton">
+        @click="AccountForm.showCreateForm()"
+        label="AccountView.create"
+        class="createButton">
     </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-AccountList
-          ref="AccountList"
-          @onEdit="showEditForm($event)"
+            ref="AccountList"
+            @onEdit="showEditForm($event)"
         ></opensilex-AccountList>
       </template>
     </opensilex-PageContent>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
-      ref="AccountForm"
-      component="opensilex-AccountForm"
-      createTitle="AccountView.create"
-      editTitle="AccountView.update"
-      icon="ik#ik-user"
-      :lazy="true"
-      @onCreate="AccountList.refresh()"
-      @onUpdate="AccountList.refresh()"
+        v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
+        ref="AccountForm"
+        component="opensilex-AccountForm"
+        createTitle="AccountView.create"
+        editTitle="AccountView.update"
+        icon="ik#ik-user"
+        :lazy="true"
+        @onCreate="AccountList.refresh()"
+        @onUpdate="AccountList.refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import {OpenSilexStore} from "../../models/Store";
+import VueRouter from "vue-router";
 
 @Component
 export default class AccountView extends Vue {
-  $opensilex: any;
-  $store: any;
+  //#region Plugin & Services
+  public readonly $store: OpenSilexStore;
+  public readonly $router: VueRouter
+  //#endregion
 
-  @Ref("AccountForm") readonly AccountForm!: any;
-  @Ref("AccountList") readonly AccountList!: any;
+  //#region Refs
+  @Ref("AccountForm") private readonly AccountForm!: any;
+  @Ref("AccountList") private readonly AccountList!: any;
+  //#endregion
 
-  get user() {
+  //#region Computed properties
+  private get user() {
     return this.$store.state.user;
   }
 
-  get credentials() {
+  private get credentials() {
     return this.$store.state.credentials;
   }
   showEditForm(dto){

@@ -45,14 +45,17 @@
         
 
         <!-- PHIS legacy module-->
-        <module>opensilex-phis</module>
+        <!-- desactivateNEW   <module>opensilex-phis</module> -->
+
+        <!-- INSECT module-->
+        <module>opensilex-insect</module>
 
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
 
         <!-- FAIDARE module-->
         <module>opensilex-faidare</module>
-        
+
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
 
@@ -126,13 +129,15 @@
         </dependency>
         
         <!--PHIS legacy dependency-->
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-phis</artifactId>
-            <version>${revision}</version>
-        </dependency>
+        <!-- desactivateNEW
+             <dependency>
+                 <groupId>org.opensilex</groupId>
+                 <artifactId>opensilex-phis</artifactId>
+                 <version>${revision}</version>
+             </dependency>
+     -->
 
-        <!-- BRAPI dependency --> 
+        <!-- BRAPI dependency -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
@@ -145,7 +150,14 @@
             <artifactId>opensilex-faidare</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
+        <!-- Insect dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-insect</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-migration</artifactId>

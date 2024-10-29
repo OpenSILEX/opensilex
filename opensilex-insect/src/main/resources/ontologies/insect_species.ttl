@@ -1,0 +1,8 @@
+PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<taxref:taxon/219017>  rdf:type  vocabulary:Species    .
+<taxref:taxon/219017>  rdfs:label  "wasp"@en    .
+<taxref:taxon/219017>  rdfs:label  "guepe"@fr    .
+<taxref:taxon/219017>  rdfs:label  "Trichogramma evanescens"@la    .

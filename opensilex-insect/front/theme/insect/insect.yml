@@ -1,0 +1,30 @@
+stylesheets:
+    - _mixins.scss
+    - _settings.scss
+    - _cards.scss
+    - _widgets.scss
+    - _tables.scss
+    - _badges.scss
+    - _navigation.scss
+    - _buttons.scss
+    - _modal.scss
+    - _forms.scss
+    - _carousel.scss
+    - _calendar.scss
+    - _alert.scss
+    - _rating.scss
+    - _range-slider.scss
+    - _layout.scss
+    - _auth.scss
+    - _main.scss
+    - main.css
+    - fix.css
+    - hamburgers.css
+    
+fonts:
+
+iconClassesRDF:
+    "org:Site": "fa#map-marker-alt"
+    "http://www.w3.org/ns/org#Site": "fa#map-marker-alt"
+    
+

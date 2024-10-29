@@ -325,6 +325,10 @@ export default class GlobalUriSearchResult extends Vue {
   background: none;
 }
 
+::v-deep .field-view-title {
+  min-width: 100px; //override title width for the field components, as we are in a small area here
+}
+
 </style>
 
 <i18n>

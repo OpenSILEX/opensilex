@@ -146,6 +146,8 @@ public class UriSearchSparqlDao {
         //Some stuff that gets used later in this function
         String lang = currentUser.getLanguage();
         SelectBuilder result = new SelectBuilder();
+        Locale locale = Locale.forLanguageTag(lang);
+
         //Vars returned
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
@@ -160,6 +162,7 @@ public class UriSearchSparqlDao {
         Var graphVar = makeVar(contextStringVar);
         //Other vars used
         Var publisherPersonVar = makeVar("person");
+
         result.addVar(uriVar);
         result.addVar(nameVar);
         result.addVar(typeVar);
@@ -172,12 +175,6 @@ public class UriSearchSparqlDao {
         result.addVar(updated);
         result.addVar(graphVar);
 
-        //Rdf type label outside of graph as this information is stored in global graph
-        WhereHandler optionalTypeLabelHandler = new WhereHandler();
-        optionalTypeLabelHandler.addWhere(result.makeTriplePath(typeVar, RDFS.label, typeNameVar));
-        Locale locale = Locale.forLanguageTag(lang);
-        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
-        result.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         //Everything that concerns our uri needs to be by distinct graph to avoid duplicates when same uri is present in multiple graphs
         //To do this make a subwhere to put in an addGraph operation
@@ -213,6 +210,12 @@ public class UriSearchSparqlDao {
                         .addWhere(publisherPersonVar, FOAF.lastName.asNode(), publisherLastName)
         );
         result.addOptional(foafDetails);
+
+        //Rdf type label outside of graph as this information is stored in global graph
+        WhereHandler optionalTypeLabelHandler = new WhereHandler();
+        optionalTypeLabelHandler.addWhere(result.makeTriplePath(typeVar, RDFS.label, typeNameVar));
+        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        result.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         //uri value
         Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));

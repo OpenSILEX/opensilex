@@ -239,11 +239,11 @@ a {
 en:
   AgroportalSearchFormPart:
     step1-title: Search
-    step2-title: Enrich
+    step2-title: Create
     step3-title: Mapping
     reuse: Reuse
     save: Save
-    enrich: Enrich
+    createNew: Create New
     create: Create
     map: Map
     skip: Skip
@@ -277,11 +277,11 @@ en:
 fr:
   AgroportalSearchFormPart:
     step1-title: Chercher
-    step2-title: Enrichir
+    step2-title: Créer
     step3-title: Mapper
     reuse: Réutiliser
     save: Enregistrer
-    enrich: Enrichir
+    createNew: Créer Nouveau
     create: Créer
     map: Mapper
     skip: Passer

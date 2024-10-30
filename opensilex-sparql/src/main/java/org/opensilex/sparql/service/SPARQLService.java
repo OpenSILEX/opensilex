@@ -87,6 +87,8 @@ import static org.opensilex.utils.LogFilter.*;
 public class SPARQLService extends BaseService implements SPARQLConnection, Service, AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
+    public static final Var URI_VAR = makeVar(SPARQLResourceModel.URI_FIELD);
+    public static final Var TYPE_VAR = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;

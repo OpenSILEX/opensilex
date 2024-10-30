@@ -25,17 +25,24 @@ public interface SparqlMapper<T extends SPARQLResourceModel> {
         return instance;
     }
 
-    void setLabel(T instance, SPARQLResult result, String lang) throws Exception;
+    default void setLabel(T instance, SPARQLResult result, String lang) throws Exception {
 
-    void setLabelProperties(T instance, SPARQLResult result, String lang) throws Exception;
+    }
 
-    void setDataProperties(T instance, SPARQLResult result, String lang) throws Exception;
+    default void setLabelProperties(T instance, SPARQLResult result, String lang) throws Exception {
+    }
 
-    void setObjectProperties(T model, SPARQLResult result, String lang) throws Exception;
+    default void setDataProperties(T instance, SPARQLResult result, String lang) throws Exception {
+    }
 
-    void setDataListProperties(T instance, SPARQLResult result, String lang) throws Exception;
+    default void setObjectProperties(T model, SPARQLResult result, String lang) throws Exception {
+    }
 
-    void setObjectListProperties(T model, SPARQLResult result, String lang) throws Exception;
+    default void setDataListProperties(T instance, SPARQLResult result, String lang) throws Exception {
+    }
+
+    default void setObjectListProperties(T model, SPARQLResult result, String lang) throws Exception {
+    }
 
     Constructor<T> getConstructor();
 

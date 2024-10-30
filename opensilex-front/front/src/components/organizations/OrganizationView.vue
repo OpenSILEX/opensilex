@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <opensilex-CreateButton
                 id="createOrgaButton"
-                @click="OnCreateClick()"
+                @click="onCreateClick()"
                 label="OrganizationView.create"
                 class="createButton">
         </opensilex-CreateButton>

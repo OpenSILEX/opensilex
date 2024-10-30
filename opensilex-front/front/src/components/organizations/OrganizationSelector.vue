@@ -5,7 +5,7 @@
     :selected.sync="organizationsURI"
     :multiple="multiple"
     :options="organizationsOptions"
-    placeholder="OrganizationTree.filter-placeholder"
+    placeholder="OrganizationSelector.filter-placeholder"
     @select="select"
     @deselect="deselect"
   ></opensilex-FormSelector>
@@ -69,5 +69,11 @@ export default class OrganizationSelector extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
-</style>
+<i18n>
+en:
+  OrganizationSelector:
+    filter-placeholder: "Search organizations"
+fr:
+  OrganizationSelector:
+    filter-placeholder: "Rechercher des organisations"
+</i18n>

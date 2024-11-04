@@ -5023,7 +5023,7 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#HumiditySensor">
         <rdfs:label xml:lang="en">Humidity sensor</rdfs:label>
-        <rdfs:label xml:lang="fr">capteur d&apos;humidité</rdfs:label>
+        <rdfs:label xml:lang="fr">Capteur d&apos;humidité</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ITKDocument">
         <rdfs:label xml:lang="fr">ITK</rdfs:label>
@@ -5151,7 +5151,7 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">Document Technique</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#TemperatureSensor">
-        <rdfs:label xml:lang="fr">capteur de température</rdfs:label>
+        <rdfs:label xml:lang="fr">Capteur de température</rdfs:label>
         <rdfs:label xml:lang="en">Temperature sensor</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#TemporalArea">

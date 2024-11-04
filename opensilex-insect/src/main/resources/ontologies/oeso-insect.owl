@@ -650,6 +650,14 @@
     </owl:Class>
     
 
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#PestAttack -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#PestAttack">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="en">Pest attack</rdfs:label>
+        <rdfs:label xml:lang="fr">Attaque de ravageurs</rdfs:label>
+    </owl:Class>
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso-insect#Loss -->
 

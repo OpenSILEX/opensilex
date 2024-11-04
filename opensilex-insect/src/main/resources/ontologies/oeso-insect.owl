@@ -290,7 +290,22 @@
         <rdfs:label xml:lang="en">Event</rdfs:label>
         <rdfs:label xml:lang="fr">Événement</rdfs:label>
     </owl:Class>
-    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Sampling -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Sampling">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Échantillonnage</rdfs:label>
+        <rdfs:label xml:lang="en">Sampling</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://purl.org/dc/dcmitype/StillImage">
+        <rdfs:subClassOf rdf:resource="http://purl.org/dc/dcmitype/Image"/>
+        <rdfs:comment xml:lang="en">Examples include paintings, drawings, graphic designs, plans and maps. Recommended best practice is to assign the type Text to images of textual materials. Instances of the type Still Image must also be describable as instances of the broader type Image.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Image fixe</rdfs:label>
+        <rdfs:label xml:lang="en">Still image</rdfs:label>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#Incident -->
@@ -302,7 +317,15 @@
         <rdfs:label xml:lang="en">Incident</rdfs:label>
         <rdfs:label xml:lang="fr">Incident</rdfs:label>
     </owl:Class>
-    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#ObservedPhenology -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#ObservedPhenology">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Phénologie observée</rdfs:label>
+        <rdfs:label xml:lang="en">Observed phenology</rdfs:label>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement -->
@@ -312,17 +335,25 @@
         <rdfs:label xml:lang="fr">Gestion d&apos;objet scientifique</rdfs:label>
         <rdfs:label xml:lang="en">Scientific object management</rdfs:label>
     </owl:Class>
-    
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#Trouble -->
+    <!-- http://www.opensilex.org/vocabulary/oeso-insect#Treatment -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Trouble">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
-        <rdfs:label xml:lang="fr">Problème</rdfs:label>
-        <rdfs:label xml:lang="en">Trouble</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso-insect#Treatment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
+        <rdfs:label xml:lang="fr">Traitement</rdfs:label>
+        <rdfs:label xml:lang="en">Treatment</rdfs:label>
     </owl:Class>
-    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
+
+   <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
+        <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Événement lié a un objet</rdfs:comment>
+        <rdfs:label xml:lang="fr">Traitement</rdfs:label>
+        <rdfs:label xml:lang="en">Treatment</rdfs:label>
+   </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->

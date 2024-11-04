@@ -1986,14 +1986,6 @@ OESO</rdfs:label>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#ControlLaw -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ControlLaw">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
@@ -2460,13 +2452,6 @@ OESO</rdfs:label>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-    </owl:Class>
-
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
@@ -2725,14 +2710,6 @@ OESO</rdfs:label>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
@@ -2836,14 +2813,6 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RGBImage">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Image"/>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RadiationSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RadiationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
     </owl:Class>
 
 
@@ -3273,14 +3242,6 @@ OESO</rdfs:label>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:Class>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#WebSite -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WebSite">
@@ -3288,28 +3249,6 @@ OESO</rdfs:label>
     </owl:Class>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WeighingScale -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
-    </owl:Class>
 
 
 
@@ -4016,13 +3955,6 @@ If values are not provided for the following Observation properties, they may be
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Computation"/>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ControlLaw -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ControlLaw"/>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
@@ -4134,11 +4066,6 @@ If values are not provided for the following Observation properties, they may be
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor"/>
-
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
@@ -4236,12 +4163,6 @@ If values are not provided for the following Observation properties, they may be
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor"/>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Project"/>
@@ -4263,12 +4184,6 @@ If values are not provided for the following Observation properties, they may be
     <!-- http://www.opensilex.org/vocabulary/oeso#RGBImage -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#RGBImage"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RadiationSensor -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
 
 
 
@@ -4396,33 +4311,12 @@ If values are not provided for the following Observation properties, they may be
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector"/>
-
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#WebSite -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#WebSite"/>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WeighingScale -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindSensor -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#WindSensor"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea"/>
 
 
 
@@ -5039,10 +4933,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Computation</rdfs:label>
         <rdfs:label xml:lang="fr">Calcul</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ControlLaw">
-        <rdfs:label xml:lang="fr">Loi de commande</rdfs:label>
-        <rdfs:label xml:lang="en">Control law</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile">
         <rdfs:comment xml:lang="en">Datafile is a type of data, group in a file, like HDF5 archive or images.</rdfs:comment>
         <rdfs:label xml:lang="fr">Fichier de données</rdfs:label>
@@ -5123,10 +5013,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Floodable area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
-        <rdfs:label xml:lang="en">Gas sensor</rdfs:label>
-        <rdfs:label xml:lang="fr">Capteur d&apos;air</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
         <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
@@ -5136,7 +5022,7 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Germplasm group</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#HumiditySensor">
-        <rdfs:label xml:lang="en">humidity sensor</rdfs:label>
+        <rdfs:label xml:lang="en">Humidity sensor</rdfs:label>
         <rdfs:label xml:lang="fr">capteur d&apos;humidité</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ITKDocument">
@@ -5193,10 +5079,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">Population</rdfs:label>
         <rdfs:label xml:lang="en">Population</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor">
-        <rdfs:label xml:lang="fr">capteur de précipitation</rdfs:label>
-        <rdfs:label xml:lang="en">precipitation sensor</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
         <rdfs:label xml:lang="fr">projet</rdfs:label>
         <rdfs:comment xml:lang="en">PROJECT (e.g. EU or national projects) involves partners that are in charge of experiments performed in one or more local organizations.</rdfs:comment>
@@ -5213,10 +5095,6 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#RGBImage">
         <rdfs:label xml:lang="en">RGB image</rdfs:label>
         <rdfs:label xml:lang="fr">image RGB</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#RadiationSensor">
-        <rdfs:label xml:lang="fr">capteur de rayonnement</rdfs:label>
-        <rdfs:label xml:lang="en">radiation sensor</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Report">
         <rdfs:label xml:lang="fr">Rapport de stage</rdfs:label>
@@ -5274,7 +5152,7 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#TemperatureSensor">
         <rdfs:label xml:lang="fr">capteur de température</rdfs:label>
-        <rdfs:label xml:lang="en">temperature sensor</rdfs:label>
+        <rdfs:label xml:lang="en">Temperature sensor</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#TemporalArea">
         <rdfs:comment xml:lang="en">Area that are link to an event.</rdfs:comment>
@@ -5303,25 +5181,9 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">Groupe de variables</rdfs:label>
         <rdfs:label xml:lang="en">Group of variables</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
-        <rdfs:label xml:lang="en">Vector</rdfs:label>
-        <rdfs:label xml:lang="fr">Vecteur</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WebSite">
         <rdfs:label xml:lang="fr">Site web</rdfs:label>
         <rdfs:label xml:lang="en">Web Site</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale">
-        <rdfs:label xml:lang="en">weighing scale</rdfs:label>
-        <rdfs:label xml:lang="fr">balance</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WindSensor">
-        <rdfs:label xml:lang="en">wind sensor</rdfs:label>
-        <rdfs:label xml:lang="fr">anémomètre</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:label xml:lang="fr">Zone venteuse</rdfs:label>
-        <rdfs:label xml:lang="en">Windy area</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
         <rdfs:label xml:lang="en">last calibration</rdfs:label>

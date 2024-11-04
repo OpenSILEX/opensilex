@@ -1,6 +1,6 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{$t(title)}}</span>
+  <span :class="['field-view-title', customClass]">{{$t(title)}}</span>
     <span class="static-field-line">
       <opensilex-UriLink :uri="uri" :value="value" :url="url" :to="to"></opensilex-UriLink>
     </span>
@@ -29,6 +29,10 @@ export default class UriView extends Vue {
   @Prop({default : "component.common.uri"})
   title: string;
 
+  @Prop({ default: '' })
+customClass: string;
+
+
   copy = copy;
 }
 </script>
@@ -36,6 +40,10 @@ export default class UriView extends Vue {
 <style scoped lang="scss">
 .static-field-line {
   word-wrap: normal;
+}
+
+.specificProperties {
+  min-width: 250px
 }
 </style>
 

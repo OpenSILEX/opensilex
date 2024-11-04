@@ -10,12 +10,14 @@ ontologies:
 file-system:
     fs:
         config:
-            defaultFS: local
+            defaultFS: S3
             connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
+                S3:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
                     config:
-                        basePath: ../../opensilex-data
+                        endpoint: https://s3-tls.stockage.inra.fr
+                        bucket: tester
+                        profile: insects
                 #     irods:
                 #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
                 #         config:

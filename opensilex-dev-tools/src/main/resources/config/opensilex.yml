@@ -37,6 +37,35 @@ big-data:
             database: opensilex
     #            timezone: Europe/Paris
 
+core:
+    enableLogs: true
+    enableOntologyCaching: false
+    metrics:
+        # Metrics configs about system (SystemMetricsConfig)
+        enableMetrics: true
+        system:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 30
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: MINUTES
+        # Metrics configs about experiments (ExperimentsMetricsConfig)
+        experiments:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 30
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: MINUTES
+
+front:
+    theme: opensilex-insect#insect
+    loginComponent: opensilex-insect-InsectLoginComponent
+    headerComponent: opensilex-insect-InsectHeaderComponent
+    applicationName: Insects
+
+
 phisws:
     infrastructure: opensilex
 # Configuration for module: SecurityModule (SecurityConfig)
@@ -74,6 +103,7 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+        org.opensilex.phis.PhisWsModule: opensilex-phis.jar
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"

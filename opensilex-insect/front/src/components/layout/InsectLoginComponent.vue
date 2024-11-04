@@ -3,7 +3,7 @@
     <template v-slot:loginMedia>
        <img
 
-           v-bind:src="$opensilex.getResourceURI('images/T.brassicae_E.kuehniella-1.jpg')"
+           v-bind:src="$opensilex.getResourceURI('images/T.brassicae_E.kuehniella.jpg')"
       />
 
 

@@ -290,10 +290,6 @@ export default class EventList extends Vue {
     $service: EventsService
     $i18n: any;
     $store: any;
-    uriLabels = {};
-    uriPaths = {};
-    specificPropertiesLabels = {}
-    specificPropertiesPaths = {}
 
     @Prop({
         default: false
@@ -336,6 +332,11 @@ export default class EventList extends Vue {
 
     @Prop()
     context;
+
+    uriLabels : {[key : string] : string} = {};
+    uriPaths : {[key : string] : string} = {};
+    specificPropertiesLabels : {[key : string] : string} = {};
+    specificPropertiesPaths : {[key : string] : string} = {};
 
     baseType: string;
 
@@ -534,15 +535,13 @@ export default class EventList extends Vue {
         if (this.isMove(event)) {
             return this.$service.getMoveEvent(event.uri);
         } else {
-
-            let promiseObject = this.ontologyService
+            this.ontologyService
                 .getURILabelsList(event.targets)
                 .then((httpObj) => {
                     for (let target in event.target) {
                         this.selectedEventTargetsNames.push(target)
                     }
                 })
-                promiseObject;
             return this.$service.getEventDetails(event.uri);
         }
     }
@@ -560,7 +559,7 @@ export default class EventList extends Vue {
             this.selectedEvent = http.response.result;
 
             // retrieving target names
-            let promiseObject = this.ontologyService
+            this.ontologyService
                 .getURILabelsList(this.selectedEvent.targets)
                 .then((httpObj) => {
                     for (let element of httpObj.response.result){
@@ -582,7 +581,7 @@ export default class EventList extends Vue {
             })
 
             // retrieving specific properties names
-            let specificPropertiesPromiseObject = this.ontologyService
+            this.ontologyService
             .getURILabelsList(this.selectedEvent.relations.map(relation => relation.value))
             .then((httpObj) => {
                 for (let element of httpObj.response.result){

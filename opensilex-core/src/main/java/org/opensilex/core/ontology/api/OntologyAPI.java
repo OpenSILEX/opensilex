@@ -623,7 +623,7 @@ public class OntologyAPI {
         return new SingleObjectResponse<>(uriLabel).getResponse();
     }
 
-    @GET
+    @POST
     @Path("/uris_labels")
     @ApiOperation("Return associated rdfs:label of uris if they exist")
     @ApiProtected
@@ -633,7 +633,7 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return URI label", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getURILabelsList(
-            @ApiParam(value = "URIs to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris,
+            @ApiParam(value = "URIs to get label from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris,
             @ApiParam(value = "Context URI") @QueryParam("context") @ValidURI URI context,
             @ApiParam(value = "Look for all contexts if not present in specified context") @QueryParam("searchDefault") Boolean searchDefault
     ) throws Exception {
@@ -693,7 +693,7 @@ public class OntologyAPI {
                 .getResponse();
     }
 
-    @GET
+    @POST
     @Path("/uri_types")
     @ApiOperation("Return all rdf types of an uri")
     @ApiProtected
@@ -703,7 +703,7 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class, responseContainer = "List")
     })
     public Response getURITypes(
-            @ApiParam(value = "URIs to get types from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris
+            @ApiParam(value = "URIs to get types from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 

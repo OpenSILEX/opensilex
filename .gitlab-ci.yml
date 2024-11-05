@@ -1014,6 +1014,7 @@ test:emilie:deploy:
 ##  BRICE-TEST-BUILD-DEPLOYMENT
 ###################################
 
+
 test:temporary3:build:
   <<: *build_template_with_opensilex
   variables:

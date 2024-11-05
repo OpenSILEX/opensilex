@@ -1,16 +1,15 @@
 package org.opensilex.sparql.utils;
 
 import org.opensilex.OpenSilex;
-import org.opensilex.sparql.model.A;
-import org.opensilex.sparql.model.B;
-import org.opensilex.sparql.model.C;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,10 +20,11 @@ public class OpenSilexTestEnvironment {
 
     private static OpenSilexTestEnvironment INSTANCE;
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexTestEnvironment.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(OpenSilexTestEnvironment.class);
 
     private final OpenSilex openSilex;
     private final SPARQLService sparql;
+    private final SPARQLServiceFactory sparqlServiceFactory;
 
     public static OpenSilexTestEnvironment getInstance() throws Exception {
         if (INSTANCE == null) {
@@ -33,7 +33,7 @@ public class OpenSilexTestEnvironment {
         return INSTANCE;
     }
 
-    private OpenSilexTestEnvironment() throws Exception {
+    public OpenSilexTestEnvironment() throws Exception {
 
         Map<String, String> args = new HashMap<>();
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
@@ -44,8 +44,8 @@ public class OpenSilexTestEnvironment {
         LOGGER.debug("Create OpenSilex instance for Unit Test");
         openSilex = OpenSilex.createInstance(args);
 
-        SPARQLServiceFactory factory = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        factory.getMapperIndex().addClasses(
+        sparqlServiceFactory = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        sparqlServiceFactory.getMapperIndex().addClasses(
                 A.class,
                 B.class,
                 C.class
@@ -63,6 +63,12 @@ public class OpenSilexTestEnvironment {
 
     public void stopOpenSilex() throws Exception {
         openSilex.shutdown();
+    }
+
+    public void addTestClasses(List<Class<? extends SPARQLResourceModel>> newClasses) throws SPARQLInvalidClassDefinitionException {
+        for(var clazz : newClasses) {
+            sparqlServiceFactory.getMapperIndex().addClasses(clazz);
+        }
     }
 
 }

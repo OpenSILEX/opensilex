@@ -277,7 +277,7 @@ export default class OrganizationList extends Vue {
   public refresh(): void {
     this.fetchOrganization()
 
-    if(this.allOrganizations !== []){
+    if(this.SearchFiltersToggle && this.allOrganizations !== []){
       this.refreshOrganizationsForParentFilter();
     }
   }

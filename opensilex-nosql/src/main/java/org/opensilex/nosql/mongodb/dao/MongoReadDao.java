@@ -44,6 +44,17 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
     @NotNull T get(ClientSession session, @NotNull URI uri) throws NoSQLInvalidURIException;
 
     /**
+     * Get a model by its URI within a client session. And apply projection.
+     *
+     * @param session The MongoDB client session. Can be null.
+     * @param uri     The URI of the model to retrieve.
+     * @param projection The projection to apply to result.
+     * @return The model corresponding to the given URI.
+     * @throws NoSQLInvalidURIException If no Model with the given URI is found from database
+     */
+    @NotNull T get(ClientSession session, @NotNull URI uri, Bson projection) throws NoSQLInvalidURIException;
+
+    /**
      * Finds multiple documents in the specified MongoCollection based on a collection of URIs.
      *
      * @param uris       The collection of URIs to search for documents
@@ -220,6 +231,24 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
      * @return Stream<T>         The Stream of results after aggregation
      */
     Stream<T> aggregateAsStream(List<Bson> aggregationPipeline);
+
+    /**
+     * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
+     *
+     * @param aggregationPipeline The list of aggregation arguments
+     * @param <T_RESULT>          The type of elements returned
+     * @return List<T_RESULT>           The set of results after aggregation
+     */
+    <T_RESULT> List<T_RESULT> aggregate(List<Bson> aggregationPipeline, @NotNull Class<T_RESULT> resultClass);
+
+    /**
+     * Performs an aggregation operation on the specified collection using the provided aggregation arguments.
+     *
+     * @param aggregationPipeline The list of aggregation arguments
+     * @param <T_RESULT>          The type of elements returned
+     * @return Stream<T_RESULT>         The Stream of results after aggregation
+     */
+    <T_RESULT> Stream<T_RESULT> aggregateAsStream(List<Bson> aggregationPipeline, @NotNull Class<T_RESULT> resultClass);
 
     /**
      * Perform a lookup aggregation to join collections and apply a conversion function.

@@ -192,7 +192,7 @@ public class UnitAPI {
         BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
 
         UnitModel model = dto.newModel();
-        dao.update(model);
+        dao.update(model, currentUser);
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();    }
 
@@ -214,7 +214,7 @@ public class UnitAPI {
             @ApiParam(value = "Unit URI", example = "http://opensilex.dev/set/variables/unit/Centimeter", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
-        dao.delete(uri, Oeso.hasUnit);
+        dao.delete(uri, Oeso.hasUnit, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

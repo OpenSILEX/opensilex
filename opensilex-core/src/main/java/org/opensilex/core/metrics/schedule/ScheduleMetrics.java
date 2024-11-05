@@ -21,6 +21,7 @@ import org.opensilex.core.CoreConfig;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.metrics.dal.MetricDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -77,11 +78,13 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     } catch (IllegalArgumentException e) {
                         throw new RuntimeException("Bad experiment time unit set" + systemTimeUnit);
                     }
-                    MetricDAO metricsDao = new MetricDAO(sparql, nosql);
+
+                    AccountModel user = AccountModel.getSystemUser();
+                    MetricDAO metricsDao = new MetricDAO(sparql, nosql,user);
                     scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
                     scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsDao), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
 
-                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit.toString() + "and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit" + systemTimeUnit.toString());
+                    LOGGER.debug("start " + SCHEDULE_METRICS + " with parameters experimentsTimeBeforeFirstMetric : " + experimentsTimeBeforeFirstMetric + " , delayBetweenExperimentMetrics" + delayBetweenExperimentsMetrics + " with timeUnit" + experimentsTimeUnit.toString() + " and systemTimeBeforeFirstMetric : " + systemTimeBeforeFirstMetric + ", delayBetweenSystemMetrics" + delayBetweenSystemMetrics + " with timeUnit " + systemTimeUnit.toString());
                 } catch (OpenSilexModuleNotFoundException ex) {
                     LOGGER.debug("error on start " + SCHEDULE_METRICS);
                     LOGGER.error(ex.getMessage(), ex);

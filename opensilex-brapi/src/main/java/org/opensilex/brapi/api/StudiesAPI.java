@@ -11,9 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.opensilex.brapi.model.*;
 import org.opensilex.brapi.responses.*;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
@@ -203,7 +204,7 @@ public class StudiesAPI extends BrapiCall {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organisationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
@@ -275,8 +276,8 @@ public class StudiesAPI extends BrapiCall {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, Collections.singletonList(studyDbId), null, null, null);
+        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, currentUser);
+        List<VariableModel> variables = dataBLL.getUsedVariables(Collections.singletonList(studyDbId), null, null, null);
 
         BaseVariableDAO<MethodModel> baseVariableDAO = new BaseVariableDAO<>(MethodModel.class, sparql);
         ListWithPagination<VariableModel> variablesPaginated = new ListWithPagination<>(variables, page, pageSize, variables.size());
@@ -317,11 +318,11 @@ public class StudiesAPI extends BrapiCall {
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventDAO moveEventDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         GeospatialDAO geospatialDAO = new GeospatialDAO(nosql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
@@ -344,7 +345,7 @@ public class StudiesAPI extends BrapiCall {
                         dataDAO,
                         xpDao.get(studyDbId, currentUser),
                         ontologyDAO,
-                        moveEventDAO,
+                        moveLogic,
                         geospatialDAO,
                         germplasmDAO,
                         sparql);

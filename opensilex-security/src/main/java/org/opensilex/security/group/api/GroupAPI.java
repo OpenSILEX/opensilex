@@ -239,23 +239,15 @@ public class GroupAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchGroups(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*")
-            @DefaultValue(".*")
-            @QueryParam("name") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc")
-            @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0")
-            @QueryParam("page")
-            @DefaultValue("0")
-            @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20")
-            @QueryParam("page_size")
-            @DefaultValue("20")
-            @Min(0) int pageSize
+            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         ListWithPagination<GroupModel> resultList = dao.search(
                 pattern,
+                currentUser.getLanguage(),
                 orderByList,
                 page,
                 pageSize

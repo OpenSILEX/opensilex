@@ -25,7 +25,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
       ref="experimentForm"
       @onCreate="redirectToCreatedExperiment"
-      @onUpdate="this.experimentList.updateSelectedExperiment()"
+      @onUpdate="experimentList.updateSelectedExperiment()"
     ></opensilex-ExperimentForm>
 
   </div>
@@ -42,6 +42,7 @@ export default class ExperimentListView extends Vue {
   $store: any;
 
   @Ref("experimentForm") readonly experimentForm!: any;
+  @Ref("experimentList") readonly experimentList!: any;
 
   get user() {
     return this.$store.state.user;
@@ -51,7 +52,6 @@ export default class ExperimentListView extends Vue {
     return this.$store.state.credentials;
   }
 
-  @Ref("experimentList") readonly experimentList!: any;
   refresh() {
     this.experimentList.refresh();
   }

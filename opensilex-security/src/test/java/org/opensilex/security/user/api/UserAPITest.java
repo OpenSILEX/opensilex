@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -34,6 +35,16 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 //    }
     public static String path = "security/users";
     public static String createPath = path ;
+    public static ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(UserAPI.class.getMethod("createUser", UserCreationDTO.class), path);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String updatePath = path ;
     public static String getPath = path + "/{uri}";
     public String deletePath = path + "/{uri}";
@@ -70,7 +81,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well-formed URI, else throw exception
@@ -78,7 +89,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        postResult = getJsonPostResponseAsAdmin(target(createPath), getUser2CreationDTO());
+        postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser2CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well-formed URI, else throw exception
@@ -91,7 +102,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
     public void testUpdate_accountHasNoHolderAndWillNotHave() throws Exception {
         UserGetDTO createdUser = getUser1CreationDTO();
         // create the user
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), createdUser);
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), createdUser);
         URI userURI = extractUriFromResponse(postResult);
         URI holderOfTheAccountUri = new AccountDAO(getSparqlService()).get(userURI).getLinkedPerson().getUri();
 
@@ -135,12 +146,12 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         PersonDTO newHolder = new PersonDTO();
         newHolder.setFirstName("bib");
         newHolder.setLastName("elot");
-        Response personCreated = getJsonPostResponseAsAdmin(target(PersonAPITest.createPath), newHolder);
+        Response personCreated = getJsonPostResponseAsAdmin(target(PersonAPITest.create.getPathTemplate()), newHolder);
         assertEquals(Response.Status.CREATED.getStatusCode(), personCreated.getStatus());
         URI newHolderURI = extractUriFromResponse(personCreated);
 
         UserGetDTO createdUser = getUser1CreationDTO();
-        Response userCreated = getJsonPostResponseAsAdmin(target(createPath), createdUser);
+        Response userCreated = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), createdUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), userCreated.getStatus());
         URI userURI = extractUriFromResponse(userCreated);
 
@@ -162,7 +173,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 //    @Test
 //    public void testDelete() throws Exception {
 //        // create object and check if URI exists
-//        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+//        Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser1CreationDTO());
 //        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 //        String uri = extractUriFromResponse(postResponse).toString();
 //
@@ -176,7 +187,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testGetByUriFail() throws Exception {
-        final Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        final Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser1CreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
 
         // call the service with a non-existing pseudo random URI
@@ -186,10 +197,10 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testSearch() throws Exception {
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        postResult = getJsonPostResponseAsAdmin(target(createPath), getUser2CreationDTO());
+        postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser2CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -224,11 +235,11 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testGetByURIs() throws Exception {
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser1CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
         URI user1URI = extractUriFromResponse(postResult);
 
-        postResult = getJsonPostResponseAsAdmin(target(createPath), getUser2CreationDTO());
+        postResult = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), getUser2CreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
         URI user2URI = extractUriFromResponse(postResult);
 

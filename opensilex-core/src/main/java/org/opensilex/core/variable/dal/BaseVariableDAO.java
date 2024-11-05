@@ -10,6 +10,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
@@ -62,7 +63,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
         return instanceList;
     }
 
-    public T update(T instance) throws Exception {
+    public T update(T instance, AccountModel currentUser) throws Exception {
         sparql.update(instance);
         return instance;
     }
@@ -71,6 +72,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      * Delete a resource associated to a variable
      * @param uri URI of the resource to delete (required)
      * @param property The property which link the given uri to a {@link VariableModel} (required)
+     * @param currentUser the current user, needed to count data
      * @throws DisplayableBadRequestException if the resource is linked to an existing variable
      * @throws Exception if some errors occurs during deletion operation
      *
@@ -79,7 +81,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      * {@code delete(:entity_uri,Oeso.hasEntity)} will delete the given entity by checking
      * if some variable is linked to the entity, before deleting it
      */
-    public void delete(URI uri, Property property) throws DisplayableBadRequestException, Exception {
+    public void delete(URI uri, Property property, AccountModel currentUser) throws DisplayableBadRequestException, Exception {
         Objects.requireNonNull(uri);
         Objects.requireNonNull(property);
 

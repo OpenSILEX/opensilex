@@ -18,7 +18,7 @@
       </b-row>
     </template>
     <template>
-      <opensilex-SelectForm
+      <opensilex-FormSelector
         label="DataExportModal.select-format"
         :selected.sync="format"
         :required="true"
@@ -26,7 +26,7 @@
         :clearable="false"
         helpMessage="DataExportModal.select-format-help"
         :options="options"
-      ></opensilex-SelectForm>
+      ></opensilex-FormSelector>
       <opensilex-FormField
         label="DataExportModal.check-raw-data"
         helpMessage="DataExportModal.raw-data-help"

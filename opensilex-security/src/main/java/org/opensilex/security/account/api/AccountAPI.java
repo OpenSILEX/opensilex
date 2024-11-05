@@ -245,8 +245,12 @@ public class AccountAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         AccountDAO dao = new AccountDAO(sparql);
-        ListWithPagination<AccountModel> resultList = dao.search(
+        ListWithPagination<AccountModel> resultList = dao.searchWithNoGroupUserProfiles(
                 pattern,
+                null,
+                null,
+                true,
+                true,
                 orderByList,
                 page,
                 pageSize

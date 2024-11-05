@@ -95,7 +95,7 @@
                 <!-- Scientific objects -->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
-                    <opensilex-SelectForm
+                    <opensilex-ModalFormSelector
                         ref="soSelector"
                         label="DataView.filter.scientificObjects"
                         placeholder="DataView.filter.scientificObjects-placeholder"
@@ -103,7 +103,6 @@
                         modalComponent="opensilex-ScientificObjectModalList"
                         class="searchFilter"
                         :filter.sync="soFilter"
-                        :isModalSearch="true"
                         :clearable="true"
                         :multiple="true"
                         @clear="refreshSoSelector"
@@ -111,7 +110,7 @@
                         @onClose="refreshComponent"
                         @select="refreshComponent"
                         :limit="1"
-                    ></opensilex-SelectForm>
+                    ></opensilex-ModalFormSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -153,13 +152,13 @@
                 <!-- Operator -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-AccountSelector
-                      :users.sync="filter.operators"
+                    <opensilex-PersonSelector
+                      :persons.sync="filter.operators"
                       label="DataView.filter.operator"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                       :multiple="true"
-                    ></opensilex-AccountSelector>
+                    ></opensilex-PersonSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -388,7 +387,6 @@ export default class DataView extends Vue {
   }
 
   updateSOFilter() {
-
     this.refreshComponent();
     this.soFilter.experiment = this.filter.experiments[0];
     this.soSelector.refreshModalSearch();

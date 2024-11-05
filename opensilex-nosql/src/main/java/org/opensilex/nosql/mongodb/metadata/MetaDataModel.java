@@ -1,5 +1,6 @@
 package org.opensilex.nosql.mongodb.metadata;
 
+import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.util.Map;
@@ -28,4 +29,5 @@ public class MetaDataModel extends MongoModel {
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
+
 }

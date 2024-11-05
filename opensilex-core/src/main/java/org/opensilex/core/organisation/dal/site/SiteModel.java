@@ -1,7 +1,10 @@
 package org.opensilex.core.organisation.dal.site;
 
 import org.apache.jena.vocabulary.ORG;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -35,6 +38,12 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     public static final String ADDRESS_FIELD = "address";
 
     @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    String description;
+
+    @SPARQLProperty(
             ontology = ORG.class,
             property = "hasSite",
             ignoreUpdateIfNull = true,
@@ -60,6 +69,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     protected List<FacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
 
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+    public static final String OBSERVATION_COLLECTION_FIELD = "LocationObservationCollection";
 
     public SiteAddressModel getAddress() {
         return address;
@@ -68,6 +85,10 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     public void setAddress(SiteAddressModel address) {
         this.address = address;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     public List<OrganizationModel> getOrganizations() {
         return organizations;
@@ -93,6 +114,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         this.facilities = facilities;
     }
 
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection( LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
+    }
+
     public List<URI> getOrganizationURIListOrEmpty() {
         if (getOrganizations() == null) {
             return Collections.emptyList();
@@ -101,5 +130,13 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         return getOrganizations().stream()
                 .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String[] getInstancePathSegments(SiteModel instance) {
+        return new String[]{
+                "site",
+                instance.getName()
+        };
     }
 }

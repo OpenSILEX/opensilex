@@ -1,8 +1,12 @@
-//******************************************************************************
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
+/*
+ * *****************************************************************************
+ *                         OrganizationDAO.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/06/2024 10:10
+ * Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr, gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
 package org.opensilex.core.organisation.dal;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -16,7 +20,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -42,7 +45,6 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class OrganizationDAO {
 
     protected final SPARQLService sparql;
-    protected final MongoDBService nosql;
     protected final OrganizationSPARQLHelper organizationSPARQLHelper;
 
     /**
@@ -54,9 +56,12 @@ public class OrganizationDAO {
     private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
             .build();
 
-    public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
+    public void invalidateCache() {
+        userOrganizationCache.invalidateAll();
+    }
+
+    public OrganizationDAO(SPARQLService sparql) throws Exception {
         this.sparql = sparql;
-        this.nosql = nosql;
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }
@@ -214,9 +219,12 @@ public class OrganizationDAO {
         }
 
         Set<URI> restrictedOrganizationSet = Objects.nonNull(filter.getRestrictedOrganizations()) ?  new HashSet<>(filter.getRestrictedOrganizations()) : null;
-        Pattern pattern = StringUtils.isNotEmpty(filter.getNameFilter()) ? Pattern.compile(filter.getNameFilter(), Pattern.CASE_INSENSITIVE) : null;
+        Pattern namePattern = StringUtils.isNotEmpty(filter.getNameFilter()) ? Pattern.compile(filter.getNameFilter(), Pattern.CASE_INSENSITIVE) : null;
         return searchWithoutFilters(filter.getUser()).stream().filter(org -> {
-            if (Objects.nonNull(pattern) && !pattern.matcher(org.getName()).find()) {
+            if (Objects.nonNull(namePattern) && !namePattern.matcher(org.getName()).find()) {
+                return false;
+            }
+            if (Objects.nonNull(filter.getTypeUriFilter()) && !SPARQLDeserializers.compareURIs(filter.getTypeUriFilter(),org.getType())) {
                 return false;
             }
             if (Objects.nonNull(filter.getFacilityURI()) &&  org.getFacilities().stream().noneMatch(facilityModel -> SPARQLDeserializers.compareURIs(filter.getFacilityURI(),facilityModel.getUri()))) {
@@ -250,6 +258,13 @@ public class OrganizationDAO {
         validateOrganizationAccess(uri, user);
 
         return sparql.getByURI(OrganizationModel.class, uri, user.getLanguage());
+    }
+
+    public List<OrganizationModel> getByURIs(List<URI> uris, String lang) throws Exception {
+        return sparql.getListByURIs(
+                OrganizationModel.class,
+                uris,
+                lang);
     }
 
     /**

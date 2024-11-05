@@ -411,7 +411,7 @@ export default class VariableVisualizationTile extends Vue {
 
     if (dataLength >= 0) {
       const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
-      if (dataLength > 50000) {
+      if (dataLength > this.$store.state.graphDataLimit) {
         this.$opensilex.showInfoToast(
             this.$t("VariableVisualizationTile.limitSizeMessage", {count: dataLength }).toString()
         );

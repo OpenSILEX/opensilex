@@ -7,15 +7,16 @@ package org.opensilex.core.project.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.rest.validation.Required;
+
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.rest.validation.Required;
 
 /**
  * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}
@@ -69,9 +70,6 @@ public abstract class ProjectDTO {
 
     @JsonProperty("administrative_contacts")
     protected List<URI> administrativeContacts = new ArrayList<>();
-    
-    @JsonProperty("experiments")
-    protected List<URI> experiments = new ArrayList<>();
 
 
     public URI getUri() {
@@ -183,15 +181,6 @@ public abstract class ProjectDTO {
 
     public ProjectDTO setHomePage(URI homePage) {
         this.homePage = homePage;
-        return this;
-    }
-
-    public List<URI> getExperiments() {
-        return experiments;
-    }
-    
-    public ProjectDTO setExperiments(List<URI> experiments) {
-        this.experiments = experiments;
         return this;
     }
 

@@ -83,7 +83,7 @@
               <opensilex-FilterField>
                 <b-form-group>
                   <label for="parentFilter">{{ $t("ExperimentScientificObjects.parent-label") }}</label>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                     id="parentFilter"
                     :selected.sync="filters.parent"
                     :multiple="false"
@@ -92,7 +92,7 @@
                     :placeholder="$t('ExperimentScientificObjects.parent-placeholder')"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </b-form-group>
               </opensilex-FilterField>
             </div>

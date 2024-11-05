@@ -10,12 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
-import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
-import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
+import org.opensilex.core.organisation.api.facility.*;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -23,7 +21,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.core.Response;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -36,7 +33,19 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     protected final static String URI_PATH = PATH + "/{uri}";
     protected final static String URIS_PATH = PATH + "/by_uris";
     protected final static String SEARCH_PATH = PATH;
-    protected final static String CREATE_PATH = PATH;
+    public static final ServiceDescription create;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    FacilityAPI.class.getMethod("createFacility", FacilityCreationDTO.class),
+                    PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected final static String UPDATE_PATH = PATH;
     protected final static String DELETE_PATH = PATH + "/{uri}";
 
@@ -99,9 +108,9 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityUpdateDTO facility1 = getCreationDTO(1);
         FacilityUpdateDTO facility2 = getCreationDTO(2);
 
-        Response creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility1);
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility1);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility2);
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility2);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
 
         // test search with pattern which match the both facility
@@ -139,9 +148,9 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityUpdateDTO facility1 = getCreationDTO(1);
         FacilityUpdateDTO facility2 = getCreationDTO(2);
 
-        Response creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility1);
+        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility1);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility2);
+        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility2);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
 
 
@@ -180,7 +189,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
                 "Occitanie",
                 "2 place Pierre Viala"
         ), null);
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());
@@ -194,7 +203,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreateWithGeometry() throws Exception {
         FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, new Point(49, 3));
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());
@@ -215,7 +224,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
                 "Occitanie",
                 "2 place Pierre Viala"
         ), new Point(49, 3));
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());
@@ -230,7 +239,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreateWithoutAddressOrGeometry() throws Exception {
         FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());
@@ -244,7 +253,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testUpdateWithGeometry() throws Exception {
         FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());
@@ -262,7 +271,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testUpdateWithAddress() throws Exception {
         FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
-        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
         URI createdUri = new URI(objectUriResponse.getResult());

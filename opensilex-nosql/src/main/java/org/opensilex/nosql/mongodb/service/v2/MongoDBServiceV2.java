@@ -23,6 +23,7 @@ import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.nosql.mongodb.codec.ObjectCodec;
 import org.opensilex.nosql.mongodb.codec.URICodec;
+import org.opensilex.nosql.mongodb.codec.ZonedDateTimeCodec;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -115,6 +116,7 @@ public class MongoDBServiceV2 extends BaseService {
         try {
             if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
                 checkConnection(getImplementedConfig());
+                createIndexes();
             }
         } catch (MongoTimeoutException | MongoSecurityException e) {
             mongoClient.close();
@@ -246,7 +248,17 @@ public class MongoDBServiceV2 extends BaseService {
     public static MongoClient buildMongoDBClient(MongoDBConfig config) throws IOException {
 
         // Define custom codec registry for URI, Object and GeoJson
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()), CodecRegistries.fromProviders(new GeoJsonCodecProvider(), PojoCodecProvider.builder().register(URI.class).automatic(true).build()));
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromCodecs(
+                        new URICodec(),
+                        new ObjectCodec(),
+                        new ZonedDateTimeCodec()),
+                CodecRegistries.fromProviders(
+                        new GeoJsonCodecProvider(),
+                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
+                )
+        );
 
         // Build client : set server, codec and socket settings
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()

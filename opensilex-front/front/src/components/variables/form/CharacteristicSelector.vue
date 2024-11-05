@@ -1,20 +1,22 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :selected.sync="characteristicURI"
     :multiple="multiple"
     :searchMethod="searchCharacteristics"
     :itemLoadingMethod="loadCharacteristics"
-    :clearable="clearable"
     :placeholder="placeholder"
-    @loadMoreItems="loadMoreItems"
+    :actionHandler="actionHandler"
+    :required="required"
+    :helpMessage="helpMessage"
+    :conversionMethod="objectToSelectNode"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
     @keyup.enter.native="onEnter"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -24,15 +26,16 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {CharacteristicGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class CharacteristicSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   currentPage: number = 0;
   pageSize = 10;
+  page = 0;
 
-  @PropSync("characteristic")
+  @PropSync("selected")
   characteristicURI;
 
   @Prop()
@@ -42,30 +45,31 @@ export default class CharacteristicSelector extends Vue {
   multiple;
 
   @Prop()
-  clearable;
+  helpMessage;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  required;
 
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm<CharacteristicGetDTO>;
+  @Prop()
+  conversionMethod;
+
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Watch("sharedResourceInstance")
   onSriChange() {
-    this.selectForm.refresh();
+    this.formSelector.refresh();
   }
 
   get placeholder() {
     return this.multiple
       ? "component.characteristic.form.selector.placeholder-multiple"
       : "component.characteristic.form.selector.placeholder";
-  }
-
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.selectForm.refresh();
-    this.$nextTick(() => {
-      this.selectForm.openTreeselect();
-    })
   }
 
   loadCharacteristics(characteristics): Promise<Array<CharacteristicGetDTO>> {
@@ -77,9 +81,9 @@ export default class CharacteristicSelector extends Vue {
       .catch(this.$opensilex.errorHandler)
   }
 
-  searchCharacteristics(name): Promise<HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>> {
+  searchCharacteristics(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchCharacteristics(name, ["name=asc"], 0, this.pageSize, this.sharedResourceInstance)
+    .searchCharacteristics(name, ["name=asc"], page, pageSize, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
       return http;
     });

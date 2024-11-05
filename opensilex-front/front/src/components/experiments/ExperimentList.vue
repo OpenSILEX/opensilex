@@ -42,7 +42,7 @@
               <!-- Species -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                     v-if="!isGermplasmMenuExcluded"
                     label="ExperimentList.filter-species"
                     placeholder="ExperimentList.filter-species-placeholder"
@@ -50,7 +50,7 @@
                     :selected.sync="filter.species"
                     :options="species"
                     class="searchFilter"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
 
@@ -72,14 +72,14 @@
               <!-- Facilities -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                       label="ExperimentList.filter-facilities"
                       placeholder="ExperimentList.filter-facilities-placeholder"
                       :multiple="true"
                       :selected.sync="filter.facilities"
                       :options="facilities"
                       class="searchFilter"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
 
@@ -102,27 +102,26 @@
               <!-- Projects -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-ModalFormSelector
                     ref="projectSelector"
                     label="ExperimentList.filter-project"
                     placeholder="ExperimentList.filter-project-placeholder"
                     :selected.sync="filter.projects"
                     modalComponent="opensilex-ProjectModalList"
-                    :isModalSearch="true"
                     :clearable="true"
                     :multiple="true"
                     @clear="refreshProjectSelector"
                     :limit="1"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-ModalFormSelector>
                 </opensilex-FilterField>
               </div>
 
               <!-- State -->
               <div>
                 <opensilex-FilterField>
-                  <opensilex-SelectForm
+                  <opensilex-FormSelector
                     label="ExperimentList.filter-state"
                     placeholder="ExperimentList.filter-state-placeholder"
                     :multiple="false"
@@ -130,7 +129,7 @@
                     :options="experimentStates"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                  ></opensilex-SelectForm>
+                  ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
             </template>
@@ -273,7 +272,7 @@ export default class ExperimentList extends Vue {
   $store: any;
   SearchFiltersToggle: boolean = false;
   
-  @Ref("documentForm") readonly documentForm!: any;
+  @Ref("documentForm") private readonly documentForm!: any;
 
   @Prop({
     default: false,
@@ -360,10 +359,11 @@ export default class ExperimentList extends Vue {
   }
 
   updateSelectedExperiment(){
-    this.$opensilex.updateURLParameters(this.filter);
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
     }
+        this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
   }
 
   searchExperiments(options) {
@@ -547,6 +547,7 @@ export default class ExperimentList extends Vue {
       .getService<ExperimentsService>("opensilex.ExperimentsService")
       .deleteExperiment(uri)
       .then(() => {
+        this.tableRef.checkSelectedItems(uri);
         this.refresh();
         let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);

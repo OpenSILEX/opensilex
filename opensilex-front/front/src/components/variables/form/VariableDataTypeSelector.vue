@@ -1,12 +1,15 @@
 <template>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :label="label"
         :selected.sync="dataTypeURI"
         :options="datatypesNodes"
         :itemLoadingMethod="loadDataType"
+        :required="required"
+        :disabled="disabled"
+        :helpMessage="helpMessage"
         placeholder="VariableForm.datatype-placeholder"
         @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -20,7 +23,7 @@ export default class VariableDataTypeSelector extends Vue {
     $opensilex: any;
     $store: any;
     
-    @PropSync("datatype")
+    @PropSync("selected")
     dataTypeURI;
 
     @Prop()
@@ -28,6 +31,12 @@ export default class VariableDataTypeSelector extends Vue {
 
     @Prop()
     placeholder;
+
+    @Prop()
+    required;
+
+    @Prop()
+    helpMessage;
 
     datatypes: Array<VariableDatatypeDTO> = [];
     datatypesNodes: Array<any> = [];

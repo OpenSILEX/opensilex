@@ -385,7 +385,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
               undefined,
               ["date=asc"],
               0,
-              50000
+              this.$store.state.graphDataLimit
           );
 
       const data = http.response.result as Array<DataGetDTO>;
@@ -399,20 +399,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
       if (dataLength >= 0) {
         const {cleanData, imageData} = await this.transformDataWithImages(data);
-        if (dataLength > 50000) {
-                this.$opensilex.showInfoToast(
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageA"
-                    ) +
-                    " " +
-                    dataLength +
-                    " " +
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageB"
-                    )
-                );
-              }
-              const dataAndImage = [];
+
+        const dataAndImage = [];
 
         const dataSerie = {
           name: this.scientificObject.name,

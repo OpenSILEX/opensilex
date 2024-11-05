@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
-******************************************************************************
- OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
- Copyright © INRA 2019
- Contact: gabriel.besombes@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
- 
- OpenSilex Dataverse pom.xml
- This module includes all core concepts for dataverses.
-******************************************************************************
--->
+  ~ ******************************************************************************
+  ~                         pom.xml
+  ~ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  ~ Copyright © INRAE 2024.
+  ~ Last Modification: 11/07/2024 16:32
+  ~ Contact: gabriel.besombes@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+  ~ ******************************************************************************
+  -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -46,45 +45,14 @@
         <dependency>
             <groupId>org.swordapp</groupId>
             <artifactId>sword2-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
             <version>0.9.3</version>
         </dependency>
 
-
     </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Generate swagger.json file -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
-            </plugin>
-            <!-- Generate TypeScript library from swagger.json file -->
-            <plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
-            </plugin>
-
-            <!-- Allow to extends SPARQL deserializers -->
-            <plugin>
-                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
-                <artifactId>serviceloader-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>opensilex-vue-types-services</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <services>
-                                <param>org.opensilex.front.vueOwlExtension.types.VueOntologyType</param>
-                            </services>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

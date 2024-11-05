@@ -239,7 +239,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       localStorage.setItem("tabPath", this.routeArr[2]);
       localStorage.setItem("tabPage", "1");
       this.currentPage = 1;
-      this.tableRef.refresh()
+      this.tableRef.refresh();
     }
   }
 
@@ -424,20 +424,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     this.tableRef.refresh();
   }
 
-
   onRefreshed() {
     let that = this;
     this.$emit('refreshed');
-
-    //Remove elements from the selection if they are deleted / update the number of badge elements displayed
-    this.selectedItems.forEach((element, index) => {
-      let tableIndex = this.tableRef.sortedItems.findIndex(
-        it => element.uri == it.uri
-      );
-      if (tableIndex < 0) {
-        this.selectedItems.splice(index, 1);
-      }
-    });
 
     this.numberOfSelectedRows = this.selectedItems.length;
 
@@ -636,6 +625,15 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     this.changeCurrentPage(1)
     this.refresh();
   }
+
+    checkSelectedItems(uri) {
+        if (this.selectedItems.length > 0) {
+            const deletedItem = this.selectedItems.findIndex(it => it.uri == uri);
+            if (deletedItem !== -1) {
+                this.selectedItems.splice(deletedItem, 1)
+            }
+        }
+    }
 
 }
 </script>

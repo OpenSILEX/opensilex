@@ -20,8 +20,9 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
+import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
@@ -34,7 +35,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.*;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -47,7 +47,6 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.BadRequestException;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -356,9 +355,9 @@ public class ScientificObjectAPI {
         //This is a boolean to not bother applying other filters if criteria search returned 0 results
         boolean applyNonCriteriaFilters = true;
         if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
-            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            ExcludableUriList criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
+
+            DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
+            ExcludableUriList criteriaFilteredObjects = dataLogic.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI);
             if(criteriaFilteredObjects != null){
                 if(criteriaFilteredObjects.excludeResults){
                     searchFilter.setExcludedUris(criteriaFilteredObjects.result);
@@ -384,11 +383,15 @@ public class ScientificObjectAPI {
                     .setExistenceDate(existenceDate)
                     .setCreationDate(creationDate);
 
-            //TODO this crushes the result of criteria search, how should this be handled?
-        if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            searchFilter.setUris(dataDAO.getUsedTargets(currentUser, devices, variables, null));
-        }
+            if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+                DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
+                var targets = dataLogic.getUsedTargets(devices, variables, null);
+
+                if (targets.isEmpty()) {
+                    return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+                }
+                searchFilter.intersectionOnUris(targets);
+            }
 
             searchFilter.setPage(page)
                     .setPageSize(pageSize)
@@ -425,8 +428,8 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
 
         ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -459,13 +462,13 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
 
-        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
+        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
 
         for (URI contextURI : contexts) {
             ExperimentModel experiment;
@@ -873,7 +876,7 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         searchFilter.setLang(currentUser.getLanguage());
 
@@ -892,7 +895,7 @@ public class ScientificObjectAPI {
         HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(searchFilter.getExperiment(), objectsUris);
 
         // get last location of objects
-        Map<URI, URI> arrivalFacilityByOs = moveDAO.getLastLocations(objectsUris.stream(), objects.getList().size());
+        Map<URI, URI> arrivalFacilityByOs = moveLogic.getLastLocations(objectsUris.stream(), objects.getList().size());
 
         CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
                 sparql,
@@ -992,8 +995,8 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, null);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null, null);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
+        List<VariableModel> variables = dataLogic.getUsedVariables(null, Arrays.asList(uri), null, null);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 

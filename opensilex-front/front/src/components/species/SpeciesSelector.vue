@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
@@ -12,7 +12,7 @@
     @deselect="deselect"
     :key="refreshKey"
     @keyup.enter.native="onEnter"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -34,7 +34,7 @@ export default class SpeciesSelector extends Vue {
 
   refreshKey = 0;
 
-  @PropSync("species")
+  @PropSync("selected")
   speciesURI;
 
   @Prop({

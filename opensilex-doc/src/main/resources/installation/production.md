@@ -1,34 +1,34 @@
 # Install OpenSILEX in production
 
 <!-- TOC -->
-* [Install OpenSILEX in production](#install-opensilex-in-production)
-* [Using the ready to use Docker](#using-the-ready-to-use-docker)
-* [Pre-requisites](#pre-requisites)
-  * [Operating System](#operating-system)
-  * [Java](#java)
-  * [Set up MongoDB](#set-up-mongodb)
-  * [Set up a triplestore](#set-up-a-triplestore)
-    * [RDF4J](#rdf4j)
-    * [GraphDB](#graphdb)
-* [Installation](#installation)
-  * [Set up a user](#set-up-a-user)
-  * [Create directories](#create-directories)
-  * [Download & extract OpenSILEX production release](#download--extract-opensilex-production-release)
-  * [Configuration](#configuration)
-    * [Create main configuration file](#create-main-configuration-file)
-    * [Configure logging](#configure-logging)
-  * [Initialize database and check configuration](#initialize-database-and-check-configuration)
-    * [Create a script to access instructions](#create-a-script-to-access-instructions)
-    * [Add an alias](#add-an-alias)
-    * [Initialize your triplestore](#initialize-your-triplestore)
-  * [Start OpenSILEX](#start-opensilex)
-  * [Stop OpenSILEX](#stop-opensilex)
-  * [Add a Reverse Proxy Nginx to redirect application on port 80](#add-a-reverse-proxy-nginx-to-redirect-application-on-port-80)
+- [Install OpenSILEX in production](#install-opensilex-in-production)
+- [Using the ready to use Docker](#using-the-ready-to-use-docker)
+- [Pre-requisites](#pre-requisites)
+  - [Operating System](#operating-system)
+  - [Java](#java)
+  - [Set up MongoDB](#set-up-mongodb)
+  - [Set up a triplestore](#set-up-a-triplestore)
+    - [RDF4J](#rdf4j)
+    - [GraphDB](#graphdb)
+- [Installation](#installation)
+  - [Set up a user](#set-up-a-user)
+  - [Create directories](#create-directories)
+  - [Download \& extract the OpenSILEX production release](#download--extract-the-opensilex-production-release)
+  - [Configuration](#configuration)
+    - [Create main configuration file](#create-main-configuration-file)
+    - [Configure logging](#configure-logging)
+  - [Initialize database and check configuration](#initialize-database-and-check-configuration)
+    - [Create a script to access instructions](#create-a-script-to-access-instructions)
+    - [Add an alias](#add-an-alias)
+    - [Initialize your triplestore](#initialize-your-triplestore)
+  - [Start openSilex](#start-opensilex)
+  - [Stop openSilex](#stop-opensilex)
+  - [Add a Reverse Proxy Nginx to redirect the application on port 80](#add-a-reverse-proxy-nginx-to-redirect-the-application-on-port-80)
 <!-- TOC -->
 
 # Using the ready to use Docker
 
-Before reading this document, you can check the [docker container for OpenSILEX ](https://github.com/OpenSILEX/opensilex-docker-compose)
+Before reading this document, you can check the [docker container for OpenSILEX ](https://forgemia.inra.fr/OpenSILEX/opensilex-docker-compose)
 This docker container allows you to install and configure OpenSILEX and all required databases (RDF4J and MongoDB) within only a few steps.
 
 If you prefer a fine tuned control on the installed databases or if you prefer a custom installation, you are at the right place !

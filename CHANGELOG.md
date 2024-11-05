@@ -1,55 +1,74 @@
 <!-- TOC -->
 * [Changelog](#changelog)
+  * [[1.3.4]](#134)
+    * [Fixed](#fixed)
+  * [[1.3.3]](#133)
+    * [Fixed](#fixed-1)
+  * [[1.3.2]](#132)
+    * [Fixed](#fixed-2)
+    * [Changes and new features](#changes-and-new-features)
+  * [[1.3.1]](#131)
+    * [Fixed](#fixed-3)
+  * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
+    * [Changes and new features](#changes-and-new-features-1)
+    * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.2.7]](#127)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.2.6]](#126)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+    * [Known issue](#known-issue)
+  * [[1.2.5]](#125)
+    * [Fixed or optimized](#fixed-or-optimized-3)
   * [[1.2.4]](#124)
-    * * [Fixed or optimized](#fixed-or-optimized) 
+    * [Fixed or optimized](#fixed-or-optimized-4)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
-    * [Changes and new features](#changes-and-new-features)
-    * [Fixed or optimized](#fixed-or-optimized)
+    * [Changes and new features](#changes-and-new-features-2)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.2.2]](#122)
-    * [Fixed](#fixed)
+    * [Fixed](#fixed-4)
   * [[1.2.1]](#121)
-    * [Fixed](#fixed-1)
+    * [Fixed](#fixed-5)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
-    * [Changes and new features](#changes-and-new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-1)
+    * [Changes and new features](#changes-and-new-features-3)
+    * [Fixed or optimized](#fixed-or-optimized-6)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-2)
-    * [Fixed or optimized](#fixed-or-optimized-2)
+    * [Changes and new features](#changes-and-new-features-4)
+    * [Fixed or optimized](#fixed-or-optimized-7)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
-    * [Fixed or optimized](#fixed-or-optimized-3)
+    * [Fixed or optimized](#fixed-or-optimized-8)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Fixed or optimized](#fixed-or-optimized-9)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Fixed or optimized](#fixed-or-optimized-10)
   * [[1.0.0-rc+6]](#100-rc6)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-11)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-7)
+    * [Fixed or optimized](#fixed-or-optimized-12)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-13)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-9)
+    * [Fixed or optimized](#fixed-or-optimized-14)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
-    * [Fixed](#fixed-2)
+    * [Fixed](#fixed-6)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
     * [Added or changed](#added-or-changed-2)
-    * [Fixed](#fixed-3)
+    * [Fixed](#fixed-7)
   * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
     * [Added or changed](#added-or-changed-3)
-    * [Fixed](#fixed-4)
+    * [Fixed](#fixed-8)
   * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
     * [Added](#added)
     * [Added in pre-production](#added-in-pre-production)
@@ -57,23 +76,23 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-10)
+    * [Fixed or optimized](#fixed-or-optimized-15)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-11)
+    * [Fixed or optimized](#fixed-or-optimized-16)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
     * [Added](#added-3)
-    * [Fixed](#fixed-5)
+    * [Fixed](#fixed-9)
   * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
     * [Added](#added-4)
     * [Changed](#changed-1)
   * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
-    * [Fixed](#fixed-6)
+    * [Fixed](#fixed-10)
   * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
     * [Added](#added-5)
-    * [Fixed](#fixed-7)
+    * [Fixed](#fixed-11)
   * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
     * [Added](#added-6)
 <!-- TOC -->
@@ -85,11 +104,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.3.4]
+
+### Fixed
+
+- (!1289) Deleting data with criteria now works again
+- (!1291) Updating a Facility from the Facility details page now works correctly
+
+## [1.3.3]
+
+### Fixed
+
+- (!1262) Fixed Move import template generation, and Move import
+
+## [1.3.2]
+
+### Fixed
+
+- (!1260) Fixed the link to swagger for the specific case where a "/" is at the end of server uri in the config file.
+
+### Changes and new features
+
+- (!1261) You can now fetch a list of moves at once using the new service GET /moves/by_uris
+
+## [1.3.1]
+
+### Fixed
+
+- (!1259) Fixed link to swagger and corrected the 1.3.0 migration documentation (the "Known issues" of version 1.3.0 have been
+  fixed).
+
+## [1.3.0] - Dizzy Diamond 
+
+> WARNING : upgrading to this new version requires manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.3.0.md).
+> Also available [locally](opensilex-doc/src/main/resources/release/1.3.0.md).
+
+### Changes and new features
+
+- (!1128) [GraphQL] Added a WebService to retrieve graph URIs in the triple store. This is used by the Staple API for GraphQL mapping.
+- (!1172) [GraphQL] Rectifying ontologies and adding a list of authorized experiments to the token, as well as adding a web service that returns the base URI. This is used by the GraphQL service to retrieve data and manage authorizations.
+- (!1188) [API] There are now FAIDARE compatible services. Use this service for more information : "/rest/faidare/v1/calls"
+- (!1204) [Visualization] If there are more than 50000 data in the selected time range for visualization a message warns the user that the serie was truncated.
+- (!1211) [Annotation] Added API and DAO tests for opensilex:Annotation
+
+### Fixed or optimized
+
+- (!1200) [Event] In the event creation form, if there is a URI error in the "targets" field, error messages are now displayed.
+- (!1206) [Moves] fixed pagination for tabs returning a list of positions. The first page of results is no longer the only one available.
+- (!1214) [Data] fixed number of elements and totalcount rendered on datalist, improve interface
+- (!1224) [Data] operator and device filters for data searches now work.
+- (!1229) [Facility] Optimization of the Facilities page
+- (!1233) [Interface] Allows redirection to the different sections from the dashboard metrics information.
+  When changing the selected period, the metrics only display a loader instead of the entire dashboard.
+  Fix missing global header for variables after clicking on a variable property and being redirected to the global section.
+  Fix of the "showMoreResult" message at the end of the list of selectors, which could disappear depending on the searches although there are more results
+- (!1242) [Germplasm] Germplasm POST service with checkOnly now returns valid metadata instead of null
+- (!1246) [Account] Optimization of account and group services, display is now faster
+- (!1255) [Metrics] Metrics querying has been optimized
+
+## [1.2.7]
+
+### Fixed or optimized
+
+- (!1220) Updating custom relations of SO and devices now works correctly (the "Kown issue" of version 1.2.6 has been 
+  fixed).
+
+## [1.2.6]
+
+### Fixed or optimized
+
+- (!1219) Fixed display of custom relations in forms when both incoming and outgoing relations are defined.
+
+### Known issue
+
+- Self-referencing custom properties (i.e. properties that reference the same type as the object they are declared on,
+  e.g. a Device property that targets another Device) are **not stable** when declared in chain for _Scientific Objects_
+  and _Devices_, meaning that they can be removed by the system when trying to update one of the resource of the chain.
+  By "chain", we mean three or more resources that are linked together by the same property.
+
+  For example, a property "contains" declared on scientific objects A, B and C such as "A contains B" and "B contains C"
+  may be removed when trying to update A, B or C.
+  
+  We are actively working on fixing this issue, but for the moment you should avoid declaring this kind of property 
+  chain.
+
+## [1.2.5]
+
+### Fixed or optimized
+
+- (!1218) Service "all_facilities" now correctly returns all results
+
 ## [1.2.4]
 
 ### Fixed or optimized
 
 - (!1212) Device filter no longer ignored during data export.
+- (!1213) A wrong error message is no longer displayed on the visualization page of a device with no associated scientific object
 
 ## [1.2.3]
 

@@ -43,10 +43,10 @@ export default class FacilityModalForm extends Vue {
 
   @Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
 
-  showEditForm(form) {
+  showEditForm(uri) {
     this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .getFacility(form.uri)
+      .getFacility(uri)
       .then((http) => {
         let dto: FacilityGetDTO = http.response.result;
         let publisher: UserGetDTO = dto.publisher;

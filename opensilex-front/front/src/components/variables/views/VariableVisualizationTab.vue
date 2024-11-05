@@ -68,6 +68,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import DataVisuGraphic from "../../visualization/DataVisuGraphic.vue";
+import VueI18n from "vue-i18n";
 
 @Component
 export default class VariableVisualizationTab extends Vue {
@@ -95,6 +96,7 @@ export default class VariableVisualizationTab extends Vue {
   isGraphicLoaded: boolean = true;
   target = [];
   eventCreatedTime = "";
+  $i18n: VueI18n;
 
   form;
   selectedVariable;
@@ -436,7 +438,7 @@ export default class VariableVisualizationTab extends Vue {
             undefined,
             ["date=asc"],
             0,
-            50000
+            this.$store.state.graphDataLimit
         )
         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
           const data = http.response.result as Array<DataGetDTO>;
@@ -449,17 +451,6 @@ export default class VariableVisualizationTab extends Vue {
 
           if (dataLength >= 0) {
             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
-            if (dataLength > 50000) {
-              this.$opensilex.showInfoToast(
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
-                  " " +
-                  dataLength +
-                  " " +
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageB") +
-                  concernedItem.name +
-                  this.$i18n.t("DeviceDataTab.limitSizeMessageC")
-              );
-            }
 
             let name = concernedItem.name ? concernedItem.name : concernedItem.uri
             return {

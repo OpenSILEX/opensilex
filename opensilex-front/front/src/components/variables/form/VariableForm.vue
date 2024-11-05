@@ -19,25 +19,26 @@
             ></opensilex-UriForm>
 
             <div class="row">
+                
+                <!-- Entity -->
                 <div class="col-lg-6" id="v-step-entity">
-                    <!-- Entity -->
-                    <opensilex-SelectForm
-                        ref="entitySelectForm"
+                    <opensilex-EntitySelector
+                        ref="entitySelector"
                         label="VariableView.entity"
+                        placeholder="VariableForm.entity-placeholder"
+                        helpMessage="VariableForm.entity-help"
+                        noResultsText="VariableForm.no-entity"
                         :selected.sync="form.entity"
                         :multiple="false"
                         :required="true"
-                        :searchMethod="searchEntities"
-                        :itemLoadingMethod="loadEntity"
-                        placeholder="VariableForm.entity-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-entity"
-                        helpMessage="VariableForm.entity-help"
-                        @select="updateEntity"
                         :actionHandler="editMode ? undefined : showEntityCreateForm"
+                        :searchMethod="searchEntities"
+                        @select="updateEntity"   
+                        :itemLoadingMethod="loadEntity"
+                        :conversionMethod="objectToSelectNode"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(entitySelectForm)"
-                    ></opensilex-SelectForm>
+                    ></opensilex-EntitySelector>
                     <opensilex-AgroportalEntityForm
                         ref="entityForm"
                         @onCreate="setLoadedEntity">
@@ -46,22 +47,22 @@
 
                 <!-- Entity of interest -->
                 <div class="col-lg-6" id="v-step-interestEntity">
-                    <opensilex-SelectForm
-                        ref="interestEntitySelectForm"
+                    <opensilex-InterestEntitySelector
+                        ref="interestEntitySelector"
                         label="VariableForm.interestEntity-label"
+                        placeholder="VariableForm.interestEntity-placeholder"
                         :selected.sync="form.entity_of_interest"
                         :multiple="false"
                         :required="false"
+                        :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
+                        helpMessage="VariableForm.interestEntity-help" 
                         :searchMethod="searchInterestEntities"
                         :itemLoadingMethod="loadInterestEntity"
-                        placeholder="VariableForm.interestEntity-placeholder"
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-interestEntity"
-                        helpMessage="VariableForm.interestEntity-help"
-                        :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(interestEntitySelectForm)"
-                    ></opensilex-SelectForm>
+                    ></opensilex-InterestEntitySelector>
                     <opensilex-AgroportalEntityOfInterestForm
                         ref="interestEntityForm"
                         @onCreate="setLoadedInterestEntity">
@@ -69,24 +70,24 @@
                 </div>
 
                 <!-- Characteristic -->
-                <div class="col-lg-6" id="v-step-characteristic">                    
-                    <opensilex-SelectForm
-                        ref="characteristicSelectForm"
+                <div class="col-lg-6" id="v-step-characteristic"> 
+                    <opensilex-CharacteristicSelector
+                        ref="characteristicSelector"
                         label="VariableView.characteristic"
+                        placeholder="VariableForm.characteristic-placeholder"
                         :selected.sync="form.characteristic"
                         :multiple="false"
                         :required="true"
-                        :searchMethod="searchCharacteristics"
-                        :itemLoadingMethod="loadCharacteristic"
-                        placeholder="VariableForm.characteristic-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-characteristic"
-                        helpMessage="VariableForm.characteristic-help"
                         @select="updateCharacteristic"
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
+                        helpMessage="VariableForm.interestEntity-help"
+                        :searchMethod="searchCharacteristics"
+                        :itemLoadingMethod="loadCharacteristic"
+                        :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm.no-characteristic"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(characteristicSelectForm)"
-                    ></opensilex-SelectForm>
+                    ></opensilex-CharacteristicSelector>
                     <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
                         @onCreate="setLoadedCharacteristic">
@@ -100,35 +101,35 @@
                         label="SpeciesSelector.select-multiple"
                         placeholder="SpeciesSelector.select-multiple-placeholder"
                         :multiple="true"
-                        :species.sync="form.species"
+                        :selected.sync="form.species"
                     ></opensilex-SpeciesSelector>
                 </div>
 
                 <!-- Method -->
                 <div class="col-lg-6" id="v-step-method">
-                    <opensilex-SelectForm
-                        ref="methodSelectForm"
+                    <opensilex-MethodSelector
+                        ref="methodSelector"
                         label="VariableView.method"
-                        :selected.sync="form.method"
+                        placeholder="VariableForm.method-placeholder"
                         :multiple="false"
                         :required="true"
+                        :selected.sync="form.method"
+                        helpMessage="VariableForm.method-help"
+                        noResultsText="VariableForm.no-method"
+                        :actionHandler="editMode ? undefined : showMethodCreateForm"
+                        @select="updateMethod"
                         :searchMethod="searchMethods"
                         :itemLoadingMethod="loadMethod"
-                        placeholder="VariableForm.method-placeholder"
                         :conversionMethod="objectToSelectNode"
-                        helpMessage="VariableForm.method-help"
-                        @select="updateMethod"
-                        :actionHandler="editMode ? undefined : showMethodCreateForm"
-                        noResultsText="VariableForm.no-method"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(methodSelectForm)"
-                    ></opensilex-SelectForm>
+                    ></opensilex-MethodSelector>
                     <opensilex-AgroportalMethodForm
                         ref="methodForm"
                         @onCreate="setLoadedMethod">
                     </opensilex-AgroportalMethodForm>
                 </div>
-                
+
                 <!-- Trait button -->
                 <div class="col-lg-6" id="traitButton">
                     <opensilex-Button
@@ -156,23 +157,23 @@
 
                 <!-- Unit -->
                 <div class="col-lg-6" id="v-step-unit">
-                    <opensilex-SelectForm
-                        ref="unitSelectForm"
+                    <opensilex-UnitSelector
+                        ref="unitSelector"
                         label="VariableView.unit"
-                        :selected.sync="form.unit"
+                        placeholder="VariableForm.unit-placeholder"
                         :multiple="false"
                         :required="true"
+                        :selected.sync="form.unit"
+                        @select="updateUnit"
+                        helpMessage="VariableForm.unit-help"
+                        :actionHandler="editMode ? undefined : showUnitCreateForm" 
                         :searchMethod="searchUnits"
                         :itemLoadingMethod="loadUnit"
                         :conversionMethod="objectToSelectNode"
-                        helpMessage="VariableForm.unit-help"
-                        placeholder="VariableForm.unit-placeholder"
-                        @select="updateUnit"
-                        :actionHandler="editMode ? undefined : showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(unitSelectForm)"
-                    ></opensilex-SelectForm>
+                    ></opensilex-UnitSelector>
                     <opensilex-AgroportalUnitForm
                         ref="unitForm"
                         @onCreate="setLoadedUnit">
@@ -193,7 +194,7 @@
                     ></opensilex-InputForm>
                 </div>
 
-                <!-- altName -->
+                <!-- AltName -->
                 <div class="col-lg-6" id="v-step-alt">
                     <opensilex-InputForm
                         :value.sync="form.alternative_name"
@@ -204,28 +205,30 @@
 
                 <!-- DataType -->
                 <div class="col-lg-6" id="v-step-datatype">
-                    <opensilex-SelectForm
+                    <opensilex-VariableDataTypeSelector
                         label="OntologyPropertyForm.data-type"
-                        :required="true"
-                        :disabled="hasLinkedData"
-                        :selected.sync="form.datatype"
-                        :options="datatypesNodes"
-                        :itemLoadingMethod="loadDataType"
-                        helpMessage="VariableForm.datatype-help"
                         placeholder="VariableForm.datatype-placeholder"
-                    ></opensilex-SelectForm>
+                        :required="true"
+                        :selected.sync="form.datatype"
+                        helpMessage="VariableForm.datatype-help"
+                        :itemLoadingMethod="loadDataType"
+                        :disabled="hasLinkedData"
+                        :options="datatypesNodes"
+                    >
+                    </opensilex-VariableDataTypeSelector>                   
                 </div>
 
-                <!-- time-interval -->
+                <!-- Time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                    <opensilex-SelectForm
+                    <opensilex-VariableTimeIntervalSelector
                         label="VariableForm.time-interval"
                         :selected.sync="form.time_interval"
                         :multiple="false"
                         :options="periodList"
                         placeholder="VariableForm.time-interval-placeholder"
                         helpMessage="VariableForm.time-interval-help"
-                    ></opensilex-SelectForm>
+                    >
+                    </opensilex-VariableTimeIntervalSelector>
                 </div>
 
                 <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
@@ -233,14 +236,14 @@
 
                 <!-- sample/distance-interval -->
                 <div class="col-lg-6" id="v-step-sampling-interval">
-                    <opensilex-SelectForm
+                    <opensilex-FormSelector
                         label="VariableForm.sampling-interval"
                         :selected.sync="form.sampling_interval"
                         :multiple="false"
                         :options="sampleList"
                         placeholder="VariableForm.sampling-interval-placeholder"
                         helpMessage="VariableForm.sampling-interval-help"
-                    ></opensilex-SelectForm>
+                    ></opensilex-FormSelector>
                 </div>
 
                 <!-- description -->
@@ -252,14 +255,6 @@
                     >
                     </opensilex-TextAreaForm>
                 </div>
-                
-                <!-- variables groups-->
-                <!-- <div class="col-xl-12">
-                    <opensilex-GroupVariablesTable
-                        ref="groupVariablesTable"
-                        :variablesGroupArray="variablesGroupArray"
-                    ></opensilex-GroupVariablesTable>
-                </div> -->
             </div>
         </ValidationObserver>
     </div>
@@ -281,7 +276,6 @@ import {
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
-import SelectForm from "../../common/forms/SelectForm.vue";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
 import {EntityGetDTO} from "opensilex-core/model/entityGetDTO";
@@ -289,12 +283,15 @@ import {InterestEntityGetDTO} from "opensilex-core/model/interestEntityGetDTO";
 import {CharacteristicGetDTO} from "opensilex-core/model/characteristicGetDTO";
 import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
 import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
+import VueI18n from "vue-i18n";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class VariableForm extends Vue {
     $opensilex: any;
     $store: any;
     pageSize = 10;
+    $i18n: VueI18n;
 
     @Prop()
     editMode: boolean;
@@ -314,11 +311,11 @@ export default class VariableForm extends Vue {
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelectForm") entitySelectForm!: SelectForm<EntityGetDTO>;
-    @Ref("interestEntitySelectForm") interestEntitySelectForm!: SelectForm<InterestEntityGetDTO>;
-    @Ref("characteristicSelectForm") characteristicSelectForm!: SelectForm<CharacteristicGetDTO>;
-    @Ref("methodSelectForm") methodSelectForm!: SelectForm<MethodGetDTO>;
-    @Ref("unitSelectForm") unitSelectForm!: SelectForm<UnitGetDTO>;
+    @Ref("entitySelector") entitySelector!: FormSelector;
+    @Ref("interestEntitySelector") interestEntitySelector!: any;
+    @Ref("characteristicSelector") characteristicSelector!: any;
+    @Ref("methodSelector") methodSelector!: any;
+    @Ref("unitSelector") unitSelector!: any;
 
     @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
     @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
@@ -390,18 +387,6 @@ export default class VariableForm extends Vue {
         }
         return "";
     }
-
-    // variablesGroupArray = [];
-    // setVariablesGroups(form) {
-    //     this.variablesGroupArray = [];
-    //     if (form.relations != null) {  
-    //         form.variablesGroup.forEach(variablesGroup => {
-    //             if(variablesGroup.uri != null){
-    //                 this.variablesGroupArray.push(variablesGroup);
-    //             }
-    //         })        
-    //     }
-    // }
 
     selectedEntityName;
     selectedCharacteristicName;
@@ -514,7 +499,7 @@ export default class VariableForm extends Vue {
     }
 
     searchEntities(name: string, page, pageSize){
-        return this.service.searchEntities(name, ["name=asc"], page, this.pageSize)
+        return this.service.searchEntities(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -537,11 +522,11 @@ export default class VariableForm extends Vue {
 
     setLoadedEntity(created: EntityCreationDTO) {
         this.form.entity = created.uri;
-        this.entitySelectForm.select({id: created.uri, label: created.name});
+        this.entitySelector.select({id: created.uri, label: created.name});
     }
 
     searchInterestEntities(name: string, page, pageSize){
-        return this.service.searchInterestEntity(name, ["name=asc"], page, this.pageSize)
+        return this.service.searchInterestEntity(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -564,12 +549,12 @@ export default class VariableForm extends Vue {
 
     setLoadedInterestEntity(created: InterestEntityCreationDTO) {
         this.form.entity_of_interest = created.uri;
-        this.interestEntitySelectForm.select({id: created.uri, label: created.name});
+        this.interestEntitySelector.select({id: created.uri, label: created.name});
     }
     
     searchCharacteristics(name: string, page, pageSize){
         return this.service
-            .searchCharacteristics(name, ["name=asc"], page, this.pageSize)
+            .searchCharacteristics(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -591,12 +576,12 @@ export default class VariableForm extends Vue {
 
     setLoadedCharacteristic(created: CharacteristicCreationDTO) {
         this.form.characteristic = created.uri;
-        this.characteristicSelectForm.select({id: created.uri, label: created.name});
+        this.characteristicSelector.select({id: created.uri, label: created.name});
     }
 
     searchMethods(name: string, page, pageSize){
         return this.service
-            .searchMethods(name, ["name=asc"], page, this.pageSize)
+            .searchMethods(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -618,12 +603,12 @@ export default class VariableForm extends Vue {
 
     setLoadedMethod(created: MethodCreationDTO) {
         this.form.method = created.uri;
-        this.methodSelectForm.select({id: created.uri, label: created.name});
+        this.methodSelector.select({id: created.uri, label: created.name});
     }
 
     searchUnits(name: string ,page, pageSize){
         return this.service
-            .searchUnits(name, ["name=asc"], page,this.pageSize)
+            .searchUnits(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -644,7 +629,7 @@ export default class VariableForm extends Vue {
 
     setLoadedUnit(created: UnitCreationDTO) {
         this.form.unit = created.uri;
-        this.unitSelectForm.select({id: created.uri, label: created.name});
+        this.unitSelector.select({id: created.uri, label: created.name});
     }
 
     objectToSelectNode(dto) {
@@ -856,15 +841,6 @@ export default class VariableForm extends Vue {
             },
         ];
     }
-
-  loadMoreItems(ref){
-    this.pageSize = 0;
-    ref.refresh();
-    this.$nextTick(() => {
-      ref.openTreeselect();
-    })
-  }
-
 }
 </script>
 

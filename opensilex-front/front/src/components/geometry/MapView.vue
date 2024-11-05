@@ -613,7 +613,7 @@
         </template>
 
         <template v-slot:cell(type)="{ data }">{{
-          nameType(data.item.properties.type)
+          nameType(data.item.properties.rdf_type)
         }}</template>
 
         <template v-slot:row-details="{ data }">
@@ -908,7 +908,7 @@ export default class MapView extends Vue {
 
     baseTypes.forEach((baseType) => {
       this.ontologyService
-          .getSubClassesOf(baseType, true)
+          .getSubClassesOf(baseType, false)
           .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
             const res = http.response.result;
             this.extracted(res, typeLabel);

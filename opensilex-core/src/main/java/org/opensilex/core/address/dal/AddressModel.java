@@ -6,6 +6,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -94,5 +95,19 @@ public class AddressModel extends SPARQLResourceModel implements ClassURIGenerat
                 "address",
                 UUID.randomUUID().toString()
         };
+    }
+
+    @Override
+    public String toString() {
+        if (Objects.nonNull(getStreetAddress()) &&
+                Objects.nonNull(getPostalCode()) &&
+                Objects.nonNull(getLocality()) &&
+                Objects.nonNull(getCountryName())
+        ) {
+            return getStreetAddress() + "\n"
+                    + getPostalCode() + " " + getLocality() + "\n"
+                    + getCountryName();
+        }
+        return "";
     }
 }

@@ -6,9 +6,12 @@
 package org.opensilex.security.profile.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Var;
@@ -18,8 +21,11 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -92,6 +98,38 @@ public final class ProfileDAO {
                 orderByList,
                 page,
                 pageSize
+        );
+    }
+
+    /**
+     *
+     * @param uriFilter uris filter
+     * @param lang user lang
+     * @return All profile models with minimal amount of field loaded
+     * @throws Exception
+     */
+    public ListWithPagination<ProfileModel> noProxySearch(List<URI> uriFilter, String lang) throws Exception {
+        SparqlNoProxyFetcher<ProfileModel> profileFetcher = new SparqlNoProxyFetcher<>(ProfileModel.class, sparql);
+
+        return sparql.searchWithPagination(
+                sparql.getDefaultGraph(ProfileModel.class),
+                ProfileModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    if(!CollectionUtils.isEmpty(uriFilter)){
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, uriFilter));
+                    }
+                },
+                Collections.emptyMap(),
+                (SPARQLResult result) -> {
+                    //Set to short uri so that they can be easily used in Front-end for Profile selectors
+                    ProfileModel nextModel = profileFetcher.getInstance(result, lang);
+                    nextModel.setUri(new URI(SPARQLDeserializers.getShortURI(nextModel.getUri())));
+                    return nextModel;
+                },
+                Collections.emptyList(),
+                0,
+                0
         );
     }
 

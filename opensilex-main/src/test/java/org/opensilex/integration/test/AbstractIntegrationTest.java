@@ -46,6 +46,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -142,6 +143,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         public TestContainer create(URI baseUri, DeploymentContext context) {
             if (globalTestContainer == null) {
                 globalTestContainer = super.create(baseUri, context);
+                //@todo find a better way to configure this
+                java.util.logging.Logger.getLogger("org.glassfish").setLevel(Level.SEVERE);
             }
             return globalTestContainer;
         }
@@ -345,7 +348,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public <T extends JsonResponse<?>> Result<T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
             try (Response response = executeCall()) {
-                assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+                assertTrue("request failed with status : "+response.getStatus(), response.getStatus() >= 200 && response.getStatus() < 300);
                 Result<T> result = new Result<>(readResponse(response, typeReference), response);
                 response.close();
                 return result;
@@ -402,7 +405,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws UnsupportedOperationException if the HTTP method is not supported
          */
         protected Response executeRequest(Invocation.Builder requestBuilder) {
-            LOGGER.debug(String.valueOf(this));
             if(Objects.equals(httpMethod, HttpMethod.GET)) {
                 return requestBuilder.get();
             } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
@@ -603,7 +605,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * Method to check if all path parameters exist in the path template.
          */
         protected void checkPathParamsExist() {
-            assertTrue(pathTemplateParams.entrySet().stream().allMatch(entry -> pathTemplate.contains("{" + entry.getKey() + "}")));
+            assertTrue("one or many path parameter does was given but does not exists for this endpoint", pathTemplateParams.entrySet().stream().allMatch(entry -> pathTemplate.contains("{" + entry.getKey() + "}")));
         }
     }
 

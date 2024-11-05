@@ -35,8 +35,6 @@
         @hideSelector='$emit("hideSelector")'
         @shownSelector='$emit("shownSelector")'
     ></opensilex-GermplasmSelectorWithFilter>
-
-
   </ValidationObserver>
 </template>
 
@@ -45,7 +43,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import GermplasmSelectorWithFilter from '../germplasm/GermplasmSelectorWithFilter.vue';
 import {GermplasmGroupUpdateDTO} from "../../../../../opensilex-core/front/src/lib";
-import {SelectableItem} from "../common/forms/SelectForm.vue";
+import {SelectableItem} from "../common/forms/FormSelector.vue";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 
 
@@ -65,7 +63,7 @@ export default class GroupGermplasmForm extends Vue {
 
   @Ref("germplasmSelector") readonly germplasmSelector!: GermplasmSelectorWithFilter;
 
-    germplasmsWithLabels : Array<GermplasmGetAllDTO>;
+  germplasmsWithLabels : Array<GermplasmGetAllDTO>;
 
   setSelectorsToFirstTimeOpenAndSetLabels(germplasmsWithLabels){
     this.germplasmSelector.setGermplasmSelectorToFirstTimeOpen();

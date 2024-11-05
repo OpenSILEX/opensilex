@@ -1,5 +1,11 @@
 <template>
     <div class="container-fluid">
+        <opensilex-PageHeader
+            icon="fa#vials"
+            title="VariableView.title"
+            description="VariableView.description"
+            class="detail-element-header"
+        ></opensilex-PageHeader>
         <div>
             <opensilex-PageActions>
                 <div>
@@ -183,7 +189,13 @@ import DTOConverter from "../../models/DTOConverter";
 import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
+import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
+interface GroupUpdateDtoAndVariableModels {
+  updateDto: VariablesGroupUpdateDTO,
+  variableModels: Array<NamedResourceDTOVariableModel>
+}
 import {BaseExternalReferencesForm} from "../common/external-references/ExternalReferencesTypes";
 
 @Component
@@ -427,13 +439,22 @@ export default class VariablesView extends Vue {
         }
     }
 
-    formatVariablesGroup(dto : any) {
+    formatVariablesGroup(dto : VariablesGroupGetDTO) : GroupUpdateDtoAndVariableModels{
         let copy = JSON.parse(JSON.stringify(dto));
-        if (copy.variables) {
-            copy.variables = copy.variables.map(variable => variable.uri);
+        let variables_uris : Array<String> = [];
+        let new_variable_list : Array<NamedResourceDTOVariableModel>= [];
+      if (copy.variables) {
+        for(let variable of copy.variables){
+          let variableUri = this.$opensilex.getLongUri(variable.uri);
+          variables_uris.push(variableUri);
+          variable.uri = variableUri;
+          new_variable_list.push(variable);
         }
-        return copy;
+        copy.variables = variables_uris;
+      }
+      return {updateDto : (copy as VariablesGroupUpdateDTO), variableModels : new_variable_list};
     }
+
 
     showEditForm(dto : any){
         if (this.elementType == VariablesView.GROUP_VARIABLE_TYPE) {
@@ -442,8 +463,9 @@ export default class VariablesView extends Vue {
             this.loadGroupForm = true;
             this.$nextTick(() => {
 
-                let formatVariableGroup = this.formatVariablesGroup(dto);
-                this.getForm().showEditForm(formatVariableGroup);
+              let updateDtoAndExtractedVariables = this.formatVariablesGroup(dto);
+              this.getForm().setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedVariables.variableModels);
+              this.getForm().showEditForm(updateDtoAndExtractedVariables.updateDto);
             });
         }
         else{

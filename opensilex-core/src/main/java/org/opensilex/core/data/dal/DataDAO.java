@@ -947,14 +947,14 @@ public class DataDAO {
             userLanguage = user.getLanguage();
         }
         // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
+        return new VariableDAO(sparql,nosql,fs, user).getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
 
     public List<URI> getUsedTargets(AccountModel user, List<URI> devices, List<URI> variables, List<URI> experiments) throws Exception {
         Document filter = searchFilter(user, experiments, null, variables, null, devices, null, null, null, null, null, null);
-        Set<URI> targetURIs = nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter);
-        return new ArrayList<>(targetURIs);
+        return nosql.distinct("target", URI.class, DATA_COLLECTION_NAME, filter)
+                .stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
@@ -1052,7 +1052,7 @@ public class DataDAO {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs, user).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -1314,7 +1314,7 @@ public class DataDAO {
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs, user).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }

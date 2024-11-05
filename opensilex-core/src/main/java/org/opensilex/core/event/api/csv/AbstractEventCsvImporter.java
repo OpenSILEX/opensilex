@@ -306,7 +306,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                     }
                 }else {
                     // invalid value -> error
-                    if(! ontologyDAO.validateObjectValue(null, classModel, property, propValue, model)){
+                    if(! ontologyDAO.validateThenAddObjectRelationValue(null, classModel, property, propValue, model)){
                         CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, property.toString());
                         validation.addInvalidValueError(csvCell);
                     }

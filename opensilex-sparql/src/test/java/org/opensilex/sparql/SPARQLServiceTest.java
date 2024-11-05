@@ -817,4 +817,51 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertTrue(sparql.uriExists(A.class, longUri));
     }
+
+    /**
+     * Tests that creating a model from a graph and get it from another model stored in another graph using an inverse
+     * property (optional model).
+     */
+    @Test
+    public void testCreateAndGetModelFromOtherGraph() throws Exception {
+        // create a model with the inverse property
+        InverseModel inverseModelWith = new InverseModel();
+        URI inverseModelURI = new URI("http://test.opensilex.org/inverse/001");
+
+        inverseModelWith.setUri(inverseModelURI);
+
+        sparql.create(inverseModelWith);
+
+        // create model from another graph
+        ModelInAnotherGraph anotherGraph = new ModelInAnotherGraph();
+        URI anotherGraphURI = new URI("http://test.opensilex.org/anotherGraph/001");
+
+        anotherGraph.setUri(anotherGraphURI);
+        anotherGraph.setInverseModelURI(inverseModelWith.getUri());
+
+        sparql.create(anotherGraph);
+
+        // create a model without the inverse property
+        InverseModel inverseModelWithout = new InverseModel();
+        URI inverseModelWithoutURI = new URI("http://test.opensilex.org/inverseModel/002");
+
+        inverseModelWithout.setUri(inverseModelWithoutURI);
+
+        sparql.create(inverseModelWithout);
+
+        // get models with and without inverse property
+        List<URI> modelList = Arrays.asList(inverseModelURI, inverseModelWithoutURI);
+
+        List<InverseModel> results = sparql.getListByURIs(InverseModel.class,modelList,"en");
+
+        // Asserts
+        assertEquals(2, results.size());
+
+        assertTrue(results.contains(inverseModelWithout));
+        assertNull(results.stream().filter(r -> r.getUri().equals(inverseModelWithoutURI)).findFirst().orElseThrow().getAnotherModel());
+
+        assertTrue(results.contains(inverseModelWith));
+        assertNotNull(results.stream().filter(r -> r.getUri().equals(inverseModelURI)).findFirst().orElseThrow().getAnotherModel());
+    }
+
 }

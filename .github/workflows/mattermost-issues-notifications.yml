@@ -7,5 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: call Mattermost webhook
+        env:
+          HOOK_URL: ${{ secrets.HOOK_URL }}
+          TITLE: ${{ github.event.issue.title }}
+          URL: ${{ github.event.issue.bodyUrl }}
+          USER: ${{ github.event.issue.user.login }}
         run: |
-          curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "New issue on GitHub:\n* link = ${{ github.event.issue.url }}\n* title = ${{ github.event.issue.title }}\n* user = ${{ github.event.issue.user.login }}"}' https://team.forgemia.inra.fr/hooks/11snftmshpb97pjr9pygjeywkr
+          curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "New issue on GitHub:\n* link = $URL\n* title = $TITLE\n* user = $USER"}' $HOOK_URL

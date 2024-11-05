@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-FormSelector
       :label="label"
       :selected.sync="selectedSriId"
       :multiple="false"
@@ -8,7 +8,7 @@
       @clear="$emit('clear')"
       @select="select"
       @deselect="deselect"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -46,7 +46,7 @@ export default class SharedResourceInstanceSelector extends Vue {
   }
 
   // This property may be marked as unused on some IDEs, but it is actually used as the PropSync "selected" for the
-  // SelectForm needs both a getter and a setter. Vue consider a getter & setter with the same name as a unique computed
+  // FormSelector needs both a getter and a setter. Vue consider a getter & setter with the same name as a unique computed
   // prop, but the IDE treat them as separate symbols.
   // noinspection JSUnusedGlobalSymbols
   set selectedSriId(newId: string) {

@@ -137,6 +137,9 @@
                     window.SwaggerTranslator.translate();
                 }
                 window.swaggerUi = new SwaggerUi({
+                    operationsSorter: 'alpha',
+                    tagsSorter: 'alpha',
+                    apisSorter: 'alpha',
                     url: url,
                     dom_id: "swagger-ui-container",
                     supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
@@ -215,7 +218,6 @@
                     docExpansion: "none",
                     jsonEditor: false,
                     defaultModelRendering: 'schema',
-                    operationsSorter: 'alpha',
                     showRequestHeaders: false,
                     showMutatedRequest: true,
                     requestInterceptor: function () {

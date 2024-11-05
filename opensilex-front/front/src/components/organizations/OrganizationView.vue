@@ -1,147 +1,104 @@
+<!--
+  - ******************************************************************************
+  -                         OrganizationView.vue
+  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+  - Copyright © INRAE 2024.
+  - Last Modification: 29/08/2024 09:10
+  - Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
+  - ******************************************************************************
+  -->
 <template>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-6">
-        <!-- Organization tree -->
-        <opensilex-OrganizationTree
-          ref="organizationTree"
-          @onSelect="onSelectedOrganizationOrSite"
-        ></opensilex-OrganizationTree>
-      </div>
-      <div class="col-md-6">
-        <!-- Organization detail -->
-        <opensilex-OrganizationDetail
-          :selected="selectedOrganization"
-          @onUpdate="refreshTree"
-          class="organizationDetailComponent"
-        ></opensilex-OrganizationDetail>
-        <!-- Site detail -->
-        <opensilex-SiteDetail
-          :selected="selectedSite"
-          :withActions="true"
-          @onUpdate="refreshTree"
-        ></opensilex-SiteDetail>
-        <!-- Facilities -->
-        <opensilex-FacilitiesView
-          v-if="selectedFacilities"
-          :withActions="true"
-          @onUpdate="refreshTree"
-          @onCreate="refreshTree"
-          @onDelete="refreshTree"
-          :facilities="selectedFacilities"
-          :organization="selectedOrganization"
-          :site="selectedSite"
-          :isSelectable="false"
-        ></opensilex-FacilitiesView>
-      </div>
+    <div class="container-fluid">
+        <opensilex-CreateButton
+                id="createOrgaButton"
+                @click="onCreateClick()"
+                label="OrganizationView.create"
+                class="createButton">
+        </opensilex-CreateButton>
+
+        <opensilex-PageContent>
+            <template v-slot>
+                <opensilex-OrganizationList
+                        ref="organizationList"
+                        @onEdit="OnOrganizationListEdit($event)"
+                ></opensilex-OrganizationList>
+            </template>
+        </opensilex-PageContent>
+
+        <opensilex-ModalForm
+                v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
+                ref="organizationForm"
+                lazy="true"
+                component="opensilex-OrganizationForm"
+                createTitle="OrganizationView.create"
+                editTitle="OrganizationView.update"
+                icon="ik#ik-map-pin"
+                @onCreate="organisationList.refresh()"
+                @onUpdate="organisationList.refresh()"
+        ></opensilex-ModalForm>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
+import Vue from 'vue';
+import {OpenSilexStore} from "../../models/Store";
 import {Component, Ref} from "vue-property-decorator";
-import Vue from "vue";
-import {OrganizationGetDTO, NamedResourceDTOFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
-import Org from "../../ontologies/Org";
-import OrganizationTree from "./OrganizationTree.vue";
+import OrganizationList from "@/components/organizations/OrganizationList.vue";
 
 @Component
 export default class OrganizationView extends Vue {
-  $opensilex: any;
-  $store: any;
-  $route: any;
-  service: OrganizationsService;
+    //#region Plugins and services
+    public $store: OpenSilexStore;
+    //#endregion
 
-  @Ref("organizationTree") readonly organizationTree!: OrganizationTree;
-  @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
-  @Ref("facilitiesView") readonly facilitiesView!: any;
+    //#region Refs
+    @Ref("organizationForm") private readonly organizationForm
+    @Ref("organizationList") private readonly organisationList!: OrganizationList;
+    //#endregion
 
-  selectedOrganization: OrganizationGetDTO = null;
-  selectedSite: SiteGetDTO = null;
-
-  created() {
-    this.service = this.$opensilex.getService(
-        "opensilex-core.OrganizationsService"
-    );
-  }
-
-  get user() {
-    return this.$store.state.user;
-  }
-
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  get selectedFacilities(): Array<NamedResourceDTOFacilityModel> {
-    if (this.selectedOrganization) {
-      return this.selectedOrganization.facilities;
-    }
-    if (this.selectedSite) {
-      return this.selectedSite.facilities;
-    }
-    return undefined;
-  }
-
-  onSelectedOrganizationOrSite(selection: OrganizationGetDTO | SiteGetDTO) {
-    if (!selection) {
-      this.clearSelection();
-      return;
+    //#region Computed
+    private get user() {
+        return this.$store.state.user;
     }
 
-    if (Org.checkURIS(Org.SITE_TYPE_URI, selection.rdf_type)) {
-      this.updateSelectedSite(selection);
-    } else { // Organization
-      this.updateSelectedOrganization(selection);
+    private get credentials() {
+        return this.$store.state.credentials;
     }
-  }
+    //#endregion
 
-  clearSelection() {
-    this.selectedSite = undefined;
-    this.selectedOrganization = undefined;
-  }
-
-  updateSelectedOrganization(newSelection) {
-    this.selectedSite = undefined;
-    this.selectedOrganization = newSelection;
-  }
-
-  updateSelectedSite(newSite) {
-    this.selectedOrganization = undefined;
-    this.selectedSite = newSite;
-  }
-
-  refreshTree() {
-    let uri = undefined;
-    if (this.selectedOrganization) {
-      uri = this.selectedOrganization.uri;
-    } else if (this.selectedSite) {
-      uri = this.selectedSite.uri;
+    //#region Events handlers
+    private OnOrganizationListEdit(dto) {
+        this.organizationForm.showEditForm(dto);
     }
 
-    this.organizationTree.refresh(uri);
-  }
+    private onCreateClick() {
+        this.organizationForm.showCreateForm();
+    }
+    //#endregion
+
+
 }
 </script>
 
-
 <style scoped lang="scss">
-@media only screen and (min-width: 768px) {
-  .organizationDetailComponent {
-    margin-top: 30px;
-  }
+#createOrgaButton {
+  margin-bottom: 10px;
+  margin-top: -15px;
 }
+
 </style>
 
 <i18n>
 en:
-  OrganizationView:
-    description: Manage and configure organizations
-    organizations: Organizations and sites
-    facilities: Facilities
+    OrganizationView:
+        title: "Organizations"
+        description: "Manage and configure organizations"
+        create: "Add organization"
+        update: "Edit organization"
 fr:
-  OrganizationView:
-    description: Gérer et configurer les organisations
-    organizations: Organisations et sites
-    facilities: Installations techniques
+    OrganizationView:
+        title: "Organisations"
+        description: "Gérer et configurer les organisations"
+        create: "Ajouter une organisation"
+        update: "Modifier une organisation"
 </i18n>

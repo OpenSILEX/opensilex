@@ -12,9 +12,11 @@ import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -24,10 +26,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -324,5 +323,12 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         List<ProvenanceGetDTO> provenances = provListResponse.getResult();
 
         assertFalse(provenances.isEmpty());
+    }
+
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return Arrays.asList(
+                ProvenanceDAO.PROVENANCE_COLLECTION_NAME
+        );
     }
 }

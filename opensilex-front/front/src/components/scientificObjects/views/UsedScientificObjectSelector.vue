@@ -1,5 +1,5 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-ModalFormSelector
       ref="soSelector"
       modalComponent="opensilex-ScientificObjectModalListByExp"
       :label="label"
@@ -13,20 +13,18 @@
       :maximumSelectedItems="maximumSelectedRows"
       :clearable="true"
       :required="required"
-      :isModalSearch="true"
       :limit="1"
       @clear="reset"
       @onValidate="refreshProvComponent"
       @onClose="refreshProvComponent"
-  ></opensilex-SelectForm>
+  ></opensilex-ModalFormSelector>
 </template>
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {ScientificObjectsService} from "opensilex-core/index";
-import { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
-import SelectForm from "../../common/forms/SelectForm.vue";
+import ModalFormSelector, { SelectableItem } from "../../common/forms/ModalFormSelector.vue";
 
 /**
 * Selector of Scientific Objects present in an experiment.
@@ -62,8 +60,6 @@ export default class UsedScientificObjectSelector extends Vue {
   @Prop()
   objects;
   @Prop()
-  isModalSearch;
-  @Prop()
   modalComponent;
   @Prop()
   soFilter;
@@ -78,7 +74,7 @@ export default class UsedScientificObjectSelector extends Vue {
     return {variables: this.variables, devices: this.devices}
   }
 
-  @Ref("soSelector") readonly soSelector!: SelectForm<unknown>; // Unknown because no load/search method
+  @Ref("soSelector") readonly soSelector!: ModalFormSelector;
 
   refreshKey = 0;
 

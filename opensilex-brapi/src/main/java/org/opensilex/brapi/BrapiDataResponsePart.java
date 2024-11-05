@@ -17,6 +17,10 @@ public class BrapiDataResponsePart<T> {
         this.data = data;
     }
 
+    public BrapiDataResponsePart() {
+        this.data = null;
+    }
+
     public T getData() {
         return data;
     }

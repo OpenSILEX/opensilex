@@ -21,10 +21,8 @@ import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
-import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
@@ -422,10 +420,10 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null, null);
+        List<VariableModel> variables = dataLogic.getUsedVariables(experiments, objects, null, null);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -848,7 +846,7 @@ public class ExperimentAPI {
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
 
-            VariableDAO dao = new VariableDAO(sparql,nosql,fs);
+            VariableDAO dao = new VariableDAO(sparql,nosql,fs, currentUser);
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {

@@ -15,7 +15,6 @@ import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -32,7 +31,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -58,6 +57,15 @@ public class UriSearchLogic {
         this.currentUser = currentUser;
         this.fs = fs;
     }
+
+    private static final Set<String> VOCABULARY_ROOT_TYPES = Set.of(
+            Objects.requireNonNull(URIDeserializer.formatURIAsStr(Oeso.ScientificObject.getURI())),
+            Objects.requireNonNull(URIDeserializer.formatURIAsStr(Oeev.Event.getURI())),
+            Objects.requireNonNull(URIDeserializer.formatURIAsStr(Oeso.Device.getURI())),
+            Objects.requireNonNull(URIDeserializer.formatURIAsStr(Oeso.Facility.getURI())),
+            Objects.requireNonNull(URIDeserializer.formatURIAsStr(Oeso.FactorCategory.getURI()))
+    );
+
 
     /**
      *
@@ -98,7 +106,7 @@ public class UriSearchLogic {
     }
 
     private URIGlobalSearchDTO searchInSparql(URI uri) throws Exception {
-        UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff sparqlMatch = sparqlDao.searchByUri(uri);
+        UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = sparqlDao.searchByUri(uri);
         if(sparqlMatch == null){
             return null;
         }
@@ -118,17 +126,23 @@ public class UriSearchLogic {
      * @throws Exception
      */
     private URIGlobalSearchDTO searchInOntology(URI uri) throws Exception {
+        //Initialize local scope variables used
         VocabularyModel<?> model = null;
         boolean isProperty = false;
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         //ClassModel used for navigation route calculation
         ClassModel nextParent = null;
+
+        //Set ClassModel nextParent to either a class or property from ontology
         try{
+            //Look in classes
             var classModel = ontologyStore.getClassModel(uri, null, currentUser.getLanguage());
             model = classModel;
             nextParent = classModel;
         }catch(Exception ignore){}
+
         if(model == null){
+            //If no class found then look in properties
             try{
                 var propertyModel = ontologyStore.getProperty(uri, null, null, currentUser.getLanguage());
                 model = propertyModel;
@@ -139,6 +153,8 @@ public class UriSearchLogic {
                 return null;
             }
         }
+
+        //Build URIGlobalSearchDTO result
         URIGlobalSearchDTO result = URIGlobalSearchDTO.fromVocabularyModel(model);
 
         //set the isProperty value
@@ -166,19 +182,10 @@ public class UriSearchLogic {
      * @param model
      * @return true if the model corresponds to a type that has a dedicated page in front
      *
-     * TODO (Maximilian) This is ugly hard code, this information should be stored more cleanly somewhere, in config?
-     *  i feel that if the path was for example .../app/types/scientific_objects/...
-     *  instead of .../app/scientific_object_types
-     *  Then it would be easier to perform calculations like this without hard-code
      */
     private boolean isRootClassModel(ClassModel model){
         URI modelUri = model.getUri();
-        return SPARQLDeserializers.compareURIs(modelUri, Oeso.ScientificObject.getURI()) ||
-                SPARQLDeserializers.compareURIs(modelUri, Oeev.Event.getURI()) ||
-                SPARQLDeserializers.compareURIs(modelUri, Oeso.Device.getURI()) ||
-                SPARQLDeserializers.compareURIs(modelUri, Oeso.Facility.getURI()) ||
-                SPARQLDeserializers.compareURIs(modelUri, Oeso.FactorCategory.getURI()) ||
-                SPARQLDeserializers.compareURIs(modelUri, Oeso.FactorCategory.getURI());
+        return VOCABULARY_ROOT_TYPES.contains(URIDeserializer.formatURIAsStr(modelUri.toString()));
     }
 
     private URIGlobalSearchDTO searchInProvenances(URI uri) throws Exception {

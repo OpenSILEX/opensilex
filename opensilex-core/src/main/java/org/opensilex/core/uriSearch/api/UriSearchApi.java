@@ -71,7 +71,7 @@ public class UriSearchApi {
         //Here we create dtos in the logic layer as it has to handle different types of models (SPARQLNamedResourceModels and MongoModels)
         URIGlobalSearchDTO result = logic.searchByUri(uri);
 
-        if (!(result==null)) {
+        if (result != null) {
             return new SingleObjectResponse<>(result).getResponse();
         } else {
             throw new NotFoundURIException("No elements matching this URI were found : ", uri);

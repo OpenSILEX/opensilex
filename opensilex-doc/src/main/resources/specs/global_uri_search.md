@@ -1,5 +1,5 @@
 
-# Specifications : Global URI searh
+# Specifications : Global URI search
 
 **Document history (please add a line when you edit the document)**
 
@@ -40,9 +40,7 @@ Scientific objects can have a same URI across multiple experiments so they will 
 - Use case #1: The user can enter a URI in a search box in the application header and hit a search button. (Enter a URI)
 - Use case #2: After hitting search the user either receives a URI non-existing message where the result should be, or a box containing the results. (Does the URI exist?)
 - Use case #3: Inside the result box the default returned elements will be type, label, metadata and a link to details page or popup.
-- Use case #4: For elements where multiple URIs can exist (for now only Scientific Objects), the same data will be shown with an added pop-up box to select which experiment to show from
-
-> Valentin : Pour les objets scientifiques, on peut aussi imaginer simplement afficher le label global (et pas les labels par XP), et le lien vers la page de détail globale. De cette manière pas besoin de dupliquer la logique d'affichage de l'OS par expé (c'est géré par la page de détail globale)
+- Use case #4: For elements where multiple URIs can exist (for now only Scientific Objects), we will always show the information from the GLOBAL context. The global ScientificObject details page already contains links to the Experiments.
 
 
 ## Design specifications

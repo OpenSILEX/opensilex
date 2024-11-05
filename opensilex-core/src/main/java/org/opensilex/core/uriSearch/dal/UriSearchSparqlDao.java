@@ -13,6 +13,7 @@ package org.opensilex.core.uriSearch.dal;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -22,6 +23,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -50,10 +52,10 @@ public class UriSearchSparqlDao {
     //#endregion
 
     //#region: static stuff
-    private final static String contextStringVar = "g";
-    private final static String commentStringVar = "comment";
-    private final static String isStudyEffectIn = "studyIn";
-    private final static String hasFactor = "factor";
+    private final static String CONTEXT_STRING_VAR = "g";
+    private final static String COMMENT_STRING_VAR = "comment";
+    private final static String IS_STUDY_EFFECT_IN = "studyIn";
+    private final static String HAS_FACTOR = "factor";
     //#endregion
 
     //#region: PUBLIC METHODS
@@ -62,8 +64,8 @@ public class UriSearchSparqlDao {
      *
      * Precondition: if multiple elements have same uri then we suppose they are SCIENTIFIC OBJECTS
      */
-    public SparqlNamedResourceModelWithExtraStuff searchByUri(URI uri) throws Exception {
-        List<SparqlNamedResourceModelWithExtraStuff> resultsAsModels = new ArrayList<>();
+    public SparqlNamedResourceModelPlus searchByUri(URI uri) throws Exception {
+        List<SparqlNamedResourceModelPlus> resultsAsModels = new ArrayList<>();
         sparql.executeSelectQueryAsStream(
                 generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));
         //If multiple found then keep only default graph one
@@ -71,34 +73,35 @@ public class UriSearchSparqlDao {
             return null;
         }else if(resultsAsModels.size() == 1) {
             return resultsAsModels.get(0);
-        }else{
-            //TODO if elements other than Scientific objects can be in multiple graphs then we would need to replace the below line with a fetching of the correct graph URI by looking at which Super type has a graph associated to it
-            URI defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-            for(SparqlNamedResourceModelWithExtraStuff next : resultsAsModels){
-                if(SPARQLDeserializers.compareURIs(defaultGraph, next.getContext())) {
-                    return next;
-                }
-            }
-            //If no default graph found throw an exception because this will need to be debugged
-            throw new Exception("No element from a default graph found!");
         }
+        //TODO if elements other than Scientific objects can be in multiple graphs then we would need to replace the below line with a fetching of the correct graph URI by looking at which Super type has a graph associated to it
+        URI defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        for(SparqlNamedResourceModelPlus next : resultsAsModels){
+            if(SPARQLDeserializers.compareURIs(defaultGraph, next.getContext())) {
+                return next;
+            }
+        }
+        //If no default graph found throw an exception because this will need to be debugged
+        throw new NotFoundException("No element from a default graph found!");
     }
 
     //#endregion
     //#region: PRIVATE METHODS
 
-    private SparqlNamedResourceModelWithExtraStuff buildModelFromSparqlResult(SPARQLResult result) {
+    private SparqlNamedResourceModelPlus buildModelFromSparqlResult(SPARQLResult result) {
         PersonModel publisher = new PersonModel();
         URI factor = null;
         SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+
         //uri
         String expandedURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLNamedResourceModel.URI_FIELD));
         model.setUri(URI.create(expandedURI));
+
         //name
         model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
 
         //Comment
-        String rdfsComment = result.getStringValue(commentStringVar);
+        String rdfsComment = result.getStringValue(COMMENT_STRING_VAR);
 
         //type
         String typeUri = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD));
@@ -111,14 +114,14 @@ public class UriSearchSparqlDao {
         model.setTypeLabel(typeLabel);
 
         //Set factor if not null
-        String factorStringUri = result.getStringValue(hasFactor);
+        String factorStringUri = result.getStringValue(HAS_FACTOR);
         if (Objects.nonNull(factorStringUri)) {
             factor = URI.create(factorStringUri);
         }
 
         // context, crush with studied effect in if it was a factor or factor level
-        String contextStringUri = result.getStringValue(contextStringVar);
-        String studiedInXp = result.getStringValue(isStudyEffectIn);
+        String contextStringUri = result.getStringValue(CONTEXT_STRING_VAR);
+        String studiedInXp = result.getStringValue(IS_STUDY_EFFECT_IN);
         URI contextUri = null;
         if (Objects.nonNull(studiedInXp)) {
             contextUri = URI.create(studiedInXp);
@@ -151,7 +154,7 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri, rdfsComment, factor);
+        return new SparqlNamedResourceModelPlus(model, publisher, contextUri, rdfsComment, factor);
     }
 
     /**
@@ -170,15 +173,15 @@ public class UriSearchSparqlDao {
         Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
-        Var rdfsCommentVar = makeVar(commentStringVar);
+        Var rdfsCommentVar = makeVar(COMMENT_STRING_VAR);
         Var publisherVar = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
         Var publisherFirstName = makeVar(PersonModel.FIRST_NAME_FIELD);
         Var publisherLastName = makeVar(PersonModel.LAST_NAME_FIELD);
         Var publishedVar = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Var updated = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
-        Var graphVar = makeVar(contextStringVar);
-        Var isStudyEffectInVar = makeVar(isStudyEffectIn);
-        Var factorVar = makeVar(hasFactor);
+        Var graphVar = makeVar(CONTEXT_STRING_VAR);
+        Var isStudyEffectInVar = makeVar(IS_STUDY_EFFECT_IN);
+        Var factorVar = makeVar(HAS_FACTOR);
         //Other vars used
         Var publisherPersonVar = makeVar("person");
 
@@ -206,7 +209,7 @@ public class UriSearchSparqlDao {
         //Comment
         WhereHandler optionalCommentHandler = new WhereHandler();
         optionalCommentHandler.addWhere(result.makeTriplePath(uriVar, RDFS.comment, rdfsCommentVar));
-        optionalCommentHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(commentStringVar, locale.getLanguage()));
+        optionalCommentHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(COMMENT_STRING_VAR, locale.getLanguage()));
         inGraphWhere.getWhereHandler().addOptional(optionalCommentHandler);
 
         //If the Uri was a factor or factor level then we need to fetch the Experiment for redirection
@@ -242,8 +245,7 @@ public class UriSearchSparqlDao {
         result.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         //uri value
-        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Collections.singletonList(uri));
-        result.addValueVar(SPARQLResourceModel.URI_FIELD, uriNodes);
+        result.addValueVar(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(uri.toString()));
 
         return result;
     }
@@ -253,14 +255,14 @@ public class UriSearchSparqlDao {
     /**
      * Class used as return type for search instead of making a Model class just for this
      */
-    public static class SparqlNamedResourceModelWithExtraStuff {
+    public static class SparqlNamedResourceModelPlus {
         private final SPARQLNamedResourceModel model;
         private final PersonModel publisher;
         private final URI context;
         private final String rdfsComment;
         private final URI factor;
 
-        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment, URI factor) {
+        public SparqlNamedResourceModelPlus(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment, URI factor) {
             this.model = model;
             this.publisher = publisher;
             this.context = context;

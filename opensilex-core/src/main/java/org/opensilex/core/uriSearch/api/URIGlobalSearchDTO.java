@@ -15,7 +15,6 @@ import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.model.VocabularyModel;
@@ -23,7 +22,6 @@ import org.opensilex.sparql.model.VocabularyModel;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 /**
  * Object returned for UriSearch, contains everything needed from publication info to the data-dto in-case the uri was a data.
@@ -86,7 +84,7 @@ public class URIGlobalSearchDTO {
     //#endregion
     //#region: Factory methods
 
-    public static URIGlobalSearchDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelWithExtraStuff result){
+    public static URIGlobalSearchDTO fromSparqlUriGlobalSearchResult(UriSearchSparqlDao.SparqlNamedResourceModelPlus result){
         URIGlobalSearchDTO dto = new URIGlobalSearchDTO();
         dto.setUri(result.getModel().getUri());
         dto.setType(result.getModel().getType());

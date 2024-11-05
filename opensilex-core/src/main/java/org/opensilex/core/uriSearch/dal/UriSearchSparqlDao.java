@@ -18,6 +18,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
@@ -51,6 +52,8 @@ public class UriSearchSparqlDao {
     //#region: static stuff
     private final static String contextStringVar = "g";
     private final static String commentStringVar = "comment";
+    private final static String isStudyEffectIn = "studyIn";
+    private final static String hasFactor = "factor";
     //#endregion
 
     //#region: PUBLIC METHODS
@@ -86,6 +89,7 @@ public class UriSearchSparqlDao {
 
     private SparqlNamedResourceModelWithExtraStuff buildModelFromSparqlResult(SPARQLResult result) {
         PersonModel publisher = new PersonModel();
+        URI factor = null;
         SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
         //uri
         String expandedURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLNamedResourceModel.URI_FIELD));
@@ -99,17 +103,30 @@ public class UriSearchSparqlDao {
         //type
         String typeUri = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD));
         model.setType(URI.create(typeUri));
+
         //typename
         SPARQLLabel typeLabel = new SPARQLLabel();
         typeLabel.setDefaultLang(currentUser.getLanguage());
         typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
         model.setTypeLabel(typeLabel);
-        // context
+
+        //Set factor if not null
+        String factorStringUri = result.getStringValue(hasFactor);
+        if (Objects.nonNull(factorStringUri)) {
+            factor = URI.create(factorStringUri);
+        }
+
+        // context, crush with studied effect in if it was a factor or factor level
         String contextStringUri = result.getStringValue(contextStringVar);
+        String studiedInXp = result.getStringValue(isStudyEffectIn);
         URI contextUri = null;
-        if (Objects.nonNull(contextStringUri)) {
+        if (Objects.nonNull(studiedInXp)) {
+            contextUri = URI.create(studiedInXp);
+        }
+        if (contextUri == null && Objects.nonNull(contextStringUri)) {
             contextUri = URI.create(contextStringUri);
         }
+
         //publisher, published, updated
         String publisherUri = SPARQLDeserializers.getShortURI(result.getStringValue(SPARQLResourceModel.PUBLISHER_FIELD));
         String publicationDate = result.getStringValue(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
@@ -134,7 +151,7 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri, rdfsComment);
+        return new SparqlNamedResourceModelWithExtraStuff(model, publisher, contextUri, rdfsComment, factor);
     }
 
     /**
@@ -160,6 +177,8 @@ public class UriSearchSparqlDao {
         Var publishedVar = makeVar(SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Var updated = makeVar(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
         Var graphVar = makeVar(contextStringVar);
+        Var isStudyEffectInVar = makeVar(isStudyEffectIn);
+        Var factorVar = makeVar(hasFactor);
         //Other vars used
         Var publisherPersonVar = makeVar("person");
 
@@ -174,7 +193,8 @@ public class UriSearchSparqlDao {
         result.addVar(publishedVar);
         result.addVar(updated);
         result.addVar(graphVar);
-
+        result.addVar(isStudyEffectInVar);
+        result.addVar(factorVar);
 
         //Everything that concerns our uri needs to be by distinct graph to avoid duplicates when same uri is present in multiple graphs
         //To do this make a subwhere to put in an addGraph operation
@@ -188,6 +208,10 @@ public class UriSearchSparqlDao {
         optionalCommentHandler.addWhere(result.makeTriplePath(uriVar, RDFS.comment, rdfsCommentVar));
         optionalCommentHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(commentStringVar, locale.getLanguage()));
         inGraphWhere.getWhereHandler().addOptional(optionalCommentHandler);
+
+        //If the Uri was a factor or factor level then we need to fetch the Experiment for redirection
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, Oeso.studiedEffectIn, isStudyEffectInVar));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, Oeso.hasFactor, factorVar).addWhere(factorVar, Oeso.studiedEffectIn, isStudyEffectInVar));
 
         //label
         WhereHandler optionalLabelHandler = new WhereHandler();
@@ -230,16 +254,18 @@ public class UriSearchSparqlDao {
      * Class used as return type for search instead of making a Model class just for this
      */
     public static class SparqlNamedResourceModelWithExtraStuff {
-        private SPARQLNamedResourceModel model;
-        private PersonModel publisher;
-        private URI context;
-        private String rdfsComment;
+        private final SPARQLNamedResourceModel model;
+        private final PersonModel publisher;
+        private final URI context;
+        private final String rdfsComment;
+        private final URI factor;
 
-        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment) {
+        public SparqlNamedResourceModelWithExtraStuff(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment, URI factor) {
             this.model = model;
             this.publisher = publisher;
             this.context = context;
             this.rdfsComment = rdfsComment;
+            this.factor = factor;
         }
 
         public SPARQLNamedResourceModel getModel() {
@@ -256,6 +282,10 @@ public class UriSearchSparqlDao {
 
         public String getRdfsComment() {
             return rdfsComment;
+        }
+
+        public URI getFactor() {
+            return factor;
         }
     }
     //#endregion

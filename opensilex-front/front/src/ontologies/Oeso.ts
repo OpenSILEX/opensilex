@@ -49,6 +49,7 @@ let ontologies = {
     IMAGE_TYPE_URI: OESO_URI + "#Image",
     DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
     FACTOR_CATEGORY_URI: OESO_URI + '#FactorCategory',
+    FACTOR_LEVEL_URI: OESO_URI + '#FactorLevel',
     MEASURES_PROP_URI: OESO_URI + "#measures",
     VARIABLESGROUP_TYPE_URI: OESO_URI + "#VariablesGroup",
     HAS_MODEL: OESO_URI+"#hasModel",

@@ -434,6 +434,7 @@ routes:
       - factor-modification
   - path: /:xpUri/factor/details/:uri
     component: opensilex-FactorView
+    rdfType: vocabulary:Factor
   - path: /:xpUri/factor/experiments/:uri
     component: opensilex-FactorView
   - path: /:xpUri/factor/annotations/:uri

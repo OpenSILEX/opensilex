@@ -38,6 +38,8 @@ public class URIGlobalSearchDTO {
     @JsonProperty("rdf_type")
     private URI type;
 
+    private URI context;
+
     @JsonProperty("rdf_type_name")
     private String typeLabel;
 
@@ -72,6 +74,10 @@ public class URIGlobalSearchDTO {
     @JsonProperty("is_property")
     private boolean isProperty;
 
+    //This is used to permit navigation to parent Factor if the uri was a Factor Level
+    @JsonProperty("factor_uri")
+    private URI factorUri;
+
     //#endregion
     //#region: private constants
 
@@ -86,6 +92,8 @@ public class URIGlobalSearchDTO {
         dto.setType(result.getModel().getType());
         dto.setTypeLabel(result.getModel().getTypeLabel().getDefaultValue());
         dto.setName(result.getModel().getName());
+        dto.setContext(result.getContext());
+        dto.setFactorUri(result.getFactor());
 
         if(result.getRdfsComment() != null){
             dto.setRdfsComment(result.getRdfsComment());
@@ -256,6 +264,22 @@ public class URIGlobalSearchDTO {
 
     public void setIsProperty(boolean isProperty) {
         this.isProperty = isProperty;
+    }
+
+    public URI getContext() {
+        return context;
+    }
+
+    public void setContext(URI context) {
+        this.context = context;
+    }
+
+    public URI getFactorUri() {
+        return factorUri;
+    }
+
+    public void setFactorUri(URI factorUri) {
+        this.factorUri = factorUri;
     }
 
     //#endregion

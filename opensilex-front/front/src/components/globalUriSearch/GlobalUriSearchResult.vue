@@ -55,11 +55,11 @@
         :typeLabel="$t('GlobalUriSearch.dataTypeName')"
       ></opensilex-TypeView>
       <!-- rdfsComment -->
-      <opensilex-StringView
+      <opensilex-TextView
         v-if="comment"
         label="GlobalUriSearch.comment"
         :value="comment"
-      ></opensilex-StringView>
+      ></opensilex-TextView>
     </div>
 
     <!-- Metadata -->
@@ -200,7 +200,7 @@ export default class GlobalUriSearchResult extends Vue {
   //#region: computed
 
   /**
-   * Gets the path if the uri can lead to some page
+   * Gets the path if the uri can lead to some page, A bunch of cases are handled separately
    */
   get detailsPath() : string{
     let formattedPath = "";
@@ -218,7 +218,8 @@ export default class GlobalUriSearchResult extends Vue {
     }
     if(this.searchResult.super_types !== null){
         let unformattedPath = this.$opensilex.getPathFromUriTypes(this.searchResult.super_types.rdf_types);
-        formattedPath = this.$opensilex.getTargetPath(this.searchResult.uri, undefined, unformattedPath);
+        //Pass factor as uri to getTargetPath if the uri was a FactorLevel (to navigate to its parent Factor)
+        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), this.context, unformattedPath);
     }else if(this.searchResult.root_class !== null){
       return this.$opensilex.getVocabularyPath(this.uri, this.searchResult.root_class, this.searchResult.is_property);
     }
@@ -226,6 +227,20 @@ export default class GlobalUriSearchResult extends Vue {
     return formattedPath;
   }
 
+  /**
+   * Get the graph that the uri belongs too, OR in some cases simply the uri of Experiment that this element is used in
+   * (Factor for example is stored in its own graph but the webservice forces context to have the correct Experiment uri)
+   */
+  get context(){
+    return this.searchResult.context;
+  }
+
+  /**
+   * This will only ever not be null if the uri was a factor level, used for navigation
+   */
+  get factorUri(){
+    return this.searchResult.factor_uri;
+  }
 
   get hasResult() : boolean{
     return this.searchResult != null;

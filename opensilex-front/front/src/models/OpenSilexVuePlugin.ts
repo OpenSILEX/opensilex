@@ -150,8 +150,11 @@ export default class OpenSilexVuePlugin {
 
         let osPath = objectPath.replace(':uri', encodeURIComponent(uri))
 
-        // pass encoded experiment inside OS path URL
+        // pass encoded experiment inside OS path URL,
         if(context && context.length > 0){
+            //Replace :xpUri as well as :experiment, for some reason :xpUri is the used keyword for Factor and FactorLev,
+            // I tried changing this in opensilex.front.yml but the Factor details page became blank
+            osPath = osPath.replace(':xpUri', encodeURIComponent(context));
             return osPath.replace(':experiment', encodeURIComponent(context));
         }else{ // no experiment passed
             return osPath.replace(':experiment', "");

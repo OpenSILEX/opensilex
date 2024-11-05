@@ -67,14 +67,14 @@ public class UriSearchLogic {
      * @throws Exception
      */
     public URIGlobalSearchDTO searchByUri(URI uri) throws Exception {
-        //Start by searching in sparql global graph
-        URIGlobalSearchDTO result = this.searchInSparql(uri);
+        //Start by searching in vocabulary, the sparql search would also return a result but with incomplete information
+        URIGlobalSearchDTO result = this.searchInOntology(uri);
         if(result != null){
             return result;
         }
 
-        //If no matches search in Vocabulary
-        result = this.searchInOntology(uri);
+        //search in sparql global graph if no results
+        result = this.searchInSparql(uri);
         if(result != null){
             return result;
         }
@@ -105,7 +105,7 @@ public class UriSearchLogic {
         URIGlobalSearchDTO result = URIGlobalSearchDTO.fromSparqlUriGlobalSearchResult(sparqlMatch);
 
         //Get super types, needed to identify details page path in front
-        URITypesDTO types = getSuperTypesFromUri(uri);
+        URITypesDTO types = getSuperTypesFromUri((sparqlMatch.getFactor() == null ? uri : sparqlMatch.getFactor()));
         result.setSuperTypes(types);
 
         return result;

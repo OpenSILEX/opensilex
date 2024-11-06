@@ -219,9 +219,12 @@ public class OrganizationDAO {
         }
 
         Set<URI> restrictedOrganizationSet = Objects.nonNull(filter.getRestrictedOrganizations()) ?  new HashSet<>(filter.getRestrictedOrganizations()) : null;
-        Pattern pattern = StringUtils.isNotEmpty(filter.getNameFilter()) ? Pattern.compile(filter.getNameFilter(), Pattern.CASE_INSENSITIVE) : null;
+        Pattern namePattern = StringUtils.isNotEmpty(filter.getNameFilter()) ? Pattern.compile(filter.getNameFilter(), Pattern.CASE_INSENSITIVE) : null;
         return searchWithoutFilters(filter.getUser()).stream().filter(org -> {
-            if (Objects.nonNull(pattern) && !pattern.matcher(org.getName()).find()) {
+            if (Objects.nonNull(namePattern) && !namePattern.matcher(org.getName()).find()) {
+                return false;
+            }
+            if (Objects.nonNull(filter.getTypeUriFilter()) && !SPARQLDeserializers.compareURIs(filter.getTypeUriFilter(),org.getType())) {
                 return false;
             }
             if (Objects.nonNull(filter.getFacilityURI()) &&  org.getFacilities().stream().noneMatch(facilityModel -> SPARQLDeserializers.compareURIs(filter.getFacilityURI(),facilityModel.getUri()))) {

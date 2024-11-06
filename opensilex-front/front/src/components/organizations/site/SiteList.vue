@@ -38,6 +38,7 @@
         <opensilex-FacilitiesModalList
             :facilities="data.item.facilities"
             :currentSite="data.item"
+            :hostNameForTitle="data.item.name"
             @onCRUD="refresh"
         />
       </template>
@@ -67,7 +68,7 @@
 import Vue from 'vue';
 import {OpenSilexStore} from "../../../models/Store";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {SiteGetListDTO} from "opensilex-core/model/siteGetListDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
@@ -88,8 +89,13 @@ export default class SiteList extends Vue {
   @Ref("tableRef") private readonly tableRef!: any;
   //#endregion
 
-  //#region Data
-  private filter: string = "";
+  //#region Props
+  @Prop({default: null})
+  private organizationsForFilter: Array<string>;
+  //#endregion
+
+    //#region Data
+    private filter: string = "";
 
   private fields = [
     {key: 'name', label: 'component.common.name', sortable: true},
@@ -157,7 +163,7 @@ export default class SiteList extends Vue {
   private searchSites(options) {
     return this.service.searchSites(
         this.filter,
-        null,
+        this.organizationsForFilter,
         options.orderBy,
         options.currentPage,
         options.pageSize);

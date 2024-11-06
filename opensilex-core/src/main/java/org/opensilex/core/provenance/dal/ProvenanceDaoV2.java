@@ -13,6 +13,7 @@ import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,9 +65,10 @@ public class ProvenanceDaoV2 extends MongoReadWriteDao<ProvenanceModel, Provenan
             result.add(Filters.eq(ProvenanceModel.AGENTS_TYPE_FIELD, filter.getAgentType()));
         }
 
-        if (filter.getAgentURI() != null) {
-            result.add(Filters.eq(ProvenanceModel.AGENTS_URI_FIELD, filter.getAgentURI()));
+        if (filter.getAgentURIs() != null && !filter.getAgentURIs().isEmpty()) {
+            result.add(Filters.in(ProvenanceModel.AGENTS_URI_FIELD, filter.getAgentURIs().stream().map(SPARQLDeserializers::getExpandedURI).toList()));
         }
+
         return result;
     }
 

@@ -100,10 +100,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
         try {
             classAnalyzer = new SPARQLClassAnalyzer(mapperIndex, objectClass);
-            LOGGER.debug("Analyze class by reflection: {}", objectClass.getName());
-
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalyzer);
-            LOGGER.debug("Init SPARQL class query builder {}",objectClass.getName());
 
             if (classAnalyzer.getGraph() != null) {
                 URI classGraph = new URI(classAnalyzer.getGraph());

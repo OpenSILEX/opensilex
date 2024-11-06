@@ -58,8 +58,8 @@
             <opensilex-AgentTypeSelector
               :multiple="false"
               :selected.sync="filter.agent_type"
-              @clear="filter.agent = undefined"
-              @select="filter.agent = undefined"
+              @clear="filter.agents = undefined"
+              @select="filter.agents = undefined"
               :key="lang"
               class="searchFilter"
               @handlingEnterKey="refresh()"
@@ -71,7 +71,8 @@
         <div>
           <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
             <opensilex-PersonSelector
-                :persons.sync="filter.agent"
+                :persons.sync="filter.agents"
+                :multiple="true"
                 label="ProvenanceForm.agent"
                 class="searchFilter"
                 @handlingEnterKey="refresh()"
@@ -82,8 +83,8 @@
             <opensilex-DeviceSelector
               ref="deviceSelector"
               label="ProvenanceForm.agent"
-              :value.sync="filter.agent"
-              :multiple="false"
+              :value.sync="filter.agents"
+              :multiple="true"
               :type="filter.agent_type"
               class="searchFilter"
               @handlingEnterKey="refresh()"
@@ -185,7 +186,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 // @ts-ignore
@@ -248,7 +249,7 @@ export default class ProvenanceList extends Vue {
     name: undefined,
     activity_type: undefined,
     agent_type: undefined,
-    agent: undefined,
+    agents: [],
     operator: undefined
   };
 
@@ -258,14 +259,14 @@ export default class ProvenanceList extends Vue {
       name: undefined,
       activity_type: undefined,
       agent_type: undefined,
-      agent: undefined,
+      agents: [],
       operator: undefined
     };
   }
 
   clearAgents() {
-    this.filter.agent = undefined;
-    this.filter.operator = undefined;
+    this.filter.agents = [];
+    this.filter.operator = [];
   }
 
   get fields() {
@@ -360,7 +361,7 @@ export default class ProvenanceList extends Vue {
       undefined, //description
       undefined, //activity
       this.filter.activity_type, //activity_type
-      this.filter.agent, //agent
+      this.filter.agents, //agents
       this.filter.agent_type, //agent_type
       options.orderBy, // order_by
       options.currentPage,

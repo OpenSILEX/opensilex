@@ -15,13 +15,20 @@ import com.mongodb.client.ClientSession;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import com.mongodb.client.model.geojson.Geometry;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LocationObservationLogic {
 
@@ -34,11 +41,12 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
+        locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
 
         locationObservationDAO.create(session, locationObservationModel);
@@ -46,6 +54,33 @@ public class LocationObservationLogic {
 
     public LocationObservationModel getLocationObservationByURI(URI uri) throws NoSQLInvalidURIException {
         return locationObservationDAO.get(uri);
+    }
+
+    /**
+     * @param modelList collections of observations list of features of interest
+     * @param hasGeometry fetch only documents with a "geometry" field - displayable on a map
+     * @param date the date at which we search the location
+     * @param intersection geographical limits of locations
+     * @return list of the last locations of each feature of interest
+     */
+    public List<LocationObservationModel> getLastLocationObservation(List<LocationObservationCollectionModel> modelList, boolean hasGeometry, Instant date, Geometry intersection) {
+        //TODO: get last location for elements with date linked to location - not implement for the moment (OS, facilities,...). Site are a particular case: one location without linked date
+        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+        List<LocationObservationModel> resultSearch;
+
+        List<URI> uriList = modelList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+
+        searchFilter.setObservationCollectionList(uriList);
+        searchFilter.setHasGeometry(hasGeometry);
+
+
+        if(date != null) {
+            searchFilter.setDate(date);
+        }
+
+        resultSearch = locationObservationDAO.searchWithPagination(searchFilter).getList();
+
+        return resultSearch;
     }
 
     public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry,LocationModel locationModel) {

@@ -5,7 +5,7 @@
     :selected.sync="organizationsURI"
     :multiple="multiple"
     :options="organizationsOptions"
-    placeholder="OrganizationTree.filter-placeholder"
+    placeholder="OrganizationSelector.filter-placeholder"
     @select="select"
     @deselect="deselect"
   ></opensilex-FormSelector>
@@ -15,7 +15,7 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import { ResourceDagDTO } from 'opensilex-core/index';
+import { OrganizationDagDTO } from 'opensilex-core/index';
 
 @Component
 export default class OrganizationSelector extends Vue {
@@ -47,7 +47,7 @@ export default class OrganizationSelector extends Vue {
     this.$opensilex
       .getService("opensilex-core.OrganizationsService")
       .searchOrganizations()
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<OrganizationDagDTO>>>) => {
         this.organizationsOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );
@@ -69,5 +69,11 @@ export default class OrganizationSelector extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
-</style>
+<i18n>
+en:
+  OrganizationSelector:
+    filter-placeholder: "Search organizations"
+fr:
+  OrganizationSelector:
+    filter-placeholder: "Rechercher des organisations"
+</i18n>

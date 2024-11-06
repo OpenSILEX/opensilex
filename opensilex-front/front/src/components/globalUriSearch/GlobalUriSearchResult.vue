@@ -20,7 +20,7 @@
         class="data-uri-details"
       >
         <opensilex-UriView
-          :uri="uri"
+          :uri="this.shortUri"
           :value="this.shortUri"
         ></opensilex-UriView>
 
@@ -100,7 +100,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
-//import Oeso from '../../ontologies/Oeso';
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -293,7 +292,7 @@ export default class GlobalUriSearchResult extends Vue {
   }
 
   /**
-   * Returns true if this is an element that has a URI link
+   * Returns true if this is an element that does not have a URI link
    */
   get hasNoDetailsPage(): boolean{
     return this.searchResult.data_dto !== null ||

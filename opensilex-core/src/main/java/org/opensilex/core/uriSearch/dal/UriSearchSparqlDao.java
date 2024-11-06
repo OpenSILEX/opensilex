@@ -245,7 +245,7 @@ public class UriSearchSparqlDao {
         result.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         //uri value
-        result.addValueVar(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(uri.toString()));
+        result.addValueVar(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri)));
 
         return result;
     }

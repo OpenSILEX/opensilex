@@ -157,7 +157,7 @@ public class TestFacilityBuilder  {
         dto.setRelations(getRelations());
         dto.setTypeLabel(getTypeLabel());
         dto.setAddress(getAddress());
-        dto.setGeometry(getGeometry());
+        dto.setLocations(getLocations());
         dto.setOrganizations(getOrganizations());
         dto.setSites(getSites());
         dto.setVariableGroups(getVariableGroups());

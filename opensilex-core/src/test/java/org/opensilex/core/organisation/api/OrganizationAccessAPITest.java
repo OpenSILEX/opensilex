@@ -18,6 +18,7 @@ import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.group.GroupAPITest;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAPI;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
@@ -47,6 +48,7 @@ import org.opensilex.sparql.response.ResourceDagDTO;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -181,6 +183,8 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private FacilityCreationDTO getFacilityCreationDTO(String name, URI orgURI) {
         FacilityCreationDTO facilityCreationDTO = new FacilityCreationDTO();
         facilityCreationDTO.setName(name);
+        facilityCreationDTO.setLocations(new ArrayList<>());
+
         if (Objects.nonNull(orgURI)) {
             facilityCreationDTO.setOrganizations(Collections.singletonList(orgURI));
         } else {

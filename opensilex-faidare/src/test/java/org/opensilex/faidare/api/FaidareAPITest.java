@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
-import org.geojson.GeoJsonObject;
 import org.junit.BeforeClass;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -22,8 +21,6 @@ import org.opensilex.core.experiment.api.ExperimentCreationDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationLogic;
-import org.opensilex.core.location.dal.LocationModel;
-import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.project.api.ProjectCreationDTO;
@@ -40,8 +37,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,6 +97,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         ));
         LocationObservationDTO location = new LocationObservationDTO();
         location.setGeojson(LocationLogic.geometryToGeoJson(polygon));
+        location.setEndDate(Instant.parse("2021-09-08T12:00:00+01:00"));
 
         facilityBuilder.setLocations(List.of(location));
 

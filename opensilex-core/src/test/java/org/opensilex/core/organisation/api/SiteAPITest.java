@@ -256,8 +256,8 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
                 "France",
                 "Montpellier",
                 "34000",
-                "Occitanie",
-                "2 place Pierre Viala"
+                null,
+                "2 place pierre viala"
         ))).buildAdmin().executeCallAndReturnURI();
 
         //search sites with spatial coordinates

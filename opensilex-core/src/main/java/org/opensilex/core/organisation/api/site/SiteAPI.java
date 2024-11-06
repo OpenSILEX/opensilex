@@ -95,12 +95,7 @@ public class SiteAPI {
         }
         ListWithPagination<SiteModel> siteModels = siteLogic.search(filter);
 
-        List<SiteGetListDTO> siteDtos = siteModels.getList().stream()
-                .map(siteModel -> {
-                    SiteGetListDTO siteDto = new SiteGetListDTO();
-                    siteDto.fromModel(siteModel);
-                    return siteDto;
-                }).collect(Collectors.toList());
+        ListWithPagination<SiteGetListDTO> siteDtos = siteModels.convert(SiteGetListDTO.class, SiteGetListDTO::getNewDTOFromModel);
 
         return new PaginatedListResponse<>(siteDtos).getResponse();
     }

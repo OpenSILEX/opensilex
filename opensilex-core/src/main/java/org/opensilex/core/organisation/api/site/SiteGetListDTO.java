@@ -79,4 +79,11 @@ public class SiteGetListDTO extends SiteDTO {
             );
         }
     }
+
+    public static SiteGetListDTO getNewDTOFromModel(SiteModel model) {
+        SiteGetListDTO dto = new SiteGetListDTO();
+        dto.fromModel(model);
+        return dto;
+    }
+
 }

@@ -178,19 +178,27 @@ export default class App extends Vue {
   //#region: EventHandlers
 
   private handleUriGlobalSearchPressed(){
-    this.uriSearchBoxVisible = !this.uriSearchBoxVisible;
+    this.toggleUriSearchBox();
   }
 
   private handleHideUriSearch(){
-    this.uriSearchBoxVisible = false;
+    this.toggleUriSearchBox(false);
   }
 
   closeNotification(){
     this.displayNotificationMessage = false;
   }
 
-  keydownEnter(event) {
-    console.debug("Keydown enter");
+  //#endregion
+  //#region: private functions
+
+  /**
+   * Toggles or sets the value of this.uriSearchBoxVisible
+   *
+   * @param visible if not null then sets this.uriSearchBoxVisible to this value
+   */
+  private toggleUriSearchBox(visible?: boolean) {
+    this.uriSearchBoxVisible = visible !== undefined ? visible : !this.uriSearchBoxVisible;
   }
 
   //#endregion

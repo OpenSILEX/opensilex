@@ -167,33 +167,24 @@ export default class OpenSilexVuePlugin {
      * @param uri
      * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
      *
-     * TODO same as vocabulaire, completely hardcoded
      */
     getVariableComponentPath(type: string, uri:string): string{
-        if(this.checkURIs(type, Oeso.ENTITY_TYPE_URI)){
-            return "/variables?elementType=Entity&selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(type, Oeso.ENTITY_OF_INTEREST_TYPE_URI)){
-            return "/variables?elementType=InterestEntity&selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(type, Oeso.CHARACTERISTIC_TYPE_URI)){
-            return "/variables?elementType=Characteristic&selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(type, Oeso.METHOD_TYPE_URI)){
-            return "/variables?elementType=Method&selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(type, Oeso.UNIT_TYPE_URI)){
-            return "/variables?elementType=Unit&selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(type, Oeso.VARIABLESGROUP_TYPE_URI)){
-            return "/variables?elementType=VariableGroup&selected="+ encodeURIComponent(uri);
-        }
-        return null;
+
+        const paths = {
+            [Oeso.ENTITY_TYPE_URI]: "Entity",
+            [Oeso.ENTITY_OF_INTEREST_TYPE_URI]: "InterestEntity",
+            [Oeso.CHARACTERISTIC_TYPE_URI]: "Characteristic",
+            [Oeso.METHOD_TYPE_URI]: "Method",
+            [Oeso.UNIT_TYPE_URI]: "Unit",
+            [Oeso.VARIABLESGROUP_TYPE_URI]: "VariableGroup"
+        };
+
+        const elementType = Object.entries(paths).find(([key]) => this.checkURIs(type, key))?.[1];
+        return elementType ? `/variables?elementType=${elementType}&selected=${encodeURIComponent(uri)}` : null;
     }
 
     /**
      * This is a function to get path for vocabulary pages from a type or domain and if the uri is a property or class
-     * TODO this isn't great , pressed for time currently, is there a way to set this path dynamically?
      *
      * @param uri the vocabulary we want to try and navigate to
      * @param rootClassUri to know which page to go to
@@ -201,36 +192,18 @@ export default class OpenSilexVuePlugin {
      *
      */
     getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string{
-        if(this.checkURIs(rootClassUri, Oeso.SCIENTIFIC_OBJECT_TYPE_URI)){
-            if(isProperty){
-                return "/scientific-object-types/properties?selected="+ encodeURIComponent(uri);
-            }
-            return "/scientific-object-types?selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(rootClassUri, Oeev.EVENT_TYPE_URI)){
-            if(isProperty){
-                return "/event-types/properties?selected="+ encodeURIComponent(uri);
-            }
-            return "/event-types?selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(rootClassUri, Oeso.DEVICE_TYPE_URI)){
-            if(isProperty){
-                return "/device-types/properties?selected="+ encodeURIComponent(uri);
-            }
-            return "/device-types?selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(rootClassUri, Oeso.FACILITY_TYPE_URI)){
-            if(isProperty){
-                return "/facilities-types/properties?selected="+ encodeURIComponent(uri);
-            }
-            return "/facilities-types?selected="+ encodeURIComponent(uri);
-        }
-        if(this.checkURIs(rootClassUri, Oeso.FACTOR_CATEGORY_URI)){
-            if(isProperty){
-                return "/factor-category-types/properties?selected="+ encodeURIComponent(uri);
-            }
-            return "/factor-category-types?selected="+ encodeURIComponent(uri);
-        }
+
+        const paths = {
+            [Oeso.SCIENTIFIC_OBJECT_TYPE_URI]: "scientific-object-types",
+            [Oeev.EVENT_TYPE_URI]: "event-types",
+            [Oeso.DEVICE_TYPE_URI]: "device-types",
+            [Oeso.FACILITY_TYPE_URI]: "facilities-types",
+            [Oeso.FACTOR_CATEGORY_URI]: "factor-category-types"
+        };
+
+        const elementType: string = Object.entries(paths).find(([key]) => this.checkURIs(rootClassUri, key))?.[1];
+        const propertyPath: string = isProperty ? '/properties' : '';
+        return elementType ? `/${elementType}${propertyPath}?selected=${encodeURIComponent(uri)}` : null;
     }
 
     /**

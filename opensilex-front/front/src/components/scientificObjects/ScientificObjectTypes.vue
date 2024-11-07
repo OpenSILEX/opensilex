@@ -27,11 +27,6 @@ export default class ScientificObjectTypes extends Vue {
   @Prop()
   initiallySelectedUri: string;
 
-  //#region: eventHandlers
-  /*private handleSelect(){
-    this.$opensilex.updateURLParameter("selected", this.selected.uri);
-  }*/
-  //#endregion
 }
 </script>
 

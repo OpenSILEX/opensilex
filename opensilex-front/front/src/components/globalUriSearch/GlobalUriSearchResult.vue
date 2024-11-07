@@ -56,9 +56,9 @@
       ></opensilex-TypeView>
       <!-- rdfsComment -->
       <opensilex-TextView
-        v-if="comment"
+        v-if="rdfsComment"
         label="GlobalUriSearch.comment"
-        :value="comment"
+        :value="rdfsComment"
       ></opensilex-TextView>
     </div>
 
@@ -254,7 +254,7 @@ export default class GlobalUriSearchResult extends Vue {
   get type() : string{
     return this.searchResult.rdf_type;
   }
-  get comment() : string{
+  get rdfsComment() : string{
     return this.searchResult.rdfs_comment;
   }
   get publisher() : UserGetDTO{
@@ -320,7 +320,6 @@ export default class GlobalUriSearchResult extends Vue {
 
 .data-uri-details {
   display: flex;
-  gap: 5px;
   align-items: center;
 }
 

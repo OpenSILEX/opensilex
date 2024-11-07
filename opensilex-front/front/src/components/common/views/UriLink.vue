@@ -8,7 +8,7 @@
       :to="to"
       class="uri"
       @focus.native="storePrevious"
-      @click.native="handleUriLinkPressed"
+      @click.native="handleUriLinkClicked"
     >
       <span v-html="value">{{ value || uri }}</span>
       &nbsp;
@@ -170,7 +170,7 @@ export default class UriLink extends Vue {
     this.$store.commit("storeCandidatePage", this.$router);
   }
 
-  handleUriLinkPressed(){
+  handleUriLinkClicked(){
     this.storeReturnPage();
     this.$emit('linkClicked');
   }

@@ -141,6 +141,7 @@ export default class OntologyClassTreeView extends Vue {
             .getRDFTypeProperties(uri, this.rdfType)
             .then(http => {
                 this.selected = http.response.result;
+                //This updates or adds a url parameter, permitting refresh and navigation to specific elements
                 this.$opensilex.updateURLParameter("selected", this.selected.uri);
                 this.$emit("selectionChange", this.selected);
             }).catch(this.$opensilex.errorHandler);

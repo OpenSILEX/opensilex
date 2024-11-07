@@ -280,7 +280,7 @@ main {
 
 .uri-search-box {
   position: fixed;
-  max-width: 30%;
+  max-width: 500px;
   top: 70px;
   right: 8%;
   padding: 20px;

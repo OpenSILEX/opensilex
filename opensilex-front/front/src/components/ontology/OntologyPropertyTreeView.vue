@@ -130,6 +130,7 @@ export default class OntologyPropertyTreeView extends Vue {
     displayPropertyDetail(uri, type) {
         this.ontologyService.getProperty(uri, type, this.domain).then(http => {
             this.selected = http.response.result;
+            //This updates or adds a url parameter, permitting refresh and navigation to specific elements
             this.$opensilex.updateURLParameter("selected", this.selected.uri);
             this.$emit("selectionChange", this.selected);
         });

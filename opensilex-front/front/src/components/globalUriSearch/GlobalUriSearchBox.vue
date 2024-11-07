@@ -83,7 +83,7 @@ export default class GlobalUriSearchBox extends Vue {
 
   //#region: computed
   get resultsFound(): boolean{
-    return this.uriSearchResult !== null;
+    return !!this.uriSearchResult;
   }
   //#endregion
 }

@@ -67,9 +67,9 @@
         </div>
         <!--Uri global search-->
         <opensilex-Button
-          @click="handleUriSearchIconHit"
+          @click="$emit('uriGlobalSearch')"
           :label="$t('component.header.uriSearchHoverMessage')"
-          class="searchicon-cheeseburger ik ik-search"
+          class="burgerMenu-searchIcon ik ik-search"
           :class="{ 'selected-searchicon': searchBoxIsActive }"
           icon="ik-search"
         ></opensilex-Button>
@@ -128,7 +128,7 @@
               class="searchicon"
               :class="{ 'selected-searchicon': searchBoxIsActive }"
               :title="$t('component.header.uriSearchHoverMessage')"
-              @click="handleUriSearchIconHit"
+              @click="$emit('uriGlobalSearch')"
             >
               URI
               <i class="icon ik ik-search"></i>
@@ -332,10 +332,6 @@ export default class DefaultHeaderComponent extends Vue {
 
   beforeDestroy() {
     window.removeEventListener("resize", this.handleResize);
-  }
-
-  handleUriSearchIconHit(){
-    this.$emit("uriGlobalSearch")
   }
 
   handleResize() {
@@ -695,13 +691,13 @@ export default class DefaultHeaderComponent extends Vue {
   border-color: rgba(0,0,0,0);
 }
 
-.searchicon-cheeseburger{
+.burgerMenu-searchIcon{
   color: #212121;
   background-color: rgba(0,0,0,0);
   border-color: rgba(0,0,0,0);
 }
 
-.searchicon:hover, searchicon-cheeseburger:hover {
+.searchicon:hover, burgerMenu-searchIcon:hover {
   color: #007bff;
   background-color: #F0F1F5;
   border-color: #F0F1F5;

@@ -104,6 +104,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5]
+
+> Warning : upgrading to this new version requires to update the ontologies. Please run the following command
+> to make sure they are up-to-date :
+> 
+> ```shell
+> # From the directory which contains your OpenSILEX executable .jar file
+> java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
+> ```
+
+### Fixed
+
+- (!1301) vocabulary:hasGeometry property is now present again in the scientific object export file
+- (!1301) Fixed an error where objects with the exact type `vocabulary:ScientificObject` were displayed twice in results
 
 ## [1.3.4]
 

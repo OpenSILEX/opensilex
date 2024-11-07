@@ -1470,8 +1470,6 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">Objet scientifique</rdfs:label>
-        <rdfs:label xml:lang="en">Scientific object</rdfs:label>
     </owl:Class>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->

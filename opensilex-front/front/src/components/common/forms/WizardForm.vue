@@ -338,10 +338,12 @@ export default class WizardForm extends Vue {
         }
         submitResult
           .then(result => {
-            this.$nextTick(() => {
-              this.$emit(successEvent, submitResult);
-              this.hide();
-            });
+            if (result !== false) {
+              this.$nextTick(() => {
+                this.$emit(successEvent, submitResult);
+                this.hide();
+              });
+            }
           })
           .catch(console.error);
       }

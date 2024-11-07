@@ -237,7 +237,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         return true;
       }
       form.close_match.push(form.uri);
-      form.uri = "";
+      form.uri = null;
     }
     return true;
   }

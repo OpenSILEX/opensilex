@@ -42,7 +42,7 @@
     <b-collapse id="advanced-options">
       <b-row align-v="center">
         <b-col sm="8">
-          <opensilex-SelectForm
+          <opensilex-FormSelector
               ref="soSelector"
               label="Ontologies"
               :selected.sync="ontologiesURIs"
@@ -52,7 +52,7 @@
               :conversionMethod="ontologyToSelectNode"
               :disabled="isAllOntologiesSelected"
           >
-          </opensilex-SelectForm>
+          </opensilex-FormSelector>
         </b-col>
         <b-col sm="4">
           <b-form-checkbox
@@ -77,7 +77,7 @@ import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 import {OntologyAgroportalDTO} from "opensilex-core/model/ontologyAgroportalDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../../lib/HttpResponse";
 import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
-import {SelectableItem} from "../../forms/SelectForm.vue";
+import {SelectableItem} from "../../forms/FormSelector.vue";
 
 @Component
 export default class AgroportalSearch extends Vue {
@@ -121,7 +121,7 @@ export default class AgroportalSearch extends Vue {
         .getAgroportalOntologies(searchQuery, undefined)
         .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
           return http;
-        }); //Let SelectForm handle the error
+        });
   }
 
   private ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {

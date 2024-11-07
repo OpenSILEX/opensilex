@@ -6,7 +6,7 @@
           ref="searchComponent"
           label="component.common.name"
           :placeholder="placeholder"
-          :selected.sync="selectedOntologies"
+          :selected.sync="syncedSelectedOntologies"
           :isAllOntologies.sync="useAllOntologies"
           @change="onSearchTextChange"
       ></opensilex-AgroportalSearch>
@@ -15,7 +15,7 @@
           class="v-step-agroportal-results"
           ref="searchResults"
           :text="searchText"
-          :ontologies="selectedOntologies"
+          :ontologies="syncedSelectedOntologies"
           :isMappingMode="isMappingMode"
           @import="onImport"
           @importMapping="onImportMapping">
@@ -33,7 +33,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import AgroportalResults from "./AgroportalResults.vue";
-import {Prop, PropSync, Ref} from "vue-property-decorator";
+import {Prop, Ref, Watch} from "vue-property-decorator";
 import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import {UriSkosRelation} from "../../../../models/SkosRelations";
 import AgroportalSearch from "./AgroportalSearch.vue";
@@ -58,8 +58,28 @@ export default class AgroportalTermSelector extends Vue {
   })
   private readonly isMappingMode: boolean;
 
-  @PropSync("ontologies")
-  private selectedOntologies: string[];
+  @Prop({
+    default: () => []
+  })
+  private readonly ontologies!: string[];
+  //#endregion
+
+  //#region Data
+  private selectedOntologies: string[] = this.ontologies; // initialise with default values given by prop
+  private searchText: string = "";
+  private useAllOntologies: boolean = false;
+  private isAgroportalReachable: boolean = false;
+  //#endregion
+
+  //#region Computed
+  get syncedSelectedOntologies() {
+    return this.selectedOntologies;
+  }
+
+  set syncedSelectedOntologies(value: string[]) {
+    this.selectedOntologies = value;
+    this.$emit("update:ontologies", value); // tjr besoin ?
+  }
   //#endregion
 
   //#region Refs
@@ -68,12 +88,6 @@ export default class AgroportalTermSelector extends Vue {
 
   @Ref("searchResults")
   private readonly searchResults: AgroportalResults;
-  //#endregion
-
-  //#region Data
-  private searchText: string = "";
-  private useAllOntologies: boolean = false;
-  private isAgroportalReachable: boolean = false;
   //#endregion
 
   //#region Hooks

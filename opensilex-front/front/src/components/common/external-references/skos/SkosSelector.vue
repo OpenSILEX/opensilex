@@ -24,7 +24,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {SelectableItem} from "../../forms/SelectForm.vue";
+import {SelectableItem} from "../../forms/FormSelector.vue";
 import SUPPORTED_SKOS_RELATIONS from "../../../../models/SkosRelations";
 import {Prop, PropSync} from "vue-property-decorator";
 

@@ -37,7 +37,7 @@
                         :itemLoadingMethod="loadEntity"
                         :conversionMethod="objectToSelectNode"
                         :disabled="false"
-                        @loadMoreItems="loadMoreItems(entitySelectForm)"
+                        @loadMoreItems="loadMoreItems(entitySelector)"
                     ></opensilex-EntitySelector>
                     <opensilex-AgroportalEntityForm
                         ref="entityForm"
@@ -61,7 +61,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-interestEntity"
                         :disabled="false"
-                        @loadMoreItems="loadMoreItems(interestEntitySelectForm)"
+                        @loadMoreItems="loadMoreItems(interestEntitySelector)"
                     ></opensilex-InterestEntitySelector>
                     <opensilex-AgroportalEntityOfInterestForm
                         ref="interestEntityForm"
@@ -86,7 +86,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-characteristic"
                         :disabled="false"
-                        @loadMoreItems="loadMoreItems(characteristicSelectForm)"
+                        @loadMoreItems="loadMoreItems(characteristicSelector)"
                     ></opensilex-CharacteristicSelector>
                     <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
@@ -122,7 +122,7 @@
                         :itemLoadingMethod="loadMethod"
                         :conversionMethod="objectToSelectNode"
                         :disabled="false"
-                        @loadMoreItems="loadMoreItems(methodSelectForm)"
+                        @loadMoreItems="loadMoreItems(methodSelector)"
                     ></opensilex-MethodSelector>
                     <opensilex-AgroportalMethodForm
                         ref="methodForm"
@@ -172,7 +172,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-unit"
                         :disabled="false"
-                        @loadMoreItems="loadMoreItems(unitSelectForm)"
+                        @loadMoreItems="loadMoreItems(unitSelector)"
                     ></opensilex-UnitSelector>
                     <opensilex-AgroportalUnitForm
                         ref="unitForm"

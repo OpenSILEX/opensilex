@@ -26,7 +26,6 @@
           :rdfType="rdfType"
           :icon="icon"
           :title="typeTitle"
-          :initiallySelectedUri="initiallySelectedUri"
         ></opensilex-OntologyClassView>
         <opensilex-OntologyPropertyView
           v-else-if="withProperties"
@@ -71,12 +70,6 @@ export default class OntologyTypesView extends Vue {
 
   @Prop()
   propertiesURI;
-
-  /**
-   * If a class or property's details should already be open upon arrival then set the uri here
-   */
-  @Prop()
-  initiallySelectedUri: string;
 
   @Prop({default:true})
   withProperties;

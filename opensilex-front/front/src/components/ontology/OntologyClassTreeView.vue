@@ -40,7 +40,6 @@ import {OntologyService, ResourceTreeDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
 import {VueJsOntologyExtensionService} from "../../lib";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {Route} from "vue-router";
 
 @Component
@@ -62,9 +61,6 @@ export default class OntologyClassTreeView extends Vue {
 
     @Prop()
     rdfType;
-
-    @Prop()
-    initiallySelectedUri: string;
 
     public nodes = [];
 
@@ -88,8 +84,6 @@ export default class OntologyClassTreeView extends Vue {
             lang => {
                 if (this.selected) {
                     this.displayClassDetail(this.selected.uri);
-                } else if (this.initiallySelectedUri){
-                  this.displayClassDetail(this.initiallySelectedUri);
                 }
             }
         );

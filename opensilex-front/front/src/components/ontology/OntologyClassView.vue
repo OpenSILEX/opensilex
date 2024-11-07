@@ -38,7 +38,6 @@
                 <opensilex-OntologyClassTreeView
                     ref="classesTree"
                     :rdfType="rdfType"
-                    :initiallySelectedUri="initiallySelectedUri"
                     @selectionChange="selected = $event"
                     @editClass="showEditForm($event)"
                     @createChildClass="showCreateForm($event)"
@@ -90,9 +89,6 @@ export default class OntologyClassView extends Vue {
 
     @Prop()
     icon;
-
-    @Prop()
-    initiallySelectedUri: string;
 
     selected = null;
 

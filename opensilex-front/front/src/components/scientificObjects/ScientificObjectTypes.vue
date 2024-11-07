@@ -1,7 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
     :rdfType="this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)"
-    :initiallySelectedUri="initiallySelectedUri"
     icon="ik#ik-settings"
     typeTitle="ScientificObjectTypes.typeTitle"
     typeDescription="ScientificObjectTypes.typeDescription"
@@ -20,12 +19,6 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 @Component
 export default class ScientificObjectTypes extends Vue {
     $opensilex: OpenSilexVuePlugin;
-
-  /**
-   * If a class or property's details should already be open upon arrival then set the uri here
-   */
-  @Prop()
-  initiallySelectedUri: string;
 
 }
 </script>

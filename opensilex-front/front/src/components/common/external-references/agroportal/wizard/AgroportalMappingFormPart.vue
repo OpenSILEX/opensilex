@@ -18,7 +18,7 @@
                 class="mb-0"
             >
               <template v-slot:label>
-                {{ $t('AgroportalExternalReferencesFormPart.search-mapping-title') }}
+                {{ $t('AgroportalMappingFormPart.search-mapping-title') }}
               </template>
 
               <opensilex-AgroportalTermSelector
@@ -31,7 +31,7 @@
             </b-form-group>
             <div v-else>
               <b-alert show dismissible variant="info">
-                <span v-html="$t('AgroportalExternalReferencesFormPart.agroportal-not-reachable')"></span>
+                <span v-html="$t('AgroportalMappingFormPart.agroportal-not-reachable')"></span>
               </b-alert>
             </div>
 
@@ -42,7 +42,7 @@
             >
               <template v-slot:label>
                 <span id="manual-mapping">
-                  {{ $t('AgroportalExternalReferencesFormPart.map-manually-title') }}
+                  {{ $t('AgroportalMappingFormPart.map-manually-title') }}
                 </span>
               </template>
 
@@ -54,14 +54,14 @@
                 <b-form-group>
                   <div class="helperAndBlueStar">
                     <opensilex-FormInputLabelHelper
-                        label="AgroportalExternalReferencesFormPart.manual-mapping"
-                        helpMessage="AgroportalExternalReferencesFormPart.ontologies-help"
+                        label="AgroportalMappingFormPart.manual-mapping"
+                        helpMessage="AgroportalMappingFormPart.ontologies-help"
                     ></opensilex-FormInputLabelHelper>
                   </div>
                   <span
                       class="error-message alert alert-danger"
                       v-if="isIncludedInRelations()"
-                  >{{ $t('component.skos.external-already-existing') }}</span>
+                  >{{ $t('component.skos.mapping-already-existing') }}</span>
                   <opensilex-SkosRelationInput
                       @input="addRelationToTerm"
                   ></opensilex-SkosRelationInput>
@@ -112,7 +112,7 @@ import AgroportalTermSelector from "../AgroportalTermSelector.vue";
 import HttpResponse from "../../../../../lib/HttpResponse";
 
 @Component
-export default class AgroportalExternalReferencesFormPart extends Vue {
+export default class AgroportalMappingFormPart extends Vue {
   //#region Plugins
   private readonly $opensilex: OpenSilexVuePlugin;
   //#endregion
@@ -156,60 +156,60 @@ export default class AgroportalExternalReferencesFormPart extends Vue {
   private readonly tutorialSteps = [
     {
       target: ".v-step-agroportal-references .v-step-agroportal-search",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-search.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-search.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-search.content"),
       params: {placement: "left"}
     },
     {
       target: ".v-step-agroportal-references .v-step-agroportal-results",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-results.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-results.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-results.content"),
       params: {placement: "left"}
     },
     {
       target: ".v-step-agroportal-references .v-step-agroportal-results .v-step-skos-selector",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-result-mapping.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-result-mapping.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-result-mapping.content"),
       params: {placement: "right", enableScrolling: false},
       before: this.beforeImportMappingStep
     },
     {
       target: ".v-step-agroportal-references .v-step-skos-relation-table",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-table.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-table.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewStep
     },
     {
       target: ".v-step-agroportal-references .v-step-skos-relation-table .v-step-skos-selector",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-change-mapping.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-change-mapping.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-change-mapping.content"),
       params: {placement: "left"}
     },
     {
       target: ".v-step-agroportal-references .v-step-skos-relation-input .v-step-skos-relation-uri-input",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-uri.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-manual-uri.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-manual-uri.content"),
       params: {placement: "top"},
       before: this.beforeManualMappingStep
     },
     {
       target: ".v-step-agroportal-references .v-step-skos-relation-input .v-step-skos-selector",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-manual-mapping.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-manual-mapping.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-manual-mapping.content"),
       params: {placement: "top"}
     },
     {
       target: ".v-step-agroportal-references .v-step-skos-relation-table",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-table-bis.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-table-bis.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-table-bis.content"),
       params: {placement: "left"},
       before: this.beforeMappingOverviewAgainStep
     },
     {
       target: "#v-step-wizard-buttons",
-      header: {title: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-validation.title")},
-      content: this.$t("AgroportalExternalReferencesFormPart.tutorial.step-validation.content"),
+      header: {title: this.$t("AgroportalMappingFormPart.tutorial.step-validation.title")},
+      content: this.$t("AgroportalMappingFormPart.tutorial.step-validation.content"),
       params: {placement: "top"}
     },
   ];
@@ -386,7 +386,7 @@ ul {
 
 <i18n>
 en:
-  AgroportalExternalReferencesFormPart:
+  AgroportalMappingFormPart:
     uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
     ontologies-help: "You can find URIs in this locations:
       <li>
@@ -441,7 +441,7 @@ en:
           Once you have linked your concept to external references, click the '@:component.common.form-wizard.done'
           button.
 fr:
-  AgroportalExternalReferencesFormPart:
+  AgroportalMappingFormPart:
     uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
     ontologies-help: "Vous pouvez chercher des URIs via ces portails:
       <li>

@@ -1,7 +1,7 @@
 <template>
   <opensilex-AgroportalCreateForm
       ref="createForm"
-      :requireEnrich="true"
+      :requireCreate="true"
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
       ontologiesConfig="unitOntologies"
@@ -12,7 +12,7 @@
       :updateMethod="service.updateUnit.bind(service)"
       :emptyForm="emptyForm"
   >
-    <template v-slot:enrichAdditionalFields="scope">
+    <template v-slot:createAdditionalFields="scope">
       <!-- Symbol -->
       <opensilex-InputForm
           :value.sync="scope.form.symbol"

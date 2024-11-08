@@ -1,5 +1,5 @@
 <template>
-  <div class="v-step-agroportal-enrich">
+  <div class="v-step-agroportal-create">
     <ValidationObserver ref="validatorRef">
       <opensilex-Tutorial
           ref="tutorial"
@@ -9,7 +9,7 @@
       >
       </opensilex-Tutorial>
       <div class="row align-items-center">
-        <div class="agroportalEnrichForm">
+        <div class="agroportalCreateForm">
           <!-- URI -->
           <opensilex-UriForm
               class="v-step-uri"
@@ -17,7 +17,7 @@
               label="component.common.uri"
               :generated.sync="uriGenerated"
               :required="true"
-              helpMessage="AgroportalEnrichFormPart.uri-help"
+              helpMessage="AgroportalCreateFormPart.uri-help"
               :editMode="editMode"
           ></opensilex-UriForm>
 
@@ -39,7 +39,7 @@
           </opensilex-TextAreaForm>
 
           <!-- Additional fields -->
-          <slot name="enrichAdditionalFields" :form="formDto"></slot>
+          <slot name="createAdditionalFields" :form="formDto"></slot>
         </div>
       </div>
     </ValidationObserver>
@@ -55,7 +55,7 @@ import {BModal} from "bootstrap-vue";
 import {ValidationObserver} from "vee-validate";
 
 @Component
-export default class AgroportalEnrichFormPart extends Vue {
+export default class AgroportalCreateFormPart extends Vue {
   //#region Props
   @Prop()
   private readonly editMode;
@@ -89,27 +89,27 @@ export default class AgroportalEnrichFormPart extends Vue {
   private savedFormBeforeTutorial: BaseExternalReferencesDTO;
   private readonly tutorialSteps = [
     {
-      target: ".v-step-agroportal-enrich .v-step-uri",
-      header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-uri.title")},
-      content: this.$t("AgroportalEnrichFormPart.tutorial.step-uri.content"),
+      target: ".v-step-agroportal-create .v-step-uri",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-uri.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-uri.content"),
       params: {placement: "right"}
     },
     {
-      target: ".v-step-agroportal-enrich .v-step-name",
-      header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-name.title")},
-      content: this.$t("AgroportalEnrichFormPart.tutorial.step-name.content"),
+      target: ".v-step-agroportal-create .v-step-name",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-name.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-name.content"),
       params: {placement: "right"}
     },
     {
-      target: ".v-step-agroportal-enrich .v-step-description",
-      header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-description.title")},
-      content: this.$t("AgroportalEnrichFormPart.tutorial.step-description.content"),
+      target: ".v-step-agroportal-create .v-step-description",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-description.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-description.content"),
       params: {placement: "right"}
     },
     {
       target: "#v-step-wizard-buttons",
-      header: {title: this.$t("AgroportalEnrichFormPart.tutorial.step-validation.title")},
-      content: this.$t("AgroportalEnrichFormPart.tutorial.step-validation.content"),
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-validation.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-validation.content"),
       params: {placement: "top"}
     },
   ];
@@ -146,7 +146,7 @@ a {
   color: #007bff;
 }
 
-.agroportalEnrichForm {
+.agroportalCreateForm {
     position: relative;
     width: 100%;
     padding-right: 15px;
@@ -156,7 +156,7 @@ a {
 
 <i18n>
 en:
-  AgroportalEnrichFormPart:
+  AgroportalCreateFormPart:
     uri-help: >
       Uncheck this checkbox if you want to insert a concept from an existing ontology or if you want to set a
       particular URI. Leave it checked if you want to create a new entity with an auto-generated URI.
@@ -177,10 +177,10 @@ en:
       step-validation:
         title: Validation
         content: >
-          Click on the 'component.common.form-wizard.next' button to proceed to the next step, where you will add
-          external references to your concept. Click on the 'AgroportalSearchFormPart.save' button to save your concept.
+          Click on the '@:component.common.form-wizard.map' button to proceed to the next step, where you will add
+          external references to your concept. Click on the '@:AgroportalSearchFormPart.save' button to save your concept.
 fr:
-  AgroportalEnrichFormPart:
+  AgroportalCreateFormPart:
     uri-help: >
       Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez
       spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée.
@@ -201,7 +201,7 @@ fr:
       step-validation:
         title: Validation
         content: >
-          Cliquez sur le bouton '@:component.common.form-wizard.next' pour passer à l'étape d'ajout de références
+          Cliquez sur le bouton '@:component.common.form-wizard.map' pour passer à l'étape d'ajout de références
           externes. Si vous pensez ne pas avoir besoin d'en ajouter, vous pouvez cliquer sur le bouton
           '@:AgroportalSearchFormPart.save' pour sauvegarder votre concept tel quel.
 </i18n>

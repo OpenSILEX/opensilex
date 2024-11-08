@@ -17,8 +17,8 @@
       @agroportalTermSelected="handleTermSelected"
       @agroportalTermUnselected="handleTermUnselected"
   >
-    <template v-slot:enrichAdditionalFields="scope">
-      <slot name="enrichAdditionalFields" v-bind="scope"></slot>
+    <template v-slot:createAdditionalFields="scope">
+      <slot name="createAdditionalFields" v-bind="scope"></slot>
     </template>
     <template v-slot:icon></template>
   </opensilex-WizardForm>
@@ -48,7 +48,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   private readonly ontologiesConfig: string;
 
   @Prop({default: false})
-  private readonly requireEnrich: boolean;
+  private readonly requireCreate: boolean;
 
   @Prop()
   private readonly searchPlaceholder: string;
@@ -119,14 +119,14 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
       {
         component: "opensilex-AgroportalSearchFormPart",
         title: "AgroportalSearchFormPart.step1-title",
-        finish: this.requireEnrich ? undefined : "AgroportalSearchFormPart.reuse",
+        finish: this.requireCreate ? undefined : "AgroportalSearchFormPart.reuse",
         next: this.termIsSelected ? "AgroportalSearchFormPart.create" : "AgroportalSearchFormPart.createNew",
         props: {
           ontologiesConfig: this.ontologiesConfig,
           searchPlaceholder: this.searchPlaceholder
         }
       }, {
-        component: "opensilex-AgroportalEnrichFormPart",
+        component: "opensilex-AgroportalCreateFormPart",
         title: "AgroportalSearchFormPart.step2-title",
         finish: "AgroportalSearchFormPart.save",
         next: "AgroportalSearchFormPart.map",
@@ -134,9 +134,9 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
           namePlaceholder: this.searchPlaceholder,
           descriptionPlaceholder: this.descriptionPlaceholder
         },
-        slots: [ "enrichAdditionalFields" ]
+        slots: [ "createAdditionalFields" ]
       }, {
-        component: "opensilex-AgroportalExternalReferencesFormPart",
+        component: "opensilex-AgroportalMappingFormPart",
         title: "AgroportalSearchFormPart.step3-title",
         props: {
           ontologiesConfig: this.ontologiesConfig,

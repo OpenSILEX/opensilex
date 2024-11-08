@@ -651,10 +651,10 @@ components["opensilex-AgroportalTermSelector"] = AgroportalTermSelector;
 //#region Form
 import AgroportalSearchFormPart from './common/external-references/agroportal/wizard/AgroportalSearchFormPart.vue';
 components["opensilex-AgroportalSearchFormPart"] = AgroportalSearchFormPart;
-import AgroportalEnrichFormPart from './common/external-references/agroportal/wizard/AgroportalEnrichFormPart.vue';
-components["opensilex-AgroportalEnrichFormPart"] = AgroportalEnrichFormPart;
-import AgroportalExternalReferencesFormPart from './common/external-references/agroportal/wizard/AgroportalExternalReferencesFormPart.vue';
-components["opensilex-AgroportalExternalReferencesFormPart"] = AgroportalExternalReferencesFormPart;
+import AgroportalCreateFormPart from './common/external-references/agroportal/wizard/AgroportalCreateFormPart.vue';
+components["opensilex-AgroportalCreateFormPart"] = AgroportalCreateFormPart;
+import AgroportalMappingFormPart from './common/external-references/agroportal/wizard/AgroportalMappingFormPart.vue';
+components["opensilex-AgroportalMappingFormPart"] = AgroportalMappingFormPart;
 import AgroportalCreateForm from './common/external-references/agroportal/wizard/AgroportalCreateForm.vue';
 components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
 //#endregion

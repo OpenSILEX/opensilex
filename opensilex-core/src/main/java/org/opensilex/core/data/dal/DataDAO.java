@@ -33,7 +33,6 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -87,39 +86,22 @@ public class DataDAO {
         this.fs = fs;
     }
 
-    public void createIndexes() {
-        IndexOptions unicityOptions = new IndexOptions().unique(true);
-
-        MongoCollection<DataFileModel> fileCollection = nosql.getDatabase()
-                .getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
-        fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending(DataModel.TARGET_FIELD, "date"));
-        fileCollection.createIndex(Indexes.descending("date"));
-        fileCollection.createIndex(Indexes.ascending("date"));
-    }
-
     public DataModel create(DataModel instance) throws Exception {
-        createIndexes();
         nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         return instance;
     }
 
     public DataFileModel createFile(DataFileModel instance) throws Exception {
-        createIndexes();
         nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
         return instance;
     }
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
-        createIndexes(); 
         nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX,false);
         return instances;
     } 
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
-        createIndexes();
         nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX,false);
         return instances;
     }

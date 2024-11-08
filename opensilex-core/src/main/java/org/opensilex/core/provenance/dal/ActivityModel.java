@@ -6,45 +6,20 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.net.URI;
 import java.time.Instant;
-import org.bson.Document;
 
 /**
  * Activity model
  * @author Alice Boizet
  */
-public class ActivityModel {    
-    URI rdfType;   
+public class ActivityModel  extends GlobalProvenanceEntity {
 
-    URI uri;
-    
     Instant startDate;
     
     Instant endDate;
     
     String offset;
     
-    Document settings; 
-
-    public URI getRdfType() {
-        return rdfType;
-    }
-
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
-    }
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
     public Instant getStartDate() {
         return startDate;
     }
@@ -69,12 +44,4 @@ public class ActivityModel {
         this.offset = offset;
     }    
 
-    public Document getSettings() {
-        return settings;
-    }
-
-    public void setSettings(Document settings) {
-        this.settings = settings;
-    }
-    
 }

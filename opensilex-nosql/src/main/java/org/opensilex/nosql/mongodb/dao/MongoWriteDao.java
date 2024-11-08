@@ -35,7 +35,7 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @throws MongoException If a MongoDB error occurs.
      * @throws URISyntaxException If the provided URI is invalid.
      */
-    @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException;
+    @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException, MongoDbUniqueIndexConstraintViolation;
 
     /**
      * Create a new model instance in the database within a client session.
@@ -47,7 +47,7 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @throws URISyntaxException               If there's an issue with URI syntax
      * @throws NoSQLAlreadyExistingUriException If the URI already exists in the collection
      */
-    @NotNull InsertOneResult create(ClientSession session, @NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException;
+    @NotNull InsertOneResult create(ClientSession session, @NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException, MongoDbUniqueIndexConstraintViolation;
 
     /**
      * Create multiple model instances in the database.
@@ -70,7 +70,7 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @throws MongoException     If a MongoDB error occurs.
      * @throws URISyntaxException If the provided URI is invalid.
      */
-    @NotNull InsertManyResult create(ClientSession session, @NotNull @NotEmpty List<T> instances) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException;
+    @NotNull InsertManyResult create(ClientSession session, @NotNull @NotEmpty List<T> instances) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException, MongoDbUniqueIndexConstraintViolation;
 
     /**
      * Get the name of the ID field for the model.

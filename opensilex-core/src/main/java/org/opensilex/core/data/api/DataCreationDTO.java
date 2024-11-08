@@ -8,15 +8,20 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
+
 import static java.lang.Double.NaN;
+
 import java.net.URI;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
@@ -25,55 +30,59 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
- *
  * @author sammy
  */
-@JsonPropertyOrder({"uri", "date","timezone", "target", "variable", "value", "confidence", "provenance",  "metadata"})
+@JsonPropertyOrder({"uri", "date", "timezone", "target", "variable", "value", "confidence", "provenance", "metadata"})
 public class DataCreationDTO {
-    
-    public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/A"};
-    public static final String[] NAN_VALUES = {"nan", "NaN", "NAN"};
-    
+
+    public static final Collection<String> NA_VALUES = Set.of(
+            "na", "n/a", "NA", "N/A"
+    );
+    public static final Collection<String> NAN_VALUES = Set.of("nan", "NaN", "NAN");
+
     @ValidURI
-    @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
+    @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI)
     protected URI uri;
-    
+
     @Required
     @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
     private String date;
-    
+
     @ApiModelProperty(value = "target URI on which the data have been collected (e.g. a scientific object)", example = "http://plot01")
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI target;
-    
+
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
     protected String timezone;
-    
+
     @ValidURI
     @NotNull
     @ApiModelProperty(value = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, required = true)
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI variable;
 
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
-    
+
     @JsonProperty("raw_data")
     @ApiModelProperty(value = "list of repetition values")
     private List<Object> rawData;
-    
+
     @Min(0)
     @Max(1)
     @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
-    private Float confidence = null;    
+    private Float confidence = null;
 
     @Valid
     @NotNull
     private DataProvenanceModel provenance;
-    
+
     @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     private Document metadata;
 
@@ -139,7 +148,7 @@ public class DataCreationDTO {
 
     public void setRawData(List<Object> rawData) {
         this.rawData = rawData;
-    }    
+    }
 
     public Float getConfidence() {
         return confidence;
@@ -155,46 +164,44 @@ public class DataCreationDTO {
 
     public void setMetadata(Document metadata) {
         this.metadata = metadata;
-    }       
+    }
 
     public DataModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataModel model = new DataModel();
 
-        model.setUri(getUri());        
-        model.setTarget(getTarget());
-        model.setVariable(getVariable());
-        model.setProvenance(getProvenance());       
-        
-        model.setConfidence(getConfidence());
-        model.setMetadata(getMetadata());
-        
-        ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
+        model.setUri(uri);
+        model.setTarget(target);
+        model.setVariable(variable);
+        model.setProvenance(provenance);
+
+        model.setConfidence(confidence);
+        model.setMetadata(metadata);
+
+        ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(date, timezone);
         if (parsedDateTimeMongo == null) {
-            throw new UnableToParseDateException(getDate());
+            throw new UnableToParseDateException(date);
         } else {
             model.setDate(parsedDateTimeMongo.getInstant());
             model.setOffset(parsedDateTimeMongo.getOffset());
             model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         }
-        
-        if (getValue() instanceof String) {
-            if (Arrays.asList(NA_VALUES).contains(getValue())) {
+
+        if (value instanceof String) {
+            if (NA_VALUES.contains(value)) {
                 model.setValue(null);
-            } else if (Arrays.asList(NAN_VALUES).contains(getValue())) {
+            } else if (NAN_VALUES.contains(value)) {
                 model.setValue(NaN);
             } else {
-                model.setValue(getValue());
-            }            
+                model.setValue(value);
+            }
         } else {
-            model.setValue(getValue());
-        }       
-        
-        if (getRawData() != null) {
-            model.setRawData(getRawData());
+            model.setValue(value);
         }
 
-        return model;      
-        
-    }   
-    
+        if (rawData != null) {
+            model.setRawData(rawData);
+        }
+
+        return model;
+    }
 }

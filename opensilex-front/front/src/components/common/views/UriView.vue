@@ -2,7 +2,7 @@
   <div class="static-field">
   <span :class="['field-view-title', customClass]">{{$t(title)}}</span>
     <span class="static-field-line">
-      <opensilex-UriLink :uri="uri" :value="value" :url="url" :to="to"></opensilex-UriLink>
+      <opensilex-UriLink :uri="uri" :value="value" :url="url" :to="to" @linkClicked="$emit('linkClicked')"></opensilex-UriLink>
     </span>
   </div>
 </template>

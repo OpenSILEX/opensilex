@@ -187,7 +187,9 @@
                 "develop": "Develop",
                 "release": "Release"
             },
-            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect."
+            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect.",
+            "uri-search-placeholder": "Recherche par URI",
+            "uriSearchHoverMessage": "Recherche par URI quelconque"
         },
         "menu": {
             "dashboard": "Tableau de bord",

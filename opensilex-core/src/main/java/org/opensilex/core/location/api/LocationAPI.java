@@ -14,7 +14,6 @@
 package org.opensilex.core.location.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -38,7 +37,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -88,7 +86,7 @@ public class LocationAPI {
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
 
-        if(!Objects.isNull(collectionURI)){
+        if (Objects.nonNull(collectionURI)) {
             ListWithPagination<LocationObservationModel> locationHistory = locationObservationLogic.getLocationsHistory(
                     collectionURI,
                     startDate != null ? Instant.parse(startDate) : null,
@@ -98,7 +96,7 @@ public class LocationAPI {
                     pageSize
             );
 
-           locationObservationDTOList = locationHistory.getList().stream()
+            locationObservationDTOList = locationHistory.getList().stream()
                     .map(LocationObservationDTO::getDTOFromModel)
                     .collect(Collectors.toList());
         }
@@ -115,12 +113,12 @@ public class LocationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countLocations(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) throws Exception {
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
-        int locationsCount = locationObservationLogic.countLocationsForURI(collectionURI );
+        int locationsCount = locationObservationLogic.countLocationsForURI(collectionURI);
 
         return new SingleObjectResponse<>(locationsCount).getResponse();
     }

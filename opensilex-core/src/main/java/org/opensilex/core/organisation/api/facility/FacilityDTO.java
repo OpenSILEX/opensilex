@@ -7,14 +7,12 @@ package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -83,11 +81,10 @@ public class FacilityDTO extends RDFObjectDTO {
         model.setType(getType());
         model.setName(getName());
 
-        if (getDescription() != null) {
+        if (Objects.nonNull(getDescription())) {
             model.setDescription(getDescription());
         }
-
-        if (getAddress() != null) {
+        if (Objects.nonNull(getAddress())) {
             model.setAddress(getAddress().newModel());
         }
     }
@@ -97,16 +94,17 @@ public class FacilityDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
+
         if (Objects.nonNull(model.getPublicationDate())) {
             setPublicationDate(model.getPublicationDate());
         }
         if (Objects.nonNull(model.getLastUpdateDate())) {
             setLastUpdatedDate(model.getLastUpdateDate());
         }
-        if (model.getAddress() != null) {
-            FacilityAddressDTO address = new FacilityAddressDTO();
-            address.fromModel(model.getAddress());
-            setAddress(address);
+        if (Objects.nonNull(model.getAddress())) {
+            FacilityAddressDTO addressDto = new FacilityAddressDTO();
+            addressDto.fromModel(model.getAddress());
+            setAddress(addressDto);
         }
     }
 
@@ -131,7 +129,7 @@ public class FacilityDTO extends RDFObjectDTO {
             dto.setRelations(relationsDTO);
         }
 
-        if(model.getDescription() != null) {
+        if (model.getDescription() != null) {
             dto.setDescription(model.getDescription());
         }
 

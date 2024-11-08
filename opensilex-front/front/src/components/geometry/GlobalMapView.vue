@@ -26,15 +26,20 @@
             </b-button>
         </b-button-group>
         <!-- tool buttons -->
-        <b-button @click="focusOnItems" v-b-tooltip.hover="$t('GlobalMapView.focus')" variant="outline-secondary" pill><opensilex-Icon :icon="'fa#crosshairs'" /></b-button>
-        <b-button @click="osm = !osm" v-b-tooltip.hover="$t('GlobalMapView.tile')" variant="outline-secondary" pill><opensilex-Icon :icon="'ik#ik-layers'" /></b-button>
+        <b-button @click="focusOnItems" v-b-tooltip.hover="$t('GlobalMapView.focus')" variant="outline-secondary" pill>
+            <opensilex-Icon :icon="'fa#crosshairs'"/>
+        </b-button>
+        <b-button @click="osm = !osm" v-b-tooltip.hover="$t('GlobalMapView.tile')" variant="outline-secondary" pill>
+            <opensilex-Icon :icon="'ik#ik-layers'"/>
+        </b-button>
         <!------------------------------------- MAP -------------------------------->
         <div data-testid="map-poster">
             <!-- Map config - "mapControls" to display the scale -->
             <vl-map ref="globalMap" :default-controls="mapControls" data-projection="EPSG:4326"
                     style="height: 800px" @click="manageCluster">
                 <!-- Zoom and position -->
-                <vl-view ref="globalMapView" :min-zoom="2" :max-zoom="22" @update:center="getCurrentExtent" @update:zoom="disabledLayerButtons"></vl-view>
+                <vl-view ref="globalMapView" :min-zoom="2" :max-zoom="22" @update:center="getCurrentExtent"
+                         @update:zoom="disabledLayerButtons"></vl-view>
                 <!-- Base tiles -->
                 <vl-layer-tile v-if="osm">
                     <vl-source-osm/>
@@ -45,8 +50,9 @@
                 <!-- SITE layer group-->
                 <vl-layer-group v-if="isSiteLoaded && siteFeaturesDisplay.id" :visible="siteFeaturesDisplay.visibility">
                     <!-- SITE layer -->
-                    <vl-layer-vector id="site-layer-vector" ref="siteLayerVector" :max-resolution="18" render-mode="image">
-                        <vl-source-vector id="site-source-vector" :features="siteFeaturesDisplay.features" @mounted="focusOnItems"></vl-source-vector>
+                    <vl-layer-vector ref="siteLayerVector" :max-resolution="18" render-mode="image">
+                        <vl-source-vector :features="siteFeaturesDisplay.features"
+                                          @mounted="focusOnItems"></vl-source-vector>
                         <vl-style-box>
                             <vl-style-circle :radius="8">
                                 <vl-style-stroke
@@ -60,7 +66,7 @@
                         </vl-style-box>
                     </vl-layer-vector>
                     <!-- SITE cluster-->
-                    <vl-layer-vector id="site-cluster-layer" ref="siteClusterLayerVector" :min-resolution="18" render-mode="image">
+                    <vl-layer-vector ref="siteClusterLayerVector" :min-resolution="18" render-mode="image">
                         <vl-source-cluster :distance="25">
                             <vl-source-vector
                                     :features="siteFeaturesDisplay.features"
@@ -70,10 +76,10 @@
                     </vl-layer-vector>
                 </vl-layer-group>
                 <!-- FACILITY layer group-->
-                <vl-layer-group v-if="isFacilityLoaded" id="facility-layer-group" :visible="facilityFeaturesDisplay.visibility">
+                <vl-layer-group v-if="isFacilityLoaded" :visible="facilityFeaturesDisplay.visibility">
                     <!-- FACILITY layer -->
-                    <vl-layer-vector id="facility-layer-vector" ref="facilityLayerVector" :max-resolution="3" render-mode="image">
-                        <vl-source-vector id="facility-source-vector" :features="facilityFeaturesDisplay.features"></vl-source-vector>
+                    <vl-layer-vector ref="facilityLayerVector" :max-resolution="3" render-mode="image">
+                        <vl-source-vector :features="facilityFeaturesDisplay.features"></vl-source-vector>
                         <vl-style-box>
                             <vl-style-stroke
                                     :color="facilityFeaturesDisplay.style.stroke"
@@ -94,7 +100,7 @@
                         </vl-style-box>
                     </vl-layer-vector>
                     <!-- FACILITY cluster-->
-                    <vl-layer-vector id="facility-cluster-layer" ref="facilityClusterLayerVector" :min-resolution="3" render-mode="image">
+                    <vl-layer-vector ref="facilityClusterLayerVector" :min-resolution="3" render-mode="image">
                         <vl-source-cluster :distance="25">
                             <vl-source-vector
                                     :features="facilityFeaturesDisplay.features"
@@ -104,7 +110,8 @@
                     </vl-layer-vector>
                 </vl-layer-group>
                 <!-- Interaction for selecting vector features -->
-                <vl-interaction-select ref="selectedLayerVector" @select="selectFeature" @unselect="unSelectFeature" :filter="filterInteraction">
+                <vl-interaction-select ref="selectedLayerVector" @select="selectFeature" @unselect="unSelectFeature"
+                                       :filter="filterInteraction">
                     <vl-style-box>
                         <vl-style-stroke
                                 color="red"
@@ -126,7 +133,7 @@
                 </vl-interaction-select>
             </vl-map>
         </div>
-        <opensilex-GlobalMapMenu v-if="isSiteLoaded" id="global-map-menu" ref="globalMapMenu"
+        <opensilex-GlobalMapMenu v-if="isSiteLoaded" ref="globalMapMenu"
                                  :items="selectedLayer"
                                  :itemsInitial="selectedLayerInitial"
                                  :selectedItem="selectedFeature"
@@ -159,6 +166,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 export default class GlobalMapView extends Vue {
     //#region Events
     //endregion
+
     //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin;
     private organizationsService: OrganizationsService;
@@ -190,7 +198,7 @@ export default class GlobalMapView extends Vue {
     //MAP
     private osm: boolean = true;
     private apiKey: string = 'ArbsA9NX-AZmebC6VyXAnDqjXk6mo2wGCmeYM8EwyDaxKfQhUYyk0jtx6hX5fpMn';
-    private imagerySet: string ='AerialWithLabels';
+    private imagerySet: string = 'AerialWithLabels';
     private mapControls: Collection<Control> = defaultControl({
         attribution: false,
         rotate: false,
@@ -210,8 +218,8 @@ export default class GlobalMapView extends Vue {
     private selectedLayerInitial: Layer = {};
     private stopInteraction: boolean = true;
     // TOOL BUTTONS
-    private buttons :{ id: string,label: string, resolution? : number, state: boolean, disabled: boolean}[] = [];
-    private buttonsFeaturesMap : Map<string, {}> = new Map<string, {}>();
+    private buttons: { id: string, label: string, resolution?: number, state: boolean, disabled: boolean }[] = [];
+    private buttonsFeaturesMap: Map<string, {}> = new Map<string, {}>();
     //endregion
 
     //#region Computed
@@ -226,9 +234,10 @@ export default class GlobalMapView extends Vue {
         //set the corresponding list
         this.selectedLayer = this.buttonsFeaturesMap.get(id);
         switch (this.selectedLayer.id) {
-            default: break ;
+            default:
+                break;
             case this.siteFeaturesInitial.id:
-               this.selectedLayerInitial = this.siteFeaturesInitial;
+                this.selectedLayerInitial = this.siteFeaturesInitial;
                 break;
             case this.facilityFeaturesInitial.id:
                 this.selectedLayerInitial = this.facilityFeaturesInitial;
@@ -239,7 +248,7 @@ export default class GlobalMapView extends Vue {
     }
 
     //disabled button if the corresponding layer is not displayed on the map (attribute max resolution)
-    private disabledLayerButtons(){
+    private disabledLayerButtons() {
         this.buttons.forEach(btn => {
             btn.disabled = btn.resolution <= this.globalMapView.$view.getResolution();
         })
@@ -247,7 +256,8 @@ export default class GlobalMapView extends Vue {
 
     private updatedColor(color: string) {
         switch (this.selectedLayer.id) {
-            default: return ;
+            default:
+                return;
             case this.siteFeaturesDisplay.id:
                 this.siteFeaturesDisplay.style.fill = color;
                 this.siteClusterLayerVector.$layer.setStyle(this.makeSiteClusterStyleFunc())
@@ -261,14 +271,17 @@ export default class GlobalMapView extends Vue {
 
     private updatedVisibility(status: boolean) {
         switch (this.selectedLayer.id) {
-            default: return ;
-            case this.siteFeaturesDisplay.id: return this.siteFeaturesDisplay.visibility = status;
-            case this.facilityFeaturesDisplay.id: return this.facilityFeaturesDisplay.visibility = status;
+            default:
+                return;
+            case this.siteFeaturesDisplay.id:
+                return this.siteFeaturesDisplay.visibility = status;
+            case this.facilityFeaturesDisplay.id:
+                return this.facilityFeaturesDisplay.visibility = status;
         }
     }
 
     private updatedFeatures(features?) {
-        if(features){
+        if (features) {
             this.selectedLayer.features = this.selectedLayerInitial.features.filter(feat => features.includes(feat.id));
         } else {
             this.selectedLayer.features = this.selectedLayerInitial.features;
@@ -276,46 +289,52 @@ export default class GlobalMapView extends Vue {
         this.focusOnItems();
     }
 
-    private selectFeature(feature){
+    private selectFeature(feature) {
         //updateSelectedLayer
-        if(this.siteFeaturesDisplay.features.find(feat =>feature.getProperties().uri === feat.id)){
-            this.selectedLayer= this.siteFeaturesDisplay;
-            this.selectedLayerInitial= this.siteFeaturesInitial;
-        } else if(this.facilityFeaturesDisplay.features.find(feat =>feature.getProperties().uri === feat.id)){
-            this.selectedLayer= this.facilityFeaturesDisplay;
-            this.selectedLayerInitial= this.facilityFeaturesInitial;
+        if (this.siteFeaturesDisplay.features.find(feat => feature.getProperties().uri === feat.id)) {
+            this.selectedLayer = this.siteFeaturesDisplay;
+            this.selectedLayerInitial = this.siteFeaturesInitial;
+        } else if (this.facilityFeaturesDisplay.features.find(feat => feature.getProperties().uri === feat.id)) {
+            this.selectedLayer = this.facilityFeaturesDisplay;
+            this.selectedLayerInitial = this.facilityFeaturesInitial;
         }
 
-        this.selectedFeature = this.selectedLayer.features.find(feat =>feature.getProperties().uri === feat.id)
+        this.selectedFeature = this.selectedLayer.features.find(feat => feature.getProperties().uri === feat.id)
     }
 
-    private unSelectFeature(){
+    private unSelectFeature() {
         this.selectedFeature = {}
     }
 
-    private filterInteraction(vector){
-        if(!this.stopInteraction){
+    private filterInteraction(vector) {
+        if (!this.stopInteraction) {
             return vector;
         }
     }
 
-    private selectFeatureFromMenu(feature){
+    private selectFeatureFromMenu(feature) {
         this.selectedLayerVector.unselectAll()
 
-        if(feature !== null){
+        if (feature !== null) {
             let selectedLayer;
 
             switch (this.selectedLayer.id) {
-                default: return ;
-                case this.siteFeaturesDisplay.id: selectedLayer = this.siteLayerVector;break;
-                case this.facilityFeaturesDisplay.id: selectedLayer = this.facilityLayerVector;break;
+                default:
+                    return;
+                case this.siteFeaturesDisplay.id:
+                    selectedLayer = this.siteLayerVector;
+                    break;
+                case this.facilityFeaturesDisplay.id:
+                    selectedLayer = this.facilityLayerVector;
+                    break;
             }
 
-            let selection = selectedLayer.$layer.getSource().getFeatures().find(feat=> feat.getId()===feature.id)
+            let selection = selectedLayer.$layer.getSource().getFeatures().find(feat => feat.getId() === feature.id)
             this.selectedLayerVector.select(selection);
             this.fitViewWithFeaturesExtent(selection.getGeometry().getExtent());
         }
     }
+
     //endregion
 
     //#region Public methods
@@ -326,8 +345,8 @@ export default class GlobalMapView extends Vue {
         this.organizationsService = this.$opensilex.getService("opensilex.OrganizationsService");
 
         this.buttons = [
-            { id:'site',label: 'component.common.organization.sites', state: true, disabled: false },
-            { id:'facility',label: 'component.menu.facilities', state: false, disabled: true },
+            {id: 'site', label: 'component.common.organization.sites', state: true, disabled: false},
+            {id: 'facility', label: 'component.menu.facilities', state: false, disabled: true},
         ]
     }
 
@@ -335,6 +354,7 @@ export default class GlobalMapView extends Vue {
         this.getSitesFeatures();
         this.getFacilityFeatures();
     }
+
     //endregion
 
     //#region Private methods
@@ -346,7 +366,7 @@ export default class GlobalMapView extends Vue {
         );
     }
 
-    private addTransparency(color){
+    private addTransparency(color) {
         return (
                 "rgba(" +
                 parseInt(color.substring(1, 3), 16) +
@@ -358,13 +378,13 @@ export default class GlobalMapView extends Vue {
         );
     }
 
-    private getFeatures(){
+    private getFeatures() {
         return {
             id: undefined,
             title: undefined,
             features: [{
                 geometry: {},
-                properties:  {},
+                properties: {},
                 id: undefined
             }],
             style: {
@@ -377,9 +397,9 @@ export default class GlobalMapView extends Vue {
     private getSitesFeatures() {
         this.organizationsService.getSitesWithLocation().then((http: HttpResponse<OpenSilexResponse<Array<SiteGetWithGeometryDTO>>>) => {
             let results: SiteGetWithGeometryDTO[] = http.response.result;
-            if(http.response.result.length > 0){
-              this.siteFeaturesInitial = this.convertObjectIntoGeoJson(results, results[0].rdf_type, this.buttons.find(button => button.id === 'site').id, '#d10bdb', '#fff');
-              this.siteFeaturesDisplay = Object.assign({}, this.siteFeaturesInitial);
+            if (http.response.result.length > 0) {
+                this.siteFeaturesInitial = this.convertObjectIntoGeoJson(results, results[0].rdf_type, this.buttons.find(button => button.id === 'site').id, '#d10bdb', '#fff');
+                this.siteFeaturesDisplay = Object.assign({}, this.siteFeaturesInitial);
             }
         }).finally(() => {
             //Site by default
@@ -388,14 +408,14 @@ export default class GlobalMapView extends Vue {
             this.buttonsFeaturesMap.set("site", this.siteFeaturesDisplay)
             this.isSiteLoaded = true;
             setTimeout(() => {
-                this.globalMapMenu.openGlobalMapSidebar('component.common.organization.sites');
+                this.globalMapMenu.openGlobalMapSidebar();
             }, 1)
         })
     }
 
-    private getFacilityFeatures(){
-        this.organizationsService.getFacilitiesWithGeometry()
-                .then((http: HttpResponse<OpenSilexResponse<FacilityGetWithGeometryDTO>>)=>{
+    private getFacilityFeatures() {
+        this.organizationsService.getFacilitiesWithGeometry(undefined)
+                .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetWithGeometryDTO>>>) => {
                     let results: FacilityGetWithGeometryDTO[] = http.response.result;
                     this.facilityFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.FACILITY_TYPE_URI, this.buttons.find(button => button.id === 'facility').id, '#FF7300', '#fff');
                     this.facilityFeaturesDisplay = Object.assign({}, this.facilityFeaturesInitial);
@@ -411,7 +431,7 @@ export default class GlobalMapView extends Vue {
             title: title,
             features: [],
             style: {
-                fill: fillColor ,
+                fill: fillColor,
                 stroke: strokeColor
             },
             visibility: true
@@ -458,16 +478,16 @@ export default class GlobalMapView extends Vue {
         return this.clusterStyle(styleStroke, styleFill);
     }
 
-    makeFacilityClusterStyleFunc() {
+    private makeFacilityClusterStyleFunc() {
         let styleStroke: string = this.facilityFeaturesDisplay.style.stroke;
         let styleFill: string = this.facilityFeaturesDisplay.style.fill;
 
         return this.clusterStyle(styleStroke, styleFill);
     }
 
-    private clusterStyle(styleStroke, styleFill){
+    private clusterStyle(styleStroke, styleFill) {
         const styleCache = {};
-       return function __clusterStyleFunc(feature) {
+        return function __clusterStyleFunc(feature) {
             const size = feature.get('features').length;
             let style = styleCache[size];
             if (!style) {
@@ -518,16 +538,17 @@ export default class GlobalMapView extends Vue {
                         })
                         this.fitViewWithFeaturesExtent(olExtent.boundingExtent(points));
                     } else {
-                        // to avoid selecting with vl-interaction when we use the cluster when we click on the map
+                        // to avoid selecting with vl-interaction when we use the cluster on click on the map
                         this.stopInteraction = false;
                     }
                 }
         )
     }
 
-    private fitViewWithFeaturesExtent(extent){
+    private fitViewWithFeaturesExtent(extent) {
         this.globalMapView.$view.fit(extent, {maxZoom: 17});
     }
+
     //endregion
 }
 </script>
@@ -551,12 +572,12 @@ en:
         description: Displays geospatialized elements of the instance
         menu: Manage data
         focus: Focus on items
-        tile : Change map background
+        tile: Change map background
 fr:
     GlobalMapView:
         title: Carte globale
         description: Affiche les éléments géospatialisés de l'instance
         menu: Gérer les données
         focus: Zoom sur les éléments
-        tile : Changer le fond de carte
+        tile: Changer le fond de carte
 </i18n>

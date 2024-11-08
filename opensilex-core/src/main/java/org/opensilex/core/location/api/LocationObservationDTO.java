@@ -58,14 +58,14 @@ public class LocationObservationDTO {
         try {
             LocationModel location = LocationLogic.buildLocationModel(LocationLogic.geoJsonToGeometry(geojson), null, null, null, null);
             model.setLocation(location);
-        } catch (JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        if (getStartDate() != null) {
+        if (Objects.nonNull(getStartDate())) {
             model.setStartDate(getStartDate());
         }
-        if (getEndDate() != null) {
+        if (Objects.nonNull(getEndDate())) {
             model.setEndDate(getEndDate());
         }
     }
@@ -78,17 +78,17 @@ public class LocationObservationDTO {
     }
 
     public void fromModel(LocationObservationModel model) {
-        if (!Objects.isNull(model.getLocation())) {
+        if (Objects.nonNull(model.getLocation())) {
             try {
                 setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
-        if(!Objects.isNull(model.getStartDate())) {
+        if (Objects.nonNull(model.getStartDate())) {
             setStartDate(model.getStartDate());
         }
-        if(!Objects.isNull(model.getEndDate() )) {
+        if (Objects.nonNull(model.getEndDate())) {
             setEndDate(model.getEndDate());
         }
     }

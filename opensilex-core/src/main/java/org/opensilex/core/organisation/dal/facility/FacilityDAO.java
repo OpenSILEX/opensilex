@@ -16,10 +16,8 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -44,7 +42,7 @@ public class FacilityDAO {
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
 
     //#region constructor
-    public FacilityDAO(SPARQLService sparql, MongoDBServiceV2 nosql, OrganizationDAO organizationDAO) throws Exception {
+    public FacilityDAO(SPARQLService sparql){
         this.sparql = sparql;
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }
@@ -103,7 +101,6 @@ public class FacilityDAO {
         return sparql.uriExists(FacilityModel.class, facilityUri);
     }
 
-    //TODO :add request ASK WHERE ...
     /**
      * Validates that the user has access to a facility. Throws an exception if that is not the case. The user/facility must
      * satisfy at least one of the following conditions :
@@ -117,6 +114,9 @@ public class FacilityDAO {
      *
      * <pre>
      * ASK WHERE
+     * { <http://opensilex.test/id/organization/facility....>
+     *       rdf:type  ?rdfType .
+     *      ?rdfType (rdfs:subClassOf)* vocabulary:Facility}
      *
      * </pre>
      *

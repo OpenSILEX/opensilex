@@ -25,10 +25,11 @@
 import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { parse, stringify } from "wkt";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GeometryForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("value")
   geoJson: any;

@@ -43,14 +43,14 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation (ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
 
-        if(endDate != null) {
+        if (Objects.nonNull(endDate)) {
             locationObservationModel.setEndDate(endDate);
-            if(startDate != null) {
+            if (Objects.nonNull(startDate)) {
                 locationObservationModel.setStartDate(startDate);
             }
         }
@@ -61,7 +61,7 @@ public class LocationObservationLogic {
         locationObservationDAO.create(session, locationObservationModel);
     }
 
-    public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry) throws Exception {
 
         models.forEach(model -> {
             model.setObservationCollection(locationObservationCollectionURI);
@@ -69,7 +69,7 @@ public class LocationObservationLogic {
             model.setHasGeometry(hasGeometry);
         });
 
-        if(models.size() >= 2 ) {
+        if (models.size() >= 2) {
             validateConsistencyObservationList(models);
         }
 
@@ -81,9 +81,9 @@ public class LocationObservationLogic {
     }
 
     /**
-     * @param modelList collections of observations list of features of interest
+     * @param modelList   collections of observations list of features of interest
      * @param hasGeometry fetch only documents with a "geometry" field - displayable on a map
-     * @param date the date at which we search the location
+     * @param date        the date at which we search the location
      * @return list of the last locations of each feature of interest
      */
     public List<LocationObservationModel> getLastLocationObservation(List<LocationObservationCollectionModel> modelList, boolean hasGeometry, Instant date) {
@@ -94,7 +94,7 @@ public class LocationObservationLogic {
         searchFilter.setObservationCollectionList(uriList);
         searchFilter.setHasGeometry(hasGeometry);
 
-        if(date != null) {
+        if (Objects.nonNull(date)) {
             searchFilter.setEndDate(date);
         }
 
@@ -117,7 +117,7 @@ public class LocationObservationLogic {
             Instant endDate,
             List<OrderBy> orderByList,
             Integer page,
-            Integer pageSize) throws Exception {
+            Integer pageSize) {
 
         Objects.requireNonNull(collection);
 
@@ -132,10 +132,10 @@ public class LocationObservationLogic {
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
 
-       return locationObservationDAO.searchWithPagination(searchFilter);
+        return locationObservationDAO.searchWithPagination(searchFilter);
     }
 
-    public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry,LocationModel locationModel) {
+    public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) {
         try {
             LocationObservationModel locationObservationModel = locationObservationDAO.get(locationObservationCollectionURI);
 
@@ -151,6 +151,7 @@ public class LocationObservationLogic {
     public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {
         locationObservationDAO.delete(session, locationObservationCollectionURI);
     }
+
     public void deleteLocationObservations(ClientSession session, URI locationObservationCollectionURI) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
         searchFilter.setObservationCollection(locationObservationCollectionURI);
@@ -160,27 +161,26 @@ public class LocationObservationLogic {
 
     /**
      * Checks if an object with location (not from an address) is valid :
-     *     - it must have one observation date;
-     *     - if there is a endDate, it must be after the "begin" date.
-     *
+     * - it must have one observation date;
+     * - if there is a endDate, it must be after the "begin" date.
      *
      * @param startDate start observation date of the geometry
-     * @param endDate end observation date of the geometry
+     * @param endDate   end observation date of the geometry
      * @throws NotAllowedException If dates are invalid
      */
-    public void validateDates(Instant endDate, Instant startDate){
-        if(Objects.isNull(endDate)){
+    public void validateDates(Instant endDate, Instant startDate) throws NotAllowedException {
+        if (Objects.isNull(endDate)) {
             throw new NotAllowedException("endDate cannot be null");
         }
-        if(!Objects.isNull(startDate) && endDate.isBefore(endDate)){
-            throw new NotAllowedException("endDate ("+ endDate +") cannot be after startDate ("+ startDate + ")");
+        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
+            throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
         }
     }
 
     public int countLocationsForURI(URI locationObservationCollectionURI) {
         int count = 0;
 
-        if(!Objects.isNull(locationObservationCollectionURI)){
+        if (!Objects.isNull(locationObservationCollectionURI)) {
             LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
             searchFilter.setHasGeometry(false);
             searchFilter.setObservationCollection(locationObservationCollectionURI);
@@ -189,20 +189,18 @@ public class LocationObservationLogic {
         }
 
         return count;
-
     }
     //#endregion
 
     //#region private
+
     /**
      * Checks if the all observation dates are consistency
      * The object can't have 2 locations in the same time
      *
      * @param models list of location observations
      */
-    private void validateConsistencyObservationList(List<LocationObservationModel> models) {
-        //TODO : a optimiser -algo? stream ? boucle while models.size() <2 ? refactoring?
-        //TODO: message d'erreur lisible
+    private void validateConsistencyObservationList(List<LocationObservationModel> models) throws NotAllowedException {
         List<LocationObservationModel> modelsToCompare = new ArrayList<>(models);
 
         models.forEach(model -> {

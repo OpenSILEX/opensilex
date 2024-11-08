@@ -13,6 +13,8 @@ package org.opensilex.core.organisation.bll;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.external.geocoding.GeocodingService;
@@ -22,6 +24,7 @@ import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.site.SiteAddressDTO;
@@ -465,7 +468,7 @@ public class SiteLogic {
                     locationObservationCollectionLogic.deleteLocationObservationCollection(siteModel.getLocationObservationCollection().getUri());
                 }
             } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown data URI ", siteModel.getLocationObservationCollection().getUri());
+                throw new NotFoundURIException("Invalid or unknown URI ", siteModel.getLocationObservationCollection().getUri());
             }
 
         }

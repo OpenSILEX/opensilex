@@ -19,47 +19,47 @@
         <hr/>
 
         <b-form>
-        <!-- Dates -->
-        <div class="row">
-            <div class="col">
-                <opensilex-DateTimeForm
-                        :value.sync="position.startDate"
-                        label="component.common.begin"
-                        :maxDate="position.endDate"
-                        :required="false"
-                ></opensilex-DateTimeForm>
-            </div>
-            <div class="col">
-                <opensilex-DateTimeForm
-                        :value.sync="position.endDate"
-                        label="component.common.end"
-                        :minDate="position.startDate"
-                        :required="!!position.geojson || !!position.startDate"
-                ></opensilex-DateTimeForm>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Geometry -->
-            <div class="col-8">
-                <opensilex-GeometryForm
-                        :value.sync="position.geojson"
-                        label="component.common.geometry"
-                        :required="!!position.endDate"
-                >
-                </opensilex-GeometryForm>
+            <!-- Dates -->
+            <div class="row">
+                <div class="col">
+                    <opensilex-DateTimeForm
+                            :value.sync="position.startDate"
+                            label="component.common.begin"
+                            :maxDate="position.endDate"
+                            :required="false"
+                    ></opensilex-DateTimeForm>
+                </div>
+                <div class="col">
+                    <opensilex-DateTimeForm
+                            :value.sync="position.endDate"
+                            label="component.common.end"
+                            :minDate="position.startDate"
+                            :required="!!position.geojson || !!position.startDate"
+                    ></opensilex-DateTimeForm>
+                </div>
             </div>
 
-            <!-- Add position -->
-            <div class="col-4" style="padding-top: 25px">
-                <opensilex-AddChildButton
-                        @click="addPosition"
-                        label="LocationsForm.add-position"
-                        :small="true"
-                ></opensilex-AddChildButton>
-                <span> {{ $t('LocationsForm.add-position') }}</span>
+            <div class="row">
+                <!-- Geometry -->
+                <div class="col-8">
+                    <opensilex-GeometryForm
+                            :value.sync="position.geojson"
+                            label="component.common.geometry"
+                            :required="!!position.endDate"
+                    >
+                    </opensilex-GeometryForm>
+                </div>
+
+                <!-- Add position -->
+                <div class="col-4" style="padding-top: 25px">
+                    <opensilex-AddChildButton
+                            @click="addPosition"
+                            label="LocationsForm.add-position"
+                            :small="true"
+                    ></opensilex-AddChildButton>
+                    <span> {{ $t('LocationsForm.add-position') }}</span>
+                </div>
             </div>
-        </div>
         </b-form>
 
         <!-- Position list -->
@@ -76,7 +76,7 @@
                         variant="warning"
                         show
                 >
-                    {{$t("component.facility.warning.facility-default-date")}}
+                    {{ $t("component.facility.warning.facility-default-date") }}
                 </b-alert>
             </template>
 
@@ -87,7 +87,6 @@
             </template>
 
             <template v-slot:cell(actions)="{ data }">
-                <!-- TODO: CREDENTIALS Update/delete Facility? Location?-->
                 <b-button-group size="sm">
                     <opensilex-EditButton
                             @click="updatePosition(data)"
@@ -103,6 +102,7 @@
             </template>
         </opensilex-TableView>
         <opensilex-LocationModalForm
+                v-if="facility.locations.length > 0"
                 ref="locationModalForm"
                 @onUpdate="onUpdate"
         ></opensilex-LocationModalForm>
@@ -112,8 +112,9 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {LocationObservationDTO, FacilityGetDTO} from 'opensilex-core/index';
 import {PropSync, Ref} from "vue-property-decorator";
+import LocationModalForm from "../../../components/location/form/LocationModalForm.vue";
 
 @Component({})
 export default class LocationsForm extends Vue {
@@ -122,12 +123,14 @@ export default class LocationsForm extends Vue {
 
     //#region Props
     @PropSync("form")
-    facility: any;
+    private facility: FacilityGetDTO;
     //endregion
 
     //#region Refs
-    @Ref("validatorRef") readonly validatorRef!: any;
-    @Ref("locationModalForm") readonly locationModalForm!: any;
+    @Ref("validatorRef")
+    readonly validatorRef!: any;
+    @Ref("locationModalForm")
+    readonly locationModalForm!: LocationModalForm;
     //endregion
 
     //#region Data
@@ -152,7 +155,7 @@ export default class LocationsForm extends Vue {
             key: "actions",
             label: "component.common.actions",
         },
-    ]
+    ];
     //endregion
 
     //#region Computed
@@ -165,25 +168,25 @@ export default class LocationsForm extends Vue {
     //endregion
 
     //#region Events handlers
-    private addPosition(){
-       let isValid=  this.validatorRef.validate().then(isValid =>{
+    private addPosition() {
+        let isValid = this.validatorRef.validate().then(isValid => {
             return isValid
         });
 
-        if(isValid){
-            if(this.position.geojson && this.position.endDate){
-                        this.facility.locations.push(this.position)
-                        this.position = this.getPositionEmpty();
+        if (isValid) {
+            if (this.position.geojson && this.position.endDate) {
+                this.facility.locations.push(this.position)
+                this.position = this.getPositionEmpty();
             }
         }
     }
 
-    private updatePosition(data){
+    private updatePosition(data) {
         this.locationModalForm.showEditForm(data.item);
     }
 
-    private deletePosition(data){
-        this.facility.locations.splice(this.facility.locations.indexOf(data.item),1)
+    private deletePosition(data) {
+        this.facility.locations.splice(this.facility.locations.indexOf(data.item), 1)
     }
     //endregion
 

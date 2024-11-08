@@ -9,7 +9,6 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -29,7 +28,7 @@ public class LocationObservationCollectionDAO {
     }
 
     public LocationObservationCollectionModel get(URI collectionURI) throws Exception {
-        return sparql.getByURI(LocationObservationCollectionModel.class,collectionURI, null);
+        return sparql.getByURI(LocationObservationCollectionModel.class, collectionURI, null);
     }
 
     public URI getCollection(URI featureOfInterest) throws SPARQLException {

@@ -54,23 +54,23 @@ public class LocationLogic {
         return geocodec.decode(jsonReader, DecoderContext.builder().build());
     }
 
-    public static LocationModel buildLocationModel(Geometry geometry, String x, String y, String z, String textualPosition){
+    public static LocationModel buildLocationModel(Geometry geometry, String x, String y, String z, String textualPosition) {
         LocationModel locationModel = new LocationModel();
 
         //build LocationModel
-        if(geometry != null) {
+        if (geometry != null) {
             locationModel.setGeometry(geometry);
         }
-        if(x != null) {
+        if (x != null) {
             locationModel.setX(x);
         }
-        if(y != null) {
+        if (y != null) {
             locationModel.setY(y);
         }
-        if(z != null) {
+        if (z != null) {
             locationModel.setZ(z);
         }
-        if(textualPosition != null) {
+        if (textualPosition != null) {
             locationModel.setTextualPosition(textualPosition);
         }
 

@@ -39,7 +39,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -66,46 +65,46 @@ public class FacilityLogic {
     private final GeocodingService geocodingService;
 
 
-
     //#region constructor
     public FacilityLogic(SPARQLService sparql, MongoDBServiceV2 mongodb) throws Exception {
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.organizationDAO = new OrganizationDAO(sparql);
-        this.facilityDAO = new FacilityDAO(sparql,mongodb,organizationDAO);
-        this.siteLogic = new SiteLogic(sparql,mongodb);
+        this.facilityDAO = new FacilityDAO(sparql);
+        this.siteLogic = new SiteLogic(sparql, mongodb);
         this.geocodingService = new OpenStreetMapGeocodingService();
     }
     //#endregion
 
     //region public
+
     /**
      * Creates a facility. The address is checked before the creation (it must be the same as the associated sites).
      * See {@link #validateFacilityAddress(FacilityModel, AccountModel)}.
      *
-     * @param instance The facility to create
+     * @param instance  The facility to create
      * @param locations geometry list linked to the facility
-     * @param user The current user
+     * @param user      The current user
      * @return The created instance
      * @throws SiteFacilityInvalidAddressException If the address is invalid
-     * @throws Exception If any other problem occurs
+     * @throws Exception                           If any other problem occurs
      */
     public FacilityModel create(FacilityModel instance, List<LocationObservationModel> locations, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
         validateFacilityRelations(instance, user);
 
         String lang = null;
-        if (user != null) {
+        if (Objects.nonNull(user)) {
             lang = user.getLanguage();
             instance.setPublisher(user.getUri());
         }
 
-        List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(),lang);
+        List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(), lang);
         instance.setOrganizations(organizationModels);
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.create(instance);
-            if(!Objects.isNull(locations) || !Objects.isNull(instance.getAddress())) {
+            if (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())) {
                 createFacilityLocations(session, instance, locations);
             }
             return null;
@@ -119,14 +118,19 @@ public class FacilityLogic {
      * Gets a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
-     * @param uri The URI of the facility
+     * @param uri  The URI of the facility
      * @param user The current user
      * @return The facility
-     * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel get(URI uri, AccountModel user) throws Exception {
-        validateFacilityAccess(uri, user);
-        return facilityDAO.get(uri, user.getLanguage());
+    public FacilityModel get(URI uri, AccountModel user) throws ForbiddenURIAccessException {
+        try {
+            validateFacilityAccess(uri, user);
+            return facilityDAO.get(uri, user.getLanguage());
+        } catch (ForbiddenURIAccessException exception) {
+            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri.toString());
+        } catch (Exception e) {
+            throw new NotFoundURIException(uri);
+        }
     }
 
     /**
@@ -151,11 +155,15 @@ public class FacilityLogic {
      * @return The list of facilities
      */
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter) throws Exception {
-        filter.validate();
+        try {
+            filter.validate();
 
-        FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
+            FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
-        return facilityDAO.search(filter,organizationsAndSites);
+            return facilityDAO.search(filter, organizationsAndSites);
+        } catch (Exception e) {
+            throw new InvalidValueException(e.getMessage());
+        }
     }
 
     /**
@@ -170,23 +178,20 @@ public class FacilityLogic {
 
         FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
-        return facilityDAO.minimalSearch(filter,organizationsAndSites);
+        return facilityDAO.minimalSearch(filter, organizationsAndSites);
     }
 
     /**
      * Search facilities with detail (sparql) and, if filter is at 'true', only facilities with location (mongo).
      *
      * @param currentUser The current user
-     * @throws Exception If some error is encountered during the search
-     *
      * @return a Map of facilities with or without corresponding location
+     * @throws Exception If some error is encountered during the search
      */
-    public Map<FacilityModel, LocationObservationModel> getSitesWithPosition(AccountModel currentUser) throws Exception {
-        FacilityDAO facilityDAO = new FacilityDAO(sparql,mongodb,organizationDAO);
+    public Map<FacilityModel, LocationObservationModel> getSitesWithPosition(Instant endDate, AccountModel currentUser) throws Exception {
         Map<FacilityModel, LocationObservationModel> facilitiesAndLocationsMap = new HashMap<>();
         FacilitySearchFilter facilitySearchfilter = new FacilitySearchFilter();
 
-        //TODO : date as API parameter?
         //Set searchFilter
         facilitySearchfilter.setUser(currentUser);
         facilitySearchfilter.setPageSize(0);
@@ -198,19 +203,24 @@ public class FacilityLogic {
 
         //Get facility with location
         Map<FacilityModel, LocationObservationCollectionModel> facilitiesWithLocationMap = facilityList.stream()
-                    .filter(facility -> facility.getLocationObservationCollection() != null)
-                    .collect(Collectors.toMap(Function.identity(), FacilityModel::getLocationObservationCollection));
+                .filter(facility -> facility.getLocationObservationCollection() != null)
+                .collect(Collectors.toMap(Function.identity(), FacilityModel::getLocationObservationCollection));
 
         if (!facilitiesWithLocationMap.isEmpty()) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(facilitiesWithLocationMap.values()), true, Instant.now());
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
+                    new ArrayList<>(facilitiesWithLocationMap.values()),
+                    true,
+                    Objects.nonNull(endDate) ? endDate : Instant.now());
 
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
             facilitiesWithLocationMap.forEach((site, collection) -> {
                 var observation = locationObservationMap.get(collection.getUri());
-                facilitiesAndLocationsMap.put(site, observation);
+                if (Objects.nonNull(observation)) {
+                    facilitiesAndLocationsMap.put(site, observation);
+                }
             });
 
         }
@@ -223,31 +233,28 @@ public class FacilityLogic {
      * for further information.
      *
      * @param instance the facility to update
-     * @param user The current user
+     * @param user     The current user
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance,  List<LocationObservationModel> locations, AccountModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance, List<LocationObservationModel> locations, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
         validateFacilityRelations(instance, user);
 
-        List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(),user.getLanguage());
+        List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(), user.getLanguage());
         instance.setOrganizations(organizationModels);
 
         FacilityModel existingModel = facilityDAO.get(instance.getUri(), user.getLanguage());
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
-
-//            instance.setLocationObservationCollection(existingModel.getLocationObservationCollection());
-
             facilityDAO.update(instance);
 
-            if (existingModel.getLocationObservationCollection() != null && (!Objects.isNull(locations) || !Objects.isNull(instance.getAddress()))) {
+            if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
                 updateFacilityLocations(session, instance, existingModel, locations);
-            } else if (existingModel.getLocationObservationCollection() == null && (!Objects.isNull(locations) || !Objects.isNull(instance.getAddress()))) {
-                createFacilityLocations(session, instance,locations);
-            } else if (existingModel.getLocationObservationCollection() != null && (Objects.isNull(locations) && Objects.isNull(instance.getAddress()))) {
+            } else if (Objects.isNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
+                createFacilityLocations(session, instance, locations);
+            } else if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.isNull(locations) && Objects.isNull(instance.getAddress()))) {
                 deleteFacilityLocations(session, instance);
             }
 
@@ -262,7 +269,7 @@ public class FacilityLogic {
      * Deletes a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
-     * @param uri The URI of the facility
+     * @param uri  The URI of the facility
      * @param user The current user
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
@@ -271,7 +278,7 @@ public class FacilityLogic {
 
         FacilityModel model = facilityDAO.get(uri, user.getLanguage());
 
-        new SparqlMongoTransaction(sparql,mongodb).execute(session ->{
+        new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             deleteFacilityLocations(session, model);
             facilityDAO.delete(uri);
 
@@ -280,7 +287,7 @@ public class FacilityLogic {
         organizationDAO.invalidateCache();
     }
 
-    public FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList, AccountModel currentUser) throws Exception {
+    public FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList, AccountModel currentUser) {
         FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
                 .setUser(currentUser)
                 .setPattern(pattern)
@@ -303,17 +310,17 @@ public class FacilityLogic {
     public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
-       List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
+        List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
                 Collections.singletonList(facilityModel.getLocationObservationCollection()),
                 false,
                 Instant.now()
         );
 
-       if(lastLocationByFacility.isEmpty()) {
-           return new LocationObservationModel();
-       } else{
-           return lastLocationByFacility.get(0);
-       }
+        if (lastLocationByFacility.isEmpty()) {
+            return new LocationObservationModel();
+        } else {
+            return lastLocationByFacility.get(0);
+        }
     }
     //#endregion
 
@@ -341,7 +348,7 @@ public class FacilityLogic {
     /**
      * Mini class to contain results of search rights calculation.
      */
-    public static class FacilitySearchRights{
+    public static class FacilitySearchRights {
         final List<URI> userOrganizations;
         final List<URI> userSites;
 
@@ -361,6 +368,7 @@ public class FacilityLogic {
     //endregion
 
     //#region private
+
     /**
      * Validates that the user has access to a facility. Throws an exception if that is not the case. The
      * facility must exist, and the user/facility must satisfy at least one of the following conditions :
@@ -372,7 +380,7 @@ public class FacilityLogic {
      *     <li>The user is the publisher of the facility</li>
      * </ul>
      *
-     * @param facilityURI The facility URI to check
+     * @param facilityURI  The facility URI to check
      * @param accountModel The user
      * @throws IllegalArgumentException If the AccountModel is null
      */
@@ -413,11 +421,11 @@ public class FacilityLogic {
      */
     private void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) {
 
-        if (facilityModel.getAddress() == null) {
+        if (Objects.isNull(facilityModel.getAddress())) {
             return;
         }
 
-        if (facilityModel.getSites() == null) {
+        if (Objects.isNull(facilityModel.getSites())) {
             return;
         }
 
@@ -430,14 +438,14 @@ public class FacilityLogic {
         }).collect(Collectors.toList());
 
         for (SiteModel siteModel : siteModelList) {
-            if (siteModel.getAddress() != null) {
+            if (Objects.nonNull(siteModel.getAddress())) {
                 SiteLogic.assertEqualsFacilityAndSiteAddresses(siteModel, facilityModel);
             }
         }
     }
 
     private void validateFacilityRelations(FacilityModel facilityModel, AccountModel user) throws SPARQLException, URISyntaxException {
-        if (facilityModel.getRelations() != null) {
+        if (!facilityModel.getRelations().isEmpty()) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
             ClassModel model = ontoDAO.getClassModel(facilityModel.getType(), new URI(Oeso.Facility.getURI()), user.getLanguage());
             URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
@@ -454,11 +462,8 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         List<LocationObservationModel> locations = new ArrayList<>();
 
-        if (Objects.isNull(locationObservationModels) && !Objects.isNull(facility.getAddress())) {
-            FacilityAddressDTO addressDto = new FacilityAddressDTO();
-            addressDto.fromModel(facility.getAddress());
-
-            Geometry geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+        if (Objects.isNull(locationObservationModels) && Objects.nonNull(facility.getAddress())) {
+            Geometry geometry = convertAddressToGeometry(facility);
             if (Objects.isNull(geometry)) {
                 return;
             }
@@ -467,14 +472,14 @@ public class FacilityLogic {
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(),location.getStartDate()));
+            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
         //Create the LocationObservationCollection
         LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(facility.getUri());
         //Create LocationObservations
-        locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations,true);
+        locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations, true);
     }
 
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
@@ -486,10 +491,7 @@ public class FacilityLogic {
         List<LocationObservationModel> locations = new ArrayList<>();
 
         if ((Objects.isNull(locationObservationModels) || locationObservationModels.isEmpty()) && !Objects.isNull(instance.getAddress())) {
-            FacilityAddressDTO addressDto = new FacilityAddressDTO();
-            addressDto.fromModel(instance.getAddress());
-
-            Geometry geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+            Geometry geometry = convertAddressToGeometry(instance);
             if (Objects.isNull(geometry)) {
                 return;
             }
@@ -499,15 +501,22 @@ public class FacilityLogic {
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(),location.getStartDate()));
+            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
 
-        locationObservationLogic.createLocationObservations(session, existingModel.getLocationObservationCollection().getUri(), existingModel.getUri(), locations,true);
+        locationObservationLogic.createLocationObservations(session, existingModel.getLocationObservationCollection().getUri(), existingModel.getUri(), locations, true);
+    }
+
+    private Geometry convertAddressToGeometry(FacilityModel facility) {
+        FacilityAddressDTO addressDto = new FacilityAddressDTO();
+        addressDto.fromModel(facility.getAddress());
+
+        return geocodingService.getPointFromAddress(addressDto.toReadableAddress());
     }
 
     private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
-        if(facility.getLocationObservationCollection()  != null) {
+        if (facility.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
@@ -515,7 +524,7 @@ public class FacilityLogic {
                 locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
                 locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new NotFoundURIException("Invalid or unknown URI ", facility.getLocationObservationCollection().getUri());
             }
         }
     }

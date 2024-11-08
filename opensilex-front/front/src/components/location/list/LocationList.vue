@@ -29,13 +29,13 @@
 
                         <template v-slot:cell(endDate)="{ data }">
                             <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
-                            <!-- Warning iff the endDate is equal to 1970 == default date for facility geometry from migration-->
+                            <!-- Warning if the endDate is equal to 1970 == default date for facility geometry from migration-->
                             <b-alert
                                     v-if="data.item.endDate === DEFAULT_DATE"
                                     variant="warning"
                                     show
                             >
-                                {{$t("component.facility.warning.facility-default-date")}}
+                                {{ $t("component.facility.warning.facility-default-date") }}
                             </b-alert>
                         </template>
 
@@ -61,73 +61,73 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component({})
 export default class LocationList extends Vue {
-  //#region Plugins and services
-  private readonly $opensilex: OpenSilexVuePlugin;
-  private locationsService: LocationsService;
-  //endregion
+    //#region Plugins and services
+    private readonly $opensilex: OpenSilexVuePlugin;
+    private locationsService: LocationsService;
+    //endregion
 
-  //#region Props
-  @Prop({default: () => [] })
-  private readonly locations;
-  @Prop()
-  private readonly target;
-  //endregion
+    //#region Props
+    @Prop({default: () => []})
+    private readonly locations;
+    @Prop()
+    private readonly target;
+    //endregion
 
-  //#region Refs
-  @Ref("locationModalForm")
-  private readonly locationModalForm: LocationModalForm;
-  //endregion
+    //#region Refs
+    @Ref("locationModalForm")
+    private readonly locationModalForm: LocationModalForm;
+    //endregion
 
-  //#region Data
-  private fields = [
-    {
-      key: "startDate",
-      label: "component.common.begin",
-      sortable: true,
-    },
-    {
-      key: "endDate",
-      label: "component.common.end",
-      sortable: true,
-    },
-    {
-      key: "geometry",
-      label: "component.common.geometry",
-    }
-  ]
+    //#region Data
+    private fields = [
+        {
+            key: "startDate",
+            label: "component.common.begin",
+            sortable: true,
+        },
+        {
+            key: "endDate",
+            label: "component.common.end",
+            sortable: true,
+        },
+        {
+            key: "geometry",
+            label: "component.common.geometry",
+        }
+    ]
     private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
-  //endregion
+    //endregion
 
-  //#region Computed
-  //endregion
+    //#region Computed
+    //endregion
 
-  //#region Events
-  //endregion
+    //#region Events
+    //endregion
 
-  //#region Events handlers
-  //endregion
+    //#region Events handlers
+    //endregion
 
-  //#region Public methods
-  //endregion
+    //#region Public methods
+    //endregion
 
-  //#region Hooks
-  created() {
-    this.locationsService = this.$opensilex.getService<LocationsService>("opensilex.LocationsService")
-  }
-  //endregion
+    //#region Hooks
+    private created() {
+        this.locationsService = this.$opensilex.getService<LocationsService>("opensilex.LocationsService")
+    }
+    //endregion
 
-  //#region Private methods
-  private search(options) {
-    return this.locationsService.searchLocationHistory(
-        this.target,
-        undefined,
-        undefined,
-        options.orderBy,
-        options.currentPage,
-        undefined
-    );
-  }
-  //endregion
+    //#region Private methods
+    private search(options) {
+        return this.locationsService.searchLocationHistory(
+                this.target,
+                undefined,
+                undefined,
+                options.orderBy,
+                options.currentPage,
+                undefined
+        );
+    }
+    //endregion
 }
 </script>
 

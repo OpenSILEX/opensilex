@@ -1,17 +1,17 @@
 <template>
-  <opensilex-WizardForm
-    ref="facilityForm"
-    :steps="steps"
-    createTitle="FacilitiesView.add"
-    editTitle="FacilitiesView.update"
-    icon="ik#ik-map"
-    :createAction="callOrganizationFacilityCreation"
-    :updateAction="callOrganizationFacilityUpdate"
-    @onCreate="$emit('onCreate', $event)"
-    @onUpdate="$emit('onUpdate', $event)"
-    :initForm="getEmptyForm"
-    modalSize="lg"
-  ></opensilex-WizardForm>
+    <opensilex-WizardForm
+            ref="facilityForm"
+            :steps="steps"
+            createTitle="FacilitiesView.add"
+            editTitle="FacilitiesView.update"
+            icon="ik#ik-map"
+            :createAction="callOrganizationFacilityCreation"
+            :updateAction="callOrganizationFacilityUpdate"
+            @onCreate="$emit('onCreate', $event)"
+            @onUpdate="$emit('onUpdate', $event)"
+            :initForm="getEmptyForm"
+            modalSize="lg"
+    ></opensilex-WizardForm>
 </template>
 
 <script lang="ts">
@@ -22,7 +22,13 @@ import DTOConverter from "../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {LocationsService} from "opensilex-core/api/locations.service";
-import {LocationObservationDTO,FacilityCreationDTO, FacilityGetDTO, FacilityUpdateDTO, UserGetDTO} from "opensilex-core/index";
+import {
+    LocationObservationDTO,
+    FacilityCreationDTO,
+    FacilityGetDTO,
+    FacilityUpdateDTO,
+    UserGetDTO
+} from "opensilex-core/index";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -36,7 +42,7 @@ export default class FacilityModalForm extends Vue {
 
     //#region Refs
     @Ref("facilityForm")
-    private readonly facilityForm!: any;
+    private readonly facilityForm!: FacilityModalForm;
     //endregion
 
     //#region Data
@@ -60,7 +66,7 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Public methods
-    showEditForm(uri) {
+    public showEditForm(uri) {
         let editDto;
         this.$opensilex
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
@@ -71,8 +77,8 @@ export default class FacilityModalForm extends Vue {
                     editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
                     editDto.publisher = publisher;
                 }).catch(this.$opensilex.errorHandler)
-                .finally(()=>{
-                    if(editDto.locations){
+                .finally(() => {
+                    if (editDto.locations) {
                         this.locationsService.searchLocationHistory(
                                 uri,
                                 undefined,
@@ -80,30 +86,32 @@ export default class FacilityModalForm extends Vue {
                                 [],
                                 0,
                                 20
-                        ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) =>{
+                        ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) => {
                             editDto.locations = http.response.result
                             this.facilityForm.showEditForm(editDto);
                         });
-                    }else{
+                    } else {
                         editDto.locations = [];
                         this.facilityForm.showEditForm(editDto);
                     }
                 });
     }
 
-    showCreateForm() {
+    public showCreateForm() {
         this.facilityForm.showCreateForm();
     }
+
     //endregion
 
     //#region Hooks
-    created() {
+    private created() {
         this.locationsService = this.$opensilex.getService<LocationsService>("opensilex.LocationsService")
     }
+
     //endregion
 
     //#region Private methods
-    getEmptyForm() {
+    private getEmptyForm() {
         return {
             uri: undefined,
             rdf_type: undefined,
@@ -118,7 +126,7 @@ export default class FacilityModalForm extends Vue {
         };
     }
 
-    callOrganizationFacilityCreation(form: FacilityCreationDTO) {
+    private callOrganizationFacilityCreation(form: FacilityCreationDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];
@@ -142,7 +150,7 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .createFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    console.log("http",http)
+                    console.log("http", http)
                     let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })
@@ -161,7 +169,7 @@ export default class FacilityModalForm extends Vue {
                 });
     }
 
-    callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
+    private callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];
@@ -189,6 +197,7 @@ export default class FacilityModalForm extends Vue {
                 })
                 .catch(this.$opensilex.errorHandler);
     }
+
     //endregion
 }
 </script>
@@ -198,17 +207,17 @@ export default class FacilityModalForm extends Vue {
 
 <i18n>
 en:
-  OrganizationFacilityForm:
-    name: The facility
-    facility-uri: Organization facility URI
-    form-name-placeholder: Enter organization facility name
-    form-type-placeholder: Select organization facility type
-    organization-facility-already-exists: Organization facility already exists with this URI
+    OrganizationFacilityForm:
+        name: The facility
+        facility-uri: Organization facility URI
+        form-name-placeholder: Enter organization facility name
+        form-type-placeholder: Select organization facility type
+        organization-facility-already-exists: Organization facility already exists with this URI
 fr:
-  OrganizationFacilityForm:
-    name: L'installation environnementale
-    facility-uri: URI de l'installation environnementale
-    form-name-placeholder: Saisir le nom de l'installation environnementale
-    form-type-placeholder: Sélectionner le type de l'installation environnementale
-    organization-facility-already-exists: Une installation environnementale existe déjà avec cette URI
+    OrganizationFacilityForm:
+        name: L'installation environnementale
+        facility-uri: URI de l'installation environnementale
+        form-name-placeholder: Saisir le nom de l'installation environnementale
+        form-type-placeholder: Sélectionner le type de l'installation environnementale
+        organization-facility-already-exists: Une installation environnementale existe déjà avec cette URI
 </i18n>

@@ -1,6 +1,5 @@
 package org.opensilex.core.location.dal;
 
-import org.bson.Document;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;

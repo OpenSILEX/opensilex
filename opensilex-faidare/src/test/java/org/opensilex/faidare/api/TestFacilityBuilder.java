@@ -1,6 +1,5 @@
 package org.opensilex.faidare.api;
 
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;

@@ -12,94 +12,94 @@
   -->
 
 <template>
-      <b-form>
-    <!-- Dates -->
-    <div class="row">
-      <div class="col">
-        <opensilex-DateTimeForm
-                :value.sync="form.startDate"
-                label="component.common.begin"
-                :maxDate="form.endDate"
-                :required="false"
-        ></opensilex-DateTimeForm>
-      </div>
-      <div class="col">
-        <opensilex-DateTimeForm
-                :value.sync="form.endDate"
-                label="component.common.end"
-                :minDate="form.startDate"
-                :required="true"
-        ></opensilex-DateTimeForm>
-      </div>
-    </div>
+    <div>
+        <!-- Dates -->
+        <div class="row">
+            <div class="col">
+                <opensilex-DateTimeForm
+                        :value.sync="form.startDate"
+                        label="component.common.begin"
+                        :maxDate="form.endDate"
+                ></opensilex-DateTimeForm>
+            </div>
+            <div class="col">
+                <opensilex-DateTimeForm
+                        :value.sync="form.endDate"
+                        label="component.common.end"
+                        :minDate="form.startDate"
+                        :required="!disableValidation"
+                ></opensilex-DateTimeForm>
+            </div>
+        </div>
 
-    <!-- Geometry -->
-    <div class="row">
-      <div class="col-lg-9">
-        <opensilex-GeometryForm
-                :value.sync="form.geojson"
-                label="component.common.geometry"
-                helpMessage="component.common.geometry-help"
-                :required="true"
-        ></opensilex-GeometryForm>
-      </div>
+        <!-- Geometry -->
+        <div class="row">
+            <div class="col-lg-9">
+                <opensilex-GeometryForm
+                        :value.sync="form.geojson"
+                        label="component.common.geometry"
+                        helpMessage="component.common.geometry-help"
+                        :required="!disableValidation"
+                ></opensilex-GeometryForm>
+            </div>
+        </div>
     </div>
-      </b-form>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {Prop, Ref} from "vue-property-decorator";
+import {Prop} from "vue-property-decorator";
 import {LocationObservationDTO} from "opensilex-core/index";
 
 @Component({})
 export default class LocationForm extends Vue {
-  //#region Plugins and services
-  //endregion
+    //#region Plugins and services
+    //endregion
 
-  //#region Props
-  @Prop({default: () => LocationForm.getEmptyForm()})
-  form: LocationObservationDTO;
-  //endregion
+    //#region Props
+    @Prop({default: () => LocationForm.getEmptyForm()})
+    form: LocationObservationDTO;
+    @Prop({default: false})
+    disableValidation: boolean;
+    //endregion
 
-  //#region Refs
-  //endregion
+    //#region Refs
+    //endregion
 
-  //#region Data
-  //endregion
+    //#region Data
+    //endregion
 
-  //#region Computed
-  //endregion
+    //#region Computed
+    //endregion
 
-  //#region Events
-  //endregion
+    //#region Events
+    //endregion
 
-  //#region Events handlers
-  //endregion
+    //#region Events handlers
+    //endregion
 
   //#region Public methods
     public showEditForm(form) {
-        console.log("form",form)
     }
   //endregion
 
-  //#region Hooks
-  //endregion
+    //#region Hooks
+    //endregion
 
-  //#region Private methods
-  static getEmptyForm() : LocationObservationDTO{
-    return {
-      geojson: undefined,
-      startDate: undefined,
-      endDate: undefined
-    };
-  }
+    //#region Private methods
+    static getEmptyForm(): LocationObservationDTO {
+        return {
+            geojson: undefined,
+            startDate: undefined,
+            endDate: undefined
+        };
+    }
 
-  getEmptyForm() {
-    return LocationForm.getEmptyForm();
-  }
-  //endregion
+    getEmptyForm() {
+        return LocationForm.getEmptyForm();
+    }
+    //endregion
 }
 </script>
 
@@ -109,11 +109,11 @@ export default class LocationForm extends Vue {
 
 <i18n>
 en:
-  LocationForm:
-    update: Update location
+    LocationForm:
+        update: Update location
 
 fr:
-  LocationForm:
-    update: Modifier la localisation
+    LocationForm:
+        update: Modifier la localisation
 
 </i18n>

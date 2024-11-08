@@ -19,7 +19,9 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.server.exceptions.BadRequestException;
 
-public class FacilityGetWithGeometryDTO extends FacilityDTO{
+import java.util.Objects;
+
+public class FacilityGetWithGeometryDTO extends FacilityDTO {
 
     @JsonProperty("geometry")
     protected GeoJsonObject geometry;
@@ -35,7 +37,7 @@ public class FacilityGetWithGeometryDTO extends FacilityDTO{
     public void fromModel(FacilityModel model, LocationObservationModel location) {
         super.fromModel(model);
 
-        if (location != null) {
+        if (Objects.nonNull(location)) {
             try {
                 setGeometry(LocationLogic.geometryToGeoJson(location.getLocation().getGeometry()));
             } catch (JsonProcessingException e) {
@@ -43,5 +45,4 @@ public class FacilityGetWithGeometryDTO extends FacilityDTO{
             }
         }
     }
-
 }

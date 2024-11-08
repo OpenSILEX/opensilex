@@ -49,6 +49,11 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         }
     }
 
+    protected final ServiceDescription getFacilities = new ServiceDescription(
+            FacilityAPI.class.getMethod("getFacilitiesWithGeometry", String.class),
+            PATH+"/with_location"
+    );
+
     protected final static String UPDATE_PATH = PATH;
     protected final static String DELETE_PATH = PATH + "/{uri}";
 
@@ -57,10 +62,6 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     // TypeReference used to parse Response into a List of FacilityGetDTO
     protected static final TypeReference<PaginatedListResponse<FacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
     protected static final TypeReference<SingleObjectResponse<FacilityGetDTO>> singleObjectResponseTypeReference = new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {};
-    protected final ServiceDescription getFacilities = new ServiceDescription(
-            FacilityAPI.class.getMethod("getFacilitiesWithGeometry", String.class),
-            PATH+"/with_location"
-    );
 
     public FacilityApiTest() throws NoSuchMethodException {
     }
@@ -224,13 +225,15 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         ), null);
         Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
-        URI createdUri = new URI(objectUriResponse.getResult());
 
-        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
-        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        //TODO: : avec getgeom?
-        assertNotNull(singleObjectResponse.getResult().getAddress());
+        // Call "getFacilities" because this service retrieve the address spatial coordinates if there is no geometry - the "get" service retrieve only the last geometry
+        PaginatedListResponse<FacilityGetWithGeometryDTO> facilityList = new UserCallBuilder(getFacilities)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FacilityGetWithGeometryDTO>>() {
+                })
+                .getDeserializedResponse();
+        assertNotNull(facilityList.getResult().get(0).getGeometry());
+        assertNotNull(facilityList.getResult().get(0).getAddress());
     }
 
     @Test
@@ -319,11 +322,14 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
-        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-//        todo
-//        assertNotNull(singleObjectResponse.getResult().getLocations().get(0).getGeojson());
-        assertNotNull(singleObjectResponse.getResult().getAddress());
+        // Call "getFacilities" because this service retrieve the address spatial coordinates if there is no geometry - the "get" service retrieve only the last geometry
+        PaginatedListResponse<FacilityGetWithGeometryDTO> facilityList = new UserCallBuilder(getFacilities)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FacilityGetWithGeometryDTO>>() {
+                })
+                .getDeserializedResponse();
+        assertNotNull(facilityList.getResult().get(0).getGeometry());
+        assertNotNull(facilityList.getResult().get(0).getAddress());
     }
 
     @Test

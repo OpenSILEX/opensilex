@@ -11,13 +11,13 @@
   -
   -->
 <template>
-  <opensilex-ModalForm
-          ref="locationForm"
-          component="opensilex-LocationForm"
-          :updateAction="updateLocation"
-          editTitle="LocationForm.update"
-          icon="ik#ik-globe"
-  ></opensilex-ModalForm>
+    <opensilex-ModalForm
+            ref="locationForm"
+            component="opensilex-LocationForm"
+            :updateAction="updateLocation"
+            editTitle="LocationForm.update"
+            icon="ik#ik-globe"
+    ></opensilex-ModalForm>
 </template>
 
 <script lang="ts">
@@ -28,43 +28,43 @@ import LocationForm from "../../../components/location/form/LocationForm.vue";
 
 @Component({})
 export default class LocationModalForm extends Vue {
-  //#region Plugins and services
-  //endregion
+    //#region Plugins and services
+    //endregion
 
-  //#region Props
-  //endregion
+    //#region Props
+    //endregion
 
-  //#region Refs
-  @Ref("locationForm")
-  private readonly locationForm!: LocationForm;
-  //endregion
+    //#region Refs
+    @Ref("locationForm")
+    private readonly locationForm!: LocationForm;
+    //endregion
 
-  //#region Data
-  //endregion
+    //#region Data
+    //endregion
 
-  //#region Computed
-  //endregion
+    //#region Computed
+    //endregion
 
-  //#region Events
-  private updateLocation(form){
-    this.$emit('onUpdate', form)
-  }
-  //endregion
+    //#region Events
+    private updateLocation(form) {
+        this.$emit('onUpdate', form)
+    }
+    //endregion
 
-  //#region Events handlers
-  //endregion
+    //#region Events handlers
+    //endregion
 
-  //#region Public methods
-  public showEditForm(form) {
-    this.locationForm.showEditForm(form);
-  }
-  //endregion
+    //#region Public methods
+    public showEditForm(form) {
+        this.locationForm.showEditForm(form);
+    }
+    //endregion
 
-  //#region Hooks
-  //endregion
+    //#region Hooks
+    //endregion
 
-  //#region Private methods
-  //endregion
+    //#region Private methods
+    //endregion
 }
 </script>
 

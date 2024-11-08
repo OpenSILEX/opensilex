@@ -19,10 +19,13 @@ contact: Renaud COLIN, Arnaud CHARLEROY
     * [Log entries](#log-entries-1)
     * [Properties](#properties-1)
   * [MongoDB](#mongodb)
-  * [Log entries](#log-entries-2)
+    * [Log entries](#log-entries-2)
     * [Properties](#properties-2)
     * [Implementation](#implementation-1)
   * [SPARQL](#sparql)
+    * [Log entries](#log-entries-3)
+    * [Log properties](#log-properties)
+    * [Implementations](#implementations)
 * [OpenSILEX logback configuration](#opensilex-logback-configuration)
 * [Example](#example-)
   * [Search logging](#search-logging)
@@ -142,7 +145,7 @@ This section describe log entries which can be produced by operations related to
 
 The following subsections describes log entries and associated properties which can be produced by a read/write on a MongoDB server
 
-## Log entries
+### Log entries
 
 | **Operation type**              | **Description**                                                  | **Start properties**   | **Success properties** | **Level** |
 |---------------------------------|------------------------------------------------------------------|------------------------|------------------------|-----------|
@@ -172,6 +175,30 @@ The following subsections describes log entries and associated properties which 
 ## SPARQL
 
 The following subsections describes log entries and associated properties which can be produced by a read/write on a SPARQL database
+
+### Log entries
+
+| **Operation type**     | **Description**                 | **Start properties**      | **Success properties**    | **Level** |
+|------------------------|---------------------------------|---------------------------|---------------------------|-----------|
+| `sparql_clear_graph`   | Clear the SPARQL graph          | `graph`                   | `graph`                   | `INFO`    |
+| `sparql_clear`         | Clear the SPARQL database !!!!! |                           |                           | `INFO`    |
+| `sparql_move`          | Move a graph to another         | `src_graph`, `dest_graph` | `src_graph`, `dest_graph` | `INFO`    |
+| `sparql_load_ontology` | Load an ontology file           | `graph`                   | `graph`                   | `INFO`    |
+
+### Log properties
+
+
+| **Property**        | **Description**                                      | **Values**                                                       |
+|---------------------|------------------------------------------------------|------------------------------------------------------------------|
+| `graph`             | The SPARQL graph                                     |                                                                  |                      |
+| `src_graph`         | The old/source graph when moving a SPARQL graph      |                                                                  |
+| `dest_graph`        | The new/destination graph when moving a SPARQL graph |                                                                  |
+| `sparql_query`      | The SPARQL query                                     |                                                                  |
+| `sparql_query_type` | The type of SPARQL query                             | `[sparql_select, sparql_describe, sparql_ask, sparql_construct]` |
+
+### Implementations
+
+- `SPARQLService` and `SparqlLogger`
 
 # OpenSILEX logback configuration
 
@@ -270,3 +297,8 @@ The following subsections describes log entries and associated properties which 
 
 - https://www.innoq.com/en/blog/2019/05/structured-logging/
 - https://bearded-developer.com/posts/the-benefits-of-structured-logging/
+
+# TODO
+
+- Schema global JSON
+- logback.xml

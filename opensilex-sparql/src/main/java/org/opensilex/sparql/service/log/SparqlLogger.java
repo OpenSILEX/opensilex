@@ -25,8 +25,6 @@ public class SparqlLogger extends OpenSilexStructuredLogger {
     public static final String SPARQL_ASK_QUERY = "sparql_ask";
     public static final String SPARQL_CONSTRUCT_QUERY = "sparql_construct";
 
-
-
     public SparqlLogger(Logger logger, StructuredArgument structuredArgument) {
         super(logger, structuredArgument);
     }

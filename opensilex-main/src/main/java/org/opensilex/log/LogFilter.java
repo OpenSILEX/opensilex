@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.utils;
+package org.opensilex.log;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.filter.ThresholdFilter;
@@ -23,23 +23,41 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
  */
 public class LogFilter extends ThresholdFilter {
 
-    public static final String LOG_TYPE_KEY = "log_type";
-
-    public static final String TRANSACTION = "TRANSACTION";
-
+    // region LOG STATUS
     public static final String LOG_STATUS_LOG_KEY = "status";
     public static final String LOG_ERROR_MESSAGE_KEY = "error_message";
-
     public static final String LOG_STATUS_START = "START";
     public static final String LOG_STATUS_OK = "OK";
     public static final String LOG_STATUS_ERROR = "ERROR";
     public static final String LOG_STATUS_ROLLBACK = "ROLLBACK";
-    public static final String LOG_DURATION_MS_KEY = "duration_ms";
-
     public static final StructuredArgument STATUS_START_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_START);
     public static final StructuredArgument STATUS_OK_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_OK);
-
     public static final StructuredArgument STATUS_ERROR_LOG_ARG = keyValue(LOG_STATUS_LOG_KEY, LOG_STATUS_ERROR);
+
+    // region LOG TYPES
+    public static final String LOG_TYPE_KEY = "log_type";
+    public static final String TRANSACTION = "TRANSACTION";
+    public static final String INSERT_ONE = "insert_one";
+    public static final String INSERT_MANY = "insert_many_msg";
+    public static final String INSERT_MANY_COUNT = "insert_many_count";
+    public static final String UPDATE_ONE = "update_one";
+    public static final String UPSERT_ONE = "upsert_one";
+    public static final String DELETE_MANY = "delete_many";
+    public static final String DELETE_MANY_COUNT = "delete_many_count";
+    public static final String DELETE_ONE = "delete_one";
+    public static final String FILTER = "filter";
+    public static final String COUNT = "count";
+    public static final String COUNT_RESULT = "count_result";
+    public static final String SEARCH = "search";
+    public static final String SEARCH_STREAM = "search_stream";
+    public static final String RESULT_COUNT = "result_count";
+    public static final String DISTINCT = "distinct";
+    public static final String DISTINCT_FIELD = "distinct_field";
+
+    // region LOG common attributes
+    public static final String URI_KEY = "uri";
+    public static final String LOG_DURATION_MS_KEY = "duration_ms";
+    public static final String TIMEOUT_MS = "timeout_ms";
 
     /**
      * Method to force debug output.

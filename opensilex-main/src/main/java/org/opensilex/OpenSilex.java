@@ -35,7 +35,7 @@ import org.opensilex.server.ServerModule;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceManager;
 import org.opensilex.utils.ClassUtils;
-import org.opensilex.utils.LogFilter;
+import org.opensilex.log.LogFilter;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;

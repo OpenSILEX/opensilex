@@ -42,7 +42,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
-import static org.opensilex.utils.LogFilter.*;
+import static org.opensilex.log.LogFilter.*;
 
 /**
  * Definition of MongoDB based service. This class handle features concerning Mongo Client, session and transaction lifecycle

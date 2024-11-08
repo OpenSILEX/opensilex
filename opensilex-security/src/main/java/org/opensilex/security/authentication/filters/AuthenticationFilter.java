@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
-import static org.opensilex.utils.LogFilter.LOG_TYPE_KEY;
+import static org.opensilex.log.LogFilter.LOG_TYPE_KEY;
 
 /**
  * <pre>

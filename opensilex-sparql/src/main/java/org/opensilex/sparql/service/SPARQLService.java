@@ -78,7 +78,7 @@ import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.utils.LogFilter.*;
+import static org.opensilex.log.LogFilter.*;
 
 /**
  * Implementation of SPARQLService
@@ -141,30 +141,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         shutdown();
     }
 
-    private static HashMap<String, String> getDefaultPrefixes() {
-        return new HashMap<String, String>() {
-            {
-                put(RDFS.PREFIX, RDFS.NAMESPACE);
-                put(FOAF.PREFIX, FOAF.NAMESPACE);
-                put("dc", DCTerms.NS);
-                put(OWL.PREFIX, OWL.NAMESPACE);
-                put(XSD.PREFIX, XSD.NAMESPACE);
-            }
-        };
+    private static Map<String, String> getDefaultPrefixes() {
+        return Map.of(
+                RDFS.PREFIX, RDFS.NAMESPACE,
+                FOAF.PREFIX, FOAF.NAMESPACE,
+                "dc", DCTerms.NS,
+                OWL.PREFIX, OWL.NAMESPACE,
+                XSD.PREFIX, XSD.NAMESPACE
+        );
     }
 
-    private static HashMap<String, String> prefixes = getDefaultPrefixes();
+    private static Map<String, String> PREFIXES = getDefaultPrefixes();
 
     public static void addPrefix(String prefix, String namespace) {
-        prefixes.put(prefix, namespace);
+        PREFIXES.put(prefix, namespace);
     }
 
     public static Map<String, String> getPrefixes() {
-        return prefixes;
+        return PREFIXES;
     }
 
     public static PrefixMapping getPrefixMapping() {
-        return new SPARQLPrefixMapping().setNsPrefixes(prefixes);
+        return new SPARQLPrefixMapping().setNsPrefixes(PREFIXES);
     }
 
     private static void addPrefixes(UpdateBuilder builder) {
@@ -177,7 +175,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public static void clearPrefixes() {
-        prefixes = getDefaultPrefixes();
+        PREFIXES = getDefaultPrefixes();
     }
 
     @Override

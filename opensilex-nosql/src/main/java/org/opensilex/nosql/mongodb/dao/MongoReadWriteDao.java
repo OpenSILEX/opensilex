@@ -9,7 +9,6 @@ import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -46,6 +45,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.mongodb.client.model.Filters.eq;
+import static org.opensilex.log.LogFilter.*;
 import static org.opensilex.utils.pagination.PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH;
 import static org.opensilex.utils.pagination.PaginatedSearchStrategy.HAS_NEXT_PAGE;
 

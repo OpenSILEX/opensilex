@@ -8,7 +8,7 @@
       :to="to"
       class="uri"
       @focus.native="storePrevious"
-      @click.native="storeReturnPage"
+      @click.native="handleUriLinkClicked"
     >
       <span v-html="value">{{ value || uri }}</span>
       &nbsp;
@@ -95,9 +95,14 @@ export type UriLinkDestination = string | {
 
 @Component
 export default class UriLink extends Vue {
+  //#region: data
+
   $opensilex: any;
   $t: any;
   $router: any;
+
+  //#endregion
+  //region: props
 
   @Prop()
   uri: string;
@@ -131,6 +136,9 @@ export default class UriLink extends Vue {
   })
   isClickable: boolean;
 
+  //#endregion
+  //#region: computed
+
   get computeURL() {
     if (this.to) {
       return null;
@@ -146,6 +154,9 @@ export default class UriLink extends Vue {
     }
   }
 
+  //#endregion
+  //#region: EventHandlers
+
   copyURI(address) {
     copy(address);
     this.$opensilex.showSuccessToast(
@@ -159,9 +170,19 @@ export default class UriLink extends Vue {
     this.$store.commit("storeCandidatePage", this.$router);
   }
 
-  storeReturnPage() {
+  handleUriLinkClicked(){
+    this.storeReturnPage();
+    this.$emit('linkClicked');
+  }
+
+  //#endregion
+  //#region: private functions
+
+  private storeReturnPage() {
     this.$store.commit("validateCandidatePage", this.$router);
   }
+  //#endregion
+
 }
 </script>
 

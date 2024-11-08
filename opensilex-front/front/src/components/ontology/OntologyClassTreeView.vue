@@ -40,6 +40,7 @@ import {OntologyService, ResourceTreeDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
 import {VueJsOntologyExtensionService} from "../../lib";
+import {Route} from "vue-router";
 
 @Component
 export default class OntologyClassTreeView extends Vue {
@@ -48,6 +49,7 @@ export default class OntologyClassTreeView extends Vue {
     $store: Store<any>;
     ontologyService: OntologyService;
     vueJsOntologyService: VueJsOntologyExtensionService;
+    $route: Route;
 
     get user() {
         return this.$store.state.user;
@@ -67,6 +69,10 @@ export default class OntologyClassTreeView extends Vue {
     created() {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
         this.vueJsOntologyService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+        let preselected = this.$route.query.selected;
+        if(typeof preselected === "string"){
+          this.displayClassDetail(preselected);
+        }
         this.onRootClassChange();
     }
 
@@ -135,6 +141,8 @@ export default class OntologyClassTreeView extends Vue {
             .getRDFTypeProperties(uri, this.rdfType)
             .then(http => {
                 this.selected = http.response.result;
+                //This updates or adds a url parameter, permitting refresh and navigation to specific elements
+                this.$opensilex.updateURLParameter("selected", this.selected.uri);
                 this.$emit("selectionChange", this.selected);
             }).catch(this.$opensilex.errorHandler);
     }

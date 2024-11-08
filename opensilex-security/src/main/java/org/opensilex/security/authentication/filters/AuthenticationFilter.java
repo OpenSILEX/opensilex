@@ -6,7 +6,6 @@
 //******************************************************************************n the template in the editor.
 package org.opensilex.security.authentication.filters;
 
-import net.logstash.logback.argument.StructuredArguments;
 import org.opensilex.security.authentication.AuthenticationService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
+import static org.opensilex.utils.LogFilter.LOG_TYPE_KEY;
 
 /**
  * <pre>
@@ -95,12 +94,16 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
     private static final String REQUEST_ID = "request-id";
     private static final String USER_ID = "user-id";
 
-    private static final String INCOMING_REQUEST_URI = "http_request_uri";
-    private static final String INCOMING_REQUEST_METHOD = "http_request_method";
-    private static final String INCOMING_REQUEST_HEADER = "http_request_header";
-    private static final String INCOMING_REQUEST_BODY = "http_request_body";
+    private static final String HTTP_REQUEST_URI = "http_request_uri";
+    private static final String HTTP_SERVICE_PATH = "http_request_path";
+    private static final String HTTP_REQUEST_METHOD = "http_request_method";
+    private static final String HTTP_REQUEST_HEADER = "http_request_header";
+    private static final String HTTP_REQUEST_BODY = "http_request_body";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
+    public static final String HTTP_REQUEST_LOG_TYPE = "http_request";
+    public static final String HTTP_REQUEST_HEADERS_TYPE = "http_headers";
+    public static final String HTTP_REQUEST_BODY_TYPE = "http_body";
 
     @Context
     protected HttpServletRequest httpRequest;
@@ -118,115 +121,136 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
     OpenSilex opensilex;
 
     private String defaultClientId() {
-        return "Direct:" + httpRequest.getRemoteAddr();
+        return httpRequest.getRemoteAddr();
     }
-    
-    @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
 
-        String clientId = java.util.Optional.ofNullable(httpRequest.getHeader("X-Forwarded-For"))
-                .orElse(defaultClientId());
+    private void logRequest(ContainerRequestContext requestContext){
 
         // MDC (attributes propagated to each log write inside the current thread)
-        MDC.put(CLIENT_ID, clientId);
-        MDC.put(REQUEST_ID, UUID.randomUUID().toString());
-        MDC.put(HOST_NAME, httpRequest.getServerName());
+        String clientId = java.util.Optional.ofNullable(httpRequest.getHeader("X-Forwarded-For"))
+                .orElse(defaultClientId());
+        String requestUri = requestContext.getUriInfo().getRequestUri().toString();
 
-        // request attributes
-        LOGGER.debug("Incoming request",
-                kv(INCOMING_REQUEST_URI, requestContext.getUriInfo().getRequestUri()),
-                kv(INCOMING_REQUEST_METHOD, requestContext.getMethod())
+        MDC.put(REQUEST_ID, UUID.randomUUID().toString());
+        MDC.put(CLIENT_ID, clientId);
+        MDC.put(HOST_NAME, httpRequest.getServerName());
+        MDC.put(HTTP_SERVICE_PATH, requestContext.getUriInfo().getPath());
+        MDC.put(HTTP_REQUEST_URI, requestUri);
+
+        // Log request properties as key/value
+        // No duplicate log of request headers/metadata
+        LOGGER.info("http request {} {}",
+                kv(HTTP_REQUEST_URI, requestUri),
+                kv(HTTP_REQUEST_METHOD, requestContext.getMethod()),
+                kv(LOG_TYPE_KEY, HTTP_REQUEST_LOG_TYPE)
         );
 
-        final AtomicBoolean isJSON = new AtomicBoolean(false);
-        requestContext.getHeaders().forEach((header, value) -> {
-            if (value.size() == 1) {
-                if (header.equalsIgnoreCase("content-type") && value.get(0).equals(MediaType.APPLICATION_JSON)) {
-                    isJSON.set(true);
-                }
-            }
-        });
-        LOGGER.debug("Incoming request header", kv(INCOMING_REQUEST_HEADER, requestContext.getHeaders()));
+        // No more log entry to write, just end
+        if (! LOGGER.isDebugEnabled()) {
+          return;
+        }
 
+        // debug HTTP header
+        LOGGER.debug("http request headers",
+                kv(LOG_TYPE_KEY, HTTP_REQUEST_HEADERS_TYPE),
+                kv(HTTP_REQUEST_HEADER, requestContext.getHeaders()));
 
-        // request body
+        // debug HTTP body
+        boolean isJson = requestContext.getHeaders().entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().equalsIgnoreCase("content-type"))
+                .filter(entry -> entry.getValue() != null && entry.getValue().size() == 1)
+                .anyMatch(entry ->  MediaType.APPLICATION_JSON.equals(entry.getValue().get(0)));
+
+        if(! isJson){
+            return;
+        }
+
+        // read body from request stream
+        // since the stream is consumed, the entity stream must be reset by reading body content
         try {
-            if (isJSON.get()) {
+            String body = IOUtils.toString(requestContext.getEntityStream(), StandardCharsets.UTF_8);
+            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
 
-                // #TODO : Avoid read + JSON parsing + rewrite of JSON  body ? only used for logging
-                String body = IOUtils.toString(requestContext.getEntityStream(), StandardCharsets.UTF_8);
-                ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
-                LOGGER.debug("Incoming request JSON body", kv(INCOMING_REQUEST_BODY, json));
-                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
-            }
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
+            LOGGER.debug("http request JSON body",
+                    kv(LOG_TYPE_KEY, HTTP_REQUEST_BODY_TYPE),
+                    kv(HTTP_REQUEST_BODY, json)
+            );
+
+            requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException ex) {
             throw new IllegalArgumentException("Error JSON: " + ex.getMessage());
         }
+    }
 
+    private AccountModel checkAccountSecurity(ContainerRequestContext context){
 
-        // get user header token
-        String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);
-
+        // Check if API is secured : Get method ApiProtected annotation
         boolean isSecuredAPI = false;
         Method apiMethod = resourceInfo.getResourceMethod();
-
         if (apiMethod != null) {
-            // Get method ApiProtected annotation
-            ApiProtected securityAnnotation = apiMethod.getAnnotation(ApiProtected.class);
-
-            isSecuredAPI = (securityAnnotation != null);
+            isSecuredAPI = apiMethod.getAnnotation(ApiProtected.class) != null;
         }
 
-        // Ignore user definition if no token
-        AccountModel user;
-        if (tokenValue != null) {
+        // Get user header token
+        String tokenValue = context.getHeaderString(ApiProtected.HEADER_NAME);
+        AccountModel user = getAndValidateAccount(tokenValue, isSecuredAPI);
 
-            try {
-                // Decode token
-                String token = tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, "");
-                URI userURI = authentication.decodeTokenUserURI(token);
+        // Define user to be accessed through SecurityContext
+        SecurityContext originalContext = context.getSecurityContext();
+        SecurityContext newContext = new SecurityContextProxy(originalContext, user);
+        context.setSecurityContext(newContext);
+        MDC.put(USER_ID, user.getEmail().toString());
 
-                // Get corresponding user
-                if (authentication.hasUserURI(userURI)) {
-                    user = authentication.getUserByUri(userURI);
-                } else {
-                    throw new ForbiddenException("User not found with URI: " + userURI);
-                }
+        return user;
+    }
 
-            } catch (JWTVerificationException | URISyntaxException ex) {
-                LOGGER.debug("Error while decoding and verifying token: {}", ex.getMessage());
-                if (isSecuredAPI) {
-                    throw new UnauthorizedException();
-                } else {
-                    user = AccountModel.getAnonymous();
-                }
-            } catch (ForbiddenException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new UnexpectedErrorException(ex);
-            }
-        } else {
-            user = AccountModel.getAnonymous();
-        }
+    @Override
+    public void filter(ContainerRequestContext context) throws IOException {
 
+        logRequest(context);
+        AccountModel user = checkAccountSecurity(context);
+
+        // Lang/local handling
         List<Locale> locales = headers.getAcceptableLanguages();
-
-        Locale locale = null;
-        for (Locale l : locales) {
-            locale = l;
-            break;
-        }
-
+        Locale locale = locales.isEmpty() ? null : locales.get(0);
         if (locale != null && !locale.toString().equals("*")) {
             user.setLocale(locale);
         }
+    }
 
-        // Define user to be accessed through SecurityContext
-        SecurityContext originalContext = requestContext.getSecurityContext();
-        SecurityContext newContext = new SecurityContextProxy(originalContext, user);
-        requestContext.setSecurityContext(newContext);
-        MDC.put(USER_ID, user.getEmail().toString());
+    private AccountModel getAndValidateAccount(String tokenValue, boolean isSecuredAPI) {AccountModel.getAnonymous();
+
+        if( tokenValue == null){
+            return AccountModel.getAnonymous();
+        }
+
+        // Decode token
+        // Ignore user definition if no token
+        try {
+            String token = tokenValue.replace(ApiProtected.TOKEN_PARAMETER_PREFIX, "");
+            URI userURI = authentication.decodeTokenUserURI(token);
+
+            // Get corresponding user
+            if (authentication.hasUserURI(userURI)) {
+                return authentication.getUserByUri(userURI);
+            } else {
+                throw new ForbiddenException("User not found with URI: " + userURI);
+            }
+
+        } catch (JWTVerificationException | URISyntaxException ex) {
+            LOGGER.debug("Error while decoding and verifying token: {}", ex.getMessage());
+            if (isSecuredAPI) {
+                throw new UnauthorizedException();
+            } else {
+                return AccountModel.getAnonymous();
+            }
+        } catch (ForbiddenException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new UnexpectedErrorException(ex);
+        }
     }
 
     @Override

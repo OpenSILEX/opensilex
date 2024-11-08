@@ -22,8 +22,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.Path;
-import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
@@ -55,6 +53,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
+import org.opensilex.sparql.service.log.SparqlLogger;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.*;
@@ -72,13 +71,13 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import static org.opensilex.log.LogFilter.*;
+import static org.opensilex.sparql.service.log.SparqlLogger.*;
 
 /**
  * Implementation of SPARQLService
@@ -92,15 +91,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
+    private final SparqlLogger sparqlLogger;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
         this.connection = config.connection();
+        this.sparqlLogger = new SparqlLogger(LOGGER, null);
     }
 
     public SPARQLService(SPARQLConnection connection) {
         super(null);
         this.connection = connection;
+        this.sparqlLogger = new SparqlLogger(LOGGER, null);
     }
 
 
@@ -179,21 +181,24 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     @Override
-    public boolean executeAskQuery(AskBuilder ask) throws SPARQLException {
-        addPrefixes(ask);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL ASK\n" + ask.buildString());
-        }
-        return connection.executeAskQuery(ask);
+    public boolean executeAskQuery(AskBuilder query) throws SPARQLException {
+        addPrefixes(query);
+
+        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY, SPARQL_QUERY, query.buildString());
+        boolean result = connection.executeAskQuery(query);
+        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY);
+        return result;
     }
 
     @Override
-    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLException {
-        addPrefixes(describe);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL DESCRIBE\n" + describe.buildString());
-        }
-        return connection.executeDescribeQuery(describe);
+    public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder query) throws SPARQLException {
+        addPrefixes(query);
+
+        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY, SPARQL_QUERY, query.buildString());
+        var results = connection.executeDescribeQuery(query);
+        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY);
+
+        return results;
     }
 
     public List<SPARQLStatement> describe(Node graph, URI uri) throws SPARQLException {
@@ -209,44 +214,49 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException {
-        LOGGER.debug("SPARQL GET GRAPH STATEMENTS FOR: " + graph);
         return connection.getGraphStatement(graph);
     }
 
     @Override
-    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException {
-        addPrefixes(construct);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL CONSTRUCT\n" + construct.buildString());
-        }
-        return connection.executeConstructQuery(construct);
+    public List<SPARQLStatement> executeConstructQuery(ConstructBuilder query) throws SPARQLException {
+        addPrefixes(query);
+
+        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY, SPARQL_QUERY, query.buildString());
+        var results = connection.executeConstructQuery(query);
+        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY);
+
+        return results;
     }
 
     @Override
-    public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
-        addPrefixes(select);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
-        }
-        return connection.executeSelectQuery(select, resultHandler);
+    public List<SPARQLResult> executeSelectQuery(SelectBuilder query, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
+        addPrefixes(query);
+
+        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, query.buildString());
+        var results = connection.executeSelectQuery(query, resultHandler);
+        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+
+        return results;
     }
 
     @Override
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
         addPrefixes(select);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
-        }
-        return connection.executeSelectQueryAsStream(select);
+
+        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, select.buildString());
+        var results = connection.executeSelectQueryAsStream(select);
+        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+
+        return results;
     }
 
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
-        }
+
+        Instant start = sparqlLogger.logOperationStart(UPDATE_MANY, SPARQL_QUERY, update.buildRequest().toString());
         connection.executeUpdateQuery(update);
+        sparqlLogger.logOperationOk(UPDATE_MANY, start);
     }
 
     @Override
@@ -257,10 +267,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
-        }
-        connection.executeDeleteQuery(delete);
+
+        Instant start = sparqlLogger.logOperationStart(DELETE_MANY, SPARQL_QUERY, delete.buildRequest().toString());
+        connection.executeUpdateQuery(delete);
+        sparqlLogger.logOperationOk(DELETE_MANY, start);
     }
 
     private int transactionLevel = 0;
@@ -273,7 +283,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            LOGGER.debug("SPARQL TRANSACTION START");
+            sparqlLogger.logOperationStart(TRANSACTION);
             connection.startTransaction();
         }
         transactionLevel++;
@@ -283,8 +293,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
-            LOGGER.debug("SPARQL TRANSACTION COMMIT");
             connection.commitTransaction();
+            sparqlLogger.logOperationOk(TRANSACTION);
         }
     }
 
@@ -292,7 +302,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
             if(ex != null){
-                LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+                sparqlLogger.logOperationError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, ex.getMessage());
             }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
@@ -305,13 +315,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void clearGraph(URI graph) throws SPARQLException {
-        LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
+        Instant start = sparqlLogger.logOperationStart(SPARQL_CLEAR_GRAPH_QUERY, SPARQL_GRAPH, graph);
         connection.clearGraph(graph);
+        sparqlLogger.logOperationOk(SPARQL_CLEAR_GRAPH_QUERY, start);
     }
 
-    public void clearGraph(String graph) throws SPARQLException, URISyntaxException {
-        LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
-        connection.clearGraph(new URI(graph));
+    public void clearGraph(String graph) throws SPARQLException {
+        clearGraph(URI.create(graph));
     }
 
     @Override
@@ -334,26 +344,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (isShaclEnabled) {
             disableSHACL();
         }
-        LOGGER.debug("MOVE GRAPH " + fullOldURI + " TO " + fullNewURI);
+        Instant instant = sparqlLogger.logOperationStart(SPARQL_MOVE_QUERY, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
         connection.renameGraph(fullOldURI, fullNewURI);
         if (isShaclEnabled) {
             enableSHACL();
         }
+        sparqlLogger.logOperationOk(SPARQL_MOVE_QUERY, instant, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
     }
 
     @Override
     public void clear() throws SPARQLException {
-        LOGGER.debug("SPARQL CLEAR REPOSITORY");
+        Instant start = sparqlLogger.logOperationStart(SPARQL_CLEAR_QUERY);
         connection.clear();
+        sparqlLogger.logOperationOk(SPARQL_CLEAR_QUERY, start);
     }
 
     public void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        if (graph != null) {
-            LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graph);
-        } else {
-            LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO DEFAULT GRAPH");
-        }
+        Instant start = sparqlLogger.logOperationStart(SPARQL_LOAD_ONTOLOGY, SPARQL_GRAPH, graph);
         connection.loadOntology(graph, ontology, format);
+        sparqlLogger.logOperationOk(SPARQL_LOAD_ONTOLOGY, start, SPARQL_GRAPH, graph);
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
@@ -370,8 +379,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             lang = getDefaultLang();
         }
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        T instance = mapper.createInstance(graph, uri, lang, useDefaultGraph, this);
-        return instance;
+        return mapper.createInstance(graph, uri, lang, useDefaultGraph, this);
     }
 
 
@@ -646,120 +654,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         List<T> list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, null, null, null, null);
 
-        SPARQLTreeListModel<T> tree = new SPARQLTreeListModel<T>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
+        SPARQLTreeListModel<T> tree = new SPARQLTreeListModel<>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
 
         for (T item : list) {
             tree.addTree(item);
-        }
-
-        return tree;
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLPartialTreeListModel<T> searchPartialResourceTree(Node graph, Class<T> objectClass, String lang, String parentField, Property parentProperty, URI parentURI, int maxChild, int maxDepth, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        if (maxDepth < 0) {
-            return null;
-        }
-
-        final String language;
-        if (lang == null) {
-            language = getDefaultLang();
-        } else {
-            language = lang;
-        }
-
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        Var uriVar = makeVar("uri");
-
-        List<T> rootList = search(graph, objectClass, language, (select) -> {
-            if (parentURI == null) {
-                Triple noParentTriple = new Triple(uriVar, parentProperty.asNode(), makeVar(parentField));
-                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(noParentTriple)));
-            } else {
-                select.addWhere(uriVar, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
-            }
-            if (filterHandler != null) {
-                filterHandler.accept(select);
-            }
-        });
-
-        List<URI> rootURIs = new ArrayList<>(rootList.size());
-        for (T i : rootList) {
-            rootURIs.add(i.getUri());
-        }
-
-        Map<String, List<T>> objectMapByParent = new HashMap<>();
-        SelectBuilder objectListQuery = mapper.getSelectBuilder(graph, language, filterHandler, null);
-
-        if (maxDepth == 2 && parentURI == null) {
-            objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter(parentField, rootURIs));
-        } else {
-            Path propertyPath = PathFactory.pathOneOrMore1(
-                    PathFactory.pathLink(parentProperty.asNode())
-            );
-            if (parentURI == null) {
-                Var rootParentVar = makeVar("__rootParent");
-                objectListQuery.addWhere(uriVar, propertyPath, rootParentVar);
-                objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter("__rootParent", rootURIs));
-            } else {
-                objectListQuery.addWhere(uriVar,
-                        propertyPath,
-                        SPARQLDeserializers.nodeURI(parentURI)
-                );
-            }
-        }
-
-        executeSelectQuery(objectListQuery, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            T instance = mapper.createInstance(graph, result, language, this);
-            String instanceParentURI = SPARQLDeserializers.getExpandedURI(instance.getParent().getUri().toString());
-            if (!objectMapByParent.containsKey(instanceParentURI)) {
-                objectMapByParent.put(instanceParentURI, new ArrayList<>());
-            }
-            objectMapByParent.get(instanceParentURI).add(instance);
-        }, Exception.class));
-
-        Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
-            String expandURI = SPARQLDeserializers.getExpandedURI(parentSearchURI);
-            if (objectMapByParent.containsKey(expandURI)) {
-                return objectMapByParent.get(expandURI);
-            } else {
-                return new ArrayList<>();
-            }
-        };
-
-        SelectBuilder objectCountQuery = mapper.getSelectBuilder(graph, language);
-        Var objectCountUriVar = mapper.getURIFieldVar();
-        objectCountQuery.getVars().clear();
-        objectCountQuery.addVar(objectCountUriVar);
-        Var childVar = makeVar("__child");
-        objectCountQuery.addVar("COUNT(?__child)", "?__childCount");
-        objectCountQuery.addWhere(childVar, parentProperty.asNode(), objectCountUriVar);
-        if (filterHandler != null) {
-            filterHandler.accept(objectCountQuery);
-        }
-        objectCountQuery.addGroupBy(objectCountUriVar);
-
-        Map<String, Integer> countMap = new HashMap<>();
-        executeSelectQuery(objectCountQuery, (result) -> {
-            countMap.put(
-                    result.getStringValue(mapper.getURIFieldName()),
-                    Integer.valueOf(result.getStringValue("__childCount"))
-            );
-        });
-
-        Function<URI, Integer> countHandler = (parentCountURI) -> {
-            String expandURI = SPARQLDeserializers.getExpandedURI(parentCountURI);
-            if (countMap.containsKey(expandURI)) {
-                return countMap.get(expandURI);
-            } else {
-                return 0;
-            }
-        };
-
-        SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
-
-        for (T item : rootList) {
-            tree.loadChildren(item, null, maxDepth);
         }
 
         return tree;
@@ -1384,37 +1282,30 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, List<T> instances) throws Exception {
+
+        if(instances.isEmpty()){
+            return;
+        }
         try {
             // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
             startTransaction();
 
-            if (instances.size() > 0) {
-
-                validate(instances, null);
-
-                for (T instance : instances) {
-                    Node instanceGraph = graph;
-                    if (graph == null) {
-                        instanceGraph = getDefaultGraph(instance.getClass());
-                    }
-
-                    update(instanceGraph, instance);
+            validate(instances, null);
+            for (T instance : instances) {
+                Node instanceGraph = graph;
+                if (graph == null) {
+                    instanceGraph = getDefaultGraph(instance.getClass());
                 }
+
+                update(instanceGraph, instance);
             }
-            commitTransaction();
+        commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
             throw ex;
         }
     }
 
-    public <T extends SPARQLResourceModel> void deleteIfExists(Class<T> objectClass, URI uri) throws Exception {
-        try {
-            delete(objectClass, uri);
-        } catch (Exception ex) {
-
-        }
-    }
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uri);
@@ -2489,8 +2380,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void renameTripleURI(URI oldUri, URI newUri, TupleSlot tupleSlot, boolean inNamedGraph) throws Exception {
         UpdateBuilder update = new UpdateBuilder();
 
-        Node oldUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(oldUri));
-        Node newUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(newUri));
         Var s = makeVar("s");
         Var p = makeVar("p");
         Var o = makeVar("o");

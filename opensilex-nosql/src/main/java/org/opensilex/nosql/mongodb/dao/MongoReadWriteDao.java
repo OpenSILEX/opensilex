@@ -235,7 +235,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     public InsertOneResult create(ClientSession session, @NotNull T instance) throws MongoException, MongoDbUniqueIndexConstraintViolation, URISyntaxException, NoSQLAlreadyExistingUriException {
         Objects.requireNonNull(instance);
 
-        Instant operationStart = mongoLogger.logOperationStart(INSERT_ONE);
+        Instant start = mongoLogger.logOperationStart(INSERT_ONE);
         generateUniqueUriIfNullOrValidateCurrent(instance);
 
         try {
@@ -243,7 +243,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                     collection.insertOne(session, instance) :
                     collection.insertOne(instance);
 
-            mongoLogger.logOperationOk(INSERT_ONE, operationStart, URI_KEY, instance.getUri());
+            mongoLogger.logOperationOk(INSERT_ONE, start, URI_KEY, instance.getUri());
             return result;
 
         } catch (MongoWriteException e) {
@@ -355,9 +355,11 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         );
 
         Instant operationStart = mongoLogger.logOperationStart(UPSERT_ONE, URI_KEY, model.getUri());
-        T updatedModel = session == null ?
-                collection.findOneAndReplace(filter, model, options) :
-                collection.findOneAndReplace(session, filter, model, options);
+        if (session == null) {
+            collection.findOneAndReplace(filter, model, options);
+        } else {
+            collection.findOneAndReplace(session, filter, model, options);
+        }
 
         mongoLogger.logOperationOk(UPSERT_ONE, operationStart, URI_KEY, model.getUri());
     }

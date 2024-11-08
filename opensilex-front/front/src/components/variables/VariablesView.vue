@@ -458,14 +458,13 @@ export default class VariablesView extends Vue {
 
     showEditForm(dto : any){
         if (this.elementType == VariablesView.GROUP_VARIABLE_TYPE) {
-
             // ensure that the group form component is loaded
             this.loadGroupForm = true;
             this.$nextTick(() => {
 
               let updateDtoAndExtractedVariables = this.formatVariablesGroup(dto);
-              this.getForm().setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedVariables.variableModels);
-              this.getForm().showEditForm(updateDtoAndExtractedVariables.updateDto);
+              this.groupVariablesForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedVariables.variableModels);
+              this.groupVariablesForm.showEditForm(updateDtoAndExtractedVariables.updateDto);
             });
         }
         else{

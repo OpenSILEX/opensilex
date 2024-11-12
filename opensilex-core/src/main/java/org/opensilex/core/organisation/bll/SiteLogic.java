@@ -260,12 +260,13 @@ public class SiteLogic {
      * @return The location observation model
      */
     public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
-        if(siteModel.getLocationObservationCollection() != null) {
+        if (siteModel.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
             try {
-            return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
+                return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
             } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown data URI ", siteModel.getLocationObservationCollection().getUri());
+                //Even if the location is not found, it must not block the request
+                return new LocationObservationModel();
             }
         } else {
             return new LocationObservationModel();
@@ -302,20 +303,14 @@ public class SiteLogic {
             //the 'hasGeometry' parameter must be set to 'true' because this is the only type of location stored in mongo that is allowed for the site
             List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(sitesWithLocationMap.values()), true, null, null);
 
-            if (locationObservationModels.isEmpty()) {
-                throw new NotFoundException("No location found");
-            } else if (locationObservationModels.size() < sitesWithLocationMap.size()) {
-                throw new NegativeArraySizeException("Missing location(s)");
-            } else if (locationObservationModels.size() > sitesWithLocationMap.size()) {
-                throw new SizeLimitExceededException("authorized location number for site is exceed");
-            }
-
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
             sitesWithLocationMap.forEach((site, collection) -> {
                 var observation = locationObservationMap.get(collection.getUri());
-                sitesAndLocationsMap.put(site, observation);
+                if (Objects.nonNull(observation)) {
+                    sitesAndLocationsMap.put(site, observation);
+                }
             });
         }
         return sitesAndLocationsMap;
@@ -420,10 +415,11 @@ public class SiteLogic {
     private void createSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
         Geometry geom = convertAddressToGeometry(siteModel);
 
+        //Create the LocationObservationCollection
+        LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(siteModel.getUri());
+
         if (geom != null) {
-            //Create the LocationObservationCollection
-            LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-            URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(siteModel.getUri());
             //Create the LocationObservation
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
 
@@ -434,14 +430,38 @@ public class SiteLogic {
         }
     }
 
-    private void updateSiteLocation(ClientSession session, SiteModel siteModel) {
+    /**
+     * If the existing and the new site have addresses, update the site location.
+     * Different cases are handled to avoid to block the request if the location is not found in Mongo:
+     *  - If the conversion of the new address to geometry works but the old isn't found : create the location
+     *  - If the conversion of the address to geometry doesn't work (address not found) but the old is found : delete the old location
+     *  - If the conversion of the address to geometry doesn't work (address not found) and the old isn't found : exception ignored
+     *
+     * @param siteModel The new site
+     * @param session session Mongo
+     * @throws Exception If the location is not found, or if any other problem occurs
+     */
+    private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
         Geometry geom = convertAddressToGeometry(siteModel);
+
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
+
+            try {
+                locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
+            } catch (Exception e) {
+                //Even if the location is not found, it must not block the request
+                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, locationModel);
+            }
+        } else {
+            try {
+                locationObservationLogic.delete(session, siteModel.getLocationObservationCollection().getUri());
+            } catch (Exception ignore) {
+                //Even if the location is not found, it must not block the request
+            }
         }
     }
 
@@ -452,6 +472,14 @@ public class SiteLogic {
         return geocodingService.getPointFromAddress(addressDto.toReadableAddress());
     }
 
+    /**
+     * When the site or its address is deleted, the location observation is deleted (Mongo) and the location collection is also deleted (sparql).
+     * If the location is not found in Mongo, the location collection is still deleted to avoid to block the request.
+     *
+     * @param siteModel The site
+     * @param session session Mongo
+     * @throws Exception If the location is not found, or if any other problem occurs
+     */
     private void deleteSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
         if (siteModel.getAddress() == null && siteModel.getLocationObservationCollection() == null) {
             return;
@@ -460,17 +488,18 @@ public class SiteLogic {
         if (siteModel.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
+            URI locationObservationCollectionUri = siteModel.getLocationObservationCollection().getUri();
 
             try {
-                LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
+                LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(locationObservationCollectionUri);
                 if (locationObservationModel != null) {
-                    locationObservationLogic.delete(session, siteModel.getLocationObservationCollection().getUri());
-                    locationObservationCollectionLogic.deleteLocationObservationCollection(siteModel.getLocationObservationCollection().getUri());
+                    locationObservationLogic.delete(session, locationObservationCollectionUri);
+                    locationObservationCollectionLogic.deleteLocationObservationCollection(locationObservationCollectionUri);
                 }
             } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown data URI ", siteModel.getLocationObservationCollection().getUri());
+                //Even if the location is not found, it must not block the request
+                locationObservationCollectionLogic.deleteLocationObservationCollection(locationObservationCollectionUri);
             }
-
         }
     }
 

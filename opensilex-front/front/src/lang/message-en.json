@@ -69,6 +69,7 @@
             "year":"Year",
             "geometry": "Geospatial coordinates",
             "geometry-help": "Geospatial coordinates in WKT format",
+            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",

@@ -22,7 +22,6 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.server.exceptions.NotFoundURIException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -83,17 +82,13 @@ public class LocationObservationLogic {
         return resultSearch;
     }
 
-    public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry,LocationModel locationModel) {
-        try {
-            LocationObservationModel locationObservationModel = locationObservationDAO.get(locationObservationCollectionURI);
+    public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry,LocationModel locationModel) throws NoSQLInvalidURIException {
+        LocationObservationModel locationObservationModel = locationObservationDAO.get(locationObservationCollectionURI);
 
-            locationObservationModel.setLocation(locationModel);
-            locationObservationModel.setHasGeometry(hasGeometry);
+        locationObservationModel.setLocation(locationModel);
+        locationObservationModel.setHasGeometry(hasGeometry);
 
-            locationObservationDAO.upsert(session, locationObservationModel);
-        } catch (NoSQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown data URI ", locationObservationCollectionURI);
-        }
+        locationObservationDAO.upsert(session, locationObservationModel);
     }
 
     public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {

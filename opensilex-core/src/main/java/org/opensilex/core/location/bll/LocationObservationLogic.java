@@ -144,7 +144,7 @@ public class LocationObservationLogic {
 
             locationObservationDAO.upsert(session, locationObservationModel);
         } catch (NoSQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown data URI ", locationObservationCollectionURI);
+            throw new NotFoundURIException("Invalid or unknown URI ", locationObservationCollectionURI);
         }
     }
 

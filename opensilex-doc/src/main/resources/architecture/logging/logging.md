@@ -133,7 +133,7 @@ This section describe log entries which can be produced by operations related to
 | `insert_one`    | Insert one element                                 |                                    | `duration_ms`, `uri`                    | `INFO`    |
 | `insert_many`   | Insert multiple element                            | `insert_many_count`                | `duration_ms`, `insert_many_count`      | `INFO`    |
 | `update_one`    | Update one element                                 | `uri`                              | `duration_ms`, `uri`                    | `INFO`    |
-| `delete_one`    | Delete one element                                 | `uri`                              | `duration_ms`, uri`                     | `INFO`    |
+| `delete_one`    | Delete one element                                 | `uri`                              | `duration_ms`, `uri`                    | `INFO`    |
 | `delete_many`   | Delete multiple elements                           | `filter`, `delete_many_count`      | `duration_ms`, `delete_many_count`      | `INFO`    |
 | `count`         | Count elements                                     | `filter`                           | `duration_ms`, `filter`, `count_result` | `INFO`    |
 | `search`        | Count, evaluation and fetching                     | `filter`                           | `duration_ms`, `filter`, `result_count` | `INFO`    |

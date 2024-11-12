@@ -100,10 +100,10 @@ public class MongoDBServiceV2 extends BaseService {
 
         // check that network connection is OK by running ping command, throw MongoTimeoutException else
         final Bson pingCommand = new BsonDocument("ping", new BsonInt32(1));
-        Instant operationStart = mongoLogger.logOperationStart(CHECK_MONGO_SERVER_CONNECTION, TIMEOUT_MS, config.connectTimeoutMs());
+        Instant operationStart = mongoLogger.logInfoStart(CHECK_MONGO_SERVER_CONNECTION, TIMEOUT_MS, config.connectTimeoutMs());
 
         db.runCommand(pingCommand);
-        mongoLogger.logOperationOk(CHECK_MONGO_SERVER_CONNECTION, operationStart);
+        mongoLogger.logInfoOk(CHECK_MONGO_SERVER_CONNECTION, operationStart);
     }
 
     @Override
@@ -181,11 +181,11 @@ public class MongoDBServiceV2 extends BaseService {
     public <R> R computeTransaction(Function<ClientSession, R> operationInTrx){
 
         try (ClientSession session = mongoClient.startSession()) {
-            Instant operationStart = mongoLogger.logOperationStart(TRANSACTION);
+            Instant operationStart = mongoLogger.logInfoStart(TRANSACTION);
 
             // Run operation within transaction handling
             R result = session.withTransaction(() -> operationInTrx.apply(session));
-            mongoLogger.logOperationOk(TRANSACTION, operationStart);
+            mongoLogger.logInfoOk(TRANSACTION, operationStart);
             return result;
         }
     }
@@ -200,7 +200,7 @@ public class MongoDBServiceV2 extends BaseService {
     public <R> R computeThrowingTransaction(ThrowingFunction<ClientSession, R, Exception> operationInTrx) throws Exception {
 
         try (ClientSession session = mongoClient.startSession()) {
-            Instant operationStart = mongoLogger.logOperationStart(TRANSACTION);
+            Instant operationStart = mongoLogger.logInfoStart(TRANSACTION);
 
             // Run operation within transaction handling
             R result = session.withTransaction(() -> {
@@ -214,10 +214,10 @@ public class MongoDBServiceV2 extends BaseService {
                     throw new MongoDBTransactionException(e.getMessage(), e);
                 }
             });
-            mongoLogger.logOperationOk(TRANSACTION, operationStart);
+            mongoLogger.logInfoOk(TRANSACTION, operationStart);
             return result;
         }catch (MongoDBTransactionException e){
-            mongoLogger.logOperationError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, e.getMessage());
+            mongoLogger.logError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, e.getMessage());
             throw e.getInnerException();
         }
     }
@@ -308,18 +308,18 @@ public class MongoDBServiceV2 extends BaseService {
         Objects.requireNonNull(collection);
         Objects.requireNonNull(indexKeys);
 
-        Instant operationStart = mongoLogger.logOperationStart(MONGO_CREATE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+        Instant operationStart = mongoLogger.logInfoStart(MONGO_CREATE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
         try {
             // Ensure index is build on background in order to preserve server availability
             indexOptions = Objects.requireNonNullElseGet(indexOptions, () -> new IndexOptions().background(true));
             collection.createIndex(indexKeys, indexOptions);
-            mongoLogger.logOperationOk(MONGO_CREATE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+            mongoLogger.logInfoOk(MONGO_CREATE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
 
         }catch (MongoCommandException e){
 
             // It's OK if index already exists -> https://www.mongodb.com/docs/manual/reference/error-codes/ : 86 IndexKeySpecsConflict
             if(e.getErrorCode() != 86){
-                mongoLogger.logOperationError(MONGO_CREATE_INDEX, COLLECTION, collection, INDEX, indexKeys);
+                mongoLogger.logError(MONGO_CREATE_INDEX, COLLECTION, collection, INDEX, indexKeys);
                 throw e;
             }
         }
@@ -330,9 +330,9 @@ public class MongoDBServiceV2 extends BaseService {
         Objects.requireNonNull(collection);
         Objects.requireNonNull(indexKeys);
 
-        Instant operationStart = mongoLogger.logOperationStart(MONGO_DELETE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+        Instant operationStart = mongoLogger.logInfoStart(MONGO_DELETE_INDEX, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
         collection.dropIndex(indexKeys);
-        mongoLogger.logOperationOk(MONGO_DELETE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
+        mongoLogger.logInfoOk(MONGO_DELETE_INDEX, operationStart, COLLECTION, collection.getNamespace().getCollectionName(), INDEX, indexKeys.toBsonDocument().toJson());
     }
 
     public Map<String, Map<Bson, IndexOptions>> getIndexRegister() {

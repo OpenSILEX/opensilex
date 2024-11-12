@@ -4,6 +4,10 @@ import net.logstash.logback.argument.StructuredArgument;
 import org.opensilex.log.OpenSilexStructuredLogger;
 import org.slf4j.Logger;
 
+/**
+ * Specialization of {@link OpenSilexStructuredLogger} for the structured logging of SPARQL bases operations
+ * @author rcolin
+ */
 public class SparqlLogger extends OpenSilexStructuredLogger {
 
     // region LOG TYPES

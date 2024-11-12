@@ -9,6 +9,7 @@ contact: Renaud COLIN, Arnaud CHARLEROY
 <!-- TOC -->
 * [Log entries scheme](#log-entries-scheme)
   * [Default log attributes](#default-log-attributes)
+  * [Use cases](#use-cases)
 * [Log types](#log-types)
   * [Common properties](#common-properties)
   * [HTTP request](#http-request)
@@ -30,11 +31,16 @@ contact: Renaud COLIN, Arnaud CHARLEROY
 * [Example](#example-)
   * [Search logging](#search-logging)
 * [Documentation](#documentation)
+  * [structured-logging](#structured-logging)
+  * [structured-logging-benefits](#structured-logging-benefits)
+* [TODO](#todo)
 <!-- TOC -->
 
 # Log entries scheme
 
-This section describe which log attributes are written inside OpenSILEX application
+This section describe which log attributes are written inside OpenSILEX application.
+OpenSILEX uses logging and especially rely on [structured-logging](#structured-logging) and JSON encoding of application logs.
+This document describes which information are logged, what is the corresponding data-scheme and what are the uses cases.
 
 ## Default log attributes
 
@@ -53,6 +59,13 @@ This section describe which log attributes are written inside OpenSILEX applicat
 | `http_request_uri`  | The full URI of the incoming HTTP request                        |                      |
 
 - See [Log types](#log-types) for the list of available operations type values associated with the `LOG_TYPE` key in Json log entry
+
+## Use cases
+
+To write of these attributes inside a log allow to answer to the following questions/uses cases :
+
+- 
+
 
 # Log types
 
@@ -293,12 +306,15 @@ The following subsections describes log entries and associated properties which 
   }
 ]
 ```
+
 # Documentation
 
-- https://www.innoq.com/en/blog/2019/05/structured-logging/
-- https://bearded-developer.com/posts/the-benefits-of-structured-logging/
+## [structured-logging](https://www.innoq.com/en/blog/2019/05/structured-logging/)
+
+## [structured-logging-benefits](https://bearded-developer.com/posts/the-benefits-of-structured-logging/)
 
 # TODO
 
 - Schema global JSON
 - logback.xml
+- Uses cases

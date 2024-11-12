@@ -184,9 +184,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public boolean executeAskQuery(AskBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY, SPARQL_QUERY, query.buildString());
         boolean result = connection.executeAskQuery(query);
-        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY);
+        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY);
         return result;
     }
 
@@ -194,9 +194,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeDescribeQuery(query);
-        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY);
+        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY);
 
         return results;
     }
@@ -221,9 +221,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLStatement> executeConstructQuery(ConstructBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeConstructQuery(query);
-        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY);
+        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY);
 
         return results;
     }
@@ -232,9 +232,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLResult> executeSelectQuery(SelectBuilder query, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeSelectQuery(query, resultHandler);
-        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
 
         return results;
     }
@@ -243,9 +243,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
         addPrefixes(select);
 
-        Instant start = sparqlLogger.logOperationStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, select.buildString());
+        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, select.buildString());
         var results = connection.executeSelectQueryAsStream(select);
-        sparqlLogger.logOperationOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
 
         return results;
     }
@@ -254,9 +254,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
 
-        Instant start = sparqlLogger.logOperationStart(UPDATE_MANY, SPARQL_QUERY, update.buildRequest().toString());
+        Instant start = sparqlLogger.logInfoStart(UPDATE_MANY, SPARQL_QUERY, update.buildRequest().toString());
         connection.executeUpdateQuery(update);
-        sparqlLogger.logOperationOk(UPDATE_MANY, start);
+        sparqlLogger.logInfoOk(UPDATE_MANY, start);
     }
 
     @Override
@@ -268,9 +268,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
 
-        Instant start = sparqlLogger.logOperationStart(DELETE_MANY, SPARQL_QUERY, delete.buildRequest().toString());
+        Instant start = sparqlLogger.logInfoStart(DELETE_MANY, SPARQL_QUERY, delete.buildRequest().toString());
         connection.executeUpdateQuery(delete);
-        sparqlLogger.logOperationOk(DELETE_MANY, start);
+        sparqlLogger.logInfoOk(DELETE_MANY, start);
     }
 
     private int transactionLevel = 0;
@@ -283,7 +283,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            sparqlLogger.logOperationStart(TRANSACTION);
+            sparqlLogger.logInfoStart(TRANSACTION);
             connection.startTransaction();
         }
         transactionLevel++;
@@ -294,7 +294,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         transactionLevel--;
         if (transactionLevel == 0) {
             connection.commitTransaction();
-            sparqlLogger.logOperationOk(TRANSACTION);
+            sparqlLogger.logInfoOk(TRANSACTION);
         }
     }
 
@@ -302,7 +302,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
             if(ex != null){
-                sparqlLogger.logOperationError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, ex.getMessage());
+                sparqlLogger.logError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, ex.getMessage());
             }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
@@ -315,9 +315,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void clearGraph(URI graph) throws SPARQLException {
-        Instant start = sparqlLogger.logOperationStart(SPARQL_CLEAR_GRAPH_QUERY, SPARQL_GRAPH, graph);
+        Instant start = sparqlLogger.logInfoStart(SPARQL_CLEAR_GRAPH_QUERY, SPARQL_GRAPH, graph);
         connection.clearGraph(graph);
-        sparqlLogger.logOperationOk(SPARQL_CLEAR_GRAPH_QUERY, start);
+        sparqlLogger.logInfoOk(SPARQL_CLEAR_GRAPH_QUERY, start);
     }
 
     public void clearGraph(String graph) throws SPARQLException {
@@ -344,25 +344,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (isShaclEnabled) {
             disableSHACL();
         }
-        Instant instant = sparqlLogger.logOperationStart(SPARQL_MOVE_QUERY, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
+        Instant instant = sparqlLogger.logInfoStart(SPARQL_MOVE_QUERY, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
         connection.renameGraph(fullOldURI, fullNewURI);
         if (isShaclEnabled) {
             enableSHACL();
         }
-        sparqlLogger.logOperationOk(SPARQL_MOVE_QUERY, instant, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
+        sparqlLogger.logInfoOk(SPARQL_MOVE_QUERY, instant, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
     }
 
     @Override
     public void clear() throws SPARQLException {
-        Instant start = sparqlLogger.logOperationStart(SPARQL_CLEAR_QUERY);
+        Instant start = sparqlLogger.logInfoStart(SPARQL_CLEAR_QUERY);
         connection.clear();
-        sparqlLogger.logOperationOk(SPARQL_CLEAR_QUERY, start);
+        sparqlLogger.logInfoOk(SPARQL_CLEAR_QUERY, start);
     }
 
     public void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        Instant start = sparqlLogger.logOperationStart(SPARQL_LOAD_ONTOLOGY, SPARQL_GRAPH, graph);
+        Instant start = sparqlLogger.logInfoStart(SPARQL_LOAD_ONTOLOGY, SPARQL_GRAPH, graph);
         connection.loadOntology(graph, ontology, format);
-        sparqlLogger.logOperationOk(SPARQL_LOAD_ONTOLOGY, start, SPARQL_GRAPH, graph);
+        sparqlLogger.logInfoOk(SPARQL_LOAD_ONTOLOGY, start, SPARQL_GRAPH, graph);
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
@@ -1987,6 +1987,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void disableSHACL() throws SPARQLException {
+        sparqlLogger.
         LOGGER.debug("DISABLE SHACL Validation");
         connection.disableSHACL();
     }

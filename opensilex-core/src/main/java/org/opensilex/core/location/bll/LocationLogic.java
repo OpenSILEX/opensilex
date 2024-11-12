@@ -16,6 +16,7 @@ import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
@@ -58,19 +59,19 @@ public class LocationLogic {
         LocationModel locationModel = new LocationModel();
 
         //build LocationModel
-        if (geometry != null) {
+        if (Objects.nonNull(geometry)) {
             locationModel.setGeometry(geometry);
         }
-        if (x != null) {
+        if (Objects.nonNull(x)) {
             locationModel.setX(x);
         }
-        if (y != null) {
+        if (Objects.nonNull(y)) {
             locationModel.setY(y);
         }
-        if (z != null) {
+        if (Objects.nonNull(z)) {
             locationModel.setZ(z);
         }
-        if (textualPosition != null) {
+        if (Objects.nonNull(textualPosition)) {
             locationModel.setTextualPosition(textualPosition);
         }
 

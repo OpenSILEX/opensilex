@@ -48,6 +48,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import javax.ws.rs.NotAllowedException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;

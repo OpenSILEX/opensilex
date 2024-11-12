@@ -29,6 +29,8 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
+import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -47,10 +49,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
@@ -122,8 +121,13 @@ public class FacilityAPI {
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Facility already exists", e.getMessage()).getResponse();
         } catch (NotAllowedException notAllowedException) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Error on dates", notAllowedException.getMessage())
-                    .getResponse();
+            return new DisplayableResponseException(
+                    "Error on dates: A facility can't be at 2 different locations in the same time",
+                    Response.Status.FORBIDDEN,
+                    "Error on dates",
+                    null,
+                    null
+            ).getResponse();
         }
     }
 
@@ -324,8 +328,13 @@ public class FacilityAPI {
             return new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
 
         } catch (NotAllowedException notAllowedException) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Error on dates", notAllowedException.getMessage())
-                    .getResponse();
+            return new DisplayableResponseException(
+                    "Error on dates: A facility can't be at 2 different locations in the same time",
+                    Response.Status.FORBIDDEN,
+                    "Error on dates",
+                    null,
+                    null
+            ).getResponse();
         }
     }
 

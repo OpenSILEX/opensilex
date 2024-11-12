@@ -444,18 +444,17 @@ public class SiteLogic {
     private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
         Geometry geom = convertAddressToGeometry(siteModel);
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
 
             try {
                 locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
             } catch (Exception e) {
                 //Even if the location is not found, it must not block the request
-                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, locationModel);
+                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel);
             }
         } else {
             try {

@@ -65,6 +65,14 @@
             label="component.header.user-guide"
           ></opensilex-HelpButton>
         </div>
+        <!--Uri global search-->
+        <opensilex-Button
+          @click="$emit('uriGlobalSearch')"
+          :label="$t('component.header.uriSearchHoverMessage')"
+          class="burgerMenu-searchIcon ik ik-search"
+          :class="{ 'selected-searchicon': searchBoxIsActive }"
+          icon="ik-search"
+        ></opensilex-Button>
         <div>
           <div>
             <b-dropdown
@@ -113,8 +121,18 @@
             label="component.header.user-guide"
           ></opensilex-HelpButton>
 
-          <span class="headerMenuIcons">
+          <div class="headerMenuIcons">
 
+            <!--Uri global search-->
+            <b-button
+              class="searchicon"
+              :class="{ 'selected-searchicon': searchBoxIsActive }"
+              :title="$t('component.header.uriSearchHoverMessage')"
+              @click="$emit('uriGlobalSearch')"
+            >
+              URI
+              <i class="icon ik ik-search"></i>
+            </b-button>
             <!--language button -->
             <b-dropdown
               class="langDropdown" 
@@ -156,11 +174,12 @@
                 {{ $t("component.header.account.logout") }}
               </b-dropdown-item>
             </b-dropdown>
-          </span>
+          </div>
         </div>
       </div>
     </div>
-  </div> 
+  </div>
+
 </div>
 </template>
 
@@ -182,6 +201,9 @@ export default class DefaultHeaderComponent extends Vue {
   icon: any;
   title: any;
   description: any;
+
+  @Prop()
+  searchBoxIsActive: boolean;
 
   /**
    * Return the current connected user
@@ -657,5 +679,32 @@ export default class DefaultHeaderComponent extends Vue {
   .headerMenuIcons, .topbarBtnHelp {
     display: none;
   }
+
 }
+
+.searchicon {
+  font-size: 1.3em;
+  color: #212121;
+  vertical-align: middle;
+  padding: 5px;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+}
+
+.burgerMenu-searchIcon{
+  color: #212121;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+}
+
+.searchicon:hover, burgerMenu-searchIcon:hover {
+  color: #007bff;
+  background-color: #F0F1F5;
+  border-color: #F0F1F5;
+}
+
+.selected-searchicon {
+  color: #007bff;
+}
+
 </style>

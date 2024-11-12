@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -42,12 +44,18 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
     private final SPARQLClassObjectMapperIndex mapperIndex;
     private final SPARQLClassAnalyzer classAnalyzer;
     private Map<String,ClassModel> classesCache;
+    private boolean usedFormattedUri;
 
     public SparqlNoProxyFetcher(Class<T> objectClass, SPARQLService sparql) throws Exception {
+        this(objectClass, sparql, false);
+    }
+
+    public SparqlNoProxyFetcher(Class<T> objectClass, SPARQLService sparql, boolean usedFormattedUri) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException, NoSuchMethodException {
         this.constructor = objectClass.getConstructor();
         this.mapperIndex = sparql.getMapperIndex();
         this.classAnalyzer = mapperIndex.getForClass(objectClass).getClassAnalyzer();
         classesCache = new PatriciaTrie<>();
+        this.usedFormattedUri = usedFormattedUri;
     }
 
     private ClassModel getClassModel(URI classURI) throws Exception {
@@ -162,5 +170,10 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
     @Override
     public Constructor<T> getConstructor() {
         return constructor;
+    }
+
+    @Override
+    public boolean useFormattedUri() {
+        return usedFormattedUri;
     }
 }

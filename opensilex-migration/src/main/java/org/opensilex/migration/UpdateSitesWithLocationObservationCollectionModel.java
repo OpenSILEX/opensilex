@@ -13,6 +13,8 @@ package org.opensilex.migration;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -25,6 +27,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.ORG;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.bson.conversions.Bson;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
@@ -47,11 +50,10 @@ import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.NotAllowedException;
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,7 +99,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
             mongodb.commitTransaction();
             logger.info("Migration successfully completed");
 
-        } catch (Exception e){
+        } catch (Exception e) {
             try {
                 sparql.rollbackTransaction();
                 mongodb.rollbackTransaction();
@@ -132,8 +134,8 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
      *       		  rdfs:label ?name .
      *       	FILTER NOT EXISTS {
      *          	GRAPH <http://opensilex.test/set/ObservationCollection>
-     *       		         {?s sosa:hasFeatureOfInterest ?site}
-     *     			}
+     *                     {?s sosa:hasFeatureOfInterest ?site}
+     *                }
      *   }
      *   BIND(REPLACE(?name, " ", "") AS ?nameFormated)
      *   BIND (URI(CONCAT("http://opensilex.test/id/ObservationCollection/site/",STR(?nameFormated))) AS ?newURI)
@@ -172,7 +174,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
                     .addWhere(siteVar, RDF.type.asNode(), ORG.Site)
                     .addWhere(siteVar, ORG.siteAddress, addressVar)
                     .addWhere(siteVar, RDF.type.asNode(), typeVar)
-                    .addWhere(siteVar, RDFS.label.asNode(),nameVar);
+                    .addWhere(siteVar, RDFS.label.asNode(), nameVar);
 
             //add not exists filter to avoid duplicates
             WhereBuilder whereObservationCollection = new WhereBuilder();
@@ -185,7 +187,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
             //Bind functions of the where clause
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
-            Expr exprNameFormated = exprFactory.replace(nameVar.asNode()," ","");
+            Expr exprNameFormated = exprFactory.replace(nameVar.asNode(), " ", "");
             where.addBind(exprNameFormated, nameFormatedVar);
             where.addBind(exprFactory.rand(), randomVar);
 
@@ -193,7 +195,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
                     "http://opensilex.test/id/observationCollection/site/",
                     new ExprFactory().str(nameFormatedVar.asNode()),
                     "/",
-                    exprFactory.replace(new ExprFactory().str(randomVar.asNode()),"0.",""))
+                    exprFactory.replace(new ExprFactory().str(randomVar.asNode()), "0.", ""))
             );
             where.addBind(exprURI, observationCollectionURIVar);
 
@@ -209,7 +211,24 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
         logger.info("Observation collections were added and saved in the rdf database");
     }
 
-    private Map<URI,URI> getSiteObservationCollectionMap() throws SPARQLException {
+    /**
+     * Select all site with observation collection.
+     * <p>
+     * The request to do that is :
+     * <pre>
+     *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     *     PREFIX  org:  <http://www.w3.org/ns/org#>
+     *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
+     *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     *
+     * SELECT *
+     * WHERE {
+     *   	    ?site a org:Site.
+     *   		?s sosa:hasFeatureOfInterest ?site.
+     * }
+     * </pre>
+     */
+    private Map<URI, URI> getSiteObservationCollectionMap() throws SPARQLException {
 
         //Variables
         Var siteVar = makeVar(OrganizationModel.SITE_FIELD);
@@ -220,6 +239,7 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
 
         //Add the where clause
         select.addWhere(uriVar, SOSA.hasFeatureOfInterest, siteVar);
+        select.addWhere(siteVar, RDF.type.asNode(), ORG.Site);
 
         Stream<SPARQLResult> stream = sparql.executeSelectQueryAsStream(select);
 
@@ -251,50 +271,85 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
      *
      * </pre>
      */
-    private void mongoSitesFromGeospatialToLocationCollection(Map<URI,URI> sparqlSiteObservationCollectionMap) {
+    private void mongoSitesFromGeospatialToLocationCollection(Map<URI, URI> sparqlSiteObservationCollectionMap) {
         MongoDatabase db = mongodb.getDatabase();
         MongoCollection<LocationObservationModel> locationCollection = db.getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
         // 1- Get Sites from Geospatial Collection
         MongoCollection<GeospatialModel> geospatialCollection = db.getCollection(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
-        List<GeospatialModel> mongoSiteList = geospatialCollection.find(Filters.eq("rdfType", "http://www.w3.org/ns/org#Site")).into(new ArrayList<>());
+        List<GeospatialModel> geospatialSiteList = geospatialCollection.find(Filters.eq("rdfType", "http://www.w3.org/ns/org#Site")).into(new ArrayList<>());
 
         // 2- Check existing locations to avoid duplicates
+        List<LocationObservationModel> locationsToUpdate = new ArrayList<>();
         List<LocationObservationModel> existingLocations = locationCollection.find(Filters.empty()).into(new ArrayList<>());
-        if(!existingLocations.isEmpty()){
+        if (!existingLocations.isEmpty()) {
             List<URI> existingLocationURI = existingLocations.stream().map(LocationObservationModel::getObservationCollection).collect(Collectors.toList());
-            sparqlSiteObservationCollectionMap.forEach((feature,collection) ->{
-               boolean match = existingLocationURI.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, collection));
-                if(match){
-                  GeospatialModel siteToExclude = mongoSiteList.stream().filter(mongoSite -> SPARQLDeserializers.compareURIs(mongoSite.getUri(), feature)).reduce((a, b) -> {
-                              throw new IllegalStateException("Multiple elements: " + a + ", " + b);
-                          })
-                          .orElse(null);
-                  mongoSiteList.remove(siteToExclude);
+            sparqlSiteObservationCollectionMap.forEach((feature, collection) -> {
+                boolean match = existingLocationURI.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, collection));
+                if (match) {
+                    // Exclude Location to the geospatial collection list
+                    List<GeospatialModel> siteToExclude = geospatialSiteList.stream().filter(geospatialSite -> SPARQLDeserializers.compareURIs(geospatialSite.getUri(), feature)).collect(Collectors.toList());
+                    if (siteToExclude.size() > 1) {
+                        throw new NotAllowedException("Site can't have multiple geometry");
+                    } else {
+                        if(!siteToExclude.isEmpty()){
+                            geospatialSiteList.remove(siteToExclude.get(0));
+                        }
+                    }
+
+
+                    // Add to Locations to update
+                    List<LocationObservationModel> locationToUpdate = existingLocations.stream().filter(location -> SPARQLDeserializers.compareURIs(location.getObservationCollection(), collection)).collect(Collectors.toList());
+                    if (locationToUpdate.size() > 1) {
+                        throw new NotAllowedException("Site can't have multiple geometry");
+                    } else {
+                        if (Objects.isNull(locationToUpdate.get(0).getFeatureOfInterest())) {
+                            locationsToUpdate.add(locationToUpdate.get(0));
+                        }
+                    }
                 }
             });
         }
-        // 3- Format Sites according to the new model
-        List<LocationObservationModel> locationObservationModelList = mongoSiteList.stream().map(mongoSite -> {
+        // 3- Format Sites from geospatial according to the new model
+        List<LocationObservationModel> locationObservationModelList = geospatialSiteList.stream().map(geospatialSite -> {
             LocationObservationModel locationObservationModel = new LocationObservationModel();
 
-            URI observationCollectionURI = sparqlSiteObservationCollectionMap.get(URI.create(SPARQLDeserializers.getExpandedURI(mongoSite.getUri())));
+            URI observationCollectionURI = sparqlSiteObservationCollectionMap.get(URI.create(SPARQLDeserializers.getExpandedURI(geospatialSite.getUri())));
 
             locationObservationModel.setObservationCollection(observationCollectionURI);
-            locationObservationModel.setFeatureOfInterest(mongoSite.getUri());
+            locationObservationModel.setFeatureOfInterest(geospatialSite.getUri());
             locationObservationModel.setHasGeometry(true);
 
             LocationModel locationModel = new LocationModel();
 
-            locationModel.setGeometry(mongoSite.getGeometry());
+            locationModel.setGeometry(geospatialSite.getGeometry());
             locationObservationModel.setLocation(locationModel);
             locationObservationModel.setUri(observationCollectionURI);
 
             return locationObservationModel;
         }).collect(Collectors.toList());
-        // 4- Insert Sites into new location Collection
-        if(!locationObservationModelList.isEmpty()){
+
+        // 4- Add featureOfInterest in location collection
+        List<Bson> locationObservationModelUpdateList = new ArrayList<>();
+
+        locationsToUpdate.forEach(locationToUpdate -> {
+            for (Map.Entry<URI, URI> entry : sparqlSiteObservationCollectionMap.entrySet()) {
+                if (SPARQLDeserializers.compareURIs(entry.getValue(), locationToUpdate.getObservationCollection())) {
+                    Bson locationUpdated = Aggregates.addFields(new Field<>(LocationObservationModel.FEATURE_OF_INTEREST_FIELD, entry.getKey()));
+                    locationObservationModelUpdateList.add(locationUpdated);
+                }
+            }
+        });
+
+        // 5- Insert/update Sites into new location Collection
+        if (!locationObservationModelList.isEmpty()) {
             locationCollection.insertMany(locationObservationModelList);
+        }
+
+        if (!locationObservationModelUpdateList.isEmpty()) {
+            Bson filter = Filters.and(
+                    Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, locationsToUpdate.stream().map(LocationObservationModel::getObservationCollection).collect(Collectors.toList())));
+            locationCollection.updateMany(filter, locationObservationModelUpdateList);
         }
 
         logger.info("Locations were added and saved in the mongo database");

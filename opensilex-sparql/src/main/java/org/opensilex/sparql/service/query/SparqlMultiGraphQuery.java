@@ -11,7 +11,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Collection;
@@ -96,7 +95,7 @@ public class SparqlMultiGraphQuery<T extends SPARQLResourceModel> extends Abstra
      * </li>
      * </ul>
      */
-    public SparqlMultiGraphQuery(SPARQLService sparql, @Nullable Map<Node, Node> typesAndGraphs, @NotNull Supplier<Stream<String>> urisSupplier, int urisSize) {
+    public SparqlMultiGraphQuery(SPARQLService sparql, Map<Node, Node> typesAndGraphs, @NotNull Supplier<Stream<String>> urisSupplier, int urisSize) {
         super(sparql);
         Objects.requireNonNull(urisSupplier);
         if (urisSize <= 0) {

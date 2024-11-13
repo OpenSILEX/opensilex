@@ -39,7 +39,7 @@ OpenSILEX Developer's installation
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
-NOTE: OpenSILEX Production's installation available in : [production.md](./opensilex-doc/src/main/resources/installation/production.md)
+NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](./opensilex-doc/src/main/resources/installation/production.md)
 
 # Required software
 

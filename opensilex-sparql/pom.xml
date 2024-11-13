@@ -17,6 +17,7 @@
     <url>https://www.opensilex.org/</url>
     <version>${revision}</version>
 
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
@@ -27,8 +28,7 @@
     <properties>
         <skipFrontBuild>true</skipFrontBuild>
         <skipTypeScriptLibBuild>true</skipTypeScriptLibBuild>
-        <jgrapht.version>1.5.1</jgrapht.version>
-        <ontotext.graphdb.version>9.11.2</ontotext.graphdb.version>
+        <jgrapht.version>1.5.1</jgrapht.version> 
     </properties>
     
     <dependencies>
@@ -52,18 +52,8 @@
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
             <version>${jgrapht.version}</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.ontotext.graphdb/graphdb-free-runtime -->
-        <dependency>
-            <groupId>com.ontotext.graphdb</groupId>
-            <artifactId>graphdb-free-runtime</artifactId>
-            <version>${ontotext.graphdb.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-
-    </dependencies>    
+        </dependency> 
+    </dependencies> 
         
     <build>
         <plugins>

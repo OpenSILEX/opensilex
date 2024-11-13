@@ -63,15 +63,6 @@ public class InstallTest {
         testInstall("opensilex_rdf4j_install_test.yml",false);
     }
 
-    /**
-     * This test need a running graphdb server instance in order to success. See the configuration used
-     */
-    @Test
-    public void installWithGraphDbRepository() throws Exception {
-        testInstall("opensilex_graphdb_install_test.yml",false);
-    }
-
-
     private void testInstall(String configFile, boolean reset) throws Exception {
 
         Path configPath = Paths.get("src","test","resources","configs",configFile);

@@ -6,8 +6,6 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.apache.jena.arq.querybuilder.*;
-import org.eclipse.rdf4j.IsolationLevel;
-import org.eclipse.rdf4j.IsolationLevels;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;

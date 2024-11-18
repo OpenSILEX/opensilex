@@ -9,6 +9,7 @@
           :selected.sync="syncedSelectedOntologies"
           :isAllOntologies.sync="useAllOntologies"
           @change="onSearchTextChange"
+          @inputValueHasChanged="inputValueHasChanged"
       ></opensilex-AgroportalSearch>
 
       <opensilex-AgroportalResults
@@ -117,6 +118,11 @@ export default class AgroportalTermSelector extends Vue {
   private onSearchTextChange(text: string) {
     this.searchText = text;
     this.searchResults.search(text, this.useAllOntologies, this.selectedOntologies);
+  }
+
+  inputValueHasChanged(text: string) {
+    this.searchText = text
+    this.$emit("inputValueHasChanged", this.searchText)// faire condition si on crée sur createnew
   }
 
   private onImport(term: AgroportalTermDTO) {

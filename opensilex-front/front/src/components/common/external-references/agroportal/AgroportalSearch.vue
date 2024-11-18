@@ -6,7 +6,8 @@
           type="text"
           v-model="searchText"
           :placeholder="$t(placeholder)"
-          @keyup.enter.native="emitChange">
+          @keyup.enter.native="emitChange"
+          @input="onInputValueChange">
       </b-input>
       <template #append>
         <opensilex-Button
@@ -155,6 +156,13 @@ export default class AgroportalSearch extends Vue {
 
   private cleanSearchField(){
     this.searchText = "";
+  }
+
+  private onInputValueChange(text: string){
+    this.searchText = text
+    if (this.searchText !== "") {
+      this.$emit("inputValueHasChanged", this.searchText);
+    }
   }
   //#endregion
 }

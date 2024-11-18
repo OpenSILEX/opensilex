@@ -25,6 +25,7 @@
               :placeholder="$t(props.searchPlaceholder)"
               :ontologies="ontologies"
               @import="onTermImported"
+              @inputValueHasChanged="updateItemName"
           ></opensilex-AgroportalTermSelector>
       </b-col>
 
@@ -170,6 +171,10 @@ export default class AgroportalSearchFormPart extends Vue {
     this.formDto.uri = term.id;
     this.formDto.name = term.name;
     this.formDto.description = term.definitions[0];
+  }
+
+  private updateItemName (text: string){
+    this.formDto.name = text
   }
   //#endregion
 

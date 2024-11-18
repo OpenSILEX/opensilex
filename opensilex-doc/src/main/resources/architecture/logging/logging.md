@@ -64,8 +64,9 @@ This document describes which information are logged, what is the corresponding 
 
 To write of these attributes inside a log allow to answer to the following questions/uses cases :
 
-- 
-
+- Get all API connexion for a given user
+- Get all API connexion to a given service
+- Get all sub-operations performed inside an API call
 
 # Log types
 

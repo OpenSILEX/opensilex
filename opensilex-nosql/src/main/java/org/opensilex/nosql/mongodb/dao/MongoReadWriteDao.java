@@ -82,7 +82,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     protected final boolean checkUriExistence;
     protected final String createPrefix;
 
-    protected final MongoLogger mongoLogger;
+    protected final MongoLogger structuredLogger;
     protected final Logger logger;
 
     protected static final OrderBy DEFAULT_ORDER_BY = new OrderBy(MongoModel.URI_FIELD, Order.ASCENDING);
@@ -121,7 +121,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 uriBuilder.path(createUriPath).toString();
 
         this.logger = LoggerFactory.getLogger(getClass());
-        this.mongoLogger = new MongoLogger(collectionName, logger);
+        this.structuredLogger = new MongoLogger(collectionName, logger);
     }
 
     /**
@@ -235,7 +235,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     public InsertOneResult create(ClientSession session, @NotNull T instance) throws MongoException, MongoDbUniqueIndexConstraintViolation, URISyntaxException, NoSQLAlreadyExistingUriException {
         Objects.requireNonNull(instance);
 
-        Instant start = mongoLogger.logInfoStart(INSERT_ONE);
+        Instant start = structuredLogger.logInfoStart(INSERT_ONE);
         generateUniqueUriIfNullOrValidateCurrent(instance);
 
         try {
@@ -243,7 +243,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                     collection.insertOne(session, instance) :
                     collection.insertOne(instance);
 
-            mongoLogger.logInfoOk(INSERT_ONE, start, URI_KEY, instance.getUri());
+            structuredLogger.logInfoOk(INSERT_ONE, start, URI_KEY, instance.getUri());
             return result;
 
         } catch (MongoWriteException e) {
@@ -270,7 +270,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             throw new IllegalArgumentException("instances list can't be null or empty");
         }
 
-        Instant operationStart = mongoLogger.logInfoStart(INSERT_MANY, INSERT_MANY_COUNT, instances.size());
+        Instant start = structuredLogger.logInfoStart(INSERT_MANY, INSERT_MANY_COUNT, instances.size());
 
         // check if each model has a URI
         if (checkUriGeneration) {
@@ -285,7 +285,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                     collection.insertMany(session, instances) :
                     mongodb.computeTransaction(newSession -> collection.insertMany(newSession, instances));
 
-            mongoLogger.logInfoOk(INSERT_MANY, operationStart, INSERT_MANY_COUNT, result.getInsertedIds().size());
+            structuredLogger.logInfoOk(INSERT_MANY, start, INSERT_MANY_COUNT, result.getInsertedIds().size());
             return result;
 
         } catch (MongoBulkWriteException e) {
@@ -316,7 +316,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 Projections.include(MongoModel.URI_FIELD) // only retrieve id
         );
 
-        Instant operationStart = mongoLogger.logInfoStart(UPDATE_ONE, URI_KEY, newModel.getUri());
+        Instant start = structuredLogger.logInfoStart(UPDATE_ONE, URI_KEY, newModel.getUri());
         T updatedModel = session == null ?
                 collection.findOneAndReplace(filter, newModel, options) :
                 collection.findOneAndReplace(session, filter, newModel, options);
@@ -326,7 +326,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         if (updatedModel == null) {
             throw new NoSQLInvalidURIException(newModel.getUri());
         }
-        mongoLogger.logInfoOk(UPDATE_ONE, operationStart, URI_KEY, newModel.getUri());
+        structuredLogger.logInfoOk(UPDATE_ONE, start, URI_KEY, newModel.getUri());
     }
 
     @Override
@@ -354,14 +354,14 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                 Projections.include(MongoModel.URI_FIELD) // only retrieve id
         );
 
-        Instant operationStart = mongoLogger.logInfoStart(UPSERT_ONE, URI_KEY, model.getUri());
+        Instant start = structuredLogger.logInfoStart(UPSERT_ONE, URI_KEY, model.getUri());
         if (session == null) {
             collection.findOneAndReplace(filter, model, options);
         } else {
             collection.findOneAndReplace(session, filter, model, options);
         }
 
-        mongoLogger.logInfoOk(UPSERT_ONE, operationStart, URI_KEY, model.getUri());
+        structuredLogger.logInfoOk(UPSERT_ONE, start, URI_KEY, model.getUri());
     }
 
     @Override
@@ -384,7 +384,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         Objects.requireNonNull(uri);
         Bson bsonFilter = getIdFilter(uri);
 
-        Instant operationStart = mongoLogger.logInfoStart(DELETE_ONE, URI_KEY, uri);
+        Instant start = structuredLogger.logInfoStart(DELETE_ONE, URI_KEY, uri);
         DeleteResult deleteResult = session == null ?
                 collection.deleteOne(bsonFilter) :
                 collection.deleteOne(session, bsonFilter);
@@ -393,21 +393,21 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             throw new NoSQLInvalidURIException(uri);
         }
 
-        mongoLogger.logInfoOk(DELETE_ONE, operationStart, URI_KEY, uri);
+        structuredLogger.logInfoOk(DELETE_ONE, start, URI_KEY, uri);
         return deleteResult;
     }
 
     protected final @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
 
         String deleteFilterString = deleteFilterBson.toString();
-        Instant operationStart = mongoLogger.logInfoStart(DELETE_MANY, FILTER, deleteFilterString);
+        Instant start = structuredLogger.logInfoStart(DELETE_MANY, FILTER, deleteFilterString);
 
         // deleteMany() can update several document inside a collection, transaction handling is always needed
         DeleteResult result = session != null ?
                 collection.deleteMany(session, deleteFilterBson) :
                 mongodb.computeTransaction(newSession -> collection.deleteMany(newSession, deleteFilterBson));
 
-        mongoLogger.logInfoOk(DELETE_MANY, operationStart, FILTER, deleteFilterString, DELETE_MANY_COUNT, result.getDeletedCount());
+        structuredLogger.logInfoOk(DELETE_MANY, start, FILTER, deleteFilterString, DELETE_MANY_COUNT, result.getDeletedCount());
         return result;
     }
 
@@ -520,12 +520,12 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             );
         }
 
-        Instant operationStart = mongoLogger.logInfoStart(COUNT, FILTER, query.getFilterBsonStr());
+        Instant start = structuredLogger.logInfoStart(COUNT, FILTER, query.getFilterBsonStr());
         long count = session == null ?
                 collection.countDocuments(query.getFilterBson(), countOptions) :
                 collection.countDocuments(session, query.getFilterBson(), countOptions);
 
-        mongoLogger.logInfoOk(COUNT, operationStart, FILTER, query.getFilterBsonStr(), COUNT_RESULT, count);
+        structuredLogger.logInfoOk(COUNT, start, FILTER, query.getFilterBsonStr(), COUNT_RESULT, count);
         return count;
     }
 
@@ -592,7 +592,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         F filter = query.getFilter();
         initializeSearchFilter(filter);
 
-        Instant operationStart = mongoLogger.logInfoStart(SEARCH, FILTER, filter.getFilterBsonStr());
+        Instant start = structuredLogger.logInfoStart(SEARCH, FILTER, filter.getFilterBsonStr());
 
         long totalCount = 0;
         int countLimit = 0;
@@ -635,7 +635,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
         paginatedIt.setPaginationStrategy(query.getPaginationStrategy());
 
-        mongoLogger.logInfoOk(SEARCH, operationStart, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, results.size());
+        structuredLogger.logInfoOk(SEARCH, start, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, results.size());
         return paginatedIt;
     }
 
@@ -654,7 +654,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         F filter = query.getFilter();
         initializeSearchFilter(filter);
 
-        Instant operationStart = mongoLogger.logInfoStart(SEARCH_STREAM, FILTER, filter.getFilterBsonStr());
+        Instant start = structuredLogger.logInfoStart(SEARCH_STREAM, FILTER, filter.getFilterBsonStr());
 
         long totalCount = 0;
         int countLimit = 0;
@@ -686,7 +686,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
         paginatedIt.setPaginationStrategy(query.getPaginationStrategy());
 
-        mongoLogger.logInfoOk(SEARCH_STREAM, operationStart, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, totalCount);
+        structuredLogger.logInfoOk(SEARCH_STREAM, start, FILTER, filter.getFilterBsonStr(), RESULT_COUNT, totalCount);
         return paginatedIt;
     }
 
@@ -782,7 +782,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         Bson bsonFilter = filterToBson(filter);
         String bsonFilterStr = bsonFilter.toString();
 
-        Instant operationStart = mongoLogger.logInfoStart(DISTINCT, DISTINCT_FIELD, field, FILTER, bsonFilterStr);
+        Instant start = structuredLogger.logInfoStart(DISTINCT, DISTINCT_FIELD, field, FILTER, bsonFilterStr);
 
         DistinctIterable<T_RESULT> queryResult = session == null ?
                 collection.distinct(field, bsonFilter, resultClass) :
@@ -794,7 +794,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             results.add(res);
         }
 
-        mongoLogger.logInfoOk(DISTINCT, operationStart, DISTINCT_FIELD, field, FILTER, bsonFilterStr);
+        structuredLogger.logInfoOk(DISTINCT, start, DISTINCT_FIELD, field, FILTER, bsonFilterStr);
         return results;
     }
 
@@ -811,16 +811,16 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     @Override
     public <T_RESULT> List<T_RESULT> aggregate(List<Bson> aggregationPipeline, Class<T_RESULT> tResultClass) {
         String pipelineStr = aggregationPipeline.toString();
-        Instant operationStart = mongoLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
+        Instant start = structuredLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
 
         AggregateIterable<T_RESULT> aggregate = collection.aggregate(aggregationPipeline, tResultClass);
-        mongoLogger.logInfoOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, aggregationPipeline);
+        structuredLogger.logInfoOk(AGGREGATE, start, AGGREGATION_PIPELINE, aggregationPipeline);
 
         List<T_RESULT> results = new ArrayList<>();
         for (T_RESULT res : aggregate) {
             results.add(res);
         }
-        mongoLogger.logInfoOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
+        structuredLogger.logInfoOk(AGGREGATE, start, AGGREGATION_PIPELINE, pipelineStr);
 
         return results;
     }
@@ -828,9 +828,9 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     @Override
     public <T_RESULT> Stream<T_RESULT> aggregateAsStream(List<Bson> aggregationPipeline, Class<T_RESULT> tResultClass) {
         String pipelineStr = aggregationPipeline.toString();
-        Instant operationStart = mongoLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
+        Instant start = structuredLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
         AggregateIterable<T_RESULT> aggregate = collection.aggregate(aggregationPipeline, tResultClass);
-        mongoLogger.logInfoOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
+        structuredLogger.logInfoOk(AGGREGATE, start, AGGREGATION_PIPELINE, pipelineStr);
 
         return StreamSupport.stream(aggregate.spliterator(), false);
     }
@@ -867,7 +867,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         // The order is computed by MongoDB and the results are returned in this order
         String bsonFilterStr = bsonFilter.toString();
 
-        Instant operationStart = mongoLogger.logInfoStart(DISTINCT, FILTER, bsonFilterStr, DISTINCT_FIELD, distinctField);
+        Instant start = structuredLogger.logInfoStart(DISTINCT, FILTER, bsonFilterStr, DISTINCT_FIELD, distinctField);
         List<T_RESULT> distinctValues = new ArrayList<>();
 
         // map aggregation results a Document, since the aggregation will produce a different document schema
@@ -883,7 +883,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
                         distinctValues.add(extracted);
                     }
                 });
-        mongoLogger.logInfoOk(DISTINCT, operationStart, FILTER, bsonFilterStr, RESULT_COUNT, distinctValues.size());
+        structuredLogger.logInfoOk(DISTINCT, start, FILTER, bsonFilterStr, RESULT_COUNT, distinctValues.size());
 
         return new ListWithPagination<>(distinctValues, filter.getPage(), filter.getPageSize(), distinctValues.size());
     }
@@ -926,7 +926,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         String pipelineStr = pipeline.toString();
 
-        Instant operationStart = mongoLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
+        Instant start = structuredLogger.logInfoStart(AGGREGATE, AGGREGATION_PIPELINE, pipelineStr);
         List<T_RESULT> results = new ArrayList<>();
         AggregateIterable<T_JOINED> aggregateIt = session == null ?
                 collection.aggregate(pipeline, lookupClass) :
@@ -934,7 +934,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
         // Collect results from DB
         aggregateIt.map(convertFunction::apply).forEach(results::add);
-        mongoLogger.logInfoOk(AGGREGATE, operationStart, AGGREGATION_PIPELINE, pipelineStr);
+        structuredLogger.logInfoOk(AGGREGATE, start, AGGREGATION_PIPELINE, pipelineStr);
 
         return results;
     }

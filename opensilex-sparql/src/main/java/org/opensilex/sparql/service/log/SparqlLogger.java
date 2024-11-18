@@ -15,6 +15,9 @@ public class SparqlLogger extends OpenSilexStructuredLogger {
     public static final String SPARQL_CLEAR_QUERY = "sparql_clear";
     public static final String SPARQL_MOVE_QUERY = "sparql_move";
     public static final String SPARQL_LOAD_ONTOLOGY = "sparql_load_ontology";
+    public static final String SPARQL_ENABLE_SHACL = "sparql_enable_shacl";
+    public static final String SPARQL_DISABLE_SHACL = "sparql_disable_shacl";
+
 
     // region LOG PROPERTIES
     public static final String SPARQL_QUERY_TYPE = "sparql_query_type";

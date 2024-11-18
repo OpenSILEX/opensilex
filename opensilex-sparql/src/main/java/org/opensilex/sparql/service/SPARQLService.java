@@ -91,18 +91,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
-    private final SparqlLogger sparqlLogger;
+    private final SparqlLogger structuredLogger;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
         this.connection = config.connection();
-        this.sparqlLogger = new SparqlLogger(LOGGER, null);
+        this.structuredLogger = new SparqlLogger(LOGGER, null);
     }
 
     public SPARQLService(SPARQLConnection connection) {
         super(null);
         this.connection = connection;
-        this.sparqlLogger = new SparqlLogger(LOGGER, null);
+        this.structuredLogger = new SparqlLogger(LOGGER, null);
     }
 
 
@@ -184,9 +184,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public boolean executeAskQuery(AskBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = structuredLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY, SPARQL_QUERY, query.buildString());
         boolean result = connection.executeAskQuery(query);
-        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY);
+        structuredLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_ASK_QUERY);
         return result;
     }
 
@@ -194,9 +194,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = structuredLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeDescribeQuery(query);
-        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY);
+        structuredLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_DESCRIBE_QUERY);
 
         return results;
     }
@@ -221,9 +221,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLStatement> executeConstructQuery(ConstructBuilder query) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = structuredLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeConstructQuery(query);
-        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY);
+        structuredLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_CONSTRUCT_QUERY);
 
         return results;
     }
@@ -232,9 +232,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLResult> executeSelectQuery(SelectBuilder query, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(query);
 
-        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, query.buildString());
+        Instant start = structuredLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, query.buildString());
         var results = connection.executeSelectQuery(query, resultHandler);
-        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+        structuredLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
 
         return results;
     }
@@ -243,9 +243,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
         addPrefixes(select);
 
-        Instant start = sparqlLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, select.buildString());
+        Instant start = structuredLogger.logInfoStart(SEARCH, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY, SPARQL_QUERY, select.buildString());
         var results = connection.executeSelectQueryAsStream(select);
-        sparqlLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
+        structuredLogger.logInfoOk(SEARCH, start, SPARQL_QUERY_TYPE, SPARQL_SELECT_QUERY);
 
         return results;
     }
@@ -254,9 +254,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
 
-        Instant start = sparqlLogger.logInfoStart(UPDATE_MANY, SPARQL_QUERY, update.buildRequest().toString());
+        Instant start = structuredLogger.logInfoStart(UPDATE_MANY, SPARQL_QUERY, update.buildRequest().toString());
         connection.executeUpdateQuery(update);
-        sparqlLogger.logInfoOk(UPDATE_MANY, start);
+        structuredLogger.logInfoOk(UPDATE_MANY, start);
     }
 
     @Override
@@ -268,9 +268,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
 
-        Instant start = sparqlLogger.logInfoStart(DELETE_MANY, SPARQL_QUERY, delete.buildRequest().toString());
+        Instant start = structuredLogger.logInfoStart(DELETE_MANY, SPARQL_QUERY, delete.buildRequest().toString());
         connection.executeUpdateQuery(delete);
-        sparqlLogger.logInfoOk(DELETE_MANY, start);
+        structuredLogger.logInfoOk(DELETE_MANY, start);
     }
 
     private int transactionLevel = 0;
@@ -283,7 +283,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            sparqlLogger.logInfoStart(TRANSACTION);
+            structuredLogger.logInfoStart(TRANSACTION);
             connection.startTransaction();
         }
         transactionLevel++;
@@ -294,7 +294,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         transactionLevel--;
         if (transactionLevel == 0) {
             connection.commitTransaction();
-            sparqlLogger.logInfoOk(TRANSACTION);
+            structuredLogger.logInfoOk(TRANSACTION);
         }
     }
 
@@ -302,7 +302,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
             if(ex != null){
-                sparqlLogger.logError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, ex.getMessage());
+                structuredLogger.logError(TRANSACTION, LOG_STATUS_ROLLBACK, LOG_ERROR_MESSAGE_KEY, ex.getMessage());
             }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
@@ -315,9 +315,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void clearGraph(URI graph) throws SPARQLException {
-        Instant start = sparqlLogger.logInfoStart(SPARQL_CLEAR_GRAPH_QUERY, SPARQL_GRAPH, graph);
+        Instant start = structuredLogger.logInfoStart(SPARQL_CLEAR_GRAPH_QUERY, SPARQL_GRAPH, graph);
         connection.clearGraph(graph);
-        sparqlLogger.logInfoOk(SPARQL_CLEAR_GRAPH_QUERY, start);
+        structuredLogger.logInfoOk(SPARQL_CLEAR_GRAPH_QUERY, start);
     }
 
     public void clearGraph(String graph) throws SPARQLException {
@@ -344,25 +344,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (isShaclEnabled) {
             disableSHACL();
         }
-        Instant instant = sparqlLogger.logInfoStart(SPARQL_MOVE_QUERY, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
+        Instant instant = structuredLogger.logInfoStart(SPARQL_MOVE_QUERY, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
         connection.renameGraph(fullOldURI, fullNewURI);
         if (isShaclEnabled) {
             enableSHACL();
         }
-        sparqlLogger.logInfoOk(SPARQL_MOVE_QUERY, instant, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
+        structuredLogger.logInfoOk(SPARQL_MOVE_QUERY, instant, SPARQL_MOVE_FROM, fullOldURI, SPARQL_MOVE_TO, fullNewURI);
     }
 
     @Override
     public void clear() throws SPARQLException {
-        Instant start = sparqlLogger.logInfoStart(SPARQL_CLEAR_QUERY);
+        Instant start = structuredLogger.logInfoStart(SPARQL_CLEAR_QUERY);
         connection.clear();
-        sparqlLogger.logInfoOk(SPARQL_CLEAR_QUERY, start);
+        structuredLogger.logInfoOk(SPARQL_CLEAR_QUERY, start);
     }
 
     public void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        Instant start = sparqlLogger.logInfoStart(SPARQL_LOAD_ONTOLOGY, SPARQL_GRAPH, graph);
+        Instant start = structuredLogger.logInfoStart(SPARQL_LOAD_ONTOLOGY, SPARQL_GRAPH, graph);
         connection.loadOntology(graph, ontology, format);
-        sparqlLogger.logInfoOk(SPARQL_LOAD_ONTOLOGY, start, SPARQL_GRAPH, graph);
+        structuredLogger.logInfoOk(SPARQL_LOAD_ONTOLOGY, start, SPARQL_GRAPH, graph);
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
@@ -1031,6 +1031,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
+
         boolean reuseSameQuery = maxInstancePerQuery != null;
         if (reuseSameQuery && maxInstancePerQuery <= 0) {
             throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
@@ -1039,7 +1040,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if(instances.isEmpty()){
             return;
         }
-        Instant start = Instant.now();
+        Instant start = structuredLogger.logInfoStart(INSERT_MANY, INSERT_MANY_COUNT, instances.size());
 
         validate(instances, null);
         UpdateBuilder updateBuilder = new UpdateBuilder();
@@ -1078,8 +1079,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             executeUpdateQuery(updateBuilder);
         }
 
-        long durationMs = Duration.between(start, Instant.now()).toMillis();
-        LOGGER.debug("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
+        structuredLogger.logInfoOk(INSERT_MANY, start, INSERT_MANY_COUNT, instances.size());
     }
 
     /**
@@ -1987,15 +1987,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void disableSHACL() throws SPARQLException {
-        sparqlLogger.
-        LOGGER.debug("DISABLE SHACL Validation");
+        Instant start = structuredLogger.logDebugStart(SPARQL_DISABLE_SHACL);
         connection.disableSHACL();
+        structuredLogger.logDebugOk(SPARQL_DISABLE_SHACL, start);
     }
 
     @Override
     public void enableSHACL() throws SPARQLException {
-        LOGGER.debug("ENABLE SHACL Validation");
+        Instant start = structuredLogger.logDebugStart(SPARQL_ENABLE_SHACL);
         connection.enableSHACL();
+        structuredLogger.logDebugOk(SPARQL_ENABLE_SHACL, start);
     }
 
     @Override
@@ -2437,10 +2438,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         update.addDelete(delete);
         update.addInsert(insert);
         update.addWhere(where);
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(update.build().toString());
-        }
 
         executeUpdateQuery(update);
     }

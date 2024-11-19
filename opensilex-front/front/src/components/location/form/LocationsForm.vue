@@ -101,11 +101,15 @@
                 </b-button-group>
             </template>
         </opensilex-TableView>
-        <opensilex-LocationModalForm
-                v-if="facility.locations.length > 0"
-                ref="locationModalForm"
-                @onUpdate="onUpdate"
-        ></opensilex-LocationModalForm>
+        <opensilex-WizardForm
+                ref="locationForm"
+                :steps="locationSteps"
+                editTitle="LocationForm.update"
+                icon="ik#ik-globe"
+                :static="false"
+                :initForm="getEmptyLocationForm"
+                :updateAction="updateLocationForm"
+        ></opensilex-WizardForm>
     </ValidationObserver>
 </template>
 
@@ -114,7 +118,7 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import {LocationObservationDTO, FacilityGetDTO} from 'opensilex-core/index';
 import {PropSync, Ref} from "vue-property-decorator";
-import LocationModalForm from "../../../components/location/form/LocationModalForm.vue";
+import LocationForm from "../../../components/location/form/LocationForm.vue";
 
 @Component({})
 export default class LocationsForm extends Vue {
@@ -129,8 +133,8 @@ export default class LocationsForm extends Vue {
     //#region Refs
     @Ref("validatorRef")
     readonly validatorRef!: any;
-    @Ref("locationModalForm")
-    readonly locationModalForm!: LocationModalForm;
+    @Ref("locationForm")
+    private readonly locationForm!: LocationForm;
     //endregion
 
     //#region Data
@@ -156,6 +160,10 @@ export default class LocationsForm extends Vue {
             label: "component.common.actions",
         },
     ];
+    private locationSteps = [
+        {component: "opensilex-LocationForm"}
+    ]
+    private index: number;
     //endregion
 
     //#region Computed
@@ -182,11 +190,27 @@ export default class LocationsForm extends Vue {
     }
 
     private updatePosition(data) {
-        this.locationModalForm.showEditForm(data.item);
+        this.index = data.index;
+        //Copy item to prevent the update in the modal from directly modifying "data"
+        let form = JSON.parse(JSON.stringify(data.item));
+        this.locationForm.showEditForm(form);
     }
 
     private deletePosition(data) {
         this.facility.locations.splice(this.facility.locations.indexOf(data.item), 1)
+    }
+
+    getEmptyLocationForm(){
+        return {
+            geojson: this.position.geojson,
+            startDate: this.position.startDate,
+            endDate: this.position.endDate
+        };
+    }
+    updateLocationForm(form){
+        this.facility.locations[this.index].geojson = form.geojson;
+        this.facility.locations[this.index].startDate = form.startDate;
+        this.facility.locations[this.index].endDate = form.endDate;
     }
     //endregion
 

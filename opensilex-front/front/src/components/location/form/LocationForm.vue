@@ -12,7 +12,7 @@
   -->
 
 <template>
-    <div>
+    <ValidationObserver ref="validatorRef">
         <!-- Dates -->
         <div class="row">
             <div class="col">
@@ -27,7 +27,7 @@
                         :value.sync="form.endDate"
                         label="component.common.end"
                         :minDate="form.startDate"
-                        :required="!disableValidation"
+                        :required="true"
                 ></opensilex-DateTimeForm>
             </div>
         </div>
@@ -39,17 +39,17 @@
                         :value.sync="form.geojson"
                         label="component.common.geometry"
                         helpMessage="component.common.geometry-help"
-                        :required="!disableValidation"
+                        :required="true"
                 ></opensilex-GeometryForm>
             </div>
         </div>
-    </div>
+    </ValidationObserver>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {Prop} from "vue-property-decorator";
+import {Prop, Ref} from "vue-property-decorator";
 import {LocationObservationDTO} from "opensilex-core/index";
 
 @Component({})
@@ -65,6 +65,7 @@ export default class LocationForm extends Vue {
     //endregion
 
     //#region Refs
+    @Ref("validatorRef") readonly validatorRef!: any;
     //endregion
 
     //#region Data
@@ -79,10 +80,10 @@ export default class LocationForm extends Vue {
     //#region Events handlers
     //endregion
 
-  //#region Public methods
+    //#region Public methods
     public showEditForm(form) {
     }
-  //endregion
+    //endregion
 
     //#region Hooks
     //endregion
@@ -98,6 +99,14 @@ export default class LocationForm extends Vue {
 
     getEmptyForm() {
         return LocationForm.getEmptyForm();
+    }
+
+    reset() {
+        return this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
     }
     //endregion
 }

@@ -8,31 +8,13 @@ package org.opensilex.core.data;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static junit.framework.TestCase.*;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.vocabulary.XSD;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,62 +26,80 @@ import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
-import org.opensilex.core.provenance.api.ProvenanceAPITest;
-import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
-import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.DateFormatters;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLService;
+
+import javax.mail.internet.InternetAddress;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
+import static junit.framework.TestCase.*;
 
 /**
  *
  * @author Alice Boizet
+ * @author rcolin
  */
 public class DataAPITest extends AbstractMongoIntegrationTest {
-    public static final String path = "/core/data";
-    public static final String annotationPath = "/core/annotations";
+    public static final String PATH = "/core/data";
+    public static final String ANNOTATION_PATH = "/core/annotations";
 
-    protected String uriPath = path + "/{uri}";
-    protected String searchPath = path;
-    protected String createPath = path;
-    protected String importPath = path + "/import";
+    protected static final String URI_PATH = PATH + "/{uri}";
+    protected static final String SEARCH_PATH = PATH;
+    protected static final String IMPORT_PATH = PATH + "/import";
 
-    public static final String createListPath = path;
-    protected String updatePath = path;
-    protected String deletePath = path + "/{uri}";
-
-    private ProvenanceAPITest provAPI = new ProvenanceAPITest();
+    public static final String CREATE_PATH = PATH;
+    protected static final String UPDATE_PATH = PATH;
+    protected static final String DELETE_PATH = PATH + "/{uri}";
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private URI variable;
+    private static URI variable;
 
     // Variables with specific types and template strings for CSV files
-    private URI dateVariable;
+    private static URI dateVariable;
     private static final String FILE_TEMPLATE_DATE_VARIABLE_URI = "__DATE_VARIABLE__";
-    private URI datetimeVariable;
+    private static URI datetimeVariable;
     private static final String FILE_TEMPLATE_DATETIME_VARIABLE_URI = "__DATETIME_VARIABLE__";
-    private URI integerVariable;
+    private static URI integerVariable;
     private static final String FILE_TEMPLATE_INTEGER_VARIABLE_URI = "__INTEGER_VARIABLE__";
-    private URI decimalVariable;
+    private static URI decimalVariable;
     private static final String FILE_TEMPLATE_DECIMAL_VARIABLE_URI = "__DECIMAL_VARIABLE__";
-    private URI booleanVariable;
+    private static URI booleanVariable;
     private static final String FILE_TEMPLATE_BOOLEAN_VARIABLE_URI = "__BOOLEAN_VARIABLE__";
-    private URI stringVariable;
+    private static URI stringVariable;
     private static final String FILE_TEMPLATE_STRING_VARIABLE_URI = "__STRING_VARIABLE__";
 
     // Target template string for CSV files
@@ -126,91 +126,107 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static final String SEARCH_PROVENANCES_QUERY_PARAMETER_NAME = "provenances";
 
     // Provenances for CSV import tests
-    private URI provenanceImportInteger;
-    private URI provenanceImportDecimal;
-    private URI provenanceImportBoolean;
-    private URI provenanceImportString;
-    private URI provenanceImportDate;
-    private URI provenanceImportDatetime;
-    private URI provenanceImportIntegerDatatypeError;
-    private URI provenanceImportDateDatatypeError;
-    private URI provenanceImportDatetimeDatatypeError;
-    private URI provenanceImportAnnotation;
+    private static URI provenanceImportInteger;
+    private static URI provenanceImportDecimal;
+    private static URI provenanceImportBoolean;
+    private static URI provenanceImportString;
+    private static URI provenanceImportDate;
+    private static URI provenanceImportDatetime;
+    private static URI provenanceImportIntegerDatatypeError;
+    private static URI provenanceImportDateDatatypeError;
+    private static URI provenanceImportDatetimeDatatypeError;
+    private static URI provenanceImportAnnotation;
 
-    private DataProvenanceModel provenance;
-    private List<URI> scientificObjects;
-    
-    @Before
-    public void beforeTest() throws Exception {
+    private static URI globalProvenanceURI;
+    private static DataProvenanceModel provenanceWithXP,  provenanceWithoutXP;
+    private static ScientificObjectModel os, osWithXp;
+    private static DeviceModel device;
+    private static AccountModel account;
+    private static FacilityModel facility;
+
+    @BeforeClass
+    public static void beforeTest() throws Exception {
+
+        SPARQLService sparql = newSparqlService();
+
         //create experiment
-        ExperimentAPITest expAPI = new ExperimentAPITest();
-        Response postResultExp = getJsonPostResponseAsAdmin(target(expAPI.createPath), expAPI.getCreationDTO());
-        List<URI> experiments = new ArrayList<>();
-        experiments.add(extractUriFromResponse(postResultExp));
-        
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService());
+        ExperimentModel xp =  ExperimentAPITest.getCreationDTO().newModel();
+        experimentDAO.create(xp);
+        List<URI> experiments = Collections.singletonList(xp.getUri());
+
         createProvenances(experiments);
+        createVariables(sparql);
 
-        createVariables();
-        
         //create scientific object
-        ScientificObjectAPITest soAPI = new ScientificObjectAPITest();
-        Response postResultSO = getJsonPostResponseAsAdmin(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
-        scientificObjects = new ArrayList<>();
-        scientificObjects.add(extractUriFromResponse(postResultSO)); 
-        
+        // Don't use API in order to reduce tests dependencies and make test faster (no API call wrapping)
+        os = new ScientificObjectModel();
+        os.setName("DataAPITest");
+        sparql.create(os);
+
+        osWithXp = new ScientificObjectModel();
+        osWithXp.setName("DataAPITest-xp");
+        sparql.create(SPARQLDeserializers.nodeURI(experiments.get(0)), osWithXp);
+
+        device = new DeviceModel();
+        device.setName("DataAPITest-xp");
+        sparql.create(device);
+
+        account = new AccountModel();
+        account.setEmail(new InternetAddress("DataAPITest-xp@opensilex.com"));
+        sparql.create(account);
+
+        facility = new FacilityModel();
+        facility.setName("DataAPITest-facility");
+        sparql.create(facility);
     }
 
-    private void createVariables() throws Exception {
-        VariableApiTest varAPI = new VariableApiTest();
-        Response postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), varAPI.getCreationDto());
-        variable = extractUriFromResponse(postResultVar);
+    private static void createVariables(SPARQLService sparql) throws Exception {
 
-        VariableCreationDTO variableDateDTO = varAPI.getCreationDto();
-        variableDateDTO.setDataType(new URI(XSD.date.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDateDTO);
-        dateVariable = extractUriFromResponse(postResultVar);
+        // Get variable DTO with already created components (entity, method, etc.). Only call it once in order to avoid recreation of linked objects
+        VariableCreationDTO varDTO = new VariableApiTest().getCreationDto();
+        VariableDAO variableDAO = new VariableDAO(sparql, getMongoDBService(), null, null);
 
-        VariableCreationDTO variableDatetimeDTO = varAPI.getCreationDto();
-        variableDatetimeDTO.setDataType(new URI(XSD.dateTime.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDatetimeDTO);
-        datetimeVariable = extractUriFromResponse(postResultVar);
+        // create a variable of each type
+        variable = variableDAO.create(varDTO.newModel()).getUri();
 
-        VariableCreationDTO variableDecimalDTO = varAPI.getCreationDto();
-        variableDecimalDTO.setDataType(new URI(XSD.decimal.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDecimalDTO);
-        decimalVariable = extractUriFromResponse(postResultVar);
+        varDTO.setDataType(new URI(XSD.date.getURI()));
+        dateVariable = variableDAO.create(varDTO.newModel()).getUri();
 
-        VariableCreationDTO variableIntegerDTO = varAPI.getCreationDto();
-        variableIntegerDTO.setDataType(new URI(XSD.integer.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableIntegerDTO);
-        integerVariable = extractUriFromResponse(postResultVar);
+        varDTO.setDataType(new URI(XSD.dateTime.getURI()));
+        datetimeVariable = variableDAO.create(varDTO.newModel()).getUri();
 
-        VariableCreationDTO variableBooleanDTO = varAPI.getCreationDto();
-        variableBooleanDTO.setDataType(new URI(XSD.xboolean.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableBooleanDTO);
-        booleanVariable = extractUriFromResponse(postResultVar);
+        varDTO.setDataType(new URI(XSD.decimal.getURI()));
+        decimalVariable = variableDAO.create(varDTO.newModel()).getUri();
 
-        VariableCreationDTO variableStringDTO = varAPI.getCreationDto();
-        variableStringDTO.setDataType(new URI(XSD.xstring.getURI()));
-        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableStringDTO);
-        stringVariable = extractUriFromResponse(postResultVar);
+        varDTO.setDataType(new URI(XSD.integer.getURI()));
+        integerVariable = variableDAO.create(varDTO.newModel()).getUri();
+
+        varDTO.setDataType(new URI(XSD.xboolean.getURI()));
+        booleanVariable = variableDAO.create(varDTO.newModel()).getUri();
+
+        varDTO.setDataType(new URI(XSD.xstring.getURI()));
+        stringVariable = variableDAO.create(varDTO.newModel()).getUri();
     }
 
-    private URI createOneProvenance(String name) throws Exception {
-        ProvenanceCreationDTO provenanceImportIntegerDTO = new ProvenanceCreationDTO();
-        provenanceImportIntegerDTO.setName("Import test : integer");
-        Response postResultProv = getJsonPostResponseAsAdmin(target(provAPI.createPath), provenanceImportIntegerDTO);
-        return extractUriFromResponse(postResultProv);
+    private static URI createOneProvenance(String name) throws Exception {
+        ProvenanceDaoV2 provenanceDaoV2 = new ProvenanceDaoV2(getMongoDBService().getServiceV2());
+        ProvenanceModel model = new ProvenanceModel();
+        model.setName(name);
+        provenanceDaoV2.create(model);
+        return model.getUri();
     }
 
-    private void createProvenances(List<URI> experiments) throws Exception {
-        ProvenanceCreationDTO prov = new ProvenanceCreationDTO();
-        prov.setName("name");
-        Response postResultProv = getJsonPostResponseAsAdmin(target(provAPI.createPath), prov);
+    private static void createProvenances(List<URI> experiments) throws Exception {
 
-        provenance = new DataProvenanceModel();
-        provenance.setUri(extractUriFromResponse(postResultProv));
-        provenance.setExperiments(experiments);
+        // Provenance for JSON CRUD tests
+        globalProvenanceURI = createOneProvenance("DataAPITest");
+        provenanceWithXP = new DataProvenanceModel();
+        provenanceWithXP.setUri(globalProvenanceURI);
+        provenanceWithXP.setExperiments(experiments);
+
+        provenanceWithoutXP = new DataProvenanceModel();
+        provenanceWithoutXP.setUri(globalProvenanceURI);
 
         // Provenances for import tests
         provenanceImportInteger = createOneProvenance("Import test : integer");
@@ -224,18 +240,18 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provenanceImportDateDatatypeError = createOneProvenance("Import test : date with datatype errors");
         provenanceImportDatetimeDatatypeError = createOneProvenance("Import test : date with datatype errors");
     }
-    
-    public DataCreationDTO getCreationDataDTO(String date) throws URISyntaxException, Exception {
+
+    public DataCreationDTO getCreationDataDTO(String date) {
 
         DataCreationDTO dataDTO = new DataCreationDTO();
-        
-        dataDTO.setProvenance(provenance);
+
+        dataDTO.setProvenance(provenanceWithXP);
         dataDTO.setVariable(variable);
-        dataDTO.setTarget(scientificObjects.get(0));
+        dataDTO.setTarget(osWithXp.getUri());
         dataDTO.setValue(5.56);
         dataDTO.setDate(date);
-                
-        return dataDTO;        
+
+        return dataDTO;
     }
 
     public DataCreationDTO getCreationDataDTO(String date, URI variable, URI target, Object value, DataProvenanceModel provenance) throws URISyntaxException {
@@ -249,7 +265,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         return dataDTO;
     }
 
-    private MultiPart getImportFileAsMultipart(Path filePath) throws IOException {
+    private FileDataBodyPart getImportFileBodyPart(Path filePath) throws IOException {
         File file = tmpFolder.newFile("import.csv");
         InputStream sourceFileStream = OpenSilex.getResourceAsStream(filePath.toString());
 
@@ -262,40 +278,38 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
                 .replaceAll(FILE_TEMPLATE_DECIMAL_VARIABLE_URI, decimalVariable.toString())
                 .replaceAll(FILE_TEMPLATE_BOOLEAN_VARIABLE_URI, booleanVariable.toString())
                 .replaceAll(FILE_TEMPLATE_STRING_VARIABLE_URI, stringVariable.toString())
-                .replaceAll(FILE_TEMPLATE_TARGET_URI, scientificObjects.get(0).toString());
+                .replaceAll(FILE_TEMPLATE_TARGET_URI, os.getUri().toString());
 
         FileUtils.writeStringToFile(file, fileContent, StandardCharsets.UTF_8);
 
-        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(IMPORT_FILE_MULTIPART_PARAMETER_NAME, file, APPLICATION_OCTET_STREAM_TYPE);
-
-        return new FormDataMultiPart()
-                .bodyPart(fileDataBodyPart);
+        return new FileDataBodyPart(IMPORT_FILE_MULTIPART_PARAMETER_NAME, file, APPLICATION_OCTET_STREAM_TYPE);
     }
 
     private DataCSVValidationDTO getImportResponseAsDTO(Path fileToImport, URI provenanceUri) throws Exception {
-        final Response postResult = getJsonPostResponseMultipart(
-                target(importPath).queryParam(IMPORT_PROVENANCE_QUERY_PARAMETER_NAME, provenanceUri.toString()),
-                getImportFileAsMultipart(fileToImport));
+        FileDataBodyPart bodyPart = getImportFileBodyPart(fileToImport);
+        try(MultiPart multiPart = new FormDataMultiPart().bodyPart(bodyPart)){
+            final Response postResult = getJsonPostResponseMultipart(
+                    target(IMPORT_PATH).queryParam(IMPORT_PROVENANCE_QUERY_PARAMETER_NAME, provenanceUri.toString()),
+                    multiPart);
 
-        assertEquals(Response.Status.OK.getStatusCode(), postResult.getStatus());
+            assertEquals(Response.Status.OK.getStatusCode(), postResult.getStatus());
 
-        JsonNode node = postResult.readEntity(JsonNode.class);
-        SingleObjectResponse<DataCSVValidationDTO> postResponse = mapper.convertValue(node,
-                new TypeReference<SingleObjectResponse<DataCSVValidationDTO>>() {});
-        return postResponse.getResult();
+            JsonNode node = postResult.readEntity(JsonNode.class);
+            SingleObjectResponse<DataCSVValidationDTO> postResponse = mapper.convertValue(node, new TypeReference<>() {});
+            return postResponse.getResult();
+        }
     }
 
     private List<DataGetDTO> getSearchResponseAsDTOList(URI provenance) throws Exception {
-        List<DataGetDTO> debug = getSearchResultsAsAdmin(searchPath,
+        return getSearchResultsAsAdmin(SEARCH_PATH,
                 0,
                 20,
-                new HashMap<String, Object>() {{
+                new HashMap<>() {{
                     put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
                 }},
-                new TypeReference<PaginatedListResponse<DataGetDTO>>() {
+                new TypeReference<>() {
                 }
         );
-        return debug;
         /*return getSearchResultsAsAdmin(searchPath,
                 0,
                 20,
@@ -309,56 +323,219 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     private List<AnnotationGetDTO> getSearchAnnotationsResponseAsDTOList() throws Exception {
 
-        return getSearchResultsAsAdmin(annotationPath,
+        return getSearchResultsAsAdmin(ANNOTATION_PATH,
                 0,
                 20,
                 new HashMap<>(),
-                new TypeReference<PaginatedListResponse<AnnotationGetDTO>>() {
+                new TypeReference<>() {
                 }
         );
     }
 
     @Test
-    public void testCreate() throws Exception {        
-        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
-        dtoList.add(getCreationDataDTO("2020-10-11T10:29:06.402+0200"));
-        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), dtoList);
-        LOGGER.info(postResultData.toString());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());        
+    public void testCreate() throws Exception {
+        // test with global OS inside XP
+        var dtoWithOsTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dtoWithOsTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test with global OS
+        var dtoWithGlobalOsTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithGlobalOsTarget.setTarget(os.getUri());
+        dtoWithGlobalOsTarget.setProvenance(provenanceWithoutXP);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dtoWithGlobalOsTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test with both of target
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithOsTarget, dtoWithGlobalOsTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test with facility
+        var dtoWithFacilityTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithFacilityTarget.setTarget(facility.getUri());
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithOsTarget, dtoWithGlobalOsTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test with facility and experiment OS
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithOsTarget, dtoWithFacilityTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test with facility and global OS
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithGlobalOsTarget, dtoWithFacilityTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test without OS and without experiment
+        var dtoWithNoTargetAndXp = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithNoTargetAndXp.setTarget(null);
+        dtoWithNoTargetAndXp.setProvenance(provenanceWithoutXP);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithNoTargetAndXp));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        // test without OS inside an experiment
+        var dtoWithNoTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithNoTarget.setTarget(null);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithNoTarget));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
     }
 
     @Test
-    public void testCreateWithIncompleteProvUsedShouldFail() throws Exception {
-        // Create provenance with incomplete provUsed (no rdf_type specified)
+    public void testCreateWithUnknownTargetFail() throws Exception {
+
+        // test with unknown os from xp
+        var dtoWithBadOsTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithBadOsTarget.setTarget(URI.create("os:unknown_os"));
+        Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dtoWithBadOsTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // test with unknown os from global
+        var dtoWithBadGlobalOsTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithBadGlobalOsTarget.setTarget(URI.create("os:unknown_os"));
+        dtoWithBadGlobalOsTarget.setProvenance(provenanceWithoutXP);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dtoWithBadOsTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // test with unknown facility
+        var dtoWithBadFacilityTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithBadFacilityTarget.setTarget(URI.create("os:unknown_facility"));
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dtoWithBadFacilityTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // test with unknown facility and a known OS
+        var dtoWithOsTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithBadFacilityTarget, dtoWithOsTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // test with a known facility and an unknown OS
+        var dtoWithFacilityTarget = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        dtoWithFacilityTarget.setTarget(facility.getUri());
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithFacilityTarget, dtoWithBadOsTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // test with an unknown facility and an unknown OS
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithBadFacilityTarget, dtoWithBadOsTarget));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithProvWithBadAgentFail() throws Exception {
         DataProvenanceModel provenanceModel = new DataProvenanceModel();
-        provenanceModel.setUri(provenance.getUri());
-        ProvEntityModel provUsed = new ProvEntityModel();
-        provUsed.setUri(scientificObjects.get(0));
-        provenanceModel.setProvUsed(Collections.singletonList(provUsed));
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        ProvEntityModel provAgent = new ProvEntityModel();
+        provAgent.setUri(os.getUri());
+        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(provAgent));
+
+        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setProvenance(provenanceModel);
+
+        // Test with an OS : should fail since the OS exists but is not an agent (a device/account)
+        Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // Test with unknown device or agent
+        ProvEntityModel badProvUsedDevice = new ProvEntityModel();
+        badProvUsedDevice.setUri(URI.create(device.getUri().toString()+"_unknown"));
+        ProvEntityModel badProvUsedAccount = new ProvEntityModel();
+        badProvUsedAccount.setUri(URI.create(account.getUri().toString()+"_unknown"));
+        provenanceModel.setProvWasAssociatedWith(Arrays.asList(badProvUsedDevice, badProvUsedAccount));
+
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithInvalidVariableOrDatatypeFail() throws Exception {
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+
+        // DataCreationDTO uses an unknown variable
+        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setProvenance(provenanceModel);
+        creationDTO.setVariable(URI.create("os:unknown_variable"));
+
+        Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+
+        // Data with incompatible value type
+        creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setVariable(datetimeVariable);
+        creationDTO.setValue(5);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
+
+        creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setVariable(stringVariable);
+        creationDTO.setValue(563F);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
+
+        creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setVariable(decimalVariable);
+        creationDTO.setValue(563F);
+        postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+    }
+
+
+    @Test
+    public void testCreateWithProvAgentOK() throws Exception {
+
+        ProvEntityModel provUsedDevice = new ProvEntityModel();
+        provUsedDevice.setUri(device.getUri());
+        ProvEntityModel provUsedAccount = new ProvEntityModel();
+        provUsedAccount.setUri(account.getUri());
+
+        // Create provenance with unknown agent (here an OS, not a device or account)
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvWasAssociatedWith(Arrays.asList(provUsedDevice, provUsedAccount));
 
         // DataCreationDTO uses this provenance
         DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
         creationDTO.setProvenance(provenanceModel);
 
-        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), Collections.singletonList(creationDTO));
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
     }
 
     @Test
-    public void testCreateWithIncompleteProvWasAssociatedWithShouldFail() throws Exception {
-        // Create provenance with incomplete provWasAssociatedWith (no rdf_type specified)
+    public void testCreateWithProvActivityOK() throws Exception {
+
+        ProvEntityModel provActivity1 = new ProvEntityModel();
+        provActivity1.setUri(device.getUri());
+        ProvEntityModel provActivity2 = new ProvEntityModel();
+        provActivity2.setUri(account.getUri());
+
+        // Create provenance with activities
         DataProvenanceModel provenanceModel = new DataProvenanceModel();
-        provenanceModel.setUri(provenance.getUri());
-        ProvEntityModel provUsed = new ProvEntityModel();
-        provUsed.setUri(scientificObjects.get(0));
-        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(provUsed));
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvUsed(List.of(provActivity1, provActivity2));
 
         // DataCreationDTO uses this provenance
         DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
         creationDTO.setProvenance(provenanceModel);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+    }
 
-        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), Collections.singletonList(creationDTO));
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
+    @Test
+    public void testCreateWithProvActivityFail() throws Exception {
+
+        ProvEntityModel provActivity1 = new ProvEntityModel();
+        provActivity1.setUri(URI.create("test:unknown-activity"));
+
+        // Create provenance with activities
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvUsed(List.of(provActivity1));
+
+        // DataCreationDTO uses this provenance
+        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setProvenance(provenanceModel);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
     }
 
     @Test
@@ -532,82 +709,79 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         // Row 0 is invalid
         assertTrue(csvValidationDTO.getDataErrors().getInvalidDataTypeErrors().containsKey(0));
     }
-    
+
     @Test
     public void testUpdate() throws Exception {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO dto = getCreationDataDTO("2020-10-12T10:29:06.402+0200");
         dtoList.add(dto);
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
+        final Response postResult = getJsonPostResponseAsAdmin(target(CREATE_PATH), dtoList);
 
-        dto.setUri(extractUriFromResponse(postResult));
+        dto.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
         dto.setValue(10.2);
-        
+
         // check update ok
-        final Response updateResult = getJsonPutResponse(target(updatePath), dto);
+        final Response updateResult = getJsonPutResponse(target(UPDATE_PATH), dto);
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(URI_PATH), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<DataGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<DataGetDTO>>() {
+        SingleObjectResponse<DataGetDTO> getResponse = mapper.convertValue(node, new TypeReference<>() {
         });
         DataGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
         assertEquals(dto.getValue(), dtoFromApi.getValue());
     }
-    
+
     @Test
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
-        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
-        dtoList.add(getCreationDataDTO("2020-10-13T10:29:06.402+0200"));
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), dtoList);
-        String uri = extractUriFromResponse(postResponse).toString();
+        var dto = getCreationDataDTO("2020-10-13T10:29:06.402+0200");
+        Response postResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(dto));
+        String uri = extractUriListFromPaginatedListResponse(postResponse).get(0).toString();
 
         // delete object and check if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+        Response delResult = getDeleteByUriResponse(target(DELETE_PATH), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(URI_PATH), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByUri() throws Exception {
-        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
-        dtoList.add(getCreationDataDTO("2020-10-14T10:29:06.402+0200"));
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
-        URI uri = extractUriFromResponse(postResult);
+        var data = getCreationDataDTO("2020-10-14T10:29:06.402+0200");
 
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
+        final Response postResult = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(data));
+        URI uri = extractUriListFromPaginatedListResponse(postResult).get(0);
+
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(URI_PATH), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<DataGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<DataGetDTO>>() {
-        });
+        SingleObjectResponse<DataGetDTO> getResponse = mapper.convertValue(node, new TypeReference<>() {});
         DataGetDTO dataGetDto = getResponse.getResult();
         assertNotNull(dataGetDto);
     }
-    
+
     @Test
     public void testSearch() throws Exception {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO creationDTO = getCreationDataDTO("2020-06-15T10:29:06.402+0200");
         dtoList.add(creationDTO);
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
-        URI uri = extractUriFromResponse(postResult);
-        
-        List<URI> provenances = new ArrayList();
+        getJsonPostResponseAsAdmin(target(CREATE_PATH), dtoList);
+
+        List<URI> provenances = new ArrayList<>();
         provenances.add(creationDTO.getProvenance().getUri());
-        List<URI> variables = new ArrayList();
+        List<URI> variables = new ArrayList<>();
         variables.add(creationDTO.getVariable());
 
-        Map<String, Object> params = new HashMap<String, Object>() {
+        Map<String, Object> params = new HashMap<>() {
             {
                 put("start_date", "2020-06-01");
                 put("end_date", "2020-06-30");
@@ -617,25 +791,25 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
             }
         };
 
-        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        WebTarget searchTarget = appendSearchParams(target(SEARCH_PATH), 0, 20, params);
         final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        List<DataGetDTO> datas = getSearchResultsAsAdmin(searchPath,params,new TypeReference<PaginatedListResponse<DataGetDTO>>() {});
+        List<DataGetDTO> datas = getSearchResultsAsAdmin(SEARCH_PATH,params, new TypeReference<>() {
+        });
 
         assertFalse(datas.isEmpty());
     }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(AnnotationModel.class);
+        return List.of(AnnotationModel.class);
     }
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Arrays.asList(
-                DataDAO.DATA_COLLECTION_NAME,
-                ProvenanceDAO.PROVENANCE_COLLECTION_NAME
+        return List.of(
+                DataDAO.DATA_COLLECTION_NAME
         );
     }
 

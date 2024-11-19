@@ -338,9 +338,11 @@ menu:
 routes:
   - path: /organization/details/:uri
     component: opensilex-OrganizationDetailView
+    rdfType: vocabulary:LocalOrganization
     icon: ik#ik-globe
   - path: /organization/site/details/:uri
     component: opensilex-SiteDetailView
+    rdfType: org:Site
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     rdfType: vocabulary:Experiment
@@ -386,6 +388,7 @@ routes:
 
   - path: /variable/details/:uri
     component: opensilex-VariableView
+    rdfType: vocabulary:Variable
     credentials: [ ]
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
@@ -403,6 +406,7 @@ routes:
 
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
+    rdfType: vocabulary:Project
   - path: /project/documents/:uri
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
@@ -430,6 +434,7 @@ routes:
       - factor-modification
   - path: /:xpUri/factor/details/:uri
     component: opensilex-FactorView
+    rdfType: vocabulary:Factor
   - path: /:xpUri/factor/experiments/:uri
     component: opensilex-FactorView
   - path: /:xpUri/factor/annotations/:uri
@@ -439,6 +444,7 @@ routes:
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
+    rdfType: vocabulary:Document
     credentials: [ ]
 
   - path: /device/details/:uri
@@ -490,6 +496,7 @@ routes:
     credentials: []
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
+    rdfType: vocabulary:Provenance
     credentials: [ ]
   - path: /provenances/annotations/:uri
     component: opensilex-ProvenanceDetailsPage

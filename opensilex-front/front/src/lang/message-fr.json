@@ -68,6 +68,7 @@
             "year":"Année",
             "geometry": "Coordonnées géospatiales",
             "geometry-help": "Coordonnées géospatiales au format WKT",
+            "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
             "example": "Exemple",
@@ -187,7 +188,9 @@
                 "develop": "Develop",
                 "release": "Release"
             },
-            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect."
+            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect.",
+            "uri-search-placeholder": "Recherche par URI",
+            "uriSearchHoverMessage": "Recherche par URI quelconque"
         },
         "menu": {
             "dashboard": "Tableau de bord",

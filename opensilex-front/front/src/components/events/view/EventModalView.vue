@@ -3,7 +3,7 @@
     <b-modal
             ref="modalRef"
             :size="modalSize"
-            :static="true"
+            :static="static"
             no-close-on-backdrop
             no-close-on-esc
             ok-only
@@ -40,7 +40,7 @@
                     :to="{
                         path: uriPaths[targetURI]
                     }"
-                
+
                 ></opensilex-UriLink>
                 </div>
 
@@ -107,6 +107,12 @@
 
         @Prop({default: "lg"})
         modalSize;
+
+        /**
+         * Renders the content of the component in-place in the DOM, rather than portalling it to be appended to the body element
+         */
+        @Prop({default: true})
+        static: boolean;
 
         @Prop()
         uriLabels;

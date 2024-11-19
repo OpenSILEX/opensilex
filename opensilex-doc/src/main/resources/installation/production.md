@@ -47,13 +47,13 @@ You need at least [Java JDK 11+](https://jdk.java.net/) installed on the server.
 
 You can install it on Linux with the following command:
 
-```
+```bash
 sudo apt install openjdk-11-jdk openjdk-11-jre
 ```
 
 You can check Java installation and version with the following command:
 
-```
+```bash
 java --version
 ```
 
@@ -75,7 +75,7 @@ documentation for this image [here](https://www.mongodb.com/compatibility/deploy
 
 > Linux example command
 
-```
+```bash
 docker network create mongoCluster
 docker run -d --rm -p 27017:27017 --name mongo_opensilex --network mongoCluster mongo:5 mongod --replSet opensilex --bind_ip localhost,mongo_opensilex
 ```
@@ -87,7 +87,7 @@ docker run -d --rm -p 27017:27017 --name mongo_opensilex --network mongoCluster 
 
 ## Set up a triplestore
 
-You can use [RDF4J](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
+You can use [RDF4J 5.X](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
 
 You can find a quick comparison of both triplestore engines [here](https://db-engines.com/en/system/GraphDB%3BRDF4J).
 
@@ -104,7 +104,7 @@ You can also use this docker image: [eclipse/rdf4j-workbench](https://hub.docker
 
 ```bash
 sudo docker run -d -p 8080:8080 -e JAVA_OPTS="-Xms4g -Xmx4g" \
-	-v data:/var/rdf4j -v logs:/usr/local/tomcat/logs eclipse/rdf4j-workbench:3.7.7
+	-v data:/var/rdf4j -v logs:/usr/local/tomcat/logs eclipse/rdf4j-workbench:5.0.3
 ```
 
 - The RDF4J exposed port is `8080`
@@ -134,25 +134,25 @@ All directories and usernames in this installation procedure can be changed, but
 
 Create a user with its home directory:
 
-```
+```bash
 sudo useradd -s /bin/bash -d /home/opensilex/ -m opensilex
 ```
 
 Set up a password for your new user:
 
-```
+```bash
 sudo passwd opensilex
 ```
 
 Give sudo permissions to this user :
 
-```
+```bash
 sudo usermod -a -G sudo opensilex
 ```
 
 Connect with this username and the defined password:
 
-```
+```bash
 su - opensilex
 ```
 
@@ -160,25 +160,25 @@ su - opensilex
 
 Directory for OpenSILEX binaries:
 
-```
+```bash
 mkdir -p /home/opensilex/bin
 ```
 
 Directory for OpenSILEX configuration file:
 
-```
+```bash
 mkdir -p /home/opensilex/config
 ```
 
 Directory for OpenSILEX data file storage:
 
-```
+```bash
 mkdir -p /home/opensilex/data
 ```
 
 Directory for OpenSILEX file logs:
 
-```
+```bash
 mkdir -p /home/opensilex/logs
 ```
 
@@ -192,7 +192,7 @@ Extract the downloaded ZIP file into `/home/opensilex/bin`
 
 > Linux example commands:
 
-```
+```bash
 cd /home/opensilex/bin
 wget https://github.com/OpenSILEX/opensilex/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
 unzip opensilex-X.Y.Z.zip
@@ -210,7 +210,7 @@ unzip opensilex-release-1.1.1.zip
 
 You should get the following directory structure:
 
-```
+```bash
 /home/opensilex/
 +-- bin/
     +-- <X.Y.Z>/
@@ -268,7 +268,7 @@ Edit the file `/home/opensilex/bin/<X.Y.Z>/logback.xml`
 
 Set the path property to reflect your installation:
 
-```
+```xml
 <property name="log.path" value="/home/opensilex/logs"/>
 ```
 
@@ -282,13 +282,13 @@ By default, the logs will be printed to the console output and written into a ro
 
 - Create
 
-```
+```bash
 nano /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
 - Content
 
-```
+```bash
 #!/bin/bash
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
@@ -302,7 +302,7 @@ java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR --CONFIG_FILE=$
 
 - Activation
 
-```
+```bash
 chmod +x /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
@@ -310,25 +310,25 @@ chmod +x /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 
 - Edit
 
-```
+```bash
 nano ~/.bash_aliases
 ```
 
 - Content
 
-```
+```bash
 alias opensilex="/home/opensilex/bin/<X.Y.Z>/opensilex.sh"
 ```
 
 - Activation
 
-```
+```bash
 source  ~/.bashrc
 ```
 
 - Verification
 
-```
+```bash
 opensilex help
 ```
 
@@ -342,27 +342,17 @@ This instruction creates the repository (with the name defined in the configurat
 
 **GraphDB**
 
-If you want to use GraphDB, you must update the following parts of your `opensilex.yml` config file:
+If you want to use GraphDB, you have to manually creates the repository in your graphdb instance and update your OpenSILEX config by using the graphdb server/repository likes following : 
 
 ```yml
 ontologies:
   baseURI: http://opensilex.dev/
   baseURIAlias: os
   sparql:
-    implementation: org.opensilex.sparql.rdf4j.graphdb.OntotextGraphDBServiceFactory
     config:
       serverURI: http://localhost:7200
       repository: opensilex
-      repositoryType: graphdb:FreeSailRepository
 ```
-
-**Note :** the value for the setting `repositoryType` depends on your GraphDB version (free, standard or entreprise).
-
-You can follow these links for more details about repository configuration :
-
-- https://graphdb.ontotext.com/documentation/9.11/standard/configuring-a-repository.html#configuration-parameters
-- https://graphdb.ontotext.com/documentation/9.11/enterprise/configuring-a-repository.html#configuration-parameters
-- https://graphdb.ontotext.com/documentation/9.11/free/configuring-a-repository.html#configuration-parameters
 
 Now you can run
 
@@ -380,38 +370,38 @@ opensilex sparql reset-ontologies
 
 This instruction creates a user "admin@opensilex.org" with the password "admin"
 
-```
+```bash
 opensilex user add --admin
 ```
 
 More information about the command
 
-```
+```bash
 opensilex user add --help
 ```
 
 ## Start openSilex
 
-```
+```bash
 opensilex server start --host=192.168.178.31 --port=8081 --adminPort=4081
 ```
 
 ## Stop openSilex
 
-```
+```bash
 opensilex server stop --host=192.168.178.31 --adminPort=4081
 ```
 
 ## Add a Reverse Proxy Nginx to redirect the application on port 80
 
-Instructions
+* Instructions
 
-```
+```bash
 sudo apt install nginx
 sudo nano /etc/nginx/sites-enabled/default
 ```
 
-Content
+* Content
 
 ```
         location / {
@@ -423,8 +413,8 @@ Content
         }
 ```
 
-Activation
+* Activation
 
-```
+```bash
 sudo systemctl restart nginx
 ```

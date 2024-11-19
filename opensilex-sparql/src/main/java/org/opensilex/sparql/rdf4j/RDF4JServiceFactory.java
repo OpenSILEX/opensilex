@@ -20,6 +20,7 @@ import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -28,7 +29,6 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.ConfigTemplate;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
-import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
 import org.eclipse.rdf4j.repository.config.RepositoryFactory;
 import org.eclipse.rdf4j.repository.config.RepositoryRegistry;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
@@ -237,10 +237,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
             final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, SimpleValueFactory.getInstance());
             rdfParser.setRDFHandler(new StatementCollector(graph));
-            rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
+            rdfParser.parse(new StringReader(configString), CONFIG.NAMESPACE);
 
             final org.eclipse.rdf4j.model.Resource repositoryNode = Models
-                    .subject(graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY))
+                    .subject(graph.filter(null, RDF.TYPE, CONFIG.Rep.Repository))
                     .orElseThrow(() -> new RepositoryConfigException("missing repository node"));
 
             loadRDF4JServices();

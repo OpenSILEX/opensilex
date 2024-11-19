@@ -39,6 +39,7 @@ import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -56,6 +57,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLService.TYPE_VAR;
+import static org.opensilex.sparql.service.SPARQLService.URI_VAR;
 
 /**
  * @author Vincent MIGOT
@@ -414,61 +417,75 @@ public class ExperimentDAO {
         ));
     }
 
-    public void validateExperimentAccess(URI experimentURI, AccountModel user) throws Exception {
+    public void validateExperimentAccess(Collection<URI> experiments, AccountModel user) throws Exception {
 
-        if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
-            throw new NotFoundURIException("Experiment URI not found: ", experimentURI);
+        var unknownXps = sparql.getExistingUris(ExperimentModel.class, experiments, false);
+        if(! unknownXps.isEmpty()){
+            throw new SPARQLInvalidUriListException("Experiments URI(s) not found", unknownXps);
         }
 
-        if (user.isAdmin()) {
+        if (Boolean.TRUE.equals(user.isAdmin())) {
             return;
         }
 
-        AskBuilder ask = sparql.getUriExistsQuery(ExperimentModel.class, experimentURI);
-
-        Node uriVar = SPARQLDeserializers.nodeURI(experimentURI);
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_user");
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
 
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-
-        ElementGroup optionals = new ElementGroup();
-        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
-        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
-        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
-        ask.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
-        Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
-
-        Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
-        ask.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
-        Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
-
+        Var publisherVar = makeVar(SPARQLResourceModel.PUBLISHER_FIELD);
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
-        Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
-
         Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
-        Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
-
         Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
-        Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
-        ask.addFilter(
+        // Sub-query : Retrieve all experiments which are accessible according user/group and experiment access rules (publisher, supervisor, public)
+        WhereBuilder where = new WhereBuilder()
+                .addWhere(URI_VAR, RDF.type, TYPE_VAR)
+                .addWhere(TYPE_VAR, Ontology.subClassAny, sparql.getRDFType(ExperimentModel.class))
+                .addOptional(new WhereBuilder()
+                        .addWhere(URI_VAR, SecurityOntology.hasGroup.asNode(), groupVar)
+                        .addWhere(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar)
+                        .addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar))
+                .addOptional(URI_VAR, DCTerms.publisher.asNode(), publisherVar)
+                .addOptional(URI_VAR, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar)
+                .addOptional(URI_VAR, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar)
+                .addOptional(URI_VAR, Oeso.isPublic.asNode(), isPublicVar);
+
+        // Filter : get experiments which are accessible by the user
+        where.addFilter(
                 SPARQLQueryHelper.or(
-                        isPublisher,
-                        inGroup,
-                        hasScientificSupervisor,
-                        hasTechnicalSupervisor,
-                        isPublic
+                        SPARQLQueryHelper.eq(publisherVar, userNodeURI),
+                        SPARQLQueryHelper.eq(userVar, userNodeURI),
+                        SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI),
+                        SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI),
+                        SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE)
                 )
         );
 
-        if (!sparql.executeAskQuery(ask)) {
-            throw new ForbiddenURIAccessException(experimentURI);
+        SelectBuilder select = new SelectBuilder().addVar(URI_VAR);
+        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(where));
+
+        SPARQLQueryHelper.addWhereUriStringValues(
+                select,
+                URI_VAR.getVarName(),
+                experiments.stream().map(URI::toString),
+                true,
+                experiments.size()
+        );
+
+        // Compute the subset of experiments which are not present in the set of accessible experiments
+        List<URI> forbiddenXps = sparql.executeSelectQueryAsStream(select)
+                .map(result -> URIDeserializer.formatURI(result.getStringValue(URI_VAR.getVarName())))
+                .collect(Collectors.toList());
+
+        if(! forbiddenXps.isEmpty()){
+            throw new ForbiddenURIAccessException(forbiddenXps, "Forbidden Experiment access");
         }
+    }
+
+    public void validateExperimentAccess(URI experiment, AccountModel user) throws Exception {
+        Objects.requireNonNull(experiment);
+        validateExperimentAccess(Collections.singletonList(experiment),user);
     }
 
     /**

@@ -207,10 +207,7 @@ export default class AssociatedPosition extends Vue {
     }
 
     showEventView(position) {
-        this.getEventPromise(position).then((http: HttpResponse<OpenSilexResponse>) => {
-            this.selectedEvent = http.response.result;
-            this.eventModalView.show();
-        }).catch(this.$opensilex.errorHandler);
+      this.eventModalView.show(position, this.getEventPromise);
     }
 
     getItemsToDisplay(targets) {

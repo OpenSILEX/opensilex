@@ -81,8 +81,6 @@
       modalSize="lg"
       ref="eventModalView"
       :static="false"
-      :dto.sync="selectedEvent"
-      :type.sync="selectedEvent.rdf_type"
     ></opensilex-EventModalView>
   </div>
 </template>
@@ -115,7 +113,6 @@ export default class GlobalUriSearchResult extends Vue {
   private ontologyService: OntologyService;
   private dataService: DataService;
   private eventsService: EventsService;
-  private selectedEvent: EventDetailsDTO | MoveDetailsDTO = {};
   //#endregion
 
   //#region: hooks
@@ -133,10 +130,7 @@ export default class GlobalUriSearchResult extends Vue {
     //If the result is an event:
     this.$opensilex.enableLoader();
     if(this.isSubTypeOfEvent()){
-      this.getEventPromise().then((http: HttpResponse<OpenSilexResponse>) => {
-        this.selectedEvent = http.response.result;
-        this.eventModalView.show();
-      }).catch(this.$opensilex.errorHandler);
+      this.eventModalView.show(this.uri, this.getEventPromise);
       return;
     }
 
@@ -193,6 +187,13 @@ export default class GlobalUriSearchResult extends Vue {
   private isMove() {
     return this.$opensilex.Oeev.checkURIs(this.type, this.$opensilex.Oeev.MOVE_TYPE_URI);
   }
+
+  private isFactorLevel(): boolean{
+    return this.$opensilex.Oeev.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI);
+  }
+  private isFactorLevelOrFactor(): boolean{
+    return this.$opensilex.Oeev.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_URI) || this.isFactorLevel();
+  }
   //#endregion
 
 
@@ -218,7 +219,9 @@ export default class GlobalUriSearchResult extends Vue {
     if(this.searchResult.super_types !== null){
         let unformattedPath = this.$opensilex.getPathFromUriTypes(this.searchResult.super_types.rdf_types);
         //Pass factor as uri to getTargetPath if the uri was a FactorLevel (to navigate to its parent Factor)
-        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), this.context, unformattedPath);
+        //Only pass context if we the type is factor or factor level, only things inside experiments that we can navigate to for now.
+        //Errors get created otherwise as the context will always be the global graph instead of an xp
+        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), (this.isFactorLevelOrFactor() ? this.context : undefined), unformattedPath);
     }else if(this.searchResult.root_class !== null){
       return this.$opensilex.getVocabularyPath(this.uri, this.searchResult.root_class, this.searchResult.is_property);
     }

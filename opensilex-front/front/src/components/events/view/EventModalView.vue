@@ -9,7 +9,7 @@
             ok-only
             :title="$t('Event.event')"
     >
-        <div class="card-body" v-if="event">
+      <div class="card-body" v-if="event">
             <opensilex-UriView :uri="event.uri"></opensilex-UriView>
             <opensilex-TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name"></opensilex-TypeView>
             <opensilex-TextView label="component.common.description" :value="event.description"></opensilex-TextView><br>
@@ -90,18 +90,18 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
-    import Vue from "vue";
-    import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
-    import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-    import { EventDetailsDTO } from 'opensilex-core/index';
-    import { UserGetDTO } from "../../../../../../opensilex-security/front/src/lib";
+import {Component, Prop, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {EventDetailsDTO} from 'opensilex-core/index';
+import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";
+import {OntologyService} from "opensilex-core/api/ontology.service";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+
 
     @Component
     export default class EventModalView extends Vue {
-
-        $opensilex: any;
-        $vueJsOntologyService: VueJsOntologyExtensionService;
 
         @Ref("modalRef") readonly modalRef!: any;
 
@@ -114,26 +114,25 @@
         @Prop({default: true})
         static: boolean;
 
-        @Prop()
-        uriLabels;
-
-        @Prop()
-        uriPaths;
-
-        @Prop()
-        specificPropertiesPaths;
-
-        @Prop()
-        specificPropertiesLabels;
-
-
-        @PropSync("dto")
-        event: EventDetailsDTO;
-
-        @PropSync("type")
-        eventType: string;
+        type: string;
 
         baseEventType: string;
+
+        $opensilex: OpenSilexVuePlugin;
+
+        $vueJsOntologyService: VueJsOntologyExtensionService;
+
+        ontologyService: OntologyService;
+
+        uriLabels: {[key : string] : string} = {};
+
+        uriPaths: {[key : string] : string} = {};
+
+        specificPropertiesPaths: {[key : string] : string} = {};
+
+        specificPropertiesLabels: {[key : string] : string} = {};
+
+        event: EventDetailsDTO = {};
 
         eventPropertyByUri: Map<string, VueRDFTypeDTO> = new Map();
 
@@ -157,19 +156,19 @@
         }
 
         created() {
-
             this.baseEventType = this.$opensilex.Oeev.EVENT_TYPE_URI;
-            this.$vueJsOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService")
+            this.$vueJsOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+            this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
             this.buildPropertyMap();
         }
 
         buildPropertyMap() {
 
-            if(! this.eventType || this.$opensilex.Oeev.checkURIs(this.eventType,this.$opensilex.Oeev.EVENT_TYPE_URI)) {
+            if(! this.type || this.$opensilex.Oeev.checkURIs(this.type,this.$opensilex.Oeev.EVENT_TYPE_URI)) {
                 return;
             }
 
-            this.$vueJsOntologyService.getRDFTypeProperties(this.eventType, this.baseEventType)
+            this.$vueJsOntologyService.getRDFTypeProperties(this.type, this.baseEventType)
                 .then((http: HttpResponse<OpenSilexResponse<VueRDFTypeDTO>>) => {
                     let typeModel = http.response.result;
 
@@ -184,14 +183,80 @@
 
         }
 
-        show() {
-            this.$nextTick(() => {
-                this.buildPropertyMap();
-                this.modalRef.show();
-            });
-        }
+      /**
+       * Fetches Event details using uri, loads the labels for inner targets and relations, then shows the modal
+       *
+       * @param promiseParam , not typed because this param is a bit wierd, it gets used alongside the getEventPromise whose param is also untyped
+       * @param getEventPromise the getEvent service
+       *
+       * @return An EventViewCalculatableProps with the props values, or undefined if an error was caught and handled
+       * the caller must verify not undefined.
+       */
+      async show(
+        promiseParam,
+        getEventPromise: (param) => Promise<HttpResponse<OpenSilexResponse<EventDetailsDTO>>>,
+      ) {
 
-        getPropertyName(propertyUri: string) {
+        let http;
+        try {
+          // Await the main event data
+          http = await getEventPromise(promiseParam);
+          //Set the result to a const to be used for other get requests
+          //We only set this.event at the end because of display delay problems
+          const event: EventDetailsDTO = http.response.result;
+
+          // Check and load target names
+          if (event.targets && event.targets.length > 0) {
+            const targetLabels = await this.ontologyService.getURILabelsList(event.targets);
+            for (const element of targetLabels.response.result) {
+              this.uriLabels[element.uri] = element.name;
+            }
+
+            // Load target types to create paths
+            const targetTypes = await this.ontologyService.getURITypes(event.targets);
+            for (const element of targetTypes.response.result) {
+              this.uriPaths[element.uri] = this.$opensilex.getTargetPath(
+                element.uri,
+                null,
+                this.$opensilex.getPathFromUriTypes(element.rdf_types)
+              );
+            }
+          }
+
+          // Check and load specific properties names and paths
+          if (event.relations && event.relations.length > 0) {
+            const relationsURIs = event.relations.map(relation => relation.value);
+
+            const specificPropertyLabels = await this.ontologyService.getURILabelsList(relationsURIs);
+            for (const element of specificPropertyLabels.response.result) {
+              this.specificPropertiesLabels[element.uri] = element.name;
+            }
+
+            const specificPropertyTypes = await this.ontologyService.getURITypes(relationsURIs);
+            for (const element of specificPropertyTypes.response.result) {
+              this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
+                element.uri,
+                null,
+                this.$opensilex.getPathFromUriTypes(element.rdf_types)
+              );
+            }
+          }
+
+          this.event = http.response.result;
+          this.type = event.rdf_type;
+
+          // Trigger DOM update and show modal
+          this.buildPropertyMap();
+          this.$nextTick(() => {
+            this.buildPropertyMap();
+            this.modalRef.show();
+          });
+        } catch (error) {
+          this.$opensilex.errorHandler(http);
+        }
+      }
+
+      getPropertyName(propertyUri: string) {
 
             if (!propertyUri) {
                 return undefined;

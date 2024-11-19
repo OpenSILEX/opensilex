@@ -85,8 +85,6 @@
         <opensilex-EventModalView
             modalSize="lg"
             ref="eventModalView"
-            :dto.sync="selectedEvent"
-            :type.sync="selectedEvent.type"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -270,10 +268,7 @@ export default class PositionList extends Vue {
     }
 
     showEventView(position) {
-        this.getEventPromise(position).then((http: HttpResponse<OpenSilexResponse>) => {
-            this.selectedEvent = http.response.result;
-            this.eventModalView.show();
-        }).catch(this.$opensilex.errorHandler);
+      this.eventModalView.show(position, this.getEventPromise);
     }
     showDetails(data) {
       if (!data.detailsShowing) {

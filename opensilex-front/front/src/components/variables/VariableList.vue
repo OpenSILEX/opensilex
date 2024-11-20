@@ -356,6 +356,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
 
 @Component
 export default class VariableList extends Vue {
@@ -585,8 +586,7 @@ export default class VariableList extends Vue {
 
     classicExportVariables() {
         let path = "/core/variables/export_classic_by_uris";
-        let today = new Date();
-        let filename = "export_classic_variables_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, "0") + String(today.getDate()).padStart(2, "0");
+        let filename = "export_classic_variables_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
         let variablesURIs = [];
 
         for (let select of this.tableRef.getSelected()) {
@@ -642,8 +642,7 @@ export default class VariableList extends Vue {
 
     detailsExportVariables() {
         let path = "/core/variables/export_details_by_uris";
-        let today = new Date();
-        let filename = "export_detailed_variables_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, "0") + String(today.getDate()).padStart(2, "0");
+        let filename = "export_detailed_variables_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
         let variablesURIs = [];
 
         for (let select of this.tableRef.getSelected()) {

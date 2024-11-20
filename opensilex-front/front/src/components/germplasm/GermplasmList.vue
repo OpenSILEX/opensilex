@@ -283,6 +283,7 @@ import TableAsyncView from "../common/views/TableAsyncView.vue";
 import GermplasmAttributesValueSelector from "./GermplasmAttributesValueSelector.vue";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
 
 @Component
 export default class GermplasmList extends Vue {
@@ -486,8 +487,7 @@ export default class GermplasmList extends Vue {
 
     exportCSV(exportAll: boolean) {
         let path = "/core/germplasm/export";
-        let today = new Date();
-        let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+        let filename = "export_germplasm_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
 
         let exportDto: GermplasmSearchFilter = {
             uri: this.filter.uri,

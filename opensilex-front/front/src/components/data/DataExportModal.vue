@@ -60,6 +60,7 @@
 import Vue from "vue";
 import { Component, Prop, Ref } from "vue-property-decorator";
 import {DataSearchDTO} from "opensilex-core/model/dataSearchDTO";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
 
 @Component
 export default class DataExportModal extends Vue {
@@ -93,12 +94,7 @@ export default class DataExportModal extends Vue {
 
   exportData() {
     let path = "/core/data/export";
-    let today = new Date();
-    let filename =
-      "export_data_" +
-      today.getFullYear() +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      String(today.getDate()).padStart(2, "0");
+    let filename = "export_data_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
 
     let exportDto: DataSearchDTO = {
       start_date: this.filter.start_date,

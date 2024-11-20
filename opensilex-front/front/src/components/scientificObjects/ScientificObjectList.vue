@@ -147,6 +147,7 @@ import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ExperimentGetDTO, ScientificObjectsService } from "opensilex-core/index";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
 
 @Component
 export default class ScientificObjectList extends Vue {
@@ -392,15 +393,7 @@ export default class ScientificObjectList extends Vue {
 
   exportCSV(exportAll: boolean) {
     let path = "/core/scientific_objects/export";
-    let today = new Date();
-    let filename =
-          "export_scientific_objects_" +
-          today.getFullYear() + ""
-          + (today.getMonth()) + ""
-          + today.getDate() + "_"
-          +  today.getHours() + ""
-          + today.getMinutes()
-          + "" + today.getSeconds();
+    let filename = "export_scientific_objects_" + DateTimeFormatter.formatDateTimeForFilename(today);
 
     // export all OS corresponding to filter
     let exportDto  = {

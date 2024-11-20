@@ -261,6 +261,7 @@ import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import DeviceModalForm from "./form/DeviceModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/index";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
 
 @Component
 export default class DeviceList extends Vue {
@@ -444,12 +445,7 @@ export default class DeviceList extends Vue {
 
     exportDevices() {
         let path = "/core/devices/export_by_uris";
-        let today = new Date();
-        let filename =
-            "export_devices_" +
-            today.getFullYear() +
-            String(today.getMonth() + 1).padStart(2, "0") +
-            String(today.getDate()).padStart(2, "0");
+        let filename = "export_devices_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
 
         var exportList = [];
         for (let select of this.tableRef.getSelected()) {

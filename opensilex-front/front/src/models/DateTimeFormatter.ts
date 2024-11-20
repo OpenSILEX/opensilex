@@ -154,5 +154,22 @@ export default class DateTimeFormatter {
 
         return result;
     }
+
+    /**
+     * Formats a date as a string to be included in a filename, for example for an exported CSV.
+     * Format is YYYYMMDD_HHmmss.
+     *
+     * @param dateTimeValue
+     */
+    static formatDateTimeForFilename(dateTimeValue: DateArg): string {
+        const date = new Date(dateTimeValue);
+        return String(date.getFullYear())
+            + String(date.getMonth() + 1).padStart(2, "0")
+            + String(date.getDate()).padStart(2, "0")
+            + "_"
+            + String(date.getHours()).padStart(2, "0")
+            + String(date.getMinutes()).padStart(2, "0")
+            + String(date.getSeconds()).padStart(2, "0");
+    }
 }
 

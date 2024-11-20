@@ -335,6 +335,8 @@ import {User} from "../../../models/User";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
 import CriteriaSearchModalCreator from "../../scientificObjects/CriteriaSearchModalCreator.vue";
+import DateTimeFormatter from "@/models/DateTimeFormatter";
+
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -605,15 +607,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   exportCSV(exportAll: boolean) {
     let path = "/core/scientific_objects/export";
-    let today = new Date();
-    let filename =
-      "export_scientific_objects_global_" +
-        today.getFullYear() + ""
-        + (today.getMonth()) + "" 
-        + today.getDate() + "_"
-        +  today.getHours() + ""
-        + today.getMinutes()
-        + "" + today.getSeconds();
+    let filename = "export_scientific_objects_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
 
     // export all OS corresponding to filter
     let exportDto = {

@@ -312,13 +312,14 @@ export default class DataImportForm extends Vue {
         let promise;
 
         promise = this.$opensilex.uploadFileToService(
-          "/core/data/import",
+          "/core/data-v2/import_v2",
           {
             file: this.form.dataFile,
           },
           {
             provenance: this.form.provenance.uri,
             experiment: this.form.experiment ? this.form.experiment : null,
+            validationId: "mko"
           }
         );
 
@@ -415,7 +416,7 @@ export default class DataImportForm extends Vue {
 
      return this.$opensilex
         .uploadFileToService(
-          "/core/data/import_validation",
+          "/core/data-v2/import_validation_v2",
           {
             file: this.form.dataFile,
           },

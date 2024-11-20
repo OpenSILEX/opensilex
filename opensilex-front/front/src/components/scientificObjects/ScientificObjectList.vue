@@ -393,7 +393,7 @@ export default class ScientificObjectList extends Vue {
 
   exportCSV(exportAll: boolean) {
     let path = "/core/scientific_objects/export";
-    let filename = "export_scientific_objects_" + DateTimeFormatter.formatDateTimeForFilename(today);
+    let filename = "export_scientific_objects_" + DateTimeFormatter.formatDateTimeForFilename(new Date());
 
     // export all OS corresponding to filter
     let exportDto  = {

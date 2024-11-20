@@ -104,6 +104,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0]
+
+### Fixed
+
+- (!1306) Made the datetime format in exported file names uniform. Exported file names will now always match
+  the following scheme : `exported_resource_type_YYYYMMDD_HHmmss`.
+
 ## [1.3.5]
 
 > Warning : upgrading to this new version requires to update the ontologies. Please run the following command

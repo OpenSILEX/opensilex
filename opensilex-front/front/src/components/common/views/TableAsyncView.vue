@@ -75,7 +75,7 @@
         :busy="isSearching"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
-        :items="loadData"
+        :items="tableItems"
         :fields="fields"
         sort-icon-left
         @row-selected="onRowSelected"
@@ -143,6 +143,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $store: any;
   $i18n: any;
   $t : any;
+
+  tableLoadedItems = [];
+  tableKey = 0;
+
+  get tableItems(){
+    return this.tableLoadedItems;
+  }
 
   @Ref("tableRef") readonly tableRef: BTable;
 
@@ -313,7 +320,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
         this.sortDesc = this.defaultSortDesc;
       }
     }
-    this.definePath()                             
+    this.definePath()
+    this.loadData();
   } 
 
   pageChange(newPage) {
@@ -389,6 +397,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       this.selectedItems.splice(idx, 1);
     }
     this.numberOfSelectedRows = this.selectedItems.length;
+    console.debug("FUCK, row selectesd");
+    this.tableRef.refresh();
     this.$emit("row-selected", this.numberOfSelectedRows);
   }
 
@@ -456,6 +466,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     const index = this.selectedItems.findIndex(it => item.id === it.uri);
     this.selectedItems.splice(index, 1);
     this.numberOfSelectedRows = this.selectedItems.length;
+    this.tableRef.refresh();
   }
   //from outside the component
   onItemSelected(item) {
@@ -466,6 +477,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
     this.selectedItems.push(this.tableRef.sortedItems[selectedItemIndex]);
     this.numberOfSelectedRows = this.selectedItems.length;
+    this.tableRef.refresh();
   }
 
   getSelected(): Array<T> {
@@ -532,9 +544,10 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       }
       this.$opensilex.enableLoader();
       // We return the selectedItems in coherence with the pagination
-      return this.selectedItems.slice((this.currentPage - 1) * this.pageSize, this.pageSize * this.currentPage);
+      this.tableLoadedItems = this.selectedItems.slice((this.currentPage - 1) * this.pageSize, this.pageSize * this.currentPage);
     } else { // we handle the data loading when there is all elements displayed
-      return this.searchMethod({
+      console.debug("Yes this is the appel thats gettting relanced");
+      this.searchMethod({
         orderBy: orderBy,
         currentPage: this.currentPage - 1,
         pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
@@ -544,7 +557,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
           this.pageSize = http.response.metadata.pagination.pageSize;
           this.isSearching = false;
           this.$opensilex.enableLoader();
-          return http.response.result;
+          this.tableLoadedItems = http.response.result;
         })
         .catch(error => {
           this.isSearching = false;

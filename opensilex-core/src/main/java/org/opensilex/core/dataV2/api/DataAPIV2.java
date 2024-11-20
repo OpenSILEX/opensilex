@@ -84,10 +84,12 @@ public class DataAPIV2 {
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition, @QueryParam("validationId") String validationId) throws Exception {
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+            @ApiParam(value = "The key for file that have already been validated by the API (/core/data-v2/import_validation_v2)",
+                    example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
 
         this.dataService = new DataService(nosql, sparql, fs, user);
-        DataCSVValidationDTO csvValidation = dataService.importCSVDataV2(provenance, experiment, file, validationId);
+        DataCSVValidationDTO csvValidation = dataService.importCSVDataV2(provenance, experiment, file, validationKey);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 

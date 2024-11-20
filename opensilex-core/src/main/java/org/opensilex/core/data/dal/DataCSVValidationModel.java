@@ -60,7 +60,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private boolean tooLargeDataset = false;
 
     private String errorMessage;
-    private String validationId;
+    private String validationKey;
 
 
     /**
@@ -116,12 +116,12 @@ public class DataCSVValidationModel extends CSVValidationModel {
         this.getInvalidRowSizeErrors().putAll(other.getInvalidRowSizeErrors());
     }
 
-    public String getValidationId() {
-        return validationId;
+    public String getValidationKey() {
+        return validationKey;
     }
 
-    public void setValidationId(String validationId) {
-        this.validationId = validationId;
+    public void setValidationKey(String validationKey) {
+        this.validationKey = validationKey;
     }
 
     public List<String> getHeaders() {

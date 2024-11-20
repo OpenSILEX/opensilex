@@ -81,6 +81,8 @@ public class DataService {
     public static final String OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT = "OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT";
     public static final String TARGET_ID = "TARGET_ID";
     public static final String EXPERIMENT_ID = "EXPERIMENT_ID";
+    public static final String UNDERSCORE = "_";
+    public static final String DATE_FORMAT = "yyyyMMddHHmmss";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -150,9 +152,9 @@ public class DataService {
 
         if (!validation.hasErrors()) {
             // Set generate and set validationID for whole csv into the cache
-            String validationId = "mko"; //generateValidationId();
-            validation.setValidationId(validationId);
-            csvValidationModelCache.put(validationId, validation);
+            String validationKey = generateValidationKey();
+            validation.setValidationKey(validationKey);
+            csvValidationModelCache.put(validationKey, validation);
         }
 
         return validation;
@@ -924,12 +926,16 @@ public class DataService {
         return csvValidation;
     }
 
-    private String generateValidationId() {
-        String currentDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+    /**
+     * Generates a unique validation ID for a user.
+     *
+     * @return A string representing the unique validation ID
+     */
+    private String generateValidationKey() {
+        String currentDate = new SimpleDateFormat(DATE_FORMAT).format(new Date());
         // UUID unique
         String randomUUID = UUID.randomUUID().toString().substring(0, 8);
-
-        return user.getName() + "_" + currentDate + "_" + randomUUID;
+        return user.getName() + UNDERSCORE + currentDate + UNDERSCORE + randomUUID;
     }
 
 }

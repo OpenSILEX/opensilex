@@ -32,17 +32,18 @@ import java.net.URI;
 /**
  * @author Marouan
  */
-@Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
-@Path(DataAPI.PATH)
+@Api(DataAPIV2.CREDENTIAL_DATA_GROUP_ID)
+@Path(DataAPIV2.PATH)
 @ApiCredentialGroup(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
+        groupId = DataAPIV2.CREDENTIAL_DATA_GROUP_ID,
+        groupLabelKey = DataAPIV2.CREDENTIAL_DATA_GROUP_LABEL_KEY
 )
-public class DataAPI {
+public class DataAPIV2 {
+    public static final int SIZE_MAX = 10000;
 
     public static final String PATH = "/core/data-v2";
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(DataAPI.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(DataAPIV2.class);
 
     public static final String CREDENTIAL_DATA_GROUP_ID = "Data";
     public static final String CREDENTIAL_DATA_GROUP_LABEL_KEY = "credential-groups.data";

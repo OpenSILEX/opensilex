@@ -12,7 +12,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
-import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
@@ -21,6 +20,7 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.dataV2.api.DataAPIV2;
 import org.opensilex.core.dataV2.model.DAOContext;
 import org.opensilex.core.dataV2.model.DeviceContext;
 import org.opensilex.core.dataV2.model.ExperimentContext;
@@ -68,7 +68,9 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DataService {
@@ -146,10 +148,12 @@ public class DataService {
 
         validation.setNbLinesToImport(validation.getData().size());
 
-        // Set generate and set validationID for whole csv into the cache
-        String validationId = "mko"; //generateValidationId();
-        validation.setValidationId(validationId);
-        csvValidationModelCache.put(validationId, validation);
+        if (!validation.hasErrors()) {
+            // Set generate and set validationID for whole csv into the cache
+            String validationId = "mko"; //generateValidationId();
+            validation.setValidationId(validationId);
+            csvValidationModelCache.put(validationId, validation);
+        }
 
         return validation;
     }
@@ -184,6 +188,14 @@ public class DataService {
         List<String> duplicatedDevices = new ArrayList<>();
         List<String> checkedVariables = new ArrayList<>();
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
+        List<String[]> allRows = new ArrayList<>();
+
+
+        ExperimentContext experimentContext = ExperimentContext.buildExperimentContext(experiment, duplicatedExperiments, nameURIExperiments, notExistingExperiments);
+        DeviceContext deviceContext = DeviceContext.buildDeviceContext(duplicatedDevices, duplicateDataByIndex, checkedVariables, nameURIDevices, notExistingDevices, variableCheckedDevice, variableCheckedProvDevice, mapVariableUriDataType);
+        TargetContext targetContext = TargetContext.buildTargetContext(duplicatedTargets, nameURITargets, notExistingTargets, nameURIScientificObjectsInXp, scientificObjectsNotInXp);
+        DAOContext daoContext = DAOContext.buildDaoContext(deviceDAO, ontologyDAO, experimentDAO, scientificObjectDAO);
+
 
         boolean sensingDeviceFoundFromProvenance = provenance.getAgents() != null
                 && provenance.getAgents().stream()
@@ -195,6 +207,7 @@ public class DataService {
                         return false;
                     }
                 });
+
 
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
@@ -227,48 +240,126 @@ public class DataService {
             csvReader.parseNext();
 
             // Line 4
-            int rowIndex = 0;
-            int nbError = 0;
             String[] values;
-
-            ExperimentContext experimentContext = ExperimentContext.buildExperimentContext(experiment, duplicatedExperiments, nameURIExperiments, notExistingExperiments);
-            DeviceContext deviceContext = DeviceContext.buildDeviceContext(duplicatedDevices, duplicateDataByIndex, checkedVariables, nameURIDevices, notExistingDevices, variableCheckedDevice, variableCheckedProvDevice, mapVariableUriDataType);
-            TargetContext targetContext = TargetContext.buildTargetContext(duplicatedTargets, nameURITargets, notExistingTargets, nameURIScientificObjectsInXp, scientificObjectsNotInXp);
-            DAOContext daoContext = DAOContext.buildDaoContext(deviceDAO, ontologyDAO, experimentDAO, scientificObjectDAO);
-
             while ((values = csvReader.parseNext()) != null) {
-                try {
-                    boolean validateCSVRow = validateCSVRow(
-                            provenance,
-                            sensingDeviceFoundFromProvenance,
-                            values,
-                            rowIndex,
-                            csvValidation,
-                            headerByIndex,
-                            experimentContext,
-                            targetContext,
-                            deviceContext,
-                            daoContext
-                    );
-                    if (!validateCSVRow) {
-                        nbError++;
-                    }
-                    if (nbError >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
-                        break;
-                    }
-                } catch (CSVDataTypeException e) {
-                    csvValidation.addInvalidDataTypeError(e.getCsvCell());
-                }
-                rowIndex++;
+                allRows.add(values);
             }
         }
 
-        if (csvValidation.getData().keySet().size() > DataAPI.SIZE_MAX) {
+        validateCSVRowsInParallel(provenance, allRows, sensingDeviceFoundFromProvenance,
+                headerByIndex, experimentContext, targetContext, deviceContext, daoContext, csvValidation);
+
+        if (csvValidation.getData().keySet().size() > DataAPIV2.SIZE_MAX) {
             csvValidation.setTooLargeDataset(true);
         }
 
         return csvValidation;
     }
+
+
+    /**
+     * Validates rows of a CSV file in parallel using a multithreaded approach.
+     * This method divides the rows into batches, processes each batch concurrently,
+     * and merges the results into a shared {@code DataCSVValidationModel} instance.
+     *
+     * <p>This method is designed for efficiency and scalability, particularly when working with large datasets.
+     * It uses a fixed thread pool executor to manage concurrent tasks and ensures proper merging of validation
+     * results across threads.</p>
+     *
+     * @param provenance                       the {@code ProvenanceModel} containing metadata related to the provenance of the data.
+     * @param allRows                          a list of all rows from the CSV file, where each row is represented as a {@code String[]} array.
+     * @param sensingDeviceFoundFromProvenance a boolean indicating if the sensing device is derived from the provenance data.
+     * @param headerByIndex                    a map of column indexes to their corresponding header names.
+     * @param experimentContext                the context for validating experiment-related data.
+     * @param targetContext                    the context for validating target-related data.
+     * @param deviceContext                    the context for validating device-related data.
+     * @param daoContext                       the DAO context for database-related operations.
+     * @param csvValidation                    the {@code DataCSVValidationModel} to which validation results will be merged.
+     * @throws InterruptedException if thread execution is interrupted while awaiting termination.
+     */
+    private void validateCSVRowsInParallel(ProvenanceModel provenance, List<String[]> allRows,
+                                           boolean sensingDeviceFoundFromProvenance, Map<Integer, String> headerByIndex,
+                                           ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext,
+                                           DAOContext daoContext, DataCSVValidationModel csvValidation) throws InterruptedException {
+
+        List<Future<DataCSVValidationModel>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        int totalRows = allRows.size();
+        int batchSize = 2500;
+        int numberOfBatches = (int) Math.ceil((double) totalRows / batchSize);
+        AtomicInteger nbError = new AtomicInteger();
+        AtomicBoolean stopProcessing = new AtomicBoolean(false);
+
+
+        try {
+            // Process each batch in a separate thread
+            for (int i = 0; i < numberOfBatches && !stopProcessing.get(); i++) {
+                int start = i * batchSize;
+                int end = Math.min(start + batchSize, totalRows);
+                List<String[]> batch = allRows.subList(start, end);
+
+                futures.add(executor.submit(() ->
+                        processBatch(provenance, sensingDeviceFoundFromProvenance, headerByIndex,
+                                experimentContext, targetContext, deviceContext, daoContext, start, batch, stopProcessing, nbError)));
+            }
+
+            // Collect results from all threads
+            for (Future<DataCSVValidationModel> future : futures) {
+                try {
+                    csvValidation.merge(future.get()); // Merge results into the final model
+                } catch (InterruptedException e) {
+                    LOGGER.error("Thread execution failed: ", e);
+                } catch (ExecutionException e) {
+                    Thread.currentThread().interrupt();
+                    LOGGER.error("Thread interrupted: ", e);
+                }
+            }
+        } finally {
+            executor.shutdown();
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)
+            ) {
+                executor.shutdownNow();
+            }
+        }
+    }
+
+
+    private DataCSVValidationModel processBatch(ProvenanceModel provenance, boolean sensingDeviceFoundFromProvenance, Map<Integer, String> headerByIndex,
+                                                ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext, DAOContext daoContext,
+                                                int start, List<String[]> batch, AtomicBoolean stopProcessing, AtomicInteger nbError) throws Exception {
+        DataCSVValidationModel localValidation = new DataCSVValidationModel();
+        int localRowIndex = start;
+
+        for (String[] row : batch) {
+            if (stopProcessing.get()) {
+                // Early termination of threads when the nbError limit is reached by one of the threads
+                break;
+            }
+
+            try {
+                boolean isValid = validateCSVRow(
+                        provenance, sensingDeviceFoundFromProvenance,
+                        row, localRowIndex, localValidation, headerByIndex,
+                        experimentContext, targetContext, deviceContext, daoContext);
+
+                if (!isValid) {
+                    nbError.getAndIncrement();
+                }
+
+                if (nbError.get() >= ExperimentAPI.CSV_NB_ERRORS_MAX) {
+                    // Trigger the Stop validation process
+                    stopProcessing.set(true);
+                    break;
+                }
+            } catch (CSVDataTypeException e) {
+                localValidation.addInvalidDataTypeError(e.getCsvCell());
+            }
+            localRowIndex++;
+        }
+
+        return localValidation;
+    }
+
 
     private boolean validateHeaders(Set<String> headers, boolean sensingDeviceFound, DataCSVValidationModel csvValidation) {
         if (!headers.contains(DEVICE_HEADER) && !headers.contains(TARGET_HEADER)

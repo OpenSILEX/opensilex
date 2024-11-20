@@ -62,6 +62,60 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private String errorMessage;
     private String validationId;
 
+
+    /**
+     * Merges the content and validation errors from another {@code DataCSVValidationModel} instance
+     * into the current instance.
+     *
+     * @param other the instance whose data and errors are to be merged.
+     */
+    public synchronized void merge(DataCSVValidationModel other) {
+        // Combiner les données
+        this.data.putAll(other.data);
+        this.invalidDataTypeErrors.putAll(other.getInvalidDataTypeErrors());
+        this.tooLargeDataset = other.tooLargeDataset;
+        this.duplicatedExperimentErrors.putAll(other.getDuplicatedExperimentErrors());
+        this.invalidExperimentErrors.putAll(other.getInvalidExperimentErrors());
+        this.duplicatedTargetErrors.putAll(other.getDuplicatedTargetErrors());
+        this.invalidTargetErrors.putAll(other.getInvalidTargetErrors());
+        this.invalidDateErrors.putAll(other.getInvalidDateErrors());
+        this.duplicatedDeviceErrors.putAll(other.getDuplicatedDeviceErrors());
+        this.invalidDeviceErrors.putAll(other.getInvalidDeviceErrors());
+        this.variablesToDevices.putAll(other.getVariablesToDevices());
+        this.deviceChoiceAmbiguityErrors.putAll(other.getDeviceChoiceAmbiguityErrors());
+        this.duplicatedDataErrors.putAll(other.getDuplicatedDataErrors());
+        this.invalidAnnotationErrors.putAll(other.getInvalidAnnotationErrors());
+        this.invalidObjectErrors.putAll(other.getInvalidObjectErrors());
+        this.duplicatedObjectErrors.putAll(other.getDuplicatedObjectErrors());
+        this.headers.addAll(other.getHeaders());
+        this.headersLabels.addAll(other.getHeadersLabels());
+        this.annotationsOnObjects.addAll(other.getAnnotationsOnObjects());
+        if (other.validationStep) {
+            this.validationStep = true;
+        }
+        if (other.insertionStep) {
+            this.insertionStep = true;
+        }
+        if (other.validCSV) {
+            this.validCSV = true;
+        }
+        if (other.tooLargeDataset) {
+            this.tooLargeDataset = true;
+        }
+        this.getInvalidValueErrors().putAll(other.getInvalidValueErrors());
+        this.getMissingRequiredValueErrors().putAll(other.getMissingRequiredValueErrors());
+        this.getObjects().addAll(other.getObjects());
+        this.getMissingHeaders().addAll(other.getMissingHeaders());
+        this.getEmptyHeaders().addAll(other.getEmptyHeaders());
+        this.getInvalidHeaderURIs().putAll(other.getInvalidHeaderURIs());
+        this.getDatatypeErrors().putAll(other.getDatatypeErrors());
+        this.getUriNotFoundErrors().putAll(other.getUriNotFoundErrors());
+        this.getInvalidURIErrors().putAll(other.getInvalidURIErrors());
+        this.getAlreadyExistingURIErrors().putAll(other.getAlreadyExistingURIErrors());
+        this.getDuplicateURIErrors().putAll(other.getDuplicateURIErrors());
+        this.getInvalidRowSizeErrors().putAll(other.getInvalidRowSizeErrors());
+    }
+
     public String getValidationId() {
         return validationId;
     }

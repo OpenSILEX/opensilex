@@ -283,7 +283,7 @@ import TableAsyncView from "../common/views/TableAsyncView.vue";
 import GermplasmAttributesValueSelector from "./GermplasmAttributesValueSelector.vue";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../models/DateTimeFormatter";
 
 @Component
 export default class GermplasmList extends Vue {

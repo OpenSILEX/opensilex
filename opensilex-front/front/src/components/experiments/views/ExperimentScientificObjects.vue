@@ -335,7 +335,7 @@ import {User} from "../../../models/User";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
 import CriteriaSearchModalCreator from "../../scientificObjects/CriteriaSearchModalCreator.vue";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../../models/DateTimeFormatter";
 
 @Component
 export default class ExperimentScientificObjects extends Vue {

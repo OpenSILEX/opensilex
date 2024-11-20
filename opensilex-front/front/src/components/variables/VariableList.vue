@@ -356,7 +356,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../models/DateTimeFormatter";
 
 @Component
 export default class VariableList extends Vue {

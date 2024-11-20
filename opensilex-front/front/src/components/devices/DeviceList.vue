@@ -261,7 +261,7 @@ import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import DeviceModalForm from "./form/DeviceModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/index";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../models/DateTimeFormatter";
 
 @Component
 export default class DeviceList extends Vue {

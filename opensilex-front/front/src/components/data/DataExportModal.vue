@@ -60,7 +60,7 @@
 import Vue from "vue";
 import { Component, Prop, Ref } from "vue-property-decorator";
 import {DataSearchDTO} from "opensilex-core/model/dataSearchDTO";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../models/DateTimeFormatter";
 
 @Component
 export default class DataExportModal extends Vue {

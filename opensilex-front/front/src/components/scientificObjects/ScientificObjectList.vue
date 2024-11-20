@@ -147,7 +147,7 @@ import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ExperimentGetDTO, ScientificObjectsService } from "opensilex-core/index";
-import DateTimeFormatter from "@/models/DateTimeFormatter";
+import DateTimeFormatter from "../../models/DateTimeFormatter";
 
 @Component
 export default class ScientificObjectList extends Vue {

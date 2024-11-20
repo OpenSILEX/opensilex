@@ -113,10 +113,12 @@ public class DataService {
         DataCSVValidationModel validation = csvValidationModelCache.getIfPresent(validationId);
         if (validation == null) {
             validation = validateWholeCsvV2(provenance, experiment, file);
+            validation.setValidationStep(true);
         }
 
         if (validation.isValidCSV()) {
             handleDataInsertion(dataLogic, validation);
+            validation.setInsertionStep(true);
             validation.setValidCSV(!validation.hasErrors());
             csvValidationModelCache.invalidate(validationId);
         }
@@ -149,6 +151,7 @@ public class DataService {
         validation.setValidCSV(!validation.hasErrors());
 
         validation.setNbLinesToImport(validation.getData().size());
+        validation.setValidationStep(true);
 
         if (!validation.hasErrors()) {
             // Set generate and set validationID for whole csv into the cache

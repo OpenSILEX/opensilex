@@ -319,7 +319,7 @@ export default class DataImportForm extends Vue {
           {
             provenance: this.form.provenance.uri,
             experiment: this.form.experiment ? this.form.experiment : null,
-            validationId: "mko"
+            validationKey: "mko"
           }
         );
 

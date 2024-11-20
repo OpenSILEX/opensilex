@@ -108,9 +108,9 @@ public class DataService {
         this.user = user;
     }
 
-    public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String validationId) throws Exception {
+    public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String validationKey) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-        DataCSVValidationModel validation = csvValidationModelCache.getIfPresent(validationId);
+        DataCSVValidationModel validation = StringUtils.isNotBlank(validationKey) ? csvValidationModelCache.getIfPresent(validationKey) : null;
         if (validation == null) {
             validation = validateWholeCsvV2(provenance, experiment, file);
             validation.setValidationStep(true);
@@ -120,7 +120,9 @@ public class DataService {
             handleDataInsertion(dataLogic, validation);
             validation.setInsertionStep(true);
             validation.setValidCSV(!validation.hasErrors());
-            csvValidationModelCache.invalidate(validationId);
+            if (StringUtils.isNotBlank(validationKey)) {
+                csvValidationModelCache.invalidate(validationKey);
+            }
         }
 
         return buildDataCSVValidationDTO(validation);
@@ -154,7 +156,7 @@ public class DataService {
         validation.setValidationStep(true);
 
         if (!validation.hasErrors()) {
-            // Set generate and set validationID for whole csv into the cache
+            // Set generate and set validationKey for whole csv into the cache
             String validationKey = generateValidationKey();
             validation.setValidationKey(validationKey);
             csvValidationModelCache.put(validationKey, validation);

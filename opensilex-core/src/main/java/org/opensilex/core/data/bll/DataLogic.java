@@ -31,6 +31,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -806,7 +807,7 @@ public class DataLogic {
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
 
-        List<URI> experiments = new ArrayList<>();
+        List<URI> experimentUris = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
 
         Boolean missingTargetOrDevice = false;
@@ -819,16 +820,17 @@ public class DataLogic {
         DeviceModel deviceFromDeviceColumn = null;
         SPARQLNamedResourceModel object = null;
         if( experiment != null) {
-            experiments.add(experiment);
+            experimentUris.add(experiment);
         }
 
         //Set to remember which columns to do at end of row iteration (in case required columns like target are at the end).
         Set<Integer> colsToDoAtEnd = new HashSet<>();
 
+        //Remember exp from exp column outside of For scope so we can verify if target is in this xp at end (if the target was an OS)
+        ExperimentModel exp = null;
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (headerByIndex.get(colIndex).equalsIgnoreCase(EXPERIMENT_HEADER)) {
                 //check experiment column
-                ExperimentModel exp = null;
                 String expNameOrUri = values[colIndex];
                 // test in uri list
                 if (!StringUtils.isEmpty(expNameOrUri)) {
@@ -869,7 +871,7 @@ public class DataLogic {
                     }
                 }
                 if (exp != null) {
-                    experiments.add(exp.getUri());
+                    experimentUris.add(exp.getUri());
                 }
 
 
@@ -882,12 +884,14 @@ public class DataLogic {
                     if (nameURITargets.containsKey(targetNameOrUri)) {
                         target = nameURITargets.get(targetNameOrUri);
                     } else {
-                        // test not in uri list
+                        // test if target was already recorded as a duplicate
                         if (duplicatedTargets.contains(targetNameOrUri)) {
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, TARGET_HEADER);
                             csvValidation.addDuplicateTargetError(cell);
                             validRow = false;
-                        } else if (!notExistingTargets.contains(targetNameOrUri)) {
+                        }
+
+                        else if (!notExistingTargets.contains(targetNameOrUri)) {
                             try {
                                 target = ontologyDAO.getTargetByNameOrURI(targetNameOrUri);
                                 if (target == null) {
@@ -895,21 +899,21 @@ public class DataLogic {
                                         notExistingTargets.add(targetNameOrUri);
                                     }
 
-                                    CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, TARGET_HEADER);
                                     csvValidation.addInvalidTargetError(cell);
                                     validRow = false;
                                 } else {
                                     nameURITargets.put(targetNameOrUri, target);
                                 }
                             } catch (Exception e) {
-                                CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, TARGET_HEADER);
                                 csvValidation.addDuplicateTargetError(cell);
                                 duplicatedTargets.add(targetNameOrUri);
                                 validRow = false;
                             }
 
                         } else {
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, TARGET_HEADER);
                             csvValidation.addInvalidTargetError(cell);
                             validRow = false;
                         }
@@ -930,7 +934,7 @@ public class DataLogic {
 
                     // check if the object has been previously referenced as unknown, if not, then performs a check with Dao
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                        existingOs = testNameOrURI(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
+                        existingOs = isScientificObjInExisting(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
                     }
 
                     if(existingOs == null){
@@ -1103,8 +1107,8 @@ public class DataLogic {
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
 
-                    if (!experiments.isEmpty()) {
-                        provenanceModel.setExperiments(experiments);
+                    if (!experimentUris.isEmpty()) {
+                        provenanceModel.setExperiments(experimentUris);
                     }
 
                     if (deviceFromDeviceColumn != null) {
@@ -1139,6 +1143,14 @@ public class DataLogic {
                         dataModel.setTarget(object.getUri());
                     }
                     if (target != null) {
+                        //If the target is a scientific object, and if the experiment value was filled, verify that the OS is part of this experiment
+                        if(SPARQLDeserializers.compareURIs(target.getType(), Oeso.ScientificObject.getURI())){
+                            Node experimentNode = exp == null ? null : SPARQLDeserializers.nodeURI(experiment);
+                            SPARQLNamedResourceModel existingOs = isScientificObjInExisting(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, target.getUri().toString());
+                            if(existingOs == null){
+                                validRow = false;
+                            }
+                        }
                         dataModel.setTarget(target.getUri());
                     }
                     dataModel.setProvenance(provenanceModel);
@@ -1202,9 +1214,22 @@ public class DataLogic {
         return validRow;
     }
 
-    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
+    /**
+     * For csv line validation, returns the corresponding SPARQLNamedResourceModel if the uri or name corresponds to a
+     * non-ambiguous object in experiment or in global graph.
+     *
+     * @param scientificObjectDAO
+     * @param validation The CSVValidation object for error reporting
+     * @param rowIndex
+     * @param colIndex
+     * @param experiment Can be null if object is just in global graph
+     * @param nameOrUri Name or Uri of the object we want to validate
+     * @return the corresponding SPARQLNamedResourceModel or null
+     * @throws Exception
+     */
+    private SPARQLNamedResourceModel isScientificObjInExisting(ScientificObjectDAO scientificObjectDAO, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
 
-        // check if object exist by URI inside experiment
+        // If nameOrUri is a uri then we can simply call a sparql.getByUri on ScientificObjectModel.class
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
@@ -1215,8 +1240,11 @@ public class DataLogic {
             }
             return existingObject;
 
+
+        }
+        //Otherwise we are looking by name in which case we invalidate csv if there is no experiment passed
+        else if (experiment != null) {
             // check if object exist by name inside experiment
-        } else if (experiment != null) {
             SPARQLNamedResourceModel existingObject = scientificObjectDAO.getUriByNameAndGraph(experiment, nameOrUri);
             if (existingObject == null) {
                 validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));

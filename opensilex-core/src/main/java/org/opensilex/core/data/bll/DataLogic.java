@@ -37,7 +37,7 @@ import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
@@ -100,7 +100,6 @@ public class DataLogic {
     //VariableDAO
     //DeviceDAO
     //ExperimentDAO
-    //ScientificObjectDAO
     //ProvenanceDaoV2
     //OntologyDAO
 
@@ -774,7 +773,7 @@ public class DataLogic {
                                 notExistingTargets,
                                 duplicatedTargets,
                                 nameURITargets,
-                                new ScientificObjectDAO(sparql, nosql),
+                                new ScientificObjectLogic(sparql, nosql, fs),
                                 nameURIScientificObjectsInXp,
                                 scientificObjectsNotInXp,
                                 deviceDAO,
@@ -824,7 +823,7 @@ public class DataLogic {
             List<String> notExistingTargets,
             List<String> duplicatedTargets,
             Map<String, SPARQLNamedResourceModel> nameURITargets,
-            ScientificObjectDAO scientificObjectDAO,
+            ScientificObjectLogic scientificObjectLogic,
             Map<String, SPARQLNamedResourceModel> nameURIScientificObjects,
             List<String> scientificObjectsNotInXp,
             DeviceDAO deviceDAO,
@@ -965,7 +964,7 @@ public class DataLogic {
 
                     // check if the object has been previously referenced as unknown, if not, then performs a check with Dao
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                        existingOs = testNameOrURI(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
+                        existingOs = testNameOrURI(scientificObjectLogic, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
                     }
 
                     if(existingOs == null){
@@ -1239,7 +1238,7 @@ public class DataLogic {
         return validRow;
     }
 
-    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
+    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectLogic scientificObjectLogic, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
 
         // check if object exist by URI inside experiment
         if (URIDeserializer.validateURI(nameOrUri)) {
@@ -1254,7 +1253,7 @@ public class DataLogic {
 
             // check if object exist by name inside experiment
         } else if (experiment != null) {
-            SPARQLNamedResourceModel existingObject = scientificObjectDAO.getUriByNameAndGraph(experiment, nameOrUri);
+            SPARQLNamedResourceModel existingObject = scientificObjectLogic.getUriByNameAndGraph(experiment, nameOrUri);
             if (existingObject == null) {
                 validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));
                 return null;

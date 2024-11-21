@@ -1,23 +1,22 @@
 <template>
     <opensilex-ModalForm
-        ref="modalForm"
-        component="opensilex-OntologyObjectForm"
-        createTitle="ExperimentScientificObjects.add"
-        editTitle="ExperimentScientificObjects.update"
-        modalSize="lg"
-        icon="ik#ik-target"
-        :createAction="callScientificObjectCreation"
-        :updateAction="callScientificObjectUpdate"
-        @onCreate="$emit('onCreate', $event)"
-        @onUpdate="$emit('onUpdate', $event)"
+            ref="modalForm"
+            component="opensilex-OntologyObjectForm"
+            createTitle="ExperimentScientificObjects.add"
+            editTitle="ExperimentScientificObjects.update"
+            modalSize="lg"
+            icon="ik#ik-target"
+            :createAction="callScientificObjectCreation"
+            :updateAction="callScientificObjectUpdate"
+            @onCreate="$emit('onCreate', $event)"
+            @onUpdate="$emit('onUpdate', $event)"
     >
-        <template v-slot:customFields="{ form }">
-            <opensilex-GeometryForm
-                :value.sync="form.geometry"
-                label="component.common.geometry"
-                helpMessage="component.common.geometry-help"
-            ></opensilex-GeometryForm>
-        </template>
+<!--        <template v-slot:customFields="{ form }">
+            <opensilex-MoveFormV2
+                    :form.sync="form.targets_positions"
+                    ref="moveForm"
+            ></opensilex-MoveFormV2>
+        </template>-->
     </opensilex-ModalForm>
 </template>
 
@@ -34,65 +33,42 @@ import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDe
 import {ScientificObjectCreationDTO} from "opensilex-core/model/scientificObjectCreationDTO";
 import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUpdateDTO";
 import DTOConverter from "../../models/DTOConverter";
-import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
+import {UserGetDTO} from "../../../../../opensilex-security/front/src/lib";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import MoveFormV2 from "@/components/events/form/MoveFormV2.vue";
 
 @Component
 export default class ScientificObjectForm extends Vue {
-    $opensilex: any;
-    $store: any;
+//#region Plugins and services
+    private readonly $opensilex: OpenSilexVuePlugin;
+    private soService: ScientificObjectsService;
+    //endregion
 
-    soService: ScientificObjectsService;
+    //#region Props
+    @Prop({default: () => {}})
+    private readonly context;
+    //endregion
 
-    @Prop({
-        default: () => {},
-    })
-    context;
+    //#region Refs
+    @Ref("modalForm")
+    private readonly modalForm!: ModalForm<OntologyObjectForm, ScientificObjectCreationDTO, ScientificObjectUpdateDTO>;
+    @Ref("moveFormV2") readonly moveFormV2!: MoveFormV2;
+    //endregion
 
-    @Ref("modalForm") readonly modalForm!: ModalForm<OntologyObjectForm, ScientificObjectCreationDTO, ScientificObjectUpdateDTO>;
+    //#region Data
+    //endregion
 
-    created() {
-        this.soService = this.$opensilex.getService(
-            "opensilex.ScientificObjectsService"
-        );
-    }
+    //#region Computed
+    //endregion
 
-    /**
-     * Inner function used to pass some properties to the OntologyObjectForm
-     * @param form
-     * @param type
-     */
-    initOntologyObjectForm(form: OntologyObjectForm, type: string){
+    //#region Events
+    //endregion
 
-        let excludedProperties = new Set<string>([
-            Oeso.getShortURI(Oeso.HAS_GEOMETRY), // handle geometry manually with opensilex-GeometryForm
-            Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
-        ]);
+    //#region Events handlers
+    //endregion
 
-        let xp: string = this.getExperimentURI();
-        form.setContext(xp)
-        if (!type) {
-            form.setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
-        } else {
-            form.setBaseType(type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
-        }
-        form.setExcludedProperties(excludedProperties);
-
-        if(! xp){
-          form.setLoadCustomProperties(false);
-        }
-    }
-
-    excludeCurrentURIFromParentSelector(objectURI: string, form: OntologyObjectForm){
-        let customComponentProps = new Map<string, Map<string, any>>();
-
-        let isPartOf = Oeso.getShortURI(Oeso.IS_PART_OF);
-        customComponentProps.set(isPartOf, new Map<string, any>());
-        customComponentProps.get(isPartOf).set("excluded", new Set<string>([objectURI]));
-
-        form.setCustomComponentProps(customComponentProps);
-    }
-
-    createScientificObject(parentURI?) {
+    //#region Public methods
+    public createScientificObject(parentURI?) {
         let form: OntologyObjectForm = this.modalForm.getFormRef();
         this.initOntologyObjectForm(form, undefined);
 
@@ -109,31 +85,75 @@ export default class ScientificObjectForm extends Vue {
         this.modalForm.showCreateForm();
     }
 
-    editScientificObject(objectURI: string) {
+    public editScientificObject(objectURI: string) {
         this.soService
-            .getScientificObjectDetail(objectURI, this.getExperimentURI())
-            .then((http) => {
-                let form: OntologyObjectForm = this.modalForm.getFormRef();
-                let os: ScientificObjectDetailDTO = http.response.result;
+                .getScientificObjectDetail(objectURI, this.getExperimentURI())
+                .then((http) => {
+                    let form: OntologyObjectForm = this.modalForm.getFormRef();
+                    let os: ScientificObjectDetailDTO = http.response.result;
 
-                this.initOntologyObjectForm(form, os.rdf_type);
-                this.excludeCurrentURIFromParentSelector(objectURI, form);
-                let publisher: UserGetDTO = os.publisher; 
-                const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, ScientificObjectUpdateDTO>(os);
-                editDto.publisher = publisher;
-                
-                this.modalForm.showEditForm(editDto);
-            });
+                    this.initOntologyObjectForm(form, os.rdf_type);
+                    this.excludeCurrentURIFromParentSelector(objectURI, form);
+                    let publisher: UserGetDTO = os.publisher;
+                    const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, ScientificObjectUpdateDTO>(os);
+                    editDto.publisher = publisher;
+
+                    this.modalForm.showEditForm(editDto);
+                });
+    }
+    //endregion
+
+    //#region Hooks
+    private created() {
+        this.soService = this.$opensilex.getService("opensilex.ScientificObjectsService");
+    }
+    //endregion
+
+    //#region Private methods
+    /**
+     * Inner function used to pass some properties to the OntologyObjectForm
+     * @param form
+     * @param type
+     */
+    private initOntologyObjectForm(form: OntologyObjectForm, type: string) {
+
+        let excludedProperties = new Set<string>([
+            Oeso.getShortURI(Oeso.HAS_GEOMETRY), // location with move
+            Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
+        ]);
+
+        let xp: string = this.getExperimentURI();
+        form.setContext(xp)
+        if (!type) {
+            form.setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+        } else {
+            form.setBaseType(type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
+        }
+        form.setExcludedProperties(excludedProperties);
+
+        if (!xp) {
+            form.setLoadCustomProperties(false);
+        }
     }
 
-    getExperimentURI() {
+    private excludeCurrentURIFromParentSelector(objectURI: string, form: OntologyObjectForm) {
+        let customComponentProps = new Map<string, Map<string, any>>();
+
+        let isPartOf = Oeso.getShortURI(Oeso.IS_PART_OF);
+        customComponentProps.set(isPartOf, new Map<string, any>());
+        customComponentProps.get(isPartOf).set("excluded", new Set<string>([objectURI]));
+
+        form.setCustomComponentProps(customComponentProps);
+    }
+
+    private getExperimentURI() {
         if (this.context && this.context.experimentURI) {
             return this.context.experimentURI;
         }
         return undefined;
     }
 
-    callScientificObjectCreation(form: ScientificObjectCreationDTO) {
+    private callScientificObjectCreation(form: ScientificObjectCreationDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];
@@ -152,21 +172,20 @@ export default class ScientificObjectForm extends Vue {
         }
 
         return this.soService
-            .createScientificObject({
-                uri: form.uri,
-                name: form.name,
-                rdf_type: form.rdf_type,
-                geometry: form.geometry,
-                experiment: this.getExperimentURI(),
-                relations: definedRelations,
-            })
-            .catch((error) => {
-                this.$opensilex.errorHandler(error, error.response.result.message);
-                throw error;
-            });
+                .createScientificObject({
+                    uri: form.uri,
+                    name: form.name,
+                    rdf_type: form.rdf_type,
+                    experiment: this.getExperimentURI(),
+                    relations: definedRelations,
+                })
+                .catch((error) => {
+                    this.$opensilex.errorHandler(error, error.response.result.message);
+                    throw error;
+                });
     }
 
-    callScientificObjectUpdate(form: ScientificObjectUpdateDTO) {
+    private callScientificObjectUpdate(form: ScientificObjectUpdateDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];
@@ -185,21 +204,21 @@ export default class ScientificObjectForm extends Vue {
         }
 
         return this.soService
-            .updateScientificObject({
-                uri: form.uri,
-                name: form.name,
-                rdf_type: form.rdf_type,
-                geometry: form.geometry,
-                publisher: form.publisher,
-                publication_date: form.publication_date,
-                experiment: this.getExperimentURI(),
-                relations: definedRelations
-            })
-            .catch((error) => {
-                this.$opensilex.errorHandler(error, error.response.result.message);
-                throw error;
-            });
+                .updateScientificObject({
+                    uri: form.uri,
+                    name: form.name,
+                    rdf_type: form.rdf_type,
+                    publisher: form.publisher,
+                    publication_date: form.publication_date,
+                    experiment: this.getExperimentURI(),
+                    relations: definedRelations
+                })
+                .catch((error) => {
+                    this.$opensilex.errorHandler(error, error.response.result.message);
+                    throw error;
+                });
     }
+    //endregion
 }
 </script>
 <style scoped lang="scss">

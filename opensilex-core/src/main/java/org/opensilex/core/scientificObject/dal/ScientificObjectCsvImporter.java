@@ -14,6 +14,8 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
@@ -49,7 +51,7 @@ import java.util.stream.Stream;
  * <hr>
  * <b>Batch validations : {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}</b>
  * <ul>
- *     <li>In experimental context, each object name must unique inside experiment. We apply {@link ScientificObjectDAO#checkUniqueNameByGraph(List, URI)} method to ensure name uniqueness</li>
+ *     <li>In experimental context, each object name must unique inside experiment. We apply {@link ScientificObjectLogic#checkUniqueNameByGraph(List, URI)} method to ensure name uniqueness</li>
  * </ul>
  *
  * <hr>
@@ -74,8 +76,9 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     private final URI experiment;
     private final GeospatialDAO geoDAO;
     private final MoveEventDAO moveDAO;
-    private final ScientificObjectDAO scientificObjectDAO;
+    private final ScientificObjectLogic scientificObjectLogic;
     private final ExperimentDAO experimentDAO;
+    private final FileStorageService fs;
 
     /**
      * @param sparql     SPARQL service
@@ -83,7 +86,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
      * @param experiment URI of the experiment
      * @param user       {@link org.opensilex.security.account.dal.AccountModel} used to determine if user has the right to access the experiment {@link ExperimentDAO#validateExperimentAccess(URI, org.opensilex.security.account.dal.AccountModel) }
      */
-    public ScientificObjectCsvImporter(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user) throws Exception {
+    public ScientificObjectCsvImporter(SPARQLService sparql, MongoDBService mongoDB, FileStorageService fs, URI experiment, AccountModel user) throws Exception {
         super(
                 sparql,
                 ScientificObjectModel.class,
@@ -95,11 +98,12 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         Objects.requireNonNull(mongoDB);
 
         this.experiment = experiment;
+        this.fs = fs;
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
 
         geoDAO = new GeospatialDAO(mongoDB);
         moveDAO = new MoveEventDAO(sparql, mongoDB);
-        scientificObjectDAO = new ScientificObjectDAO(sparql, mongoDB);
+        scientificObjectLogic = new ScientificObjectLogic(sparql, mongoDB, fs);
 
         if (experiment != null) {
             // ensure that the user has the right to access experiment
@@ -258,7 +262,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         if (withinExperiment()) {
             // in case of URI generation in experimental context we want to ensure that
             // generated URI are globally unique. So we need to use the global OS graph, since it's contains declaration of any OS
-            return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), scientificObjectDAO.getDefaultGraphNode());
+            return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), scientificObjectLogic.getDefaultGraphNode());
         } else {
             // use default implementation which use the provided graph.
             // Here, since we are outside experimental context, then the provided graph was the default OS graph
@@ -286,7 +290,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
         if (experiment != null) {
             try {
-                scientificObjectDAO.checkUniqueNameByGraph(modelChunk, experiment);
+                scientificObjectLogic.checkUniqueNameByGraph(modelChunk, experiment);
             } catch (DuplicateNameListException e) {
                 addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
             } catch (SPARQLException e) {
@@ -332,13 +336,13 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 }
             }
         }
-        scientificObjectDAO.create(models, graph);
+        scientificObjectLogic.create(models, graph);
 
         // associated moves creation
         List<MoveModel> moves = new ArrayList<>();
         for (ScientificObjectModel object : models) {
             MoveModel facilityMoveEvent = new MoveModel();
-            if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+            if (ScientificObjectLogic.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moves.add(facilityMoveEvent);
             }
         }
@@ -353,7 +357,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                     false,
                     sparql.getDefaultGraph(ScientificObjectModel.class));
             if (!soToCreateUriSet.isEmpty()) {
-                scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> soToCreateUriSet.contains(model.getUri())));
+                scientificObjectLogic.copyIntoGlobalGraph(models.stream().filter(model -> soToCreateUriSet.contains(model.getUri())));
             }
             experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
         }

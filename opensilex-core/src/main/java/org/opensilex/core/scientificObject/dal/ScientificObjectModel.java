@@ -2,7 +2,9 @@ package org.opensilex.core.scientificObject.dal;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -61,6 +63,15 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     protected List<FactorLevelModel> factorLevels;
     public static String FACTOR_LEVEL_FIELD = "factorLevels";
 
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+    public static final String OBSERVATION_COLLECTION_FIELD = "LocationObservationCollection";
+
     public LocalDate getCreationDate() {
         return creationDate;
     }
@@ -83,6 +94,14 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
 
     public void setFactorLevels(List<FactorLevelModel> factorLevels) {
         this.factorLevels = factorLevels;
+    }
+
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection(LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
     }
 
     @Override

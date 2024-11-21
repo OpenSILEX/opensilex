@@ -23,6 +23,7 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
@@ -243,13 +244,13 @@ public class StudiesAPI extends BrapiCall {
         experiments.add(studyDbId);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectLogic scientificObjectLogic = new ScientificObjectLogic(sparql, nosql, fs);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
         ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, data -> {
             try {
-                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, germplasmDAO);
+                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser, scientificObjectLogic, germplasmDAO);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -317,7 +318,7 @@ public class StudiesAPI extends BrapiCall {
             rdfTypes.add(rdfType);
         }
 
-        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
@@ -334,7 +335,7 @@ public class StudiesAPI extends BrapiCall {
                 .setPageSize(limit)
                 .setLang(currentUser.getLanguage());
 
-        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
+        ListWithPagination<ScientificObjectModel> scientificObjects = soLogic.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
         
         ListWithPagination<BrAPIv1ObservationUnitDTO> observations = scientificObjects.convert(BrAPIv1ObservationUnitDTO.class, (scientificObjectModel) -> {
             try {

@@ -49,7 +49,11 @@
         </div>
 
         <div v-if="isMove()">
-            <opensilex-MoveView :event="event"></opensilex-MoveView>
+            <opensilex-MoveView 
+                :event="event"
+                :positionsUriLabels="positionsUriLabels"
+                :positionsUriPaths="positionsUriPaths"
+            ></opensilex-MoveView>
         </div>
 
         <div v-if="hasRelations(event)" class="card-body">
@@ -121,10 +125,16 @@
         uriPaths;
 
         @Prop()
+        specificPropertiesLabels;
+
+        @Prop()
         specificPropertiesPaths;
 
         @Prop()
-        specificPropertiesLabels;
+        positionsUriLabels;
+
+        @Prop()
+        positionsUriPaths;
 
 
         @PropSync("dto")

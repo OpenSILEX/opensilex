@@ -79,7 +79,7 @@ export class ExternalOntologies {
         }],
 
         [ExternalOntologies.QUDT, {
-            link: "http://www.qudt.org/release2/qudt-catalog.html#vocabs",
+            link: "https://www.qudt.org/2.1/catalog/qudt-catalog.html#vocabs",
             name: "QUDT Ontologies (QUDT)",
             description: `Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the
       OWL Web Ontology Language (OWL). The dimensional approach relates each unit

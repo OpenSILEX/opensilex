@@ -217,11 +217,7 @@
                 <div class="col-lg-6" id="v-step-time-interval">
                     <opensilex-VariableTimeIntervalSelector
                         label="VariableForm.time-interval"
-                        :selected.sync="form.time_interval"
-                        :multiple="false"
-                        :options="periodList"
-                        placeholder="VariableForm.time-interval-placeholder"
-                        helpMessage="VariableForm.time-interval-help"
+                        :timeinterval.sync="form.time_interval"
                     >
                     </opensilex-VariableTimeIntervalSelector>
                 </div>

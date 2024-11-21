@@ -104,6 +104,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0]
+
+### Fixed
+
+- (!1309) Fixed QUDT ontology link
+- (!1309) Fixed the "time interval" field in the variable form
+
 ## [1.3.5]
 
 > Warning : upgrading to this new version requires to update the ontologies. Please run the following command

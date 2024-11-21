@@ -48,8 +48,12 @@
 
         </div>
 
-        <div v-if="isMove()">
-            <opensilex-MoveView :event="event"></opensilex-MoveView>
+        <div v-if="event && isMove()">
+            <opensilex-MoveView
+              :event="event"
+              :positionsUriLabels="positionsUriLabels"
+              :positionsUriPaths="positionsUriPaths"
+            ></opensilex-MoveView>
         </div>
 
         <div v-if="hasRelations(event)" class="card-body">
@@ -94,7 +98,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {EventDetailsDTO} from 'opensilex-core/index';
+import {EventDetailsDTO, MoveDetailsDTO} from 'opensilex-core/index';
 import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -131,6 +135,10 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         specificPropertiesPaths: {[key : string] : string} = {};
 
         specificPropertiesLabels: {[key : string] : string} = {};
+
+        positionsUriLabels: {[key : string] : string} = {};
+
+        positionsUriPaths: {[key : string] : string} = {};
 
         event: EventDetailsDTO = {};
 
@@ -201,13 +209,18 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
         // Check and load target names
         if (event.targets && event.targets.length > 0) {
-          const targetLabels = await this.ontologyService.getURILabelsList(event.targets);
+          //Get labels and super-types at same time as the requests are independent
+          const [targetLabels, targetTypes] = await Promise.all([
+            this.ontologyService.getURILabelsList(event.targets),
+            this.ontologyService.getURITypes(event.targets),
+          ]);
+
+          //Fill uriLabels data
           for (const element of targetLabels.response.result) {
             this.uriLabels[element.uri] = element.name;
           }
 
-          // Load target types to create paths
-          const targetTypes = await this.ontologyService.getURITypes(event.targets);
+          // create paths
           for (const element of targetTypes.response.result) {
             this.uriPaths[element.uri] = this.$opensilex.getTargetPath(
               element.uri,
@@ -221,18 +234,50 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         if (event.relations && event.relations.length > 0) {
           const relationsURIs = event.relations.map(relation => relation.value);
 
-          const specificPropertyLabels = await this.ontologyService.getURILabelsList(relationsURIs);
+          const [specificPropertyLabels, specificPropertyTypes] = await Promise.all([
+            this.ontologyService.getURILabelsList(relationsURIs),
+            this.ontologyService.getURITypes(relationsURIs),
+          ]);
+
           for (const element of specificPropertyLabels.response.result) {
             this.specificPropertiesLabels[element.uri] = element.name;
           }
 
-          const specificPropertyTypes = await this.ontologyService.getURITypes(relationsURIs);
           for (const element of specificPropertyTypes.response.result) {
             this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
               element.uri,
               null,
               this.$opensilex.getPathFromUriTypes(element.rdf_types)
             );
+          }
+        }
+
+        if (this.isMove(event) && (event as MoveDetailsDTO).targets_positions) {
+
+          try {
+            // Retrieve position target names from move
+            const targetUris = (event as MoveDetailsDTO).targets_positions.map((positionObject: any) => positionObject.target);
+
+            const [labelsResponse, typesResponse] = await Promise.all([
+              this.ontologyService.getURILabelsList(targetUris),
+              this.ontologyService.getURITypes(targetUris),
+            ]);
+
+            for (let element of labelsResponse.response.result) {
+              this.$set(this.positionsUriLabels, element.uri, element.name);
+            }
+
+            // Creation of paths for move position targets types
+            for (let element of typesResponse.response.result) {
+              const responsePath = this.$opensilex.getTargetPath(
+                element.uri,
+                null,
+                this.$opensilex.getPathFromUriTypes(element.rdf_types)
+              );
+              this.$set(this.positionsUriPaths, element.uri, responsePath);
+            }
+          } catch (error) {
+            console.error("Error processing move positions:", error);
           }
         }
 
@@ -264,12 +309,13 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
             this.modalRef.hide();
         }
 
-        isMove(): boolean {
-            if (!this.event.rdf_type) {
+        isMove(event?: EventDetailsDTO): boolean {
+            const eventToUse: EventDetailsDTO = event ? event : this.event;
+            if (!eventToUse.rdf_type) {
                 return false;
             }
 
-          return this.$opensilex.Oeev.checkURIs(this.event.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI)
+          return this.$opensilex.Oeev.checkURIs(eventToUse.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI)
         }
 
         hasRelations(event): boolean {

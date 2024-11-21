@@ -527,10 +527,9 @@ export default class EventList extends Vue {
         return this.$opensilex.Oeev.checkURIs(event.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
 
-    showEventView(event) {
-      this.eventModalView.show(
-        event,
-        this.getEventPromise);
+    async showEventView(event) {
+      let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise(event);
+      await this.eventModalView.show(http);
     }
 
     editEvent(uri, type) {

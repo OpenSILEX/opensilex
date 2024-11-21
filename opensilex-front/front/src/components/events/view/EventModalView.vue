@@ -193,67 +193,58 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
        * the caller must verify not undefined.
        */
       async show(
-        promiseParam,
-        getEventPromise: (param) => Promise<HttpResponse<OpenSilexResponse<EventDetailsDTO>>>,
+        getEventPromiseHttpResult: HttpResponse<OpenSilexResponse<EventDetailsDTO>>
       ) {
+        //Set the result to a const to be used for other get requests
+        //We only set this.event at the end because of display delay problems
+        const event: EventDetailsDTO = getEventPromiseHttpResult.response.result;
 
-        let http;
-        try {
-          // Await the main event data
-          http = await getEventPromise(promiseParam);
-          //Set the result to a const to be used for other get requests
-          //We only set this.event at the end because of display delay problems
-          const event: EventDetailsDTO = http.response.result;
-
-          // Check and load target names
-          if (event.targets && event.targets.length > 0) {
-            const targetLabels = await this.ontologyService.getURILabelsList(event.targets);
-            for (const element of targetLabels.response.result) {
-              this.uriLabels[element.uri] = element.name;
-            }
-
-            // Load target types to create paths
-            const targetTypes = await this.ontologyService.getURITypes(event.targets);
-            for (const element of targetTypes.response.result) {
-              this.uriPaths[element.uri] = this.$opensilex.getTargetPath(
-                element.uri,
-                null,
-                this.$opensilex.getPathFromUriTypes(element.rdf_types)
-              );
-            }
+        // Check and load target names
+        if (event.targets && event.targets.length > 0) {
+          const targetLabels = await this.ontologyService.getURILabelsList(event.targets);
+          for (const element of targetLabels.response.result) {
+            this.uriLabels[element.uri] = element.name;
           }
 
-          // Check and load specific properties names and paths
-          if (event.relations && event.relations.length > 0) {
-            const relationsURIs = event.relations.map(relation => relation.value);
-
-            const specificPropertyLabels = await this.ontologyService.getURILabelsList(relationsURIs);
-            for (const element of specificPropertyLabels.response.result) {
-              this.specificPropertiesLabels[element.uri] = element.name;
-            }
-
-            const specificPropertyTypes = await this.ontologyService.getURITypes(relationsURIs);
-            for (const element of specificPropertyTypes.response.result) {
-              this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
-                element.uri,
-                null,
-                this.$opensilex.getPathFromUriTypes(element.rdf_types)
-              );
-            }
+          // Load target types to create paths
+          const targetTypes = await this.ontologyService.getURITypes(event.targets);
+          for (const element of targetTypes.response.result) {
+            this.uriPaths[element.uri] = this.$opensilex.getTargetPath(
+              element.uri,
+              null,
+              this.$opensilex.getPathFromUriTypes(element.rdf_types)
+            );
           }
-
-          this.event = http.response.result;
-          this.type = event.rdf_type;
-
-          // Trigger DOM update and show modal
-          this.buildPropertyMap();
-          this.$nextTick(() => {
-            this.buildPropertyMap();
-            this.modalRef.show();
-          });
-        } catch (error) {
-          this.$opensilex.errorHandler(http);
         }
+
+        // Check and load specific properties names and paths
+        if (event.relations && event.relations.length > 0) {
+          const relationsURIs = event.relations.map(relation => relation.value);
+
+          const specificPropertyLabels = await this.ontologyService.getURILabelsList(relationsURIs);
+          for (const element of specificPropertyLabels.response.result) {
+            this.specificPropertiesLabels[element.uri] = element.name;
+          }
+
+          const specificPropertyTypes = await this.ontologyService.getURITypes(relationsURIs);
+          for (const element of specificPropertyTypes.response.result) {
+            this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
+              element.uri,
+              null,
+              this.$opensilex.getPathFromUriTypes(element.rdf_types)
+            );
+          }
+        }
+
+        this.event = getEventPromiseHttpResult.response.result;
+        this.type = event.rdf_type;
+
+        // Trigger DOM update and show modal
+        this.buildPropertyMap();
+        this.$nextTick(() => {
+          this.buildPropertyMap();
+          this.modalRef.show();
+        });
       }
 
       getPropertyName(propertyUri: string) {

@@ -126,11 +126,12 @@ export default class GlobalUriSearchResult extends Vue {
   //#endregion
 
   //#region: event handlers
-  private handleSeeDetails(){
+  private async handleSeeDetails(){
     //If the result is an event:
     this.$opensilex.enableLoader();
     if(this.isSubTypeOfEvent()){
-      this.eventModalView.show(this.uri, this.getEventPromise);
+      let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise();
+      await this.eventModalView.show(http);
       return;
     }
 

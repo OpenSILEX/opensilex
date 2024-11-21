@@ -608,31 +608,35 @@ export default class EventList extends Vue {
                 }
             });
 
-            // retrieving position target names from move 
-            let promisePositionObject = this.ontologyService
-                .getURILabelsList(
-                    this.selectedEvent.targets_positions.map((positionObject: any) => positionObject.target) 
+            if (this.isMove(event) && (this.selectedEvent as any).targets_positions) {
+
+                // retrieving position target names from move 
+                let promisePositionObject = this.ontologyService
+                    .getURILabelsList(
+                        (this.selectedEvent as any).targets_positions.map((positionObject: any) => positionObject.target) 
+                    )
+                    .then((httpObj) => {
+                        for (let element of httpObj.response.result) {
+                            this.$set(this.positionsUriLabels, element.uri, element.name);
+                        }
+                });
+
+
+                // creation of paths for move position targets types
+                this.ontologyService.getURITypes(
+                    (this.selectedEvent as any).targets_positions.map((positionObject: any) => positionObject.target)
                 )
                 .then((httpObj) => {
-                    for (let element of httpObj.response.result) {
-                        this.$set(this.positionsUriLabels, element.uri, element.name);
+                    for( let element of httpObj.response.result) {
+                        let responsePath = this.$opensilex.getTargetPath(
+                            element.uri, 
+                            null, 
+                            this.$opensilex.getPathFromUriTypes(element.rdf_types)
+                        );
+                        this.$set(this.positionsUriPaths, element.uri, responsePath);
                     }
-            });
-
-            // creation of paths for move position targets types
-            this.ontologyService.getURITypes(
-                this.selectedEvent.targets_positions.map((positionObject: any) => positionObject.target)
-            )
-            .then((httpObj) => {
-                for( let element of httpObj.response.result) {
-                   let responsePath = this.$opensilex.getTargetPath(
-                        element.uri, 
-                        null, 
-                        this.$opensilex.getPathFromUriTypes(element.rdf_types)
-                    );
-                      this.$set(this.positionsUriPaths, element.uri, responsePath);
-                }
-            })
+                })
+            }
 
             this.eventModalView.show();
         }).catch(this.$opensilex.errorHandler);

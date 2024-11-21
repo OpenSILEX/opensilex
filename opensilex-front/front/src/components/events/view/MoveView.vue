@@ -12,7 +12,11 @@
             <br>
             <p class="h5"> {{ $t("Position.title") }}</p>
             <hr/>
-            <opensilex-PositionsView :positions="event.targets_positions">
+            <opensilex-PositionsView
+                :positions="event.targets_positions"
+                :positionsUriLabels="positionsUriLabels"
+                :positionsUriPaths="positionsUriPaths"
+            >
             </opensilex-PositionsView>
         </div>
 
@@ -31,6 +35,12 @@
 
         @Prop({default: () => PositionsView.getEmptyForm })
         event: MoveDetailsDTO;
+
+        @Prop()
+        positionsUriLabels;
+
+        @Prop()
+        positionsUriPaths;
 
         created() {
 

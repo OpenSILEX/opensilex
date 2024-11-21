@@ -84,6 +84,16 @@
         >
         </opensilex-AddressView>
 
+          <!-- Warning if one site has an address but its geometry isn't found : problem with the geocoding service (address not found)
+          but it must not block the request. -->
+          <b-alert
+                  v-if="selected.address && !selected.geometry"
+                  variant="warning"
+                  show
+          >
+              {{$t("component.common.geometry-address-warning")}}
+          </b-alert>
+
         <!-- Metadata -->
         <opensilex-MetadataView
           v-if="selected.publisher && selected.publisher.uri"
@@ -96,8 +106,8 @@
     <opensilex-ModalForm
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="SiteDetail.add"
-        editTitle="SiteDetail.edit"
+        createTitle="add"
+        editTitle="edit"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"

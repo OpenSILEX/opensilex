@@ -152,7 +152,7 @@
                     <template v-slot:cell(rdf_type_name)="{data}">
                         <opensilex-UriLink
                             v-if="data.item.rdf_type_name"
-                            :uri="data.item.uri"
+                            :uri="$opensilex.getShortUri(data.item.rdf_type)"
                             :value="data.item.rdf_type_name"
                         ></opensilex-UriLink>
                     </template>

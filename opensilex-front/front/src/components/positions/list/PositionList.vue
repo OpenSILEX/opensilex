@@ -85,8 +85,6 @@
         <opensilex-EventModalView
             modalSize="lg"
             ref="eventModalView"
-            :dto.sync="selectedEvent"
-            :type.sync="selectedEvent.type"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -125,6 +123,7 @@ import EventModalView from "../../events/view/EventModalView.vue";
 import EventModalForm from "../../events/form/EventModalForm.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import { MoveDetailsDTO } from 'opensilex-core/index';
+import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
 
 @Component
 export default class PositionList extends Vue {
@@ -269,11 +268,9 @@ export default class PositionList extends Vue {
         return this.$eventService.getMoveEvent(position.event);
     }
 
-    showEventView(position) {
-        this.getEventPromise(position).then((http: HttpResponse<OpenSilexResponse>) => {
-            this.selectedEvent = http.response.result;
-            this.eventModalView.show();
-        }).catch(this.$opensilex.errorHandler);
+    async showEventView(position) {
+      let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise(position);
+      await this.eventModalView.show(http);
     }
     showDetails(data) {
       if (!data.detailsShowing) {

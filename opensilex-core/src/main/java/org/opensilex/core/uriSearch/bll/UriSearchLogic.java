@@ -260,6 +260,9 @@ public class UriSearchLogic {
     }
 
     private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, URIGlobalSearchDTO result) throws Exception {
+        if(model.getPublisher() == null){
+            return;
+        }
         AccountModel publisherAccount = new AccountDAO(sparql).get(model.getPublisher());
         UserGetDTO publisherAsUser = new UserGetDTO();
         publisherAsUser.setUri(publisherAccount.getUri());

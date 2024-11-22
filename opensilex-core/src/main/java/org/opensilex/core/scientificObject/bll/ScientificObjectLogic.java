@@ -95,6 +95,7 @@ public class ScientificObjectLogic {
     private final URI defaultGraphURI;
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
+    public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
 
     //TODO: retirer les sparql.  ...
     //#region CONSTRUCTOR

@@ -703,8 +703,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             dataProvenance.setExperiments(Collections.emptyList());
         }
         data.setProvenance(dataProvenance);
-        Response postDataResponse = getJsonPostResponseAsAdmin(target(DataAPITest.createListPath),Collections.singletonList(data));
-        data.setUri(extractUriFromResponse(postDataResponse));
+        Response postDataResponse = getJsonPostResponseAsAdmin(target(DataAPITest.CREATE_PATH),Collections.singletonList(data));
+        data.setUri(extractUriListFromPaginatedListResponse(postDataResponse).get(0));
 
         testDeleteFail(globalOs,scientificObject.getUri(),"Scientific object can't be deleted : object has associated data");
     }
@@ -773,7 +773,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(falseIntData);
         dtoList.add(falseIntData2);
-        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.PATH), dtoList);
         LOGGER.info(postResultData.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
 
@@ -854,7 +854,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         dtoList.add(otherOsThatsAlmostGoodData);
         dtoList.add(stupidOsData);
         dtoList.add(stupidOsData2);
-        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.path), dtoList);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.PATH), dtoList);
         LOGGER.info(postResultData.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
 
@@ -943,7 +943,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         dtoList.add(falseDecimalData);
         dtoList.add(correctDatetimeData);
         dtoList.add(falseDatetimeData);
-        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.createListPath), dtoList);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.CREATE_PATH), dtoList);
         LOGGER.info(postResultData.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
 

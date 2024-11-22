@@ -171,6 +171,7 @@ public class Oeso {
     // ---- PROVENANCES ----
     public static final Property ImageAnalysis = Ontology.property(NS, "ImageAnalysis");
     public static final Property Image = Ontology.property(NS, "Image");
+    public static final Property Provenance = Ontology.property(NS, "Provenance");
 
     // ---- DOCUMENTS ----
     public static final Resource Document = Ontology.resource(NS, "Document");

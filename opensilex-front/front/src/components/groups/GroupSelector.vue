@@ -80,7 +80,7 @@ export default class GroupSelector extends Vue {
   groupToSelectNode(dto: GroupDTO) {
     return {
       label: dto.name,
-      id: dto.uri
+       id: this.$opensilex.getShortUri(dto.uri) // shortUri is needed to avoid auto deselection problem on selectors with  both shorts and long URIs
     };
   }
 

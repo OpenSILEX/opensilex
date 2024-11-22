@@ -22,6 +22,8 @@
           <component
             v-bind:is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
+            :searchBoxIsActive="uriSearchBoxVisible"
+            @uriGlobalSearch="handleUriGlobalSearchPressed"
           ></component>
 
 
@@ -49,10 +51,19 @@
             </span>
           </div>
 
-          <section
-            id="content-wrapper"
-            class="page-wrap"
-            v-bind:class="{ 'hidden-menu': !menuVisible }"
+          <!-- URI search box -->
+          <div
+            v-show="uriSearchBoxVisible"
+            class="uri-search-box">
+            <opensilex-GlobalUriSearchBox
+              @hideUriSearch="handleHideUriSearch"
+            ></opensilex-GlobalUriSearchBox>
+
+          </div>
+          <section 
+            id="content-wrapper" 
+            class="page-wrap"  
+            v-bind:class="{ 'hidden-menu': !menuVisible }" 
             v-if="user.isLoggedIn() && !disconnected"
           >
             <div>
@@ -76,19 +87,24 @@
 </template>
 
 <script lang="ts">
-import { Component as ComponentAnnotation, Prop, Watch } from "vue-property-decorator";
+import {Component as ComponentAnnotation, Prop} from "vue-property-decorator";
 import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import AsyncComputed from "vue-async-computed-decorator";
 
 @ComponentAnnotation
 export default class App extends Vue {
+
+  //#region: props
   @Prop() embed: boolean;
 
   @Prop() headerComponent!: string | Component;
   @Prop() loginComponent!: string | Component;
   @Prop() menuComponent!: string | Component;
   @Prop() footerComponent!: string | Component;
+
+  //#endregion
+  //#region: data
 
   $opensilex: OpenSilexVuePlugin;
   $i18n: any;
@@ -99,8 +115,12 @@ export default class App extends Vue {
   notificationEndDate: string = "";
   notificationColorTheme: string = "";
   displayNotificationMessage: boolean = false;
-
   private langUnwatcher;
+  //The following concerns the URI global search functionality
+  private uriSearchBoxVisible: boolean = false;
+
+  //#endregion
+  //#region: hooks
 
   mounted() {
     this.langUnwatcher = this.$store.watch(
@@ -137,6 +157,9 @@ export default class App extends Vue {
     }
   }
 
+  //#endregion
+  //#region: AsyncComputed
+
   @AsyncComputed()
   notificationColorClass() {
     const theme = this.notificationColorTheme.toLowerCase();
@@ -150,9 +173,35 @@ export default class App extends Vue {
     }
   }
 
+  //#endregion
+  //#region: EventHandlers
+
+  private handleUriGlobalSearchPressed(){
+    this.toggleUriSearchBox();
+  }
+
+  private handleHideUriSearch(){
+    this.toggleUriSearchBox(false);
+  }
+
   closeNotification(){
     this.displayNotificationMessage = false;
   }
+
+  //#endregion
+  //#region: private functions
+
+  /**
+   * Toggles or sets the value of this.uriSearchBoxVisible
+   *
+   * @param visible if not null then sets this.uriSearchBoxVisible to this value
+   */
+  private toggleUriSearchBox(visible?: boolean) {
+    this.uriSearchBoxVisible = visible !== undefined ? visible : !this.uriSearchBoxVisible;
+  }
+
+  //#endregion
+  //#region: computed
 
   get lang() {
     return this.$store.state.lang;
@@ -173,6 +222,7 @@ export default class App extends Vue {
   get menuVisible(): boolean {
     return this.$store.state.menuVisible;
   }
+  //#endregion
 }
 </script>
 
@@ -227,6 +277,17 @@ main {
   padding: 15px;
 }
 
+.uri-search-box {
+  position: fixed;
+  max-width: 500px;
+  top: 70px;
+  right: 8%;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1030;
+}
 
 .notificationMessageContainer{
   display: flex;

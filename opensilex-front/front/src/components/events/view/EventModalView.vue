@@ -3,7 +3,7 @@
     <b-modal
             ref="modalRef"
             :size="modalSize"
-            :static="true"
+            :static="static"
             no-close-on-backdrop
             no-close-on-esc
             ok-only
@@ -33,17 +33,27 @@
 
           <opensilex-StringView class="overflow-auto" style="height: 100px" label="Event.targets" :uri="event.targets">
                 <br>
-                <span :key="targets" v-for="(targets) in event.targets">
+                <div :key="targetURI" v-for="(targetURI) in event.targets">
                 <opensilex-UriLink
-                    :uri="targets"
+                    :uri="targetURI"
+                    :value="uriLabels[targetURI]"
+                    :to="{
+                        path: uriPaths[targetURI]
+                    }"
+
                 ></opensilex-UriLink>
-                </span>
+                </div>
+
           </opensilex-StringView>
 
         </div>
 
         <div v-if="isMove()">
-            <opensilex-MoveView :event="event"></opensilex-MoveView>
+            <opensilex-MoveView 
+                :event="event"
+                :positionsUriLabels="positionsUriLabels"
+                :positionsUriPaths="positionsUriPaths"
+            ></opensilex-MoveView>
         </div>
 
         <div v-if="hasRelations(event)" class="card-body">
@@ -52,10 +62,14 @@
             <hr/>
 
             <div :key="index" v-for="(relation, index) in event.relations">
-                <opensilex-TextView
-                        :label="getPropertyName(relation.property)"
-                        :value="relation.value"
-                ></opensilex-TextView>
+                <opensilex-UriView
+                    :uri="relation.value"
+                    :value="specificPropertiesLabels[relation.value] ? specificPropertiesLabels[relation.value] : relation.value"
+                    :title="getPropertyName(relation.property)"
+                    v-bind:to="specificPropertiesPaths[relation.value] ? { path: specificPropertiesPaths[relation.value] } : null"
+                    customClass="specificProperties"
+                ></opensilex-UriView>
+
             </div>
         </div>
 
@@ -80,7 +94,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+    import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
     import Vue from "vue";
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
@@ -97,6 +111,31 @@
 
         @Prop({default: "lg"})
         modalSize;
+
+        /**
+         * Renders the content of the component in-place in the DOM, rather than portalling it to be appended to the body element
+         */
+        @Prop({default: true})
+        static: boolean;
+
+        @Prop()
+        uriLabels;
+
+        @Prop()
+        uriPaths;
+
+        @Prop()
+        specificPropertiesLabels;
+
+        @Prop()
+        specificPropertiesPaths;
+
+        @Prop()
+        positionsUriLabels;
+
+        @Prop()
+        positionsUriPaths;
+
 
         @PropSync("dto")
         event: EventDetailsDTO;

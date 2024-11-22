@@ -1,6 +1,14 @@
 <template>
     <div v-if="hasPosition()">
-        <opensilex-UriView title="Event.targets" :uri="getTargetPosition().target"></opensilex-UriView>
+        <opensilex-UriView
+            title="Event.targets" 
+            :uri="getTargetPosition().target"
+            :value="positionsUriLabels[getTargetPosition().target]"
+            :to="{
+                path: positionsUriPaths[getTargetPosition().target]
+            }"
+        >      
+        </opensilex-UriView>
         <opensilex-GeometryView label="component.common.geometry"
                                 :value="getTargetPosition().position.point"></opensilex-GeometryView>
 
@@ -25,6 +33,12 @@
 
         @Prop({default: () => [] })
         positions: Array<TargetPositionGetDTO>;
+
+        @Prop()
+        positionsUriLabels;
+
+        @Prop()
+        positionsUriPaths;
 
         hasPosition() : boolean{
             return this.positions && this.positions.length > 0;

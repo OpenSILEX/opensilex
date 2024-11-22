@@ -12,13 +12,14 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ScientificObjectTypes extends Vue {
     $opensilex: OpenSilexVuePlugin;
+
 }
 </script>
 

@@ -7,16 +7,6 @@
 package org.opensilex.server.rest;
 
 import io.swagger.jaxrs.config.BeanConfig;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Singleton;
-import javax.servlet.ServletContext;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -24,7 +14,6 @@ import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -33,9 +22,17 @@ import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceFactory;
-import org.reflections.Reflections;
+import org.opensilex.service.reflection.SelfBound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Singleton;
+import javax.servlet.ServletContext;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Context;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <pre>
@@ -198,9 +195,15 @@ public class RestApplication extends ResourceConfig {
                 // Make opensilex instance injectable
                 bind(opensilex).to(OpenSilex.class);
 
-                // Make every module injectable
+                // Make every module and their config injectable
                 for (OpenSilexModule module : opensilex.getModules()) {
                     bind(module).to((Class<? super OpenSilexModule>) module.getClass());
+
+                    // Make the module config injectable
+                    Class<?> moduleConfigClass = module.getConfigClass();
+                    if (moduleConfigClass != null) {
+                        bind(module.getConfig()).to((Class<? super Object>) moduleConfigClass);
+                    }
                 }
 
                 // Make every service injectable
@@ -214,6 +217,13 @@ public class RestApplication extends ResourceConfig {
                             bind(implementation).named(name).to((Class<? super Service>) serviceClass);
                         }
                     });
+                });
+
+                // Make every self-bound service injectable
+                opensilex.getAnnotatedClasses(SelfBound.class).forEach(serviceClass -> {
+                    if (serviceClass.isAnnotationPresent(org.jvnet.hk2.annotations.Service.class)) {
+                        bindAsContract(serviceClass).in(RequestScoped.class);
+                    }
                 });
 
                 getAPIExtensionModules().forEach((APIExtension api) -> {

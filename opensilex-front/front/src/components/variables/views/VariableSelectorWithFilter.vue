@@ -28,14 +28,14 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
-import {SelectableItem} from '../../common/forms/SelectForm.vue';
-import SelectForm from "../../common/forms/SelectForm.vue";
+import {SelectableItem} from '../../common/forms/ModalFormSelector.vue';
+import ModalFormSelector from "../../common/forms/ModalFormSelector.vue";
 
 @Component
 export default class VariableSelectorWithFilter extends Vue {
   $opensilex: any;
 
-  @Ref("variableSelector") readonly variableSelector!: SelectForm;
+  @Ref("variableSelector") readonly variableSelector!: ModalFormSelector;
 
   @PropSync("variables")
   variablesURI;

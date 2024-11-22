@@ -210,7 +210,7 @@ public class SharedResourceInstanceService {
         return json;
     }
 
-    //region Main public methods
+    //#region Main public methods
 
     public URI getSharedResourceInstanceURI() {
         return URI.create(this.config.uri());
@@ -269,8 +269,8 @@ public class SharedResourceInstanceService {
         }
     }
 
-    //endregion
-    //region Short-hand methods for common queries
+    //#endregion
+    //#region Short-hand methods for common queries
 
     public <T> ListWithPagination<T> search(String path, Map<String, String[]> parameters, Class<T> type) {
         WebTarget target = httpClient.target(config.apiUrl())
@@ -310,5 +310,5 @@ public class SharedResourceInstanceService {
         return response.getResultWithPagination();
     }
 
-    //endregion
+    //#endregion
 }

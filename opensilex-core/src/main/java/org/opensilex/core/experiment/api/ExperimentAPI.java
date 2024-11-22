@@ -1025,7 +1025,7 @@ public class ExperimentAPI {
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
-            object = scientificObjectLogic.getObjectByURI(objectUri,contextUri,null);
+            object = scientificObjectLogic.getObjectByURI(objectUri,contextUri,currentUser);
         } else {
                 object = scientificObjectLogic.getByNameAndContext(nameOrUri, contextUri);
             }

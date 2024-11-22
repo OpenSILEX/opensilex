@@ -1,6 +1,5 @@
 <template>
   <div>
-    <global-events @keydown.enter.exact="keydownEnter"></global-events>
     <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000" :fullscreen="true">
       <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
          <!-- if route as credentials public -->
@@ -27,16 +26,16 @@
             @uriGlobalSearch="handleUriGlobalSearchPressed"
           ></component>
 
-            
+
           <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
             <component class="header-login" v-bind:is="loginComponent"></component>
           </header>
 
           <!-- notification message  -->
-          <div 
+          <div
             v-if="displayNotificationMessage && notificationMessageDisplayed"
             :class="{
-              'notificationWithMenu' : this.$store.state.menuVisible, 
+              'notificationWithMenu' : this.$store.state.menuVisible,
               [notificationColorClass]: true
             }"
             class="notificationMessageContainer notificationMessageDefaultColor"
@@ -134,7 +133,7 @@ export default class App extends Vue {
 
   beforeDestroy() {
       this.langUnwatcher();
-  } 
+  }
 
 
   created() {
@@ -145,7 +144,7 @@ export default class App extends Vue {
     this.notificationEndDate = this.$opensilex.getConfig().notificationEndDate;
     this.notificationColorTheme = this.$opensilex.getConfig().notificationColorTheme;
 
-    try { 
+    try {
       if(this.notificationEndDate){
         new Date(this.notificationEndDate)
       }
@@ -326,7 +325,7 @@ main {
   position: inherit;
   right: 0;
 }
-  
+
 .closeNotificationButton{
   border: none;
   padding: 1px 8px;

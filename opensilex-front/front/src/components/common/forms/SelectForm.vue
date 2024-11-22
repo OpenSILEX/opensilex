@@ -80,10 +80,12 @@ import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string,
   isDisabled?: boolean
 }
 

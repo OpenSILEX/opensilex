@@ -142,6 +142,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             }
             config.setDashboard(dashboard);
 
+            AgroportalOntologiesConfigDTO agroportal = new AgroportalOntologiesConfigDTO();
+            agroportal.setEntityOntologies(frontConfig.agroportal().entity());
+            agroportal.setTraitOntologies(frontConfig.agroportal().trait());
+            agroportal.setMethodOntologies(frontConfig.agroportal().method());
+            agroportal.setUnitOntologies(frontConfig.agroportal().unit());
+            config.setAgroportal(agroportal);
+
             try {
                 SecurityConfig securityConfig = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class);
                 config.setGdprFileIsConfigured( ! securityConfig.gdprPdfPathsByLanguages().isEmpty() );

@@ -25,9 +25,10 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import VariableForm from "./VariableForm.vue";
+import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
 
 @Component
-    export default class VariableCreate extends Vue {
+    export default class VariableCreate extends Vue implements BaseExternalReferencesForm{
 
         $opensilex: OpenSilexVuePlugin;
         $store: any;
@@ -63,7 +64,7 @@ import VariableForm from "./VariableForm.vue";
             });
         }
 
-        showEditForm(form, linkedDataNb) {
+        showEditForm(form, linkedDataNb: number) {
           form.linked_data_nb = linkedDataNb;
           this.refresh();
             this.loadForm = true;

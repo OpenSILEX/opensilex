@@ -1039,9 +1039,9 @@ test:temporary3:deploy:
   needs:
     - test:temporary3:build
 
-###################################
-##  MARIEM-TEST-SNAPSHOT-DEPLOYMENT
-###################################
+#######################################
+##  TEMPORARY4-TEST-SNAPSHOT-DEPLOYMENT
+#######################################
 
 test:temporary4:build:
   <<: *build_template_with_opensilex

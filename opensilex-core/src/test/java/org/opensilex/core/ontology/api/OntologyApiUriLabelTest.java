@@ -50,7 +50,7 @@ import static junit.framework.TestCase.assertEquals;
  */
 public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
 
-    //region Fields
+    //#region Fields
 
     private static final String PATH = OntologyAPI.PATH;
 
@@ -83,9 +83,9 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
     private static final String SCIENTIFIC_OBJECT_A_LABEL_IN_GLOBAL = "SO A label in global context";
     private static final String SCIENTIFIC_OBJECT_B_LABEL = "SO B label";
 
-    //endregion
+    //#endregion
 
-    //region Setup methods
+    //#region Setup methods
 
     @BeforeClass
     public static void setup() {
@@ -119,9 +119,9 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
     }
 
-    //endregion
+    //#endregion
 
-    //region Clean / after test methods
+    //#region Clean / after test methods
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
@@ -138,9 +138,9 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
         super.clearGraphs();
     }
 
-    //endregion
+    //#endregion
 
-    //region Before test methods
+    //#region Before test methods
 
     @Before
     public void before() throws Exception {
@@ -152,9 +152,9 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
         createScientificObject(SCIENTIFIC_OBJECT_B_URI, null, SCIENTIFIC_OBJECT_B_LABEL);
     }
 
-    //endregion
+    //#endregion
 
-    //region Test methods
+    //#region Test methods
 
     @Test
     public void testGetUrisLabels() throws Exception {
@@ -214,5 +214,5 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
         assertTrue(response.getResult().stream().anyMatch(dto -> Objects.equals(dto.getName(), SCIENTIFIC_OBJECT_A_LABEL_IN_EXPERIMENT)));
     }
 
-    //endregion
+    //#endregion
 }

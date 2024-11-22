@@ -92,7 +92,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",
                 "previous": "Previous",
-                "next": "Next",
+                "map": "Map",
                 "done": "Save",
                 "cancel": "Cancel"
             },
@@ -100,7 +100,9 @@
             "success": {
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
+                "creation-success-with-template": "{uri} has been created",
                 "update-success-message": " has been updated",
+                "update-success-with-template": "{uri} has been updated",
                 "delete-success-message": "has been deleted",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },
@@ -626,8 +628,14 @@
             "update": "Update references",
             "exactMatch": "Exact match",
             "closeMatch": "Close match",
-            "broadMatch": "Broader",
-            "narrowMatch": "Narrower",
+            "broadMatch": "Broad match",
+            "narrowMatch": "Narrow match",
+            "description": {
+                "exactMatch": "The term is equivalent to my concept",
+                "closeMatch": "The term is similar to my concept",
+                "broadMatch": "The term is more general than my concept",
+                "narrowMatch": "The term is more specific than my concept"
+            },
             "no-relation": "Please choose a relation type",
             "no-current-relation": "No relation selected",
             "current-relation": "Current selected relation",
@@ -863,7 +871,9 @@
     },
     "server": {
         "errors": {
-            "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect."
+            "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect.",
+            "agroportal-instance-connection": "Could not reach Agroportal. The service may be unavailable, or the configuration is incorrect.",
+            "agroportal-not-configured": "Agroportal is not configured for this instance."
         },
         "warnings": {
             "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance.",

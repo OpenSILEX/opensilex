@@ -89,6 +89,7 @@ import CustomTreeselect from "./CustomTreeselect.vue";
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string, // added for agroportal SelectableItem adequation
   isDisabled?: boolean
 }
 

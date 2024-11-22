@@ -91,7 +91,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",
                 "previous": "Précédent",
-                "next": "Suivant",
+                "map": "Mapper",
                 "done": "Terminer",
                 "cancel": "Annuler"
             },
@@ -99,7 +99,9 @@
             "success": {
                 "success-title": "Succès",
                 "creation-success-message": " a été crée",
+                "creation-success-with-template": "{uri} a été créé",
                 "update-success-message": " a été modifié(e)",
+                "update-success-with-template": "{uri} a été mis à jour",
                 "delete-success-message": " a été supprimé(e)",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entités, {variablesCount} caractéristiques, {variablesCount} méthodes, {variablesCount} unités, {variablesCount} entités d'intérêt ont bien été importés."
             },
@@ -607,6 +609,12 @@
             "closeMatch": "Similaire",
             "broadMatch": "Plus général",
             "narrowMatch": "Plus spécifique",
+            "description": {
+                "exactMatch": "Le terme est équivalent à mon concept (skos:exactMatch)",
+                "closeMatch": "Le terme est similaire à mon concept (skos:closeMatch)",
+                "broadMatch": "Le terme est plus général que mon concept (skos:broadMatch)",
+                "narrowMatch": "Le terme est plus spécifique que mon concept (skos:narrowMatch)"
+            },
             "no-relation": "Sélectionner une relation",
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",
@@ -877,7 +885,9 @@
     },
     "server": {
         "errors": {
-            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
+            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-instance-connection": "Impossible de se connecter à Agroportal. Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-not-configured": "Agroportal n'est pas configuré pour cette instance."
         },
         "warnings": {
             "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance.",

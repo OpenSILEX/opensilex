@@ -117,13 +117,6 @@ public class ScientificObjectAPI {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScientificObjectAPI.class);
 
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
-    public static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
-
-    /**
-     * Name of the parameter used into translate-key about scientific object deletion error.
-     * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
-     */
-    public static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
 
     /**
      * Experiment URI claim key
@@ -216,8 +209,9 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
             @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
+        //TODO !!!
+       GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql, fs);
         List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
         List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
@@ -597,7 +591,7 @@ public class ScientificObjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Scientific object deleted", response = URI.class),
-            @ApiResponse(code = 400, message = DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
+            @ApiResponse(code = 400, message = ScientificObjectLogic.DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })
     public Response deleteScientificObject(

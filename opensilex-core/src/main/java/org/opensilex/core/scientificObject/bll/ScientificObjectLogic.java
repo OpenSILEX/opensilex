@@ -96,6 +96,13 @@ public class ScientificObjectLogic {
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
+    public static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
+
+    /**
+     * Name of the parameter used into translate-key about scientific object deletion error.
+     * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
+     */
+    public static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
 
     //TODO: retirer les sparql.  ...
     //#region CONSTRUCTOR
@@ -516,9 +523,9 @@ public class ScientificObjectLogic {
             if (global) {
                 // global OS suppression -> ensure that the OS is not used into any experiment
                 if (dao.isInvolvedIntoAnyExperiment(osList.stream(), osList.size())) {
-                    throw new DisplayableBadRequestException(ScientificObjectAPI.DELETE_ERROR_TITLE+" : object is used into an experiment",
+                    throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object is used into an experiment",
                             "component.scientificObjects.error.delete.used-in-experiment",
-                            Collections.singletonMap(ScientificObjectAPI.DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
+                            Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
                     );
                 }
                 // set empty list to pass to DataDao count and countFiles
@@ -526,9 +533,9 @@ public class ScientificObjectLogic {
             }else{
                 // check that the OS has no children
                 if (dao.hasChildren(contextURI, osList.stream(), osList.size())) {
-                    throw new DisplayableBadRequestException(ScientificObjectAPI.DELETE_ERROR_TITLE+" : object has child",
+                    throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has child",
                             "component.scientificObjects.error.delete.has-child",
-                            Collections.singletonMap(ScientificObjectAPI.DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
+                            Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
                     );
                 }
                 // set list composed of the experiment, to pass to DataDao count and countFiles
@@ -538,18 +545,18 @@ public class ScientificObjectLogic {
             // check that no data are associated (dao handle empty or not list)
             int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null, null);
             if(dataCount > 0){
-                throw new DisplayableBadRequestException(ScientificObjectAPI.DELETE_ERROR_TITLE+" : object has associated data",
+                throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data",
                         "component.scientificObjects.error.delete.associated-data",
-                        Collections.singletonMap(ScientificObjectAPI.DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
+                        Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
                 );
             }
 
             // check that no data file are associated (dao handle empty or not list)
             int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null, null);
             if(dataFileCount > 0){
-                throw new DisplayableBadRequestException(ScientificObjectAPI.DELETE_ERROR_TITLE+" : object has associated data files",
+                throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data files",
                         "component.scientificObjects.error.delete.associated-data-files",
-                        Collections.singletonMap(ScientificObjectAPI.DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
+                        Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
                 );
             }
 

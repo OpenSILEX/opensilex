@@ -68,15 +68,10 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class ScientificObjectDAO {
 
     private final SPARQLService sparql;
-
-    public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
-    public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
     private static final String countField = "count";
 
     private final Node defaultGraphNode;
 
-
-    //TODO: private/ public
     //#region CONSTRUCTOR
     public ScientificObjectDAO(SPARQLService sparql) {
         this.sparql = sparql;

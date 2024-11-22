@@ -313,7 +313,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 URI duplicateObjectURI = existingUriByName.get(name);
 
                 // handle case where URI is null (in case of local duplicate with a non set URI)
-                String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name, duplicateObjectURI == null ? "A new object " : duplicateObjectURI.toString());
+                String errorMsg = String.format(ScientificObjectLogic.NON_UNIQUE_NAME_ERROR_MSG, name, duplicateObjectURI == null ? "A new object " : duplicateObjectURI.toString());
 
                 CsvCellValidationContext cell = new CsvCellValidationContext(i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, object.getName(), rdfsLabel);
                 cell.setMessage(errorMsg);

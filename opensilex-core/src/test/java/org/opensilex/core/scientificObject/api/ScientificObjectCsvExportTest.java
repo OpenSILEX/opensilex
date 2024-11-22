@@ -20,7 +20,9 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 
@@ -91,13 +93,22 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
     public static final String RDFS_LABEL = URIDeserializer.formatURIAsStr(RDFS.label.getURI());
     public static final String GEOMETRY = URIDeserializer.formatURIAsStr(Oeso.hasGeometry.getURI());
 
+    protected static FileStorageService fs;
+    static FileStorageService getFs(){
+
+        if(fs == null){
+            fs = getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+        }
+        return fs;
+    }
+
     @BeforeClass
     public static void beforeTest() throws Exception {
 
         sparql = newSparqlService();
         mongodb = getMongoDBService();
 
-        dao = new ScientificObjectDAO(sparql, mongodb);
+        dao = new ScientificObjectDAO(sparql);
         geospatialDAO = new GeospatialDAO(mongodb);
 
         experiment = new ExperimentModel();
@@ -153,7 +164,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 OpenSilex.getResourceAsStream(EXPORT_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
         // load object with CSV import for testing purpose
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(sparql, getMongoDBService(), experiment.getUri(), user);
+        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(sparql, getMongoDBService(),getFs(), experiment.getUri(), user);
         File csvFile = CSV_FILES_DIR.resolve("os_export_test_file.csv").toFile();
 
         CSVValidationModel validation = importer.importCSV(csvFile, false);

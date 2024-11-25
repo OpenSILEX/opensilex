@@ -92,6 +92,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",
                 "previous": "Previous",
+                "next": "Next",
                 "map": "Map",
                 "done": "Save",
                 "cancel": "Cancel"

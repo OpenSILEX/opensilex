@@ -91,6 +91,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",
                 "previous": "Précédent",
+                "next": "Suivant",
                 "map": "Mapper",
                 "done": "Terminer",
                 "cancel": "Annuler"

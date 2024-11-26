@@ -14,9 +14,9 @@
             <!-- Description -->
             <opensilex-TextView :value="selected.description" label="component.common.description"></opensilex-TextView>
             <!-- symbol -->
-            <opensilex-TextView label="UnitForm.symbol" :value="selected.symbol"></opensilex-TextView>
+            <opensilex-TextView label="AgroportalUnitForm.symbol" :value="selected.symbol"></opensilex-TextView>
             <!-- alternative symbol -->
-            <opensilex-TextView label="UnitForm.alternative-symbol" :value="selected.alternative_symbol"></opensilex-TextView>
+            <opensilex-TextView label="AgroportalUnitForm.alternative-symbol" :value="selected.alternative_symbol"></opensilex-TextView>
             <!-- Metadata -->
             <opensilex-MetadataView
                 v-if="selected.publisher && selected.publisher.uri"

@@ -11,10 +11,10 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -148,14 +148,14 @@ class BrAPIv1LocationDTO {
         this.longitude = longitude;
     }
 
-    public BrAPIv1LocationDTO extractFromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
+    public BrAPIv1LocationDTO extractFromModel(FacilityModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
         this.setLocationDbId(model.getUri().toString());
 
         this.setLocationName(model.getName());
         this.setLocationType(model.getType().toString());
 
-        if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){
-            Geometry facilityGeometry = facilityDAO.getFacilityGeospatialModel(model.getUri()).getGeometry();
+        if (facilityLogic.getFacilityLocationModel(model) != null){
+            Geometry facilityGeometry = facilityLogic.getFacilityLocationModel(model).getLocation().getGeometry();
             org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
 
             if (!facilityJtsGeometry.isEmpty()){
@@ -233,8 +233,8 @@ class BrAPIv1LocationDTO {
         return this;
     }
 
-    public static BrAPIv1LocationDTO fromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
+    public static BrAPIv1LocationDTO fromModel(FacilityModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
         BrAPIv1LocationDTO location = new BrAPIv1LocationDTO();
-        return location.extractFromModel(model, facilityDAO, organizationDAO, currentAccount);
+        return location.extractFromModel(model, facilityLogic, organizationDAO, currentAccount);
     }
 }

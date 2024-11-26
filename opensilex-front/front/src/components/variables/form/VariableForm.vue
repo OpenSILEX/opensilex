@@ -36,12 +36,13 @@
                         @select="updateEntity"   
                         :itemLoadingMethod="loadEntity"
                         :conversionMethod="objectToSelectNode"
-                    >
-                    </opensilex-EntitySelector>
-                    <opensilex-EntityCreate
+                        :disabled="false"
+                        @loadMoreItems="loadMoreItems(entitySelector)"
+                    ></opensilex-EntitySelector>
+                    <opensilex-AgroportalEntityForm
                         ref="entityForm"
                         @onCreate="setLoadedEntity">
-                    </opensilex-EntityCreate>
+                    </opensilex-AgroportalEntityForm>
                 </div>
 
                 <!-- Entity of interest -->
@@ -59,12 +60,13 @@
                         :itemLoadingMethod="loadInterestEntity"
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-interestEntity"
-                    >
-                    </opensilex-InterestEntitySelector>
-                    <opensilex-InterestEntityCreate
+                        :disabled="false"
+                        @loadMoreItems="loadMoreItems(interestEntitySelector)"
+                    ></opensilex-InterestEntitySelector>
+                    <opensilex-AgroportalEntityOfInterestForm
                         ref="interestEntityForm"
                         @onCreate="setLoadedInterestEntity">
-                    </opensilex-InterestEntityCreate>
+                    </opensilex-AgroportalEntityOfInterestForm>
                 </div>
 
                 <!-- Characteristic -->
@@ -83,12 +85,13 @@
                         :itemLoadingMethod="loadCharacteristic"
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-characteristic"
-                    >
-                    </opensilex-CharacteristicSelector>
-                    <opensilex-CharacteristicModalForm
+                        :disabled="false"
+                        @loadMoreItems="loadMoreItems(characteristicSelector)"
+                    ></opensilex-CharacteristicSelector>
+                    <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
                         @onCreate="setLoadedCharacteristic">
-                    </opensilex-CharacteristicModalForm>
+                    </opensilex-AgroportalCharacteristicForm>
                 </div>
 
                 <!-- Species -->
@@ -117,13 +120,14 @@
                         @select="updateMethod"
                         :searchMethod="searchMethods"
                         :itemLoadingMethod="loadMethod"
-                        :conversionMethod="objectToSelectNode"   
-                    >
-                    </opensilex-MethodSelector>
-                    <opensilex-MethodCreate
+                        :conversionMethod="objectToSelectNode"
+                        :disabled="false"
+                        @loadMoreItems="loadMoreItems(methodSelector)"
+                    ></opensilex-MethodSelector>
+                    <opensilex-AgroportalMethodForm
                         ref="methodForm"
                         @onCreate="setLoadedMethod">
-                    </opensilex-MethodCreate>
+                    </opensilex-AgroportalMethodForm>
                 </div>
 
                 <!-- Trait button -->
@@ -166,13 +170,14 @@
                         :searchMethod="searchUnits"
                         :itemLoadingMethod="loadUnit"
                         :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-unit"  
-                    >
-                    </opensilex-UnitSelector>
-                    <opensilex-UnitCreate
+                        noResultsText="VariableForm.no-unit"
+                        :disabled="false"
+                        @loadMoreItems="loadMoreItems(unitSelector)"
+                    ></opensilex-UnitSelector>
+                    <opensilex-AgroportalUnitForm
                         ref="unitForm"
                         @onCreate="setLoadedUnit">
-                    </opensilex-UnitCreate>
+                    </opensilex-AgroportalUnitForm>
                 </div>
             </div>
 
@@ -258,7 +263,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
 import {
   CharacteristicCreationDTO,
@@ -273,6 +277,12 @@ import {
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+import {BaseExternalReferencesForm} from "../../common/external-references/ExternalReferencesTypes";
+import {EntityGetDTO} from "opensilex-core/model/entityGetDTO";
+import {InterestEntityGetDTO} from "opensilex-core/model/interestEntityGetDTO";
+import {CharacteristicGetDTO} from "opensilex-core/model/characteristicGetDTO";
+import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
+import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
 import VueI18n from "vue-i18n";
 import FormSelector from "../../common/forms/FormSelector.vue";
 
@@ -307,11 +317,11 @@ export default class VariableForm extends Vue {
     @Ref("methodSelector") methodSelector!: any;
     @Ref("unitSelector") unitSelector!: any;
 
-    @Ref("entityForm") readonly entityForm!: any;
-    @Ref("interestEntityForm") readonly interestEntityForm!: any;
-    @Ref("characteristicForm") readonly characteristicForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
-    @Ref("unitForm") readonly unitForm!: any;
+    @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseExternalReferencesForm;
+    @Ref("methodForm") readonly methodForm!: BaseExternalReferencesForm;
+    @Ref("unitForm") readonly unitForm!: BaseExternalReferencesForm;
 
     @Ref("traitForm") readonly traitForm!: any;
 
@@ -334,7 +344,7 @@ export default class VariableForm extends Vue {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
         this.dataService = this.$opensilex.getService("opensilex-core.DataService");
 
-        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
+        for(let period of ["millisecond","second","minute","hour","day","week","month","year","unique"]){
             this.periodList.push({
                 id: this.$i18n.t("VariableForm.dimension-values." +period),
                 label: this.$i18n.t("VariableForm.dimension-values." + period)
@@ -892,6 +902,7 @@ en:
             day: Day
             week: Week
             month: Month
+            year: Year
             mm: Millimeter
             cm: Centimeter
             m: Meter
@@ -982,6 +993,7 @@ fr:
             day: Jour
             week: Semaine
             month: Mois
+            year: Année
             mm: Millimètre
             cm: Centimètre
             m: Mètre

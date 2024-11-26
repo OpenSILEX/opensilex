@@ -1,0 +1,207 @@
+<template>
+  <div class="v-step-agroportal-create">
+    <ValidationObserver ref="validatorRef">
+      <opensilex-Tutorial
+          ref="tutorial"
+          :steps="tutorialSteps"
+          @onFinish="onTutorialFinishOrSkip"
+          @onSkip="onTutorialFinishOrSkip"
+      >
+      </opensilex-Tutorial>
+      <div class="row align-items-center">
+        <div class="agroportalCreateForm">
+          <!-- URI -->
+          <opensilex-UriForm
+              class="v-step-uri"
+              :uri.sync="formDto.uri"
+              label="component.common.uri"
+              :generated.sync="uriGenerated"
+              :required="true"
+              helpMessage="AgroportalCreateFormPart.uri-help"
+              :editMode="editMode"
+          ></opensilex-UriForm>
+
+          <!-- Name -->
+          <opensilex-InputForm
+              class="v-step-name"
+              :value.sync="formDto.name"
+              label="component.common.name"
+              type="text"
+              :required="true"
+              :placeholder="props.namePlaceholder"
+          ></opensilex-InputForm>
+
+          <!-- Comment -->
+          <opensilex-TextAreaForm
+              class="v-step-description"
+              :value.sync="formDto.description"
+              label="component.common.description">
+          </opensilex-TextAreaForm>
+
+          <!-- Additional fields -->
+          <slot name="createAdditionalFields" :form="formDto"></slot>
+        </div>
+      </div>
+    </ValidationObserver>
+  </div>
+</template>
+
+<script lang="ts">
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {Tour} from "vue-tour";
+import {BaseExternalReferencesDTO} from "../../ExternalReferencesTypes";
+import {BModal} from "bootstrap-vue";
+import {ValidationObserver} from "vee-validate";
+
+@Component
+export default class AgroportalCreateFormPart extends Vue {
+  //#region Props
+  @Prop()
+  private readonly editMode;
+
+  @Prop()
+  private readonly props: {
+    namePlaceholder: string,
+    descriptionPlaceholder: string
+  };
+
+  @PropSync("form")
+  private formDto: BaseExternalReferencesDTO;
+  //#endregion
+
+  //#region Refs
+  @Ref("tutorial")
+  private readonly tutorial!: Tour;
+
+  @Ref("modalRef")
+  readonly modalRef!: BModal;
+
+  @Ref("validatorRef")
+  readonly validatorRef!: InstanceType<typeof ValidationObserver>;
+  //#endregion
+
+  //#region Data
+  private uriGenerated: boolean = true;
+  //#endregion
+
+  //#region Tutorial data
+  private savedFormBeforeTutorial: BaseExternalReferencesDTO;
+  private readonly tutorialSteps = [
+    {
+      target: ".v-step-agroportal-create .v-step-uri",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-uri.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-uri.content"),
+      params: {placement: "right"}
+    },
+    {
+      target: ".v-step-agroportal-create .v-step-name",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-name.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-name.content"),
+      params: {placement: "right"}
+    },
+    {
+      target: ".v-step-agroportal-create .v-step-description",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-description.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-description.content"),
+      params: {placement: "right"}
+    },
+    {
+      target: "#v-step-wizard-buttons",
+      header: {title: this.$t("AgroportalCreateFormPart.tutorial.step-validation.title")},
+      content: this.$t("AgroportalCreateFormPart.tutorial.step-validation.content"),
+      params: {placement: "top"}
+    },
+  ];
+  //#endregion
+
+  //#region Public methods for WizardForm
+  public reset() {
+    this.uriGenerated = true;
+    return this.validatorRef.reset();
+  }
+
+  public validate() {
+    return this.validatorRef.validate();
+  }
+  //#endregion
+
+  //#region Tutorial methods
+  public startTutorial() {
+    this.savedFormBeforeTutorial = JSON.parse(JSON.stringify(this.formDto));
+    this.formDto.name = this.$t(this.props.namePlaceholder).toString();
+    this.formDto.description = this.$t(this.props.descriptionPlaceholder).toString();
+    this.tutorial.start();
+  }
+
+  private onTutorialFinishOrSkip() {
+    this.formDto = JSON.parse(JSON.stringify(this.savedFormBeforeTutorial));
+  }
+  //#endregion
+}
+</script>
+
+<style scoped lang="scss">
+a {
+  color: #007bff;
+}
+
+.agroportalCreateForm {
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+</style>
+
+<i18n>
+en:
+  AgroportalCreateFormPart:
+    uri-help: >
+      Uncheck this checkbox if you want to insert a concept from an existing ontology or if you want to set a
+      particular URI. Leave it checked if you want to create a new entity with an auto-generated URI.
+    tutorial:
+      step-uri:
+        title: URI
+        content: >
+          By default, the URI of the concept will be generated by OpenSilex. You can also choose to define a custom
+          URI to identify your concept.
+      step-name:
+        title: Name
+        content: >
+          Enter the name of your concept.
+      step-description:
+        title: Description
+        content: >
+          Enter the description of your concept.
+      step-validation:
+        title: Validation
+        content: >
+          Click on the '@:component.common.form-wizard.map' button to proceed to the next step, where you will add
+          external references to your concept. Click on the '@:AgroportalSearchFormPart.save' button to save your concept.
+fr:
+  AgroportalCreateFormPart:
+    uri-help: >
+      Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez
+      spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée.
+    tutorial:
+      step-uri:
+        title: URI
+        content: >
+          Par défaut, l'URI de votre concept sera générée automatiquement par OpenSilex. Vous pouvez également
+          choisir de définir l'URI que vous souhaitez pour identifier votre concept.
+      step-name:
+        title: Nom
+        content: >
+          Entrez le nom de votre concept. Cette étape est obligatoire.
+      step-description:
+        title: Description
+        content: >
+          Entrez la description de votre concept. Essayez de fournir une description précise et compréhensible.
+      step-validation:
+        title: Validation
+        content: >
+          Cliquez sur le bouton '@:component.common.form-wizard.map' pour passer à l'étape d'ajout de références
+          externes. Si vous pensez ne pas avoir besoin d'en ajouter, vous pouvez cliquer sur le bouton
+          '@:AgroportalSearchFormPart.save' pour sauvegarder votre concept tel quel.
+</i18n>

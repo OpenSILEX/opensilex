@@ -21,6 +21,7 @@ import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
@@ -206,13 +207,13 @@ public class StudiesAPI extends BrapiCall {
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         if (model != null) {
             BrAPIv1SingleStudyResponse responseClass = new BrAPIv1SingleStudyResponse(
-                    BrAPIv1StudyDetailsDTO.fromModel(model, facilityDAO, organisationDAO, currentUser, germplasmDAO)
+                    BrAPIv1StudyDetailsDTO.fromModel(model, facilityLogic, organisationDAO, currentUser, germplasmDAO)
             );
             BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
             return responseClass.getResponse();
@@ -319,8 +320,7 @@ public class StudiesAPI extends BrapiCall {
         }
 
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
@@ -341,7 +341,7 @@ public class StudiesAPI extends BrapiCall {
             try {
                 return BrAPIv1ObservationUnitDTO.fromModel(
                         scientificObjectModel,
-                        facilityDAO,
+                        facilityLogic,
                         currentUser,
                         dataDAO,
                         xpDao.get(studyDbId, currentUser),

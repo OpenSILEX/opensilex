@@ -6,9 +6,8 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import org.geojson.GeoJsonObject;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -31,9 +30,11 @@ public class FacilityDTO extends RDFObjectDTO {
 
     protected String name;
 
+    protected String description;
+
     protected FacilityAddressDTO address;
 
-    protected GeoJsonObject geometry;
+    protected List<LocationObservationDTO> locations;
 
     public String getName() {
         return name;
@@ -51,6 +52,14 @@ public class FacilityDTO extends RDFObjectDTO {
         this.typeLabel = typeLabel;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public FacilityAddressDTO getAddress() {
         return address;
     }
@@ -59,19 +68,23 @@ public class FacilityDTO extends RDFObjectDTO {
         this.address = address;
     }
 
-    public GeoJsonObject getGeometry() {
-        return geometry;
+    public List<LocationObservationDTO> getLocations() {
+        return locations;
     }
 
-    public void setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
+    public void setLocations(List<LocationObservationDTO> locations) {
+        this.locations = locations;
     }
 
     public void toModel(FacilityModel model) {
         model.setUri(getUri());
         model.setType(getType());
         model.setName(getName());
-        if (getAddress() != null) {
+
+        if (Objects.nonNull(getDescription())) {
+            model.setDescription(getDescription());
+        }
+        if (Objects.nonNull(getAddress())) {
             model.setAddress(getAddress().newModel());
         }
     }
@@ -81,16 +94,17 @@ public class FacilityDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
+
         if (Objects.nonNull(model.getPublicationDate())) {
             setPublicationDate(model.getPublicationDate());
         }
         if (Objects.nonNull(model.getLastUpdateDate())) {
             setLastUpdatedDate(model.getLastUpdateDate());
         }
-        if (model.getAddress() != null) {
-            FacilityAddressDTO address = new FacilityAddressDTO();
-            address.fromModel(model.getAddress());
-            setAddress(address);
+        if (Objects.nonNull(model.getAddress())) {
+            FacilityAddressDTO addressDto = new FacilityAddressDTO();
+            addressDto.fromModel(model.getAddress());
+            setAddress(addressDto);
         }
     }
 
@@ -113,6 +127,10 @@ public class FacilityDTO extends RDFObjectDTO {
             }
 
             dto.setRelations(relationsDTO);
+        }
+
+        if (model.getDescription() != null) {
+            dto.setDescription(model.getDescription());
         }
 
         return dto;

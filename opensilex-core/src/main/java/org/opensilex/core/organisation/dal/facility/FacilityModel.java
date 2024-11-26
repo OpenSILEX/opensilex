@@ -5,8 +5,11 @@
  */
 package org.opensilex.core.organisation.dal.facility;
 
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD4;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
@@ -46,6 +49,13 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     protected List<FacilityModel> children;
 
     @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    String description;
+    public static final String COMMENT_FIELD = "description";
+
+    @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             inverse = true
@@ -76,6 +86,22 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     )
     private List<VariablesGroupModel> variableGroups;
     public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
+
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public List<OrganizationModel> getOrganizations() {
         return organizations;
@@ -117,6 +143,14 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     public void setVariableGroups(List<VariablesGroupModel> variableGroups) {
         this.variableGroups = variableGroups;
+    }
+
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection(LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
     }
 
     @Override

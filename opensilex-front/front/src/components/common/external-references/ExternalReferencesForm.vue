@@ -2,12 +2,32 @@
     <div>
         <ValidationObserver ref="validatorRef">
             <b-form>
-                <p>
+                <p v-if="skosReferences.uri">
                     {{$t('component.skos.addTo')}}  
                     <em>
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
                 </p>
+                <div class="row" v-if="includeAgroportalSearch && isAgroportalReachable">
+                  <div class="col">
+                    <opensilex-AgroportalSearch
+                        label="component.common.name"
+                        type="text"
+                        placeholder="search"
+                        :selected.sync="ontologies"
+                        :isAllOntologies.sync="isAllOntologies"
+                        @change="onSearchTextChange"
+                    ></opensilex-AgroportalSearch>
+
+                    <opensilex-AgroportalResults
+                        ref="searchResults"
+                        :text.sync="text"
+                        :isMappingMode="true"
+                        :mappingOptions="options"
+                        @importMapping="onImportMapping">
+                    </opensilex-AgroportalResults>
+                  </div>
+                </div>
                 <b-card bg-variant="light">
                     <div class="row">
                         <div class="col">
@@ -140,20 +160,29 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {Skos} from "../../../models/Skos";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import HttpResponse from "../../../lib/HttpResponse";
 
-    @Component
+@Component
     export default class ExternalReferencesForm extends Vue {
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $store: any;
         $t: any;
         $i18n: any;
 
+        agroportalAPIService: AgroportalAPIService;
+
         currentRelation: string = "";
         currentExternalUri: string = "";
+        text: string = "";
+        ontologies: string[] = [];
+        isAllOntologies: boolean = false;
 
         @PropSync("references")
         skosReferences: any;
@@ -162,6 +191,9 @@
 
         @Prop({default: true})
         displayInsertButton: boolean;
+
+        @Prop({default: false})
+        includeAgroportalSearch: boolean;
 
         @Prop({default: (() => [])})
         ontologiesToSelect: string[];
@@ -174,24 +206,41 @@
             }
         }
 
-        relationsInternal: any[] = [];
+        isAgroportalReachable: boolean = false;
 
-        skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
+        checkAgroportalReachable() {
+          this.agroportalAPIService.pingAgroportal().then((http) => {
+            if (http && http.response) {
+              this.isAgroportalReachable = http.response.result;
+            }
+          }).catch((error: HttpResponse) => {
+            if (error.status === 503) {
+              this.isAgroportalReachable = false;
+              return;
+            }
+            this.$opensilex.errorHandler(error);
+          });
+        }
+
+        relationsInternal: any[] = [];
 
         options: any[] = [];
 
         setOptions(){
             this.options = [];
-            for (let [key, value] of this.skosRelationsMap) {
-                this.$set(this.options, this.options.length, {
-                    id: key,
-                    label: this.$t(value)
-                });
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+              this.$set(this.options, this.options.length, {
+                id: skosRelation.dtoKey,
+                label: this.$t(skosRelation.label),
+                title: this.$t(skosRelation.description)
+              });
             }
         }
 
         created() {
            this.setOptions();
+           this.agroportalAPIService = this.$opensilex.getService<AgroportalAPIService>("opensilex.AgroportalAPIService");
+           this.checkAgroportalReachable();
         }
 
         private langUnwatcher;
@@ -234,13 +283,11 @@
         ];
 
         get relations() {
-            this.relationsInternal = [];
-            if (this.skosReferences !== undefined) {
-                for (let [key, value] of this.skosRelationsMap) {
-                    this.updateRelations(key, this.skosReferences[key]);
-                }
-            }
-            return this.relationsInternal;
+          this.relationsInternal = [];
+          for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+            this.updateRelations(skosRelation.dtoKey, this.skosReferences[skosRelation.dtoKey]);
+          }
+          return this.relationsInternal;
         }
 
         updateRelations(relation: string, references: string[]) {
@@ -254,7 +301,7 @@
 
         addRelation(relation: string, externalUri: string) {
             this.$set(this.relationsInternal, this.relationsInternal.length, {
-                relation: this.skosRelationsMap.get(relation),
+                relation: [...SUPPORTED_SKOS_RELATIONS].find(r => r.dtoKey === relation).label,
                 relationURI: externalUri
             });
         }
@@ -298,8 +345,8 @@
                 return false;
             }
             let includedInRelations = false;
-            for (let [key, value] of this.skosRelationsMap) {
-                if (this.skosReferences[key].includes(this.currentExternalUri)) {
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+                if (this.skosReferences[skosRelation.dtoKey].includes(this.currentExternalUri)) {
                     includedInRelations = true;
                     break;
                 }
@@ -308,8 +355,8 @@
         }
 
         removeRelationsToSkosReferences(row: any) {
-            for (let [key, value] of this.skosRelationsMap) {
-                this.skosReferences[key] = this.skosReferences[key].filter(function (
+            for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+                this.skosReferences[skosRelation.dtoKey] = this.skosReferences[skosRelation.dtoKey].filter(function (
                     value,
                     index,
                     arr
@@ -338,6 +385,15 @@
                     }
                 });
             });
+        }
+
+        onSearchTextChange(searchedText: string) {
+          this.text = searchedText;
+        }
+
+        onImportMapping(entity: AgroportalTermDTO, relation) {
+          this.currentExternalUri = entity.id;
+          this.currentRelation = relation.id;
         }
     }
 </script>

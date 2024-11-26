@@ -117,4 +117,10 @@ public interface FrontConfig {
         value = "Date until which to send the notification"
     )
     String notificationEndDate();
+
+    @ConfigDescription(
+            value = "Agroportal component"
+    )
+    AgroportalOntologiesConfig agroportal();
+
 }

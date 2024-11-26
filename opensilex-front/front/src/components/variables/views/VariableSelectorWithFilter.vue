@@ -5,7 +5,7 @@
     :label="label"
     :placeholder="placeholder"
     :selected.sync="variablesURI"
-    :selectedInJsonFormat="this.editMode ? variablesAsSelectableItems : null"
+    :selectedInJsonFormat="variablesAsSelectableItems"
     :experiment="experiment"
     :objects="objects"
     :devices="devices"

@@ -182,7 +182,7 @@ public class StapleModelBuilder {
         return model;
     }
 
-    //region Build methods
+    //#region Build methods
 
     private Resource createBaseClassResource(ClassModel classModel) {
         Resource resource = createResource(classModel.getUri(), RDFS.Class);
@@ -314,9 +314,9 @@ public class StapleModelBuilder {
         }
     }
 
-    //endregion
+    //#endregion
 
-    //region Helper methods
+    //#region Helper methods
 
     /**
      * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
@@ -389,5 +389,5 @@ public class StapleModelBuilder {
         return model.createResource(URIDeserializer.getExpandedURI(uri), type);
     }
 
-    //endregion
+    //#endregion
 }

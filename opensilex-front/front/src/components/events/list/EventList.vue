@@ -222,6 +222,8 @@
             :uriPaths="uriPaths"
             :specificPropertiesLabels="specificPropertiesLabels"
             :specificPropertiesPaths="specificPropertiesPaths"
+            :positionsUriLabels="positionsUriLabels"
+            :positionsUriPaths="positionsUriPaths"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -292,8 +294,10 @@ export default class EventList extends Vue {
     $store: any;
     uriLabels = {};
     uriPaths = {};
-    specificPropertiesLabels = {}
-    specificPropertiesPaths = {}
+    specificPropertiesLabels = {};
+    specificPropertiesPaths = {};
+    positionsUriLabels = {};
+    positionsUriPaths = {};
 
     @Prop({
         default: false
@@ -603,6 +607,36 @@ export default class EventList extends Vue {
                     this.specificPropertiesPaths[element.uri] = responseSpecificPropertyPath;
                 }
             });
+
+            if (this.isMove(event) && (this.selectedEvent as any).targets_positions) {
+
+                // retrieving position target names from move 
+                let promisePositionObject = this.ontologyService
+                    .getURILabelsList(
+                        (this.selectedEvent as any).targets_positions.map((positionObject: any) => positionObject.target) 
+                    )
+                    .then((httpObj) => {
+                        for (let element of httpObj.response.result) {
+                            this.$set(this.positionsUriLabels, element.uri, element.name);
+                        }
+                });
+
+
+                // creation of paths for move position targets types
+                this.ontologyService.getURITypes(
+                    (this.selectedEvent as any).targets_positions.map((positionObject: any) => positionObject.target)
+                )
+                .then((httpObj) => {
+                    for( let element of httpObj.response.result) {
+                        let responsePath = this.$opensilex.getTargetPath(
+                            element.uri, 
+                            null, 
+                            this.$opensilex.getPathFromUriTypes(element.rdf_types)
+                        );
+                        this.$set(this.positionsUriPaths, element.uri, responsePath);
+                    }
+                })
+            }
 
             this.eventModalView.show();
         }).catch(this.$opensilex.errorHandler);

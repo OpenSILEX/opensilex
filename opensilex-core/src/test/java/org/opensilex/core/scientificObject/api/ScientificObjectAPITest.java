@@ -150,11 +150,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     @After
     public void afterTest() throws Exception {
-
-        // delete xp
-        final Response delResult = getDeleteByUriResponse(target(ExperimentAPITest.deletePath), experiment.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
         // delete xp graph if some os has been inserted into experiment
         SPARQLService sparql = getSparqlService();
         Node experimentNode = NodeFactory.createURI(experiment.toString());
@@ -173,7 +168,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         return Arrays.asList(
                 ScientificObjectModel.class,
                 VariableModel.class,
-                FactorModel.class);
+                FactorModel.class,
+                ExperimentModel.class);
     }
 
     @Override

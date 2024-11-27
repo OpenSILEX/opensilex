@@ -38,6 +38,7 @@
           :showCount="showCount"
           :noResultsText="$t(noResultsText)"
           :actionHandler="actionHandler"
+          :disableBranchNodes="disableBranchNodes"
         >
           
           <template v-slot:after-list v-if="resultCount < totalCount && !showAllResults">
@@ -89,6 +90,7 @@ import CustomTreeselect from "./CustomTreeselect.vue";
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string, // added for agroportal SelectableItem adequation
   isDisabled?: boolean
 }
 
@@ -191,6 +193,9 @@ export default class FormSelector extends Vue {
 
   @Prop()
   defaultSelectedValue;
+
+  @Prop()
+  disableBranchNodes: boolean;
   //#endregion
 
    //#region Methods

@@ -19,6 +19,7 @@
     :show-count="showCount"
     :limit="limit"
     :clearable="true"
+    :disableBranchNodes="disableBranchNodes"
     @deselect="deselect"
     @select="select"
     @input="clearIfNeeded"
@@ -133,6 +134,10 @@ export default class CustomTreeselect extends Vue {
 
 conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
+  @Prop({
+    default: false
+  })
+  disableBranchNodes: boolean;
   //#endregion
 
   //#region Refs

@@ -123,9 +123,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1287) [Provenance] The provenance search filter by agent (operator) now allows multiple selection.
 - (!1290) [UriSearch] Added a web-service to search by any URI on the instance.
   Added a search button to app-header to use this feature.
-- (!1298) [Events] Improvement on events ergonomy, targets can now redirect to concerned element detail page, specific properties URIs can be copied
-- (!1309) Fixed QUDT ontology link
-- (!1309) Fixed the "time interval" field in the variable form
+- (!1298) [Events] Improvement on events ergonomy, targets can now redirect to concerned element detail page, specific properties URIs can be copie
+- (!1312) [Scientific object] The selector level filter for scientific object search now perform a logical AND instead
+  of an OR when multiple levels are selected, to allow filtering on multiple different factors at once
 
 ### Fixed or optimized
 
@@ -136,7 +136,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1292) [Data] Huge performance optimization on POST addListData service. Fix permissions error when inserting data with a unauthorized target.
 - (!1293) [Ontology] Services `GET /uri_labels` and `GET /uri_types` now use the `POST` method. The URI list is passed as body to allow for more parameters.
 - (!1302) [Site] a warning message is now displayed if a site address can't be geolocated.
-- (!1303) [Selectors] Selected elements on Facility selector and Group selector no longer deselect themselves in function of her URIs
+- (!1303) [Selectors] Selected elements on Facility selector and Group selector no longer deselect themselves in function of her URIsd
+- (!1309) Fixed QUDT ontology link
+- (!1309) Fixed the "time interval" field in the variable form
+- (!1312) [Web interface] You can no longer select factors in factor level selectors
+- (!1314) [Web interface] Factor level selector in the scientific object modal selector now works correctly again
 
 ### Other
 

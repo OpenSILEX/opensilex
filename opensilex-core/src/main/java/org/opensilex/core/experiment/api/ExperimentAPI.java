@@ -9,6 +9,7 @@ package org.opensilex.core.experiment.api;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -55,6 +56,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
@@ -327,8 +329,26 @@ public class ExperimentAPI {
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+
+        checkExperimentDontContainDatasBeforeDeletion(xpUri);
+
         dao.delete(xpUri, currentUser);
         return new ObjectUriResponse(xpUri).getResponse();
+    }
+
+    /**
+     * @throws ConflictException if the experiment contains data
+     */
+    private void checkExperimentDontContainDatasBeforeDeletion(URI xpUri) {
+        DataSearchFilter filter = new DataSearchFilter();
+        filter.setUser(currentUser);
+        filter.setExperiments(List.of(xpUri));
+        CountOptions countOptions = new CountOptions().limit(1);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
+
+        if (dataLogic.countData(filter, countOptions) > 0){
+            throw new ConflictException("Deletion not possible due to associated data");
+        }
     }
 
     @GET

@@ -63,7 +63,6 @@ export default class FactorLevelSelector extends Vue {
               let factorNode = {
                 id: factor.uri,
                 label: factor.name,
-                isDisabled: false,
                 children: [],
               };
               for (let j in factor.levels) {
@@ -109,7 +108,6 @@ export default class FactorLevelSelector extends Vue {
     let factorNode = {
       id: factor.uri,
       label: factor.name,
-      isDisabled: false,
       children: [],
     };
     for (let j in factor.levels) {
@@ -117,7 +115,6 @@ export default class FactorLevelSelector extends Vue {
       factorNode.children.push({
         id: factorLevel.uri,
         label: factorLevel.name,
-        isDisabled: false
       });
     }
     return factorNode;

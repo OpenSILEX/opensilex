@@ -678,7 +678,7 @@ public class ScientificObjectAPI {
      * @throws InvalidValueException if a factor level is not part of the experiment.
      */
     private static void checkFactorLevelsBelongsToExperiment(ScientificObjectCreationDTO descriptionDto, ExperimentModel experiment) throws InvalidValueException {
-        if (descriptionDto == null || descriptionDto.getRelations() == null) {
+        if (descriptionDto == null || descriptionDto.getRelations() == null || descriptionDto.getRelations().isEmpty()) {
             return;
         }
         if (experiment == null){

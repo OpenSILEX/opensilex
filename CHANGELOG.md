@@ -129,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed or optimized
 
+- (!1315) [Event] Fixed event template generation from a selection of Scientific Objects or Devices
+- (!1315) [Event] Removed empty target column from Device events
 - (!1310) [VariableGroup] Fixed creating a Group of Variables from a selection of Variables on the Variables page.
 - (!1272) [VariableGroup] A variable selector with filters is now used for Group of variables updating
 - (!1274) [Facility] Repaired the getUsedVariables webservice in Data Module, this was causing the Facility Monitoring page to not work.

@@ -57,15 +57,16 @@ public class GermplasmDAO {
         this(sparql, nosql.getServiceV2());
     }
 
-    public GermplasmModel update(GermplasmModel model) throws Exception {
+    public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
+        sparqlDAO.validateGermplasmAccess(model.getUri(), user);
         MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
         MetaDataModel attributeModel = model.getMetadata();
 
         if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
-            sparqlDAO.update(model);
+            sparqlDAO.update(model,user);
         } else {
-            new SparqlMongoTransaction(sparql,nosql).execute(session -> {
-                sparqlDAO.update(model);
+            new SparqlMongoTransaction(sparql, nosql).execute(session -> {
+                sparqlDAO.update(model, user);
 
                 if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
                     attributeModel.setUri(model.getUri());
@@ -85,7 +86,7 @@ public class GermplasmDAO {
             if(model.getMetadata() != null){
                 //Set the metaDataModel's uri to be the same as the device
                 model.getMetadata().setUri(model.getUri());
-                
+
                 metaDataDao.create(session, model.getMetadata());
             }
             return null;
@@ -101,6 +102,7 @@ public class GermplasmDAO {
      * @return GermplasmModel
      */
     public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
+        sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
             MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
@@ -120,6 +122,9 @@ public class GermplasmDAO {
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
+            Boolean isPublic,
+            //List<URI> groupsUsers,
+            boolean admin,
             boolean fetchNestedObjects) throws Exception {
 
         final Set<URI> filteredUris;
@@ -148,7 +153,53 @@ public class GermplasmDAO {
 
         searchFilter.setUris(new ArrayList<>(filteredUris));
 
-        ListWithPagination<GermplasmModel> models = sparqlDAO.search(searchFilter, fetchNestedObjects);
+        ListWithPagination<GermplasmModel> models = sparqlDAO.search(searchFilter,isPublic,admin, fetchNestedObjects);
+
+        if (fetchMetadata) {
+            // get all Germplasm metadata with one query
+            metaDataDao.getMetaDataAssociatedTo(
+                    models.getList(), // get Metadata associated with Germplasm uris
+                    GermplasmModel::setMetadata // update Germplasm metadata
+            );
+        }
+        return models;
+    }
+
+    public ListWithPagination<GermplasmModel> search(
+            GermplasmSearchFilter searchFilter,
+            boolean fetchMetadata,
+            Boolean isPublic,
+            List<URI> groupsUsers,
+            boolean admin,
+            boolean fetchNestedObjects) throws Exception {
+
+        final Set<URI> filteredUris;
+        if (searchFilter.getMetadata() != null) {
+            MetadataSearchFilter metadataSearchFilter = new MetadataSearchFilter();
+            metadataSearchFilter.setAttributes(Document.parse(searchFilter.getMetadata()));
+            filteredUris = new HashSet<>(metaDataDao.distinctUris(metadataSearchFilter));
+
+            // no URI match the given metadata filter, return empty list
+            if (filteredUris.isEmpty()) {
+                return new ListWithPagination<>(Collections.emptyList());
+            }
+        } else {
+            filteredUris = new HashSet<>();
+        }
+
+        if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
+            if (filteredUris.isEmpty()) {
+                // only use selected uris
+                filteredUris.addAll(searchFilter.getUris());
+            } else {
+                // metadata URI filter + selected uris, use Set intersection
+                filteredUris.retainAll(searchFilter.getUris());
+            }
+        }
+
+        searchFilter.setUris(new ArrayList<>(filteredUris));
+
+        ListWithPagination<GermplasmModel> models = sparqlDAO.search(searchFilter,isPublic,groupsUsers, admin, fetchNestedObjects);
 
         if (fetchMetadata) {
             // get all Germplasm metadata with one query
@@ -168,13 +219,14 @@ public class GermplasmDAO {
         return sparqlDAO.isGermplasmType(rdfType);
     }
 
-    public void delete(URI uri) throws Exception {
-        
-        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+    public void delete(URI uri, AccountModel user) throws Exception {
+
+        sparqlDAO.validateGermplasmAccess(uri, user);
+        new SparqlMongoTransaction(sparql, nosql).execute(session -> {
             if (metaDataDao.exists(uri)) {
                 metaDataDao.delete(session, uri);
             }
-            sparqlDAO.delete(uri);
+            sparqlDAO.delete(uri,user);
             return null;
         });
     }

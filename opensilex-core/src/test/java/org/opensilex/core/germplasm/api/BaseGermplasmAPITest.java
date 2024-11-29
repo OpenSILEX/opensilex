@@ -38,8 +38,8 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
                     GermplasmAPI.class.getMethod(
                             "searchGermplasm",
                             String.class, URI.class, String.class, String.class, Integer.class,
-                            URI.class, URI.class, URI.class, URI.class, String.class, URI.class,
-                            List.class, List.class, List.class, String.class, List.class, int.class, int.class
+                            URI.class, URI.class, URI.class, String.class, URI.class,
+                            List.class, String.class,Boolean.class, List.class, int.class, int.class
                     ),
                     path
             );

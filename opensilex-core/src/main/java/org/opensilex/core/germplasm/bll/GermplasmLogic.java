@@ -78,7 +78,7 @@ public class GermplasmLogic {
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
         checkBeforeCreateOrUpdate(germplasmModel, true);
         retrieveLinkedSpeciesAndVariety(germplasmModel);
-        return dao.update(germplasmModel);
+        return dao.update(germplasmModel,currentUser);
     }
 
     public void delete(URI instanceURI) throws Exception {
@@ -93,7 +93,7 @@ public class GermplasmLogic {
                     "germplasm with URI '%s' can't be deleted. It is already linked to another germplasm or a scientific object or an experiment."
                     , instanceURI.toString()));
         } else {
-            dao.delete(instanceURI);
+            dao.delete(instanceURI,currentUser);
         }
     }
 
@@ -117,8 +117,21 @@ public class GermplasmLogic {
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
+            Boolean isPublic,
+            //List<URI> groupsUsers,
+            boolean admin,
             boolean fetchNestedObjects) throws Exception {
-        return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
+        return dao.search(searchFilter, fetchMetadata,isPublic,admin, fetchNestedObjects);
+    }
+
+    public ListWithPagination<GermplasmModel> search(
+            GermplasmSearchFilter searchFilter,
+            boolean fetchMetadata,
+            Boolean isPublic,
+            List<URI> groupsUsers,
+            boolean admin,
+            boolean fetchNestedObjects) throws Exception {
+        return dao.search(searchFilter, fetchMetadata,isPublic,groupsUsers,admin, fetchNestedObjects);
     }
 
     public void checkBeforeCreateOrUpdate(GermplasmModel germplasmModel, boolean update) throws

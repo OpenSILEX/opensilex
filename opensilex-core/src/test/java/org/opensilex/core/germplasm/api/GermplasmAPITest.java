@@ -480,7 +480,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
 
     /**
      * Run this test at Dao level since the search method don't return attributes.
-     * For now the {@link GermplasmDAO#search(GermplasmSearchFilter, boolean, boolean)} with fetchMetada = true
+     * For now the {@link (GermplasmSearchFilter, boolean, boolean)} with fetchMetada = true
      * is only used into {@link GermplasmAPI#exportGermplasm(GermplasmSearchFilter)}.
      *
      */
@@ -513,7 +513,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         dao.create(model2);
 
         // search models and ensure that metadata are OK for each model
-        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true, false);
+        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true,true,false, false);
 
         GermplasmModel model1FromDb = models.getList().stream()
                 .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))

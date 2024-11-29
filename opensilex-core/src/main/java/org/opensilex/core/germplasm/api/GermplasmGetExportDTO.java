@@ -9,11 +9,14 @@ package org.opensilex.core.germplasm.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * DTO representing JSON for export
@@ -21,9 +24,9 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  * @author Alice Boizet
  */
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
-    "production_year", "description", "species", "species_name","variety", 
-    "variety_name", "accession", "accession_name", "institute", "website",
-    GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName})
+    "production_year", "description", "species", "species_name","variety",
+    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups_users",
+     GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName})
 public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
     /**
@@ -76,6 +79,21 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
     @JsonProperty(hasParentFGermplasmFieldName)
     protected List<GermplasmGetAllDTO> hasParentGermplasmF;
+
+
+    @JsonProperty("is_public")
+    protected boolean isPublic;
+
+    @JsonProperty("groups_users")
+    protected List<URI> groupsUsers = new ArrayList<>();
+
+    public List<URI> setGroupsUsers() {
+        return groupsUsers;
+    }
+
+    public void setGroupsUsers(List<URI> groups) {
+        this.groupsUsers = groups;
+    }
 
     /**
      * description
@@ -174,6 +192,11 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.hasParentGermplasm = hasParentGermplasm;
     }
 
+    public Boolean getIsPublic(){ return isPublic; }
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     public List<GermplasmGetAllDTO> getHasParentGermplasmM() {
         return hasParentGermplasmM;
     }
@@ -196,6 +219,16 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
      * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
+    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
+
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return models.stream().map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
     public static GermplasmGetExportDTO fromModel(GermplasmModel model) {
         GermplasmGetExportDTO dto = new GermplasmGetExportDTO();
 
@@ -203,6 +236,9 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+
+        dto.setIsPublic(model.getIsPublic());
+        dto.setGroupsUsers(getUriList(model.getGroupsUsers()));
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

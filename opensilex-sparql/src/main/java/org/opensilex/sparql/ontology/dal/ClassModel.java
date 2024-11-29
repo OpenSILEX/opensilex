@@ -52,6 +52,9 @@ public class ClassModel extends VocabularyModel<ClassModel> {
     protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
     protected Map<URI, OwlRestrictionModel> restrictionsByProperties = new HashMap<>();
 
+    protected Map<URI, ObjectPropertyModel> incomingObjectProperties = new HashMap<>();
+    protected Map<URI, OwlRestrictionModel> incomingRestrictionsByProperties = new HashMap<>();
+
     public ClassModel() {
         super();
         children = new LinkedList<>();
@@ -130,6 +133,24 @@ public class ClassModel extends VocabularyModel<ClassModel> {
 
     public void setRestrictionsByProperties(Map<URI, OwlRestrictionModel> restrictionsByProperties) {
         this.restrictionsByProperties = restrictionsByProperties;
+    }
+
+    public Map<URI, ObjectPropertyModel> getIncomingObjectProperties() {
+        return incomingObjectProperties;
+    }
+
+    public ClassModel setIncomingObjectProperties(Map<URI, ObjectPropertyModel> incomingObjectProperties) {
+        this.incomingObjectProperties = incomingObjectProperties;
+        return this;
+    }
+
+    public Map<URI, OwlRestrictionModel> getIncomingRestrictionsByProperties() {
+        return incomingRestrictionsByProperties;
+    }
+
+    public ClassModel setIncomingRestrictionsByProperties(Map<URI, OwlRestrictionModel> incomingRestrictionsByProperties) {
+        this.incomingRestrictionsByProperties = incomingRestrictionsByProperties;
+        return this;
     }
 
     public boolean isDatatypePropertyRestriction(URI datatype) {

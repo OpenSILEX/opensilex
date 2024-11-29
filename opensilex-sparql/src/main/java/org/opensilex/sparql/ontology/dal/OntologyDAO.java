@@ -331,10 +331,26 @@ public final class OntologyDAO {
         );
     }
 
+    public List<OwlRestrictionModel> getOwlIncomingRestrictions(URI rdfClass, String lang) throws Exception {
+        return sparql.search(
+                null, // don't specify a graph, since multiple graph can contain a restriction definition
+                OwlRestrictionModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+                    var rangeClass = makeVar("rangeClass");
+                    select.addWhere(rangeClass, Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfClass));
+                    select.addWhere(uriVar, OWL2.onClass, rangeClass);
+                }
+        );
+    }
+
     private void buildDataAndObjectProperties(ClassModel model,
                                               String lang,
                                               Map<URI, URI> datatypePropertiesURI,
-                                              Map<URI, URI> objectPropertiesURI) throws Exception {
+                                              Map<URI, URI> objectPropertiesURI,
+                                              Map<URI, URI> incomingObjectPropertiesURI
+    ) throws Exception {
 
         Map<URI, DatatypePropertyModel> dataPropertiesMap = new HashMap<>();
         List<DatatypePropertyModel> dataPropertiesList = sparql.getListByURIs(DatatypePropertyModel.class,
@@ -363,6 +379,19 @@ public final class OntologyDAO {
             return pModel.getUri();
         });
         model.setObjectProperties(objectPropertiesMap);
+
+        var incomingObjectPropertiesMap = new HashMap<URI, ObjectPropertyModel>();
+        var incomingObjectPropertiesList = sparql.getListByURIs(ObjectPropertyModel.class, incomingObjectPropertiesURI.keySet(), lang);
+
+        MapUtils.populateMap(incomingObjectPropertiesMap, incomingObjectPropertiesList, pModel -> {
+            // don't set parent if parent is TopObjectProperty
+            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(topObjectPropertyUri, pModel.getParent().getUri())) {
+                pModel.setParent(null);
+            }
+
+            return pModel.getUri();
+        });
+        model.setIncomingObjectProperties(incomingObjectPropertiesMap);
     }
 
     private void addRestriction(OwlRestrictionModel restriction,
@@ -400,9 +429,23 @@ public final class OntologyDAO {
 
     }
 
+    private void addIncomingRestriction(OwlRestrictionModel restriction,
+                                        Map<URI, OwlRestrictionModel> mergedRestriction,
+                                        Map<URI, URI> incomingObjectPropertiesURI) throws SPARQLException {
+        URI propertyURI = restriction.getOnProperty();
+        if (restriction.getOnClass() == null) {
+            throw new IllegalArgumentException("On class is required for an incoming restriction");
+        }
+        if (sparql.uriExists(ClassModel.class, restriction.getOnClass())) {
+            incomingObjectPropertiesURI.put(propertyURI, restriction.getOnClass());
+        }
+        mergedRestriction.put(propertyURI, restriction);
+    }
+
     public void buildProperties(ClassModel model, String lang) throws Exception {
 
         List<OwlRestrictionModel> restrictions = getOwlRestrictions(model.getUri(), lang);
+        List<OwlRestrictionModel> incomingRestrictions = getOwlIncomingRestrictions(model.getUri(), lang);
         if (restrictions.isEmpty()) {
             return;
         }
@@ -416,7 +459,15 @@ public final class OntologyDAO {
         }
         model.setRestrictionsByProperties(mergedRestrictions);
 
-        buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI);
+        Map<URI, URI> incomingObjectPropertiesURI = new HashMap<>();
+        Map<URI, OwlRestrictionModel> mergedIncomingRestrictions = new HashMap<>();
+
+        for (var restriction : incomingRestrictions) {
+            addIncomingRestriction(restriction, mergedIncomingRestrictions, incomingObjectPropertiesURI);
+        }
+        model.setIncomingRestrictionsByProperties(mergedIncomingRestrictions);
+
+        buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI, incomingObjectPropertiesURI);
     }
 
     /**

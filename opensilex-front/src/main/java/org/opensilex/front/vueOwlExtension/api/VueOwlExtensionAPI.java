@@ -188,7 +188,8 @@ public class VueOwlExtensionAPI {
     })
     public Response getRDFTypeProperties(
             @ApiParam(value = "RDF class URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @NotNull @ValidURI URI parentType
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @NotNull @ValidURI URI parentType,
+            @ApiParam(value = "Fetch incoming properties") @QueryParam("fetch_incoming") Boolean fetchIncoming
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -214,6 +215,14 @@ public class VueOwlExtensionAPI {
             }
             else if(propertyModel instanceof ObjectPropertyModel){
                 vueRDFTypeDTO.getObjectProperties().add(vuePropertyDto);
+            }
+        }
+
+        if (Boolean.TRUE.equals(fetchIncoming)) {
+            for (var incomingPropertyURI : classModel.getIncomingRestrictionsByProperties().keySet()) {
+                AbstractPropertyModel<?> propertyModel = ontologyStore.getProperty(incomingPropertyURI,null,null, currentUser.getLanguage());
+                VueRDFTypePropertyDTO vuePropertyDto = new VueRDFTypePropertyDTO(classModel, propertyModel);
+                vueRDFTypeDTO
             }
         }
         return new SingleObjectResponse<>(vueRDFTypeDTO).getResponse();

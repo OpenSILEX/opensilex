@@ -48,17 +48,26 @@ public class VueRDFTypePropertyDTO {
     @JsonProperty("is_custom")
     protected boolean isCustom;
 
+    protected boolean isIncoming;
+
     public VueRDFTypePropertyDTO() {
     }
 
-    public VueRDFTypePropertyDTO(ClassModel classModel, AbstractPropertyModel<?> propertyModel) {
-
+    public VueRDFTypePropertyDTO(AbstractPropertyModel<?> propertyModel, boolean isIncoming) {
         setIsCustom(false);
         setUri(propertyModel.getUri());
         setName(propertyModel.getName());
         if (propertyModel.getComment() != null) {
             setComment(propertyModel.getComment().getDefaultValue());
         }
+
+        if (isIncoming) {
+            setIncoming(true);
+        }
+    }
+
+    public VueRDFTypePropertyDTO(ClassModel classModel, AbstractPropertyModel<?> propertyModel) {
+        this(propertyModel, false);
 
         // use restriction for list/required/inherited
         OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(propertyModel.getUri());
@@ -178,4 +187,12 @@ public class VueRDFTypePropertyDTO {
         this.isCustom = isCustom;
     }
 
+    public boolean isIncoming() {
+        return isIncoming;
+    }
+
+    public VueRDFTypePropertyDTO setIncoming(boolean incoming) {
+        isIncoming = incoming;
+        return this;
+    }
 }

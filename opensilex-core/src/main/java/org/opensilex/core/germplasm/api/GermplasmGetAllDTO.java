@@ -9,15 +9,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name","is_public","groups_users",})
 public class GermplasmGetAllDTO {
 
     /**
@@ -61,6 +66,21 @@ public class GermplasmGetAllDTO {
      */
     @JsonProperty("species_name")
     protected String speciesName;
+
+    @JsonProperty("is_public")
+    protected Boolean isPublic;
+
+    @JsonProperty("groups_users")
+    protected List<URI> groupsUsers = new ArrayList<>();
+
+    public List<URI> setGroupsUsers() {
+        return groupsUsers;
+    }
+
+    public void setGroupsUsers(List<URI> groups) {
+        this.groupsUsers = groups;
+    }
+
 
     public URI getUri() {
         return uri;
@@ -126,12 +146,29 @@ public class GermplasmGetAllDTO {
         this.publicationDate = publicationDate;
     }
 
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     public OffsetDateTime getLastUpdatedDate() {
         return lastUpdatedDate;
     }
 
     public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
+
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return models.stream().map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -147,6 +184,8 @@ public class GermplasmGetAllDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+        dto.setIsPublic(model.getIsPublic());
+        dto.setGroupsUsers(getUriList(model.getGroupsUsers()));
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

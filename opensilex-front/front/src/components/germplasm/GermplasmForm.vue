@@ -67,7 +67,7 @@
       type="text"
       helpMessage="GermplasmForm.species-help"
     ></opensilex-InputForm>
- 
+
     <!-- variety -->
     <opensilex-InputForm
       v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI))"
@@ -76,17 +76,14 @@
       type="text"
       helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
-    
 
-    <!-- accession -->
-    <opensilex-InputForm
-      v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.ACCESSION_TYPE_URI))"
-      :value.sync="form.accession"
-      label="GermplasmForm.accession"
-      type="text"
-      helpMessage="GermplasmForm.accession-help"
-    ></opensilex-InputForm>
-    
+    <!-- Public microorganism -->
+    <opensilex-SelectForm
+      :options="isPublicOptions"
+      :selected.sync="form.is_public"
+      label="GermplasmForm.isPublic_label"
+    ></opensilex-SelectForm>
+
     <!-- institute -->
     <opensilex-InputForm
       v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
@@ -105,6 +102,13 @@
       rules="url"
       helpMessage="GermplasmForm.website-help"
     ></opensilex-InputForm>
+
+    <!-- groupe -->
+    <opensilex-GroupSelector
+      label="GermplasmForm.groups_users"
+      :groups.sync="form.groups_users"
+      :multiple="true"
+    ></opensilex-GroupSelector>
     
     <!-- year -->
     <opensilex-InputForm
@@ -180,6 +184,16 @@ export default class GermplasmForm extends Vue {
   uriGenerated = true;
 
   attributesArray = [];
+  isPublicOptions = [
+    {
+      id: true, 
+      label: this.$i18n.t("GermplasmForm.isPublic_trueOption")
+    },
+    {
+      id: false, 
+      label: this.$i18n.t("GermplasmForm.isPublic_falseOption")
+    },
+  ];
 
   @Prop()
   editMode: boolean;
@@ -197,6 +211,8 @@ export default class GermplasmForm extends Vue {
         institute: null,
         production_year: null,
         description: null,
+        is_public: null,
+        groups_users: [],
         synonyms:[],
         relations:[],
         metadata: null
@@ -221,6 +237,8 @@ export default class GermplasmForm extends Vue {
       institute: null,
       production_year: null,
       description: null,
+      is_public: null,
+      groups_users: [],
       synonyms:[],
       relations:[],
       metadata: null
@@ -307,7 +325,7 @@ en:
     institute: Institute
     institute-help: The code of the institute which the germplasm comes from
     comment: Description
-    comment-help: Description associated to the germplasm 
+    comment-help: Description associated to the germplasm
     year: Production Year
     year-help: Year when the ressource has been produced
     synonyms: Synonyms
@@ -318,6 +336,11 @@ en:
     code-help: The code of the germplasm
     website: Web site
     website-help: the web page of the institute or the germplasm
+    groups_users : Groups
+    isPublic_trueOption: Public 
+    isPublic_falseOption: Private 
+    isPublic_label: Define status
+
 
 fr:
   GermplasmForm:
@@ -347,5 +370,10 @@ fr:
     code-help: Code de la ressource génétique
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
+    groups_users : Groupes
+    isPublic_trueOption: Public
+    isPublic_falseOption: Privé
+    isPublic_label: Définir le statut
+
 </i18n>
 

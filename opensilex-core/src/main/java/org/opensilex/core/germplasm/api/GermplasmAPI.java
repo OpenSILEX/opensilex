@@ -208,7 +208,7 @@ public class GermplasmAPI {
         filter.setLang(currentUser.getLanguage());
         filter.setUris(uris);
 
-        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false, false).getList();
+        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false,true,false, false).getList();
 
     if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
@@ -353,6 +353,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
             @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search private(false) or public strain (true)") @QueryParam("is_public") @DefaultValue("True") Boolean isPublic,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -365,6 +366,7 @@ public class GermplasmAPI {
                  .setSpecies(species)
                  .setVariety(variety)
                  .setAccession(accession)
+                 .setPublic(isPublic)
                  .setInstitute(institute)
                  .setProductionYear(productionYear)
                  .setExperiment(experiment)
@@ -372,7 +374,8 @@ public class GermplasmAPI {
                  .setGroup(group)
                  .setParentGermplasms(parentGermplasms)
                  .setParentMGermplasms(parentGermplasmsM)
-                 .setParentFGermplasms(parentGermplasmsF);
+                 .setParentFGermplasms(parentGermplasmsF)
+                 .setUser(currentUser);
 
          searchFilter.setOrderByList(orderByList)
                  .setPage(page)
@@ -380,7 +383,7 @@ public class GermplasmAPI {
                  .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,false, false);
+                .search(searchFilter,false,true,false, false);
 
         // Convert paginated list to DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
@@ -405,7 +408,7 @@ public class GermplasmAPI {
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,true, true).getList();
+                .search(searchFilter,true,true, false, true).getList();
 
         return buildCSV(resultList);
     }

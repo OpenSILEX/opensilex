@@ -11,7 +11,7 @@
       ></opensilex-GermplasmAddColumnModal>
     </div>
 
-    <b-input-group class="mt-2 mb-2" size="sm">
+    <b-input-group id="tableOptions" class="mt-2 mb-2" size="sm">
       <downloadCsv
         ref="downloadCsv"
         class="btn downloadTemplateBtn mb-2 mr-2"
@@ -54,7 +54,7 @@
       ></b-form-select>
     </b-input-group>
 
-    <b-input-group size="sm">
+    <b-input-group id="tableActions" size="sm">
       <b-button
         class="mb-2 mr-2 greenThemeColor"
         @click="onCheckBtnClick()"
@@ -113,6 +113,11 @@
           class="mb-2 mr-2 greenThemeColor"
           @click="$bvModal.hide('progressModal')"
           >{{ $t("GermplasmTable.close") }}</b-button
+        >
+        <b-button
+          class="mb-2 mr-2 btn-secondary"
+          :to="{ path: '/germplasm' }"
+          >{{ $t("GermplasmTable.mainList") }}</b-button
         >
       </template>
     </b-modal>
@@ -173,7 +178,12 @@
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
 // @ts-ignore
-import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
+import { 
+    GermplasmCreationDTO, 
+    GermplasmService, 
+    SpeciesService, 
+    SpeciesDTO
+} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
@@ -280,8 +290,8 @@ export default class GermplasmTable extends Vue {
   private jsonForTemplate = [];
 
   private readonly checkBoxOptions = [
-    { text: "See all lines", value: "all" },
-    { text: "See lines with errors", value: "NOK" },
+    { text: this.$t("GermplasmTable.checkBoxOptionsAll"), value: "all" },
+    { text: this.$t("GermplasmTable.checkBoxOptionsAllErrors"), value: "NOK" },
   ];
 
   private filter = "all";
@@ -425,6 +435,21 @@ export default class GermplasmTable extends Vue {
    */
   private updateColumns() {
     console.log(this.$attrs.germplasmType);
+    // Fetch the species in DB in order to show a list of dicts for the input table field named speciesCol
+    let service: SpeciesService = this.$opensilex.getService("opensilex.SpeciesService");
+    let speciesInDb = [{label: this.$t("GermplasmTable.empty"), value: ""}]
+    service
+      .getAllSpecies()
+      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+        for (let i = 0; i < http.response.result.length; i++) {
+          speciesInDb.push({
+            label: http.response.result[i].name,
+            value: http.response.result[i].uri
+          });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+
     this.suppColumnsNames = [];
 
     let idCol = {
@@ -467,10 +492,14 @@ export default class GermplasmTable extends Vue {
     let speciesCol = {
       title:
         this.$t("GermplasmTable.fromSpecies") +
-        '<span class="requiredOnCondition">*</span>',
+        '<span class="required">*</span>',
       field: "species",
       visible: true,
-      editor: true,
+      editor: "list",
+      editorParams: {
+        autocomplete: true,
+        values: speciesInDb
+      }
     };
     let varietyCol = {
       title:
@@ -512,6 +541,18 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
     };
+    let isPublicCol = {
+      title: this.$t("GermplasmTable.is_public") + '<span class="required">*</span>',
+      field: "is_public",
+      visible: true,
+      editor: "list",
+      editorParams:{
+        values: {
+          true: this.$t("GermplasmTable.public"),
+          false: this.$t("GermplasmTable.private"),
+        }
+      }
+    };
     let checkingStatusCol = {
       title: this.$t("GermplasmTable.checkingStatus"),
       field: "checkingStatus",
@@ -526,6 +567,7 @@ export default class GermplasmTable extends Vue {
       minWidth: 400,
     };
 
+
     if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.SPECIES_TYPE_URI)) {
       this.tableColumns = [
         idCol,
@@ -534,6 +576,7 @@ export default class GermplasmTable extends Vue {
         labelCol,
         synonymCol,
         commentCol,
+        isPublicCol,
         checkingStatusCol,
         insertionStatusCol,
       ];
@@ -557,6 +600,7 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
+        isPublicCol,
         checkingStatusCol,
         insertionStatusCol,
       ];
@@ -748,6 +792,7 @@ export default class GermplasmTable extends Vue {
         accession: null,
         institute: null,
         production_year: null,
+        is_public: null,
         description: null,
         code: null,
         synonyms: [],
@@ -776,6 +821,13 @@ export default class GermplasmTable extends Vue {
       ) {
         form.variety = dataToInsert[idx].variety;
       }
+      if (
+          dataToInsert[idx].is_public != null &&
+          dataToInsert[idx].is_public != ""
+        ) {
+          form.is_public = dataToInsert[idx].is_public;
+        }
+
       if (
         dataToInsert[idx].accession != null &&
         dataToInsert[idx].accession != ""
@@ -1191,6 +1243,13 @@ export default class GermplasmTable extends Vue {
 </script>
 
 <style scoped lang="scss">
+#tableOptions,#tableActions {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+  justify-content: center;
+}
+
 .requiredOnCondition {
   color: blue;
 }
@@ -1235,105 +1294,113 @@ export default class GermplasmTable extends Vue {
 
 en:
   GermplasmTable:
-    name: Name
-    uri: URI
-    rdfType: Type
-    fromSpecies : Species URI
-    fromVariety : Variety URI
-    fromAccession: Accession URI
-    institute: Institute Code
-    comment: Comment
-    year: ProductionYear
-    checkingStatus: Checking status
-    insertionStatus: Insertion Status
-    downloadTemplate : Dowload template
-    resetTable : Reset table
-    check : Check
-    insert : Insert
-    progressTitle: lines to scan
-    progressValue: Progress
-    emptyMessage: The table is empty
-    close: Close
-    addRow: Add Row
-    accessionNumber: AccessionNumber
-    varietyCode: Variety Code
-    lotNumber: LotNumber
-    synonyms: Synonyms
-    subtaxa: Subtaxa
-    website: Website
     addColumn: Add column
-    infoSynonyms: To add several synonyms or subtaxa, use | as separator
-    infoAttributes: To add additional information, you can add columns
-    infoLot: You have to fill species, variety or accession
-    infoAccession: You have to fill at least species or variety
-    help: Help
-    infoMessageGermplReady: germplasm ready to be inserted
-    infoMessageErrors: errors
-    infoMessageEmptyLines: empty lines
-    infoMessageGermplInserted: germplasm inserted
-    infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
-    checkingStatusMessage: ready
-    insertionStatusMessage: created
-    filterLines: Filter the lines
-    infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
+    addRow: Add Row
     alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
+    check: Check
+    checkBoxOptionsAll: See all lines
+    checkBoxOptionsAllErrors: See lines with errors
+    checkingStatus: Checking status
+    checkingStatusMessage: ready
+    close: Close
+    comment: Comment
+    downloadTemplate : Dowload template
+    empty: Empty value
+    emptyMessage: The table is empty    
+    filterLines: Filter the lines
+    fromSpecies : Species URI
+    fromVariety : Variety URI
+    fromAccession: Accession URI
+    help: Help
+    infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
+    infoAccession: You have to fill at least species or variety
+    infoAttributes: To add additional information, you can add columns
+    infoLot: You have to fill species, variety or accession
+    infoMessageEmptyLines: empty lines
+    infoMessageErrors: errors
+    infoMessageGermplInserted: microorganism inserted
+    infoMessageGermplReady: microorganism ready to be inserted
+    infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
+    infoSynonyms: To add several synonyms or subtaxa, use | as separator
+    insert : Insert
+    insertionStatus: Insertion Status
+    insertionStatusMessage: created
+    institute: Institute Code
+    is_public: Public
+    mainList: Go to main list
+    missingHeader: Uri or name columns missing
     missingName: The name is missing at line
+    name: Name
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
-    missingHeader: Uri or name columns missing
+    progressTitle: lines to scan
+    progressValue: Progress
+    public: public
+    private: private
+    resetTable : Reset table
+    rdfType: Type
+    varietyCode: Variety Code
+    subtaxa: Subtaxa
+    synonyms: Synonyms
     toggleAll: Select all / Unselect all
+    uri: URI
+    website: Website
+    year: ProductionYear
 
 fr:
   GermplasmTable:
-    name: Nom
-    uri: URI
-    rdfType: Type
+    addColumn: Ajouter colonne
+    addRow: Ajouter ligne
+    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
+    alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
+    check : Valider
+    checkBoxOptionsAll: Visualiser tout
+    checkBoxOptionsAllErrors: Visualiser éléments avec erreurs
+    checkingStatus: Statut
+    checkingStatusMessage: validé
+    close : Fermer
+    comment: Commentaire
+    downloadTemplate : Télécharger un gabarit
+    empty: Valeur vide
+    emptyMessage: Le tableau est vide
     fromSpecies : URI de l'espèce
     fromVariety : URI de variété
     fromAccession: URI d'accession
-    institute: Code institut
-    comment: Commentaire
-    year: Année
-    checkingStatus: Statut
-    insertionStatus: Statut
-    downloadTemplate : Télécharger un gabarit
-    resetTable : Vider tableau
-    check : Valider
-    insert : Insérer
-    progressTitle: lignes à parcourir
-    progressValue: Progression
-    emptyMessage: Le tableau est vide
-    close : Fermer
-    addRow: Ajouter ligne
-    accessionNumber: Code Accession
-    varietyCode: Code Variété
-    lotNumber: Code Lot
-    synonyms: Synonymes
-    subtaxa : Subtaxa
-    website: Site web
-    addColumn: Ajouter colonne
-    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
+    help: Aide
+    infoAccession: Vous devez renseigner l'espèce ou la variété
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
-    infoAccession: Vous devez renseigner l'espèce ou la variété
-    help: Aide
-    infoMessageGermplReady: ressources génétiques prêtes à être insérées
+    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
-    infoMessageGermplInserted: ressources génétiques insérées
+    infoMessageGermplInserted: microorganismes insérées
+    infoMessageGermplReady: microorganismes prêtes à être insérées
     infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
-    checkingStatusMessage: validé
+    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
+    insert : Insérer
+    insertionStatus: Statut
     insertionStatusMessage: créé
-    seeErrorLines: See lines
-    seeAll : see all 
-    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
-    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
-    alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
+    institute: Code institut
+    is_public : Publique
+    mainList: Retour à la liste principale
+    missingHeader: Colonne uri ou nom manquant
     missingName: Le nom n'est pas renseigné à la ligne
+    name: Nom
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
-    missingHeader: Colonne uri ou nom manquant
+    public: publique
+    private: privée
+    progressTitle: lignes à parcourir
+    progressValue: Progression
+    rdfType: Type
+    resetTable : Vider tableau
+    seeAll : visualiser tout
+    seeErrorLines: visualiser lignes
+    accessionNumber: Code Accession
+    varietyCode: Code Variété
+    subtaxa : Subtaxa
+    synonyms: Synonymes
     toggleAll: Tout sélectionner / Tout désélectionner
 </i18n>

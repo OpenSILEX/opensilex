@@ -178,6 +178,7 @@
                 ref="tableRef"
                 :searchMethod="searchGermplasm"
                 :fields="fields"
+                :fieldKeyToSortableModelLabelMap="{'name':'label'}"
                 :isSelectable="true"
                 @refreshed="onRefreshed"
                 @select="$emit('select', $event)"
@@ -422,7 +423,7 @@ export default class GermplasmList extends Vue {
             {
                 key: "name",
                 label: "GermplasmList.name",
-                sortable: false
+                sortable: true
             },
             {
                 key: "rdf_type_name",

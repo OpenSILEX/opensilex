@@ -143,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1309) Fixed the "time interval" field in the variable form
 - (!1312) [Web interface] You can no longer select factors in factor level selectors
 - (!1314) [Web interface] Factor level selector in the scientific object modal selector now works correctly again
+- (!1316) [Germplasm] Germplasm export now works again if additional columns are present
 
 ### Other
 

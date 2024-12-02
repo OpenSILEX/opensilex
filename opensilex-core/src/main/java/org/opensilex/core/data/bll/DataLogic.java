@@ -58,6 +58,7 @@ import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -936,6 +937,8 @@ public class DataLogic {
                     if(existingOs == null){
                         validRow = false;
                         scientificObjectsNotInXp.add(objectNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
                     }else{
                         object = existingOs;
                         // object exist, put it into name/URI cache

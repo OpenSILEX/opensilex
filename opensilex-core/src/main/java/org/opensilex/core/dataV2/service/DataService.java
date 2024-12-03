@@ -87,6 +87,7 @@ public class DataService {
     public static final String EXPERIMENT_ID = "EXPERIMENT_ID";
     public static final String UNDERSCORE = "_";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
+    public static final String EMPTY_CSV_FILE_ERROR_MSG = "No data imported: The CSV file contains no rows to process";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -276,6 +277,11 @@ public class DataService {
             String[] values;
             while ((values = csvReader.parseNext()) != null) {
                 allRows.add(values);
+            }
+            if (allRows.isEmpty()) {
+                csvValidation.setValidCSV(false);
+                csvValidation.setErrorMessage(EMPTY_CSV_FILE_ERROR_MSG);
+                return csvValidation;
             }
         }
 
@@ -593,6 +599,8 @@ public class DataService {
                     if (existingOs == null) {
                         validRow = false;
                         targetContext.getScientificObjectsNotInXp().add(objectNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, OBJECT_ID);
+                        csvValidation.addInvalidObjectError(cell);
                     } else {
                         object = existingOs;
                         // object exist, put it into name/URI cache

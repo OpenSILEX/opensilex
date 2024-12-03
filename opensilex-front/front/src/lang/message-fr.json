@@ -401,6 +401,8 @@
             "delete": "Supprimer le groupe",
             "details": "Afficher ou masquer les détails du groupe",
             "filter-placeholder": "Rechercher des groupes...",
+            "group-added": "Le groupe a été crée",
+            "group-updated": "Le groupe a été mis à jour",
             "user-profiles": "Utilisateurs et profils",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."

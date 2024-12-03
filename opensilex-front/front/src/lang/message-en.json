@@ -403,6 +403,8 @@
             "details": "Show or hide group details",
             "filter-placeholder": "Search groups...",
             "user-profiles": "Users and profiles",
+            "group-added": "The group has been created",
+            "group-updated": "The group has been updated",
             "errors": {
                 "group-already-exists": "Group already exists with this URI or this name"
             }

@@ -246,7 +246,7 @@
             "scientificObjectTypes": "Objets scientifiques",
             "facilitiesTypes": "Installations (environnement)",
             "deviceTypes": "Appareils",
-            "eventTypes": "Évènements", 
+            "eventTypes": "Évènements",
             "factorCategoryTypes": "Catégories de facteurs",
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
@@ -573,6 +573,9 @@
                 "orga-groups-projects": "Organisations, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
+            },
+            "errors": {
+                "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
             }
         },
         "germplasms": {

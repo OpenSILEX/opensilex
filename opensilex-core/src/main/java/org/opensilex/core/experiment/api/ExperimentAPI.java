@@ -60,6 +60,7 @@ import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -347,7 +348,13 @@ public class ExperimentAPI {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
 
         if (dataLogic.countData(filter, countOptions) > 0){
-            throw new ConflictException("Deletion not possible due to associated data");
+            throw new DisplayableResponseException(
+                    "Deletion not possible due to associated data",
+                    Response.Status.CONFLICT,
+                    "Deletion not possible",
+                    "component.experiment.errors.associated-data",
+                    null
+            );
         }
     }
 

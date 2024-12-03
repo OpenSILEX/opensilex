@@ -594,6 +594,9 @@
                 "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
+            },
+            "errors": {
+                "associated-data": "The experiment can't be deleted since there are some associated data"
             }
         },
         "germplasms": {

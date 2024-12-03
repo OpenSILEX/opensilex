@@ -204,45 +204,22 @@ public class DataService {
         ScientificObjectDAO scientificObjectDAO = daoFactory.createScientificObjectDAO();
 
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
-        Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
-        Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
-        Map<String, DeviceModel> nameURIDevices = new HashMap<>();
-        Map<String, DeviceModel> variableCheckedProvDevice = new HashMap<>();
-        Map<String, DeviceModel> variableCheckedDevice = new HashMap<>();
         HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        List<String> notExistingTargets = new ArrayList<>();
-        List<String> duplicatedTargets = new ArrayList<>();
-        List<String> notExistingExperiments = new ArrayList<>();
-        List<String> duplicatedExperiments = new ArrayList<>();
-        List<String> scientificObjectsNotInXp = new ArrayList<>();
-        List<String> notExistingDevices = new ArrayList<>();
-        List<String> duplicatedDevices = new ArrayList<>();
-        List<String> checkedVariables = new ArrayList<>();
-        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
         List<String[]> allRows = new ArrayList<>();
 
 
-        ExperimentContext experimentContext = ExperimentContext.buildExperimentContext(experiment, duplicatedExperiments, nameURIExperiments, notExistingExperiments);
-        DeviceContext deviceContext = DeviceContext.buildDeviceContext(duplicatedDevices, duplicateDataByIndex, checkedVariables, nameURIDevices, notExistingDevices, variableCheckedDevice, variableCheckedProvDevice, mapVariableUriDataType);
-        TargetContext targetContext = TargetContext.buildTargetContext(duplicatedTargets, nameURITargets, notExistingTargets, nameURIScientificObjectsInXp, scientificObjectsNotInXp);
-        DAOContext daoContext = DAOContext.buildDaoContext(deviceDAO, ontologyDAO, experimentDAO, scientificObjectDAO);
+        // prepare each context with own attributes
+        ExperimentContext experimentContext = ExperimentContext.buildExperimentContext(experiment);
+        DeviceContext deviceContext = new DeviceContext();
+        TargetContext targetContext = new TargetContext();
+        DAOContext daoContext = DAOContext.buildDaoContext(deviceDAO, ontologyDAO, experimentDAO, scientificObjectDAO, variableDAO);
 
+        // checking device type for agent
+        boolean sensingDeviceFoundFromProvenance = isSensingDeviceFoundFromProvenance(provenance, deviceDAO);
 
-        boolean sensingDeviceFoundFromProvenance = provenance.getAgents() != null
-                && provenance.getAgents().stream()
-                .anyMatch(agent -> {
-                    try {
-                        return (agent.getRdfType() != null) && deviceDAO.isDeviceType(agent.getRdfType());
-                    } catch (SPARQLException e) {
-                        LOGGER.error("Error while checking device type for agent: {}", agent, e);
-                        return false;
-                    }
-                });
-
-
+        // Start csv processing
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
@@ -252,10 +229,9 @@ public class DataService {
 
             // Process headers
             String[] ids = csvReader.parseNext();
-            Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull)
-                    .map(id -> id.toLowerCase(Locale.ENGLISH))
-                    .collect(Collectors.toSet());
+            Set<String> headers = getHeadersFrom(ids);
 
+            // Validate headers
             if (!validateHeaders(headers, sensingDeviceFoundFromProvenance, csvValidation)) {
                 return csvValidation;
             }
@@ -267,17 +243,19 @@ public class DataService {
 
             csvValidation.setHeadersFromArray(ids);
 
-            // Process rows
+            // Process headers labels
             csvValidation.setHeadersLabelsFromArray(csvReader.parseNext());
 
             // SKip line 3
             csvReader.parseNext();
 
-            // Line 4
+            // Line 4 start rows validation
             String[] values;
             while ((values = csvReader.parseNext()) != null) {
                 allRows.add(values);
             }
+
+            // check csv file contains values to process
             if (allRows.isEmpty()) {
                 csvValidation.setValidCSV(false);
                 csvValidation.setErrorMessage(EMPTY_CSV_FILE_ERROR_MSG);
@@ -285,14 +263,35 @@ public class DataService {
             }
         }
 
+        // start rows processing in parallel
         validateCSVRowsInParallel(provenance, allRows, sensingDeviceFoundFromProvenance,
                 headerByIndex, experimentContext, targetContext, deviceContext, daoContext, csvValidation);
 
-        if (csvValidation.getData().keySet().size() > DataAPIV2.SIZE_MAX) {
+        if (csvValidation.getData().size() > DataAPIV2.SIZE_MAX) { // TODO Question : est ce que ça vaut le coup de valider le csv meme le fichier est depasser la limite des ligne ?
             csvValidation.setTooLargeDataset(true);
         }
 
         return csvValidation;
+    }
+
+    private boolean isSensingDeviceFoundFromProvenance(ProvenanceModel provenance, DeviceDAO deviceDAO) {
+        return provenance.getAgents() != null
+                && provenance.getAgents().stream()
+                .anyMatch(agent -> {
+                    try {
+                        return (agent.getRdfType() != null) && deviceDAO.isDeviceType(agent.getRdfType());
+                    } catch (SPARQLException e) {
+                        LOGGER.error("Error while checking device type for agent: {}", agent, e);
+                        return false;
+                    }
+                });
+    }
+
+
+    private Set<String> getHeadersFrom(String[] ids) {
+        return Arrays.stream(ids).filter(Objects::nonNull)
+                .map(id -> id.toLowerCase(Locale.ENGLISH))
+                .collect(Collectors.toSet());
     }
 
 
@@ -461,8 +460,6 @@ public class DataService {
             DeviceContext deviceContext,
             DAOContext daoContext, DataCSVValidationModel csvValidation)
             throws Exception {
-
-        VariableDAO variableDAO = daoFactory.createVariableDAO();
 
         boolean validRow = true;
 
@@ -698,7 +695,7 @@ public class DataService {
                 if (deviceFromDeviceColumn != null) {
                     boolean variableIsChecked = deviceContext.getVariableCheckedDevice().containsKey(variable) && deviceContext.getVariableCheckedDevice().get(variable) == deviceFromDeviceColumn;
                     if (!variableIsChecked) {
-                        if (!variableDAO.variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
+                        if (!daoContext.getVariableDAO().variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
                             localCsvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
                         }
                         deviceContext.getVariableCheckedDevice().put(variable, deviceFromDeviceColumn);
@@ -714,7 +711,7 @@ public class DataService {
                                 dev = daoContext.getDeviceDAO().getDeviceByURI(agent.getUri(), user);
                                 if (dev != null) {
 
-                                    if (variableDAO.variableIsAssociatedToDevice(dev, varURI)) {
+                                    if (daoContext.getVariableDAO().variableIsAssociatedToDevice(dev, varURI)) {
                                         linkedDevice.add(dev);
                                     }
                                     devices.add(dev);

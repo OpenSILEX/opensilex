@@ -38,8 +38,8 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
                     GermplasmAPI.class.getMethod(
                             "searchGermplasm",
                             String.class, URI.class, String.class, String.class, Integer.class,
-                            URI.class, URI.class, URI.class, String.class, URI.class,
-                            List.class, String.class,Boolean.class, List.class, int.class, int.class
+                            URI.class, URI.class, URI.class, URI.class , String.class, URI.class,
+                            List.class,List.class,List.class, String.class,Boolean.class, List.class, int.class, int.class
                     ),
                     path
             );
@@ -81,6 +81,7 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     protected static GermplasmCreationDTO getCreationSpeciesDTO(Map<String, String> metadatas) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testSpecies");
+        germplasmDTO.setIsPublic(true);
         germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
         germplasmDTO.setMetadata(metadatas);
         return germplasmDTO;
@@ -89,6 +90,7 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     protected GermplasmCreationDTO getCreationVarietyDTO(URI speciesURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testVariety");
+        germplasmDTO.setIsPublic(true);
         germplasmDTO.setRdfType(new URI(Oeso.Variety.toString()));
         germplasmDTO.setSpecies(speciesURI);
         return germplasmDTO;

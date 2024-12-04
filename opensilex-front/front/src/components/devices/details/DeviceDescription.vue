@@ -330,7 +330,7 @@ export default class DeviceDescription extends Vue {
         this.linkedVariablesURIs.push(relation.value);
       }
     }
-    if (device.relations.length > 0) {
+    if (this.linkedVariablesURIs.length > 0) {
       this.getLinkedVariables()
     }
   }

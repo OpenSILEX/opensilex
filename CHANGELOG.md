@@ -126,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1298) [Events] Improvement on events ergonomy, targets can now redirect to concerned element detail page, specific properties URIs can be copie
 - (!1312) [Scientific object] The selector level filter for scientific object search now perform a logical AND instead
   of an OR when multiple levels are selected, to allow filtering on multiple different factors at once
+- (!1321) [Germplasm] Added sort by name to germplasm list
 
 ### Fixed or optimized
 

@@ -178,12 +178,13 @@
                 ref="tableRef"
                 :searchMethod="searchGermplasm"
                 :fields="fields"
+                :fieldKeyToSortableModelLabelMap="{[nameFieldLabel]:'label'}"
                 :isSelectable="true"
                 @refreshed="onRefreshed"
                 @select="$emit('select', $event)"
                 @unselect="$emit('unselect', $event)"
                 @selectall="$emit('selectall', $event)"
-                defaultSortBy="name"
+                :defaultSortBy="this.nameFieldLabel"
                 labelNumberOfSelectedRow="GermplasmList.selected"
                 iconNumberOfSelectedRow="fa#seedling"
             >
@@ -284,6 +285,7 @@ import GermplasmAttributesValueSelector from "./GermplasmAttributesValueSelector
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
+
 @Component
 export default class GermplasmList extends Vue {
     $opensilex: any;
@@ -308,6 +310,7 @@ export default class GermplasmList extends Vue {
         default: false
     })
     noActions;
+
 
   /**
    * Set an experiment uri, in this case we don't show experiment filter and show only germplasms of this experiment
@@ -334,6 +337,8 @@ export default class GermplasmList extends Vue {
     species = [];
     speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
     SearchFiltersToggle: boolean = true;
+    nameFieldLabel = "name";
+
 
   filter = {
     rdf_type: undefined,
@@ -420,9 +425,9 @@ export default class GermplasmList extends Vue {
     get fields() {
         let tableFields = [
             {
-                key: "name",
+                key: this.nameFieldLabel,
                 label: "GermplasmList.name",
-                sortable: false
+                sortable: true
             },
             {
                 key: "rdf_type_name",

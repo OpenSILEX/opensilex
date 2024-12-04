@@ -337,8 +337,8 @@ export default class GermplasmList extends Vue {
     species = [];
     speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
     SearchFiltersToggle: boolean = true;
+    nameFieldLabel = "name";
 
-  nameFieldLabel = Object.freeze("name");
 
   filter = {
     rdf_type: undefined,

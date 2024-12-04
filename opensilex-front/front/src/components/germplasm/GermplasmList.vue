@@ -236,6 +236,9 @@
                     ></opensilex-UriLink>
                 </template>
 
+                <template v-slot:cell(microorganism_is_public)="{data}">{{ data.item.is_public }}</template>
+                
+
                 <template v-slot:cell(actions)="{data}">
                     <b-button-group size="sm">
                         <opensilex-EditButton
@@ -347,6 +350,7 @@ export default class GermplasmList extends Vue {
     parent_germplasms_f: [],
     germplasm_group: undefined,
     uri: undefined,
+    is_public: undefined,
     metadataKey: undefined,
     metadataValue: undefined
   };
@@ -364,6 +368,7 @@ export default class GermplasmList extends Vue {
           parent_germplasms_f: [],
           germplasm_group: undefined,
           uri: undefined,
+          is_public: undefined,
           metadataKey: undefined,
           metadataValue: undefined
         };
@@ -432,7 +437,12 @@ export default class GermplasmList extends Vue {
             {
                 key: "species_name",
                 label: "GermplasmList.speciesLabel"
+            },
+            {
+                key: "microorganism_is_public",
+                label: "GermplasmList.is_public"
             }
+
         ];
         if (!this.noActions) {
             tableFields.push({
@@ -448,7 +458,7 @@ export default class GermplasmList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.updateSelectedGermplasm()
-    this.tableRef.changeCurrentPage(1);     
+    this.tableRef.changeCurrentPage(1);
     }
 
     updateSelectedGermplasm(){
@@ -478,6 +488,7 @@ export default class GermplasmList extends Vue {
       this.filter.parent_germplasms_m,
       this.filter.parent_germplasms_f,
       this.addMetadataFilter(),
+      this.filter.is_public,
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -634,6 +645,7 @@ en:
         selected: Selected Germplasm
         export: Export Germplasm list
         selected-all: All Germplasm
+        is_public: Public
 
         filter:
           description: Germplasm Search
@@ -671,6 +683,7 @@ fr:
         selected: Ressource(s) Génétique(s) Sélectionnée(s)
         export: Exporter la liste
         selected-all: Toutes les ressources génétiques
+        is_public: Public
 
 
         filter:

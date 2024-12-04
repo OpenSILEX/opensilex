@@ -10,10 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.api.ExperimentDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -34,7 +36,7 @@ import java.util.Map;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
+    "description", "species","variety", "accession","institute", "website", "relations", "metadata","is_public","groups"}) // "variety", "accession",
 public class GermplasmCreationDTO extends RDFObjectDTO {
 
     
@@ -116,6 +118,18 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
     public URI getType() {
         return type;
     }
+
+    @JsonProperty("is_public")
+    @NotNull
+    @ApiModelProperty(value = "boolean", example = "True", required = true)
+    protected Boolean isPublic;
+
+    @JsonProperty("groups_users")
+    @ApiModelProperty(value = "groups_users", example = "")
+    protected List<URI> groupsUsers = new ArrayList<>();
+
+
+
 
     public void setRdfType(URI rdfType) {
         super.setType(rdfType);
@@ -213,9 +227,28 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.website = website;
     }
 
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(boolean isPublic) { this.isPublic = isPublic; }
+
+    public List<URI> getGroupsUsers() {
+        return groupsUsers;
+    }
+
+    public void setGroupsUsers(List<URI> groups) {
+        this.groupsUsers = groups;
+    }
+
+
+
     public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
         GermplasmModel model = new GermplasmModel();
-        
+
+        if (isPublic != null) {
+            model.setIsPublic(Boolean.valueOf(isPublic));
+        }
+
         if (uri != null) {
             model.setUri(uri);
         }
@@ -246,7 +279,7 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
             accessionModel.setUri(this.accession);
             model.setAccession(accessionModel);
         }
-        
+
         if (institute != null) {
             model.setInstitute(institute);
         }
@@ -277,6 +310,13 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         if (website != null) {
             model.setWebsite(website);                    
         }
+        List<GroupModel> groupList = new ArrayList<>(groupsUsers.size());
+        groupsUsers.forEach((URI u) -> {
+            GroupModel group = new GroupModel();
+            group.setUri(u);
+            groupList.add(group);
+        });
+        model.setGroupsUsers(groupList);
 
         return model;
     }

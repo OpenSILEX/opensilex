@@ -323,23 +323,23 @@ export default class DeviceDescription extends Vue {
   }
 
   getLinkedVariablesURIs(device){
+    //Before pushing, set the list to be empty to stop duplicates spawning
+    this.linkedVariablesURIs = [];
     for (const relation of device.relations) {
       if(this.isVariableRelation(relation)){
         this.linkedVariablesURIs.push(relation.value);
       }
     }
     if (device.relations.length > 0) {
-      this.getLinkedVariables(this.linkedVariablesURIs) 
+      this.getLinkedVariables()
     }
   }
 
-  getLinkedVariables(linkedVariablesURIs){
+  getLinkedVariables(){
     this.variablesService
       .getVariablesByURIs(this.linkedVariablesURIs)
       .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
-        for (const variable of http.response.result) {
-          this.linkedVariables.push(variable)
-        }
+        this.linkedVariables = http.response.result;
       })
     .catch(this.$opensilex.errorHandler);
   }

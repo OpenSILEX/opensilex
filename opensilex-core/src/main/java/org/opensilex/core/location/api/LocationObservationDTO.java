@@ -13,18 +13,37 @@
 
 package org.opensilex.core.location.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 
 public class LocationObservationDTO {
 
+    //TODO: refacto LocationDTO?
     protected GeoJsonObject geojson;
+
+    protected URI from;
+
+    protected URI to;
+
+    @JsonProperty("x")
+    private String x;
+
+    @JsonProperty("y")
+    private String y;
+
+    @JsonProperty("z")
+    private String z;
+
+    @JsonProperty("text")
+    private String textualPosition;
 
     protected Instant startDate;
 
@@ -36,6 +55,54 @@ public class LocationObservationDTO {
 
     public void setGeojson(GeoJsonObject geojson) {
         this.geojson = geojson;
+    }
+
+    public URI getFrom() {
+        return from;
+    }
+
+    public void setFrom(URI from) {
+        this.from = from;
+    }
+
+    public URI getTo() {
+        return to;
+    }
+
+    public void setTo(URI to) {
+        this.to = to;
+    }
+
+    public String getX() {
+        return x;
+    }
+
+    public void setX(String x) {
+        this.x = x;
+    }
+
+    public String getY() {
+        return y;
+    }
+
+    public void setY(String y) {
+        this.y = y;
+    }
+
+    public String getZ() {
+        return z;
+    }
+
+    public void setZ(String z) {
+        this.z = z;
+    }
+
+    public String getTextualPosition() {
+        return textualPosition;
+    }
+
+    public void setTextualPosition(String textualPosition) {
+        this.textualPosition = textualPosition;
     }
 
     public Instant getStartDate() {
@@ -55,8 +122,17 @@ public class LocationObservationDTO {
     }
 
     public void toModel(LocationObservationModel model) {
+
         try {
-            LocationModel location = LocationLogic.buildLocationModel(LocationLogic.geoJsonToGeometry(geojson), null, null, null, null);
+            LocationModel location = LocationLogic.buildLocationModel(
+                    Objects.nonNull(getGeojson()) ? LocationLogic.geoJsonToGeometry(geojson) : null,
+                    Objects.nonNull(getFrom()) ? from : null,
+                    Objects.nonNull(getTo()) ? to : null,
+                    Objects.nonNull(getX()) ? x : null,
+                    Objects.nonNull(getY()) ? y : null,
+                    Objects.nonNull(getZ()) ? z : null,
+                    Objects.nonNull(getTextualPosition()) ? textualPosition : null
+            );
             model.setLocation(location);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -78,7 +154,7 @@ public class LocationObservationDTO {
     }
 
     public void fromModel(LocationObservationModel model) {
-        if (Objects.nonNull(model.getLocation())) {
+        if (Objects.nonNull(model.getLocation().getGeometry())) {
             try {
                 setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));
             } catch (JsonProcessingException e) {
@@ -90,6 +166,24 @@ public class LocationObservationDTO {
         }
         if (Objects.nonNull(model.getEndDate())) {
             setEndDate(model.getEndDate());
+        }
+        if (Objects.nonNull(model.getLocation().getFrom())) {
+            setFrom(model.getLocation().getFrom());
+        }
+        if (Objects.nonNull(model.getLocation().getTo())) {
+            setTo(model.getLocation().getTo());
+        }
+        if (Objects.nonNull(model.getLocation().getY())) {
+            setY(model.getLocation().getY());
+        }
+        if (Objects.nonNull(model.getLocation().getX())) {
+            setX(model.getLocation().getX());
+        }
+        if (Objects.nonNull(model.getLocation().getZ())) {
+            setZ(model.getLocation().getZ());
+        }
+        if (Objects.nonNull(model.getLocation().getTextualPosition())) {
+            setTextualPosition(model.getLocation().getTextualPosition());
         }
     }
 

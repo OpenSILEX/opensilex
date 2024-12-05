@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityNamedDTO;
 import org.opensilex.core.position.api.TargetPositionGetDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
@@ -24,6 +25,8 @@ import java.util.List;
 })
 public class MoveGetDTO extends EventGetDTO {
 
+    private LocationObservationDTO location;
+
     @JsonProperty("from")
     private FacilityNamedDTO from;
 
@@ -39,6 +42,10 @@ public class MoveGetDTO extends EventGetDTO {
     public MoveGetDTO(MoveModel model) throws URISyntaxException, JsonProcessingException {
 
         super.fromModel(model);
+
+        if(model.getLocationObservation() != null) {
+            location = LocationObservationDTO.getDTOFromModel(model.getLocationObservation());
+        }
         if(model.getFrom() != null){
             from = new FacilityNamedDTO(model.getFrom());
         }
@@ -85,6 +92,14 @@ public class MoveGetDTO extends EventGetDTO {
 
     public void setTargetsPositions(List<TargetPositionGetDTO> targetsPositions) {
         this.targetsPositions = targetsPositions;
+    }
+
+    public LocationObservationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationObservationDTO location) {
+        this.location = location;
     }
 
     @ApiModelProperty(value = "Description of the move",example = "Move to greenhouse A")

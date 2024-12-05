@@ -451,12 +451,12 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                     if(moveDetails.getStringValue(EventModel.START_FIELD) != null) {
                         location.setStartDate(Instant.parse(moveDetails.getStringValue(EventModel.START_FIELD)));
                     }
-                    if(moveDetails.getStringValue(MoveModel.TO_FIELD) != null) {
+               /*     if(moveDetails.getStringValue(MoveModel.TO_FIELD) != null) {
                         location.getLocation().setTo(URI.create(moveDetails.getStringValue(MoveModel.TO_FIELD)));
                     }
                     if(moveDetails.getStringValue(MoveModel.FROM_FIELD) != null) {
                         location.getLocation().setFrom(URI.create(moveDetails.getStringValue(MoveModel.FROM_FIELD)));
-                    }
+                    }*/
                 }
             });
         });

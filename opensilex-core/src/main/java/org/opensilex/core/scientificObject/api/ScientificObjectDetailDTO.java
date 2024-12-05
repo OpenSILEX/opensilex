@@ -12,6 +12,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.user.api.UserGetDTO;
@@ -33,7 +35,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  *
  * @author vmigot
  */
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "geometry"})
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "location"})
 public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObjectModel> {
 
     @ApiModelProperty(value = "Scientific object parent URI")
@@ -60,7 +62,10 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
     protected List<RDFObjectRelationDTO> relations;
 
+    //TODO: a supprimer
     protected GeoJsonObject geometry;
+
+    private LocationObservationDTO location;
 
     public UserGetDTO getPublisher() {
         return publisher;
@@ -124,6 +129,14 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
+    }
+
+    public LocationObservationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationObservationDTO location) {
+        this.location = location;
     }
 
     @Override
@@ -229,10 +242,14 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         return dto;
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI, MoveModel lastMove) throws JsonProcessingException {
-        ScientificObjectDetailDTO dto = getDTOFromModel(model, lastMove);
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI, LocationObservationModel lastLocation) throws JsonProcessingException {
+        ScientificObjectDetailDTO dto = getDTOFromModel(model, null);
+        //TODO: à supprimer
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
+        }
+        if (lastLocation != null) {
+            dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
         }
 
         return dto;

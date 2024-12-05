@@ -352,7 +352,7 @@ public class FacilityAPI {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();
 
-        Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getSitesWithPosition(
+        Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getFacilitiesWithPosition(
                 Objects.nonNull(endDate) ? Instant.parse(endDate) : null,
                 currentUser
         );

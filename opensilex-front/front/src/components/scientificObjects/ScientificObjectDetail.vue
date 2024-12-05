@@ -185,10 +185,11 @@ export default class ScientificObjectDetail extends Vue {
     })
     documents: number;
 
-    @Prop({
+    //TODO: comprendre??
+    /*@Prop({
         default: 0,
     })
-    events: number;
+    events: number;*/
 
     positions: number;
     datafiles: number;

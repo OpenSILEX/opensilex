@@ -15,6 +15,7 @@ import org.geojson.GeometryCollection;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,7 +56,7 @@ public class LocationLogic {
         return geocodec.decode(jsonReader, DecoderContext.builder().build());
     }
 
-    public static LocationModel buildLocationModel(Geometry geometry, String x, String y, String z, String textualPosition) {
+    public static LocationModel buildLocationModel(Geometry geometry, URI from, URI to, String x, String y, String z, String textualPosition) {
         LocationModel locationModel = new LocationModel();
 
         //build LocationModel
@@ -73,6 +74,12 @@ public class LocationLogic {
         }
         if (Objects.nonNull(textualPosition)) {
             locationModel.setTextualPosition(textualPosition);
+        }
+        if (Objects.nonNull(from)) {
+            locationModel.setFrom(from);
+        }
+        if (Objects.nonNull(to)) {
+            locationModel.setTo(to);
         }
 
         return locationModel;

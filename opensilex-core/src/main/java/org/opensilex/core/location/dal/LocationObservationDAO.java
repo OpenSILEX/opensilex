@@ -2,13 +2,21 @@ package org.opensilex.core.location.dal;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 
+import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -97,6 +105,42 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     public void upsert(ClientSession session, LocationObservationModel instance) throws MongoException {
         Bson filter = Filters.eq(MongoModel.MONGO_ID_FIELD, instance.getUri());
         upsert(instance, filter, session);
+    }
+
+    public List<LocationObservationModel> getSpecificLocation(URI collectionURI, Instant end, Instant start){
+        Bson filter = specificFilters(collectionURI, end, start);
+        return aggregate(Collections.singletonList(Aggregates.match(filter)), LocationObservationModel.class);
+    }
+
+    public void upsertSpecificLocation(ClientSession session,  LocationObservationModel existingObservation, LocationObservationModel newObservation) throws MongoException {
+        Document filter = specificFilters(existingObservation.getObservationCollection(), existingObservation.getEndDate(), existingObservation.getStartDate());
+        filter.put(MongoModel.MONGO_ID_FIELD, existingObservation.getUri());
+
+        upsert(newObservation, filter, session);
+    }
+
+    public void deleteSpecificLocation(ClientSession session, URI collectionURI, Instant end, Instant start){
+        Bson filter = specificFilters(collectionURI, end, start);
+        deleteMany(session,filter);
+    }
+    //#endregion
+
+    //#region private
+    private Document specificFilters(URI collectionURI, Instant end, Instant start){
+        //$match
+        //{
+        //	observationCollection : "http://opensilex.dev/id/...",
+        //  endDate: ISODate("2022-05-31T11:26:16.856Z",
+        //}
+
+        Document filter = new Document();
+        filter.put(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, collectionURI);
+        filter.put(LocationObservationModel.END_DATE_FIELD, end);
+        if (start != null) {
+            filter.put(LocationObservationModel.START_DATE_FIELD, start);
+        }
+
+        return filter;
     }
     //#endregion
 }

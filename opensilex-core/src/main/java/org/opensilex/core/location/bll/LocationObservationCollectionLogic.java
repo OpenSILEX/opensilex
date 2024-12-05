@@ -21,6 +21,7 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 public class LocationObservationCollectionLogic {
     private final SPARQLService sparql;
@@ -52,6 +53,10 @@ public class LocationObservationCollectionLogic {
         } catch (Exception e) {
             throw new NotFoundURIException("No location collection found for this URI", featureOfInterest);
         }
+    }
+
+    public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollections(featureOfInterests);
     }
 
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {

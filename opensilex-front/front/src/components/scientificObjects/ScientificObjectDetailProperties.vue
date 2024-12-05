@@ -55,22 +55,16 @@
         :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
 
-      <!-- Geometry -->
-      <opensilex-GeometryCopy
-              v-if="selected.geometry"
-              :value="selected.geometry"
-      ></opensilex-GeometryCopy>
-
       <!--Last Position-->
-      <opensilex-StringView v-if="withBasicProperties && lastPosition.event" label="Event.lastPosition">
+      <opensilex-StringView v-if="withBasicProperties && selected.location.endDate" label="Event.lastPosition">
           <!-- Position detail -->
-          <span>{{new Date(lastPosition.move_time).toLocaleString()}}</span>
+          <span>{{new Date(selected.location.endDate).toLocaleString()}}</span>
           <ul>
-              <li v-if="lastPosition.to">{{lastPosition.to.name}}</li>
-              <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">{{customCoordinatesText(lastPosition.position)}}</li>
-              <li v-if="lastPosition.position && lastPosition.position.text">{{lastPosition.position.text}}</li>
-              <li v-if="lastPosition.position && lastPosition.position.point">
-                  <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
+              <li v-if="selected.location">{{ selected.location.to +"("+ selected.location.from +")" }}</li>
+              <li v-if="selected.location.x || selected.location.y || selected.location.z">{{customCoordinatesText(selected.location)}}</li>
+              <li v-if="selected.location.text">{{selected.location.text}}</li>
+              <li v-if="selected.location.geojson">
+                  <opensilex-GeometryCopy label="" :value="selected.location.geojson">
                   </opensilex-GeometryCopy>
               </li>
           </ul>
@@ -81,7 +75,7 @@
         :selected="selected"
         :parentType="oeso.SCIENTIFIC_OBJECT_TYPE_URI"
         :relations="relations"
-        :ignoredProperties="[oeso.IS_HOSTED]"
+        :ignoredProperties="['vocabulary:isHosted']"
         :additionalFieldProps="{ experiment }"
       ></opensilex-OntologyObjectProperties>
 
@@ -125,7 +119,7 @@
               :selected="selected"
               :parentType="oeso.SCIENTIFIC_OBJECT_TYPE_URI"
               :relations="value.relations"
-              :ignoredProperties="[oeso.IS_HOSTED]"
+              :ignoredProperties="['vocabulary:isHosted']"
               :additionalFieldProps="{ experiment: value.experiment }"
       ></opensilex-OntologyObjectProperties>
 
@@ -150,6 +144,8 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 import {PositionsService} from "opensilex-core/api/positions.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
 
 @Component
 export default class ScientificObjectDetailProperties extends Vue {
@@ -175,22 +171,9 @@ export default class ScientificObjectDetailProperties extends Vue {
   })
   withBasicProperties;
 
-  @Prop({
-    default: null,
-  })
+  @Prop({default: null})
   experiment;
-  lastPosition:PositionGetDTO = {
-    event: null,
-    from: null,
-    position: {
-      point: null,
-      text: null,
-      x:null,
-      y:null,
-      z:null
-    },
-    to: null
-  };
+
   mounted() {
     if (this.selected) {
       this.onSelectionChange();
@@ -213,9 +196,13 @@ export default class ScientificObjectDetailProperties extends Vue {
 
   @Watch("selected")
   onSelectionChange() {
+      //TODO: Utile??
+      console.log("selected", this.selected)
+      //TODO: Get facility label
+
     this.$opensilex.disableLoader();
     if (this.globalView) {
-      return Promise.all([
+      /*return Promise.all([
         this.$opensilex
           .getService<ScientificObjectsService>("opensilex.ScientificObjectsService")
           .getScientificObjectDetail(this.selected.uri, undefined),
@@ -224,28 +211,31 @@ export default class ScientificObjectDetailProperties extends Vue {
           .getPosition(this.selected.uri)
           .catch(() => null),
       ]).then((result) => {
-        this.$opensilex.enableLoader();
+        this.$opensilex.enableLoader();*/
 
-        this.relations = result[0].response.result.relations;
+        this.relations = this.selected.relations;
 
-        if (result[1] != null) {
-          this.lastPosition = result[1].response.result;
-        }
-      });
+        // if (result[1] != null) {
+          this.lastPosition = this.selected.location;
+        console.log("this.lastLocationG",this.selected.location)
+        console.log("this.lastLocation2",this.lastLocation)
+        // }
+      // });
     } else {
-        this.$opensilex
+       /* this.$opensilex
           .getService<PositionsService>("opensilex.PositionsService")
           .getPosition(this.selected.uri)
           .catch(this.$opensilex.errorHandler)
             .then((result:  HttpResponse<OpenSilexResponse<PositionGetDTO>>) => {
         this.$opensilex.enableLoader();
 
-        if (result[1] != null) {
-          this.lastPosition = result[1].response.result;
-        }
+        if (result[1] != null) {*/
+          this.lastPosition = this.selected.location;
+          console.log("this.lastLocation",this.lastLocation)
+        // }
 
         this.relations = this.selected.relations;
-      });
+      // });
     }
   }
 
@@ -264,7 +254,7 @@ export default class ScientificObjectDetailProperties extends Vue {
   }
 
   customCoordinatesText(position: any): string {
-
+console.log("position custom", position)
     if (!position) {
       return undefined;
     }

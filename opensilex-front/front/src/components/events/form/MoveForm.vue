@@ -12,7 +12,7 @@
                 <opensilex-FacilitySelector
                         ref="moveFromSelector"
                         label="Position.from"
-                        :facilities.sync="form.from"
+                        :facilities.sync="form.location.from"
                         :multiple="false"
                         :required="fromRequired"
                         @select="updateRequiredProps()"
@@ -24,7 +24,7 @@
                 <opensilex-FacilitySelector
                         ref="moveToSelector"
                         label="Position.to"
-                        :facilities.sync="form.to"
+                        :facilities.sync="form.location.to"
                         :multiple="false"
                         :required="toRequired"
                         @select="updateRequiredProps()"
@@ -38,7 +38,7 @@
             <p><b> {{ $t("Position.title") }}</b></p>
             <hr/>
             <opensilex-PositionForm 
-               :form.sync="form.targets_positions[0].position">
+               :form.sync="form.location">
             </opensilex-PositionForm>
         </div>
 
@@ -46,12 +46,14 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import PositionForm from "../../positions/form/PositionForm.vue";
     import { MoveCreationDTO, TargetPositionCreationDTO } from 'opensilex-core/index';
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import VueI18n from "vue-i18n";
+    import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
+    import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 
     @Component
@@ -62,12 +64,16 @@
         editMode = false;
         fromRequired: boolean = false;
         toRequired: boolean = false;
+        @PropSync("isLocationFields", {default: false})
+        isFilled;
+
         $opensilex: OpenSilexVuePlugin;
         $i18n: VueI18n;
 
         @Prop({default: () => MoveForm.getEmptyForm()})
         form: MoveCreationDTO;
 
+        //TODO: à retirer
         static getEmptyTargetsPositions() : Array<TargetPositionCreationDTO> {
             return  [{
                     target: undefined,
@@ -75,6 +81,21 @@
                 }];
          }
 
+        static getEmptyLocation() : LocationObservationDTO {
+            return  {
+                geojson: undefined,
+                from: undefined,
+                to: undefined,
+                startDate: undefined,
+                endDate: undefined,
+                x: undefined,
+                y: undefined,
+                z: undefined,
+                text: undefined
+            };
+        }
+
+        //TODO: à nettoyer
         static getEmptyForm() : MoveCreationDTO{
             return {
               uri: undefined,
@@ -84,7 +105,7 @@
               is_instant: true,
               description: undefined,
               targets: [],
-
+                location: MoveForm.getEmptyLocation(),
               relations: [],
 
               // move specific properties
@@ -103,7 +124,6 @@
         created(){
         }
 
-
         reset() {
             return this.validatorRef.reset();
         }
@@ -112,11 +132,19 @@
             return this.validatorRef.validate();
         }
 
+        //TODO: à adapter
         /**
          * The "From" field is optional, and becomes required from the moment the "To" field is completed.
          */
         updateRequiredProps() {
-            if(this.form.from == undefined 
+            this.isFilled = true;
+            if(this.form.location.geojson ||
+                    this.form.location.from ||
+                    this.form.location.x ||
+                    this.form.location.y || this.form.location.z || this.form.location.text ){
+                this.isFilled = true;
+            }
+            /*if(this.form.from == undefined
             && this.form.to == undefined 
             && this.form.targets_positions[0].position !== undefined 
             && this.form.targets_positions[0].position !== "") {
@@ -124,7 +152,7 @@
                 this.toRequired = false; 
             } else {
                  this.toRequired = true;
-            }
+            }*/
         }
 
         handleSubmitError(){

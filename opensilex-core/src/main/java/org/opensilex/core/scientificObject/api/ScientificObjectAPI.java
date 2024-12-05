@@ -5,34 +5,21 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.bson.codecs.configuration.CodecConfigurationException;
-import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
@@ -40,7 +27,6 @@ import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -50,7 +36,6 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.BadRequestException;
-import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -58,16 +43,11 @@ import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
-import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
@@ -83,13 +63,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Julien BONNEFONT
@@ -154,14 +130,13 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Scientific object uris") List<URI> objectsURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
+        List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
 
-        List<ScientificObjectModel> scientificObjects = logic.searchByURIs(contextURI, objectsURI, currentUser);
-
-        //TODO: to location
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-
-        HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(contextURI, objectsURI);
-        List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
+        Map<ScientificObjectModel, LocationObservationModel> soLocationMap = logic.searchByURIs(contextURI, objectsURI, currentUser);
+        soLocationMap.forEach((so, location) -> {
+            ScientificObjectNodeDTO dto = ScientificObjectNodeDTO.getDTOFromModel(so, null, location);
+            dtoList.add(dto);
+        });
 
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
@@ -182,7 +157,6 @@ public class ScientificObjectAPI {
 
         List<SPARQLNamedResourceModel<ScientificObjectModel>> typesModel = logic.getUsedTypes(experimentURI, currentUser);
 
-        //TODO: error if empty??
         List<ListItemDTO> types = new ArrayList<>();
 
         typesModel.forEach(type -> {
@@ -209,40 +183,21 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
             @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
-        //TODO !!!
-       GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-//        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql, fs);
-        List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
-        List<ScientificObjectNodeDTO> dtoList =new ArrayList<>();
-       /*  int lengthMapGeo = 0;
+       ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
+       List<ScientificObjectNodeDTO> soDTOList = new ArrayList<>();
+//TODO: semble Ok mais pas vérif pour l'instant
+        Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = logic.getSOWithPosition(
+                contextURI,
+                startDate,
+                endDate,
+                currentUser);
 
-        // Get SO with geometry for the experiment
-        validateContextAccess(contextURI);
+        soAndLocationsMap.forEach((model, location) -> {
+            ScientificObjectNodeDTO soDTO = ScientificObjectNodeDTO.getDTOFromModel(model,null, location);
+            soDTOList.add(soDTO);
+        });
 
-        Instant test_start = Instant.now();
-        FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
-        Instant test_end = Instant.now();
-
-        // Filter OS by date and get OS details ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date)
-        for (GeospatialModel geospatialModel : mapGeo) {
-            dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
-            lengthMapGeo++;
-        }
-
-        LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
-
-        if(lengthMapGeo == 0){
-            return new PaginatedListResponse<>(dtoList).getResponse();
-        } else {
-            dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
-            //Use a temporary list to delete objects already found and reduce the size of the list to be iterated.
-            List<ScientificObjectNodeDTO> dtoMapGeoTmp = new ArrayList<>(dtoMapGeo);
-            // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
-            for(ScientificObjectNodeDTO dto : dtoList){
-                dto.setGeometry(dtoMapGeoTmp.stream().filter(o -> SPARQLDeserializers.compareURIs(o.getUri(),dto.getUri())).findAny().orElseThrow(NullPointerException::new).getGeometry());
-                dtoMapGeoTmp.removeIf(g -> SPARQLDeserializers.compareURIs(g.getUri(),dto.getUri()));
-            }*/
-            return new PaginatedListResponse<>(dtoList).getResponse();
+        return new PaginatedListResponse<>(soDTOList).getResponse();
 
     }
 
@@ -358,19 +313,13 @@ public class ScientificObjectAPI {
 
         ScientificObjectModel model = logic.getObjectByURI(objectURI, contextURI, currentUser);
 
-        //TODO: new location model
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
-        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
-
-        GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
-
         if (Objects.isNull(model)) {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove);
+        LocationObservationModel location = logic.getLastLocation(model);
+
+        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, null, location);
 
         if (Objects.nonNull(model.getPublisher())) {
             dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
@@ -392,22 +341,15 @@ public class ScientificObjectAPI {
             @PathParam("uri") @ValidURI @NotNull URI objectURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
-
-        //TODO: new model Location
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
-
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
-
-        MoveModel lastMove = moveLogic.getLastMoveEvent(objectURI);
-
+//TODO: get facility label
         Map<ScientificObjectModel, ExperimentModel> modelsMap = logic.getScientificObjectDetailByExperiments(objectURI, currentUser);
+        Map<URI, LocationObservationModel> xpLastLocationMap = logic.getLastLocationByExperiment(modelsMap);
 
         modelsMap.forEach((model, experiment) -> {
-            GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, experiment.getUri());
             ScientificObjectDetailByExperimentsDTO dto;
             try {
-                dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
+                dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, null, xpLastLocationMap.get(experiment.getUri()));
 
                 if (Objects.nonNull(model.getPublisher())) {
                     dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
@@ -443,11 +385,20 @@ public class ScientificObjectAPI {
             @NotNull
             @Valid ScientificObjectCreationDTO scientificObjectDto
     ) throws Exception {
+        //TODO: problem à la creation dans une XP?!!?
+        //TODO: From inverse To
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
+
         ScientificObjectModel soModel = scientificObjectDto.newModel();
+        MoveModel moveModel = scientificObjectDto.getMove().toModel();
 
         try {
-            URI soURI = soLogic.createScientificObject(soModel,scientificObjectDto.getExperiment(),scientificObjectDto.getRelations(), currentUser);
+            URI soURI = soLogic.createScientificObject(
+                    soModel,
+                    scientificObjectDto.getExperiment(),
+                    scientificObjectDto.getRelations(),
+                    Objects.isNull(moveModel) ? null : moveModel,
+                    currentUser);
 
             return new CreatedUriResponse(soURI).getResponse();
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
@@ -545,9 +496,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-
-        //TODO: pas tucheuu?
-
+        //TODO: tucheuu
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -587,6 +536,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
+        //TODO!!!
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         Map<String, byte[]> result = logic.exportFromMapScientificObjects(selectedObjects, selectedProps, contextURI, format, currentUser);
 
@@ -636,7 +586,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-//TODO: pas toucheou
+//TODO: toucheou
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
                 new ScientificObjectCsvImporter(sparql, nosql, fs, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()

@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LocationObservationLogic {
 
@@ -44,16 +45,16 @@ public class LocationObservationLogic {
 
     //#region public
     public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+        validateDates(endDate, startDate);
+
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
-
-        if (Objects.nonNull(endDate)) {
-            locationObservationModel.setEndDate(endDate);
-            if (Objects.nonNull(startDate)) {
+        locationObservationModel.setEndDate(endDate);
+        if (Objects.nonNull(startDate)) {
                 locationObservationModel.setStartDate(startDate);
-            }
         }
+
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
         locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
@@ -61,9 +62,17 @@ public class LocationObservationLogic {
         locationObservationDAO.create(session, locationObservationModel);
     }
 
-    public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry) throws Exception {
+    public void createLocationObservations(ClientSession session, List<LocationObservationModel> observations) throws Exception {
+        validateCollectionsConsistency(observations);
 
+        locationObservationDAO.create(session, observations);
+    }
+
+    public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry) throws Exception {
+//TODO: refacto avec au-dessus
         models.forEach(model -> {
+            validateDates(model.getEndDate(), model.getStartDate());
+
             model.setObservationCollection(locationObservationCollectionURI);
             model.setFeatureOfInterest(featureOfInterest);
             model.setHasGeometry(hasGeometry);
@@ -78,6 +87,16 @@ public class LocationObservationLogic {
 
     public LocationObservationModel getLocationObservationByURI(URI uri) throws NoSQLInvalidURIException {
         return locationObservationDAO.get(uri);
+    }
+
+    public LocationObservationModel getASpecificLocationObservation(URI collectionURI, Instant end, Instant start) throws NotAllowedException {
+        List<LocationObservationModel> locations = locationObservationDAO.getSpecificLocation(collectionURI, end, start);
+
+        if (locations.size() > 1) {
+            throw new NotAllowedException("A feature of interest can't have 2 locations at the same time.");
+        }
+
+        return locations.get(0);
     }
 
     /**
@@ -148,33 +167,39 @@ public class LocationObservationLogic {
         }
     }
 
+    public void updateASpecificLocationObservation(ClientSession session, LocationObservationModel existingObservation,  LocationObservationModel newObservation) throws NoSQLInvalidURIException {
+        locationObservationDAO.upsertSpecificLocation(session, existingObservation, newObservation);
+    }
+
+    /**
+     * Use this method only if the object can have only one observation (e.g. sites)
+     *
+     * @param locationObservationCollectionURI collection URI
+     * @throws NoSQLInvalidURIException
+     */
     public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {
         locationObservationDAO.delete(session, locationObservationCollectionURI);
     }
 
+    /**
+     * Use this method to get a specific location observation for a feature of interest
+     *
+     * @param observation location observation
+     */
+    public void deleteASpecificLocationObservation(ClientSession session, URI collectionURI, Instant end, Instant start) {
+        locationObservationDAO.deleteSpecificLocation(session, collectionURI, end, start);
+    }
+
+    /**
+     * Delete all location observations for a feature of interest
+     *
+     * @param locationObservationCollectionURI location observation
+     */
     public void deleteLocationObservations(ClientSession session, URI locationObservationCollectionURI) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
         searchFilter.setObservationCollection(locationObservationCollectionURI);
 
         locationObservationDAO.deleteMany(session, searchFilter);
-    }
-
-    /**
-     * Checks if an object with location (not from an address) is valid :
-     * - it must have one observation date;
-     * - if there is a endDate, it must be after the "begin" date.
-     *
-     * @param startDate start observation date of the geometry
-     * @param endDate   end observation date of the geometry
-     * @throws NotAllowedException If dates are invalid
-     */
-    public void validateDates(Instant endDate, Instant startDate) throws NotAllowedException {
-        if (Objects.isNull(endDate)) {
-            throw new NotAllowedException("endDate cannot be null");
-        }
-        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
-            throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
-        }
     }
 
     public int countLocationsForURI(URI locationObservationCollectionURI) {
@@ -193,6 +218,45 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region private
+    /**
+     * Checks if an object with location (not from an address) is valid :
+     * - it must have one observation date;
+     * - if there is a endDate, it must be after the "begin" date.
+     *
+     * @param startDate start observation date of the geometry
+     * @param endDate   end observation date of the geometry
+     * @throws NotAllowedException If dates are invalid
+     */
+    private void validateDates(Instant endDate, Instant startDate) throws NotAllowedException {
+        if (Objects.isNull(endDate)) {
+            throw new NotAllowedException("endDate cannot be null");
+        }
+        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
+            throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
+        }
+    }
+
+    /**
+     * Checks the consistency of all observation by feature of interest
+     *
+     * @param observations list of location observations
+     */
+    private void validateCollectionsConsistency(List<LocationObservationModel> observations){
+        if(observations.size() >= 2){
+            Map<URI,List<LocationObservationModel>> observationsByCollectionMap = observations.stream().collect(Collectors.groupingBy(LocationObservationModel::getObservationCollection));
+
+            observationsByCollectionMap.forEach((collectionURI, groupedObservation) -> {
+                //validate consistency the new observation list (observations) and between new and existing observations (existing observations)
+                List<LocationObservationModel> existingObservations = getLocationsHistory(collectionURI, null, null, null,0,0).getList();
+                List<LocationObservationModel> newAndExistingObservations = Stream.concat(groupedObservation.stream(), existingObservations.stream()).collect(Collectors.toList());
+
+                if (newAndExistingObservations.size() >= 2) {
+                    validateConsistencyObservationList(newAndExistingObservations);
+                }
+            });
+        }
+    }
+
 
     /**
      * Checks if the all observation dates are consistency

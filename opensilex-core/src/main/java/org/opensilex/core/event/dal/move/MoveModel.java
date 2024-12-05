@@ -2,6 +2,7 @@ package org.opensilex.core.event.dal.move;
 
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
@@ -20,6 +21,8 @@ import java.util.List;
         graph = EventModel.GRAPH
 )
 public class MoveModel extends EventModel {
+
+    private LocationObservationModel locationObservation;
 
     @SPARQLProperty(
             ontology = Oeev.class,
@@ -62,5 +65,13 @@ public class MoveModel extends EventModel {
 
     public void setNoSqlModel(MoveNosqlModel noSqlModel) {
         this.noSqlModel = noSqlModel;
+    }
+
+    public LocationObservationModel getLocationObservation() {
+        return locationObservation;
+    }
+
+    public void setLocationObservation(LocationObservationModel locationObservation) {
+        this.locationObservation = locationObservation;
     }
 }

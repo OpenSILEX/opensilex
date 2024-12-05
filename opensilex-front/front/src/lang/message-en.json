@@ -611,6 +611,7 @@
                 "delete" : {
                     "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",
                     "associated-data-files" : "The object {scientific_object} can't be deleted since there are some associated data files. You must delete them first",
+                    "associated-moves" : "The object {scientific_object} can't be deleted since there are some associated moves. You must delete them first",
                     "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
                     "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }

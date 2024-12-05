@@ -422,7 +422,7 @@ public class SiteLogic {
 
             checkUniqueObservation(locationObservationCollectionUri);
 
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null, null, null);
             locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel);
         }
     }
@@ -445,7 +445,7 @@ public class SiteLogic {
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null,null,null, null, null, null);
 
             try {
                 locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);

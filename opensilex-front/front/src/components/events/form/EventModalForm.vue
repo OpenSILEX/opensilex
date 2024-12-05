@@ -237,7 +237,8 @@
 
                 let position = move.targets_positions[0].position;
 
-                if (EventModalForm.isPositionEmpty(position)) {
+                //TODO
+                /*if (EventModalForm.isPositionEmpty(position)) {
                     move.targets_positions = [];
                 } else if (EventModalForm.isPositionValid(position)) {
 
@@ -251,7 +252,7 @@
                             position: position
                         }));
                     }
-                }
+                }*/
             }
         }
 

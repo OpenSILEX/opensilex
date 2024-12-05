@@ -2,8 +2,12 @@ package org.opensilex.core.location.dal;
 
 import com.mongodb.client.model.geojson.Geometry;
 
+import java.net.URI;
+
 public class LocationModel {
     private Geometry geometry;
+    private URI to;
+    private URI from;
     private String x;
     private String y;
     private String z;
@@ -15,6 +19,22 @@ public class LocationModel {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    public URI getTo() {
+        return to;
+    }
+
+    public void setTo(URI to) {
+        this.to = to;
+    }
+
+    public URI getFrom() {
+        return from;
+    }
+
+    public void setFrom(URI from) {
+        this.from = from;
     }
 
     public String getX() {

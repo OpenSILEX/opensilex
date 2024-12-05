@@ -7,6 +7,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventCreationDTO;
 import org.opensilex.core.event.api.validation.MoveLocationOrPositionNotNullConstraint;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
@@ -22,6 +24,9 @@ import java.util.stream.Collectors;
 @MoveLocationOrPositionNotNullConstraint
 public class MoveCreationDTO extends EventCreationDTO {
 
+    LocationObservationDTO location;
+
+    //TODO: à retirer
     @JsonProperty("from")
     private URI from;
 
@@ -49,7 +54,6 @@ public class MoveCreationDTO extends EventCreationDTO {
         this.to = to;
     }
 
-
     public List<TargetPositionCreationDTO> getTargetsPositions() {
         return targetsPositions;
     }
@@ -58,9 +62,24 @@ public class MoveCreationDTO extends EventCreationDTO {
         this.targetsPositions = targetsPositions;
     }
 
+    public LocationObservationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationObservationDTO location) {
+        this.location = location;
+    }
+
     public MoveModel toModel() {
 
         MoveModel model = toModel(new MoveModel());
+
+        if(location != null) {
+            LocationObservationModel locationObservationModel = location.newModel();
+            model.setLocationObservation(locationObservationModel);
+        }
+
+        //TODO: à retirer
         if(from != null && ! from.toString().isEmpty()){
             FacilityModel fromModel = new FacilityModel();
             fromModel.setUri(from);
@@ -76,9 +95,11 @@ public class MoveCreationDTO extends EventCreationDTO {
         if(noSqlModel != null){
             model.setNoSqlModel(noSqlModel);
         }
+
         return model;
     }
 
+    //TODO: à retirer
     public MoveNosqlModel toNoSqlModel() {
 
         if (CollectionUtils.isEmpty(targetsPositions)) {

@@ -253,7 +253,7 @@ export default class PositionList extends Vue {
     }
 
     deleteEvent(uri: string) {
-        this.$eventService.deleteEvent(uri).then(() => {
+        this.$eventService.deleteMoveEvent(uri).then(() => {
             this.refresh();
 
             let message = this.$i18n.t("Event.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");

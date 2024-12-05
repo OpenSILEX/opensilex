@@ -188,7 +188,7 @@ public class FacilityLogic {
      * @return a Map of facilities with or without corresponding location
      * @throws Exception If some error is encountered during the search
      */
-    public Map<FacilityModel, LocationObservationModel> getSitesWithPosition(Instant endDate, AccountModel currentUser) throws Exception {
+    public Map<FacilityModel, LocationObservationModel> getFacilitiesWithPosition(Instant endDate, AccountModel currentUser) throws Exception {
         Map<FacilityModel, LocationObservationModel> facilitiesAndLocationsMap = new HashMap<>();
         FacilitySearchFilter facilitySearchfilter = new FacilitySearchFilter();
 
@@ -216,10 +216,10 @@ public class FacilityLogic {
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
-            facilitiesWithLocationMap.forEach((site, collection) -> {
+            facilitiesWithLocationMap.forEach((facility, collection) -> {
                 var observation = locationObservationMap.get(collection.getUri());
                 if (Objects.nonNull(observation)) {
-                    facilitiesAndLocationsMap.put(site, observation);
+                    facilitiesAndLocationsMap.put(facility, observation);
                 }
             });
 
@@ -468,11 +468,10 @@ public class FacilityLogic {
                 return;
             }
             LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
+            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
         //Create the LocationObservationCollection
@@ -497,11 +496,10 @@ public class FacilityLogic {
             }
 
             LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
+            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
 

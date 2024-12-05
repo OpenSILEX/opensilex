@@ -11,6 +11,8 @@ import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
@@ -24,7 +26,10 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  */
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
 
+    //TODO: à supprimer
     private GeoJsonObject geometry;
+
+    private LocationObservationDTO location;
 
     @JsonProperty("creation_date")
     @ApiModelProperty(value = "Scientific object creation date")
@@ -40,6 +45,14 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
 
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
+    }
+
+    public LocationObservationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationObservationDTO location) {
+        this.location = location;
     }
 
     public LocalDate getCreationDate() {
@@ -72,8 +85,9 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
         return dto;
     }
 
-    public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model, Geometry geometryByURI) {
+    public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model, Geometry geometryByURI, LocationObservationModel location) {
         ScientificObjectNodeDTO dto = getDTOFromModel(model);
+        //TODO: à supprimer
         if (geometryByURI != null) {
             try {
                 dto.setGeometry(geometryToGeoJson(geometryByURI));
@@ -81,11 +95,15 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
                 e.printStackTrace();
             }
         }
+        if (location != null) {
+            dto.setLocation(LocationObservationDTO.getDTOFromModel(location));
+        }
         return dto;
     }
 
     public static ScientificObjectNodeDTO getDTOFromModel(GeospatialModel geospatialModel) {
         ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
+        //TODO: à supprimer
         if (geospatialModel != null) {
             try {
                 dto.setType(geospatialModel.getRdfType());

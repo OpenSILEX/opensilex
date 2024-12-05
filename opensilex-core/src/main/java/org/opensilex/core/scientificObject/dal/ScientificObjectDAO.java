@@ -25,7 +25,10 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
@@ -588,8 +591,8 @@ public class ScientificObjectDAO {
         return experimentalObjectModel;
     }
 
-    public List<ScientificObjectNodeDTO> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang, Collection<URI> uris) throws Exception {
-
+    public List<ScientificObjectModel> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang) throws Exception {
+//TODO : Vérif Requete
         Node context = SPARQLDeserializers.nodeURI(contextURI);
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -598,6 +601,7 @@ public class ScientificObjectDAO {
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
         Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
         Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
+        Var locationCollectionVar = makeVar(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
 
         SelectBuilder select = new SelectBuilder();
 
@@ -615,6 +619,9 @@ public class ScientificObjectDAO {
         graphHandler.addWhere(uriVar, RDFS.label, nameVar);
         graphHandler.addWhere(uriVar, RDF.type, typeVar);
 
+        // Add location collection filter
+        graphHandler.addWhere(locationCollectionVar, SOSA.hasFeatureOfInterest, uriVar);
+
         // Add creation and destruction date as optional fields
         graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
         graphHandler.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
@@ -626,9 +633,6 @@ public class ScientificObjectDAO {
         Locale locale = Locale.forLanguageTag(lang);
         optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         select.getWhereHandler().addOptional(optionalTypeLabelHandler);
-
-        //Add uris filter
-        graphHandler.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
 
         //Add date filter
         if( startDate != null || endDate != null ){
@@ -646,8 +650,7 @@ public class ScientificObjectDAO {
             return new ArrayList<>(Collections.emptyList());
         }
         else{
-            List<ScientificObjectNodeDTO> results = streamToList(resultStream,dtoFromResult());
-            return results;
+            return streamToList(resultStream, fromResult(lang));
         }
     }
 
@@ -713,6 +716,15 @@ public class ScientificObjectDAO {
             model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
             model.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
             model.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+
+            //set Location Collection
+            String collectionURI = result.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
+            if(collectionURI != null){
+                LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();
+                locationObservationCollectionModel.setFeatureOfInterest(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                locationObservationCollectionModel.setUri(uriDeserializer.fromString(collectionURI));
+                model.setLocationObservationCollection(locationObservationCollectionModel);
+            }
 
             String parentUri = result.getStringValue(SPARQLTreeModel.PARENT_FIELD);
             if(parentUri != null){

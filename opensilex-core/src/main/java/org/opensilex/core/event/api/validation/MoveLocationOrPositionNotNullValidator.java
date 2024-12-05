@@ -27,7 +27,8 @@ public class MoveLocationOrPositionNotNullValidator implements ConstraintValidat
     @Override
     public boolean isValid(MoveCreationDTO moveCreationDTO, ConstraintValidatorContext context) {
 
-        List<TargetPositionCreationDTO> positions = moveCreationDTO.getTargetsPositions();
+        //TODO!!!
+        /*List<TargetPositionCreationDTO> positions = moveCreationDTO.getTargetsPositions();
 
         if (moveCreationDTO.getTo() == null && moveCreationDTO.getFrom() == null && CollectionUtils.isEmpty(positions)) {
             return updateContextViolationTemplateWithMessage(context, "no location or position : to, from and targets_positions are null or empty");
@@ -71,7 +72,7 @@ public class MoveLocationOrPositionNotNullValidator implements ConstraintValidat
                 }
 
             }
-        }
+        }*/
 
         return true;
     }

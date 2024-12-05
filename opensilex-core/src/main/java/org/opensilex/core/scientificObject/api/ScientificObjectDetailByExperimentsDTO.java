@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 import java.net.URI;
@@ -58,13 +60,16 @@ public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDeta
         return new ScientificObjectModel();
     }
 
-    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ScientificObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI, MoveModel lastMove) throws JsonProcessingException {
+    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ScientificObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI, LocationObservationModel lastLocation) throws JsonProcessingException {
         ScientificObjectDetailByExperimentsDTO dto = new ScientificObjectDetailByExperimentsDTO();
-        dto.fromModel(model, lastMove);
+        dto.fromModel(model);
+        //TODO:à supprimer
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }
-
+        if (lastLocation != null) {
+            dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
+        }
         if (experiment != null) {
             dto.setExperiment(experiment.getUri());
             dto.setExperimentLabel(experiment.getName());

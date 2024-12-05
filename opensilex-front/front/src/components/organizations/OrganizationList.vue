@@ -105,7 +105,6 @@
     <opensilex-TableView
         :items="organizations"
         :fields="fields"
-        pageSize="20"
         sortBy="name"
     >
       <template v-slot:cell(name)="{data}">
@@ -256,7 +255,7 @@ export default class OrganizationList extends Vue {
         .deleteOrganization(dto.uri)
         .then(() => {
           this.refresh();
-          this.$opensilex.showSuccessToast("component.common.delete.success")
+          this.$opensilex.showSuccessToast(dto.name+" "+this.$i18n.t("component.common.success.delete-success-message"))
         })
         .catch(this.$opensilex.errorHandler);
   }

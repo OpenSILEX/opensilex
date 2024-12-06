@@ -146,6 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1314) [Web interface] Factor level selector in the scientific object modal selector now works correctly again
 - (!1316) [Germplasm] Germplasm export now works again if additional columns are present
 - (!1318) [Data] The CSV validation process now returns an error message when the "target" column is missing (if no device is specified)
+- (!1326) [Device] Removed some pointless error messages.
+- (!1326) [Device] Fixed duplication of linked variables list on Device details page after a page refresh.
 
 ### Other
 

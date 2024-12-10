@@ -3,10 +3,8 @@ package org.opensilex.core.location.dal;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.ontology.SOSA;
-import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -44,12 +42,12 @@ public class LocationObservationCollectionDAO {
         return result.stream().map(x -> URI.create(x.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD))).findFirst().orElse(null);
     }
 
-    public Map<URI,URI> getCollections(List<URI> featureOfIntersts) throws SPARQLException {
+    public Map<URI,URI> getCollections(List<URI> featureOfInterests) throws SPARQLException {
         Var featuresVar = makeVar(LocationObservationModel.FEATURE_OF_INTEREST_FIELD);
 
         SelectBuilder select = new SelectBuilder()
                 .addWhere(makeVar(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD), SOSA.hasFeatureOfInterest, featuresVar)
-                .addFilter(SPARQLQueryHelper.inURIFilter(featuresVar, featureOfIntersts));
+                .addFilter(SPARQLQueryHelper.inURIFilter(featuresVar, featureOfInterests));
 
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
 

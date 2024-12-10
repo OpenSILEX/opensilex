@@ -26,7 +26,6 @@ import java.util.Objects;
 
 public class LocationObservationDTO {
 
-    //TODO: refacto LocationDTO?
     protected GeoJsonObject geojson;
 
     protected URI from;

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.URI;
 
 import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.event.api.move.MoveCreationDTO;

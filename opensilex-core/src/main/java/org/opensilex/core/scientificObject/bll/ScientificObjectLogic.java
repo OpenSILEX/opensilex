@@ -28,13 +28,11 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.*;
 import org.opensilex.core.scientificObject.dal.*;
@@ -220,8 +218,8 @@ public class ScientificObjectLogic {
 
         //Get so with location
         List<LocationObservationCollectionModel> soCollectionList = soList.stream()
-                .filter(so ->  Objects.nonNull(so.getLocationObservationCollection()))
-                .map(so-> so.getLocationObservationCollection())
+                .map(ScientificObjectModel::getLocationObservationCollection)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<LocationObservationModel> locationObservationModels = new ArrayList<>();
@@ -474,25 +472,6 @@ public class ScientificObjectLogic {
         return xpLocationMap;
     }
 
-    public Map<URI,FacilityModel> getFacilityLabel(List<LocationObservationModel> locations, AccountModel currentUser) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql,nosql.getServiceV2());
-        Set<URI> facilityList = new HashSet<>();
-
-        locations.forEach(location ->{
-            if(Objects.nonNull(location.getLocation().getTo())){
-                facilityList.add(location.getLocation().getTo());
-            }
-            if(Objects.nonNull(location.getLocation().getFrom())){
-                facilityList.add(location.getLocation().getFrom());
-            }
-        });
-
-        return facilityLogic.getList(new ArrayList<>(facilityList), currentUser).stream().collect(Collectors.toMap(
-                SPARQLResourceModel::getUri,
-                facility -> facility
-        ));
-    }
-
     /**
      *
      * @param contextURI object graph
@@ -510,7 +489,6 @@ public class ScientificObjectLogic {
         validateContextAccess(contextURI, currentUser);
 
         // Define the graph (global or XP)
-        //TODO:REfactor??
         if (Objects.isNull(contextURI)) {
             context = defaultGraphURI;
         } else {
@@ -703,7 +681,6 @@ public class ScientificObjectLogic {
      * @throws DuplicateNameException if an object with the same name already exists into objectGraph graph.
      */
     public void checkUniqueNameByGraph(URI graph, String name, URI uri, boolean create) throws DuplicateNameException, SPARQLException {
-
         Objects.requireNonNull(graph);
 
         // unique name restriction only apply on some experiment graph
@@ -870,7 +847,6 @@ public class ScientificObjectLogic {
     }
 
     private void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
-
         Set<String> uniquesNames = new HashSet<>();
 
         Map<String,URI> localDuplicatesByUri = new HashMap<>();

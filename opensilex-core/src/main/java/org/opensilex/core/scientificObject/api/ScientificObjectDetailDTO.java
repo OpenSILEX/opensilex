@@ -7,7 +7,6 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
@@ -22,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.rest.serialization.CustomParamConverterProvider;
@@ -202,10 +202,10 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         return dto;
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, LocationObservationModel lastLocation) throws JsonProcessingException {
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, LocationObservationModel lastLocation) {
         ScientificObjectDetailDTO dto = getDTOFromModel(model);
 
-        if (lastLocation != null) {
+        if (Objects.nonNull(lastLocation)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
         }
 

@@ -2,57 +2,50 @@
     <div class="container-fluid">
 
         <opensilex-PageHeader
-            icon="ik#ik-target"
-            description="component.menu.scientificObjects"
-            :title="selected ? selected.name : ''"
-            class="detail-element-header"
+                icon="ik#ik-target"
+                description="component.menu.scientificObjects"
+                :title="selected ? selected.name : ''"
+                class="detail-element-header"
         ></opensilex-PageHeader>
 
         <opensilex-ScientificObjectDetail
-            v-if="selected"
-            :selected="selected"
-            :objectByContext="objectByContext"
-            :globalView="true"
-            :withReturnButton="true"
-            :scientificObjectURI="uri"
-            :defaultTabsValue="defaultTabsValue"
-            icon="ik#ik-target"
-            @onUpdate="refresh"
-            @tabChanged="onTabChanged"
+                v-if="selected"
+                :selected="selected"
+                :objectByContext="objectByContext"
+                :globalView="true"
+                :withReturnButton="true"
+                :scientificObjectURI="uri"
+                :defaultTabsValue="defaultTabsValue"
+                icon="ik#ik-target"
+                @onUpdate="refresh"
+                @tabChanged="onTabChanged"
         ></opensilex-ScientificObjectDetail>
     </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 import ScientificObjectDetail from "./ScientificObjectDetail.vue"
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { ScientificObjectDetailByExperimentsDTO } from 'opensilex-core/index';
+import {ScientificObjectDetailByExperimentsDTO} from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 
 @Component
 export default class ScientificObjectDetailView extends Vue {
-
     $opensilex: OpenSilexVuePlugin;
-
-    selected: ScientificObjectDetailByExperimentsDTO = null;
-    objectByContext: Array<ScientificObjectDetailByExperimentsDTO> = [];
-
-    uri: string;
-    experiment: string;
-    facilityLabels:  Map<String, String> = new Map<String, String>();
-
     service: ScientificObjectsService;
     xpService: ExperimentsService;
     orgaService: OrganizationsService;
 
+    selected: ScientificObjectDetailByExperimentsDTO = null;
+    objectByContext: Array<ScientificObjectDetailByExperimentsDTO> = [];
+    uri: string;
+    experiment: string;
     // bind each tab with a path
     pathTabMap: Array<{ tab: string, path: string }> = [
         {tab: ScientificObjectDetail.DETAILS_TAB, path: "/scientific-objects/details/"},
@@ -72,19 +65,19 @@ export default class ScientificObjectDetailView extends Vue {
     }
 
     refresh() {
-        if(! this.$route.params.uri){
+        if (!this.$route.params.uri) {
             return;
         }
         this.uri = decodeURIComponent(this.$route.params.uri);
 
         // handle the experiment in which object is viewed
-        if(this.$route.params.experiment){
+        if (this.$route.params.experiment) {
 
             // check that params.experiment is defined and not empty, before calling decodeURIComponent
             // since decodeURIComponent(undefined) return "undefined"
             this.experiment = decodeURIComponent(this.$route.params.experiment);
             this.getObjectFromExperiment();
-        }else{
+        } else {
             this.getObjectFromAllExperiments();
         }
     }
@@ -92,16 +85,16 @@ export default class ScientificObjectDetailView extends Vue {
     /**
      * Fetch all relations of the object for one experiment
      */
-    getObjectFromExperiment(){
+    getObjectFromExperiment() {
 
         // #TODO fetch OS and experiment in one API call (less HTTP I/O)
 
         // Perform two network call for OS and experiment
         Promise.all([
-            this.service.getScientificObjectDetail(this.uri,this.experiment),
+            this.service.getScientificObjectDetail(this.uri, this.experiment),
             this.xpService.getExperiment(this.experiment)
         ]).then((result => {
-            console.log("result",result)
+            console.log("result", result)
 
             // get OS and XP detail
             let objectDto: ScientificObjectDetailDTO = result[0].response.result;
@@ -145,8 +138,7 @@ export default class ScientificObjectDetailView extends Vue {
     // Update the URL using the history.pushState(state, title, url) method that adds an entry to the web
     // browser's session history stack
     onTabChanged(tab: string) {
-
-        if(! tab){
+        if (!tab) {
             return;
         }
 
@@ -155,7 +147,7 @@ export default class ScientificObjectDetailView extends Vue {
 
         // append experiment if defined
         // only handle it the case of the details tab, indeed for other tab, the :experiment path is not defined in global routes
-        if(this.experiment && tab === ScientificObjectDetail.DETAILS_TAB){
+        if (this.experiment && tab === ScientificObjectDetail.DETAILS_TAB) {
             pathWithUri += "/" + encodeURIComponent(this.experiment);
         }
 
@@ -171,7 +163,3 @@ export default class ScientificObjectDetailView extends Vue {
 
 <style scoped lang="scss">
 </style>
-
-
-<i18n>
-</i18n>

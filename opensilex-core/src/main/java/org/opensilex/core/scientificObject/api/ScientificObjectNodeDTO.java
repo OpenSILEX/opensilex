@@ -6,19 +6,15 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.ApiModelProperty;
-import org.geojson.GeoJsonObject;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  *
@@ -76,9 +72,10 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
 
     public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model, LocationObservationModel location) {
         ScientificObjectNodeDTO dto = getDTOFromModel(model);
-        if (location != null) {
+        if (Objects.nonNull(location)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(location));
         }
+
         return dto;
     }
 }

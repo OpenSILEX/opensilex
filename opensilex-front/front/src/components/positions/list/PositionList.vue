@@ -128,7 +128,6 @@ import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class PositionList extends Vue {
-
     @Ref("tableRef") readonly tableRef!: any;
     @Ref("eventModalView") readonly eventModalView!: EventModalView;
     @Ref("modalForm") readonly modalForm!: EventModalForm;
@@ -137,49 +136,32 @@ export default class PositionList extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $positionService: PositionsService;
     $eventService: EventsService;
+    orgaService: OrganizationsService;
     $i18n: any;
     $store: any;
 
-    @Prop({
-        default: false
-    })
+    @Prop({default: false})
     isSelectable;
-
     @Prop()
     modificationCredentialId;
-
     @Prop()
     deleteCredentialId;
-
     @Prop({default: true})
     enableActions;
-
     @Prop({default: PositionList.getDefaultColumns()})
     columnsToDisplay: Set<string>;
-
-    static getDefaultColumns(): Set<string> {
-        return new Set(["end"]);
-    }
-
-
     @Prop({default: false})
     displayFilters: boolean;
-
     @Prop({default: false})
     displayTitle: boolean;
-
-    selectedEvent = {};
-
     @Prop()
     target;
 
+    selectedEvent = {};
     baseType: string;
-
     minPageSize = 5;
-
     renderComponent = true;
-
-    orgaService: OrganizationsService;
+    renderCsvForm = false;
     facilityLabels:  Map<String, String> = new Map<String, String>();
     loadFacility :boolean = false;
 
@@ -193,7 +175,9 @@ export default class PositionList extends Vue {
         });
     }
 
-    renderCsvForm = false;
+    static getDefaultColumns(): Set<string> {
+        return new Set(["end"]);
+    }
 
     created() {
         this.$positionService = this.$opensilex.getService("opensilex.PositionsService");

@@ -1,6 +1,5 @@
 package org.opensilex.core.position.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
@@ -82,7 +81,7 @@ public class PositionAPI {
             @ApiParam(value = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
-
+//TODO
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         MoveModel moveModel = moveLogic.getLastMoveAfter(
@@ -123,6 +122,7 @@ public class PositionAPI {
     ) throws Exception {
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
+        try {
             var positionHistory = moveLogic.getPositionsHistory(
                     target,
                     null,
@@ -131,16 +131,12 @@ public class PositionAPI {
                     orderByList,
                     page,
                     pageSize
-            ).convert(MoveGetDTO.class, move -> {
-                try {
-                    return new MoveGetDTO(move);
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            ).convert(MoveGetDTO.class, move -> new MoveGetDTO(move));
             return new PaginatedListResponse<>(positionHistory).getResponse();
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @POST
@@ -160,7 +156,7 @@ public class PositionAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
-
+//TODO
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         List<MoveNosqlModel> lastTargetPositionList = new ArrayList<>();
         List<MoveNosqlModel> lastPositionListGeo = new ArrayList<>();

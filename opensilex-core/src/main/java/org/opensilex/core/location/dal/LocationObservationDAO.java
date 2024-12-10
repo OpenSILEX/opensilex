@@ -6,12 +6,9 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 
 import java.net.URI;
 import java.time.Instant;
@@ -132,11 +129,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         //	observationCollection : "http://opensilex.dev/id/...",
         //  endDate: ISODate("2022-05-31T11:26:16.856Z",
         //}
-
         Document filter = new Document();
         filter.put(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, collectionURI);
         filter.put(LocationObservationModel.END_DATE_FIELD, end);
-        if (start != null) {
+        if (Objects.nonNull(start)) {
             filter.put(LocationObservationModel.START_DATE_FIELD, start);
         }
 

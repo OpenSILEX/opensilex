@@ -25,7 +25,6 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -37,10 +36,8 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static com.mongodb.client.model.Projections.excludeId;
@@ -71,7 +68,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     //#region PUBLIC METHODS
-
     @Override
     public void updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
@@ -81,18 +77,16 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public void delete(URI uri) throws Exception{
-
         wrapWithTransaction(session ->{
             deleteNoTransaction(uri, session);
             return 0;
         });
-
     }
 
     @Override
     public MoveModel get(URI uri) throws Exception {
         MoveModel model = dao.get(uri, currentUser);
-        if (model == null) {
+        if (Objects.isNull(model)) {
             throw new NotFoundURIException(uri);
         }
 
@@ -100,7 +94,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         URI collectionURI = collectionLogic.getLocationObservationCollection(model.getTargets().get(0));
 
-        if(collectionURI != null) {
+        if(Objects.nonNull(collectionURI)) {
             LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
             LocationObservationModel locationObservation = observationLogic.getASpecificLocationObservation(
                     collectionURI,
@@ -119,6 +113,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         //for each move, get the target collection URI and use move dates to get the specific location
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+
         Map<URI, URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(modelList.stream().map(model -> model.getTargets().get(0)).collect(Collectors.toList()));
 
         for (var model : modelList) {
@@ -150,14 +145,14 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         for (MoveModel model : models) {
             //Set event move URI
             URI uri = model.getUri();
-            if (uri == null) {
+            if (Objects.isNull(uri)) {
                 uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
                 model.setUri(uri);
             }
 
             // build location observations
             LocationObservationModel locationObservation = model.getLocationObservation();
-            if (locationObservation != null) {
+            if (Objects.nonNull(locationObservation)) {
                 model.getTargets().forEach(target -> {
                     LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
 
@@ -189,7 +184,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
-
+//TODO
         Objects.requireNonNull(uri);
         if(!noSqlDao.exists(clientSession, uri)){
             return null;
@@ -204,7 +199,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     public List<MoveNosqlModel> getIntersectPosition(List<MoveNosqlModel> moveEventNoSqlModelList, Geometry geometry){
-
+//TODO
         MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
         filter.setIncludedUris(moveEventNoSqlModelList.stream().map(MoveNosqlModel::getUri).collect(Collectors.toList()));
         filter.setGeometry(geometry);
@@ -218,11 +213,10 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @return the position of the given object during a time interval with a descending sort on the move end.
      * @apiNote The method run in two times :
      * <ul>
-     * <li> Search corresponding move URI and location from the SPARQL repository </li>
-     * <li> Then for each move URI, get the corresponding {@link MoveNosqlModel} from the mongodb collection.
+     * <li> Search corresponding move URI from the SPARQL repository </li>
+     * <li> Then, get the target location history - get corresponding {@link LocationObservationModel} from the mongodb collection.
      * <ul>
-     * <li> This last operation is done with a single query with an IN filter on {@link MoveNosqlModel#ID_FIELD} field. </li>
-     * <li> A {@link Map} between move URI and {@link PositionModel} is maintained in order to associated data from the two databases</li>
+     * <li> This last operation is to set the corresponding location in each move.
      * </ul>
      * </li>
      * </ul>
@@ -324,7 +318,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @apiNote if time is null, then the last known position will be returned
      */
     public PositionModel getPosition(URI objectUri, URI moveURI) throws Exception {
-
+//TODO
         Bson projection = Projections.fields(
                 excludeId(), // don't fetch position _id field
                 getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
@@ -346,7 +340,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     //#endregion
 
     //#region PRIVATE METHODS
-
     /**
      * Runs function either in a transaction or nay
      *
@@ -370,6 +363,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @see TargetPositionModel#getPosition()
      */
     private Bson getConcernedItemArrayItemProjection(URI concernedItemUri) {
+        //TODO
         return Filters.elemMatch(MoveEventNoSqlDao.POSITION_ARRAY_FIELD,
                 Filters.eq(MoveEventNoSqlDao.TARGET_FIELD, concernedItemUri)
         );
@@ -387,7 +381,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     private MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
         //Validate and set publisher
-        //TODO: create ne fonctionne pas quand c'est à partir d'une XP, check -> Except?
         MoveModel realModel = super.create(model);
         // insert move event as location in mongodb
         LocationObservationModel observation = realModel.getLocationObservation();

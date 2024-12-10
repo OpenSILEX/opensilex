@@ -1,6 +1,5 @@
 package org.opensilex.core.event.dal.move;
 
-import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
@@ -9,8 +8,6 @@ import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
-import java.net.URI;
-import java.util.List;
 
 /**
  * @author Renaud COLIN

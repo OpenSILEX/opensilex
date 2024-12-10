@@ -184,7 +184,10 @@ public class LocationObservationLogic {
     /**
      * Use this method to get a specific location observation for a feature of interest
      *
-     * @param observation location observation
+     * @param session mongo session
+     * @param collectionURI location collection URI
+     * @param end end date
+     * @param start start date
      */
     public void deleteASpecificLocationObservation(ClientSession session, URI collectionURI, Instant end, Instant start) {
         locationObservationDAO.deleteSpecificLocation(session, collectionURI, end, start);
@@ -256,7 +259,6 @@ public class LocationObservationLogic {
             });
         }
     }
-
 
     /**
      * Checks if the all observation dates are consistency

@@ -1,6 +1,6 @@
 <template>
     <ValidationObserver ref="validatorRef">
-        <div class="formFieldsInformations">  {{ $t("Move.requiredFieldInformation") }} </div>
+        <div class="formFieldsInformations"> {{ $t("Move.requiredFieldInformation") }}</div>
 
         <p>
             <b> {{ $t("Move.location") }}</b>
@@ -32,8 +32,8 @@
         <div>
             <p><b> {{ $t("Position.title") }}</b></p>
             <hr/>
-            <opensilex-PositionForm 
-               :form.sync="form.location">
+            <opensilex-PositionForm
+                    :form.sync="form.location">
             </opensilex-PositionForm>
         </div>
 
@@ -41,115 +41,107 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import PositionForm from "../../positions/form/PositionForm.vue";
-    import { MoveCreationDTO, TargetPositionCreationDTO } from 'opensilex-core/index';
-    import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import VueI18n from "vue-i18n";
-    import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {Component, Prop, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import PositionForm from "../../positions/form/PositionForm.vue";
+import {MoveCreationDTO, TargetPositionCreationDTO} from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import VueI18n from "vue-i18n";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
+@Component
+export default class MoveForm extends Vue {
+    $opensilex: OpenSilexVuePlugin;
+    $i18n: VueI18n;
 
-    @Component
-    export default class MoveForm extends Vue {
+    @Ref("validatorRef") readonly validatorRef!: any;
 
-        @Ref("validatorRef") readonly validatorRef!: any;
+    @Prop({default: false})
+    locationFilled;
+    @Prop({default: () => MoveForm.getEmptyForm()})
+    form: MoveCreationDTO;
 
-        editMode = false;
-        fromRequired: boolean = false;
-        toRequired: boolean = false;
-        @Prop( {default: false})
-        locationFilled;
+    editMode = false;
+    fromRequired: boolean = false;
+    toRequired: boolean = false;
 
-        $opensilex: OpenSilexVuePlugin;
-        $i18n: VueI18n;
+    //TODO: à retirer
+    static getEmptyTargetsPositions(): Array<TargetPositionCreationDTO> {
+        return [{
+            target: undefined,
+            position: PositionForm.getEmptyForm()
+        }];
+    }
 
-        @Prop({default: () => MoveForm.getEmptyForm()})
-        form: MoveCreationDTO;
+    static getEmptyLocation(): LocationObservationDTO {
+        return {
+            geojson: undefined,
+            from: undefined,
+            to: undefined,
+            startDate: undefined,
+            endDate: undefined,
+            x: undefined,
+            y: undefined,
+            z: undefined,
+            text: undefined
+        };
+    }
 
-        //TODO: à retirer
-        static getEmptyTargetsPositions() : Array<TargetPositionCreationDTO> {
-            return  [{
-                    target: undefined,
-                    position : PositionForm.getEmptyForm()
-                }];
-         }
+    //TODO: à nettoyer
+    static getEmptyForm(): MoveCreationDTO {
+        return {
+            uri: undefined,
+            rdf_type: undefined,
+            start: undefined,
+            end: undefined,
+            is_instant: true,
+            description: undefined,
+            targets: [],
+            location: MoveForm.getEmptyLocation(),
+            relations: [],
+        };
+    }
 
-        static getEmptyLocation() : LocationObservationDTO {
-            return  {
-                geojson: undefined,
-                from: undefined,
-                to: undefined,
-                startDate: undefined,
-                endDate: undefined,
-                x: undefined,
-                y: undefined,
-                z: undefined,
-                text: undefined
-            };
-        }
+    getEmptyForm() {
+        return MoveForm.getEmptyForm();
+    }
 
-        //TODO: à nettoyer
-        static getEmptyForm() : MoveCreationDTO{
-            return {
-              uri: undefined,
-              rdf_type: undefined,
-              start: undefined,
-              end: undefined,
-              is_instant: true,
-              description: undefined,
-              targets: [],
-                location: MoveForm.getEmptyLocation(),
-              relations: [],
+    created() {
+    }
 
-              // move specific properties
-                from: undefined,
-                to: undefined,
+    reset() {
+        return this.validatorRef.reset();
+    }
 
-                // move position(s)
-              targets_positions: MoveForm.getEmptyTargetsPositions()
-            };
-        }
+    validate() {
+        return this.validatorRef.validate();
+    }
 
-        getEmptyForm() {
-            return MoveForm.getEmptyForm();
-        }
-
-        created(){
-        }
-
-        reset() {
-            return this.validatorRef.reset();
-        }
-
-        validate() {
-            return this.validatorRef.validate();
-        }
-
-        //TODO: à adapter
-        /**
-         * The "From" field is optional, and becomes required from the moment the "To" field is completed.
-         */
-        updateRequiredProps() {
-            if(this.form.location.from == undefined
-            && this.form.location.to == undefined
-            && (this.form.location.x !== undefined || this.form.location.y !== undefined || this.form.location.z !== undefined || this.form.location.geojson !== undefined || this.form.location.text !== undefined)
-                            && (this.form.location.x !== "" || this.form.location.y !== "" || this.form.location.z !== "" || this.form.location.geojson !== "" || this.form.location.text !== "")) {
-                this.fromRequired = false;
-                this.toRequired = false; 
-            } else {
-                 this.toRequired = true;
-            }
-        }
-
-        handleSubmitError(){
-          this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString());
+    //TODO: à adapter
+    /**
+     * The "From" field is optional, and becomes required from the moment the "To" field is completed.
+     */
+    updateRequiredProps() {
+        if (this.form.location.from == undefined
+                && this.form.location.to == undefined
+                && (this.form.location.x !== undefined || this.form.location.y !== undefined || this.form.location.z !== undefined || this.form.location.geojson !== undefined || this.form.location.text !== undefined)
+                && (this.form.location.x !== "" || this.form.location.y !== "" || this.form.location.z !== "" || this.form.location.geojson !== "" || this.form.location.text !== "")) {
+            this.fromRequired = false;
+            this.toRequired = false;
+        } else {
+            this.toRequired = true;
         }
     }
+
+    //TODO
+    handleSubmitError() {
+        this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString());
+    }
+}
 </script>
 
 <style scoped lang="scss">
-.formFieldsInformations{
+.formFieldsInformations {
     background-color: #d1ecf1;
     color: #2D7580;
     padding: 5px;

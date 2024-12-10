@@ -27,12 +27,12 @@
                         <opensilex-DateTimeForm
                                 :value.sync="formMove.end"
                                 label="Event.end"
-                                :required="!!formMove.start || !!locationFilled"
+                                :required="!!formMove.start"
                         ></opensilex-DateTimeForm>
                     </div>
 
                 </div>
-                <opensilex-MoveForm :form.sync="formMove" :locationFilled.sync="locationFilled" ref="moveForm"></opensilex-MoveForm>
+                <opensilex-MoveForm :form.sync="formMove" ref="moveForm"></opensilex-MoveForm>
             </div>
         </template>
     </opensilex-ModalForm>
@@ -79,7 +79,6 @@ export default class ScientificObjectForm extends Vue {
     private hasMove: boolean = false;
     private formMove: MoveCreationDTO = MoveForm.getEmptyForm();
     private editMode:boolean = false;
-    private locationFilled: boolean = false;
     //endregion
 
     //#region Computed

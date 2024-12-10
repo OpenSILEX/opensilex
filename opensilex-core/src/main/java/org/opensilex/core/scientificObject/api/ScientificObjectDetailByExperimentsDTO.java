@@ -63,7 +63,7 @@ public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDeta
 
         if (Objects.nonNull(lastLocation)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
-        } else{
+        } else {
             dto.setLocation(new LocationObservationDTO());
         }
         if (Objects.nonNull(experiment)) {

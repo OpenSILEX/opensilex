@@ -65,7 +65,7 @@ public class LocationLogic {
         if (Objects.nonNull(from) && Objects.isNull(to)) {
             throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
         }
-        if(Objects.nonNull(from) && SPARQLDeserializers.compareURIs(to, from)){
+        if (Objects.nonNull(from) && SPARQLDeserializers.compareURIs(to, from)) {
             throw new BadRequestException("Cannot declare a move with a the same 'From' value and 'To' value.");
         }
 

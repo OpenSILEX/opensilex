@@ -20,7 +20,6 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
@@ -51,8 +50,6 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -127,6 +124,7 @@ public class ScientificObjectAPI {
         List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
 
         Map<ScientificObjectModel, LocationObservationModel> soLocationMap = logic.searchByURIs(contextURI, objectsURI, currentUser);
+
         soLocationMap.forEach((so, location) -> {
             ScientificObjectNodeDTO dto = ScientificObjectNodeDTO.getDTOFromModel(so, location);
             dtoList.add(dto);
@@ -192,7 +190,6 @@ public class ScientificObjectAPI {
         });
 
         return new PaginatedListResponse<>(soDTOList).getResponse();
-
     }
 
     @GET
@@ -337,7 +334,6 @@ public class ScientificObjectAPI {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
 
-//TODO: PQ remonter pas 2 fois la location!!????
         Map<ScientificObjectModel, ExperimentModel> modelsMap = logic.getScientificObjectDetailByExperiments(objectURI, currentUser);
         Map<URI, LocationObservationModel> xpLastLocationMap = logic.getLastLocationByExperiment(modelsMap);
 
@@ -352,6 +348,7 @@ public class ScientificObjectAPI {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
             dtoList.add(dto);
         });
 
@@ -394,6 +391,7 @@ public class ScientificObjectAPI {
                     currentUser);
 
             return new CreatedUriResponse(soURI).getResponse();
+
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         } catch (DuplicateNameException e){
@@ -424,7 +422,14 @@ public class ScientificObjectAPI {
         ScientificObjectModel soModel = scientificObjectDto.newModel();
 
         try {
-            URI soURI = logic.updateScientificObject(soModel, scientificObjectDto.getExperiment(), scientificObjectDto.getRelations(), scientificObjectDto.getPublisher(), scientificObjectDto.getPublicationDate(), currentUser);
+            URI soURI = logic.updateScientificObject(
+                    soModel,
+                    scientificObjectDto.getExperiment(),
+                    scientificObjectDto.getRelations(),
+                    scientificObjectDto.getPublisher(),
+                    scientificObjectDto.getPublicationDate(),
+                    currentUser
+            );
 
             return new ObjectUriResponse(soURI).getResponse();
         } catch (DuplicateNameException e) {
@@ -461,6 +466,7 @@ public class ScientificObjectAPI {
             logic.deleteScientificObject(contextURI, objectURI, currentUser);
 
             return new ObjectUriResponse(Response.Status.OK, objectURI).getResponse();
+
         } catch (DisplayableResponseException ex) {
             return ex.getResponse();
         }
@@ -676,7 +682,7 @@ public class ScientificObjectAPI {
     @ApiOperation("Count scientific objects")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the number of scientific objects associated to a given experiment", response = Integer.class)
+            @ApiResponse(code = 200, message = "Return the number of scientific objects associated to a given experiment", response = Integer.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -684,8 +690,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
 
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
-
-               ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
                 .setExperiment(experiment);
 
         int scientificObjectsCount = logic.getCount(searchFilter);

@@ -9,9 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -24,9 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.event.dal.move.MoveModel;
 
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.rest.serialization.CustomParamConverterProvider;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -61,9 +57,6 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
     protected List<NamedResourceDTO<FactorLevelModel>> factorLevels;
 
     protected List<RDFObjectRelationDTO> relations;
-
-    //TODO: a supprimer
-    protected GeoJsonObject geometry;
 
     private LocationObservationDTO location;
 
@@ -121,14 +114,6 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
     public void setRelations(List<RDFObjectRelationDTO> relations) {
         this.relations = relations;
-    }
-
-    public GeoJsonObject getGeometry() {
-        return geometry;
-    }
-
-    public void setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
     }
 
     public LocationObservationDTO getLocation() {
@@ -205,49 +190,21 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
     }
 
-    public void fromModel(ScientificObjectModel model, MoveModel lastMove) {
-        this.fromModel(model);
-        boolean hasFacility = false;
-        URI facilityURI = null;
-        if (lastMove != null && lastMove.getTo() != null) {
-            facilityURI = lastMove.getTo().getUri();
-        }
-        if (facilityURI != null) {
-            for (RDFObjectRelationDTO relation : this.getRelations()) {
-                if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.isHosted.getURI())) {
-                    hasFacility = true;
-                    relation.setValue(facilityURI.toString());
-                    break;
-                }
-            }
-
-            if (!hasFacility) {
-                SPARQLModelRelation relation = new SPARQLModelRelation();
-                relation.setProperty(Oeso.isHosted);
-                relation.setValue(facilityURI.toString());
-                this.getRelations().add(RDFObjectRelationDTO.getDTOFromModel(relation));
-            }
-        }
-    }
-
     @Override
     public ScientificObjectModel newModelInstance() {
         return new ScientificObjectModel();
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, MoveModel lastMove) {
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model) {
         ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
-        dto.fromModel(model, lastMove);
+        dto.fromModel(model);
 
         return dto;
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI, LocationObservationModel lastLocation) throws JsonProcessingException {
-        ScientificObjectDetailDTO dto = getDTOFromModel(model, null);
-        //TODO: à supprimer
-        if (geometryByURI != null) {
-            dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
-        }
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, LocationObservationModel lastLocation) throws JsonProcessingException {
+        ScientificObjectDetailDTO dto = getDTOFromModel(model);
+
         if (lastLocation != null) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
         }

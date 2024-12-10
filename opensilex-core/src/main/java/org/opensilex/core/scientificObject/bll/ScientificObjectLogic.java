@@ -28,11 +28,13 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.*;
 import org.opensilex.core.scientificObject.dal.*;
@@ -194,7 +196,7 @@ public class ScientificObjectLogic {
     public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI, AccountModel currentUser) throws Exception {
         validateContextAccess(contextURI, currentUser);
 
-        if (Objects.nonNull(contextURI)) {
+        if (Objects.isNull(contextURI)) {
             contextURI = defaultGraphURI;
         }
 
@@ -214,7 +216,7 @@ public class ScientificObjectLogic {
             contextURI = defaultGraphURI;
         }
 
-        List<ScientificObjectModel> soList = searchByURIs(contextURI,objectsURI,currentUser,false);
+        List<ScientificObjectModel> soList = searchByURIs(contextURI, objectsURI, currentUser,false);
 
         //Get so with location
         List<LocationObservationCollectionModel> soCollectionList = soList.stream()
@@ -459,16 +461,36 @@ public class ScientificObjectLogic {
 
         if(!collectionModelList.isEmpty()) {
             soXpMap.forEach((so,xp) ->{
-                LocationObservationModel lastLocation = locationObservationLogic.getLastLocationObservation(
+                List<LocationObservationModel> lastLocation = locationObservationLogic.getLastLocationObservation(
                         Collections.singletonList(so.getLocationObservationCollection()),
                         false,
                         Objects.nonNull(xp.getEndDate()) ? xp.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant() : Instant.now()
-                        ).get(0);
-                xpLocationMap.put(xp.getUri(), lastLocation);
+                        );
+                if(!lastLocation.isEmpty()){
+                    xpLocationMap.put(xp.getUri(), lastLocation.get(0));
+                }
             });
         }
-
         return xpLocationMap;
+    }
+
+    public Map<URI,FacilityModel> getFacilityLabel(List<LocationObservationModel> locations, AccountModel currentUser) throws Exception {
+        FacilityLogic facilityLogic = new FacilityLogic(sparql,nosql.getServiceV2());
+        Set<URI> facilityList = new HashSet<>();
+
+        locations.forEach(location ->{
+            if(Objects.nonNull(location.getLocation().getTo())){
+                facilityList.add(location.getLocation().getTo());
+            }
+            if(Objects.nonNull(location.getLocation().getFrom())){
+                facilityList.add(location.getLocation().getFrom());
+            }
+        });
+
+        return facilityLogic.getList(new ArrayList<>(facilityList), currentUser).stream().collect(Collectors.toMap(
+                SPARQLResourceModel::getUri,
+                facility -> facility
+        ));
     }
 
     /**

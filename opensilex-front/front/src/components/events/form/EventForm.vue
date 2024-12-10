@@ -287,13 +287,12 @@ export default class EventForm extends Vue {
     }
 
     handleSubmitError(){
-     /*   let targetsPosition = this.form.targets_positions[0];
+        let targetsPosition = this.form.targets_positions[0];
         if(this.moveForm && !this.form.to && (!targetsPosition || EventModalForm.isPositionEmpty(targetsPosition.position))){
             this.moveForm.handleSubmitError()
         }else{
             this.$opensilex.showErrorToast(this.$i18n.t("EventForm.targets-error").toString());
-        }*/
-
+        }
     }
 }
 </script>

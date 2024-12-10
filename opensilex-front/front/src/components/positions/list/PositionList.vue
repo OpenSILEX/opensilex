@@ -30,8 +30,8 @@
 
                         <template v-slot:cell(end)="{data}">
                           <opensilex-UriLink
-                                v-if="data.item.move_time"
-                                :value="new Date(data.item.move_time).toLocaleString()"
+                                v-if="data.item.endDate"
+                                :value="new Date(data.item.endDate).toLocaleString()"
                                 @click="showEventView(data.item)"
                           ></opensilex-UriLink>
                         </template>
@@ -46,12 +46,12 @@
                                 ></opensilex-DetailButton>
                                 <opensilex-EditButton
                                     v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                                    @click="editEvent(data.item.event)"
+                                    @click="editEvent(data.item.uri)"
                                     :small="true"
                                 ></opensilex-EditButton>
                                 <opensilex-DeleteButton
                                     v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                                    @click="deleteEvent(data.item.event)"
+                                    @click="deleteEvent(data.item.uri)"
                                     label="EventForm.delete"
                                     :small="true"
                                 ></opensilex-DeleteButton>
@@ -60,18 +60,18 @@
 
                         <template v-slot:row-details="{ data }">
                           <ul>
-                            <li v-if="data.item.to">
+                            <li v-if="data.item.location.to && loadFacility">
                               <opensilex-UriLink
-                                  :uri="data.item.to.uri"
-                                  :value="data.item.to.name"
-                                  :to="{ path:'/facility/details/'+ encodeURIComponent(data.item.to.uri),}"
+                                  :uri="data.item.location.to"
+                                  :value="customFacilityText(data.item.location)"
+                                  :to="{ path:'/facility/details/'+ encodeURIComponent(data.item.location.to),}"
                                   target="_blank"
                               ></opensilex-UriLink>
                             </li>
-                            <li v-if="data.item.position && (data.item.position.x || data.item.position.y || data.item.position.z)">{{customCoordinatesText(data.item.position)}}</li>
-                            <li v-if="data.item.position && data.item.position.text">{{data.item.position.text}}</li>
-                            <li v-if="data.item.position && data.item.position.point">
-                              <opensilex-GeometryCopy label="" :value="data.item.position.point">
+                            <li v-if="(data.item.location.x || data.item.location.y || data.item.location.z)">{{customCoordinatesText(data.item.location)}}</li>
+                            <li v-if="data.item.location.text">{{data.item.location.text}}</li>
+                            <li v-if="data.item.location.geojson">
+                              <opensilex-GeometryCopy label="" :value="data.item.location.geojson">
                               </opensilex-GeometryCopy>
                             </li>
                           </ul>
@@ -117,7 +117,6 @@ import Vue from "vue";
 import {stringify} from "wkt";
 
 import {PositionsService} from "opensilex-core/api/positions.service";
-
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EventsService} from "opensilex-core/api/events.service";
@@ -125,6 +124,7 @@ import EventModalView from "../../events/view/EventModalView.vue";
 import EventModalForm from "../../events/form/EventModalForm.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import { MoveDetailsDTO } from 'opensilex-core/index';
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class PositionList extends Vue {
@@ -179,6 +179,10 @@ export default class PositionList extends Vue {
 
     renderComponent = true;
 
+    orgaService: OrganizationsService;
+    facilityLabels:  Map<String, String> = new Map<String, String>();
+    loadFacility :boolean = false;
+
     @Watch("target")
     onTargetChange() {
         this.renderComponent = false;
@@ -194,6 +198,7 @@ export default class PositionList extends Vue {
     created() {
         this.$positionService = this.$opensilex.getService("opensilex.PositionsService");
         this.$eventService = this.$opensilex.getService("opensilex.EventsService");
+        this.orgaService = this.$opensilex.getService("opensilex.OrganizationsService");
     }
 
     get user() {
@@ -275,13 +280,37 @@ export default class PositionList extends Vue {
             this.eventModalView.show();
         }).catch(this.$opensilex.errorHandler);
     }
-    showDetails(data) {
-      if (!data.detailsShowing) {
-        data.toggleDetails();
-      } else {
-        data.toggleDetails();
-      }
+
+
+    getFacilityLabels(data){
+        //Get facilities label
+        if (data.item.location.to && this.facilityLabels.get(data.item.location.to) == null) {
+            let facilitiesUris = [data.item.location.to]
+            if (data.item.location.from && this.facilityLabels.get(data.item.location.from) == null) {
+                facilitiesUris.push(data.item.location.from)
+            }
+
+            if(facilitiesUris.length > 0){
+                this.orgaService.getFacilitiesByURI(facilitiesUris)
+                        .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                            http.response.result.forEach(facility => {this.facilityLabels.set(facility.uri, facility.name);})
+                        }).finally(()=>{
+                    this.loadFacility= true
+                })
+            }
+        }
     }
+
+    showDetails(data) {
+        this.getFacilityLabels(data);
+
+        if (!data.detailsShowing) {
+            data.toggleDetails();
+        } else {
+            data.toggleDetails();
+        }
+    }
+
     editEvent(uri) {
         this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
@@ -290,9 +319,23 @@ export default class PositionList extends Vue {
         return targets.slice(0, 3);
     }
 
+    customFacilityText(item){
+    let customCoordinates = "";
+
+    if (item.to) {
+        customCoordinates += this.facilityLabels.get(item.to);
+    }
+    if (item.from) {
+        customCoordinates += " ("+ this.$i18n.t("Position.from")+ " : " + this.facilityLabels.get(item.from) +")";
+    }
+    if (customCoordinates.length == 0) {
+        return undefined;
+    }
+
+    return customCoordinates;
+    }
 
     customCoordinatesText(position: any): string {
-
         if (!position) {
             return undefined;
         }
@@ -314,10 +357,10 @@ export default class PositionList extends Vue {
             }
             customCoordinates += "Z : " + position.z;
         }
-
         if (customCoordinates.length == 0) {
             return undefined;
         }
+
         return "(" + customCoordinates + ")";
     }
 
@@ -351,11 +394,13 @@ en:
         list-title: Positions
         end: Arrival date
         details: Show or hide position details
+        from: from
 fr:
     Position:
         list-title: Positions
         end: "Date d'arrivée"
         details: Afficher ou masquer les détails de la position
+        from : à partir de
 
 
 

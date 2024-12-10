@@ -20,6 +20,7 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
@@ -88,14 +89,7 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID = "scientific-objects-delete";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_LABEL_KEY = "credential.default.delete";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScientificObjectAPI.class);
-
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
-
-    /**
-     * Experiment URI claim key
-     */
-    private static final String CLAIM_CONTEXT_URI = "context";
 
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_URI = "http://opensilex.org/id/Plot 12";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE = "vocabulary:Plot";
@@ -134,7 +128,7 @@ public class ScientificObjectAPI {
 
         Map<ScientificObjectModel, LocationObservationModel> soLocationMap = logic.searchByURIs(contextURI, objectsURI, currentUser);
         soLocationMap.forEach((so, location) -> {
-            ScientificObjectNodeDTO dto = ScientificObjectNodeDTO.getDTOFromModel(so, null, location);
+            ScientificObjectNodeDTO dto = ScientificObjectNodeDTO.getDTOFromModel(so, location);
             dtoList.add(dto);
         });
 
@@ -193,7 +187,7 @@ public class ScientificObjectAPI {
                 currentUser);
 
         soAndLocationsMap.forEach((model, location) -> {
-            ScientificObjectNodeDTO soDTO = ScientificObjectNodeDTO.getDTOFromModel(model,null, location);
+            ScientificObjectNodeDTO soDTO = ScientificObjectNodeDTO.getDTOFromModel(model, location);
             soDTOList.add(soDTO);
         });
 
@@ -319,7 +313,7 @@ public class ScientificObjectAPI {
 
         LocationObservationModel location = logic.getLastLocation(model);
 
-        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, null, location);
+        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, location);
 
         if (Objects.nonNull(model.getPublisher())) {
             dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
@@ -342,14 +336,15 @@ public class ScientificObjectAPI {
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
-//TODO: get facility label
+
+//TODO: PQ remonter pas 2 fois la location!!????
         Map<ScientificObjectModel, ExperimentModel> modelsMap = logic.getScientificObjectDetailByExperiments(objectURI, currentUser);
         Map<URI, LocationObservationModel> xpLastLocationMap = logic.getLastLocationByExperiment(modelsMap);
 
         modelsMap.forEach((model, experiment) -> {
             ScientificObjectDetailByExperimentsDTO dto;
             try {
-                dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, null, xpLastLocationMap.get(experiment.getUri()));
+                dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, xpLastLocationMap.get(experiment.getUri()));
 
                 if (Objects.nonNull(model.getPublisher())) {
                     dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
@@ -360,7 +355,7 @@ public class ScientificObjectAPI {
             dtoList.add(dto);
         });
 
-        if (dtoList.size() == 0) {
+        if (dtoList.isEmpty()) {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         } else {
             return new PaginatedListResponse<>(dtoList).getResponse();
@@ -385,8 +380,6 @@ public class ScientificObjectAPI {
             @NotNull
             @Valid ScientificObjectCreationDTO scientificObjectDto
     ) throws Exception {
-        //TODO: problem à la creation dans une XP?!!?
-        //TODO: From inverse To
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
 
         ScientificObjectModel soModel = scientificObjectDto.newModel();

@@ -56,11 +56,11 @@
       ></opensilex-TypeView>
 
       <!--Last Position-->
-      <opensilex-StringView v-if="withBasicProperties && selected.location.endDate" label="Event.lastPosition">
+      <opensilex-StringView v-if="withBasicProperties && selected.location.endDate && loadFacility" label="Event.lastPosition">
           <!-- Position detail -->
           <span>{{new Date(selected.location.endDate).toLocaleString()}}</span>
           <ul>
-              <li v-if="selected.location">{{ selected.location.to +"("+ selected.location.from +")" }}</li>
+              <li v-if="selected.location.to">{{ customFacilityText(selected.location)}}</li>
               <li v-if="selected.location.x || selected.location.y || selected.location.z">{{customCoordinatesText(selected.location)}}</li>
               <li v-if="selected.location.text">{{selected.location.text}}</li>
               <li v-if="selected.location.geojson">
@@ -123,6 +123,21 @@
               :additionalFieldProps="{ experiment: value.experiment }"
       ></opensilex-OntologyObjectProperties>
 
+        <!--Last XP Position -->
+        <opensilex-StringView v-if="value.location && value.location.endDate && loadFacility" label="Event.lastPosition">
+            <!-- Position detail &ndash-->
+            <span>{{new Date(value.location.endDate).toLocaleString()}}</span>
+            <ul>
+                <li v-if="value.location.to">{{ customFacilityText(value.location)}}</li>
+                <li v-if="value.location.x || value.location.y || value.location.z">{{customCoordinatesText(value.location)}}</li>
+                <li v-if="value.location.text">{{value.location.text}}</li>
+                <li v-if="value.location.geojson">
+                    <opensilex-GeometryCopy label="" :value="value.location.geojson">
+                    </opensilex-GeometryCopy>
+                </li>
+            </ul>
+        </opensilex-StringView>
+
       <!-- Metadata -->
       <opensilex-MetadataView
         v-if="value.publisher && value.publisher.uri"
@@ -137,15 +152,12 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {PositionGetDTO} from "../../../../../opensilex-core/front/src/lib";
 import {ScientificObjectDetailByExperimentsDTO} from "../../../../../opensilex-core/front/src/lib";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
-import {PositionsService} from "opensilex-core/api/positions.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
-import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class ScientificObjectDetailProperties extends Vue {
@@ -174,8 +186,12 @@ export default class ScientificObjectDetailProperties extends Vue {
   @Prop({default: null})
   experiment;
 
+    orgaService: OrganizationsService;
+    facilityLabels:  Map<String, String> = new Map<String, String>();
+    loadFacility :boolean = false;
+
   mounted() {
-    if (this.selected) {
+      if (this.selected) {
       this.onSelectionChange();
     }
   }
@@ -239,6 +255,43 @@ export default class ScientificObjectDetailProperties extends Vue {
     }
   }
 
+  created(){
+      this.orgaService = this.$opensilex.getService("opensilex.OrganizationsService");
+      this.getFacilityLabels();
+  }
+
+    getFacilityLabels() {
+        let facilitiesUris =[];
+        console.log("this.selected", this.selected)
+        //For global
+        if (this.selected.location.to && this.facilityLabels.get(this.selected.location.to) == null) {
+            facilitiesUris.push(this.selected.location.to)
+            if (this.selected.location.from && this.facilityLabels.get(this.selected.location.from) == null) {
+                facilitiesUris.push(this.selected.location.from)
+            }
+        }
+        //For XP
+        this.objectByContext.forEach(context => {
+            if (context.location.to && this.facilityLabels.get(context.location.to) == null) {
+                facilitiesUris.push(context.location.to)
+                if (context.location.from && this.facilityLabels.get(context.location.from) == null) {
+                    facilitiesUris.push(context.location.from)
+                }
+            }
+        })
+
+        console.log("URIs", facilitiesUris)
+
+        if(facilitiesUris.length > 0){
+            this.orgaService.getFacilitiesByURI(facilitiesUris)
+                    .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                        http.response.result.forEach(facility => {this.facilityLabels.set(facility.uri, facility.name);})
+                    }).finally(()=>{
+                this.loadFacility= true
+            })
+        }
+    }
+
   deleteScientificObject(uri) {
     let scientificObjectsService = this.$opensilex.getService<ScientificObjectsService>(
       "opensilex.ScientificObjectsService"
@@ -254,7 +307,6 @@ export default class ScientificObjectDetailProperties extends Vue {
   }
 
   customCoordinatesText(position: any): string {
-console.log("position custom", position)
     if (!position) {
       return undefined;
     }
@@ -282,6 +334,22 @@ console.log("position custom", position)
     }
     return customCoordinates;
   }
+
+    customFacilityText(item){
+        let customCoordinates = "";
+
+        if (item.to) {
+            customCoordinates += this.facilityLabels.get(item.to);
+        }
+        if (item.from) {
+            customCoordinates += " ("+ this.$i18n.t("Position.from")+ " : " + this.facilityLabels.get(item.from) +")";
+        }
+        if (customCoordinates.length == 0) {
+            return undefined;
+        }
+
+        return customCoordinates;
+    }
 }
 </script>
 
@@ -289,7 +357,9 @@ console.log("position custom", position)
 en:
   Event:
     lastPosition: Last position
+    from: from
 fr:
   Event:
     lastPosition: Dernière position
+    from : à partir de
 </i18n>

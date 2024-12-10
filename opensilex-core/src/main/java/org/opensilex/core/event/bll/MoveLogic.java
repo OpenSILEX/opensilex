@@ -21,18 +21,15 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -40,6 +37,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -143,12 +141,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         List<LocationObservationModel> locationObservationList = new ArrayList<>();
 
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
-        for (var move : models) {
-            if (move.getLocationObservation().getLocation().getFrom() != null && move.getLocationObservation().getLocation().getTo() == null) {
-                throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-            }
-        }
-
         check(models, true);
 
         if(validationOnly){
@@ -229,7 +221,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * <li> Search corresponding move URI and location from the SPARQL repository </li>
      * <li> Then for each move URI, get the corresponding {@link MoveNosqlModel} from the mongodb collection.
      * <ul>
-     * <li> This last operation is done with a single query with a IN filter on {@link MoveNosqlModel#ID_FIELD} field. </li>
+     * <li> This last operation is done with a single query with an IN filter on {@link MoveNosqlModel#ID_FIELD} field. </li>
      * <li> A {@link Map} between move URI and {@link PositionModel} is maintained in order to associated data from the two databases</li>
      * </ul>
      * </li>
@@ -255,57 +247,42 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
-        ListWithPagination<MoveModel> locationHistory = dao.search(searchFilter);
+        ListWithPagination<MoveModel> moveHistory = dao.search(searchFilter);
 
-        // Index of position by uri, sorted by event end time
-        LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
+        //For each move event get location
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollection(target);
+        List<LocationObservationModel> locationHistory;
 
-        // for each location, create a position model initialized with the location and update position index
-        locationHistory.forEach(move -> {
-            positionsByUri.put(move.getUri(), null);
-        });
-
-
-        if (start != null) {
-            MoveModel lastMove = getLastMoveAfter(target, start);
-            if (lastMove != null) {
-                positionsByUri.put(lastMove.getUri(), null);
-            }
+        if (Objects.nonNull(collectionURI)) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            locationHistory = locationObservationLogic.getLocationsHistory(
+                    collectionURI,
+                    start != null ? start.toInstant() : null,
+                    end != null ? end.toInstant() : null,
+                    orderByList,
+                    page,
+                    pageSize
+            ).getList();
+        } else {
+            locationHistory = new ArrayList<>();
         }
 
-        if (!positionsByUri.isEmpty()) {
-
-            MoveNoSqlSearchFilter noSqlSearchFilter = new MoveNoSqlSearchFilter();
-            noSqlSearchFilter.setIncludedUris(positionsByUri.keySet());
-            noSqlSearchFilter.setPage(page);
-            noSqlSearchFilter.setPageSize(pageSize);
-            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(target);
-
-            MongoSearchQuery<MoveNosqlModel, MoveNoSqlSearchFilter, MoveNosqlModel> mongoSearchQuery = new MongoSearchQuery<>();
-            mongoSearchQuery.setFilter(noSqlSearchFilter);
-            mongoSearchQuery.setProjection(Projections.fields(concernedItemPositionProjection));
-            mongoSearchQuery.setConvertFunction(Function.identity());
-
-
-            noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().forEach(moveNoSqlModel -> {
-                if (!moveNoSqlModel.getTargetPositions().isEmpty()) {
-                    positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
-                } else {
-                    positionsByUri.remove(moveNoSqlModel.getUri());
+        moveHistory.forEach(move ->{
+            locationHistory.forEach(loc ->{
+                if(loc.getEndDate().equals(move.getEnd().getDateTimeStamp().toInstant())){
+                    if(Objects.nonNull(move.getStart())){
+                        if(loc.getStartDate().equals(move.getStart().getDateTimeStamp().toInstant())){
+                            move.setLocationObservation(loc);
+                        }
+                    }else{
+                        move.setLocationObservation(loc);
+                    }
                 }
             });
-
-        }
-
-        locationHistory.forEach(move -> {
-            var targetPosition = new TargetPositionModel();
-            targetPosition.setTarget(target);
-            targetPosition.setPosition(positionsByUri.get(move.getUri()));
-            var noSqlModel = new MoveNosqlModel();
-            noSqlModel.setTargetPositions(Collections.singletonList(targetPosition));
-            move.setNoSqlModel(noSqlModel);
         });
-        return locationHistory;
+
+        return moveHistory;
     }
 
     /**
@@ -409,12 +386,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     private MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
-
         //Validate and set publisher
         //TODO: create ne fonctionne pas quand c'est à partir d'une XP, check -> Except?
         MoveModel realModel = super.create(model);
         // insert move event as location in mongodb
         LocationObservationModel observation = realModel.getLocationObservation();
+
         if (Objects.nonNull(observation)) {
             LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
             LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
@@ -452,7 +429,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         URI collectionURI = collectionLogic.getLocationObservationCollection(model.getTargets().get(0));
 
         LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-        observationLogic.deleteASpecificLocationObservation(session, collectionURI,model.getEnd().getDateTimeStamp().toInstant(),model.getStart().getDateTimeStamp().toInstant());
+        observationLogic.deleteASpecificLocationObservation(
+                session,
+                collectionURI,
+                model.getEnd().getDateTimeStamp().toInstant(),
+                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null
+                );
 
         dao.delete(uri);
     }
@@ -468,7 +450,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         //TODO: à vérifier
         if (Objects.isNull(model.getLocationObservation())) {
             if (Objects.nonNull(observation)) {
-                observationLogic.deleteASpecificLocationObservation(session, collectionURI,observation.getEndDate(),observation.getStartDate());
+                observationLogic.deleteASpecificLocationObservation(session, collectionURI,observation.getEndDate(),Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
                 //if the feature of interest doesn't have location observations, delete the collection
                 int count = observationLogic.countLocationsForURI(collectionURI);
                 if(count == 0){

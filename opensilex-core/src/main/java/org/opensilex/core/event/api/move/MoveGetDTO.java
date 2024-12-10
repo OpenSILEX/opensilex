@@ -21,12 +21,13 @@ import java.util.List;
  * @author Renaud COLIN
  */
 @JsonPropertyOrder({
-        "uri", "rdf_type", "rdf_type_name", "start", "end", "is_instant","description","targets","author","from","to","targets_positions"
+        "uri", "rdf_type", "rdf_type_name", "start", "end", "is_instant","description","targets","author","location"
 })
 public class MoveGetDTO extends EventGetDTO {
 
     private LocationObservationDTO location;
 
+   //TODO : à supprimer
     @JsonProperty("from")
     private FacilityNamedDTO from;
 
@@ -46,6 +47,7 @@ public class MoveGetDTO extends EventGetDTO {
         if(model.getLocationObservation() != null) {
             location = LocationObservationDTO.getDTOFromModel(model.getLocationObservation());
         }
+
         if(model.getFrom() != null){
             from = new FacilityNamedDTO(model.getFrom());
         }

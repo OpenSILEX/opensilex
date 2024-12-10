@@ -12,6 +12,7 @@
                 noResultsText="FacilitySelector.no-result"
                 @select="select"
                 @deselect="deselect"
+                :required="required"
         ></opensilex-FormSelector>
     </div>
 </template>

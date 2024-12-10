@@ -13,7 +13,9 @@ import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.GeometryCollection;
 import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
 import java.util.List;
@@ -59,6 +61,14 @@ public class LocationLogic {
     public static LocationModel buildLocationModel(Geometry geometry, URI from, URI to, String x, String y, String z, String textualPosition) {
         LocationModel locationModel = new LocationModel();
 
+        //validate from/to consistency
+        if (Objects.nonNull(from) && Objects.isNull(to)) {
+            throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
+        }
+        if(Objects.nonNull(from) && SPARQLDeserializers.compareURIs(to, from)){
+            throw new BadRequestException("Cannot declare a move with a the same 'From' value and 'To' value.");
+        }
+
         //build LocationModel
         if (Objects.nonNull(geometry)) {
             locationModel.setGeometry(geometry);
@@ -75,11 +85,11 @@ public class LocationLogic {
         if (Objects.nonNull(textualPosition)) {
             locationModel.setTextualPosition(textualPosition);
         }
-        if (Objects.nonNull(from)) {
-            locationModel.setFrom(from);
-        }
         if (Objects.nonNull(to)) {
             locationModel.setTo(to);
+            if (Objects.nonNull(from)) {
+                locationModel.setFrom(from);
+            }
         }
 
         return locationModel;

@@ -373,7 +373,7 @@ export default class ScientificObjectList extends Vue {
         .then((http: any) => {
           let objectExperiments = [];
           for (let objectDetail of http.response.result) {
-            if (objectDetail.experiment != null) {
+            if (objectDetail.experiment != null && objectDetail.experiment_name != null) {
               objectExperiments.push({
                 uri: objectDetail.experiment,
                 name: objectDetail.experiment_name,

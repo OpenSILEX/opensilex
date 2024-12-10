@@ -33,6 +33,9 @@ import { ScientificObjectDetailByExperimentsDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 
 @Component
 export default class ScientificObjectDetailView extends Vue {
@@ -44,9 +47,11 @@ export default class ScientificObjectDetailView extends Vue {
 
     uri: string;
     experiment: string;
+    facilityLabels:  Map<String, String> = new Map<String, String>();
 
     service: ScientificObjectsService;
     xpService: ExperimentsService;
+    orgaService: OrganizationsService;
 
     // bind each tab with a path
     pathTabMap: Array<{ tab: string, path: string }> = [
@@ -62,6 +67,7 @@ export default class ScientificObjectDetailView extends Vue {
     created() {
         this.service = this.$opensilex.getService("opensilex.ScientificObjectsService");
         this.xpService = this.$opensilex.getService("opensilex.ExperimentsService");
+        this.orgaService = this.$opensilex.getService("opensilex.OrganizationsService");
         this.refresh();
     }
 
@@ -95,6 +101,7 @@ export default class ScientificObjectDetailView extends Vue {
             this.service.getScientificObjectDetail(this.uri,this.experiment),
             this.xpService.getExperiment(this.experiment)
         ]).then((result => {
+            console.log("result",result)
 
             // get OS and XP detail
             let objectDto: ScientificObjectDetailDTO = result[0].response.result;
@@ -114,7 +121,7 @@ export default class ScientificObjectDetailView extends Vue {
     /**
      * Fetch all relations of the object for each experiment (including global)
      */
-    getObjectFromAllExperiments(){
+    getObjectFromAllExperiments() {
         this.service.getScientificObjectDetailByExperiments(this.uri).then((http) => {
             this.objectByContext = [];
             if (http.response.result.length == 1) {
@@ -131,7 +138,24 @@ export default class ScientificObjectDetailView extends Vue {
                     }
                 });
             }
-        }).catch(this.$opensilex.errorHandler);
+        })/*.catch(this.$opensilex.errorHandler)
+                .finally(() => {
+                    //Get facilities label
+                    if (this.selected.location && this.selected.location.to) {
+                        let facilitiesUris = [this.selected.location.to]
+                        if (this.selected.location.from) {
+                            facilitiesUris.push(this.selected.location.from)
+                        }
+
+                        this.orgaService.getFacilitiesByURI(facilitiesUris)
+                                .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                                    http.response.result.forEach(facility => {this.facilityLabels.set(facility.uri, facility.name);})
+
+                                    this.selected.location.to = this.facilityLabels.get(this.selected.location.to);
+                                    this.selected.location.from = this.facilityLabels.get(this.selected.location.from);
+                                })
+                    }
+                });*/
     }
 
     // on click on a tab, search for a match by path between "tab" from children component and one of the elements from pathTabMap[]

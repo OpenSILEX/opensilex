@@ -10,13 +10,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectDTO;

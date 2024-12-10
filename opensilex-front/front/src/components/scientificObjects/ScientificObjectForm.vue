@@ -27,19 +27,19 @@
                         <opensilex-DateTimeForm
                                 :value.sync="formMove.end"
                                 label="Event.end"
-                                :required="!!formMove.start || !!isLocationFields"
+                                :required="!!formMove.start || !!locationFilled"
                         ></opensilex-DateTimeForm>
                     </div>
 
                 </div>
-                <opensilex-MoveForm :form.sync="formMove" :isLocationFiels.sync="isLocationFields" ref="moveForm"></opensilex-MoveForm>
+                <opensilex-MoveForm :form.sync="formMove" :locationFilled.sync="locationFilled" ref="moveForm"></opensilex-MoveForm>
             </div>
         </template>
     </opensilex-ModalForm>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ScientificObjectsService} from "opensilex-core/index";
 import OntologyObjectForm from "../ontology/OntologyObjectForm.vue";
@@ -66,8 +66,6 @@ export default class ScientificObjectForm extends Vue {
     //#region Props
     @Prop({default: () => {}})
     private readonly context;
-    //TODO
-    isLocationFields: boolean = false;
     //endregion
 
     //#region Refs
@@ -79,10 +77,9 @@ export default class ScientificObjectForm extends Vue {
 
     //#region Data
     private hasMove: boolean = false;
-    startRequired = false;
-    endRequired = true;
     private formMove: MoveCreationDTO = MoveForm.getEmptyForm();
     private editMode:boolean = false;
+    private locationFilled: boolean = false;
     //endregion
 
     //#region Computed

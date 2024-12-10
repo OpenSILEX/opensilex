@@ -85,7 +85,6 @@
         }
 
         showEditForm(uri: string, type: string) {
-
             this.renderModalForm = true;
             this.$nextTick(() => {
 
@@ -112,7 +111,6 @@
                     this.modalForm.showEditForm(editDto);
                 })
             });
-
         }
 
         create(event: EventCreationDTO) {
@@ -193,6 +191,7 @@
         }
 
         static convertMoveDtoToMoveForm(move){
+            console.log("move convertMoveDtoToMoveForm: ",move)
 
             if (!move.targets_positions || move.targets_positions.length == 0) {
                 move.targets_positions = PositionsView.getEmptyForm();
@@ -209,6 +208,9 @@
         }
 
         static convertFormToDto(event: MoveCreationDTO, isMove: boolean) {
+            console.log("event convertMoveDtoToMoveForm: ",event)
+            console.log("isMove convertMoveDtoToMoveForm: ",isMove)
+
             let moveCopy = JSON.parse(JSON.stringify(event));
             if (isMove) {
                 EventModalForm.convertMoveFormToMoveDto(moveCopy);
@@ -224,7 +226,7 @@
         }
 
         static convertMoveFormToMoveDto(move){
-
+            console.log("move convertMoveFormToMoveDto: ",move)
             if (move.from && move.from.uri) {
                 move.from = move.from.uri;
             }
@@ -237,8 +239,7 @@
 
                 let position = move.targets_positions[0].position;
 
-                //TODO
-                /*if (EventModalForm.isPositionEmpty(position)) {
+                if (EventModalForm.isPositionEmpty(position)) {
                     move.targets_positions = [];
                 } else if (EventModalForm.isPositionValid(position)) {
 
@@ -252,7 +253,7 @@
                             position: position
                         }));
                     }
-                }*/
+                }
             }
         }
 
@@ -264,6 +265,7 @@
         }
 
         static isPositionValid(position: PositionCreationDTO): boolean {
+            console.log("position isPositionValid: ",position)
             if (!position) {
                 return false;
             }

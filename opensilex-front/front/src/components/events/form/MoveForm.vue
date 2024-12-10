@@ -14,9 +14,6 @@
                         label="Position.from"
                         :facilities.sync="form.location.from"
                         :multiple="false"
-                        :required="fromRequired"
-                        @select="updateRequiredProps()"
-                        @clear="updateRequiredProps()"
                         helpMessage="Position.from-help"
                 ></opensilex-FacilitySelector>
             </div>
@@ -26,9 +23,7 @@
                         label="Position.to"
                         :facilities.sync="form.location.to"
                         :multiple="false"
-                        :required="toRequired"
-                        @select="updateRequiredProps()"
-                        @clear="updateRequiredProps()"
+                        :required="!!form.location.from"
                         helpMessage="Position.to-help"
                 ></opensilex-FacilitySelector>
             </div>
@@ -52,7 +47,6 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import { MoveCreationDTO, TargetPositionCreationDTO } from 'opensilex-core/index';
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import VueI18n from "vue-i18n";
-    import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
     import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 
@@ -64,8 +58,8 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
         editMode = false;
         fromRequired: boolean = false;
         toRequired: boolean = false;
-        @PropSync("isLocationFields", {default: false})
-        isFilled;
+        @Prop( {default: false})
+        locationFilled;
 
         $opensilex: OpenSilexVuePlugin;
         $i18n: VueI18n;
@@ -137,22 +131,15 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
          * The "From" field is optional, and becomes required from the moment the "To" field is completed.
          */
         updateRequiredProps() {
-            this.isFilled = true;
-            if(this.form.location.geojson ||
-                    this.form.location.from ||
-                    this.form.location.x ||
-                    this.form.location.y || this.form.location.z || this.form.location.text ){
-                this.isFilled = true;
-            }
-            /*if(this.form.from == undefined
-            && this.form.to == undefined 
-            && this.form.targets_positions[0].position !== undefined 
-            && this.form.targets_positions[0].position !== "") {
+            if(this.form.location.from == undefined
+            && this.form.location.to == undefined
+            && (this.form.location.x !== undefined || this.form.location.y !== undefined || this.form.location.z !== undefined || this.form.location.geojson !== undefined || this.form.location.text !== undefined)
+                            && (this.form.location.x !== "" || this.form.location.y !== "" || this.form.location.z !== "" || this.form.location.geojson !== "" || this.form.location.text !== "")) {
                 this.fromRequired = false;
                 this.toRequired = false; 
             } else {
                  this.toRequired = true;
-            }*/
+            }
         }
 
         handleSubmitError(){

@@ -81,9 +81,9 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
                         Filters.exists(LocationObservationModel.START_DATE_FIELD, true),
                         Filters.lte(LocationObservationModel.START_DATE_FIELD, searchQuery.getEndDate()));
 
-                Bson filtersEnDate = Filters.or(filterOnEndDate, filterOnStartDate);
+                Bson filtersEndDate = Filters.or(filterOnEndDate, filterOnStartDate);
 
-                filters.add(filtersEnDate);
+                filters.add(filtersEndDate);
             }
             // Start Date
             if (Objects.nonNull(searchQuery.getStartDate())) {

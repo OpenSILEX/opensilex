@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
@@ -32,6 +33,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,7 +109,7 @@ public class PositionAPI {
     @ApiOperation("Search history of position of an object")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return position list", response = PositionGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return position list", response = MoveGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,12 +121,8 @@ public class PositionAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel moveEvent = moveLogic.getLastMoveAfter(target, null);
-
-        if (moveEvent != null) {
             var positionHistory = moveLogic.getPositionsHistory(
                     target,
                     null,
@@ -133,17 +131,16 @@ public class PositionAPI {
                     orderByList,
                     page,
                     pageSize
-            ).convert(PositionGetDTO.class, move -> {
+            ).convert(MoveGetDTO.class, move -> {
                 try {
-                    return new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition());
+                    return new MoveGetDTO(move);
                 } catch (JsonProcessingException ex) {
                     throw new RuntimeException(ex);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
                 }
             });
             return new PaginatedListResponse<>(positionHistory).getResponse();
-        }
-
-        return new PaginatedListResponse<>().getResponse();
     }
 
     @POST

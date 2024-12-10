@@ -480,7 +480,7 @@ public class DeviceDAO {
 
         FacilityModel facility = null;
 
-        List<PositionGetDTO> resultDTOList = new ArrayList<>();
+       /* List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
             var positionHistory = moveLogic.getPositionsHistory(
                     deviceURI,
@@ -507,7 +507,7 @@ public class DeviceDAO {
                 FacilityLogic infraLogic = new FacilityLogic(sparql, nosql.getServiceV2());
                 facility = infraLogic.get(facilityUri, currentUser);
             }
-        }
+        }*/
 
         return facility;
     }

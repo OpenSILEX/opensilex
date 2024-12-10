@@ -138,24 +138,7 @@ export default class ScientificObjectDetailView extends Vue {
                     }
                 });
             }
-        })/*.catch(this.$opensilex.errorHandler)
-                .finally(() => {
-                    //Get facilities label
-                    if (this.selected.location && this.selected.location.to) {
-                        let facilitiesUris = [this.selected.location.to]
-                        if (this.selected.location.from) {
-                            facilitiesUris.push(this.selected.location.from)
-                        }
-
-                        this.orgaService.getFacilitiesByURI(facilitiesUris)
-                                .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                                    http.response.result.forEach(facility => {this.facilityLabels.set(facility.uri, facility.name);})
-
-                                    this.selected.location.to = this.facilityLabels.get(this.selected.location.to);
-                                    this.selected.location.from = this.facilityLabels.get(this.selected.location.from);
-                                })
-                    }
-                });*/
+        })
     }
 
     // on click on a tab, search for a match by path between "tab" from children component and one of the elements from pathTabMap[]

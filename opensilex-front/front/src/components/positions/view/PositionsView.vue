@@ -2,22 +2,22 @@
     <div v-if="hasPosition()">
         <opensilex-UriView
             title="Event.targets" 
-            :uri="getTargetPosition().target"
-            :value="positionsUriLabels[getTargetPosition().target]"
+            :uri="getTargetPosition()"
+            :value="positionsUriLabels[getTargetPosition()]"
             :to="{
-                path: positionsUriPaths[getTargetPosition().target]
+                path: positionsUriPaths[getTargetPosition()]
             }"
         >      
         </opensilex-UriView>
         <opensilex-GeometryView label="component.common.geometry"
-                                :value="getTargetPosition().position.point"></opensilex-GeometryView>
+                                :value="positions.location.geojson"></opensilex-GeometryView>
 
-        <opensilex-StringView label="Position.x" :value="getTargetPosition().position.x"></opensilex-StringView>
-        <opensilex-StringView label="Position.y" :value="getTargetPosition().position.y"></opensilex-StringView>
-        <opensilex-StringView label="Position.z" :value="getTargetPosition().position.z"></opensilex-StringView>
+        <opensilex-StringView label="Position.x" :value="positions.location.x"></opensilex-StringView>
+        <opensilex-StringView label="Position.y" :value="positions.location.y"></opensilex-StringView>
+        <opensilex-StringView label="Position.z" :value="positions.location.z"></opensilex-StringView>
 
         <opensilex-TextView v-if="hasPosition()" label="Position.textual-position"
-                            :value="getTargetPosition().position.text"></opensilex-TextView>
+                            :value="positions.location.text"></opensilex-TextView>
 
     </div>
 
@@ -27,12 +27,17 @@
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
     import { TargetPositionGetDTO } from 'opensilex-core/index';
+    import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+    import {MoveDetailsDTO} from "opensilex-core/model/moveDetailsDTO";
+    import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
+    import {FacilityNamedDTO} from "opensilex-core/model/facilityNamedDTO";
+    import {UserGetDTO} from "opensilex-core/model/userGetDTO";
 
     @Component
     export default class PositionsView extends Vue {
 
-        @Prop({default: () => [] })
-        positions: Array<TargetPositionGetDTO>;
+        @Prop({default: () => {} })
+        positions: MoveDetailsDTO;
 
         @Prop()
         positionsUriLabels;
@@ -41,11 +46,11 @@
         positionsUriPaths;
 
         hasPosition() : boolean{
-            return this.positions && this.positions.length > 0;
+            return this.positions && this.positions.location;
         }
 
         getTargetPosition(): TargetPositionGetDTO{
-            return this.positions[0];
+            return this.positions.targets[0];
         }
 
         static getEmptyForm(): Array<TargetPositionGetDTO> {

@@ -25,6 +25,7 @@ import java.util.List;
 })
 public class MoveGetDTO extends EventGetDTO {
 
+    @JsonProperty("location")
     private LocationObservationDTO location;
 
    //TODO : à supprimer

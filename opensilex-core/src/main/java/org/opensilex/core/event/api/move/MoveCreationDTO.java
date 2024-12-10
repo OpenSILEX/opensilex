@@ -19,11 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @JsonPropertyOrder({
-    "uri", "rdf_type","start", "end", "is_instant","description","targets","relations","from","to","targets_positions"
+    "uri", "rdf_type","start", "end", "is_instant","description","targets","relations","location"
 })
 @MoveLocationOrPositionNotNullConstraint
 public class MoveCreationDTO extends EventCreationDTO {
 
+    @JsonProperty("location")
     LocationObservationDTO location;
 
     //TODO: à retirer

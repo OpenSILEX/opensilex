@@ -27,8 +27,7 @@ public class ValidationContext {
     private boolean sensingDeviceFoundFromProvenance = false;
 
     private List<URI> experiments = new ArrayList<>();
-    private Set<Integer> colsToDoAtEnd = new HashSet<>();
-    private Map<URI, URI> rootDeviceTypes = null;
+    private final Set<Integer> colsToDoAtEnd = new HashSet<>();
 
 
     private ParsedDateTimeMongo parsedDateTimeMongo;
@@ -40,6 +39,7 @@ public class ValidationContext {
     private int targetColIndex = 0;
     private int deviceColIndex = 0;
     private int annotationIndex = 0;
+
 
     public ValidationContext(ProvenanceModel provenance, String[] values, int rowIndex, Map<Integer, String> headerByIndex, ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext, DAOContext daoContext, DataCSVValidationModel localCsvValidation, DataCSVValidationModel csvValidation, boolean sensingDeviceFoundFromProvenance) {
         this.provenance = provenance;
@@ -122,10 +122,6 @@ public class ValidationContext {
         return colsToDoAtEnd;
     }
 
-    public void setColsToDoAtEnd(Set<Integer> colsToDoAtEnd) {
-        this.colsToDoAtEnd = colsToDoAtEnd;
-    }
-
     public ParsedDateTimeMongo getParsedDateTimeMongo() {
         return parsedDateTimeMongo;
     }
@@ -192,17 +188,5 @@ public class ValidationContext {
 
     public boolean isSensingDeviceFoundFromProvenance() {
         return sensingDeviceFoundFromProvenance;
-    }
-
-    public void setSensingDeviceFoundFromProvenance(boolean sensingDeviceFoundFromProvenance) {
-        this.sensingDeviceFoundFromProvenance = sensingDeviceFoundFromProvenance;
-    }
-
-    public Map<URI, URI> getRootDeviceTypes() {
-        return rootDeviceTypes;
-    }
-
-    public void setRootDeviceTypes(Map<URI, URI> rootDeviceTypes) {
-        this.rootDeviceTypes = rootDeviceTypes;
     }
 }

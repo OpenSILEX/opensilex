@@ -150,32 +150,43 @@ public class DataService {
      * Validates the csv for data import after verifying provenance and experiment
      */
     public DataCSVValidationModel validateWholeCsvV2(URI provenance, URI experiment, InputStream file) throws Exception {
-        // test prov
+        // retrieve provenance model
         ProvenanceModel provenanceModel = getProvenanceModel(provenance);
 
-        // test exp
+        // check user access to experiment if not null
         if (experiment != null) {
             new ExperimentDAO(sparql, nosql).validateExperimentAccess(experiment, user);
         }
 
-        //Validate csv
-        DataCSVValidationModel validation;
-        validation = validateWholeCSVInnerCodeV2(provenanceModel, experiment, file);
-
-        //Set DataCSVValidationModel attributes
-        validation.setValidCSV(!validation.hasErrors());
-
-        validation.setNbLinesToImport(validation.getData().size());
-        validation.setValidationStep(true);
+        //Validate csv file
+        DataCSVValidationModel validation = getCsvValidation(experiment, file, provenanceModel);
 
         if (!validation.hasErrors()) {
-            // Set generate and set validationKey for whole csv into the cache
-            String validationKey = generateValidationKey();
-            validation.setValidationKey(validationKey);
-            csvValidationModelCache.put(validationKey, validation);
+            // save validation data in cache
+            putValidationDataInCache(validation);
         }
 
         return validation;
+    }
+
+    private DataCSVValidationModel getCsvValidation(URI experiment, InputStream file, ProvenanceModel provenanceModel) throws Exception {
+        DataCSVValidationModel validation;
+        // Validate the whole csv file containing data
+        validation = validateWholeCSVInnerCodeV2(provenanceModel, experiment, file);
+
+        // Set DataCSVValidationModel attributes
+        validation.setValidCSV(!validation.hasErrors());
+        validation.setNbLinesToImport(validation.getData().size());
+        validation.setValidationStep(true);
+
+        return validation;
+    }
+
+    private void putValidationDataInCache(DataCSVValidationModel validation) {
+        // Set generate and set validationKey for whole csv into the cache
+        String validationKey = generateValidationKey();
+        validation.setValidationKey(validationKey);
+        csvValidationModelCache.put(validationKey, validation);
     }
 
     protected ProvenanceModel getProvenanceModel(URI provenance) {
@@ -192,18 +203,18 @@ public class DataService {
      * Does the actual validating once we have loaded our provenance
      */
     private DataCSVValidationModel validateWholeCSVInnerCodeV2(ProvenanceModel provenance, URI experiment, InputStream file) throws Exception {
+        // create dao for each context to access data from database
         DeviceDAO deviceDAO = daoFactory.createDeviceDAO();
         VariableDAO variableDAO = daoFactory.createVariableDAO();
         ExperimentDAO experimentDAO = daoFactory.createExperimentDAO();
         OntologyDAO ontologyDAO = daoFactory.createOntologyDAO();
         ScientificObjectDAO scientificObjectDAO = daoFactory.createScientificObjectDAO();
 
+        // create CSVValidationModel object to return data after validation
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
         Map<Integer, String> headerByIndex = new HashMap<>();
 
         List<String[]> allRows = new ArrayList<>();
-
 
         // prepare each context with own attributes
         ExperimentContext experimentContext = ExperimentContext.buildExperimentContext(experiment);
@@ -220,27 +231,19 @@ public class DataService {
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
 
-            LOGGER.debug("Import data - CSV format => \n '{}'", csvReader.getDetectedFormat());
+            LOGGER.debug("[validateWholeCSVInnerCodeV2] Import data - CSV format => \n '{}'", csvReader.getDetectedFormat());
 
             // Process headers
             String[] ids = csvReader.parseNext();
-            Set<String> headers = getHeadersFrom(ids);
-
-            // Validate headers
-            validateHeaders(headers, sensingDeviceFoundFromProvenance, csvValidation);
-
-            // Process and validate each header URI if applicable
-            processHeaders(ids, headerByIndex, deviceContext, csvValidation, variableDAO);
+            validateAndProcessHeaders(ids, sensingDeviceFoundFromProvenance, csvValidation, headerByIndex, deviceContext, variableDAO);
 
             // Check for errors after headers validation
             if (csvValidation.hasErrors()) {
                 return csvValidation;
             }
 
-            csvValidation.setHeadersFromArray(ids);
-
-            // Process headers labels
-            csvValidation.setHeadersLabelsFromArray(csvReader.parseNext());
+            // Retrieve headers labels
+            setHeadersLabels(csvValidation, ids, csvReader);
 
             // SKip line 3
             csvReader.parseNext();
@@ -268,6 +271,23 @@ public class DataService {
         }
 
         return csvValidation;
+    }
+
+    private void setHeadersLabels(DataCSVValidationModel csvValidation, String[] ids, CsvParser csvReader) {
+        csvValidation.setHeadersFromArray(ids);
+
+        // Process headers labels
+        csvValidation.setHeadersLabelsFromArray(csvReader.parseNext());
+    }
+
+    private void validateAndProcessHeaders(String[] ids, boolean sensingDeviceFoundFromProvenance, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, DeviceContext deviceContext, VariableDAO variableDAO) {
+        Set<String> headers = getHeadersFrom(ids);
+
+        // Validate headers
+        validateHeaders(headers, sensingDeviceFoundFromProvenance, csvValidation);
+
+        // Process headers values
+        processHeadersValue(ids, headerByIndex, deviceContext, csvValidation, variableDAO);
     }
 
     private boolean isSensingDeviceFoundFromProvenance(ProvenanceModel provenance, DeviceDAO deviceDAO) {
@@ -373,6 +393,7 @@ public class DataService {
                 // Early termination of threads when the nbError limit is reached by one of the threads
                 break;
             }
+            // Initialize the validation context for each row validation
             validationContext = new ValidationContext(
                     provenance,
                     row,
@@ -417,8 +438,8 @@ public class DataService {
         }
     }
 
-    private void processHeaders(String[] ids, Map<Integer, String> headerByIndex, DeviceContext deviceContext,
-                                   DataCSVValidationModel csvValidation, VariableDAO variableDAO) {
+    private void processHeadersValue(String[] ids, Map<Integer, String> headerByIndex, DeviceContext deviceContext,
+                                     DataCSVValidationModel csvValidation, VariableDAO variableDAO) {
         for (int i = 0; i < ids.length; i++) {
             String header = ids[i];
             if (header == null) {
@@ -453,15 +474,15 @@ public class DataService {
                 .contains(header.toLowerCase(Locale.ENGLISH));
     }
 
-    private boolean validateCSVRowV2(ValidationContext validationContext
-    ) throws Exception {
+    private boolean validateCSVRowV2(ValidationContext validationContext) throws Exception {
+        LOGGER.debug("[validateCSVRowV2] Validating row {}", validationContext.getRowIndex());
         ExperimentContext experimentContext = validationContext.getExperimentContext();
         // Validate row step by step
         if (experimentContext.getExperiment() != null) {
             validationContext.getExperiments().add(experimentContext.getExperiment());
         }
 
-
+        // Validate each column of the row
         validateColumnsRow(validationContext);
 
         //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
@@ -479,7 +500,7 @@ public class DataService {
     private void validateColumnsRow(ValidationContext context) throws Exception {
         for (int colIndex = 0; colIndex < context.getValues().length; colIndex++) {
             String headerName = context.getHeaderByIndex().get(colIndex);
-
+            LOGGER.debug("[validateColumnsRow] start validating column : {}", headerName);
             if (headerName.equalsIgnoreCase(EXPERIMENT_HEADER)) {
                 validateExperimentColumn(context, colIndex);
             } else if (headerName.equalsIgnoreCase(TARGET_HEADER)) {
@@ -496,6 +517,7 @@ public class DataService {
                 handleVariableColumn(context, colIndex);
             }
         }
+        LOGGER.debug("[validateColumnsRow] end validating columns");
     }
 
     private void handleMissingTargetOrDevice(ValidationContext validationContext) {
@@ -872,7 +894,7 @@ public class DataService {
         TargetContext targetContext = context.getTargetContext();
         DAOContext daoContext = context.getDaoContext();
         DataCSVValidationModel localCsvValidation = context.getLocalCsvValidation();
-        SPARQLNamedResourceModel target;
+        SPARQLNamedResourceModel target = null;
 
         //check target column
         String targetNameOrUri = context.getValues()[colIndex];
@@ -891,10 +913,7 @@ public class DataService {
                     try {
                         target = daoContext.getOntologyDAO().getTargetByNameOrURI(targetNameOrUri);
                         if (target == null) {
-                            if (!targetContext.getNotExistingTargets().contains(targetNameOrUri)) {
-                                targetContext.getNotExistingTargets().add(targetNameOrUri);
-                            }
-
+                            targetContext.getNotExistingTargets().add(targetNameOrUri);
                             CSVCell cell = new CSVCell(context.getRowIndex(), colIndex, targetNameOrUri, TARGET_ID);
                             localCsvValidation.addInvalidTargetError(cell);
                             context.setValidRow(false);
@@ -916,6 +935,7 @@ public class DataService {
 
             }
         }
+        context.setTarget(target);
     }
 
     private void validateExperimentColumn(ValidationContext context, int colIndex) throws Exception {
@@ -939,10 +959,7 @@ public class DataService {
                     try {
                         exp = daoContext.getExperimentDAO().getExperimentByNameOrURI(expNameOrUri, user);
                         if (exp == null) {
-                            if (!experimentContext.getNotExistingExperiments().contains(expNameOrUri)) {
-                                experimentContext.getNotExistingExperiments().add(expNameOrUri);
-                            }
-
+                            experimentContext.getNotExistingExperiments().add(expNameOrUri);
                             CSVCell cell = new CSVCell(context.getRowIndex(), colIndex, expNameOrUri, EXPERIMENT_ID);
                             localCsvValidation.addInvalidExperimentError(cell);
                             context.setValidRow(false);

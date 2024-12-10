@@ -177,7 +177,7 @@ en:
       step-validation:
         title: Validation
         content: >
-          Click on the '@:component.common.form-wizard.map' button to proceed to the next step, where you will add
+          Click on the '@:component.common.form-wizard.next' button to proceed to the next step, where you will add
           external references to your concept. Click on the '@:AgroportalSearchFormPart.save' button to save your concept.
 fr:
   AgroportalCreateFormPart:
@@ -201,7 +201,7 @@ fr:
       step-validation:
         title: Validation
         content: >
-          Cliquez sur le bouton '@:component.common.form-wizard.map' pour passer à l'étape d'ajout de références
+          Cliquez sur le bouton '@:component.common.form-wizard.next' pour passer à l'étape d'ajout de références
           externes. Si vous pensez ne pas avoir besoin d'en ajouter, vous pouvez cliquer sur le bouton
           '@:AgroportalSearchFormPart.save' pour sauvegarder votre concept tel quel.
 </i18n>

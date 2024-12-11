@@ -62,6 +62,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
 
     private String errorMessage;
     private String validationKey;
+    private String fileName;
 
 
     /**
@@ -499,4 +500,11 @@ public class DataCSVValidationModel extends CSVValidationModel {
         return this.annotationsOnObjects;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 }

@@ -145,7 +145,7 @@ public class DataServiceTest {
         doNothing().when(dataLogicMock).createManyFromImport(anyList(), any(DataCSVValidationModel.class));
 
         // Methode to test
-        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, null);
+        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, "fileName", null);
 
         // Assert
         Assert.assertNotNull(result);
@@ -177,7 +177,7 @@ public class DataServiceTest {
         doNothing().when(dataLogicMock).createManyFromImport(anyList(), any(DataCSVValidationModel.class));
 
         // Methode to test
-        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, validationKey);
+        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, "fileName", validationKey);
 
         // Assert
         Assert.assertNotNull(result);

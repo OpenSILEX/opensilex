@@ -50,6 +50,7 @@ public class DataAPIV2 {
     public static final String DATA_EXAMPLE_MINIMAL_DATE = "2020-08-21T00:00:00+01:00";
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
+    public static final String CSV_EXTENSION = ".csv";
 
     @Inject
     private MongoDBService nosql;
@@ -83,13 +84,13 @@ public class DataAPIV2 {
     public Response importCSVData(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file, @FormDataParam("file") FormDataContentDisposition fileDisposition,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
             @ApiParam(value = "The key for file that have already been validated by the API (/core/data-v2/import_validation_v2)",
                     example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
-
+        String fileName = getFileName(fileDisposition);
         this.dataService = new DataService(nosql, sparql, fs, user);
-        DataCSVValidationDTO csvValidation = dataService.importCSVDataV2(provenance, experiment, file, validationKey);
+        DataCSVValidationDTO csvValidation = dataService.importCSVDataV2(provenance, experiment, file, fileName, validationKey);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -110,14 +111,16 @@ public class DataAPIV2 {
     public Response validateCSV(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file, @FormDataParam("file") FormDataContentDisposition fileDisposition,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-
         this.dataService = new DataService(nosql, sparql, fs, user);
-        DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file);
+        String fileName = getFileName(fileDisposition);
+        DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file, fileName);
         DataCSVValidationDTO csvValidation = dataService.buildDataCSVValidationDTO(csvValidationModel);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
-
+    private String getFileName(FormDataContentDisposition fileDisposition) {
+        return fileDisposition.getFileName().split(CSV_EXTENSION)[0];
+    }
 }

@@ -63,6 +63,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -133,15 +135,16 @@ public class DataService {
      * @param provenance    the provenance URI
      * @param experiment    the experiment URI
      * @param file          the CSV file to import
+     * @param fileName
      * @param validationKey the validation key of the csv file
      * @return a DataCSVValidationDTO containing the status of the import
      * @throws Exception if an error occurs during the import
      */
-    public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String validationKey) throws Exception {
+    public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
         DataLogic dataLogic = this.dataLogic;
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
-        validation = importCsvValidationStep(provenance, experiment, file, validation);
+        validation = importCsvValidationStep(provenance, experiment, file, fileName, validation);
 
         importCsvInsertionStep(validationKey, validation, dataLogic);
 
@@ -153,7 +156,7 @@ public class DataService {
      * <p>
      * Validates the csv for data import after verifying provenance and experiment
      */
-    public DataCSVValidationModel validateWholeCsvV2(URI provenance, URI experiment, InputStream file) throws Exception {
+    public DataCSVValidationModel validateWholeCsvV2(URI provenance, URI experiment, InputStream file, String fileName) throws Exception {
         // retrieve provenance model
         ProvenanceModel provenanceModel = getProvenanceModel(provenance);
 
@@ -163,7 +166,7 @@ public class DataService {
         }
 
         //Validate csv file
-        DataCSVValidationModel validation = getCsvValidation(experiment, file, provenanceModel);
+        DataCSVValidationModel validation = getCsvValidation(experiment, file, provenanceModel, fileName);
 
         if (!validation.hasErrors()) {
             // save validation data in cache
@@ -199,10 +202,10 @@ public class DataService {
         }
     }
 
-    private DataCSVValidationModel importCsvValidationStep(URI provenance, URI experiment, InputStream file, DataCSVValidationModel validation) throws Exception {
+    private DataCSVValidationModel importCsvValidationStep(URI provenance, URI experiment, InputStream file, String fileName, DataCSVValidationModel validation) throws Exception {
         if (validation == null) {
             LOGGER.debug("[importCsvValidationStep] Start validation step.");
-            validation = validateWholeCsvV2(provenance, experiment, file);
+            validation = validateWholeCsvV2(provenance, experiment, file, fileName);
             validation.setValidationStep(true);
             LOGGER.debug("[importCsvValidationStep] End validation step with status valid {}", validation.isValidCSV());
         }
@@ -213,10 +216,10 @@ public class DataService {
         return StringUtils.isNotBlank(key) ? csvValidationModelCache.getIfPresent(key) : null;
     }
 
-    private DataCSVValidationModel getCsvValidation(URI experiment, InputStream file, ProvenanceModel provenanceModel) throws Exception {
+    private DataCSVValidationModel getCsvValidation(URI experiment, InputStream file, ProvenanceModel provenanceModel, String fileName) throws Exception {
         DataCSVValidationModel validation;
         // Validate the whole csv file containing data
-        validation = validateWholeCSVInnerCodeV2(provenanceModel, experiment, file);
+        validation = validateWholeCSVInnerCodeV2(provenanceModel, experiment, file, fileName);
 
         // Set DataCSVValidationModel attributes
         validation.setValidCSV(!validation.hasErrors());
@@ -246,7 +249,7 @@ public class DataService {
     /**
      * Does the actual validating once we have loaded our provenance
      */
-    private DataCSVValidationModel validateWholeCSVInnerCodeV2(ProvenanceModel provenance, URI experiment, InputStream file) throws Exception {
+    private DataCSVValidationModel validateWholeCSVInnerCodeV2(ProvenanceModel provenance, URI experiment, InputStream file, String fileName) throws Exception {
         // create dao for each context to access data from database
         DeviceDAO deviceDAO = daoFactory.createDeviceDAO();
         VariableDAO variableDAO = daoFactory.createVariableDAO();
@@ -256,6 +259,7 @@ public class DataService {
 
         // create CSVValidationModel object to return data after validation
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
+        csvValidation.setFileName(fileName);
         Map<Integer, String> headerByIndex = new HashMap<>();
 
         List<String[]> allRows = new ArrayList<>();
@@ -519,7 +523,7 @@ public class DataService {
         validateColumnsRow(validationContext);
 
         //Do the variable value columns now that we know the target or device is loaded if the user correctly filled it
-        processVariableColumns(validationContext);
+        processVariableAndDataModelColumns(validationContext);
 
         // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
         processAnnotations(validationContext);
@@ -585,7 +589,7 @@ public class DataService {
     }
 
 
-    private void processVariableColumns(ValidationContext context) throws Exception {
+    private void processVariableAndDataModelColumns(ValidationContext context) throws Exception {
         for (Integer colIndex : context.getColsToDoAtEnd()) {
             if (!context.isValidRow()) {
                 break;
@@ -1051,6 +1055,9 @@ public class DataService {
         Instant start = Instant.now();
         List<DataModel> data = new ArrayList<>(validation.getData().keySet());
 
+        // Set batchId for each data
+        setBatchIdToData(start, data, validation.getFileName());
+
         try {
             dataLogic.createManyFromImport(data, validation);
         } catch (NoSQLTooLargeSetException ex) {
@@ -1063,6 +1070,15 @@ public class DataService {
             handleDataTypeError(e, validation);
         }
         LOGGER.debug("[importCsvInsertionStep] Completed insertion in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
+    }
+
+    private void setBatchIdToData(Instant start, List<DataModel> data, String fileName) {
+        data.forEach(elm -> elm.setBatchId(generateBatchId(start, fileName)));
+    }
+
+    private String generateBatchId(Instant start, String fileName) {
+        String dateTime = DateTimeFormatter.ofPattern(DATE_FORMAT).format(start.atZone(ZoneId.systemDefault()));
+        return fileName + UNDERSCORE + dateTime;
     }
 
     private void handleBulkWriteErrors(MongoBulkWriteException duplicateError, DataCSVValidationModel validation, List<DataModel> data) {

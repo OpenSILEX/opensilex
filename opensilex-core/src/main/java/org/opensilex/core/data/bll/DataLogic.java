@@ -370,40 +370,33 @@ public class DataLogic {
     }
 
     /**
-     * This function gets all the used targets, for datas that are associated with the passed devices, experiments and variables.
-     * Sometimes the caller may absolutely require only ScientificObject URIS or else an error will be thrown further down the line.
-     * If this is the case we set retainOnlyScientificObjectURIS to true, and an extra call will be made to retain only this type of object.
-     * An extra call is required because the data does not have the information about what type the target is.
+     *
+     * @param devices to filter the data by device
+     * @param variables to filter the data by variable
+     * @param experiments to filter the data by experiment
+     * @param typeOfTarget Retain only targets of this type, if NULL then we return all types of target
+     *
+     * @return A list of target URIS who are target's of the filtered data
+     * @throws Exception
      */
-    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments, boolean retainOnlyScientificObjectURIS) throws Exception {
+    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments, URI typeOfTarget) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
         List<URI> usedTargetUris = dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
 
-        if(retainOnlyScientificObjectURIS && CollectionUtils.isNotEmpty(usedTargetUris)){
+        if(typeOfTarget != null && CollectionUtils.isNotEmpty(usedTargetUris)){
             OntologyDAO ontologyDao = new OntologyDAO(sparql);
             List<URITypesModel> superTypesByUri = ontologyDao.getSuperClassesByURI(usedTargetUris).stream().filter(
-                    e -> superTypeListContainsScientificObject(e.getRdfTypes())).toList();
+                    e -> e.getRdfTypes().stream().anyMatch(
+                            f -> SPARQLDeserializers.compareURIs(f, typeOfTarget)
+                    )
+            ).toList();
             return superTypesByUri.stream().map(URITypesModel::getUri).toList();
 
         }
         return usedTargetUris;
     }
 
-    /**
-     * Function used by getUsedTargets in the case where we are only interested in Scientific Objects
-     *
-     * @param superTypes
-     * @return true if the list contains ScientificObjectType
-     */
-    private boolean superTypeListContainsScientificObject(List<URI> superTypes){
-        for(URI superType : superTypes){
-            if(SPARQLDeserializers.compareURIs(superType, Oeso.ScientificObject.getURI())){
-                return true;
-            }
-        }
-        return false;
-    }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
@@ -440,7 +433,7 @@ public class DataLogic {
                             null,
                             criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
                             (experiment == null ? null : Collections.singletonList(experiment)),
-                            false
+                            null
                     ).stream().filter(Objects::nonNull).collect(Collectors.toList())
             );
         }

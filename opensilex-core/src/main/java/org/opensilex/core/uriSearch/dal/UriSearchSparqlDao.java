@@ -136,6 +136,7 @@ public class UriSearchSparqlDao {
         String lastUpdateDate = result.getStringValue(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
         if (Objects.nonNull(publisherUri)) {
             model.setPublisher(URI.create(publisherUri));
+            publisher.setUri(URI.create(publisherUri));
             publisher.setFirstName(result.getStringValue(PersonModel.FIRST_NAME_FIELD));
             publisher.setLastName(result.getStringValue(PersonModel.LAST_NAME_FIELD));
         }

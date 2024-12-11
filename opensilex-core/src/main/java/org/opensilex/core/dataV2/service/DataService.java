@@ -800,11 +800,11 @@ public class DataService {
                     }
                     dataModel.setProvenance(provenanceModel);
                     dataModel.setVariable(varURI);
-                    DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), deviceContext.getMapVariableUriDataType().get(varURI), rowIndex, colIndex, localCsvValidation);
+                    DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), deviceContext.getMapVariableUriDataType().get(varURI), rowIndex, colIndex, csvValidation);
 
                     if (colIndex + 1 < values.length) {
                         if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(RAW_DATA_HEADER) && values[colIndex + 1] != null) {
-                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), deviceContext.getMapVariableUriDataType().get(varURI), rowIndex, colIndex + 1, localCsvValidation));
+                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), deviceContext.getMapVariableUriDataType().get(varURI), rowIndex, colIndex + 1, csvValidation));
                         }
                     }
 

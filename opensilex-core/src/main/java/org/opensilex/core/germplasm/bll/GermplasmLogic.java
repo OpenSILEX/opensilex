@@ -24,17 +24,16 @@ import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class GermplasmLogic {
 
@@ -125,77 +124,37 @@ public class GermplasmLogic {
             Exception, DisplayableResponseException {
 
         if (!update) {
-            // check if germplasm URI already exists
-            if (sparql.uriExists(GermplasmModel.class, germplasmModel.getUri())) {
-                // Return error response 409 - CONFLICT if URI already exists
-                throw new DisplayableResponseException(
-                        "Duplicated URI: " + germplasmModel.getUri(),
-                        Response.Status.CONFLICT,
-                        "Germplasm URI already exists",
-                        "component.germplasms.errors.duplicateUri",
-                        new HashMap<>() {{
-                            put("uri", germplasmModel.getUri().toString());
-                        }}
-                );
-            }
+            validateUrisDoesNotExistOrThrow(List.of(germplasmModel.getUri()));
         }
 
-        // check rdfType
-        boolean isType = cacheType.get(new GermplasmLogic.KeyType(germplasmModel.getType()), this::checkType);
-        if (!isType) {
-            // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
-            throw new DisplayableResponseException(
-                    "wrong rdfType: " + germplasmModel.getType().toString(),
-                    Response.Status.BAD_REQUEST,
-                    "rdfType doesn't exist in the ontology",
-                    "component.germplasms.errors.wrongRdfType",
-                    new HashMap<>() {{
-                        put("rdfType", germplasmModel.getType().toString());
-                    }}
-            );
-        }
+        validateTypesOrThrow(List.of(germplasmModel));
 
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
         if (germplasmModel.getSpecies() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmModel.getSpecies().getUri())) {
-                throw new DisplayableResponseException(
-                        "unknown species : " + germplasmModel.getSpecies().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't exist in the database",
-                        "component.germplasms.errors.unknownSpecies",
-                        new HashMap<>() {{
-                            put("unknownSpecies", germplasmModel.getSpecies().toString());
-                        }}
-                );
-            }
+            validateUrisExistOrThrow(
+                    List.of(germplasmModel.getSpecies().getUri()),
+                    new URI(Oeso.Species.getURI()),
+                    "species",
+                    "component.germplasms.errors.unknownSpecies",
+                    "unknownSpecies");
         }
 
         if (germplasmModel.getVariety() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmModel.getVariety().getUri())) {
-                throw new DisplayableResponseException(
-                        "unknown variety : " + germplasmModel.getVariety().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given variety doesn't exist in the database",
-                        "component.germplasms.errors.unknownVariety",
-                        new HashMap<>() {{
-                            put("unknownVariety", germplasmModel.getVariety().toString());
-                        }}
-                );
-            }
+            validateUrisExistOrThrow(
+                    List.of(germplasmModel.getVariety().getUri()),
+                    new URI(Oeso.Variety.getURI()),
+                    "variety",
+                    "component.germplasms.errors.unknownVariety",
+                    "unknownVariety");
         }
 
         if (germplasmModel.getAccession() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmModel.getAccession().getUri())) {
-                throw new DisplayableResponseException(
-                        "unknown accession : " + germplasmModel.getAccession().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given accession doesn't exist in the database",
-                        "component.germplasms.errors.unknownAccession",
-                        new HashMap<>() {{
-                            put("unknownAccession", germplasmModel.getAccession().toString());
-                        }}
-                );
-            }
+            validateUrisExistOrThrow(
+                    List.of(germplasmModel.getAccession().getUri()),
+                    new URI(Oeso.Accession.getURI()),
+                    "accession",
+                    "component.germplasms.errors.unknownAccession",
+                    "unknownAccession");
         }
 
         // check that fromAccession, fromVariety or fromSpecies are given
@@ -277,6 +236,75 @@ public class GermplasmLogic {
                         null
                 );
             }
+        }
+    }
+
+    private void validateUrisDoesNotExistOrThrow(List<URI> germplasmsUris) throws SPARQLException, DisplayableResponseException {
+        Set<URI> uniqueUris = new HashSet<>(germplasmsUris);
+        Set<URI> nonExistingUris = new HashSet<>();
+        for (URI germplasmUri : uniqueUris) {
+            if (sparql.uriExists(GermplasmModel.class, germplasmUri)) {
+                nonExistingUris.add(germplasmUri);
+            }
+        }
+
+        if (!nonExistingUris.isEmpty()) {
+            throw new DisplayableResponseException(
+                    "Duplicated URIs: " + nonExistingUris,
+                    Response.Status.CONFLICT,
+                    "Germplasm URI already exists",
+                    "component.germplasms.errors.duplicateUri",
+                    new HashMap<>() {{
+                        put("uri", nonExistingUris.toString());
+                    }}
+            );
+        }
+    }
+
+    private void validateTypesOrThrow(List<GermplasmModel> germplasmModels) throws DisplayableResponseException{
+        Set<URI> uniqueTypes = germplasmModels.stream()
+                .map(GermplasmModel::getType)
+                .collect(Collectors.toSet());
+        Set<URI> nonExistingTypes = new HashSet<>();
+        for (URI type : uniqueTypes) {
+            boolean isType = cacheType.get(new GermplasmLogic.KeyType(type), this::checkType);
+            if (!isType) {
+                nonExistingTypes.add(type);
+            }
+        }
+
+        if (!nonExistingTypes.isEmpty()) {
+            throw new DisplayableResponseException(
+                    "Unknown types: " + nonExistingTypes,
+                    Response.Status.BAD_REQUEST,
+                    "rdfType doesn't exist in the ontology",
+                    "component.germplasms.errors.wrongRdfType",
+                    new HashMap<>() {{
+                        put("type", nonExistingTypes.toString());
+                    }}
+            );
+        }
+    }
+
+    private void validateUrisExistOrThrow(List<URI> uris, URI rdfType, String type, String errorTranslationKey, String keyErrorTranslationValues) throws SPARQLException, DisplayableResponseException {
+        Set<URI> uniqueUris = new HashSet<>(uris);
+        Set<URI> nonExistingUris = new HashSet<>();
+        for (URI uri : uniqueUris) {
+            if (!sparql.uriExists(rdfType, uri)) {
+                nonExistingUris.add(uri);
+            }
+        }
+
+        if (!nonExistingUris.isEmpty()) {
+            throw new DisplayableResponseException(
+                    "Unknown "+type+": " + nonExistingUris,
+                    Response.Status.BAD_REQUEST,
+                    "The given "+type+" doesn't exist in the database",
+                    errorTranslationKey,
+                    new HashMap<>() {{
+                        put(keyErrorTranslationValues, nonExistingUris.toString());
+                    }}
+            );
         }
     }
 

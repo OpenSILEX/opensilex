@@ -4,6 +4,7 @@ package org.opensilex.core.dataV2.model;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 
 public class DAOContext {
@@ -11,6 +12,15 @@ public class DAOContext {
     OntologyDAO ontologyDAO;
     ScientificObjectDAO scientificObjectDAO;
     DeviceDAO deviceDAO;
+    VariableDAO variableDAO;
+
+    public VariableDAO getVariableDAO() {
+        return variableDAO;
+    }
+
+    public void setVariableDAO(VariableDAO variableDAO) {
+        this.variableDAO = variableDAO;
+    }
 
     public ExperimentDAO getExperimentDAO() {
         return experimentDAO;
@@ -44,12 +54,14 @@ public class DAOContext {
         this.deviceDAO = deviceDAO;
     }
 
-    public static DAOContext buildDaoContext(DeviceDAO deviceDAO, OntologyDAO ontologyDAO, ExperimentDAO experimentDAO, ScientificObjectDAO scientificObjectDAO) {
+    public static DAOContext buildDaoContext(DeviceDAO deviceDAO, OntologyDAO ontologyDAO, ExperimentDAO experimentDAO,
+                                             ScientificObjectDAO scientificObjectDAO, VariableDAO variableDAO) {
         DAOContext daoContext = new DAOContext();
         daoContext.setDeviceDAO(deviceDAO);
         daoContext.setOntologyDAO(ontologyDAO);
         daoContext.setExperimentDAO(experimentDAO);
         daoContext.setScientificObjectDAO(scientificObjectDAO);
+        daoContext.setVariableDAO(variableDAO);
         return daoContext;
     }
 }

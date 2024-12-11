@@ -6,6 +6,7 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.sparql.csv.CSVCell;
@@ -289,6 +290,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
                 || invalidDateErrors.size() > 0
                 || invalidDataTypeErrors.size() > 0
                 || deviceChoiceAmbiguityErrors.size() > 0
+                || StringUtils.isNotBlank(errorMessage)
                 ;
     }
 

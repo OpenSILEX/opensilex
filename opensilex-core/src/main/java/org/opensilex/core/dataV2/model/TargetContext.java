@@ -3,15 +3,17 @@ package org.opensilex.core.dataV2.model;
 
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TargetContext {
-    List<String> notExistingTargets;
-    List<String> duplicatedTargets;
-    Map<String, SPARQLNamedResourceModel> nameURITargets;
-    List<String> scientificObjectsNotInXp;
-    Map<String, SPARQLNamedResourceModel> nameURIScientificObjects;
+    List<String> notExistingTargets = new ArrayList<>();
+    List<String> duplicatedTargets = new ArrayList<>();
+    Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
+    List<String> scientificObjectsNotInXp = new ArrayList<>();
+    Map<String, SPARQLNamedResourceModel> nameURIScientificObjects = new HashMap<>();
 
     public List<String> getNotExistingTargets() {
         return notExistingTargets;
@@ -52,14 +54,5 @@ public class TargetContext {
     public void setNameURIScientificObjects(Map<String, SPARQLNamedResourceModel> nameURIScientificObjects) {
         this.nameURIScientificObjects = nameURIScientificObjects;
     }
-
-    public static TargetContext buildTargetContext(List<String> duplicatedTargets, Map<String, SPARQLNamedResourceModel> nameURITargets, List<String> notExistingTargets, Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp, List<String> scientificObjectsNotInXp) {
-        TargetContext targetContext = new TargetContext();
-        targetContext.setDuplicatedTargets(duplicatedTargets);
-        targetContext.setNameURITargets(nameURITargets);
-        targetContext.setNotExistingTargets(notExistingTargets);
-        targetContext.setNameURIScientificObjects(nameURIScientificObjectsInXp);
-        targetContext.setScientificObjectsNotInXp(scientificObjectsNotInXp);
-        return targetContext;
-    }
+    
 }

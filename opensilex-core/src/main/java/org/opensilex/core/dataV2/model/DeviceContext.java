@@ -4,19 +4,20 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DeviceContext {
-    Map<String, DeviceModel> variableCheckedDevice;
-    Map<String, DeviceModel> variableCheckedProvDevice;
-    List<String> checkedVariables;
-    List<String> notExistingDevices;
-    List<String> duplicatedDevices;
-    Map<String, DeviceModel> nameURIDevices;
-    HashMap<URI, URI> mapVariableUriDataType;
-    List<ImportDataIndex> duplicateDataByIndex;
+    Map<String, DeviceModel> variableCheckedDevice = new HashMap<>();
+    Map<String, DeviceModel> variableCheckedProvDevice = new HashMap<>();
+    List<String> checkedVariables = new ArrayList<>();
+    List<String> notExistingDevices = new ArrayList<>();
+    List<String> duplicatedDevices = new ArrayList<>();
+    Map<String, DeviceModel> nameURIDevices = new HashMap<>();
+    HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
+    List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
     public Map<String, DeviceModel> getVariableCheckedDevice() {
         return variableCheckedDevice;
@@ -82,16 +83,5 @@ public class DeviceContext {
         this.duplicateDataByIndex = duplicateDataByIndex;
     }
 
-    public static DeviceContext buildDeviceContext(List<String> duplicatedDevices, List<ImportDataIndex> duplicateDataByIndex, List<String> checkedVariables, Map<String, DeviceModel> nameURIDevices, List<String> notExistingDevices, Map<String, DeviceModel> variableCheckedDevice, Map<String, DeviceModel> variableCheckedProvDevice, HashMap<URI, URI> mapVariableUriDataType) {
-        DeviceContext deviceContext = new DeviceContext();
-        deviceContext.setDuplicatedDevices(duplicatedDevices);
-        deviceContext.setDuplicateDataByIndex(duplicateDataByIndex);
-        deviceContext.setCheckedVariables(checkedVariables);
-        deviceContext.setNameURIDevices(nameURIDevices);
-        deviceContext.setNotExistingDevices(notExistingDevices);
-        deviceContext.setVariableCheckedDevice(variableCheckedDevice);
-        deviceContext.setVariableCheckedProvDevice(variableCheckedProvDevice);
-        deviceContext.setMapVariableUriDataType(mapVariableUriDataType);
-        return deviceContext;
-    }
+  
 }

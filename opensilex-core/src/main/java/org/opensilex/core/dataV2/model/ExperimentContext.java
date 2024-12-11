@@ -4,14 +4,17 @@ package org.opensilex.core.dataV2.model;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExperimentContext {
     private URI experiment;
-    private List<String> notExistingExperiments;
-    private List<String> duplicatedExperiments;
-    private Map<String, ExperimentModel> nameURIExperiments;
+    private List<String> notExistingExperiments = new ArrayList<>();
+    private List<String> duplicatedExperiments = new ArrayList<>();
+    private Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
+    ;
 
     public URI getExperiment() {
         return experiment;
@@ -45,12 +48,9 @@ public class ExperimentContext {
         this.duplicatedExperiments = duplicatedExperiments;
     }
 
-    public static ExperimentContext buildExperimentContext(URI experiment, List<String> duplicatedExperiments, Map<String, ExperimentModel> nameURIExperiments, List<String> notExistingExperiments) {
+    public static ExperimentContext buildExperimentContext(URI experiment) {
         ExperimentContext experimentContext = new ExperimentContext();
         experimentContext.setExperiment(experiment);
-        experimentContext.setDuplicatedExperiments(duplicatedExperiments);
-        experimentContext.setNameURIExperiments(nameURIExperiments);
-        experimentContext.setNotExistingExperiments(notExistingExperiments);
         return experimentContext;
     }
 }

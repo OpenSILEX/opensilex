@@ -423,7 +423,7 @@ public class SiteLogic {
             checkUniqueObservation(locationObservationCollectionUri);
 
             LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel,null);
         }
     }
 
@@ -451,7 +451,7 @@ public class SiteLogic {
                 locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
             } catch (Exception e) {
                 //Even if the location is not found, it must not block the request
-                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel);
+                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel,null);
             }
         } else {
             try {

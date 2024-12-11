@@ -258,6 +258,10 @@ public class FacilityLogic {
                 deleteFacilityLocations(session, instance);
             }
 
+            //Update "hasGeometry" of location linked to the facility (as "to")
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            locationObservationLogic.updateAssociatedLocationModel(session, existingModel.getUri(), existingModel.getLocationObservationCollection().getUri());
+
             return null;
         });
 

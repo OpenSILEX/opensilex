@@ -9,6 +9,7 @@ import java.util.List;
 public class LocationObservationSearchFilter extends MongoSearchFilter {
     private List<URI> observationCollectionList;
     private URI observationCollection;
+    private URI featureOfInterest;
     private Instant startDate;
     private Instant endDate;
     private boolean hasGeometry;
@@ -27,6 +28,14 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setObservationCollection(URI observationCollection) {
         this.observationCollection = observationCollection;
+    }
+
+    public URI getFeatureOfInterest() {
+        return featureOfInterest;
+    }
+
+    public void setFeatureOfInterest(URI featureOfInterest) {
+        this.featureOfInterest = featureOfInterest;
     }
 
     public Instant getStartDate() {

@@ -117,6 +117,8 @@ export default class MoveForm extends Vue {
         return this.validatorRef.validate();
     }
 
+    //TODO: warning message if 1970
+
     //TODO: à adapter
     /**
      * The "From" field is optional, and becomes required from the moment the "To" field is completed.

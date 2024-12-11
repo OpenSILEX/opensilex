@@ -44,7 +44,7 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel,URI moveURI) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         validateDates(endDate, startDate);
 
         LocationObservationModel locationObservationModel = new LocationObservationModel();
@@ -58,6 +58,9 @@ public class LocationObservationLogic {
         locationObservationModel.setObservationCollection(locationObservationCollectionURI);
         locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
+        if(Objects.nonNull(moveURI)) {
+            locationObservationModel.setUri(moveURI);
+        }
 
         locationObservationDAO.create(session, locationObservationModel);
     }
@@ -167,7 +170,7 @@ public class LocationObservationLogic {
         }
     }
 
-    public void updateASpecificLocationObservation(ClientSession session, LocationObservationModel existingObservation,  LocationObservationModel newObservation) throws NoSQLInvalidURIException {
+    public void updateASpecificLocationObservation(ClientSession session, LocationObservationModel existingObservation, LocationObservationModel newObservation) throws NoSQLInvalidURIException {
         locationObservationDAO.upsertSpecificLocation(session, existingObservation, newObservation);
     }
 
@@ -217,6 +220,69 @@ public class LocationObservationLogic {
         }
 
         return count;
+    }
+
+    /**
+     * Checks if a location has geometry, directly or indirectly through a facility (to):
+     *
+     * @param model location observation model
+     * @param startDate start observation date of the geometry
+     * @param endDate   end observation date of the geometry
+     */
+    public boolean checkHasGeometry(LocationObservationModel model, Instant startDate, Instant endDate){
+        boolean hasGeometry = false;
+
+        if(model.getLocation().getGeometry() != null){
+            hasGeometry = true;
+        } else if(model.getLocation().getTo() != null){
+            LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+            searchFilter.setFeatureOfInterest(model.getLocation().getTo());
+            searchFilter.setEndDate(endDate);
+            searchFilter.setStartDate(startDate);
+            searchFilter.setHasGeometry(true);
+
+            ListWithPagination<LocationObservationModel> facilityLocationList = locationObservationDAO.searchWithPagination(searchFilter);
+            if(!facilityLocationList.getList().isEmpty()){
+                hasGeometry = true;
+            }
+        }
+
+        return hasGeometry;
+    }
+
+    public void updateAssociatedLocationModel(ClientSession session, URI facility, URI collection) {
+        //Get locations linked to the facility
+        List<LocationObservationModel> locationToUpdateList = locationObservationDAO.searchLocationsWithGeomLinkedToFacility(facility);
+
+        if (!locationToUpdateList.isEmpty()) {
+            //Get facility locations
+            LocationObservationSearchFilter filter = new LocationObservationSearchFilter();
+            filter.setObservationCollection(collection);
+            List<LocationObservationModel> facilityLocationList = locationObservationDAO.searchWithPagination(filter).getList();
+
+            if (!facilityLocationList.isEmpty()) {
+                if (facilityLocationList.size() == 1 && facilityLocationList.get(0).getEndDate() == null) { //Location from address (without date)
+                    locationToUpdateList.forEach(loc -> loc.setHasGeometry(true));
+                } else {
+                    locationToUpdateList.forEach(loc -> {
+
+                        List<LocationObservationModel> facilityLocationCorresponding = facilityLocationList.stream()
+                                .filter(facilityLoc ->                      //filter location facility corresponding to with the dates of location to update
+                                        facilityLoc.getEndDate().isBefore(loc.getEndDate()) ||
+                                                facilityLoc.getEndDate().equals(loc.getEndDate()) ||
+                                                (Objects.nonNull(facilityLoc.getStartDate()) ? (facilityLoc.getStartDate().isBefore(loc.getEndDate()) || facilityLoc.getEndDate().equals(loc.getEndDate())) : null))
+                                .collect(Collectors.toList());
+
+                        loc.setHasGeometry(!facilityLocationCorresponding.isEmpty());
+                    });
+                }
+            } else {                         // no location
+                locationToUpdateList.forEach(loc -> loc.setHasGeometry(false));
+            }
+
+            //update locations linked to facility
+            locationToUpdateList.forEach(loc -> locationObservationDAO.upsertSpecificLocation(session, loc, loc));
+        }
     }
     //#endregion
 

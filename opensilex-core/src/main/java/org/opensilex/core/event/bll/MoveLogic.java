@@ -134,6 +134,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     @Override
     public List<MoveModel> create(List<MoveModel> models, boolean validationOnly) throws Exception {
         List<LocationObservationModel> locationObservationList = new ArrayList<>();
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
 
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         check(models, true);
@@ -163,14 +164,18 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                             targetCollection = collectionLogic.createLocationObservationCollection(target);
                         }
 
+                        locationObservation.setUri(model.getUri());
                         locationObservation.setObservationCollection(targetCollection);
                         locationObservation.setFeatureOfInterest(target);
                         locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
                         locationObservation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
-                        locationObservation.setHasGeometry(Objects.nonNull(model.getLocationObservation().getLocation().getGeometry()));//TODO: facility geom??
 
-                        //TODO: set URI event to location _id ??
-                        //  locationObservation.setUri(model.getUri());
+                        boolean hasGeometry = observationLogic.checkHasGeometry(
+                                model.getLocationObservation(),
+                                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                                model.getEnd().getDateTimeStamp().toInstant());
+
+                        locationObservation.setHasGeometry(hasGeometry);
 
                         locationObservationList.add(locationObservation);
                     } catch (Exception e) {
@@ -397,14 +402,20 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                         collectionURI = collectionLogic.createLocationObservationCollection(target);
                     }
 
+                     boolean hasGeometry = observationLogic.checkHasGeometry(
+                             realModel.getLocationObservation(),
+                             Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null,
+                             realModel.getEnd().getDateTimeStamp().toInstant());
+
                     observationLogic.createLocationObservation(
                             session,
                             collectionURI,
                             target,
-                            Objects.nonNull(realModel.getLocationObservation().getLocation().getGeometry()),//TODO: hasgeometry = true if facility to = hasgeometry
+                            hasGeometry,
                             Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null,
                             realModel.getEnd().getDateTimeStamp().toInstant(),
-                            realModel.getLocationObservation().getLocation()
+                            realModel.getLocationObservation().getLocation(),
+                            realModel.getUri()
                     );
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -452,11 +463,17 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             }
         } else {
             LocationObservationModel newLocation = model.getLocationObservation();
+
+            boolean hasGeometry = observationLogic.checkHasGeometry(
+                    newLocation,
+                    Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                    model.getEnd().getDateTimeStamp().toInstant());
+
             newLocation.setObservationCollection(collectionURI);
             newLocation.setFeatureOfInterest(model.getTargets().get(0));
             newLocation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
             newLocation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
-            newLocation.setHasGeometry(Objects.nonNull(model.getLocationObservation().getLocation().getGeometry()));//TODO: facility geom??
+            newLocation.setHasGeometry(hasGeometry);
 
             observationLogic.updateASpecificLocationObservation(session,observation, newLocation);
         }

@@ -35,6 +35,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         if (Objects.nonNull(searchQuery.getObservationCollection())) {
             filters.add(Filters.eq(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollection()));
         }
+        //Feature of interest URI
+        if (Objects.nonNull(searchQuery.getFeatureOfInterest())) {
+            filters.add(Filters.eq(LocationObservationModel.FEATURE_OF_INTEREST_FIELD, searchQuery.getFeatureOfInterest()));
+        }
         //Collection List
         if (Objects.nonNull(searchQuery.getObservationCollectionList())  && !searchQuery.getObservationCollectionList().isEmpty()) {
             filters.add(Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollectionList()));
@@ -119,6 +123,17 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     public void deleteSpecificLocation(ClientSession session, URI collectionURI, Instant end, Instant start){
         Bson filter = specificFilters(collectionURI, end, start);
         deleteMany(session,filter);
+    }
+
+    public List<LocationObservationModel> searchLocationsWithGeomLinkedToFacility(URI facility) {
+        //"location.to":"http://opensilex.test/id/organization/facility.corroy_18-19", "location.geometry" :{$exists : false}
+        Document filter = new Document();
+        Document noExistingGeomFilter = new Document("$exists", false);
+
+        filter.put("location.to", facility);
+        filter.put("location.geometry", noExistingGeomFilter);
+
+        return aggregate(Collections.singletonList(Aggregates.match(filter)), LocationObservationModel.class);
     }
     //#endregion
 

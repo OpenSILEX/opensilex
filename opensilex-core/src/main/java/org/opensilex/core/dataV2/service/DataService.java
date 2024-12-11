@@ -124,22 +124,26 @@ public class DataService {
         this.daoFactory = daoFactory;
     }
 
+    /**
+     * Imports a CSV file for the given provenanceURI and experimentURI.
+     * This function is called after the validation step.
+     * It checks if the csv file is valid and if the user has access to the experiment.
+     * If the csv file is valid, it inserts the data in the database.
+     *
+     * @param provenance    the provenance URI
+     * @param experiment    the experiment URI
+     * @param file          the CSV file to import
+     * @param validationKey the validation key of the csv file
+     * @return a DataCSVValidationDTO containing the status of the import
+     * @throws Exception if an error occurs during the import
+     */
     public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String validationKey) throws Exception {
         DataLogic dataLogic = this.dataLogic;
-        DataCSVValidationModel validation = StringUtils.isNotBlank(validationKey) ? csvValidationModelCache.getIfPresent(validationKey) : null;
-        if (validation == null) {
-            validation = validateWholeCsvV2(provenance, experiment, file);
-            validation.setValidationStep(true);
-        }
+        DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
-        if (validation.isValidCSV()) {
-            handleDataInsertion(dataLogic, validation);
-            validation.setInsertionStep(true);
-            validation.setValidCSV(!validation.hasErrors());
-            if (StringUtils.isNotBlank(validationKey)) {
-                csvValidationModelCache.invalidate(validationKey);
-            }
-        }
+        validation = importCsvValidationStep(provenance, experiment, file, validation);
+
+        importCsvInsertionStep(validationKey, validation, dataLogic);
 
         return buildDataCSVValidationDTO(validation);
     }
@@ -167,6 +171,46 @@ public class DataService {
         }
 
         return validation;
+    }
+
+    /**
+     * This function performs the insertion step of the csv import.
+     * It takes a DataCSVValidationModel as argument and inserts the data in the database if the model is valid.
+     *
+     * @param validationKey the validation key of the csv file
+     * @param validation    the DataCSVValidationModel to insert
+     * @param dataLogic     the data logic to use for the insertion
+     * @throws Exception if an error occurs during the insertion
+     */
+    private void importCsvInsertionStep(String validationKey, DataCSVValidationModel validation, DataLogic dataLogic) throws Exception {
+        if (validation.isValidCSV()) {
+            LOGGER.debug("[importCsvInsertionStep] Start insertion step of {} row(s) ", validation.getNbLinesToImport());
+            handleDataInsertion(dataLogic, validation);
+            validation.setInsertionStep(true);
+            validation.setValidCSV(!validation.hasErrors());
+            removeValidationDataInCacheBy(validationKey);
+            LOGGER.debug("[importCsvInsertionStep] End insertion step.");
+        }
+    }
+
+    private void removeValidationDataInCacheBy(String key) {
+        if (StringUtils.isNotBlank(key)) {
+            csvValidationModelCache.invalidate(key);
+        }
+    }
+
+    private DataCSVValidationModel importCsvValidationStep(URI provenance, URI experiment, InputStream file, DataCSVValidationModel validation) throws Exception {
+        if (validation == null) {
+            LOGGER.debug("[importCsvValidationStep] Start validation step.");
+            validation = validateWholeCsvV2(provenance, experiment, file);
+            validation.setValidationStep(true);
+            LOGGER.debug("[importCsvValidationStep] End validation step with status valid {}", validation.isValidCSV());
+        }
+        return validation;
+    }
+
+    private DataCSVValidationModel getValidationDataInCacheBy(String key) {
+        return StringUtils.isNotBlank(key) ? csvValidationModelCache.getIfPresent(key) : null;
     }
 
     private DataCSVValidationModel getCsvValidation(URI experiment, InputStream file, ProvenanceModel provenanceModel) throws Exception {
@@ -394,19 +438,8 @@ public class DataService {
                 break;
             }
             // Initialize the validation context for each row validation
-            validationContext = new ValidationContext(
-                    provenance,
-                    row,
-                    localRowIndex,
-                    headerByIndex,
-                    experimentContext,
-                    targetContext,
-                    deviceContext,
-                    daoContext,
-                    localValidation,
-                    csvValidation,
-                    sensingDeviceFoundFromProvenance
-            );
+            validationContext = new ValidationContext(provenance, row, localRowIndex, headerByIndex, experimentContext, targetContext, deviceContext,
+                    daoContext, localValidation, csvValidation, sensingDeviceFoundFromProvenance);
             try {
                 boolean isValid = validateCSVRowV2(validationContext);
                 if (!isValid) {
@@ -500,7 +533,7 @@ public class DataService {
     private void validateColumnsRow(ValidationContext context) throws Exception {
         for (int colIndex = 0; colIndex < context.getValues().length; colIndex++) {
             String headerName = context.getHeaderByIndex().get(colIndex);
-            LOGGER.debug("[validateColumnsRow] start validating column : {}", headerName);
+            LOGGER.debug("[validateColumnsRow] start validating column : {} , value : {}", headerName, context.getValues()[colIndex]);
             if (headerName.equalsIgnoreCase(EXPERIMENT_HEADER)) {
                 validateExperimentColumn(context, colIndex);
             } else if (headerName.equalsIgnoreCase(TARGET_HEADER)) {
@@ -1029,8 +1062,7 @@ public class DataService {
         } catch (DataTypeException e) {
             handleDataTypeError(e, validation);
         }
-
-        logInsertionTime(start);
+        LOGGER.debug("[importCsvInsertionStep] Completed insertion in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
     }
 
     private void handleBulkWriteErrors(MongoBulkWriteException duplicateError, DataCSVValidationModel validation, List<DataModel> data) {
@@ -1070,11 +1102,6 @@ public class DataService {
 
     private String buildVariableName(DataCSVValidationModel validation, int variableIndex) {
         return validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-    }
-
-    private void logInsertionTime(Instant start) {
-        long timeElapsed = Duration.between(start, Instant.now()).toMillis();
-        LOGGER.debug("Insertion {} milliseconds elapsed", timeElapsed);
     }
 
     public DataCSVValidationDTO buildDataCSVValidationDTO(DataCSVValidationModel validation) {

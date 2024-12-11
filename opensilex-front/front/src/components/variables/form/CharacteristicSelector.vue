@@ -73,6 +73,7 @@ export default class CharacteristicSelector extends Vue {
   }
 
   loadCharacteristics(characteristics): Promise<Array<CharacteristicGetDTO>> {
+    // characteristics= characteristics.map(obj => obj.uri); maybe to use after release for variable tutorial fix
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
       .getCharacteristicsByURIs(characteristics, this.sharedResourceInstance)
       .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {

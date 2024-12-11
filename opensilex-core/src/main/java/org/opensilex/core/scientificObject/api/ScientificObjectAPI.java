@@ -387,7 +387,7 @@ public class ScientificObjectAPI {
 
             if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
                 DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
-                var targets = dataLogic.getUsedTargets(devices, variables, null);
+                var targets = dataLogic.getUsedTargets(devices, variables, null, URI.create(Oeso.ScientificObject.getURI()));
 
                 if (targets.isEmpty()) {
                     return new PaginatedListResponse<>(Collections.emptyList()).getResponse();

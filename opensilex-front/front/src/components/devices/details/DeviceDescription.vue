@@ -3,120 +3,113 @@
     <opensilex-PageContent>
       <b-row>
         <b-col>
-
-                    <opensilex-Card
-                        label="component.common.informations"
-                        icon="ik#ik-clipboard"
-                    >
-                        <template v-slot:rightHeader>
-                          <opensilex-FavoriteButton
-                              :uri="device.uri"
-                          ></opensilex-FavoriteButton>
-                            <opensilex-EditButton
-                                v-if="
-                  user.hasCredential(
-                    credentials.CREDENTIAL_DEVICE_MODIFICATION_ID
-                  )
-                "
-                  label="DeviceDescription.update"
-                  @click="editForm"
-              ></opensilex-EditButton>
-              <opensilex-DeleteButton
-                  v-if="
-                  user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)
-                "
+          <opensilex-Card
+              label="component.common.informations"
+              icon="ik#ik-clipboard"
+          >
+              <template v-slot:rightHeader>
+                <opensilex-FavoriteButton
+                    :uri="device.uri"
+                ></opensilex-FavoriteButton>
+                <opensilex-EditButton
+                      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+                      label="DeviceDescription.update"
+                      @click="editForm"
+                ></opensilex-EditButton>
+                <opensilex-DeleteButton
+                  v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
                   label="DeviceDescription.delete"
                   :small="true"
                   @click="deleteDevice(device.uri)"
-              ></opensilex-DeleteButton>
-            </template>
-            <template v-slot:body>
-              <opensilex-UriView :uri="device.uri"></opensilex-UriView>
-              <opensilex-StringView
-                  label="DeviceDescription.type"
-                  :value="device.rdf_type_name"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.name"
-                  :value="device.name"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.brand"
-                  :value="device.brand"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.constructorModel"
-                  :value="device.constructor_model"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.serialNumber"
-                  :value="device.serial_number"
-              ></opensilex-StringView>
-              <opensilex-ContactsList
-                  label="DeviceDescription.personInCharge"
-                  :list="[loaded_person_in_charge]"
-              ></opensilex-ContactsList>
-              <opensilex-StringView
-                  label="DeviceDescription.start_up"
-                  :value="device.start_up"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.removal"
-                  :value="device.removal"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  label="DeviceDescription.description"
-                  :value="device.description"
-              ></opensilex-StringView>
-              <!--Last Calibration-->
-              <opensilex-StringView
-                  label="Event.calibration"
-                  :value="lastCalibration"
-              ></opensilex-StringView>
-              <!--Last Position-->
-              <opensilex-StringView label="Event.lastPosition">
-                <!-- Position detail -->
-                <span v-if="lastPosition.move_time">{{ new Date(lastPosition.move_time).toLocaleString() }}</span>
-                <ul>
-                  <li v-if="lastPosition.to">{{ lastPosition.to.name }}</li>
-                  <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">
-                    {{ customCoordinatesText(lastPosition.position) }}
-                  </li>
-                  <li v-if="lastPosition.position && lastPosition.position.text">{{ lastPosition.position.text }}</li>
-                  <li v-if="lastPosition.position && lastPosition.position.point">
-                    <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
-                    </opensilex-GeometryCopy>
-                  </li>
-                </ul>
-              </opensilex-StringView>
-
-              <div :key="index" v-for="(relation, index) in device.relations">
-
-                <!-- Display custom properties (except variables, since they are displayed in another component) -->
+                ></opensilex-DeleteButton>
+              </template>
+              <template v-slot:body>
+                <opensilex-UriView :uri="device.uri"></opensilex-UriView>
                 <opensilex-StringView
-                    v-if="! relation.inverse && ! isIsPartOfRelation(relation) && ! isVariableRelation(relation)"
-                    :label="getPropertyName(relation.property)"
-                    :value="relation.value"
+                    label="DeviceDescription.type"
+                    :value="device.rdf_type_name"
                 ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.name"
+                    :value="device.name"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.brand"
+                    :value="device.brand"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.constructorModel"
+                    :value="device.constructor_model"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.serialNumber"
+                    :value="device.serial_number"
+                ></opensilex-StringView>
+                <opensilex-ContactsList
+                    label="DeviceDescription.personInCharge"
+                    :list="[loaded_person_in_charge]"
+                ></opensilex-ContactsList>
+                <opensilex-StringView
+                    label="DeviceDescription.start_up"
+                    :value="device.start_up"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.removal"
+                    :value="device.removal"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    label="DeviceDescription.description"
+                    :value="device.description"
+                ></opensilex-StringView>
+                <!--Last Calibration-->
+                <opensilex-StringView
+                    label="Event.calibration"
+                    :value="lastCalibration"
+                ></opensilex-StringView>
+                <!--Last Position-->
+                <opensilex-StringView label="Event.lastPosition">
+                  <!-- Position detail -->
+                  <span v-if="lastPosition.move_time">{{ new Date(lastPosition.move_time).toLocaleString() }}</span>
+                  <ul>
+                    <li v-if="lastPosition.to">{{ lastPosition.to.name }}</li>
+                    <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">
+                      {{ customCoordinatesText(lastPosition.position) }}
+                    </li>
+                    <li v-if="lastPosition.position && lastPosition.position.text">{{ lastPosition.position.text }}</li>
+                    <li v-if="lastPosition.position && lastPosition.position.point">
+                      <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
+                      </opensilex-GeometryCopy>
+                    </li>
+                  </ul>
+                </opensilex-StringView>
 
-                <!-- is Part of -->
-                <opensilex-UriView
-                    v-else-if="! relation.inverse && isIsPartOfRelation(relation)"
-                    :title="getPropertyName(relation.property)"
-                    :uri="relation.value"
-                    :value="relation.value"
-                    :to="{ path: '/device/details/' + encodeURIComponent(relation.value) }"
-                ></opensilex-UriView>
-              </div>
+                <div :key="index" v-for="(relation, index) in device.relations">
 
-              <!-- Metadata -->
-              <opensilex-MetadataView
-                v-if="device.publisher && device.publisher.uri"
-                :publisher="device.publisher"
-                :publicationDate="device.publication_date"
-                :lastUpdatedDate="device.last_updated_date" 
-              ></opensilex-MetadataView>
-            </template>
+                  <!-- Display custom properties (except variables, since they are displayed in another component) -->
+                  <opensilex-StringView
+                      v-if="! relation.inverse && ! isIsPartOfRelation(relation) && ! isVariableRelation(relation)"
+                      :label="getPropertyName(relation.property)"
+                      :value="relation.value"
+                  ></opensilex-StringView>
+
+                  <!-- is Part of -->
+                  <opensilex-UriView
+                      v-else-if="! relation.inverse && isIsPartOfRelation(relation)"
+                      :title="getPropertyName(relation.property)"
+                      :uri="relation.value"
+                      :value="relation.value"
+                      :to="{ path: '/device/details/' + encodeURIComponent(relation.value) }"
+                  ></opensilex-UriView>
+                </div>
+
+                <!-- Metadata -->
+                <opensilex-MetadataView
+                  v-if="device.publisher && device.publisher.uri"
+                  :publisher="device.publisher"
+                  :publicationDate="device.publication_date"
+                  :lastUpdatedDate="device.last_updated_date"
+                ></opensilex-MetadataView>
+              </template>
           </opensilex-Card>
         </b-col>
         <b-col>
@@ -330,23 +323,23 @@ export default class DeviceDescription extends Vue {
   }
 
   getLinkedVariablesURIs(device){
+    //Before pushing, set the list to be empty to stop duplicates spawning
+    this.linkedVariablesURIs = [];
     for (const relation of device.relations) {
       if(this.isVariableRelation(relation)){
         this.linkedVariablesURIs.push(relation.value);
       }
     }
-    if (device.relations.length > 0) {
-      this.getLinkedVariables(this.linkedVariablesURIs) 
+    if (this.linkedVariablesURIs.length > 0) {
+      this.getLinkedVariables()
     }
   }
 
-  getLinkedVariables(linkedVariablesURIs){
+  getLinkedVariables(){
     this.variablesService
       .getVariablesByURIs(this.linkedVariablesURIs)
       .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
-        for (const variable of http.response.result) {
-          this.linkedVariables.push(variable)
-        }
+        this.linkedVariables = http.response.result;
       })
     .catch(this.$opensilex.errorHandler);
   }

@@ -112,6 +112,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.0]
 
+> Warning : upgrading to this new version requires manual operations. Please follow the
+> [versioning notes](opensilex-doc/src/main/resources/release/1.4.0.md) 
+
 ### Changes and new features
 
 - (!1263) Update RDF4J from 3.7.7 to 5.0.3 version

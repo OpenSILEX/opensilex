@@ -23,11 +23,16 @@ import org.opensilex.core.data.bll.DataExportInformation;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.bll.DataLongExportInformation;
 import org.opensilex.core.data.bll.DataWideExportInformation;
-import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.DataCSVValidationModel;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.exception.*;
+import org.opensilex.core.exception.DataTypeException;
+import org.opensilex.core.exception.DateMappingExceptionResponse;
+import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -51,10 +56,10 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -126,6 +131,7 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final int SIZE_MAX = 10000;
+    public static final String JSON = "json";
 
     @Inject
     private MongoDBService nosql;
@@ -160,8 +166,10 @@ public class DataAPI {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", errorMsg).getResponse();
             }
             List<DataModel> dataList = new ArrayList<>(dtoList.size());
+            Instant currentTime = Instant.now();
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
+                model.setBatchId(dataBLL.generateBatchId(currentTime, user.getName(), JSON, dtoList.size()));
                 dataList.add(model);
             }
             dtoList.clear();

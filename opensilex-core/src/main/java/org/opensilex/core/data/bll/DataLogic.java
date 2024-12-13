@@ -58,6 +58,7 @@ import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -66,6 +67,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,7 +80,8 @@ import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHo
  */
 public class DataLogic {
     //TODO Call other Logic classes, one day this class should only directly use a single Dao, DataDao(V2)
-
+    public static final String UNDERSCORE = "_";
+    public static final String DATE_FORMAT = "yyyyMMddHHmmss";
     //Data initialized in constructor :
     private final DataDaoV2 dao;
     private final AccountModel user;
@@ -325,6 +329,11 @@ public class DataLogic {
         createMany(modelList, true, csvValidationModel);
     }
 
+
+    public String generateBatchId(Instant start, String userName, String importMethod, int dataSize) {
+        String dateTime = DateTimeFormatter.ofPattern(DATE_FORMAT).format(start.atZone(ZoneId.systemDefault()));
+        return userName + UNDERSCORE + dataSize + UNDERSCORE + importMethod + UNDERSCORE + dateTime;
+    }
     /**
      * Validates the csv for data import after verifying provenance and experiment
      */

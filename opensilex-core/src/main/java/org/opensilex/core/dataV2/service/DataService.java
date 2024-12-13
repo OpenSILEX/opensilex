@@ -21,6 +21,7 @@ import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.dataV2.api.DataAPIV2;
+import org.opensilex.core.dataV2.dao.BatchHistoryDao;
 import org.opensilex.core.dataV2.factory.DAOFactory;
 import org.opensilex.core.dataV2.model.*;
 import org.opensilex.core.device.dal.DeviceDAO;
@@ -1052,14 +1053,20 @@ public class DataService {
     }
 
     private void handleDataInsertion(DataLogic dataLogic, DataCSVValidationModel validation) throws Exception {
-        Instant start = Instant.now();
+        BatchHistoryDao batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
+        Instant startTime = Instant.now();
+        // Generate batchId
+        String batchId = generateBatchId(startTime, validation.getFileName());
+        // Create batch history model to track data insertion
+        BatchHistoryModel batchHistoryModel = createBatchHistoryModel(batchId, startTime);
         List<DataModel> data = new ArrayList<>(validation.getData().keySet());
 
-        // Set batchId for each data
-        setBatchIdToData(start, data, validation.getFileName());
+        // Set batchId and publicationDate for the data
+        setBatchIdAndPublicationDateToData(batchId, startTime, data);
 
         try {
             dataLogic.createManyFromImport(data, validation);
+            batchHistoryDao.create(batchHistoryModel);
         } catch (NoSQLTooLargeSetException ex) {
             validation.setTooLargeDataset(true);
         } catch (MongoBulkWriteException duplicateError) {
@@ -1069,11 +1076,23 @@ public class DataService {
         } catch (DataTypeException e) {
             handleDataTypeError(e, validation);
         }
-        LOGGER.debug("[importCsvInsertionStep] Completed insertion in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
+        LOGGER.debug("[importCsvInsertionStep] Completed insertion in {} milliseconds", Duration.between(startTime, Instant.now()).toMillis());
     }
 
-    private void setBatchIdToData(Instant start, List<DataModel> data, String fileName) {
-        data.forEach(elm -> elm.setBatchId(generateBatchId(start, fileName)));
+    private BatchHistoryModel createBatchHistoryModel(String batchId, Instant startTime) {
+        BatchHistoryModel batchHistoryModel = new BatchHistoryModel();
+        batchHistoryModel.setBatchId(batchId);
+        batchHistoryModel.setPublicationDate(startTime);
+        batchHistoryModel.setUserName(user.getName());
+        batchHistoryModel.setPublisher(user.getUri());
+        return batchHistoryModel;
+    }
+
+    private void setBatchIdAndPublicationDateToData(String batchId, Instant startTime, List<DataModel> data) {
+        data.forEach(elm -> {
+            elm.setBatchId(batchId);
+            elm.setPublicationDate(startTime);
+        });
     }
 
     private String generateBatchId(Instant start, String fileName) {

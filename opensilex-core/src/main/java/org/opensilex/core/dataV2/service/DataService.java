@@ -73,7 +73,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * @author Marouan
+ * @author MKourdi
  */
 public class DataService {
     protected final static Logger LOGGER = LoggerFactory.getLogger(DataService.class);
@@ -1083,7 +1083,7 @@ public class DataService {
         BatchHistoryModel batchHistoryModel = new BatchHistoryModel();
         batchHistoryModel.setBatchId(batchId);
         batchHistoryModel.setPublicationDate(startTime);
-        batchHistoryModel.setUserName(user.getName());
+        batchHistoryModel.setUsername(user.getName());
         batchHistoryModel.setPublisher(user.getUri());
         return batchHistoryModel;
     }

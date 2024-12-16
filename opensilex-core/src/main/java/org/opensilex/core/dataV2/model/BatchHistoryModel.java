@@ -10,8 +10,11 @@ import java.util.UUID;
  * @author MKOURDI
  */
 public class BatchHistoryModel extends MongoModel {
-    String batchId;
-    String userName;
+    public static final String BATCH_ID_FIELD = "batchId";
+    public static final String USERNAME = "username";
+
+    private String batchId;
+    private String username;
 
     public String getBatchId() {
         return batchId;
@@ -21,12 +24,12 @@ public class BatchHistoryModel extends MongoModel {
         this.batchId = batchId;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 

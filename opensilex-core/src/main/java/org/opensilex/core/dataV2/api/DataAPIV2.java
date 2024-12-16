@@ -5,32 +5,42 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
+import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
+import org.opensilex.core.dataV2.dao.BatchHistoryDao;
+import org.opensilex.core.dataV2.dao.BatchHistorySearchFilter;
+import org.opensilex.core.dataV2.model.BatchHistoryModel;
 import org.opensilex.core.dataV2.service.DataService;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 
 /**
- * @author Marouan
+ * @author MKourdi
  */
 @Api(DataAPIV2.CREDENTIAL_DATA_GROUP_ID)
 @Path(DataAPIV2.PATH)
@@ -118,6 +128,38 @@ public class DataAPIV2 {
         DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file, fileName);
         DataCSVValidationDTO csvValidation = dataService.buildDataCSVValidationDTO(csvValidationModel);
         return new SingleObjectResponse<>(csvValidation).getResponse();
+    }
+
+    @GET
+    @Path("batch_history")
+    @ApiOperation("Get data batch history")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return batch history list", response = BatchHistoryGetDTO.class, responseContainer = "List")
+    })
+    public Response searchBatchHistory(
+            @ApiParam(value = "Regex pattern for filtering by batchId") @QueryParam("batch_id") String batchId,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) {
+
+        BatchHistoryDao dao = new BatchHistoryDao(nosql.getServiceV2());
+        BatchHistorySearchFilter filter = (BatchHistorySearchFilter) new BatchHistorySearchFilter()
+                .setBatchId(batchId)
+                .setUserName(user.getName())
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
+
+        ListWithPagination<BatchHistoryGetDTO> results = dao.searchWithPagination(
+                new MongoSearchQuery<BatchHistoryModel, BatchHistorySearchFilter, BatchHistoryGetDTO>()
+                        .setFilter(filter)
+                        .setConvertFunction(BatchHistoryGetDTO::fromModel)
+        );
+        return new PaginatedListResponse<>(results).getResponse();
     }
 
     private String getFileName(FormDataContentDisposition fileDisposition) {

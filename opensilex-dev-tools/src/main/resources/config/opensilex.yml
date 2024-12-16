@@ -10,14 +10,12 @@ ontologies:
 file-system:
     fs:
         config:
-            defaultFS: S3
+            defaultFS: local
             connections:
-                S3:
-                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                local:
+                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
                     config:
-                        endpoint: https://s3-tls.stockage.inra.fr
-                        bucket: tester
-                        profile: insects
+                        basePath: ../../opensilex-data
                 #     irods:
                 #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
                 #         config:
@@ -38,35 +36,6 @@ big-data:
             port: 8668
             database: opensilex
     #            timezone: Europe/Paris
-
-core:
-    enableLogs: true
-    enableOntologyCaching: false
-    metrics:
-        # Metrics configs about system (SystemMetricsConfig)
-        enableMetrics: true
-        system:
-            # First metrics for any time depending on is time unit (int)
-            timeBeforeFirstMetric: 1
-            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
-            delayBetweenMetrics: 30
-            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
-            metricsTimeUnit: MINUTES
-        # Metrics configs about experiments (ExperimentsMetricsConfig)
-        experiments:
-            # First metrics for any time depending on is time unit (int)
-            timeBeforeFirstMetric: 1
-            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
-            delayBetweenMetrics: 30
-            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
-            metricsTimeUnit: MINUTES
-
-front:
-    theme: opensilex-insect#insect
-    loginComponent: opensilex-insect-InsectLoginComponent
-    headerComponent: opensilex-insect-InsectHeaderComponent
-    applicationName: Insects
-
 
 phisws:
     infrastructure: opensilex
@@ -105,7 +74,6 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-        org.opensilex.phis.PhisWsModule: opensilex-phis.jar
 
 front:
     agroportal:

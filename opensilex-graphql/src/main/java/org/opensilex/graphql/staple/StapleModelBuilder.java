@@ -330,17 +330,6 @@ public class StapleModelBuilder {
     }
 
     /**
-     * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
-     * the given resource to the {@link StapleModelBuilder#EXCLUDED_RESOURCES} set.
-     *
-     * @param model The resource model to check
-     * @return `true` if the model should be excluded form the Staple Model, `false` otherwise
-     */
-    private boolean isResourceExcluded(SPARQLResourceModel model) {
-        return EXCLUDED_RESOURCES.contains(URI.create(SPARQLDeserializers.getExpandedURI(model.getUri())));
-    }
-
-    /**
      * <p>
      *     Attempts to find a common ancestor among a set of RDF classUriCollection. If there exist one URI among the collection
      *     which has a subClassOf* relationship with all URIs of the collection, then this URI is considered a common

@@ -92,6 +92,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",
                 "previous": "Previous",
+                "next": "Next",
                 "map": "Map",
                 "done": "Save",
                 "cancel": "Cancel"
@@ -402,6 +403,8 @@
             "details": "Show or hide group details",
             "filter-placeholder": "Search groups...",
             "user-profiles": "Users and profiles",
+            "group-added": "The group has been created",
+            "group-updated": "The group has been updated",
             "errors": {
                 "group-already-exists": "Group already exists with this URI or this name"
             }
@@ -593,6 +596,9 @@
                 "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
+            },
+            "errors": {
+                "associated-data": "The experiment can't be deleted since there are some associated data"
             }
         },
         "germplasms": {

@@ -36,6 +36,11 @@ import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.api.FactorCreationDTO;
+import org.opensilex.core.experiment.factor.api.FactorLevelCreationDTO;
+import org.opensilex.core.experiment.factor.api.FactorLevelGetDTO;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
+import org.opensilex.core.experiment.factors.api.FactorsAPITest;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
@@ -45,6 +50,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.skos.model.SkosModelTest;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -94,6 +100,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
 
+
+
     public static final ServiceDescription create;
 
     static {
@@ -142,11 +150,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     @After
     public void afterTest() throws Exception {
-
-        // delete xp
-        final Response delResult = getDeleteByUriResponse(target(ExperimentAPITest.deletePath), experiment.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
         // delete xp graph if some os has been inserted into experiment
         SPARQLService sparql = getSparqlService();
         Node experimentNode = NodeFactory.createURI(experiment.toString());
@@ -162,7 +165,11 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(ScientificObjectModel.class, VariableModel.class);
+        return Arrays.asList(
+                ScientificObjectModel.class,
+                VariableModel.class,
+                FactorModel.class,
+                ExperimentModel.class);
     }
 
     @Override
@@ -287,6 +294,75 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         SingleObjectResponse<ExperimentGetDTO> getExperimentResponse =
                 mapper.convertValue(experimentNode, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {});
         return getExperimentResponse.getResult();
+    }
+
+    @Test
+    public void createGloabalOSWithFactorLevelsShouldFail() throws Exception{
+        List<FactorLevelGetDTO> factorLevelGetDTOS = createFactor(experiment);
+        String factorLevelUri = factorLevelGetDTOS.get(0).getUri().toString();
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, true, false);
+        RDFObjectRelationDTO factorLevelRelation = new RDFObjectRelationDTO(new URI(Oeso.hasFactorLevel.getURI()), factorLevelUri, false);
+        creationDTO.setRelations(List.of(factorLevelRelation));
+
+        new UserCallBuilder(ScientificObjectAPITest.create)
+                .setBody(creationDTO)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void createOsWithFactorLevelNotMatchingWithExpeShouldFail() throws Exception {
+        //create expe that has no factor level but will not be linked to the os
+        URI experiment2 = new UserCallBuilder(ExperimentAPITest.create)
+                .setBody(ExperimentAPITest.getCreationDTO())
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        List<FactorLevelGetDTO> factorLevelGetDTOS = createFactor(experiment2);
+        String factorLevelUri = factorLevelGetDTOS.get(0).getUri().toString();
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, false, false);
+        RDFObjectRelationDTO factorLevelRelation = new RDFObjectRelationDTO(new URI(Oeso.hasFactorLevel.getURI()), factorLevelUri, false);
+        creationDTO.setRelations(List.of(factorLevelRelation));
+
+        new UserCallBuilder(ScientificObjectAPITest.create)
+                .setBody(creationDTO)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    private List<FactorLevelGetDTO> createFactor(URI experiment) throws Exception {
+        FactorCreationDTO dto = new FactorCreationDTO();
+        dto.setName("Factor name");
+        dto.setCategory(new URI("http://purl.obolibrary.org/obo/PECO_0007085"));
+        dto.setDescription("Factor Description");
+        // skos model
+        SkosModelTest.setValidSkosReferences(dto);
+        dto.setExperiment(experiment);
+        // factors levels
+        List<FactorLevelCreationDTO> factorsLevels = new ArrayList<>();
+        FactorLevelCreationDTO factorLevelDto = new FactorLevelCreationDTO();
+        factorLevelDto.setName("factorsLevel");
+        factorLevelDto.setDescription("autogenerated");
+        factorsLevels.add(factorLevelDto);
+        FactorLevelCreationDTO factorLevelDto2 = new FactorLevelCreationDTO();
+        factorLevelDto2.setName("factorsLevel2");
+        factorLevelDto2.setDescription("autogenerated2");
+        factorsLevels.add(factorLevelDto2);
+        dto.setFactorLevels(factorsLevels);
+
+        URI factorUri = new UserCallBuilder(new FactorsAPITest().create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        return new UserCallBuilder(new FactorsAPITest().getFactorLevels)
+                .setUriInPath(factorUri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<List<FactorLevelGetDTO>>>() {})
+                .getDeserializedResponse()
+                .getResult();
     }
 
     @Test

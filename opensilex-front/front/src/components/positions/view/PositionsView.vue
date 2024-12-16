@@ -1,14 +1,14 @@
 <template>
     <div v-if="hasPosition()">
-        <opensilex-UriView
-            title="Event.targets" 
-            :uri="getTargetPosition().target"
-            :value="positionsUriLabels[getTargetPosition().target]"
-            :to="{
+      <opensilex-UriView
+        title="Event.targets"
+        :uri="getTargetPosition().target"
+        :value="positionsUriLabels[getTargetPosition().target]"
+        :to="{
                 path: positionsUriPaths[getTargetPosition().target]
             }"
-        >      
-        </opensilex-UriView>
+      >
+      </opensilex-UriView>
         <opensilex-GeometryView label="component.common.geometry"
                                 :value="getTargetPosition().position.point"></opensilex-GeometryView>
 

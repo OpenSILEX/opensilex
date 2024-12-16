@@ -9,12 +9,14 @@
  */
 package org.opensilex.core.uriSearch.bll;
 
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -28,9 +30,11 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -115,6 +119,26 @@ public class UriSearchLogic {
         //Get super types, needed to identify details page path in front
         URITypesDTO types = getSuperTypesFromUri((sparqlMatch.getFactor() == null ? uri : sparqlMatch.getFactor()));
         result.setSuperTypes(types);
+
+        //If the found uri happens to be a document or a person then just do an extra call to get the title
+        if(types.getRdfTypes().stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, Oeso.Document.getURI()))){
+            DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+            result.setName(documentDAO.getMetadata(uri, currentUser).getTitle());
+        }else if(SPARQLDeserializers.compareURIs(result.getType(), FOAF.Person.getURI())){
+            PersonDAO personDAO = new PersonDAO(sparql);
+            PersonModel foundPerson = personDAO.get(uri);
+            StringBuilder personNameBuilder = new StringBuilder();
+            if(foundPerson != null){
+                if(foundPerson.getFirstName() != null){
+                    personNameBuilder.append(foundPerson.getFirstName());
+                    personNameBuilder.append(" ");
+                }
+                if(foundPerson.getLastName() != null){
+                    personNameBuilder.append(foundPerson.getLastName());
+                }
+            }
+            result.setName(personNameBuilder.toString());
+        }
 
         return result;
     }
@@ -260,6 +284,9 @@ public class UriSearchLogic {
     }
 
     private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, URIGlobalSearchDTO result) throws Exception {
+        if(model.getPublisher() == null){
+            return;
+        }
         AccountModel publisherAccount = new AccountDAO(sparql).get(model.getPublisher());
         UserGetDTO publisherAsUser = new UserGetDTO();
         publisherAsUser.setUri(publisherAccount.getUri());

@@ -120,7 +120,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         component: "opensilex-AgroportalSearchFormPart",
         title: "AgroportalSearchFormPart.step1-title",
         finish: this.requireCreate ? undefined : "AgroportalSearchFormPart.reuse",
-        next: this.termIsSelected ? "AgroportalSearchFormPart.create" : "AgroportalSearchFormPart.createNew",
+        next: this.termIsSelected ? "AgroportalSearchFormPart.next" : "AgroportalSearchFormPart.skip",
         props: {
           ontologiesConfig: this.ontologiesConfig,
           searchPlaceholder: this.searchPlaceholder
@@ -129,7 +129,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         component: "opensilex-AgroportalCreateFormPart",
         title: "AgroportalSearchFormPart.step2-title",
         finish: "AgroportalSearchFormPart.save",
-        next: "AgroportalSearchFormPart.map",
+        next: "AgroportalSearchFormPart.next",
         props: {
           namePlaceholder: this.searchPlaceholder,
           descriptionPlaceholder: this.descriptionPlaceholder

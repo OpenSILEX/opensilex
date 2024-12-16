@@ -226,7 +226,7 @@
                             @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button
                             v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                            @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                            @click="showGroupVariablesCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
                         <b-dropdown-item-button
@@ -356,6 +356,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 @Component
 export default class VariableList extends Vue {
@@ -479,11 +480,19 @@ export default class VariableList extends Vue {
     loadGroupVariablesForm: boolean = false;
     @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm<GroupVariablesForm, VariablesGroupCreationDTO, VariablesGroupUpdateDTO>;
 
-    showCreateForm() {
-        // lazy loading of form
+    showGroupVariablesCreateForm() {
         this.loadGroupVariablesForm = true;
         this.$nextTick(() => {
-            this.groupVariablesForm.showCreateForm();
+          //Set the initially selected variables, pass a form with these variables to showCreate
+          this.groupVariablesForm.setSelectorsToFirstTimeOpenAndSetLabels(this.tableRef.selectedItems.map(e => {
+            let nextConvert :NamedResourceDTOVariableModel = {};
+            nextConvert.uri = e.uri;
+            nextConvert.name = e.name;
+            return nextConvert;
+          }));
+          let form = GroupVariablesForm.getEmptyForm();
+          form.variables = this.tableRef.selectedItems.map(e => e.uri);
+          this.groupVariablesForm.showCreateForm(form);
         });
     }
 

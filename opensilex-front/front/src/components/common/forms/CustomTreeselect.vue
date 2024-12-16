@@ -19,6 +19,7 @@
     :show-count="showCount"
     :limit="limit"
     :clearable="true"
+    :disableBranchNodes="disableBranchNodes"
     @deselect="deselect"
     @select="select"
     @input="clearIfNeeded"
@@ -133,6 +134,10 @@ export default class CustomTreeselect extends Vue {
 
 conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
+  @Prop({
+    default: false
+  })
+  disableBranchNodes: boolean;
   //#endregion
 
   //#region Refs
@@ -275,8 +280,8 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
               self.resultCount = list.length;
             }
           }
-          this.$emit('totalCount', self.totalCount);
-          this.$emit('resultCount', self.resultCount)
+          self.$emit('totalCount', self.totalCount);
+          self.$emit('resultCount', self.resultCount)
           self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
           let nodeList = [];
           list.forEach((item) => {

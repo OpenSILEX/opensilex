@@ -10,6 +10,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
@@ -31,11 +32,14 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -51,13 +55,20 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.query.SparqlMultiGraphQuery;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -358,11 +369,34 @@ public class DataLogic {
         return validation;
     }
 
-    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) {
+    /**
+     *
+     * @param devices to filter the data by device
+     * @param variables to filter the data by variable
+     * @param experiments to filter the data by experiment
+     * @param typeOfTarget Retain only targets of this type, if NULL then we return all types of target
+     *
+     * @return A list of target URIS who are target's of the filtered data
+     * @throws Exception
+     */
+    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments, URI typeOfTarget) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
-        return dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+        List<URI> usedTargetUris = dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+
+        if(typeOfTarget != null && CollectionUtils.isNotEmpty(usedTargetUris)){
+            OntologyDAO ontologyDao = new OntologyDAO(sparql);
+            List<URITypesModel> superTypesByUri = ontologyDao.getSuperClassesByURI(usedTargetUris).stream().filter(
+                    e -> e.getRdfTypes().stream().anyMatch(
+                            f -> SPARQLDeserializers.compareURIs(f, typeOfTarget)
+                    )
+            ).toList();
+            return superTypesByUri.stream().map(URITypesModel::getUri).toList();
+
+        }
+        return usedTargetUris;
     }
+
 
     public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
@@ -398,7 +432,8 @@ public class DataLogic {
                     getUsedTargets(
                             null,
                             criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
-                            (experiment == null ? null : Collections.singletonList(experiment))
+                            (experiment == null ? null : Collections.singletonList(experiment)),
+                            null
                     ).stream().filter(Objects::nonNull).collect(Collectors.toList())
             );
         }
@@ -936,6 +971,8 @@ public class DataLogic {
                     if(existingOs == null){
                         validRow = false;
                         scientificObjectsNotInXp.add(objectNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
                     }else{
                         object = existingOs;
                         // object exist, put it into name/URI cache

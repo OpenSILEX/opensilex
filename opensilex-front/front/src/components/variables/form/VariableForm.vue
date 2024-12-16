@@ -222,11 +222,7 @@
                 <div class="col-lg-6" id="v-step-time-interval">
                     <opensilex-VariableTimeIntervalSelector
                         label="VariableForm.time-interval"
-                        :selected.sync="form.time_interval"
-                        :multiple="false"
-                        :options="periodList"
-                        placeholder="VariableForm.time-interval-placeholder"
-                        helpMessage="VariableForm.time-interval-help"
+                        :timeinterval.sync="form.time_interval"
                     >
                     </opensilex-VariableTimeIntervalSelector>
                 </div>
@@ -711,21 +707,7 @@ export default class VariableForm extends Vue {
     }
 
     tutorial() {
-
         this.savedVariable = JSON.parse(JSON.stringify(this.form));
-
-        this.form.entity = { uri: this.$i18n.t("VariableForm.example.entity"),  name: this.$i18n.t("VariableForm.example.entity")};
-        this.form.characteristic = { uri: this.$i18n.t("VariableForm.example.characteristic"),  name: this.$i18n.t("VariableForm.example.characteristic")};
-        this.form.method = { uri: this.$i18n.t("VariableForm.example.method"),  name: this.$i18n.t("VariableForm.example.method")};
-        this.form.unit = { uri: this.$i18n.t("VariableForm.example.unit"),  name: this.$i18n.t("VariableForm.example.unit")};
-
-        this.form.name = this.$i18n.t("VariableForm.example.name");
-        this.form.alternative_name = this.$i18n.t("VariableForm.example.altName");
-        this.form.dataType = this.$i18n.t("VariableForm.example.datatype");
-        this.form.time_interval =  this.$i18n.t("VariableForm.example.time-interval");
-        this.form.sampling_interval =  this.$i18n.t("VariableForm.example.sampling-interval");
-        this.form.comment =  this.$i18n.t("VariableForm.example.description");
-
         this.variableTutorial.start();
     }
 

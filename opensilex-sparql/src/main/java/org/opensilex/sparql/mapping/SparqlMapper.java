@@ -36,7 +36,7 @@ public interface SparqlMapper<T extends SPARQLResourceModel> {
         String type = result.getStringValue(SPARQLResourceModel.TYPE_FIELD);
 
         instance.setUri(useFormattedUri() ? UriFormater.formatURI(uri) : URI.create(uri));
-        instance.setType(useFormattedUri() ? UriFormater.formatURI(uri) : URI.create(type));
+        instance.setType(useFormattedUri() ? UriFormater.formatURI(type) : URI.create(type));
     }
 
     default void setLabel(T instance, SPARQLResult result, String lang) throws Exception {

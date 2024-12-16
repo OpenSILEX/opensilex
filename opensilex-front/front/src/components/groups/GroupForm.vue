@@ -94,6 +94,7 @@ export default class GroupForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Group created", uri);
+        this.$opensilex.showSuccessToast(this.$t("component.group.group-added"));
       })
       .catch(error => {
         if (error.status == 409) {
@@ -115,6 +116,8 @@ export default class GroupForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Group updated", uri);
+        this.$opensilex.showSuccessToast(this.$t("component.group.group-updated"));
+        
       })
       .catch(this.$opensilex.errorHandler);
   }

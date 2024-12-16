@@ -71,16 +71,20 @@
           </b-col>
 
           <b-col md="6">
+            <div class="selectionTitle">
+              {{ $t("AgroportalSearchFormPart.selected-term") }}
+            </div>
+            <div class="result">
             <b-form-group
                 label-size="lg"
                 label-class="font-weight-bold pt-0"
                 class="mb-0"
             >
               <template v-slot:label>
-                {{ formDto.name }}
+                <div> {{ formDto.name }} </div>
               </template>
 
-              <b-container class="result">
+              <b-container >
                 <p v-if="formDto.uri">
                   <a v-bind:href="formDto.uri" target="_blank" rel="noopener noreferrer">{{ formDto.uri }}</a>
                 </p>
@@ -89,6 +93,7 @@
                 </p>
               </b-container>
             </b-form-group>
+            </div>
 
             <opensilex-SkosRelationTable
               :uriRelations.sync="uriRelations"
@@ -366,9 +371,12 @@ a {
 
 .result {
   font-size: medium;
-  margin-bottom: 10px;
-  padding: 10px;
+  padding: 5px;
   margin-right: 1px;
+}
+
+.result:hover {
+  background: rgba(0, 0, 0, .1);
 }
 
 ul {
@@ -382,6 +390,13 @@ ul {
 .mapByUriSection {
   margin-top: 15px;
 }
+
+.selectionTitle {
+  padding-bottom: calc(0.5rem + 1px);
+  font-size: 1.25rem;
+  line-height: 1.5;
+  font-weight: 700 !important;
+}
 </style>
 
 <i18n>
@@ -393,7 +408,7 @@ en:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
-    search-mapping-title: Search for a term
+    search-mapping-title: Search for a term to map with
     map-manually-title: Map a term by URI
     manual-mapping: "URI"
     agroportal-not-reachable: >
@@ -448,7 +463,7 @@ fr:
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">BioPortal</a></ul>
       </li>"
-    search-mapping-title: Rechercher un terme
+    search-mapping-title: Rechercher un terme à associer
     map-manually-title: Associer un terme par URI
     manual-mapping: "URI"
     agroportal-not-reachable: >

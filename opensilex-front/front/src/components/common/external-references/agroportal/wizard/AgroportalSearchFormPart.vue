@@ -252,18 +252,19 @@ en:
     create: Create
     map: Map
     skip: Skip
+    next: Next
     search-for-ontology-term: Search for ontology term
     selected-term: Selected term
     no-selected-item: No selected term
     tutorial:
       step-search:
         title: Search a term
-        content: Look for a term in Agroportal. You can change the searched ontologies using the filter button.
+        content: Look for a term in Agroportal. You can change the selected ontologies using the filter button.
       step-result:
         title: Select a concept
         content: >
-          Select the concept that you want to import. If no concept exactly matches yours, you can select the
-          closest one and enrich it on later steps.
+          Select the concept that you want to reuse. If no concept exactly matches yours, you can select the
+          closest and create a new one. You can enrich it on later steps.
       step-selected:
         title: Selected concept
         content: >
@@ -272,24 +273,25 @@ en:
         title: Validation
         content: >
           If you want to import the concept as-is, click the '@:AgroportalSearchFormPart.reuse' button. If
-          you want to use it as a basis for creating your own concept, click the '@:AgroportalSearchFormPart.create'
+          you want to use it as a basis for creating your own concept, click the '@:AgroportalSearchFormPart.next'
           button. Please note that for Units, you are required to enrich the concept.
       step-no-concept:
         title: No concept
         content: >
           If you didn't find any concept in Agroportal that matches yours, you can create your own by clicking the
-          '@:AgroportalSearchFormPart.create' button when no concept is selected.
+          '@:AgroportalSearchFormPart.skip' button when no concept is selected.
 fr:
   AgroportalSearchFormPart:
     step1-title: Chercher
     step2-title: Créer
-    step3-title: Mapper
+    step3-title: Aligner
     reuse: Réutiliser
     save: Enregistrer
     createNew: Créer Nouveau
     create: Créer
     map: Mapper
     skip: Passer
+    next: Suivant
     search-for-ontology-term: Rechercher un terme
     selected-term: Terme sélectionné
     no-selected-item: Aucun terme sélectionné
@@ -302,8 +304,8 @@ fr:
       step-result:
         title: Sélectionnez un concept
         content: >
-          Sélectionnez le concept à importer. Si aucun concept ne correspond à celui que vous cherchez à définir, vous
-          pouvez choisir le concept qui s'en rapproche le plus et l'enrichir aux étapes suivantes.
+          Sélectionnez le concept à réutiliser. Si aucun concept ne correspond à celui que vous cherchez à définir, vous
+          pouvez choisir le concept qui s'en rapproche le plus et à partir de ce dernier en créer un nouveau. Vous pourrez l'enrichir aux étapes suivantes.
       step-selected:
         title: Concept sélectionné
         content: >

@@ -251,7 +251,11 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     return this.$refs.componentRef as InnerFormType;
   }
 
-  showCreateForm() {
+  /**
+   *
+   * @param passedForm , optional passing of some predefined fields for when the user arrives on the create form
+   */
+  showCreateForm(passedForm?: UpdateDTOType | CreationDTOType) {
     this.opened = true;
     
     if(!this.static) {
@@ -259,7 +263,13 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     } 
     this.editMode = false;
     this.$nextTick(() => {
-      this.form = this.getFormRef().getEmptyForm();
+      //Set passed form or create an empty one
+      if(passedForm){
+        this.form = passedForm;
+      }else{
+        this.form = this.getFormRef().getEmptyForm();
+      }
+
       let form = this.initForm(this.form as CreationDTOType);
       if (form) {
         this.form = form;
@@ -279,7 +289,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
      * @requires  setSelectorsToFirstTimeOpenAndSetLabels function to be defined in the form ref
      */
   setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels){
-      this.getFormRef().setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels);
+    this.getFormRef().setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels);
   }
 
   showEditForm(form: UpdateDTOType) {

@@ -71,7 +71,7 @@
           </b-col>
 
           <b-col md="6">
-            <div class="selectionTitle"> 
+            <div class="selectionTitle">
               {{ $t("AgroportalSearchFormPart.selected-term") }}
             </div>
             <div class="result">

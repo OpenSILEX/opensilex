@@ -216,6 +216,14 @@
         <opensilex-EventModalView
             modalSize="lg"
             ref="eventModalView"
+            :dto.sync="selectedEvent"
+            :type.sync="selectedEvent.rdf_type"
+            :uriLabels="uriLabels"
+            :uriPaths="uriPaths"
+            :specificPropertiesLabels="specificPropertiesLabels"
+            :specificPropertiesPaths="specificPropertiesPaths"
+            :positionsUriLabels="positionsUriLabels"
+            :positionsUriPaths="positionsUriPaths"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -282,6 +290,12 @@ export default class EventList extends Vue {
     $service: EventsService
     $i18n: any;
     $store: any;
+    uriLabels = {};
+    uriPaths = {};
+    specificPropertiesLabels = {};
+    specificPropertiesPaths = {};
+    positionsUriLabels = {};
+    positionsUriPaths = {};
 
     @Prop({
         default: false

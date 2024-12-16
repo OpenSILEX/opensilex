@@ -1,26 +1,26 @@
 <template>
-  <opensilex-SelectForm
+  <opensilex-ModalFormSelector
     ref="variableSelector"
     modalComponent="opensilex-VariableModalList"
     :label="label"
     :placeholder="placeholder"
     :selected.sync="variablesURI"
+    :selectedInJsonFormat="variablesAsSelectableItems"
     :experiment="experiment"
     :objects="objects"
     :devices="devices"
-    :isModalSearch="true"
     :required="required"
     :multiple="true"
     :maximumSelectedItems="maximumSelectedRows"
     :withAssociatedData="withAssociatedData"
-    :limit="1"
+    :limit="4"
     @clear="refreshVariableSelector"
     @select="select"
     @deselect="deselect"
     @onValidate="onValidate"
     @hide='$emit("hideSelector")'
     @shown='$emit("shownSelector")'
-  ></opensilex-SelectForm>
+  ></opensilex-ModalFormSelector>
 </template>
 
 <script lang="ts">
@@ -28,16 +28,25 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse"
+import {SelectableItem} from '../../common/forms/ModalFormSelector.vue';
+import ModalFormSelector from "../../common/forms/ModalFormSelector.vue";
 
 @Component
 export default class VariableSelectorWithFilter extends Vue {
   $opensilex: any;
 
-  @Ref("variableSelector") readonly variableSelector!: any;
+  @Ref("variableSelector") readonly variableSelector!: ModalFormSelector;
 
   @PropSync("variables")
   variablesURI;
+
+  //Needed if elements were already present to correctly show their labels
+  @PropSync("variablesWithLabels")
+  variablesAsSelectableItems: Array<SelectableItem>;
+
+  //To say if some elements can already be present when we open this selector
+  @Prop()
+  editMode: boolean;
 
   @Prop()
   placeholder;
@@ -73,6 +82,11 @@ export default class VariableSelectorWithFilter extends Vue {
 
   onValidate(value) {
     this.$emit("validate", value);
+  }
+
+  //Function to load in the already present variables if this is the first time we are opening this selector
+  setVariableSelectorToFirstTimeOpen(){
+    this.variableSelector.setSelectorToFirstTimeOpen();
   }
 
   refreshVariableSelector() {

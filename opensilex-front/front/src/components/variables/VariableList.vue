@@ -54,7 +54,7 @@
                         <opensilex-FilterField>
                             <opensilex-EntitySelector v-if="loadSearchFilters"
                                 label="VariableView.entity"
-                                :entity.sync="filter.entity"
+                                :selected.sync="filter.entity"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
@@ -67,7 +67,7 @@
                         <opensilex-FilterField>
                             <opensilex-CharacteristicSelector v-if="loadSearchFilters"
                                 label="VariableView.characteristic"
-                                :characteristic.sync="filter.characteristic"
+                                :selected.sync="filter.characteristic"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
@@ -109,7 +109,7 @@
                         <opensilex-FilterField>
                             <opensilex-InterestEntitySelector v-if="loadAdvancedSearchFilters"
                                 label="VariableForm.interestEntity-label"
-                                :interestEntity.sync="filter.entityOfInterest"
+                                :selected.sync="filter.entityOfInterest"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
@@ -122,7 +122,7 @@
                         <opensilex-FilterField>
                             <opensilex-MethodSelector v-if="loadAdvancedSearchFilters"
                                 label="VariableView.method"
-                                :method.sync="filter.method"
+                                :selected.sync="filter.method"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 class="searchFilter"
                                 @handlingEnterKey="refresh()"
@@ -135,7 +135,7 @@
                         <opensilex-FilterField>
                             <opensilex-UnitSelector v-if="loadAdvancedSearchFilters"
                                 label="VariableView.unit"
-                                :unit.sync="filter.unit"
+                                :selected.sync="filter.unit"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
@@ -148,7 +148,7 @@
                         <opensilex-FilterField>
                             <opensilex-VariableDataTypeSelector v-if="loadAdvancedSearchFilters"
                                 label="OntologyPropertyForm.data-type"
-                                :datatype.sync="filter.dataType"
+                                :selected.sync="filter.dataType"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
                             ></opensilex-VariableDataTypeSelector>
@@ -160,7 +160,7 @@
                         <opensilex-FilterField>
                             <opensilex-VariableTimeIntervalSelector v-if="loadAdvancedSearchFilters"
                                 label="VariableForm.time-interval"
-                                :timeinterval.sync="filter.timeInterval"
+                                :selected.sync="filter.timeInterval"
                                 @handlingEnterKey="refresh()"
                                 class="searchFilter"
                             ></opensilex-VariableTimeIntervalSelector>
@@ -174,7 +174,7 @@
                                 label="SpeciesSelector.select-multiple"
                                 placeholder="SpeciesSelector.select-multiple-placeholder"
                                 :multiple="true"
-                                :species.sync="filter.species"
+                                :selected.sync="filter.species"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 class="searchFilter"
                             ></opensilex-SpeciesSelector>
@@ -226,7 +226,7 @@
                             @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button
                             v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                            @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                            @click="showGroupVariablesCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
                         <b-dropdown-item-button
@@ -330,7 +330,6 @@
                     v-if="!noActions"
                     label="label"
                     ref="groupVariableSelection"
-                    :isModalSearch="true"
                     :required="true"
                     :multiple="true"
                     @onValidate="editGroupVariable"
@@ -357,6 +356,7 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {OpenSilexStore} from "../../models/Store";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 @Component
 export default class VariableList extends Vue {
@@ -480,11 +480,19 @@ export default class VariableList extends Vue {
     loadGroupVariablesForm: boolean = false;
     @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm<GroupVariablesForm, VariablesGroupCreationDTO, VariablesGroupUpdateDTO>;
 
-    showCreateForm() {
-        // lazy loading of form
+    showGroupVariablesCreateForm() {
         this.loadGroupVariablesForm = true;
         this.$nextTick(() => {
-            this.groupVariablesForm.showCreateForm();
+          //Set the initially selected variables, pass a form with these variables to showCreate
+          this.groupVariablesForm.setSelectorsToFirstTimeOpenAndSetLabels(this.tableRef.selectedItems.map(e => {
+            let nextConvert :NamedResourceDTOVariableModel = {};
+            nextConvert.uri = e.uri;
+            nextConvert.name = e.name;
+            return nextConvert;
+          }));
+          let form = GroupVariablesForm.getEmptyForm();
+          form.variables = this.tableRef.selectedItems.map(e => e.uri);
+          this.groupVariablesForm.showCreateForm(form);
         });
     }
 
@@ -656,6 +664,10 @@ export default class VariableList extends Vue {
 
     addVariablesToGroups() {
         this.groupVariableSelection.show();
+    }
+
+    setInitiallySelectedItems(initiallySelectedItems:any){
+      this.tableRef.setInitiallySelectedItems(initiallySelectedItems);
     }
 
     private variableGroupsList = {};

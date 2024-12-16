@@ -68,6 +68,7 @@
             "year":"Année",
             "geometry": "Coordonnées géospatiales",
             "geometry-help": "Coordonnées géospatiales au format WKT",
+            "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
             "example": "Exemple",
@@ -91,6 +92,7 @@
                 "external-ontologies": "(Optionnel) Ontologies de références",
                 "previous": "Précédent",
                 "next": "Suivant",
+                "map": "Mapper",
                 "done": "Terminer",
                 "cancel": "Annuler"
             },
@@ -98,7 +100,9 @@
             "success": {
                 "success-title": "Succès",
                 "creation-success-message": " a été crée",
+                "creation-success-with-template": "{uri} a été créé",
                 "update-success-message": " a été modifié(e)",
+                "update-success-with-template": "{uri} a été mis à jour",
                 "delete-success-message": " a été supprimé(e)",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entités, {variablesCount} caractéristiques, {variablesCount} méthodes, {variablesCount} unités, {variablesCount} entités d'intérêt ont bien été importés."
             },
@@ -187,7 +191,9 @@
                 "develop": "Develop",
                 "release": "Release"
             },
-            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect."
+            "bad-notification-end-date": "Le format de la date de fin définie pour la notification est incorrect.",
+            "uri-search-placeholder": "Recherche par URI",
+            "uriSearchHoverMessage": "Recherche par URI quelconque"
         },
         "menu": {
             "dashboard": "Tableau de bord",
@@ -201,10 +207,15 @@
                 "images": "Images",
                 "visualization":"Visualisation"
             },
+            "spatial": {
+                "label": "Spatial",
+                "map" : "Carte"
+            },
             "homepage": "Accueil",
             "experiments": "Expérimentations",
             "facilities": "Installations (environnement)",
             "organization": "Organisations",
+            "site": "Sites",
             "installations": "Installations",
             "projects": "Projets",
             "variables": "Variables",
@@ -235,7 +246,7 @@
             "scientificObjectTypes": "Objets scientifiques",
             "facilitiesTypes": "Installations (environnement)",
             "deviceTypes": "Appareils",
-            "eventTypes": "Évènements", 
+            "eventTypes": "Évènements",
             "factorCategoryTypes": "Catégories de facteurs",
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
@@ -362,6 +373,7 @@
         },
         "profile": {
             "description": "Gérer et configurer les profils",
+            "view-profiles": "Voir les profils",
             "profile-uri": "URI du profil",
             "form-name-placeholder": "Saisir le nom du profil",
             "label": "profil",
@@ -378,6 +390,7 @@
         },
         "group": {
             "description": "Gérer et configurer les groupes",
+            "view-groups": "voir les groupes",
             "group-uri": "URI du groupe",
             "form-name-placeholder": "Saisir le nom du groupe",
             "form-description-placeholder": "Saisir la description du groupe",
@@ -388,6 +401,8 @@
             "delete": "Supprimer le groupe",
             "details": "Afficher ou masquer les détails du groupe",
             "filter-placeholder": "Rechercher des groupes...",
+            "group-added": "Le groupe a été crée",
+            "group-updated": "Le groupe a été mis à jour",
             "user-profiles": "Utilisateurs et profils",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
@@ -560,6 +575,9 @@
                 "orga-groups-projects": "Organisations, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
+            },
+            "errors": {
+                "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
             }
         },
         "germplasms": {
@@ -597,6 +615,12 @@
             "closeMatch": "Similaire",
             "broadMatch": "Plus général",
             "narrowMatch": "Plus spécifique",
+            "description": {
+                "exactMatch": "Le terme est équivalent à mon concept (skos:exactMatch)",
+                "closeMatch": "Le terme est similaire à mon concept (skos:closeMatch)",
+                "broadMatch": "Le terme est plus général que mon concept (skos:broadMatch)",
+                "narrowMatch": "Le terme est plus spécifique que mon concept (skos:narrowMatch)"
+            },
             "no-relation": "Sélectionner une relation",
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",
@@ -749,7 +773,8 @@
         "provenance": "Provenances",
         "vocabulary": "Vocabulaire",
         "packages": "Librairies",
-        "accounts": "Comptes"
+        "accounts": "Comptes",
+        "spatial" : "Spatial"
     },
     "credential": {
         "default": {
@@ -866,7 +891,9 @@
     },
     "server": {
         "errors": {
-            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
+            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-instance-connection": "Impossible de se connecter à Agroportal. Le service peut-être indisponible, ou bien la configuration incorrecte.",
+            "agroportal-not-configured": "Agroportal n'est pas configuré pour cette instance."
         },
         "warnings": {
             "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance.",

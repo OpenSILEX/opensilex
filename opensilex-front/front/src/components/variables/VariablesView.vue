@@ -64,25 +64,31 @@
             ></opensilex-VariableCreate>
 
             <!-- Create form -->
-            <opensilex-EntityCreate
-                ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-EntityCreate>
-
-            <opensilex-InterestEntityCreate
-                ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-InterestEntityCreate>
-
-            <opensilex-CharacteristicModalForm
-                ref="characteristicForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-CharacteristicModalForm>
-
-            <opensilex-MethodCreate
-                ref="methodForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-MethodCreate>
-
-            <opensilex-UnitCreate
-                ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-UnitCreate>
+          <opensilex-AgroportalEntityForm
+            ref="entityForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalEntityForm>
+          <opensilex-AgroportalEntityOfInterestForm
+            ref="interestEntityForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalEntityOfInterestForm>
+          <opensilex-AgroportalMethodForm
+            ref="methodForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalMethodForm>
+          <opensilex-AgroportalCharacteristicForm
+            ref="characteristicForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalCharacteristicForm>
+          <opensilex-AgroportalUnitForm
+            ref="unitForm"
+            @onCreate="refresh($event.uri)"
+            @onUpdate="refresh($event.uri)"
+          ></opensilex-AgroportalUnitForm>
 
             <opensilex-ModalForm
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadGroupForm"
@@ -172,9 +178,6 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VariableStructureList from "./views/VariableStructureList.vue";
-import EntityCreate from "./form/EntityCreate.vue";
-import InterestEntityCreate from "./form/InterestEntityCreate.vue";
-import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
@@ -186,7 +189,14 @@ import DTOConverter from "../../models/DTOConverter";
 import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
+import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
+interface GroupUpdateDtoAndVariableModels {
+  updateDto: VariablesGroupUpdateDTO,
+  variableModels: Array<NamedResourceDTOVariableModel>
+}
+import {BaseExternalReferencesForm} from "../common/external-references/ExternalReferencesTypes";
 
 @Component
 export default class VariablesView extends Vue {
@@ -221,11 +231,11 @@ export default class VariablesView extends Vue {
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
-    @Ref("entityForm") readonly entityForm!: EntityCreate;
-    @Ref("interestEntityForm") readonly interestEntityForm!: InterestEntityCreate;
-    @Ref("characteristicForm") readonly characteristicForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
-    @Ref("unitForm") readonly unitForm!: UnitCreate;
+    @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
+    @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
+    @Ref("characteristicForm") readonly characteristicForm!: BaseExternalReferencesForm;
+    @Ref("methodForm") readonly methodForm!: BaseExternalReferencesForm;
+    @Ref("unitForm") readonly unitForm!: BaseExternalReferencesForm;
 
     /**
      * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call
@@ -357,7 +367,7 @@ export default class VariablesView extends Vue {
         this.variableStructureList.refresh(false, uri);
     }
 
-    private getForm() {
+    private getForm(): BaseExternalReferencesForm {
         switch (this.elementType) {
             case VariablesView.VARIABLE_TYPE : {
                 return this.variableCreate;
@@ -429,23 +439,32 @@ export default class VariablesView extends Vue {
         }
     }
 
-    formatVariablesGroup(dto : any) {
+    formatVariablesGroup(dto : VariablesGroupGetDTO) : GroupUpdateDtoAndVariableModels{
         let copy = JSON.parse(JSON.stringify(dto));
-        if (copy.variables) {
-            copy.variables = copy.variables.map(variable => variable.uri);
+        let variables_uris : Array<String> = [];
+        let new_variable_list : Array<NamedResourceDTOVariableModel>= [];
+      if (copy.variables) {
+        for(let variable of copy.variables){
+          let variableUri = this.$opensilex.getLongUri(variable.uri);
+          variables_uris.push(variableUri);
+          variable.uri = variableUri;
+          new_variable_list.push(variable);
         }
-        return copy;
+        copy.variables = variables_uris;
+      }
+      return {updateDto : (copy as VariablesGroupUpdateDTO), variableModels : new_variable_list};
     }
+
 
     showEditForm(dto : any){
         if (this.elementType == VariablesView.GROUP_VARIABLE_TYPE) {
-
             // ensure that the group form component is loaded
             this.loadGroupForm = true;
             this.$nextTick(() => {
 
-                let formatVariableGroup = this.formatVariablesGroup(dto);
-                this.getForm().showEditForm(formatVariableGroup);
+              let updateDtoAndExtractedVariables = this.formatVariablesGroup(dto);
+              this.groupVariablesForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedVariables.variableModels);
+              this.groupVariablesForm.showEditForm(updateDtoAndExtractedVariables.updateDto);
             });
         }
         else{
@@ -563,12 +582,16 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
+        entity-placeholder: Plant
         entityOfInterest: Entity of interest
         add-entityOfInterest: Add observation level
+        entityOfInterest-placeholder: Canopy
         characteristic: Characteristic
         add-characteristic: Add characteristic
+        characteristic-placeholder: Height
         method: Method
         add-method: Add method
+        method-placeholder: Image analysis
         unit: "Unit/Scale"
         add-unit: Add unit
         groupVariable: Group of variables
@@ -586,12 +609,16 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
+        entity-placeholder: Plante
         entityOfInterest: Entité d'intérêt
         add-entityOfInterest: Ajouter un niveau d'observation
+        entityOfInterest-placeholder: Canopée
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
+        characteristic-placeholder: Hauteur
         method: Méthode
         add-method: Ajouter une méthode
+        method-placeholder: Analyse d'image
         unit: "Unité/Echelle"
         add-unit: Ajouter une unité
         groupVariable: Groupe de variables

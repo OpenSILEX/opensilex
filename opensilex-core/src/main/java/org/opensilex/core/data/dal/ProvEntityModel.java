@@ -7,6 +7,9 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.opensilex.core.provenance.dal.GlobalProvenanceEntity;
+import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
@@ -20,13 +23,21 @@ import java.util.Objects;
 public class ProvEntityModel {
 
     @ValidURI
-    @NotNull
     @JsonProperty("rdf_type")
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     URI type;
 
     @ValidURI
     @NotNull
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     URI uri;
+
+    public ProvEntityModel(){}
+
+    public ProvEntityModel(GlobalProvenanceEntity entity){
+        setUri(entity.getUri());
+        setType(entity.getRdfType());
+    }
 
     public static final String URI_FIELD = "uri";
     public static final String TYPE_FIELD = "rdfType";

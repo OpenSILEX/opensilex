@@ -7,8 +7,8 @@
 
 package org.opensilex.core.event.api;
 
+import com.apicatalog.jsonld.StringUtils;
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -19,15 +19,11 @@ import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
-import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.event.bll.EventLogic;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -36,8 +32,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.BadRequestException;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -48,11 +42,8 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -72,7 +63,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -129,12 +119,10 @@ public class EventAPI {
     public Response createEvents(@Valid @NotNull List<EventCreationDTO> dtoList) throws Exception {
 
         try {
-            EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-            URI eventGraph = dao.getGraph();
+            EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
 
-            List<EventModel> models = getEventModels(dtoList, eventGraph);
-            models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
-            dao.create(models);
+            List<EventModel> models = getEventModels(dtoList, logic);
+            models = logic.create(models, false);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -210,58 +198,26 @@ public class EventAPI {
         return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
-    private List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, URI eventGraph) throws Exception {
+    /**
+     *
+     * @param eventDtos
+     * @param logic : logic class previously generated in a service
+     * @return a list of fresh models created using the dtos
+     * @throws Exception
+     */
+    private <T extends EventModel, F extends EventSearchFilter> List<EventModel> getEventModels(List<? extends EventCreationDTO> eventDtos, EventLogic<T, F> logic) throws Exception {
 
-        URI eventBaseType = new URI(Oeev.Event.getURI());
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<URI, ClassModel> eventClassesByTypeCache = new HashMap<>();
 
         List<EventModel> models = new ArrayList<>(eventDtos.size());
 
         for(EventCreationDTO dto : eventDtos){
             EventModel model = dto.toModel();
-
-            if (!CollectionUtils.isEmpty(dto.getRelations())) {
-                URI type = dto.getType();
-
-                ClassModel eventClassModel = eventClassesByTypeCache.get(type);
-                if (eventClassModel == null) {
-                    eventClassModel = ontologyDAO.getClassModel(type, eventBaseType, currentUser.getLanguage());
-                    eventClassesByTypeCache.put(type, eventClassModel);
-                }
-                setEventRelations(model, dto.getRelations(), eventGraph, ontologyDAO, eventClassModel);
-            }
+            logic.setEventRelations((T)model, dto.getRelations(), dto.getType(), eventClassesByTypeCache);
             models.add(model);
         }
 
         return models;
-    }
-
-    private void setEventRelations(EventModel model, List<RDFObjectRelationDTO> relations, URI eventGraph, OntologyDAO ontologyDAO, ClassModel eventClassModel) throws InvalidValueException, URISyntaxException {
-
-        Map<URI,URI> shortPropertiesUris = new HashMap<>();
-
-        for (int i = 0; i < relations.size(); i++) {
-            RDFObjectRelationDTO relation = relations.get(i);
-            if (relation == null) {
-                throw new IllegalArgumentException("Relation at index " + i + " is null");
-            }
-
-            if (relation.getProperty() == null || relation.getValue() == null) {
-                throw new IllegalArgumentException("Relation at index " + i + " has null property or value");
-            }
-
-            URI shortPropUri = shortPropertiesUris.get(relation.getProperty());
-            if(shortPropUri == null){
-                shortPropUri = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
-                shortPropertiesUris.put(relation.getProperty(),shortPropUri);
-            }
-
-            if (!ontologyDAO.validateObjectValue(eventGraph, eventClassModel, shortPropUri, relation.getValue(), model)) {
-                throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
-            }
-        }
     }
 
     @PUT
@@ -281,19 +237,9 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull EventUpdateDTO dto
     ) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-        EventModel model = dto.toModel();
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel eventClassModel = null;
-
-        if(dto.getType() != null){
-            eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
-            if (!CollectionUtils.isEmpty(dto.getRelations())) {
-                setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
-            }
-        }
-        dao.update(model);
+        EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
+        EventModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
+        logic.updateModel(model);
 
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
@@ -315,8 +261,8 @@ public class EventAPI {
     public Response deleteEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDAO dao = new EventDAO(sparql, nosql);
-        dao.delete(uri);
+        EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
+        logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -333,12 +279,7 @@ public class EventAPI {
     public Response getEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
-        EventModel model = dao.get(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
-
+        EventModel model = new EventLogic<>(sparql, nosql, currentUser, EventModel.class).get(uri);
         EventGetDTO dto = new EventGetDTO();
         dto.fromModel(model);
         return new SingleObjectResponse<>(dto).getResponse();
@@ -358,12 +299,7 @@ public class EventAPI {
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        EventDAO dao = new EventDAO(sparql, nosql);
-
-        EventModel model = dao.get(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
+        EventModel model = new EventLogic<>(sparql, nosql, currentUser, EventModel.class).get(uri);
 
         EventDetailsDTO dto = new EventDetailsDTO();
         dto.fromModel(model);
@@ -374,10 +310,7 @@ public class EventAPI {
     }
 
     @GET
-    @ApiOperation(
-            value = "Search events"
-
-    )
+    @ApiOperation(value = "Search events")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return event list", response = EventGetDTO.class, responseContainer = "List")
@@ -396,11 +329,14 @@ public class EventAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
+        EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
         //create search filter
         EventSearchFilter searchFilter = new EventSearchFilter();
-        searchFilter.setTarget(target)
-                .setDescriptionPattern(descriptionPattern)
+
+        if(!StringUtils.isBlank(target)){
+            searchFilter.setTargets(Collections.singletonList(URI.create(target)));
+        }
+        searchFilter.setDescriptionPattern(descriptionPattern)
                 .setType(type)
                 .setStart(start != null ? OffsetDateTime.parse(start) : null)
                 .setEnd(end != null ? OffsetDateTime.parse(end) : null)
@@ -409,7 +345,7 @@ public class EventAPI {
                 .setPage(page)
                 .setPageSize(pageSize);
 
-        ListWithPagination<EventModel> resultList = dao.search(searchFilter);
+        ListWithPagination<EventModel> resultList = logic.search(searchFilter);
 
         ListWithPagination<EventGetDTO> resultDTOList = resultList.convert(
                 EventGetDTO.class,
@@ -439,16 +375,9 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-
-            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
-            models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
-            for (var move : models) {
-                if (move.getFrom() != null && move.getTo() == null) {
-                    throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-                }
-            }
-            dao.create(models);
+            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+            List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
+            models = logic.create(models, false);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -460,9 +389,9 @@ public class EventAPI {
         }
     }
 
-    private <T extends EventModel> SingleObjectResponse<CSVValidationDTO> buildCsvResponse(
+    private <T extends EventModel, F extends EventSearchFilter> SingleObjectResponse<CSVValidationDTO> buildCsvResponse(
             AbstractEventCsvImporter<T> csvImporter,
-            EventDAO<T> dao,
+            EventLogic<T, F> logic,
             boolean forValidation
     ) throws Exception {
 
@@ -484,12 +413,7 @@ public class EventAPI {
             List<T> models = csvImporter.getModels();
 
             try{
-                if(forValidation){
-                    dao.check(models, true);
-                }else{
-                    models.forEach(model -> model.setPublisher(currentUser.getUri()));
-                    dao.create(models);
-                }
+                logic.create(models, forValidation);
                 // update validation when some URIs are already existing or unknown
             }catch (SPARQLInvalidUriListException e){
                 validation.addInvalidURIError(new CSVCell(AbstractEventCsvImporter.ROWS_BEGIN_IDX,0,e.getMessage(),e.getField()));
@@ -534,12 +458,12 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
 
-        return buildCsvResponse(csvImporter,dao, false).getResponse();
+        return buildCsvResponse(csvImporter, logic, false).getResponse();
     }
 
     @POST
@@ -554,10 +478,10 @@ public class EventAPI {
             @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
-        return buildCsvResponse(csvImporter, dao, true).getResponse();
+        return buildCsvResponse(csvImporter, logic, true).getResponse();
     }
 
     @PUT
@@ -577,19 +501,9 @@ public class EventAPI {
     public Response updateMoveEvent(
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
-
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        MoveModel model = dto.toModel();
-
-        ClassModel eventClassModel = null;
-
-        if (!CollectionUtils.isEmpty(dto.getRelations())) {
-            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            eventClassModel = ontologyDAO.getClassModel(dto.getType(), new URI(Oeev.Event.getURI()), currentUser.getLanguage());
-            setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
-        }
-
-        dao.update(model);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
+        logic.updateModel(model);
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
 
@@ -606,12 +520,7 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-
-        MoveModel model = dao.getMoveEventByURI(uri, currentUser);
-        if (model == null) {
-            throw new NotFoundURIException(uri);
-        }
+        MoveModel model = new MoveLogic(sparql, nosql, currentUser).get(uri);
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -625,22 +534,22 @@ public class EventAPI {
     @ApiOperation("Get a list of moves with all positional information")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move retrieved", response = MoveDetailsDTO.class),
+            @ApiResponse(code = 200, message = "Moves retrieved", response = MoveDetailsDTO.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMoveEventByUris(
-            @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Move URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        var dao = new MoveEventDAO(sparql, nosql);
+        var logic = new MoveLogic(sparql, nosql, currentUser);
         var accountDao = new AccountDAO(sparql);
         //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
         //      to all services that need it.
         var publisherMap = new HashMap<URI, AccountModel>();
         var dtoList = new ArrayList<MoveDetailsDTO>(uris.size());
 
-        for (var model : dao.getMoveEventByURIList(uris, currentUser)) {
+        for (var model : logic.getList(uris)) {
             var dto = new MoveDetailsDTO(model);
             if (model.getPublisher() != null) {
                 publisherMap.put(model.getPublisher(), null);
@@ -681,8 +590,8 @@ public class EventAPI {
     public Response deleteMoveEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        dao.delete(uri);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -698,8 +607,8 @@ public class EventAPI {
     public Response countEvents(
             @ApiParam(value = "Targets URIs", required = true) @QueryParam("targets") @NotNull @NotEmpty List<URI> targets) throws Exception {
 
-        EventDAO<EventModel> dao = new EventDAO<>(sparql,nosql);
-        int count = dao.count(targets);
+        EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
+        int count = logic.countForTargets(targets);
 
         return new SingleObjectResponse<>(count).getResponse();
     }

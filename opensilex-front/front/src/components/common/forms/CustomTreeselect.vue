@@ -1,7 +1,6 @@
 <template>
   <treeselect
     ref="treeref"
-    v-bind="$attrs"
     v-bind:class="{
     'multiselect-action': actionHandler,
     'multiselect-view': viewHandler, // class if viewHandler = function
@@ -11,13 +10,16 @@
     :value="selectedValues"
     valueFormat="node"
     :placeholder="$t(placeholder)"
+    :flat="true"
     :default-options="searchMethod != null" 
     :load-options="loadOptions"
     :options="options || internalOption"
     :multiple="multiple"
+    :disabled="disabled"
     :show-count="showCount"
     :limit="limit"
     :clearable="true"
+    :disableBranchNodes="disableBranchNodes"
     @deselect="deselect"
     @select="select"
     @input="clearIfNeeded"
@@ -112,6 +114,9 @@ export default class CustomTreeselect extends Vue {
   })
   showCount;
 
+  @Prop()
+  disabled: boolean;
+
   @Prop({
     type: Function,
     default: function (e) {
@@ -129,6 +134,10 @@ export default class CustomTreeselect extends Vue {
 
 conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
+  @Prop({
+    default: false
+  })
+  disableBranchNodes: boolean;
   //#endregion
 
   //#region Refs
@@ -271,8 +280,8 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
               self.resultCount = list.length;
             }
           }
-          this.$emit('totalCount', self.totalCount);
-          this.$emit('resultCount', self.resultCount)
+          self.$emit('totalCount', self.totalCount);
+          self.$emit('resultCount', self.resultCount)
           self.countCache.set(query, {total : http.response.metadata.pagination.totalCount, result : list.length})
           let nodeList = [];
           list.forEach((item) => {
@@ -302,23 +311,25 @@ conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
     }
   }
 
-  public findListInTree(tree, ids, list?) {
-    list = list || [];
-    for (let i in tree) {
-      let item = tree[i];
+  public findListInTree(tree, ids, map?: Map<string, any>) {
+    map = map || new Map();
 
+    for (let item of tree) {
       if (ids.indexOf(item.id) >= 0) {
-        list.push(item);
-        if (list.length == ids.length) {
-          return list;
+        map.set(item.id, item);
+        if (map.size == ids.length) {
+          break;
         }
       }
 
-      if (list.length == ids.length) {
-        return list;
+      if (item.children) {
+        this.findListInTree(item.children, ids, map);
+      }
+      if (map.size == ids.length) {
+        break;
       }
     }
-    return list;
+    return Array.from(map.values());
   }
 
   loadOptions({ action, searchQuery, callback }) {

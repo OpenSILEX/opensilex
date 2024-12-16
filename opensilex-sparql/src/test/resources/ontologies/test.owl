@@ -208,6 +208,14 @@
     <!-- http://test.opensilex.org/D -->
 
     <owl:Class rdf:about="http://test.opensilex.org/D"/>
+
+    <!-- http://test.opensilex.org/inverse -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/inverse"/>
+
+    <!-- http://test.opensilex.org/anotherGraph -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/anotherGraph"/>
 </rdf:RDF>
 
 

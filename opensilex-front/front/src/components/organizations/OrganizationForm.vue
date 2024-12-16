@@ -28,13 +28,13 @@
     ></opensilex-TypeForm>
 
     <!-- Parents -->
-    <opensilex-SelectForm
+    <opensilex-FormSelector
       :selected.sync="form.parents"
       :options="parentOptions"
       :multiple="true"
       label="component.common.parent"
       placeholder="OrganizationForm.form-parent-placeholder"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
 
     <!-- Groupes -->
     <opensilex-GroupSelector
@@ -57,7 +57,7 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {ResourceDagDTO} from 'opensilex-core/index';
+import {OrganizationDagDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {OrganizationCreationDTO} from "opensilex-core/model/organizationCreationDTO";
@@ -93,7 +93,7 @@ export default class OrganizationForm extends Vue {
         .getService<OrganizationsService>("opensilex-core.OrganizationsService")
         .searchOrganizations()
         .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
+          (http: HttpResponse<OpenSilexResponse<Array<OrganizationDagDTO>>>) => {
             this.setParentOrganizations(http.response.result);
           }
         )
@@ -123,7 +123,7 @@ export default class OrganizationForm extends Vue {
         .getService<OrganizationsService>("opensilex-core.OrganizationsService")
         .searchOrganizations()
         .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
+          (http: HttpResponse<OpenSilexResponse<Array<OrganizationDagDTO>>>) => {
             this.setParentOrganizations(http.response.result);
           }
         )

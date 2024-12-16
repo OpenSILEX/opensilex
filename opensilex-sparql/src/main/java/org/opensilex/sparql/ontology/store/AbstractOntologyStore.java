@@ -33,7 +33,6 @@ import org.opensilex.sparql.utils.JgraphtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -247,9 +246,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
             // replace partial domain ClassModel by full ClassModel
             ClassModel domain = property.getDomain();
-            if (domain == null || domain.getUri() == null) {
-                LOGGER.warn("NULL rdfs:domain for property {}", property.getUri());
-            } else {
+            if (domain != null && domain.getUri() != null) {
 
                 ClassModel existingDomain = getClassModel(domain.getUri());
                 property.setDomain(existingDomain);
@@ -264,10 +261,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             }
 
             URI rangeURI = property.getRangeURI();
-            if (rangeURI == null) {
-                LOGGER.warn("NULL range for property {}", property.getUri());
-            } else if (property instanceof ObjectPropertyModel) {
-
+            if (rangeURI != null && property instanceof ObjectPropertyModel) {
                 // replace partial range ClassModel by full ClassModel
                 ClassModel existingRange = getClassModel(rangeURI);
                 ((ObjectPropertyModel) property).setRange(existingRange);
@@ -275,19 +269,15 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
     }
 
-    private void linkDataProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, DatatypePropertyModel property) {
+    private void linkDataProperty(OwlRestrictionModel restriction, ClassModel restrictedClass) {
 
-        if (restriction.getOnDataRange() == null) {
-            LOGGER.warn("NULL owl:onDataRange for restriction {} on property {}", restriction.getUri(), property.getUri());
-        } else {
+        if (restriction.getOnDataRange() != null) {
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
 
-    private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, ObjectPropertyModel property)  {
-        if (restriction.getOnClass() == null) {
-            LOGGER.warn("NULL owl:onClass for restriction {} on property {}", restriction.getUri(), property.getUri());
-        } else {
+    private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass)  {
+        if (restriction.getOnClass() != null) {
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
@@ -315,9 +305,9 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
             AbstractPropertyModel<?> propertyModel = getProperty(restriction.getOnProperty(), null, null,null);
             if (propertyModel instanceof DatatypePropertyModel) {
-                linkDataProperty(restriction, domainClass, (DatatypePropertyModel) propertyModel);
+                linkDataProperty(restriction, domainClass);
             } else if (propertyModel instanceof ObjectPropertyModel) {
-                linkObjectProperty(restriction, domainClass, (ObjectPropertyModel) propertyModel);
+                linkObjectProperty(restriction, domainClass);
             }
         }
 
@@ -356,14 +346,10 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
             // add inherited data/object properties
             if(addDataProperties){
-                ancestorModel.getDatatypeProperties().values().forEach(property -> {
-                    classModel.getDatatypeProperties().put(property.getUri(),property);
-                });
+                ancestorModel.getDatatypeProperties().values().forEach(property -> classModel.getDatatypeProperties().put(property.getUri(),property));
             }
             if(addObjectProperties){
-                ancestorModel.getObjectProperties().values().forEach(property -> {
-                    classModel.getObjectProperties().put(property.getUri(),property);
-                });
+                ancestorModel.getObjectProperties().values().forEach(property -> classModel.getObjectProperties().put(property.getUri(),property));
             }
 
             // add inherited restrictions

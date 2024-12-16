@@ -14,7 +14,6 @@
             :key="experimentSelectorRefreshKey"
             :experiments.sync="form.description.experiment"
             :required="true"
-            :isModalSearch="true"
             helpMessage="DatasetForm.experiment-help"
             label="DatasetForm.experiment"
         ></opensilex-ExperimentSelector>
@@ -41,7 +40,6 @@
             :multiple="true"
             :persons.sync="form.description.authors"
             :required="true"
-            :isModalSearch="true"
             helpMessage="DatasetForm.authors-help"
             label="DatasetForm.authors"
         ></opensilex-PersonSelector>
@@ -52,30 +50,29 @@
             :personPropertyExistsCondition="'email'"
             :persons.sync="form.description.contacts"
             :required="true"
-            :isModalSearch="true"
             helpMessage="DatasetForm.contacts-help"
             label="DatasetForm.contacts"
         ></opensilex-PersonSelector>
 
         <!-- Dataset language -->
-        <opensilex-SelectForm
+        <opensilex-FormSelector
             :options="datasetAvailableLanguages"
             :required="true"
             :selected.sync="form.description.datasetLanguage"
             helpMessage="DatasetForm.datasetLanguage-help"
             label="DatasetForm.datasetLanguage"
             placeholder="DatasetForm.placeholder-datasetLanguage"
-        ></opensilex-SelectForm>
+        ></opensilex-FormSelector>
 
         <!-- Dataset Metadata language -->
-        <opensilex-SelectForm
+        <opensilex-FormSelector
             :options="datasetAvailableMetadataLanguages"
             :required="true"
             :selected.sync="form.description.datasetMetadataLanguage"
             helpMessage="DatasetForm.datasetMetadataLanguage-help"
             label="DatasetForm.datasetMetadataLanguage"
             placeholder="DatasetForm.placeholder-datasetMetadataLanguage"
-        ></opensilex-SelectForm>
+        ></opensilex-FormSelector>
 
         <!-- Deprecated -->
         <opensilex-CheckboxForm
@@ -116,7 +113,7 @@ import {DocumentsService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {DataverseService} from "@/lib";
 import OesoDataverse from "@/ontology/OesoDataverse";
-import {SelectableItem} from "../../../../../opensilex-front/front/src/components/common/forms/SelectForm.vue";
+import {SelectableItem} from "../../../../../opensilex-front/front/src/components/common/forms/FormSelector.vue";
 import OpenSilexVuePlugin from "../../../../../opensilex-front/front/src/models/OpenSilexVuePlugin";
 import VueRouter, {Route} from "vue-router";
 import VueI18n from "vue-i18n";

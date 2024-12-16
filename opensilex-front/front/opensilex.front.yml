@@ -57,6 +57,16 @@ menu:
           icon: ik#ik-thermometer
           title: Device.title
           description: Device.description
+      -   id: sites
+          label: component.menu.site
+          route:
+            path: /sites
+            component: opensilex-SiteView
+            credentials:
+              - organization-access
+            icon: ik#ik-map-pin
+            title: SiteView.title
+            description: SiteView.description
       - id: persons
         label: component.menu.security.persons
         route:
@@ -180,7 +190,19 @@ menu:
       #       route:
       #         path: /users
       #         component: opensilex-AccountView
-
+  - id: spatial
+    label: component.menu.spatial.label
+    children:
+      - id: map
+        label: component.menu.spatial.map
+        route:
+          path: /global-map
+          component: opensilex-GlobalMapView
+          credentials:
+            - spatial-access
+          icon: fa#fa-earth-africa
+          title: GlobalMapView.title
+          description: GlobalMapView.description
   - id: vocabulary
     label: component.menu.vocabulary
     children:
@@ -244,6 +266,7 @@ menu:
           icon: ik#ik-settings
           title: component.menu.namespaces
           description: Namespaces.description
+
   - id: configuration
     label: component.menu.configuration
     children:
@@ -315,9 +338,11 @@ menu:
 routes:
   - path: /organization/details/:uri
     component: opensilex-OrganizationDetailView
+    rdfType: vocabulary:LocalOrganization
     icon: ik#ik-globe
   - path: /organization/site/details/:uri
-    component: opensilex-SiteView
+    component: opensilex-SiteDetailView
+    rdfType: org:Site
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     rdfType: vocabulary:Experiment
@@ -363,6 +388,7 @@ routes:
 
   - path: /variable/details/:uri
     component: opensilex-VariableView
+    rdfType: vocabulary:Variable
     credentials: [ ]
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
@@ -380,6 +406,7 @@ routes:
 
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
+    rdfType: vocabulary:Project
   - path: /project/documents/:uri
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
@@ -407,6 +434,7 @@ routes:
       - factor-modification
   - path: /:xpUri/factor/details/:uri
     component: opensilex-FactorView
+    rdfType: vocabulary:Factor
   - path: /:xpUri/factor/experiments/:uri
     component: opensilex-FactorView
   - path: /:xpUri/factor/annotations/:uri
@@ -416,6 +444,7 @@ routes:
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
+    rdfType: vocabulary:Document
     credentials: [ ]
 
   - path: /device/details/:uri
@@ -467,6 +496,7 @@ routes:
     credentials: []
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
+    rdfType: vocabulary:Provenance
     credentials: [ ]
   - path: /provenances/annotations/:uri
     component: opensilex-ProvenanceDetailsPage

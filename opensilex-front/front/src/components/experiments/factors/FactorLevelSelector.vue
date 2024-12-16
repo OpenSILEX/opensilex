@@ -1,23 +1,11 @@
 <template>
   <div v-if="!disabled">
-    <opensilex-SelectForm
-      v-if="experimentURI"
+    <opensilex-FormSelector
       :label="label"
       :selected.sync="internalValue"
       :multiple="multiple"
       :required="required"
       :optionsLoadingMethod="loadFactorLevels"
-      :disableBranchNodes="true"
-      placeholder="FactorLevelSelector.placeholder"
-      @keyup.enter.native="onEnter"
-    ></opensilex-SelectForm>
-    
-    <opensilex-FormSelector
-      v-else
-      :label="label"
-      :selected.sync="internalValue"
-      :multiple="multiple"
-      :required="required"
       :searchMethod="searchFactorLevels"
       :conversionMethod="convertDetail"
       :disableBranchNodes="true"
@@ -75,7 +63,6 @@ export default class FactorLevelSelector extends Vue {
               let factorNode = {
                 id: factor.uri,
                 label: factor.name,
-                isDisabled: false,
                 children: [],
               };
               for (let j in factor.levels) {
@@ -106,6 +93,12 @@ export default class FactorLevelSelector extends Vue {
   }
 
   searchFactorLevels(name: string, page, pageSize) {
+    if (this.experimentURI) {
+      return this.$opensilex
+          .getService("opensilex.ExperimentsService")
+          .getAvailableFactors(this.experimentURI);
+    }
+
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .searchFactorLevels(name, ["name=asc"], page, pageSize);
@@ -115,7 +108,6 @@ export default class FactorLevelSelector extends Vue {
     let factorNode = {
       id: factor.uri,
       label: factor.name,
-      isDisabled: false,
       children: [],
     };
     for (let j in factor.levels) {
@@ -123,7 +115,6 @@ export default class FactorLevelSelector extends Vue {
       factorNode.children.push({
         id: factorLevel.uri,
         label: factorLevel.name,
-        isDisabled: false
       });
     }
     return factorNode;

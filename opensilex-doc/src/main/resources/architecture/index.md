@@ -372,6 +372,9 @@ For more information on this module see [documentation](../opensilex-security/se
 +++++++++++++++++++ Provided extensions +++++++++++++++++++++++
 + LoginExtension:                                             +
 +   allow other modules to interact on user login/logout      +
++ SwaggerExtension:                                           +
++   allow other modules to add Swagger definitions (DTOs) see +
++   `SwaggerExtension` class for more information        +
 +++++++++++++++ Implemented extension points ++++++++++++++++++
 + APIExtension:                                               +
 +   register module API packages                              +
@@ -408,7 +411,9 @@ For more information on this module see [documentation](./core.md)
 + LoginExtension:                                             +
 +   store custom informations into user token                 +
 + SPARQLExtension:                                            +
-+   Add mapping to core ontology files                        +
++   Add mapping to core ontology files         
++ SwaggerExtension:                                           +
++   Add Swagger definition for `ResourceDagDTO`
 +-------------------------------------------------------------+
 ```
 

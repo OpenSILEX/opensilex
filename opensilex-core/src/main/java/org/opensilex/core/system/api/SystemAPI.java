@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import java.util.List;
 import java.util.Properties;
 import org.opensilex.OpenSilex;
@@ -107,9 +106,8 @@ public class SystemAPI {
         versionInfoDTO.setApiDocs( 
             new ApiExternalDocsDTO(
                 "Opensilex API documentation",
-                    UriBuilder.fromPath(this.serverModule.getBaseURL()).path("/api-docs/").build().toString()
+                this.serverModule.getBaseURL() + "api-docs"
             )
-
         );
         
         versionInfoDTO.setGithubPage(

@@ -6,7 +6,11 @@
     :multiple="multiple"
     :searchMethod="searchMethods"
     :itemLoadingMethod="loadMethods"
+    :conversionMethod="conversionMethod"
     :placeholder="placeholder"
+    :actionHandler="actionHandler"
+    :required="required"
+    :helpMessage="helpMessage"
     noResultsText="component.method.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -30,7 +34,7 @@ export default class MethodSelector extends Vue {
   pageSize = 10;
   page = 0;
 
-  @PropSync("method")
+  @PropSync("selected")
   methodURI;
 
   @Prop()
@@ -38,6 +42,19 @@ export default class MethodSelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  helpMessage;
+
+  @Prop()
+  required;
+
+  @Prop()
+  actionHandler: Function;
+
+  @Prop()
+  conversionMethod;
+
 
   @Prop()
   sharedResourceInstance;

@@ -10,6 +10,7 @@ package org.opensilex.core.organisation.api.site;
 
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
 import java.util.List;
@@ -23,15 +24,34 @@ import java.util.stream.Collectors;
  * @author Valentin Rigolle
  */
 public class SiteGetListDTO extends SiteDTO {
+
+    protected SiteAddressDTO address;
+
+    protected String description;
+
     protected List<URI> organizations;
+
+    protected List<NamedResourceDTO> facilities;
+
+    public SiteAddressDTO getAddress() {
+        return address;
+    }
+    public void setAddress(SiteAddressDTO address) {
+        this.address = address;
+    }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public List<URI> getOrganizations() {
         return organizations;
     }
-
     public void setOrganizations(List<URI> organizations) {
         this.organizations = organizations;
     }
+
+    public List<NamedResourceDTO> getFacilities() { return facilities; }
+    public void setFacilities(List<NamedResourceDTO> facilities) { this.facilities = facilities; }
 
     @Override
     public void fromModel(SiteModel model) {
@@ -43,5 +63,27 @@ public class SiteGetListDTO extends SiteDTO {
                     .collect(Collectors.toList())
             );
         }
+
+        if (Objects.nonNull(model.getAddress())) {
+            SiteAddressDTO addressDTO = new SiteAddressDTO();
+            addressDTO.fromModel(model.getAddress());
+            setAddress(addressDTO);
+        }
+
+        setDescription(model.getDescription());
+
+        if (Objects.nonNull(model.getFacilities())) {
+            setFacilities(model.getFacilities().stream()
+                    .map(NamedResourceDTO::getDTOFromModel)
+                    .collect(Collectors.toList())
+            );
+        }
     }
+
+    public static SiteGetListDTO getNewDTOFromModel(SiteModel model) {
+        SiteGetListDTO dto = new SiteGetListDTO();
+        dto.fromModel(model);
+        return dto;
+    }
+
 }

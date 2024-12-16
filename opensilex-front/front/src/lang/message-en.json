@@ -69,6 +69,7 @@
             "year":"Year",
             "geometry": "Geospatial coordinates",
             "geometry-help": "Geospatial coordinates in WKT format",
+            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",
@@ -92,6 +93,7 @@
                 "external-ontologies": "(Optional) External ontologies references",
                 "previous": "Previous",
                 "next": "Next",
+                "map": "Map",
                 "done": "Save",
                 "cancel": "Cancel"
             },
@@ -99,7 +101,9 @@
             "success": {
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
+                "creation-success-with-template": "{uri} has been created",
                 "update-success-message": " has been updated",
+                "update-success-with-template": "{uri} has been updated",
                 "delete-success-message": "has been deleted",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },
@@ -188,7 +192,9 @@
                 "develop": "Develop",
                 "release": "Release"
             },
-            "bad-notification-end-date": "The end date format set for the notification is incorrect."
+            "bad-notification-end-date": "The end date format set for the notification is incorrect.",
+            "uri-search-placeholder": "Search by URI",
+            "uriSearchHoverMessage": "Search by any URI"
         },
         "menu": {
             "dashboard": "Dashboard",
@@ -202,11 +208,16 @@
                 "images": "Images",
                 "visualization":"Visualization"
             },
+            "spatial": {
+                "label": "Spatial",
+                "map" : "Map"
+            },
             "homepage": "Home",
             "experiments": "Experiments",
             "facilities": "Facilities",
             "variables": "Variables",
             "organization": "Organizations",
+            "site": "Sites",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
@@ -363,6 +374,7 @@
         },
         "profile": {
             "description": "Manage and configure profiles",
+            "view-profiles": "View profiles",
             "profile-uri": "Profile URI",
             "form-name-placeholder": "Enter profile name",
             "label": "profile",
@@ -379,6 +391,7 @@
         },
         "group": {
             "description": "Manage and configure groups",
+            "view-groups": "View groups",
             "group-uri": "Group URI",
             "form-name-placeholder": "Enter group name",
             "form-description-placeholder": "Enter group description",
@@ -390,6 +403,8 @@
             "details": "Show or hide group details",
             "filter-placeholder": "Search groups...",
             "user-profiles": "Users and profiles",
+            "group-added": "The group has been created",
+            "group-updated": "The group has been updated",
             "errors": {
                 "group-already-exists": "Group already exists with this URI or this name"
             }
@@ -581,6 +596,9 @@
                 "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
+            },
+            "errors": {
+                "associated-data": "The experiment can't be deleted since there are some associated data"
             }
         },
         "germplasms": {
@@ -616,8 +634,14 @@
             "update": "Update references",
             "exactMatch": "Exact match",
             "closeMatch": "Close match",
-            "broadMatch": "Broader",
-            "narrowMatch": "Narrower",
+            "broadMatch": "Broad match",
+            "narrowMatch": "Narrow match",
+            "description": {
+                "exactMatch": "The term is equivalent to my concept",
+                "closeMatch": "The term is similar to my concept",
+                "broadMatch": "The term is more general than my concept",
+                "narrowMatch": "The term is more specific than my concept"
+            },
             "no-relation": "Please choose a relation type",
             "no-current-relation": "No relation selected",
             "current-relation": "Current selected relation",
@@ -697,7 +721,8 @@
         "provenance": "Provenances",
         "vocabulary": "Vocabulary",
         "packages": "Packages",
-        "accounts": "Accounts"
+        "accounts": "Accounts",
+        "spatial" : "Spatial"
     },
     "credential": {
         "default": {
@@ -805,6 +830,9 @@
                 "equipments": {
                     "label": "ik-aperture"
                 },
+                "spatial": {
+                    "label": "ik-map-pin"
+                },
                 "experiments": "ik-layers",
                 "image": "ik-bar-chart-line",
                 "installations": "ik-globe",
@@ -849,7 +877,9 @@
     },
     "server": {
         "errors": {
-            "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect."
+            "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect.",
+            "agroportal-instance-connection": "Could not reach Agroportal. The service may be unavailable, or the configuration is incorrect.",
+            "agroportal-not-configured": "Agroportal is not configured for this instance."
         },
         "warnings": {
             "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance.",

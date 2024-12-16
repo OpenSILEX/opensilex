@@ -6,6 +6,7 @@
 package org.opensilex.security.authentication;
 
 import java.net.URI;
+import java.util.Collection;
 
 /**
  *
@@ -13,23 +14,15 @@ import java.net.URI;
  */
 public class ForbiddenURIAccessException extends Exception {
 
-    private final URI uri;
-
     public ForbiddenURIAccessException(URI uri) {
         super("Forbidden access to URI: " + uri);
-        this.uri = uri;
     }
 
-    public ForbiddenURIAccessException(URI uri,String message) {
-        super(message);
-        this.uri = uri;
+    public ForbiddenURIAccessException(URI uri, String message) {
+        super("[ Forbidden access to URI list : " + uri.toString() + "] " + message);
     }
 
-    public String getUri() {
-        if (uri == null) {
-            return null;
-        }
-        return uri.toString();
+    public ForbiddenURIAccessException(Collection<?> uris, String message) {
+        super("[ Forbidden access to URI list : " + uris.toString() + "] " + message);
     }
-
 }

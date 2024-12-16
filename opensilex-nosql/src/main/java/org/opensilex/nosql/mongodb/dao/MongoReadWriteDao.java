@@ -9,7 +9,6 @@ import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -150,6 +149,20 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         T instance = session == null ?
                 collection.find(eq(idField(), uri)).first() :
                 collection.find(session, eq(idField(), uri)).first();
+
+        if (instance == null) {
+            throw new NoSQLInvalidURIException(uri);
+        }
+        return instance;
+    }
+
+    @Override
+    public T get(ClientSession session, URI uri, Bson projection) throws NoSQLInvalidURIException {
+        Objects.requireNonNull(uri);
+
+        T instance = session == null ?
+                collection.find(eq(idField(), uri)).projection(projection).first() :
+                collection.find(session, eq(idField(), uri)).projection(projection).first();
 
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);

@@ -19,7 +19,7 @@
                   class="variable-group-help"
                   v-b-tooltip.hover.top="$t('FacilityMonitoringView.variable-group-help')"
               />
-              <opensilex-SelectForm
+              <opensilex-FormSelector
                   id="variableGroupSelector"
                   :selected.sync="selectedVariableGroup"
                   :searchMethod="searchVariableGroups"
@@ -30,7 +30,7 @@
                   @onClose="loadVariables"
                   @select="loadVariables"
                   @handlingEnterKey="loadVariables"
-              ></opensilex-SelectForm>
+              ></opensilex-FormSelector>
             </div>
           </div>
         </div>
@@ -304,7 +304,7 @@ en:
     variable-group-selector: Environmental variable groups
     no-variable-group-selected: All environnemental variables
     no-data: No data found for this period
-    no-variable: No environnemental variable found
+    no-variable: No environnemental variables found
     start-date-help: Start date of data displayed
     end-date-help: End date of data displayed
     variable-group-help: Groups of variables associated with the facility. You can associate groups in the update form of the facility.

@@ -1,36 +1,24 @@
 package org.opensilex.core.data.dal;
 
-import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
-import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ExcludableUriList;
 
 import java.net.URI;
 import java.time.Instant;

@@ -49,33 +49,33 @@
         <npm.version>v8.5.2</npm.version>
 
         <!-- Java supported version -->
-        <java.compiler.version>11</java.compiler.version>
+        <java.compiler.version>17</java.compiler.version>
 
         <!-- Minimal maven version -->
         <maven.minimal.version>3.6.0</maven.minimal.version>
 
         <!-- dependencies version -->
         <jersey.version>2.37</jersey.version>
-        <tomcat.version>9.0.82</tomcat.version>
+        <tomcat.version>9.0.91</tomcat.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
-        <jackson.version>2.15.3</jackson.version>
+        <jackson.version>2.17.2</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <jts.version>1.18.2</jts.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.5</swagger.jersey2.jaxrs.version>
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
-        <commons.codec.version>1.16.0</commons.codec.version>
+        <commons.codec.version>1.17.1</commons.codec.version>
         <maven.resolver.version>1.7.3</maven.resolver.version>
         <maven.resolver.provider.version>3.8.4</maven.resolver.provider.version>
-        <rdf4j.version>3.7.5</rdf4j.version>
+        <rdf4j.version>5.0.3</rdf4j.version>
         <jena.query.builder.version>4.9.0</jena.query.builder.version>
         <mongodb.version>4.11.0</mongodb.version>
-        <bytebuddy.version>1.14.5</bytebuddy.version>
+        <bytebuddy.version>1.14.18</bytebuddy.version>
         <java.jwt.version>4.4.0</java.jwt.version>
-        <picocli.version>4.7.4</picocli.version>
+        <picocli.version>4.7.6</picocli.version>
         <bcript.version>0.10.2</bcript.version>
-        <commons.io.version>2.13.0</commons.io.version>
-        <logback.version>1.2.10</logback.version>
+        <commons.io.version>2.16.1</commons.io.version>
+        <logback.version>1.2.13</logback.version>
         <janino.version>3.1.9</janino.version>
         <slf4j.api.version>1.7.36</slf4j.api.version>
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
@@ -89,15 +89,15 @@
         <httpcore.version>4.4.16</httpcore.version>
         <cdi.api.version>2.0.SP1</cdi.api.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
-        <apache.tika.version>2.9.1</apache.tika.version>
+        <apache.tika.version>2.9.2</apache.tika.version>
 
         <!-- test only dependencies version -->
         <junit.version>4.13.2</junit.version>
         <mockito.version>4.3.1</mockito.version>
         <!--for ubuntu 22.04 : https://askubuntu.com/a/1403683  MongoDb has no official build for ubuntu 22.04 at the moment.
 Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
-        <embed.mongo.version>3.5.4</embed.mongo.version>
-        <awaitability.version>4.2.0</awaitability.version>
+        <embed.mongo.version>4.16.1</embed.mongo.version>
+        <awaitability.version>4.2.1</awaitability.version>
 
         <!-- maven plugins versions -->
        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
@@ -130,15 +130,15 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
-        <logstash-logback-encoder.version>7.0.1</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <csv.parser.version>2.9.1</csv.parser.version>
         <email.simple.java.mail>6.7.6</email.simple.java.mail>
-        <mustache.compiler.version>0.9.10</mustache.compiler.version>
+        <mustache.compiler.version>0.9.14</mustache.compiler.version>
         <com.nimbusds.version>10.13</com.nimbusds.version>
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.8</caffeine.version>
-        <geotools.version>29.2</geotools.version>
+        <geotools.version>29.6</geotools.version>
     </properties>
 
     <dependencyManagement>
@@ -1060,8 +1060,8 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${java.compiler.version}</source>
-                    <target>${java.compiler.version}</target>
+                    <!-- see https://openjdk.org/jeps/247, java 11 is use in for-java-11 profile -->  
+                    <release>${java.compiler.version}</release> 
                     <compilerArgument>-proc:none</compilerArgument>
                     <!--                    <compilerArgs>
                         <arg>-Xlint:all</arg>
@@ -1686,5 +1686,12 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <skipTests>true</skipTests>
             </properties>
         </profile>
+        <profile>
+            <id>for-java-11</id>
+            <properties>
+                <java.compiler.version>11</java.compiler.version>
+            </properties>
+        </profile>
+
     </profiles>
 </project>

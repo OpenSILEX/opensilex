@@ -1,9 +1,9 @@
 package org.opensilex.core.organisation.api.site;
 
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.OrganizationAPI;
-import org.opensilex.core.organisation.dal.site.SiteDAO;
+import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -35,7 +35,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,7 @@ public class SiteAPI {
     @Inject
     private SPARQLService sparql;
 
+    //TODO: waiting for MongoDBServiceV2 - FacilityDAO in SiteLogic need MongoDBService
     @Inject
     private MongoDBService nosql;
 
@@ -79,7 +82,7 @@ public class SiteAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
         SiteSearchFilter filter = (SiteSearchFilter) new SiteSearchFilter()
                 .setNamePattern(pattern)
@@ -90,14 +93,9 @@ public class SiteAPI {
         if (!organizations.isEmpty()) {
             filter.setOrganizations(organizations);
         }
-        ListWithPagination<SiteModel> siteModels = siteDAO.search(filter);
+        ListWithPagination<SiteModel> siteModels = siteLogic.search(filter);
 
-        List<SiteGetListDTO> siteDtos = siteModels.getList().stream()
-                .map(siteModel -> {
-                    SiteGetListDTO siteDto = new SiteGetListDTO();
-                    siteDto.fromModel(siteModel);
-                    return siteDto;
-                }).collect(Collectors.toList());
+        ListWithPagination<SiteGetListDTO> siteDtos = siteModels.convert(SiteGetListDTO.class, SiteGetListDTO::getNewDTOFromModel);
 
         return new PaginatedListResponse<>(siteDtos).getResponse();
     }
@@ -114,16 +112,20 @@ public class SiteAPI {
     public Response getSite(
             @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
     ) throws Exception {
-        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-        SiteModel model = siteDAO.get(siteUri, currentUser);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+
+        SiteModel model = siteLogic.get(siteUri, currentUser);
+        LocationObservationModel locationModel= siteLogic.getSiteLocationObservationModel(model);
+
         SiteGetDTO siteDto = new SiteGetDTO();
-        siteDto.fromModelWithGeospatialInfo(model, siteDAO.getSiteGeospatialModel(siteUri));
+        siteDto.fromModelWithGeospatialInfo(model, locationModel.getLocation());
+
+        //@TODO : refactoring publisher check for all models (from API to Logic) - 'getPublisher' in superClass 'AbstractLogic' or 'AccountLogic' ??
         if (Objects.nonNull(model.getPublisher())){
             siteDto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
 
         return new SingleObjectResponse<>(siteDto).getResponse();
-
     }
 
     @GET
@@ -138,9 +140,8 @@ public class SiteAPI {
     public Response getSitesByURI(
             @ApiParam(value = "Site URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris
     ) throws Exception {
-        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-
-        List<SiteModel> siteModels = siteDAO.getList(uris, currentUser);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        List<SiteModel> siteModels = siteLogic.getList(uris, currentUser);
 
         List<NamedResourceDTO> dtoList = siteModels.stream()
                 .map(NamedResourceDTO::getDTOFromModel)
@@ -165,22 +166,20 @@ public class SiteAPI {
     public Response createSite(
             @ApiParam("Site creation object") @Valid SiteCreationDTO siteCreationDto
     ) throws Exception {
-        if (CollectionUtils.isEmpty(siteCreationDto.getOrganizations())) {
-            throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
-        }
 
         try {
-            SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-
+            SiteLogic siteLogic = new SiteLogic(sparql, nosql);
             SiteModel created = siteCreationDto.newModel();
-            created.setPublisher(currentUser.getUri());
-            created = siteDAO.create(created, currentUser);
+
+            created = siteLogic.create(created, currentUser);
 
             return new CreatedUriResponse(created.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "A facility with the same URI already exists",
                     e.getMessage()).getResponse();
+        } catch (BadRequestException e){
+            throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
     }
 
@@ -200,17 +199,16 @@ public class SiteAPI {
     public Response updateSite(
             @ApiParam("Site update object") @Valid SiteUpdateDTO siteUpdateDTO
     ) throws Exception {
-        if (CollectionUtils.isEmpty(siteUpdateDTO.getOrganizations())) {
+        try {
+            SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+
+            SiteModel siteModel = siteUpdateDTO.newModel();
+            SiteModel updated =  siteLogic.update(siteModel, currentUser);
+
+            return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
+        } catch (BadRequestException e){
             throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
-
-        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-
-        SiteModel siteModel = siteUpdateDTO.newModel();
-
-        SiteModel updated = siteDAO.update(siteModel, currentUser);
-
-        return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
     }
 
     @DELETE
@@ -230,8 +228,34 @@ public class SiteAPI {
     public Response deleteSite(
             @ApiParam(value = "Site URI", required = true) @PathParam("uri") @NotNull @Valid URI siteUri
     ) throws Exception {
-        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-        siteDAO.delete(siteUri, currentUser);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+
+        siteLogic.delete(siteUri, currentUser);
+
         return new ObjectUriResponse(Response.Status.OK, siteUri).getResponse();
+    }
+
+    @GET
+    @Path("/with_location")
+    @ApiOperation("Get only the list of sites with a location")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sites retrieved", response =  SiteGetWithGeometryDTO.class, responseContainer = "List")
+    })
+    public Response getSitesWithLocation() throws Exception {
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        List<SiteGetWithGeometryDTO> siteDTOList = new ArrayList<>();
+
+        Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = siteLogic.getSitesWithPosition(currentUser);
+
+        sitesAndLocationsMap.forEach((k, v) -> {
+            SiteGetWithGeometryDTO siteDTO = new SiteGetWithGeometryDTO();
+            siteDTO.fromModel(k, v);
+            siteDTOList.add(siteDTO);
+        });
+
+        return new PaginatedListResponse<>(siteDTOList).getResponse();
     }
 }

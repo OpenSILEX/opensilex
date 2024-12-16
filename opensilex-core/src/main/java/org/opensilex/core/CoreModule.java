@@ -14,14 +14,14 @@ import org.bson.Document;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.SwaggerExtension;
 import org.opensilex.core.config.SharedResourceInstanceItem;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFileDaoV2;
-import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
@@ -55,6 +55,7 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
+import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ import java.util.stream.Collectors;
 /**
  * Core OpenSILEX module implementation
  */
-public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension, ModuleWithNosqlEntityLinkedToAccount {
+public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension, ModuleWithNosqlEntityLinkedToAccount, SwaggerExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
@@ -346,9 +347,14 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         results.add(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
         results.add(LogsDAO.LOGS_COLLECTION_NAME);
         results.add(MetricDAO.METRICS_COLLECTION);
-        results.add(MoveEventDAO.MOVE_COLLECTION_NAME);
+        results.add(MoveEventNoSqlDao.COLLECTION_NAME);
         results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
 
         return results;
+    }
+
+    @Override
+    public List<Class<?>> getAdditionalSwaggerDefinitions() {
+        return List.of(ResourceDagDTO.class);
     }
 }

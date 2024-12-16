@@ -9,7 +9,6 @@ import io.swagger.annotations.*;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -24,7 +23,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
-import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.response.ResourceDagDTOBuilder;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -62,9 +60,6 @@ public class OrganizationAPI {
     @Inject
     private SPARQLService sparql;
 
-    @Inject
-    private MongoDBService nosql;
-
     @CurrentUser
     AccountModel currentUser;
 
@@ -86,7 +81,7 @@ public class OrganizationAPI {
             @ApiParam("Organisation description") @Valid OrganizationCreationDTO dto
     ) throws Exception {
         try {
-            OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+            OrganizationDAO dao = new OrganizationDAO(sparql);
             OrganizationModel model = dto.newModel();
             model.setPublisher(currentUser.getUri());
 
@@ -112,7 +107,7 @@ public class OrganizationAPI {
     public Response getOrganization(
             @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
         OrganizationModel model = dao.get(uri, currentUser);
         OrganizationGetDTO dto = OrganizationGetDTO.getDTOFromModel(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -138,7 +133,7 @@ public class OrganizationAPI {
     public Response deleteOrganization(
             @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -149,19 +144,25 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return organisations", response = ResourceDagDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return organisations", response = OrganizationDagDTO.class, responseContainer = "List")
     })
     public Response searchOrganizations(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris
+            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris,
+            @ApiParam(value = "Regex pattern for filtering list by types", example = ".*") @QueryParam("type") URI type,
+            @ApiParam(value = "Organization every result will be direct child of") @QueryParam("parent_organization_uri") URI parentOrganizationUri,
+            @ApiParam(value = "Facility for filtering") @QueryParam("facility_uri") URI facilityUri
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
 
         List<OrganizationModel> organizations = dao.search(new OrganizationSearchFilter()
                 .setNameFilter(pattern)
+                .setTypeUriFilter(type)
+                .setDirectChildURI(parentOrganizationUri)
+                .setFacilityURI(facilityUri)
                 .setRestrictedOrganizations(restrictedOrganizationUris.isEmpty() ? null : restrictedOrganizationUris)
                 .setUser(currentUser));
-        ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
+        ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new OrganizationDagDTOBuilder(organizations);
         return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }
 
@@ -182,7 +183,7 @@ public class OrganizationAPI {
             @ApiParam("Organisation description")
             @Valid OrganizationUpdateDTO dto
     ) throws Exception {
-        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql);
 
         OrganizationModel organization = dao.update(dto.newModel(), currentUser);
         Response response = new ObjectUriResponse(Response.Status.OK, organization.getUri()).getResponse();

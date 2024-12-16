@@ -15,7 +15,7 @@
                 )
               "
               @click="editOrganization()"
-              label="OrganizationTree.edit"
+              label="OrganizationDetail.edit"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
@@ -25,7 +25,7 @@
                 )
               "
               @click="deleteOrganization()"
-              label="OrganizationTree.delete"
+              label="OrganizationDetail.delete"
               :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -69,15 +69,6 @@
         >
         </opensilex-UriListView>
 
-        <!-- Sites -->
-        <opensilex-UriListView
-            label="OrganizationDetail.sites.label"
-            :list="siteUriList"
-            :inline="false"
-            v-if="hasSites"
-          >
-        </opensilex-UriListView>
-
         <!-- Expe -->
         <opensilex-UriListView
             label="OrganizationDetail.experiments.label"
@@ -99,8 +90,8 @@
     <opensilex-ModalForm
         ref="organizationForm"
         component="opensilex-OrganizationForm"
-        createTitle="OrganizationTree.add"
-        editTitle="OrganizationTree.update"
+        createTitle="OrganizationDetail.add"
+        editTitle="OrganizationDetail.update"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
@@ -185,18 +176,6 @@ export default class OrganizationDetail extends Vue {
     });
   }
 
-  get siteUriList() {
-    return this.selected.sites.map(site => {
-      return {
-        uri: site.uri,
-        value: site.name,
-        to: {
-          path: "/organization/site/details/" + encodeURIComponent(site.uri)
-        }
-      };
-    });
-  }
-
   get experimentUriList() {
     return this.selected.experiments.map(experiment => {
       return {
@@ -239,6 +218,10 @@ export default class OrganizationDetail extends Vue {
 
 <i18n>
 en:
+  add: Add organization
+  update: Update organization
+  edit: Edit organization
+  delete: Delete organization
   OrganizationDetail:
     parentOrganizations: Parent organizations
     groups:
@@ -250,6 +233,10 @@ en:
     experiments:
       label: "Experiments"
 fr:
+  add: Ajouter une organisation
+  update: Modifier l'organisation
+  edit: Editer l'organisation
+  delete: Supprimer l'organisation
   OrganizationDetail:
     parentOrganizations: Organisations parentes
     groups:

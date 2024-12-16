@@ -80,24 +80,31 @@ components["opensilex-GroupSelector"] = GroupSelector;
 // Organizations
 import OrganizationView from './organizations/OrganizationView.vue';
 components["opensilex-OrganizationView"] = OrganizationView;
+import OrganizationList from "./organizations/OrganizationList.vue";
+components["opensilex-OrganizationList"] = OrganizationList;
 import OrganizationDetailView from './organizations/OrganizationDetailView.vue';
 components["opensilex-OrganizationDetailView"] = OrganizationDetailView;
-import OrganizationTree from './organizations/OrganizationTree.vue';
-components["opensilex-OrganizationTree"] = OrganizationTree;
 import OrganizationForm from './organizations/OrganizationForm.vue';
 components["opensilex-OrganizationForm"] = OrganizationForm;
 import OrganizationDetail from './organizations/OrganizationDetail.vue';
 components["opensilex-OrganizationDetail"] = OrganizationDetail;
 import OrganizationSelector from './organizations/OrganizationSelector.vue';
 components["opensilex-OrganizationSelector"] = OrganizationSelector;
+
+//sites
+import SiteView from './organizations/site/SiteView.vue';
+components["opensilex-SiteView"] = SiteView;
+import SiteDetailView from './organizations/site/SiteDetailView.vue';
+components["opensilex-SiteDetailView"] = SiteDetailView;
 import SiteDetail from './organizations/site/SiteDetail.vue';
 components["opensilex-SiteDetail"] = SiteDetail;
 import SiteForm from './organizations/site/SiteForm.vue';
 components["opensilex-SiteForm"] = SiteForm;
-import SiteView from './organizations/site/SiteView.vue';
-components["opensilex-SiteView"] = SiteView;
 import SiteSelector from './organizations/site/SiteSelector.vue';
 components["opensilex-SiteSelector"] = SiteSelector;
+import SiteList from './organizations/site/SiteList.vue';
+components["opensilex-SiteList"] = SiteList;
+
 
 // Facilities
 import FacilityModalForm from './facilities/FacilityModalForm.vue';
@@ -124,6 +131,9 @@ import FacilityMonitoringView from "./facilities/views/FacilityMonitoringView.vu
 components["opensilex-FacilityMonitoringView"] = FacilityMonitoringView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
+import FacilitiesModalList from "./facilities/FacilitiesModalList.vue";
+components["opensilex-FacilitiesModalList"] = FacilitiesModalList;
+
 
 import DatePeriodPicker from "./facilities/DatePeriodPicker.vue";
 components["opensilex-DatePeriodPicker"] = DatePeriodPicker;
@@ -179,6 +189,8 @@ components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'
 components["opensilex-SelectForm"] = SelectForm;
 
+import ModalFormSelector from './common/forms/ModalFormSelector.vue'
+components["opensilex-ModalFormSelector"] = ModalFormSelector;
 import FormSelector from './common/forms/FormSelector.vue'
 components["opensilex-FormSelector"] = FormSelector;
 import CustomTreeselect from './common/forms/CustomTreeselect.vue'
@@ -270,17 +282,29 @@ import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
 components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
+import NbElementPerPageSelector from "./common/views/NbElementPerPageSelector.vue";
+components["opensilex-NbElementPerPageSelector"] = NbElementPerPageSelector;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
 import ModalListBuilder from './common/views/ModalListBuilder.vue'
 components["opensilex-ModalListBuilder"] = ModalListBuilder;
 
+//#region External references
 import ExternalReferencesModalForm from './common/external-references/ExternalReferencesModalForm.vue'
 components["opensilex-ExternalReferencesModalForm"] = ExternalReferencesModalForm;
 import ExternalReferencesForm from './common/external-references/ExternalReferencesForm.vue'
 components["opensilex-ExternalReferencesForm"] = ExternalReferencesForm;
 import ExternalReferencesDetails from './common/external-references/ExternalReferencesDetails.vue'
 components["opensilex-ExternalReferencesDetails"] = ExternalReferencesDetails;
+//#region Skos
+import SkosSelector from "./common/external-references/skos/SkosSelector.vue";
+components["opensilex-SkosSelector"] = SkosSelector;
+import SkosRelationInput from "./common/external-references/skos/SkosRelationInput.vue";
+components["opensilex-SkosRelationInput"] = SkosRelationInput;
+import SkosRelationTable from "./common/external-references/skos/SkosRelationTable.vue";
+components["opensilex-SkosRelationTable"] = SkosRelationTable;
+//#endregion
+//#endregion
 
 import StringFilter from './common/filters/StringFilter.vue'
 components["opensilex-StringFilter"] = StringFilter;
@@ -412,14 +436,16 @@ import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
 import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
 components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
-import ExperimentModalList from './experiments/ExperimentModalList.vue';
-components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
+import ExperimentSimpleList from "./experiments/ExperimentSimpleList.vue";
+components["opensilex-ExperimentSimpleList"] = ExperimentSimpleList;
 import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisation.vue';
 components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
+import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
+components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
 
 
 // Germplasm
@@ -535,8 +561,6 @@ import ScientificObjectVisualizationForm from './scientificObjects/visualization
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
-import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
-components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
@@ -608,12 +632,6 @@ import GroupVariablesDetails from './groupVariable/GroupVariablesDetails.vue';
 components["opensilex-GroupVariablesDetails"] = GroupVariablesDetails;
 
 // Entity
-import EntityForm from './variables/form/EntityForm.vue';
-components["opensilex-EntityForm"] = EntityForm;
-import EntityCreate from './variables/form/EntityCreate.vue';
-components["opensilex-EntityCreate"] = EntityCreate;
-import EntityExternalReferencesForm from './variables/form/EntityExternalReferencesForm.vue';
-components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
 import VariableStructureList from './variables/views/VariableStructureList.vue';
 components["opensilex-VariableStructureList"] = VariableStructureList;
 import VariableStructureDetails from './variables/views/VariableStructureDetails.vue';
@@ -621,44 +639,55 @@ components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
 import EntitySelector from './variables/form/EntitySelector.vue';
 components["opensilex-EntitySelector"] = EntitySelector;
 
+//#region Agroportal
+//#region Selector
+import AgroportalSearch from './common/external-references/agroportal/AgroportalSearch.vue';
+components["opensilex-AgroportalSearch"] = AgroportalSearch;
+import AgroportalResults from './common/external-references/agroportal/AgroportalResults.vue';
+components["opensilex-AgroportalResults"] = AgroportalResults;
+import AgroportalResultItem from './common/external-references/agroportal/AgroportalResultItem.vue';
+components["opensilex-AgroportalResultItem"] = AgroportalResultItem;
+import AgroportalTermSelector from './common/external-references/agroportal/AgroportalTermSelector.vue';
+components["opensilex-AgroportalTermSelector"] = AgroportalTermSelector;
+//#endregion
+//#region Form
+import AgroportalSearchFormPart from './common/external-references/agroportal/wizard/AgroportalSearchFormPart.vue';
+components["opensilex-AgroportalSearchFormPart"] = AgroportalSearchFormPart;
+import AgroportalCreateFormPart from './common/external-references/agroportal/wizard/AgroportalCreateFormPart.vue';
+components["opensilex-AgroportalCreateFormPart"] = AgroportalCreateFormPart;
+import AgroportalMappingFormPart from './common/external-references/agroportal/wizard/AgroportalMappingFormPart.vue';
+components["opensilex-AgroportalMappingFormPart"] = AgroportalMappingFormPart;
+import AgroportalCreateForm from './common/external-references/agroportal/wizard/AgroportalCreateForm.vue';
+components["opensilex-AgroportalCreateForm"] = AgroportalCreateForm;
+//#endregion
+//#region Variables
+import AgroportalEntityForm from './variables/agroportal/AgroportalEntityForm.vue';
+components["opensilex-AgroportalEntityForm"] = AgroportalEntityForm;
+import AgroportalEntityOfInterestForm from './variables/agroportal/AgroportalEntityOfInterestForm.vue';
+components["opensilex-AgroportalEntityOfInterestForm"] = AgroportalEntityOfInterestForm;
+import AgroportalCharacteristicForm from "./variables/agroportal/AgroportalCharacteristicForm.vue";
+components["opensilex-AgroportalCharacteristicForm"] = AgroportalCharacteristicForm;
+import AgroportalMethodForm from "./variables/agroportal/AgroportalMethodForm.vue";
+components["opensilex-AgroportalMethodForm"] = AgroportalMethodForm;
+import AgroportalUnitForm from "./variables/agroportal/AgroportalUnitForm.vue";
+components["opensilex-AgroportalUnitForm"] = AgroportalUnitForm;
+//#endregion
+//#endregion
+
 // Entity of interest
-import InterestEntityForm from './variables/form/InterestEntityForm.vue';
-components["opensilex-InterestEntityForm"] = InterestEntityForm;
-import InterestEntityCreate from './variables/form/InterestEntityCreate.vue';
-components["opensilex-InterestEntityCreate"] = InterestEntityCreate;
-import InterestEntityExternalReferencesForm from './variables/form/InterestEntityExternalReferencesForm.vue';
-components["opensilex-InterestEntityExternalReferencesForm"] = InterestEntityExternalReferencesForm;
 import InterestEntitySelector from './variables/form/InterestEntitySelector.vue';
 components["opensilex-InterestEntitySelector"] = InterestEntitySelector;
 
 // Method
-import MethodCreate from './variables/form/MethodCreate.vue';
-components["opensilex-MethodCreate"] = MethodCreate;
-import MethodForm from './variables/form/MethodForm.vue';
-components["opensilex-MethodForm"] = MethodForm;
-import MethodExternalReferencesForm from './variables/form/MethodExternalReferencesForm.vue';
-components["opensilex-MethodExternalReferencesForm"] = MethodExternalReferencesForm;
 import MethodSelector from './variables/form/MethodSelector.vue';
 components["opensilex-MethodSelector"] = MethodSelector;
 
 
 //Characteristic
-import CharacteristicForm from './variables/form/CharacteristicForm.vue';
-components["opensilex-CharacteristicForm"] = CharacteristicForm;
-import CharacteristicModalForm from './variables/form/CharacteristicModalForm.vue';
-components["opensilex-CharacteristicModalForm"] = CharacteristicModalForm;
-import CharacteristicExternalReferencesForm from './variables/form/CharacteristicExternalReferencesForm.vue';
-components["opensilex-CharacteristicExternalReferencesForm"] = CharacteristicExternalReferencesForm;
 import CharacteristicSelector from './variables/form/CharacteristicSelector.vue';
 components["opensilex-CharacteristicSelector"] = CharacteristicSelector;
 
 // Unit
-import UnitForm from './variables/form/UnitForm.vue';
-components["opensilex-UnitForm"] = UnitForm;
-import UnitCreate from './variables/form/UnitCreate.vue';
-components["opensilex-UnitCreate"] = UnitCreate;
-import UnitExternalReferencesForm from './variables/form/UnitExternalReferencesForm.vue';
-components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
 import UnitDetails from './variables/views/UnitDetails.vue';
 components["opensilex-UnitDetails"] = UnitDetails;
 import UnitSelector from './variables/form/UnitSelector.vue';
@@ -670,8 +699,6 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
-import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
-components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import DataProvenanceSelector from './data/DataProvenanceSelector.vue';
@@ -743,6 +770,10 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
+import GlobalMapView from "./geometry/GlobalMapView.vue";
+components["opensilex-GlobalMapView"] = GlobalMapView;
+import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
+components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
 
 // VISUALIZATION
 
@@ -753,8 +784,6 @@ components["opensilex-ImageSingle"] = ImageSingle;
 
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
-import VisuForm from './visualization/VisuForm.vue';
-components["opensilex-VisuForm"] = VisuForm;
 import VisuImageGrid from './visualization/VisuImageGrid.vue';
 components["opensilex-VisuImageGrid"] = VisuImageGrid;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';
@@ -874,6 +903,12 @@ import SystemView from './tools/SystemView.vue';
 components["opensilex-SystemView"] = SystemView;
 import GDPR from './tools/GDPR.vue'
 components["opensilex-GDPR"] = GDPR;
+
+//GlobalUriSearch
+import GlobalUriSearchResult from "./globalUriSearch/GlobalUriSearchResult.vue";
+components["opensilex-GlobalUriSearchResult"] = GlobalUriSearchResult;
+import GlobalUriSearchBox from "./globalUriSearch/GlobalUriSearchBox.vue";
+components["opensilex-GlobalUriSearchBox"] = GlobalUriSearchBox;
 
 
 export default components;

@@ -9,7 +9,7 @@
 
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn greenThemeColor"
         v-on:click="hide(true)"
       >{{ $t('component.common.validateSelection') }}</button>
     </template>

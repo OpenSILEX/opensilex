@@ -9,7 +9,8 @@
 
     <template v-slot:field="field">
       <!-- <b-spinner small label="Small Spinning" v-if="loading"></b-spinner> -->
-      <input :id="field.id" type="hidden" />
+      <!-- following hidden input is necessary for form validation -->
+      <input :id="field.id" type="hidden" :value="selection" />
       <b-input-group class="select-button-container">
 
         <opensilex-CustomTreeselect
@@ -27,6 +28,7 @@
           :multiple="multiple"
           :selected.sync="selection"
           :placeholder="placeholder"
+          :disabled="disabled"
           :optionsLoadingMethod="optionsLoadingMethod"
           :options="options"
           :viewHandler="viewHandler"
@@ -35,6 +37,8 @@
           :defaultSelectedValue="defaultSelectedValue"
           :showCount="showCount"
           :noResultsText="$t(noResultsText)"
+          :actionHandler="actionHandler"
+          :disableBranchNodes="disableBranchNodes"
         >
           
           <template v-slot:after-list v-if="resultCount < totalCount && !showAllResults">
@@ -86,6 +90,7 @@ import CustomTreeselect from "./CustomTreeselect.vue";
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string, // added for agroportal SelectableItem adequation
   isDisabled?: boolean
 }
 
@@ -99,7 +104,6 @@ export default class FormSelector extends Vue {
   totalCount = 0;
   resultCount = 0;
   resultLimit = 10;
-  flat: boolean = true;
   //#endregion
 
   //#region Refs
@@ -176,10 +180,8 @@ export default class FormSelector extends Vue {
   @Prop()
   rules: string | Function;
 
-  @Prop({
-    default: null,
-  })
-  actionHandler;
+  @Prop()
+  actionHandler: Function;
 
   @Prop()
   viewHandler: Function;
@@ -191,6 +193,9 @@ export default class FormSelector extends Vue {
 
   @Prop()
   defaultSelectedValue;
+
+  @Prop()
+  disableBranchNodes: boolean;
   //#endregion
 
    //#region Methods

@@ -7,6 +7,10 @@
     :searchMethod="searchCharacteristics"
     :itemLoadingMethod="loadCharacteristics"
     :placeholder="placeholder"
+    :actionHandler="actionHandler"
+    :required="required"
+    :helpMessage="helpMessage"
+    :conversionMethod="objectToSelectNode"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -31,7 +35,7 @@ export default class CharacteristicSelector extends Vue {
   pageSize = 10;
   page = 0;
 
-  @PropSync("characteristic")
+  @PropSync("selected")
   characteristicURI;
 
   @Prop()
@@ -41,7 +45,19 @@ export default class CharacteristicSelector extends Vue {
   multiple;
 
   @Prop()
+  helpMessage;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  required;
+
+  @Prop()
   sharedResourceInstance;
+
+  @Prop()
+  conversionMethod;
 
   @Ref("formSelector") readonly formSelector!: FormSelector;
 

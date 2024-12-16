@@ -7,6 +7,7 @@
 package org.opensilex.nosql.exceptions;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,24 +15,19 @@ import java.util.List;
  * @author Alice Boizet
  */
 public class NoSQLInvalidUriListException extends Exception {
-    private final List<URI> uris;
 
-    public NoSQLInvalidUriListException(List<URI> uris) {
+    private final Collection<?> uris;
+
+    public NoSQLInvalidUriListException(Collection<?> uris) {
         this("Invalid URIs: ", uris);
     }
 
-    public NoSQLInvalidUriListException(String message, List<URI> uris) {
+    public NoSQLInvalidUriListException(String message, Collection<?> uris) {
         super(message + uris);
         this.uris = uris;
     }
 
-    public String getUris() {
-        if (uris.isEmpty()) {
-            return null;
-        } else {
-            return uris.toString();
-        }
-        
+    public Collection<?> getUris() {
+        return uris;
     }
-
 }

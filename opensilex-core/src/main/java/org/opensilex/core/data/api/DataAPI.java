@@ -15,6 +15,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -28,6 +29,8 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.dataV2.dao.BatchHistoryDao;
+import org.opensilex.core.dataV2.dao.BatchHistorySearchFilter;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -703,7 +706,9 @@ public class DataAPI {
             @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
             @ApiParam(value = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by batch id for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_ID) @QueryParam("batch_id") String batchId
+
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         DataSearchFilter filter = new DataSearchFilter();
@@ -720,9 +725,26 @@ public class DataAPI {
         if (variableUri != null) {
             filter.setVariables(Collections.singletonList(variableUri));
         }
+        if (StringUtils.isNotBlank(batchId)) {
+            filter.setBatchId(batchId);
+        }
 
         DeleteResult result = dataLogic.deleteManyByFilter(filter);
+        deleteDataBatchHistory(batchId, result);
         return new SingleObjectResponse<>(result).getResponse();
+    }
+
+    /**
+     * Deletes batch history data from the database
+     *
+     * @param batchId the ID of the batch to delete history for
+     * @param result  the result of a previous delete operation
+     */
+    private void deleteDataBatchHistory(String batchId, DeleteResult result) {
+        if (StringUtils.isNotBlank(batchId) && result.getDeletedCount() > 0) {
+            BatchHistoryDao batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
+            batchHistoryDao.deleteMany(new BatchHistorySearchFilter().setBatchId(batchId));
+        }
     }
 
     /**

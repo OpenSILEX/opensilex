@@ -21,7 +21,9 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -36,8 +38,10 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static com.mongodb.client.model.Projections.excludeId;
@@ -188,28 +192,37 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session));
     }
 
-    public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
-//TODO
-        Objects.requireNonNull(uri);
-        if(!noSqlDao.exists(clientSession, uri)){
-            return null;
+    public Map<URI, LocationObservationModel> getTargetWithPosition(List<URI> targetUris, Instant endDate, Geometry intersection) throws NoSuchElementException, SPARQLException {
+        Map<URI, LocationObservationModel> targetLocationMap = new HashMap<>();
+
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(targetUris);
+
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        if(!targetCollectionMap.isEmpty()){
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
+                    targetCollectionMap.values().stream().toList(),
+                    true,
+                    Objects.nonNull(endDate) ? endDate : Instant.now(),
+                    intersection);
+
+            var locationObservationMap = locationObservationModels.stream()
+                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+
+            targetCollectionMap.forEach((target, collection) -> {
+                var observation = locationObservationMap.get(collection);
+                if (Objects.nonNull(observation)) {
+                    targetLocationMap.put(target, observation);
+                }
+            });
         }
-
-        Bson projection = Projections.fields(excludeId());
-
-        MoveNosqlModel model = noSqlDao.get(clientSession, uri, projection);
-
-        model.setUri(uri);
-        return model;
+        return targetLocationMap;
     }
 
-    public List<MoveNosqlModel> getIntersectPosition(List<MoveNosqlModel> moveEventNoSqlModelList, Geometry geometry){
-//TODO
-        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
-        filter.setIncludedUris(moveEventNoSqlModelList.stream().map(MoveNosqlModel::getUri).collect(Collectors.toList()));
-        filter.setGeometry(geometry);
-
-        return noSqlDao.searchAsStreamWithPagination(filter).getSource().collect(Collectors.toList());
+    public List<LocationObservationModel> getIntersectPosition(List<LocationObservationModel> locations, Geometry geometry){
+        //TODO: à valider - avec device??
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        return observationLogic.getIntersection(locations,geometry);
     }
 
     /**
@@ -301,9 +314,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @return a {@link SPARQLResult} which the following bindings :
      */
     public MoveModel getLastMoveAfter(URI target, OffsetDateTime dateTime) throws Exception {
-
         MoveSearchFilter searchFilter = new MoveSearchFilter().setAfterEnd(dateTime);
         searchFilter.setPage(0);
+
         if(!StringUtils.isBlank(target.toString())){
             searchFilter.setTargets(Collections.singletonList(target));
         }
@@ -318,28 +331,21 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     /**
-     * @param objectUri the object on which we get the position
+     * @param move move
      * @return the position of the given object at a given time, null if no move event was found.
      * @apiNote if time is null, then the last known position will be returned
      */
-    public PositionModel getPosition(URI objectUri, URI moveURI) throws Exception {
+    public LocationObservationModel getPosition(MoveModel move) throws Exception {
 //TODO
-        Bson projection = Projections.fields(
-                excludeId(), // don't fetch position _id field
-                getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
-        );
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollection(move.getTargets().get(0));
 
-        if(!noSqlDao.exists(clientSession, moveURI)) {
-            return null;
-        }
-
-        MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
-
-        if (moveNoSqlModel==null || moveNoSqlModel.getTargetPositions().isEmpty()) {
-            return null;
-        }
-
-        return moveNoSqlModel.getTargetPositions().get(0).getPosition();
+        //Get last location
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        return locationObservationLogic.getASpecificLocationObservation(
+                collectionURI,
+                move.getEnd().getDateTimeStamp().toInstant(),
+                move.getStart() != null ? move.getStart().getDateTimeStamp().toInstant() : null );
     }
 
     //#endregion

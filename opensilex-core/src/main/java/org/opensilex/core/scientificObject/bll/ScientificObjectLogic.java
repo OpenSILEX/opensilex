@@ -226,7 +226,11 @@ public class ScientificObjectLogic {
 
         if(!soCollectionList.isEmpty()){
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
-            locationObservationModels = locationObservationLogic.getLastLocationObservation(soCollectionList, false, Instant.now());
+            locationObservationModels = locationObservationLogic.getLastLocationObservation(
+                    soCollectionList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
+                    false,
+                    Instant.now(),
+                    null);
         }
 
         var solocationObservationMap = locationObservationModels.stream()
@@ -412,7 +416,6 @@ public class ScientificObjectLogic {
 
         Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = new HashMap<>();
         List<ScientificObjectModel> soList = dao.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage());
-        //TODO: Normalement que les SO avec collection - à vérif ??
         //TODO: performances tests? no proxy?
 
         if(!soList.isEmpty()) {
@@ -420,14 +423,32 @@ public class ScientificObjectLogic {
 
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
 
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(collectionList, true, Objects.nonNull(endDate) ? Instant.parse(endDate) : Instant.now());
-//TODO: si to != et pas geometry => get location facility si existant
+            //Get last location for the experiment
+            Instant end;
+            if(endDate == null){
+                ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+                ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
+                end = experiment.getEndDate() != null ? Instant.from(experiment.getEndDate()) : Instant.now();
+            } else {
+                end = Instant.parse(endDate);
+            }
+
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
+                    collectionList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
+                    true,
+                    end,
+                    null);
+
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
             soList.forEach(so -> {
                 var observation = locationObservationMap.get(so.getLocationObservationCollection().getUri());
                 if (Objects.nonNull(observation)) {
+                    //if geometry is null, get location facility
+                    if(observation.getLocation().getGeometry() == null && observation.getLocation().getTo() != null) {
+                      observation = locationObservationLogic.getFacilityGeometry(observation);
+                    }
                     soAndLocationsMap.put(so, observation);
                 }
             });
@@ -441,7 +462,7 @@ public class ScientificObjectLogic {
 
         if(Objects.nonNull(model.getLocationObservationCollection())){
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
-            List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservation(Collections.singletonList(model.getLocationObservationCollection()),false, Instant.now());
+            List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservation(Collections.singletonList(model.getLocationObservationCollection().getUri()),false, Instant.now(),null);
             soLastLocation = locationList.get(0);
         }
         return soLastLocation;
@@ -460,10 +481,10 @@ public class ScientificObjectLogic {
         if(!collectionModelList.isEmpty()) {
             soXpMap.forEach((so,xp) ->{
                 List<LocationObservationModel> lastLocation = locationObservationLogic.getLastLocationObservation(
-                        Collections.singletonList(so.getLocationObservationCollection()),
+                        Collections.singletonList(so.getLocationObservationCollection().getUri()),
                         false,
-                        Objects.nonNull(xp.getEndDate()) ? xp.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant() : Instant.now()
-                        );
+                        Objects.nonNull(xp.getEndDate()) ? xp.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant() : Instant.now(),
+                        null);
                 if(!lastLocation.isEmpty()){
                     xpLocationMap.put(xp.getUri(), lastLocation.get(0));
                 }

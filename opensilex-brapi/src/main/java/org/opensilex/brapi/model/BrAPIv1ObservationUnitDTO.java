@@ -23,6 +23,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -394,22 +395,22 @@ public class BrAPIv1ObservationUnitDTO {
             }
         } else if (moveEventLogic.countForTarget(model.getUri()) >= 1){
             MoveModel moveModel = moveEventLogic.getLastMoveEvent(model.getUri());
-            PositionModel movePosition = moveEventLogic.getPosition(model.getUri(), moveModel.getUri());
+            LocationObservationModel movePosition = moveEventLogic.getPosition(moveModel);
 
             if (Objects.nonNull(movePosition)){
                 //if the Object has a move with a geometry take its centroid coordinates as long/lat
-                if (Objects.nonNull(movePosition.getCoordinates())) {
-                    Geometry moveJtsGeometry = new GeoJsonReader().read(movePosition.getCoordinates().toJson());
+                if (Objects.nonNull(movePosition.getLocation().getGeometry())) {
+                    Geometry moveJtsGeometry = new GeoJsonReader().read(movePosition.getLocation().getGeometry().toJson());
                     Point centroid = moveJtsGeometry.getCentroid();
                     observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
                     observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
-                } else if (Objects.nonNull(movePosition.getX()) || Objects.nonNull(movePosition.getY())) {
+                } else if (Objects.nonNull(movePosition.getLocation().getX()) || Objects.nonNull(movePosition.getLocation().getY())) {
                     //if the Object has a move with a position take its X/Y coordinates as grid coordinates
-                    if (Objects.nonNull(movePosition.getX())) {
-                        observationUnit.setPositionCoordinateX(movePosition.getX());
+                    if (Objects.nonNull(movePosition.getLocation().getX())) {
+                        observationUnit.setPositionCoordinateX(movePosition.getLocation().getX());
                     }
-                    if (Objects.nonNull(movePosition.getY())) {
-                        observationUnit.setPositionCoordinateY(movePosition.getY());
+                    if (Objects.nonNull(movePosition.getLocation().getY())) {
+                        observationUnit.setPositionCoordinateY(movePosition.getLocation().getY());
                     }
                     observationUnit.setPositionCoordinateXType(PositionType.GRID_ROW);
                     observationUnit.setPositionCoordinateYType(PositionType.GRID_COL);

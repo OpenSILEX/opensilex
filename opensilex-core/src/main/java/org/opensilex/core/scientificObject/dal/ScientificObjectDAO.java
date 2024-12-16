@@ -592,7 +592,6 @@ public class ScientificObjectDAO {
     }
 
     public List<ScientificObjectModel> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang) throws Exception {
-//TODO : Vérif Requete
         Node context = SPARQLDeserializers.nodeURI(contextURI);
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -612,15 +611,13 @@ public class ScientificObjectDAO {
         select.addVar(typeNameVar);
         select.addVar(creationDateVar);
         select.addVar(destructionDateVar);
+        select.addVar(locationCollectionVar);
 
         // Add label and type in where clause
         WhereBuilder graphHandler = new WhereBuilder();
         select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
         graphHandler.addWhere(uriVar, RDFS.label, nameVar);
         graphHandler.addWhere(uriVar, RDF.type, typeVar);
-
-        // Add location collection filter
-        graphHandler.addWhere(locationCollectionVar, SOSA.hasFeatureOfInterest, uriVar);
 
         // Add creation and destruction date as optional fields
         graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
@@ -643,6 +640,12 @@ public class ScientificObjectDAO {
         }
 
         select.addGraph(context, graphHandler);
+
+        // Add location collection filter
+        WhereBuilder locationGraphHandler = new WhereBuilder();
+        locationGraphHandler.addWhere(locationCollectionVar, SOSA.hasFeatureOfInterest, uriVar);
+        Node graphObservationCollection = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(LocationObservationCollectionModel.class));
+        select.addGraph(graphObservationCollection, locationGraphHandler);
 
         Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
 

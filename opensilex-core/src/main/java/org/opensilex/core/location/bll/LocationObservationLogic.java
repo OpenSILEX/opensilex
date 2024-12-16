@@ -12,6 +12,7 @@
 package org.opensilex.core.location.bll;
 
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -103,21 +104,22 @@ public class LocationObservationLogic {
     }
 
     /**
-     * @param modelList   collections of observations list of features of interest
+     * @param collectionUriList   collection uris of observations list of features of interest
      * @param hasGeometry fetch only documents with a "geometry" field - displayable on a map
      * @param date        the date at which we search the location
      * @return list of the last locations of each feature of interest
      */
-    public List<LocationObservationModel> getLastLocationObservation(List<LocationObservationCollectionModel> modelList, boolean hasGeometry, Instant date) {
+    public List<LocationObservationModel> getLastLocationObservation(List<URI> collectionUriList, boolean hasGeometry, Instant date, Geometry intersection) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
 
-        List<URI> uriList = modelList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-
-        searchFilter.setObservationCollectionList(uriList);
+        searchFilter.setObservationCollectionList(collectionUriList);
         searchFilter.setHasGeometry(hasGeometry);
 
         if (Objects.nonNull(date)) {
             searchFilter.setEndDate(date);
+        }
+        if (Objects.nonNull(intersection)) {
+            searchFilter.setIntersection(intersection);
         }
 
         ListWithPagination<LocationObservationModel> resultSearch = locationObservationDAO.searchWithPagination(searchFilter);
@@ -155,6 +157,15 @@ public class LocationObservationLogic {
         searchFilter.setPageSize(pageSize);
 
         return locationObservationDAO.searchWithPagination(searchFilter);
+    }
+
+    public List<LocationObservationModel> getIntersection(List<LocationObservationModel> locations, Geometry geometry) {
+        LocationObservationSearchFilter filter = new LocationObservationSearchFilter();
+
+        filter.setIncludedUris(locations.stream().map(LocationObservationModel::getUri).collect(Collectors.toList()));
+        filter.setIntersection(geometry);
+
+        return locationObservationDAO.searchWithPagination(filter).getList();
     }
 
     public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) {
@@ -283,6 +294,32 @@ public class LocationObservationLogic {
             //update locations linked to facility
             locationToUpdateList.forEach(loc -> locationObservationDAO.upsertSpecificLocation(session, loc, loc));
         }
+    }
+
+    public LocationObservationModel getFacilityGeometry(LocationObservationModel location){
+        LocationObservationModel facilityLocationCorresponding = new LocationObservationModel();
+
+        LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
+        searchFilter.setFeatureOfInterest(location.getLocation().getTo());
+        searchFilter.setHasGeometry(true);
+        searchFilter.setEndDate(location.getEndDate());
+        searchFilter.setStartDate(location.getStartDate());
+
+        ListWithPagination<LocationObservationModel> facilityLocationList = locationObservationDAO.searchWithPagination(searchFilter);
+
+        if(!facilityLocationList.getList().isEmpty()){
+            if (facilityLocationList.getList().size() == 1 && facilityLocationList.getList().get(0).getEndDate() == null) { //Location from address (without date)
+                facilityLocationCorresponding= facilityLocationList.getList().get(0);
+            } else {
+                facilityLocationCorresponding = facilityLocationList.getList().stream()
+                        .collect(Collectors.collectingAndThen(
+                                Collectors.maxBy(Comparator.comparing(LocationObservationModel::getEndDate)),
+                                Optional::get));
+            }
+        }
+
+        location.getLocation().setGeometry(facilityLocationCorresponding.getLocation().getGeometry()) ;
+        return location;
     }
     //#endregion
 

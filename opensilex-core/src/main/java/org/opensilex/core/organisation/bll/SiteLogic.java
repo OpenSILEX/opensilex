@@ -298,7 +298,11 @@ public class SiteLogic {
         if (!sitesWithLocationMap.isEmpty()) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             // filter only on the List URI because there is only one "geometry" type location and no date required
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(new ArrayList<>(sitesWithLocationMap.values()), true, null);
+            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
+                    sitesWithLocationMap.values().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
+                    true,
+                    null,
+                    null);
 
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));

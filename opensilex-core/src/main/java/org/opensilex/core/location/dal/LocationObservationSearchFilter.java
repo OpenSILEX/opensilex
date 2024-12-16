@@ -1,5 +1,6 @@
 package org.opensilex.core.location.dal;
 
+import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
@@ -13,6 +14,7 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     private Instant startDate;
     private Instant endDate;
     private boolean hasGeometry;
+    private Geometry intersection;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -60,5 +62,13 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setHasGeometry(boolean hasGeometry) {
         this.hasGeometry = hasGeometry;
+    }
+
+    public Geometry getIntersection() {
+        return intersection;
+    }
+
+    public void setIntersection(Geometry intersection) {
+        this.intersection = intersection;
     }
 }

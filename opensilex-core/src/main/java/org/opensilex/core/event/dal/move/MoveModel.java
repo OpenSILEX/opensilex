@@ -21,6 +21,7 @@ public class MoveModel extends EventModel {
 
     private LocationObservationModel locationObservation;
 
+    //TOD: a supprimer
     @SPARQLProperty(
             ontology = Oeev.class,
             property = "to"

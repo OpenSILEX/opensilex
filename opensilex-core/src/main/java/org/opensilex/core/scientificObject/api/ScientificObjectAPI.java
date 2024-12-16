@@ -177,7 +177,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
        ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
        List<ScientificObjectNodeDTO> soDTOList = new ArrayList<>();
-//TODO: semble Ok mais pas vérif pour l'instant
+
         Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = logic.getSOWithPosition(
                 contextURI,
                 startDate,
@@ -495,7 +495,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-        //TODO: tucheuu
+        //TODO: à faire
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -535,7 +535,6 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
-        //TODO!!!
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         Map<String, byte[]> result = logic.exportFromMapScientificObjects(selectedObjects, selectedProps, contextURI, format, currentUser);
 
@@ -585,7 +584,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-//TODO: toucheou
+//TODO: à faire
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
                 new ScientificObjectCsvImporter(sparql, nosql, fs, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()

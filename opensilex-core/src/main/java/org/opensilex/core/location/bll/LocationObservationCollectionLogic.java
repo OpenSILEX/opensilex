@@ -16,6 +16,8 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -57,6 +59,10 @@ public class LocationObservationCollectionLogic {
 
     public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
         return locationObservationCollectionDAO.getCollections(featureOfInterests);
+    }
+
+    public Map<SPARQLResourceModel, LocationObservationCollectionModel> getLocationObservationCollectionListByType(URI rdfType) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollectionByType(rdfType);
     }
 
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {

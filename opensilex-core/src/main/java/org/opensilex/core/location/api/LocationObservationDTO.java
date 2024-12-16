@@ -26,6 +26,8 @@ import java.util.Objects;
 
 public class LocationObservationDTO {
 
+    protected URI featureOfInterest;
+
     protected GeoJsonObject geojson;
 
     protected URI from;
@@ -47,6 +49,14 @@ public class LocationObservationDTO {
     protected Instant startDate;
 
     protected Instant endDate;
+
+    public URI getFeatureOfInterest() {
+        return featureOfInterest;
+    }
+
+    public void setFeatureOfInterest(URI featureOfInterest) {
+        this.featureOfInterest = featureOfInterest;
+    }
 
     public GeoJsonObject getGeojson() {
         return geojson;
@@ -122,6 +132,8 @@ public class LocationObservationDTO {
 
     public void toModel(LocationObservationModel model) {
 
+        model.setFeatureOfInterest(getFeatureOfInterest());
+
         try {
             LocationModel location = LocationLogic.buildLocationModel(
                     Objects.nonNull(getGeojson()) ? LocationLogic.geoJsonToGeometry(geojson) : null,
@@ -153,6 +165,9 @@ public class LocationObservationDTO {
     }
 
     public void fromModel(LocationObservationModel model) {
+
+        setFeatureOfInterest(model.getFeatureOfInterest());
+
         if (Objects.nonNull(model.getLocation().getGeometry())) {
             try {
                 setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));

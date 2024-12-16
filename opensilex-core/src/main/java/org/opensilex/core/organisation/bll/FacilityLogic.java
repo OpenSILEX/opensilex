@@ -209,9 +209,10 @@ public class FacilityLogic {
         if (!facilitiesWithLocationMap.isEmpty()) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
             List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
-                    new ArrayList<>(facilitiesWithLocationMap.values()),
+                    facilitiesWithLocationMap.values().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
                     true,
-                    Objects.nonNull(endDate) ? endDate : Instant.now());
+                    Objects.nonNull(endDate) ? endDate : Instant.now()
+                    ,null);
 
             var locationObservationMap = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
@@ -315,9 +316,10 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
         List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
-                Collections.singletonList(facilityModel.getLocationObservationCollection()),
+                Collections.singletonList(facilityModel.getLocationObservationCollection().getUri()),
                 false,
-                Instant.now()
+                Instant.now(),
+                null
         );
 
         if (lastLocationByFacility.isEmpty()) {

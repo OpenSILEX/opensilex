@@ -494,15 +494,15 @@ public class DeviceDAO {
 
             positionHistory.forEach((move) -> {
                 try {
-                    resultDTOList.add(new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition()));
+                    resultDTOList.add(new PositionGetDTO(move, move.getLocationObservation()));
                 } catch (JsonProcessingException ex) {
                     throw new RuntimeException(ex);
                 }
             });
 
             PositionGetDTO lastPosition = resultDTOList.get(0);
-            if (lastPosition.getTo() != null) {
-                URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
+            if (lastPosition.getLocation().getTo() != null) {
+                URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getLocation().getTo().toString()));
 
                 FacilityLogic infraLogic = new FacilityLogic(sparql, nosql.getServiceV2());
                 facility = infraLogic.get(facilityUri, currentUser);

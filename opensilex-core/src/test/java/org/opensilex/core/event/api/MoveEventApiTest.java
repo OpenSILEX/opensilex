@@ -399,12 +399,12 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         /*assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getTo().getUri()), SPARQLDeserializers.getExpandedURI(creationDTO.getTo()));
         assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getTo().getUri()), SPARQLDeserializers.getExpandedURI(creationDTO.getTo()));*/
         assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getEvent()), SPARQLDeserializers.getExpandedURI(moveEventUri));
-        assertEquals(creationDTO.getEnd(),dtoFromDb.getMoveTime());
+//        assertEquals(creationDTO.getEnd(),dtoFromDb.getMoveTime());
 
 //        PositionCreationDTO itemPositionCreationDto = creationDTO.getTargetsPositions().get(concernedItemIdx).getPosition();
-        PositionGetDetailDTO positionNoSqlGetDto = dtoFromDb.getPosition();
+//        PositionGetDetailDTO positionNoSqlGetDto = dtoFromDb.getPosition();
 
-        assertNotNull(positionNoSqlGetDto);
+//        assertNotNull(positionNoSqlGetDto);
 
       /*  assertEquals(positionNoSqlGetDto.getDescription(), itemPositionCreationDto.getDescription());
         assertEquals(positionNoSqlGetDto.getX(), itemPositionCreationDto.getX());

@@ -61,6 +61,8 @@ public class DataModel extends MongoModel {
      */
     private String batchId;
 
+    public static final String BATCH_ID_FIELD = "batchId";
+
     public String getBatchId() {
         return batchId;
     }

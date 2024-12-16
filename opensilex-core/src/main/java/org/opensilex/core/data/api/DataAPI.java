@@ -111,6 +111,7 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_GROUP_ID = "Data";
     public static final String CREDENTIAL_DATA_GROUP_LABEL_KEY = "credential-groups.data";
 
+    public static final String DATA_EXAMPLE_BATCH_ID = "file_name_20241216093013";
     public static final String DATA_EXAMPLE_URI = "http://opensilex.dev/id/data/1598857852858";
     public static final String DATA_EXAMPLE_OBJECTURI = "http://opensilex.dev/opensilex/2020/o20000345";
     public static final String DATA_EXAMPLE_VARIABLEURI = "http://opensilex.dev/variable#variable.2020-08-21_11-21-23entity6_method6_quality6_unit6";
@@ -288,6 +289,7 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
     })
     public Response searchDataListByTargets(
+            @ApiParam(value = "Search by batch id for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_ID) @QueryParam("batch_id") String batchId,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -307,6 +309,7 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
+                batchId,
                 startDate,
                 endDate,
                 timezone,
@@ -363,6 +366,7 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
+                null,
                 startDate,
                 endDate,
                 timezone,
@@ -416,6 +420,7 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         return getDataList(
+                null,
                 startDate,
                 endDate,
                 timezone,
@@ -438,6 +443,7 @@ public class DataAPI {
     }
 
     private Response getDataList(
+            String batchId,
             String startDate,
             String endDate,
             String timezone,
@@ -460,7 +466,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
+            filter = getSearchFilter(batchId, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
             if(filter == null){
                 return new PaginatedListResponse<>(new ListWithPagination<>(page, pageSize)).getResponse();
             }
@@ -486,7 +492,7 @@ public class DataAPI {
         return new PaginatedListResponse<>(results).getResponse();
     }
 
-    private DataSearchFilter getSearchFilter(String startDate,
+    private DataSearchFilter getSearchFilter(String batchId, String startDate,
                                              String endDate,
                                              String timezone,
                                              List<URI> experiments,
@@ -520,6 +526,7 @@ public class DataAPI {
         }
 
         DataSearchFilter filter = new DataSearchFilter();
+        filter.setBatchId(batchId);
         filter.setUser(user);
         filter.setExperiments(experiments);
         filter.setVariables(variables);
@@ -584,7 +591,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            filter = getSearchFilter(null, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
             if(filter == null){
                 return new SingleObjectResponse<>(0).getResponse();
             }
@@ -857,7 +864,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, objects, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
+            filter = getSearchFilter(null, startDate, endDate, timezone, experiments, objects, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
             if(filter == null){
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "EMPTY_SEARCH_FILTER", "The filter used to export was null").getResponse();
             }

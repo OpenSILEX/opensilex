@@ -64,6 +64,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +76,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -406,8 +410,9 @@ public class DataFilesAPI {
         try {
             DataFileModel description = dao.get(uri);
 
-            Pattern pattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
-            if( pattern.matcher(description.getFilename()).matches()) {
+            Pattern basicsExtensionsPattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
+            Pattern tiffExtensionPattern = Pattern.compile("(.*/)*.+\\.(tiff)$") ;
+            if( basicsExtensionsPattern.matcher(description.getFilename()).matches()) {
                 byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
 
                 byte[] imageData = ImageResizer.getInstance().resize(
@@ -417,6 +422,19 @@ public class DataFilesAPI {
                 );
 
                 return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+                        .build();
+            } else if (tiffExtensionPattern.matcher(description.getFilename()).matches()) {
+                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+                byte[] convertedImage = convertTIFFToPNG(image);
+
+                byte[] resizedImage = ImageResizer.getInstance().resize(
+                        convertedImage,
+                        scaledWidth,
+                        scaledHeight
+                );
+
+                return Response.ok(resizedImage, MediaType.APPLICATION_OCTET_STREAM)
                         .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
                         .build();
             } else {
@@ -430,6 +448,17 @@ public class DataFilesAPI {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         } catch (java.io.IOException e) {
             return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+        }
+    }
+
+    private static byte[] convertTIFFToPNG(byte[] tiffBytes) throws IOException {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(tiffBytes);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            BufferedImage tiffImage = ImageIO.read(inputStream);
+            ImageIO.write(tiffImage, "png", outputStream);
+
+            return outputStream.toByteArray();
         }
     }
     

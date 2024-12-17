@@ -412,43 +412,38 @@ public class DataFilesAPI {
 
             Pattern basicsExtensionsPattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
             Pattern tiffExtensionPattern = Pattern.compile("(.*/)*.+\\.(tiff)$") ;
+
             if( basicsExtensionsPattern.matcher(description.getFilename()).matches()) {
                 byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+                return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
-                byte[] imageData = ImageResizer.getInstance().resize(
-                        image,
-                        scaledWidth,
-                        scaledHeight
-                );
-
-                return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                        .build();
             } else if (tiffExtensionPattern.matcher(description.getFilename()).matches()) {
                 byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
                 byte[] convertedImage = convertTIFFToPNG(image);
 
-                byte[] resizedImage = ImageResizer.getInstance().resize(
-                        convertedImage,
-                        scaledWidth,
-                        scaledHeight
-                );
+                return resizeImageAndGetResponse(convertedImage, description.getFilename(), scaledWidth, scaledHeight);
 
-                return Response.ok(resizedImage, MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                        .build();
             } else {
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
-
-
-
 
         } catch (NoSQLInvalidURIException e) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         } catch (java.io.IOException e) {
             return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
         }
+    }
+
+    private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
+        byte[] resizedImage = ImageResizer.getInstance().resize(
+                convertedImage,
+                scaledWidth,
+                scaledHeight
+        );
+
+        return Response.ok(resizedImage, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"") //optional
+                .build();
     }
 
     private static byte[] convertTIFFToPNG(byte[] tiffBytes) throws IOException {

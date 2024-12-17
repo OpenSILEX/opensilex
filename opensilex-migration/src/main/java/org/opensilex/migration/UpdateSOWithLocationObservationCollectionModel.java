@@ -41,7 +41,6 @@ import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -61,6 +60,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -110,8 +110,6 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
             Map<URI,URI> soCollectionMap = sparqlAddLocationCollection(soLocationListMap);
             //6 - Completed location models for each SO and insert to Location collection
             mongoSoToLocationCollection(soLocationListMap, soCollectionMap, newMoves);
-            //7 - Delete from/to from move event
-            sparqlDeleteMoveFromTo(moveDetailsList);
 
             sparql.commitTransaction();
             mongodb.commitTransaction();
@@ -155,100 +153,10 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
             locationObservation.setHasGeometry(true);
             locationObservation.setFeatureOfInterest(geo.getUri());
 
-            soLocationListMap.put(geo.getUri(), Collections.singletonList(locationObservation));
+            soLocationListMap.put(geo.getUri(), List.of(locationObservation));
         });
 
         return soLocationListMap;
-    }
-
-    private List<MoveModel> sparqlCreateSoMoves(Map<URI, List<LocationObservationModel>> soLocationListMap){
-        try {
-            /*// Avoid duplicates
-            List<URI> featureURIList = soLocationListMap.keySet().stream().collect(Collectors.toList());
-
-            //Get moves with featureOfInterest as target
-            *//**
-             * <pre>
-             *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-             *     PREFIX  org:  <http://www.w3.org/ns/org#>
-             *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
-             *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-             *
-             * SELECT *
-             * WHERE {
-             *  GRAPH <http://opensilex.test/set/event> {
-             *   	    ?objects rdf:type oeev:Move.
-             *   	    ?objects oeev:concerns ?featureOfInterest.
-             *   	    ?objects time:hasEnd ?end.
-             *   	    ?end time:inXSDDateTimeStamp ?endDate}
-             *
-             *   	    FILTER ( ?featureOfInterest IN (
-             *          <http://opensilex....>,
-             *          <http://opensilex....>
-             *          ))
-             *       }
-             * }
-             * </pre>
-             * *//*
-            //Graph
-            Node eventGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(EventModel.class));
-
-            //Variables
-            Var eventVar = makeVar(EventModel.GRAPH);
-            Var endVar = makeVar(EventModel.END_FIELD);
-            Var endDateVar = makeVar(LocationObservationModel.END_DATE_FIELD);
-            Var featureVar = makeVar(LocationObservationModel.FEATURE_OF_INTEREST_FIELD);
-
-            //where clause
-            WhereBuilder whereEvent = new WhereBuilder()
-                    .addWhere(eventVar, RDF.type, Oeev.Move)
-                    .addWhere(eventVar, Time.hasEnd, endVar)
-                    .addWhere(endVar, Time.inXSDDateTimeStamp, endDateVar)
-                    .addWhere(eventVar, Oeev.concerns, featureVar);
-
-            whereEvent.addFilter(SPARQLQueryHelper.inURIFilter(featureVar,featureURIList));
-
-            WhereBuilder where = new WhereBuilder().addGraph(eventGraph,whereEvent);
-            SelectBuilder select = new SelectBuilder().addWhere(where);
-
-            Stream<SPARQLResult> moveList = sparql.executeSelectQueryAsStream(select);
-            List<URI> featuresToExclude = moveList.filter(move -> move.getStringValue(LocationObservationModel.END_DATE_FIELD).equals("1970-01-01T00:00:00.000Z"))
-                    .map(move-> URI.create(move.getStringValue(LocationObservationModel.FEATURE_OF_INTEREST_FIELD)))
-                    .collect(Collectors.toList());*/
-
-            //build move
-            MoveEventDAO moveDao = new MoveEventDAO(sparql, mongodb);
-
-            List<MoveModel> moveModels = new ArrayList<>();
-
-           //TODO: add instantmodel
-            InstantModel defaultEnd = new InstantModel();
-            defaultEnd.setType(org.opensilex.sparql.model.time.Time.InstantURI);
-            defaultEnd.setDateTimeStamp(OffsetDateTime.parse("2017-05-19T00:00:00Z"));
-
-            soLocationListMap.values().stream()
-                    .flatMap(Collection::stream)
-                    .forEach(location -> {
-//                        if (location.getEndDate() != null && location.getUri() == null /*&& !featuresToExclude.contains(location.getFeatureOfInterest())*/) {
-                            MoveModel moveModel = new MoveModel();
-//                            moveModel.setEnd(defaultEnd);
-                            moveModel.setIsInstant(true);
-                            moveModel.setTargets(Collections.singletonList(location.getFeatureOfInterest()));
-                            moveModels.add(moveModel);
-//                        }
-                    });
-
-            List<MoveModel> moves = moveDao.create(moveModels);
-
-            return moves;
-
-        } catch (SPARQLException e) {
-            throw new RuntimeException(e);
-        } catch (SPARQLDeserializerNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Stream<SPARQLResult> sparqlGetMoveDetails() throws SPARQLException {
@@ -301,13 +209,16 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                 .addWhere(new TriplePath(soTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode()));
 
         //where event clause
+        //start optional clause
+         WhereBuilder whereStart =  new WhereBuilder();
+         whereStart.addWhere(eventVar, Time.hasBeginning, startVar).addWhere(startVar, Time.inXSDDateTimeStamp, startDateVar);
+
         WhereBuilder whereEvent = new WhereBuilder()
                 .addWhere(eventVar, RDF.type, Oeev.Move)
                 .addWhere(eventVar, Time.hasEnd, endVar)
                 .addWhere(endVar, Time.inXSDDateTimeStamp, endDateVar)
                 .addWhere(eventVar, Oeev.concerns, featureVar)
-                .addOptional(eventVar, Time.hasBeginning, startVar)
-                .addOptional(startVar, Time.inXSDDateTimeStamp, startDateVar)
+                .addOptional(whereStart)
                 .addOptional(eventVar, Oeev.to, toVar)
                 .addOptional(eventVar, Oeev.from, fromVar);
 
@@ -319,13 +230,54 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         return sparql.executeSelectQueryAsStream(select);
     }
 
+    private List<MoveModel> sparqlCreateSoMoves(Map<URI, List<LocationObservationModel>> soLocationListMap){
+        try {
+            //build move
+            MoveEventDAO moveDao = new MoveEventDAO(sparql, mongodb);
+
+            List<MoveModel> moveModels = new ArrayList<>();
+
+            soLocationListMap.values().stream()
+                    .flatMap(Collection::stream)
+                    .forEach(location -> {
+                        InstantModel defaultEnd = new InstantModel();
+                        defaultEnd.setType(org.opensilex.sparql.model.time.Time.InstantURI);
+                        defaultEnd.setDateTimeStamp(OffsetDateTime.parse("2017-05-19T00:00:00Z"));
+
+                        if (location.getEndDate() != null && location.getUri() == null) {
+                            MoveModel moveModel = new MoveModel();
+                            moveModel.setEnd(defaultEnd);
+                            moveModel.setIsInstant(true);
+                            moveModel.setTargets(Collections.singletonList(location.getFeatureOfInterest()));
+                            moveModels.add(moveModel);
+                        }
+                    });
+
+            List<MoveModel> moves = moveDao.create(moveModels);
+
+            return moves;
+
+        } catch (SPARQLException e) {
+            throw new RuntimeException(e);
+        } catch (SPARQLDeserializerNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Map<URI, List<LocationObservationModel>> mongoGetMoveFromMongo(Map<URI, List<LocationObservationModel>> soLocationGeospatialListMap, Stream<SPARQLResult> moveDetailsList){
         //Get SO from move collection
         MongoDatabase db = mongodb.getDatabase();
         MongoCollection<MoveNosqlModel> moveCollection = db.getCollection(MoveEventNoSqlDao.COLLECTION_NAME, MoveNosqlModel.class);
 
-        List<URI> moveURIs = moveDetailsList.map(move -> URI.create(move.getStringValue(EventModel.GRAPH))).collect(Collectors.toList());
-        List<MoveNosqlModel> soFromMove = moveCollection.find(Filters.in("_id", moveURIs)).into(new ArrayList<>());
+        Map<URI,SPARQLResult> moveURIs = moveDetailsList.collect(Collectors.toMap(
+             sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.GRAPH)),
+                sparqlResult -> sparqlResult,
+                (oldValue, newValue) -> oldValue
+                ));
+
+        List<MoveNosqlModel> soFromMove = moveCollection.find(Filters.in("_id", new ArrayList<>(moveURIs.keySet()))).into(new ArrayList<>());
 
         // Mapping FeatureOfInterest and locations
         //from move collection
@@ -343,35 +295,39 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                         locationObservation.setHasGeometry(true);
                     }
                     if(position.getPosition().getTextualPosition() != null) {
-                        position.getPosition().setTextualPosition(position.getPosition().getTextualPosition());
+                        location.setTextualPosition(position.getPosition().getTextualPosition());
                     }
                     if(position.getPosition().getX() != null) {
-                        position.getPosition().setX(position.getPosition().getX());
+                        location.setX(position.getPosition().getX());
                     }
                     if(position.getPosition().getY() != null) {
-                        position.getPosition().setY(position.getPosition().getY());
+                        location.setY(position.getPosition().getY());
                     }
                     if(position.getPosition().getZ() != null) {
-                        position.getPosition().setZ(position.getPosition().getZ());
+                        location.setZ(position.getPosition().getZ());
                     }
                 }
 
                 //rdf
-                SPARQLResult moveDetails = moveDetailsList.filter(sparqlResult -> SPARQLDeserializers
+                SPARQLResult moveDetails = moveURIs.values().stream().filter(sparqlResult -> SPARQLDeserializers
                                 .compareURIs(URI.create(sparqlResult.getStringValue(EventModel.GRAPH)), move.getUri()))
-                        .findFirst().get();
+                        .findFirst().orElse(null);
 
-                locationObservation.setEndDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.END_DATE_FIELD)));
+                if (moveDetails != null) {
+                    locationObservation.setEndDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.END_DATE_FIELD)));
 
-                if(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
-                    locationObservation.setStartDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD)));
+                    if (moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
+                        locationObservation.setStartDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD)));
+                    }
+                    if (moveDetails.getStringValue(MoveModel.TO_FIELD) != null) {
+                        location.setTo(URI.create(moveDetails.getStringValue(MoveModel.TO_FIELD)));
+                    }
+                    if (moveDetails.getStringValue(MoveModel.FROM_FIELD) != null) {
+                        location.setFrom(URI.create(moveDetails.getStringValue(MoveModel.FROM_FIELD)));
+                    }
                 }
-                if(moveDetails.getStringValue(MoveModel.TO_FIELD) != null) {
-                    locationObservation.getLocation().setTo(URI.create(moveDetails.getStringValue(MoveModel.TO_FIELD)));
-                }
-                if(moveDetails.getStringValue(MoveModel.FROM_FIELD) != null) {
-                    locationObservation.getLocation().setFrom(URI.create(moveDetails.getStringValue(MoveModel.FROM_FIELD)));
-                }
+
+                locationObservation.setLocation(location);
 
                 //Set hasGeometry at true if the "to" facility has corresponding location
                 if(!locationObservation.isHasGeometry() && locationObservation.getLocation().getTo() != null) {
@@ -380,16 +336,18 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                     locationObservation.setHasGeometry(hasGeometry);
                 }
 
-                locationObservation.setLocation(location);
                 locationObservation.setFeatureOfInterest(target);
                 locationObservation.setUri(move.getUri()); //store event URI
 
                 //if a location from the geospatial collection already exists, add it to the existing list, otherwise create a new entry
                 List<LocationObservationModel> list = soLocationGeospatialListMap.get(target);
                 if(Objects.isNull(list)) {
-                    soLocationGeospatialListMap.put(target, Collections.singletonList(locationObservation));
+                    soLocationGeospatialListMap.put(target,List.of(locationObservation));
                 }else{
-                    list.add(locationObservation);
+                    List<LocationObservationModel> mutableList = new ArrayList<>(list);
+                    mutableList.add(locationObservation);
+
+                    soLocationGeospatialListMap.put(target,mutableList);
                 }
             });
         });
@@ -497,7 +455,8 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
 
             soCollectionMap = sparql.executeSelectQueryAsStream(select).collect(Collectors.toMap(
                             sparqlResult -> URI.create(sparqlResult.getStringValue("objects")), //key
-                            sparqlResult -> URI.create(sparqlResult.getStringValue(LocationObservationModel.OBSERVATION_COLLECTION_FIELD)) //value
+                            sparqlResult -> URI.create(sparqlResult.getStringValue(LocationObservationModel.OBSERVATION_COLLECTION_FIELD)), //value
+                            (oldValue, newValue) -> oldValue
                     )
             );
         } catch (Exception e) {
@@ -510,21 +469,6 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
 
     private void mongoSoToLocationCollection(Map<URI, List<LocationObservationModel>> soLocationListMap, Map<URI, URI> soCollectionMap, List<MoveModel> newMoves ) {
         MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
-
-        //TODO: Check existing locations to avoid duplicates
-     /*   List<LocationObservationModel> existingLocations = locationCollection.find(Filters.empty()).into(new ArrayList<>());
-        if(!existingLocations.isEmpty()){
-            List<LocationObservationModel> locationList = soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
-            locationList.forEach(loc ->{
-                LocationObservationModel locationToRemove = existingLocations.stream().filter(existingLoc ->
-                        (SPARQLDeserializers.compareURIs(existingLoc.getFeatureOfInterest(),loc.getFeatureOfInterest()) &&
-                                   (Objects.nonNull(loc.getUri()) ? existingLoc.getUri().equals(loc.getUri()) : existingLoc.getEndDate().equals("1970-01-01T00:00:00.000Z")))
-                    ).findFirst().get();
-
-            // entre existing et soLocationMap - if location existante == map.values.flat()
-            //  feature uri // id event pour from move sinon enddate 1970
-        });
-        }*/
 
         soLocationListMap.forEach((feature, locationList) -> {
             locationList.forEach(location -> {
@@ -541,51 +485,5 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         });
 
         locationCollection.insertMany(soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
-    }
-
-    /**
-     * <pre>
-     *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-     *     PREFIX  org:  <http://www.w3.org/ns/org#>
-     *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
-     *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-     *
-     * DELETE
-     * WHERE {
-     *  GRAPH <http://opensilex.test/set/event> {
-     *   	    ?objects oeev:to ?to.
-     *   	    ?objects oeev:from ?from.
-     *   	    }
-     *   	    FILTER ( ?objects IN (
-     *          <http://opensilex....>,
-     *          <http://opensilex....>
-     *          ))
-     *       }
-     * }
-     * </pre>
-     * */
-    private void sparqlDeleteMoveFromTo(Stream<SPARQLResult> moveDetailsList ) throws SPARQLException {
-       List<URI> movesUri = moveDetailsList.map(move -> URI.create(move.getStringValue(MoveModel.FROM_FIELD))).collect(Collectors.toList());
-
-        //Graph
-        Node eventGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(EventModel.class));
-
-        //Variables
-        Var eventVar = makeVar(EventModel.GRAPH);
-        Var toVar = makeVar(MoveModel.TO_FIELD);
-        Var fromVar = makeVar(MoveModel.FROM_FIELD);
-
-        //where clause
-        WhereBuilder whereEvent = new WhereBuilder()
-                .addWhere(eventVar, Oeev.to, toVar)
-                .addWhere(eventVar, Oeev.from, fromVar);
-
-        whereEvent.addFilter(SPARQLQueryHelper.inURIFilter(eventVar, movesUri));
-
-        WhereBuilder where = new WhereBuilder().addGraph(eventGraph,whereEvent);
-        UpdateBuilder delete = new UpdateBuilder().addDelete(where);
-
-        sparql.executeDeleteQuery(delete);
-
     }
 }

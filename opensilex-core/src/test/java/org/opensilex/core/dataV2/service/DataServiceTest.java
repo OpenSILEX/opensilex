@@ -1,6 +1,10 @@
 package org.opensilex.core.dataV2.service;
 
+import com.mongodb.client.result.InsertOneResult;
 import org.apache.jena.graph.Node;
+import org.bson.BsonObjectId;
+import org.bson.types.ObjectId;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +14,9 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
+import org.opensilex.core.dataV2.dao.BatchHistoryDao;
 import org.opensilex.core.dataV2.factory.DAOFactory;
+import org.opensilex.core.dataV2.model.BatchHistoryModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
@@ -80,6 +86,9 @@ public class DataServiceTest {
     private DataLogic dataLogicMock;
 
     @Mock
+    private BatchHistoryDao batchHistoryDao;
+
+    @Mock
     private ProvenanceDaoV2 provenanceDaoV2;
 
     @Mock
@@ -121,7 +130,7 @@ public class DataServiceTest {
         when(daoFactory.createExperimentDAO()).thenReturn(experimentDAO);
         when(daoFactory.createScientificObjectDAO()).thenReturn(scientificObjectDAO);
 
-        dataService = spy(new DataService(nosql, sparql, fs, user, dataLogicMock, daoFactory));
+        dataService = spy(new DataService(nosql, sparql, fs, user, dataLogicMock, daoFactory, batchHistoryDao));
         provenance = new URI(STANDARD_PROVENANCE);
         experiment = new URI(DEV_ID_EXPERIMENT_TEST_EXP);
     }
@@ -144,6 +153,9 @@ public class DataServiceTest {
         // Mock data logic
         doNothing().when(dataLogicMock).createManyFromImport(anyList(), any(DataCSVValidationModel.class));
 
+        // Mock batch history dao
+        doReturn(getMockInsertOneResult()).when(batchHistoryDao).create(any(BatchHistoryModel.class));
+
         // Methode to test
         DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, "fileName", null);
 
@@ -153,7 +165,13 @@ public class DataServiceTest {
         assertTrue(result.getDataErrors().isValidationStep());
         assertTrue(result.getDataErrors().isInsertionStep());
         verify(dataLogicMock, times(1)).createManyFromImport(anyList(), any(DataCSVValidationModel.class));
+        verify(batchHistoryDao, times(1)).create(any(BatchHistoryModel.class));
         assertEquals("Number of lines to import", Integer.valueOf(9975), result.getDataErrors().getNbLinesToImport());
+    }
+
+    @NotNull
+    private InsertOneResult getMockInsertOneResult() {
+        return InsertOneResult.acknowledged(new BsonObjectId(new ObjectId("676139f882532f4fcd2867ba")));
     }
 
 

@@ -101,8 +101,9 @@ public class DataService {
     private final FileStorageService fs;
     private final DAOFactory daoFactory;
 
-    AccountModel user;
-    DataLogic dataLogic;
+    private final AccountModel user;
+    private final DataLogic dataLogic;
+    private final BatchHistoryDao batchHistoryDao;
     private static final Cache<String, DataCSVValidationModel> csvValidationModelCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .build();
@@ -114,17 +115,20 @@ public class DataService {
         this.user = user;
         this.dataLogic = new DataLogic(sparql, nosql, fs, user);
         this.daoFactory = new DAOFactory(sparql, nosql, fs, user);
+        this.batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
+
 
     }
 
     // For test purpose
-    public DataService(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user, DataLogic dataLogic, DAOFactory daoFactory) {
+    public DataService(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user, DataLogic dataLogic, DAOFactory daoFactory, BatchHistoryDao batchHistoryDao) {
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
         this.user = user;
         this.dataLogic = dataLogic;
         this.daoFactory = daoFactory;
+        this.batchHistoryDao = batchHistoryDao;
     }
 
     /**
@@ -1053,7 +1057,6 @@ public class DataService {
     }
 
     private void handleDataInsertion(DataLogic dataLogic, DataCSVValidationModel validation) throws Exception {
-        BatchHistoryDao batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
         Instant startTime = Instant.now();
         // Generate batchId
         String batchId = generateBatchId(startTime, validation.getFileName());

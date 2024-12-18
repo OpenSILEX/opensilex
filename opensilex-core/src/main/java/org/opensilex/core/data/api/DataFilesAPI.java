@@ -7,6 +7,7 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoWriteException;
@@ -107,7 +108,11 @@ public class DataFilesAPI {
     
     public static final String DATAFILE_EXAMPLE_URI = "http://opensilex.dev/id/file/1598857852858";
     public static final String DATAFILE_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Image";
-    
+
+    private static final Set<String> THUMBNAIL_EXTENSIONS = Set.of("png", "jpg", "gif", "bmp", "jpeg", "PNG", "JPG", "GIF", "BMP");
+    private static final Set<String> TIFF_EXTENSIONS = Set.of("tiff");
+
+
     @Inject
     private MongoDBService nosql;
     
@@ -410,22 +415,22 @@ public class DataFilesAPI {
         try {
             DataFileModel description = dao.get(uri);
 
-            Pattern basicsExtensionsPattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
-            Pattern tiffExtensionPattern = Pattern.compile("(.*/)*.+\\.(tiff)$") ;
+            // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
+            String fileExt = Files.getFileExtension(description.getFilename());
 
-            if( basicsExtensionsPattern.matcher(description.getFilename()).matches()) {
-                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
-                return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
-
-            } else if (tiffExtensionPattern.matcher(description.getFilename()).matches()) {
-                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
-                byte[] convertedImage = convertTIFFToPNG(image);
-
-                return resizeImageAndGetResponse(convertedImage, description.getFilename(), scaledWidth, scaledHeight);
-
-            } else {
+            // Non handled file type
+            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
+
+            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+
+            // Handle tiff : convert to PNG
+            if(TIFF_EXTENSIONS.contains(fileExt)){
+                image = convertTIFFToPNG(image);
+            }
+
+            return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
         } catch (NoSQLInvalidURIException e) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();

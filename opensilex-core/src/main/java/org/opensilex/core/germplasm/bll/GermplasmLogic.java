@@ -25,6 +25,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -60,13 +61,13 @@ public class GermplasmLogic {
     }
 
     /**
-     * Create a new germplasm after checking the coherence of the data (see {@link #checkBeforeCreateOrUpdate(GermplasmModel, boolean)})
+     * Create a new germplasm after checking the coherence of the data (see {@link #checkBeforeCreateOrUpdate(List, boolean)})
      *
      * @param germplasmModel Germplasm to create
      * @return Created germplasm as {@link GermplasmModel}
      */
     public GermplasmModel create(GermplasmModel germplasmModel) throws Exception, DisplayableResponseException {
-        checkBeforeCreateOrUpdate(germplasmModel, false);
+        checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), false);
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         GermplasmModel model = germplasmModel;
         model.setPublisher(currentUser.getUri());
@@ -75,7 +76,7 @@ public class GermplasmLogic {
     }
 
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
-        checkBeforeCreateOrUpdate(germplasmModel, true);
+        checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         return dao.update(germplasmModel);
     }
@@ -120,89 +121,105 @@ public class GermplasmLogic {
         return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 
-    public void checkBeforeCreateOrUpdate(GermplasmModel germplasmModel, boolean update) throws
+    public void checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws
             Exception, DisplayableResponseException {
 
         if (!update) {
-            validateUrisDoesNotExistOrThrow(List.of(germplasmModel.getUri()));
+            validateUrisDoesNotExistOrThrow(germplasmModels.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
         }
 
-        validateTypesOrThrow(List.of(germplasmModel));
+        validateTypesOrThrow(germplasmModels);
 
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
-        if (germplasmModel.getSpecies() != null) {
+        List<URI> speciesUris = new ArrayList<>();
+        List<URI> varietyUris = new ArrayList<>();
+        List<URI> accessionUris = new ArrayList<>();
+        germplasmModels.forEach(germplasmModel -> {
+            if (germplasmModel.getSpecies() != null) {
+                speciesUris.add(germplasmModel.getSpecies().getUri());
+            }
+            if (germplasmModel.getVariety() != null) {
+                varietyUris.add(germplasmModel.getVariety().getUri());
+            }
+            if (germplasmModel.getAccession() != null) {
+                accessionUris.add(germplasmModel.getAccession().getUri());
+            }
+        });
+
+        if ( ! speciesUris.isEmpty() ) {
             validateUrisExistOrThrow(
-                    List.of(germplasmModel.getSpecies().getUri()),
+                    speciesUris,
                     new URI(Oeso.Species.getURI()),
                     "species",
                     "component.germplasms.errors.unknownSpecies",
                     "unknownSpecies");
         }
 
-        if (germplasmModel.getVariety() != null) {
+        if ( ! varietyUris.isEmpty() ) {
             validateUrisExistOrThrow(
-                    List.of(germplasmModel.getVariety().getUri()),
+                    varietyUris,
                     new URI(Oeso.Variety.getURI()),
                     "variety",
                     "component.germplasms.errors.unknownVariety",
                     "unknownVariety");
         }
 
-        if (germplasmModel.getAccession() != null) {
+        if ( ! accessionUris.isEmpty() ) {
             validateUrisExistOrThrow(
-                    List.of(germplasmModel.getAccession().getUri()),
+                    accessionUris,
                     new URI(Oeso.Accession.getURI()),
                     "accession",
                     "component.germplasms.errors.unknownAccession",
                     "unknownAccession");
         }
 
-        validateAccessionVarietyOrSpeciesAreGivenOrThrow(List.of(germplasmModel));
+        validateAccessionVarietyOrSpeciesAreGivenOrThrow(germplasmModels);
 
         // check coherence between species, variety and accession
-        boolean isRelated;
-        if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
-            //check coherence between variety and species
-            isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
-            if (!isRelated) {
-                throw new DisplayableResponseException(
-                        "wrong species : " + germplasmModel.getSpecies().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        null,
-                        null
-                );
+        germplasmModels.forEach( germplasmModel -> {
+            boolean isRelated;
+            if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
+                //check coherence between variety and species
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
+                if (!isRelated) {
+                    throw new DisplayableResponseException(
+                            "wrong species : " + germplasmModel.getSpecies().toString(),
+                            Response.Status.BAD_REQUEST,
+                            "The given species doesn't match with the given variety",
+                            null,
+                            null
+                    );
+                }
             }
 
-        }
-
-        if (germplasmModel.getSpecies() != null && germplasmModel.getAccession() != null) {
-            //check coherence between accession and species
-            isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
-            if (!isRelated) {
-                throw new DisplayableResponseException(
-                        "wrong species : " + germplasmModel.getSpecies().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        null,
-                        null
-                );
+            if (germplasmModel.getSpecies() != null && germplasmModel.getAccession() != null) {
+                //check coherence between accession and species
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
+                if (!isRelated) {
+                    throw new DisplayableResponseException(
+                            "wrong species : " + germplasmModel.getSpecies().toString(),
+                            Response.Status.BAD_REQUEST,
+                            "The given species doesn't match with the given variety",
+                            null,
+                            null
+                    );
+                }
             }
-        }
 
-        if (germplasmModel.getVariety() != null && germplasmModel.getAccession() != null) {
-            //check coherence between variety and accession
-            isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
-            if (!isRelated) {
-                throw new DisplayableResponseException(
-                        "wrong species : " + germplasmModel.getSpecies().toString(),
-                        Response.Status.BAD_REQUEST,
-                        "The given species doesn't match with the given variety",
-                        null,
-                        null
-                );
+            if (germplasmModel.getVariety() != null && germplasmModel.getAccession() != null) {
+                //check coherence between variety and accession
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
+                if (!isRelated) {
+                    throw new DisplayableResponseException(
+                            "wrong species : " + germplasmModel.getSpecies().toString(),
+                            Response.Status.BAD_REQUEST,
+                            "The given species doesn't match with the given variety",
+                            null,
+                            null
+                    );
+                }
             }
-        }
+        });
     }
 
     private void validateUrisDoesNotExistOrThrow(List<URI> germplasmsUris) throws SPARQLException, DisplayableResponseException {

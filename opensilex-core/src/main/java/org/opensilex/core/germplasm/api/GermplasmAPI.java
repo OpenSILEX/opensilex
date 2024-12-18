@@ -143,7 +143,7 @@ public class GermplasmAPI {
 
         } else {
             //raise a Displayable Exception if the germplasm already exists or is incorrect
-            germplasmBusiness.checkBeforeCreateOrUpdate(model, false);
+            germplasmBusiness.checkBeforeCreateOrUpdate(Collections.singletonList(model), false);
             return new ObjectUriResponse().getResponse();
         }
 

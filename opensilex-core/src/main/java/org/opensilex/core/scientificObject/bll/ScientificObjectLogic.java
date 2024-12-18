@@ -85,7 +85,6 @@ public class ScientificObjectLogic {
      */
     public static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
 
-    //TODO: retirer les sparql.  ...
     //#region CONSTRUCTOR
     public ScientificObjectLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         this.sparql = sparql;
@@ -244,7 +243,6 @@ public class ScientificObjectLogic {
         return soLocationMap;
     }
 
-//TODO: public?? Refactor with searchByURIs?
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
 
         Set<String> fieldsToFetch = new HashSet<>();
@@ -365,7 +363,6 @@ public class ScientificObjectLogic {
 
     public ListWithPagination<ScientificObjectNodeDTO> searchScientificObjects(ScientificObjectSearchFilter searchFilter, CriteriaDTO criteriaDTO, List<URI> variables, List<URI> devices, AccountModel currentUser) throws Exception {
         ListWithPagination<ScientificObjectNodeDTO> emptyResult = new ListWithPagination<>(Collections.emptyList(), searchFilter.getPage(), searchFilter.getPageSize(), 0);
-        //TODO: searchFilter OK (API / logic)???
 
         if (Objects.nonNull(searchFilter.getExperiment())) {
             if (sparql.uriExists(ExperimentModel.class, searchFilter.getExperiment())) {
@@ -378,7 +375,6 @@ public class ScientificObjectLogic {
 
         //Get all object uris that has at least one data validating each all the criteria
         //This is a boolean to not bother applying other filters if criteria search returned 0 results
-       //TODO: remplacer le DTO par ???
         boolean applyNonCriteriaFilters = true;
         if(Objects.nonNull(criteriaDTO) && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
 
@@ -411,12 +407,20 @@ public class ScientificObjectLogic {
         return dao.searchAsDto(searchFilter);
     }
 
+    /**
+     *
+     * @param contextURI the experiment
+     * @param startDate start date filter
+     * @param endDate end date filter
+     * @param currentUser user
+     * @return Get the last location of each scientific object in an experiment
+     * @throws Exception
+     */
     public Map<ScientificObjectModel, LocationObservationModel> getSOWithPosition(URI contextURI, String startDate, String endDate, AccountModel currentUser) throws Exception {
         validateContextAccess(contextURI, currentUser);
 
         Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = new HashMap<>();
         List<ScientificObjectModel> soList = dao.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage());
-        //TODO: performances tests? no proxy?
 
         if(!soList.isEmpty()) {
             List<LocationObservationCollectionModel> collectionList = soList.stream().map(ScientificObjectModel::getLocationObservationCollection).collect(Collectors.toList());
@@ -644,8 +648,6 @@ public class ScientificObjectLogic {
     }
 
     public byte[] exportScientificObjects(ScientificObjectExportDTO searchFilter, AccountModel currentUser) throws Exception {
-        //TODO : new location
-        //TODO: Virer DTO et nom searchFilter porte à confusion
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
@@ -776,7 +778,6 @@ public class ScientificObjectLogic {
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
-        //TODO : dans DAO à refacto dans logic?
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
         facilityMoveEvent.setTargets(targets);
@@ -788,7 +789,7 @@ public class ScientificObjectLogic {
             if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
                 FacilityModel infraModel = new FacilityModel();
                 infraModel.setUri(new URI(relation.getValue()));
-                facilityMoveEvent.setTo(infraModel);
+                facilityMoveEvent.getLocationObservation().getLocation().setTo(infraModel.getUri());
                 hasFacility = true;
             } else if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasCreationDate.getURI())) {
                 InstantModel end = new InstantModel();
@@ -842,7 +843,6 @@ public class ScientificObjectLogic {
     }
 
     private ScientificObjectModel initObject(URI contextURI,ScientificObjectModel object, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
-        //TODO: à améliorer , refacto, DTO
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(object.getType(), new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 

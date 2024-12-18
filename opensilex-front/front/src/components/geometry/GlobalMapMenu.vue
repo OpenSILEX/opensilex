@@ -184,20 +184,11 @@ export default class GlobalMapMenu extends Vue {
     //endregion
 
     //#region Props
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly items;
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly itemsInitial;
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly selectedItem;
     //endregion
 

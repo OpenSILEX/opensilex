@@ -16,12 +16,10 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -72,8 +70,17 @@ public class LocationObservationLogic {
         locationObservationDAO.create(session, observations);
     }
 
+    /**
+     * This method is used if the feature of interest is the same for all locations and all with the same hasGeometry -> facility
+     *
+     * @param session mongo session
+     * @param locationObservationCollectionURI collection of a feature of interest
+     * @param featureOfInterest an object
+     * @param models location list linked to the feature of interest
+     * @param hasGeometry if the property geometry is filled
+     * @throws Exception
+     */
     public void createLocationObservations(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, List<LocationObservationModel> models, boolean hasGeometry) throws Exception {
-//TODO: refacto avec au-dessus
         models.forEach(model -> {
             validateDates(model.getEndDate(), model.getStartDate());
 
@@ -159,15 +166,6 @@ public class LocationObservationLogic {
         return locationObservationDAO.searchWithPagination(searchFilter);
     }
 
-    public List<LocationObservationModel> getIntersection(List<LocationObservationModel> locations, Geometry geometry) {
-        LocationObservationSearchFilter filter = new LocationObservationSearchFilter();
-
-        filter.setIncludedUris(locations.stream().map(LocationObservationModel::getUri).collect(Collectors.toList()));
-        filter.setIntersection(geometry);
-
-        return locationObservationDAO.searchWithPagination(filter).getList();
-    }
-
     public void updateLocationObservation(ClientSession session, URI locationObservationCollectionURI, boolean hasGeometry, LocationModel locationModel) {
         try {
             LocationObservationModel locationObservationModel = locationObservationDAO.get(locationObservationCollectionURI);
@@ -181,22 +179,12 @@ public class LocationObservationLogic {
         }
     }
 
-    public void updateASpecificLocationObservation(ClientSession session, LocationObservationModel existingObservation, LocationObservationModel newObservation) throws NoSQLInvalidURIException {
+    public void updateASpecificLocationObservation(ClientSession session, LocationObservationModel existingObservation, LocationObservationModel newObservation) {
         locationObservationDAO.upsertSpecificLocation(session, existingObservation, newObservation);
     }
 
     /**
-     * Use this method only if the object can have only one observation (e.g. sites)
-     *
-     * @param locationObservationCollectionURI collection URI
-     * @throws NoSQLInvalidURIException
-     */
-    public void delete(ClientSession session, URI locationObservationCollectionURI) throws NoSQLInvalidURIException {
-        locationObservationDAO.delete(session, locationObservationCollectionURI);
-    }
-
-    /**
-     * Use this method to get a specific location observation for a feature of interest
+     * Use this method to delete a specific location observation for a feature of interest
      *
      * @param session mongo session
      * @param collectionURI location collection URI
@@ -261,6 +249,13 @@ public class LocationObservationLogic {
         return hasGeometry;
     }
 
+    /**
+     * Checks when a facility is updated, if it is linked to locations and update the hasGeometry of these locations
+     *
+     * @param session mongo session
+     * @param facility the facility updated
+     * @param collection its location collection associated
+     */
     public void updateAssociatedLocationModel(ClientSession session, URI facility, URI collection) {
         //Get locations linked to the facility
         List<LocationObservationModel> locationToUpdateList = locationObservationDAO.searchLocationsWithGeomLinkedToFacility(facility);
@@ -296,6 +291,12 @@ public class LocationObservationLogic {
         }
     }
 
+    /**
+     * Get the geometry of a "to" facility of an object location to display the object on a map.
+     *
+     * @param location location observation of an object
+     * @return
+     */
     public LocationObservationModel getFacilityGeometry(LocationObservationModel location){
         LocationObservationModel facilityLocationCorresponding = new LocationObservationModel();
 

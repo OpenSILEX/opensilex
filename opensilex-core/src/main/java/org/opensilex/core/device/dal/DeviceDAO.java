@@ -15,7 +15,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
@@ -40,7 +39,6 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -227,14 +225,12 @@ public class DeviceDAO {
                 sparql.getDefaultGraph(DeviceModel.class),
                 DeviceModel.class,
                 currentUser.getLanguage(),
-                (SelectBuilder select) -> {
-                    this.addFiltersForSomeSearch(select, filter, true);
-                },
-            customHandlerByFields,
-            null,
-            null,
-            0,
-            0
+                (SelectBuilder select) -> this.addFiltersForSomeSearch(select, filter, true),
+                customHandlerByFields,
+                null,
+                null,
+                0,
+                0
         );
         return deviceList;
     }
@@ -296,7 +292,7 @@ public class DeviceDAO {
     }
 
 
-    public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
+    public DeviceModel update(DeviceModel instance) throws Exception {
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         instance.setLastUpdateDate(OffsetDateTime.now());
         sparql.update(graph, instance);
@@ -339,7 +335,7 @@ public class DeviceDAO {
         if (!list.isEmpty()) {
             list.forEach(l -> System.out.println(l.getStringValue("target")));
 
-            List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
+            List<URI> deviceUris = list.stream().map(x -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
             devices = getDevicesByURI(deviceUris, currentUser);
         }
 
@@ -407,9 +403,7 @@ public class DeviceDAO {
         ListWithPagination<DeviceModel> results = sparql.searchWithPagination(
             DeviceModel.class,
             null,
-            (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name));
-            },
+            (SelectBuilder select) -> select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name)),
             null,
             0,
             2
@@ -473,7 +467,6 @@ public class DeviceDAO {
     }
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {
-//TODO!!
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         MoveModel moveEvent = moveLogic.getLastMoveAfter(deviceURI, null);
@@ -492,7 +485,7 @@ public class DeviceDAO {
                     0
             );
 
-            positionHistory.forEach((move) -> {
+            positionHistory.forEach(move -> {
                 try {
                     resultDTOList.add(new PositionGetDTO(move, move.getLocationObservation()));
                 } catch (JsonProcessingException ex) {

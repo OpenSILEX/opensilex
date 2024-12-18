@@ -130,7 +130,7 @@ public class PositionAPI {
                     orderByList,
                     page,
                     pageSize
-            ).convert(MoveGetDTO.class, move -> new MoveGetDTO(move));
+            ).convert(MoveGetDTO.class, MoveGetDTO::new);
             return new PaginatedListResponse<>(positionHistory).getResponse();
 
         } catch (URISyntaxException e) {

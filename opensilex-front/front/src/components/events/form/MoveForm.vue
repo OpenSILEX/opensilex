@@ -43,8 +43,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import PositionForm from "../../positions/form/PositionForm.vue";
-import {MoveCreationDTO, TargetPositionCreationDTO} from 'opensilex-core/index';
+import {MoveCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import VueI18n from "vue-i18n";
 import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
@@ -65,16 +64,9 @@ export default class MoveForm extends Vue {
     fromRequired: boolean = false;
     toRequired: boolean = false;
 
-    //TODO: à retirer
-    static getEmptyTargetsPositions(): Array<TargetPositionCreationDTO> {
-        return [{
-            target: undefined,
-            position: PositionForm.getEmptyForm()
-        }];
-    }
-
     static getEmptyLocation(): LocationObservationDTO {
         return {
+            featureOfInterest :undefined,
             geojson: undefined,
             from: undefined,
             to: undefined,
@@ -87,7 +79,6 @@ export default class MoveForm extends Vue {
         };
     }
 
-    //TODO: à nettoyer
     static getEmptyForm(): MoveCreationDTO {
         return {
             uri: undefined,
@@ -116,8 +107,6 @@ export default class MoveForm extends Vue {
     validate() {
         return this.validatorRef.validate();
     }
-
-    //TODO: warning message if 1970
 
     //TODO: à adapter
     /**

@@ -130,8 +130,12 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         deleteMany(session,filter);
     }
 
+    /**
+     *
+     * "location.to":"http://opensilex.test/id/organization/facility.corroy_18-19", "location.geometry" :{$exists : false}
+     */
     public List<LocationObservationModel> searchLocationsWithGeomLinkedToFacility(URI facility) {
-        //"location.to":"http://opensilex.test/id/organization/facility.corroy_18-19", "location.geometry" :{$exists : false}
+        //
         Document filter = new Document();
         Document noExistingGeomFilter = new Document("$exists", false);
 
@@ -143,12 +147,17 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     //#endregion
 
     //#region private
+
+    /**
+     *
+     *$match
+     *  {
+     *        	observationCollection : "http://opensilex.dev/id/...",
+     *           endDate: ISODate("2022-05-31T11:26:16.856Z",
+     *         }
+     */
     private Document specificFilters(URI collectionURI, Instant end, Instant start){
-        //$match
-        //{
-        //	observationCollection : "http://opensilex.dev/id/...",
-        //  endDate: ISODate("2022-05-31T11:26:16.856Z",
-        //}
+
         Document filter = new Document();
         filter.put(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, collectionURI);
         filter.put(LocationObservationModel.END_DATE_FIELD, end);

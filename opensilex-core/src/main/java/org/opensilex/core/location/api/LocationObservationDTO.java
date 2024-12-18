@@ -130,7 +130,7 @@ public class LocationObservationDTO {
         this.endDate = endDate;
     }
 
-    public void toModel(LocationObservationModel model) {
+    private void toModel(LocationObservationModel model) {
 
         model.setFeatureOfInterest(getFeatureOfInterest());
 
@@ -164,7 +164,7 @@ public class LocationObservationDTO {
         return instance;
     }
 
-    public void fromModel(LocationObservationModel model) {
+    private void fromModel(LocationObservationModel model) {
 
         setFeatureOfInterest(model.getFeatureOfInterest());
 

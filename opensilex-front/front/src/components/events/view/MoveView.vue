@@ -28,7 +28,6 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import PositionsView from "../../positions/view/PositionsView.vue";
 import {MoveDetailsDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";

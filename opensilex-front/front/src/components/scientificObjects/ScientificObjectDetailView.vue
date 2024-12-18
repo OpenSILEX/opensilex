@@ -94,8 +94,6 @@ export default class ScientificObjectDetailView extends Vue {
             this.service.getScientificObjectDetail(this.uri, this.experiment),
             this.xpService.getExperiment(this.experiment)
         ]).then((result => {
-            console.log("result", result)
-
             // get OS and XP detail
             let objectDto: ScientificObjectDetailDTO = result[0].response.result;
             let xpDto: ExperimentGetDTO = result[1].response.result;

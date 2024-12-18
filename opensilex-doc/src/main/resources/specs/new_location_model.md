@@ -1,8 +1,9 @@
-| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                                |
-|------------|------|------------|-------------------|------------------------------------------------------------------------|
-| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case                                    |
-| 20/09/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add featureOfInterest field in Mongo + add Improvements |
-| 04/10/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add facility case + definitions                         |
+| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                              |
+|------------|------|------------|-------------------|----------------------------------------------------------------------|
+| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0             | created spec - global and site case                                  |
+| 20/09/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0             | updated spec - add featureOfInterest field in Mongo + add Improvements |
+| 04/10/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0             | updated spec - add facility case + definitions                       |
+| 18/12/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0             | updated spec - add scientific object case              |
 
 ## Table of contents
 * [Needs](#needs)
@@ -87,18 +88,20 @@ The new model location in MongoDB (location collection) is :
         “observationCollection” : URI,
         "featureOfInterest": URI,
         “hasGeometry” : boolean,
+        "endDate" : date,
+        "startDate" : optional - date,
         “location”: {
-              "geometry" : optionnel {
+              "geometry" : optional {
                   "type": Point/Polygon/LineString,
                   "coordinates": [ X , Y ]
                   },
-              "textualPosition": optionnel – Description ,
-              "x": optionnel – A ou 10 ou 10,5,
-              "y": optionnel – A ou 10 ou 10,5,
-              "z": optionnel – A ou 10 ou 10,5,
-              "facility”: optionnel – to
+              "textualPosition": optional – Description ,
+              "x": optional – A ou 10 ou 10,5,
+              "y": optional – A ou 10 ou 10,5,
+              "z": optional – A ou 10 ou 10,5,
+              "to”: optional
+              "from”: optional
               },
-        "time" : Instant/interval
     }
 
 The `hasGeometry` field  is added to improve the queries in MongoDB when we are only looking for elements to display on 
@@ -170,6 +173,35 @@ A facility can be located by an address and positions (at different times):
         "startDate" : 2024-11-15T06:48:15.777+00:00
     }
 
+#### Scientific Object
+A scientific object can be located by geographical values (geometry) or relative values (x/y/z, textual or facility) as move events.
+
+- Indeed, when a scientific object is created in "global" with a location, a move event is created. So, at least, the end date is required.
+- When the move is made over an interval (start and end dates), this means that the object was observed at this location during this period, from de start date to the end date.
+- The "from" facility is  for information purposes only, no date are linked to it.
+- The property "isHosted" is removed.
+
+
+    {
+        “observationCollection” : URI,
+        "featureOfInterest": URI,
+        “hasGeometry” : boolean,
+        “location”: {
+              "geometry" : {
+                  "type": Point, Line or Polygon
+                  "coordinates": [ X , Y ]
+              },
+              x : string,
+              y : string,
+              z : string,
+              textualPosition : string,
+              to : URI,
+              from : URI,
+        },
+        "endDate" : 2024-10-15T06:48:15.777+00:00,
+        "startDate" : 2024-11-15T06:48:15.777+00:00
+    }
+
 ## Technical specifications
 
 ### Front-end
@@ -181,6 +213,12 @@ As a facility can now have several positions associated with time,a few componen
 - create/update form : add a position form with a position table.
 - facility detail : add last position and position list tab.
 
+#### Scientific Object
+As the scientific object location is now only linked to a move, a few components has to be modified:
+- "global" create/update form : geometry field has been replaced a "location" check-box which adds a move form. The location can't be updated from this form (go to the position list to update it).
+- "experiment" create/update form : "isHosted" field has been removed.
+- scientific object detail : only the last position is displayed. Even in experiment details (linked to experiment dates).
+
 ### API
 The concepts of observation collection, observation and location are represented by three distinct models. They follow the
 layered architecture (BLL/DAL).
@@ -190,11 +228,11 @@ class only queries the MongoDB database.
 
 ![Diagramme_classe_models_location](png/Diagramme_classe_models_location.png)
 
-A `LocationAPI` has been created. It will replace the `PositionAPI`. For the moment, it has only 2 services:
+A `LocationAPI` has been created. It could be replaced the `PositionAPI` (if you don't need move details or are remove). For the moment, it has only 3 services:
  - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.
  - `countLocations` : gets the location count of a feature of interest.
-
 These services only retrieve locations with associated dates(not spatial coordinates from an address).
+- `searchTargetLocations` : gets last location with geometry for a rdfType, in an extent.
 
 #### Ontology
 Only classes of the SOSA ontology related with had be added to the OpenSilex
@@ -216,12 +254,23 @@ Because there is a difference between the "address" location (no date) and "posi
 `getFacility`:  only the last position, if the stored spatial coordinates come from an address (no date), they are not retrieved.
 `getFacilitiesWithGeometry`: the last position or, if there is no position, the address spatial coordinates.
 
+#### Scientific Object
+The API and DAO classes for scientific objects are refactoring to respect the layered architecture and the part `geospatial` is replaced by moves.
+The event part of a move stay the same (targets, description, start /end dates, isInstant), but the "position" part is replaced by the `LocationObservationModel`.
+So a moveModel is really simplified.
+
+The `LocationObservationCollectionModel` is added to the `ScientificObjectModel`.
+
+For the property `hasGeometry` store in MongoDB, the value is set to `true` if the location has the field `geometry` filled or if the location has the field `to` filled with a facility with location.
+This field is updated if the linked facility is updated.
+
 ## Limitations and Improvements
 ### Limitations
 ### Improvements
 
 - Refactoring the new location model for the rest of the elements : scientific objects, devices and areas.
 - Tests mongoDB queries and indexes.
+- Add an index on 'Location' collection.
 
 
 

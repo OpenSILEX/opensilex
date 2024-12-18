@@ -60,7 +60,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -159,36 +158,36 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         return soLocationListMap;
     }
 
+    /**
+     * <pre>
+     *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     *     PREFIX  org:  <http://www.w3.org/ns/org#>
+     *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
+     *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     *
+     * SELECT *
+     * WHERE {
+     * ?featureOfInterest a ?rdfType.
+     * ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
+     *  GRAPH <http://opensilex.test/set/event> {
+     *
+     *           ?objects rdf:type oeev:Move.
+     *   	    ?objects time:hasEnd ?end.
+     *   	    ?end time:inXSDDateTimeStamp ?endDate.
+     *   	    ?objects oeev:concerns ?featureOfInterest.
+     *   	    OPTIONAL
+     *   	        { ?objects time:hasBeginning ?start.
+     *   	        ?start time:inXSDDateTimeStamp ?startDate}
+     *   	    OPTIONAL
+     *   	        { ?objects oeev:to ?facilityTo }
+     *   	    OPTIONAL
+     *        	   { ?objects oeev:from ?facilityFrom }
+     *   	    }
+     *       }
+     * }
+     * </pre>
+     * */
     private Stream<SPARQLResult> sparqlGetMoveDetails() throws SPARQLException {
-        /**
-         * <pre>
-         *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-         *     PREFIX  org:  <http://www.w3.org/ns/org#>
-         *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
-         *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-         *
-         * SELECT *
-         * WHERE {
-         * ?featureOfInterest a ?rdfType.
-         * ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
-         *  GRAPH <http://opensilex.test/set/event> {
-         *
-         *           ?objects rdf:type oeev:Move.
-         *   	    ?objects time:hasEnd ?end.
-         *   	    ?end time:inXSDDateTimeStamp ?endDate.
-         *   	    ?objects oeev:concerns ?featureOfInterest.
-         *   	    OPTIONAL
-         *   	        { ?objects time:hasBeginning ?start.
-         *   	        ?start time:inXSDDateTimeStamp ?startDate}
-         *   	    OPTIONAL
-         *   	        { ?objects oeev:to ?facilityTo }
-         *   	    OPTIONAL
-         *        	   { ?objects oeev:from ?facilityFrom }
-         *   	    }
-         *       }
-         * }
-         * </pre>
-         * */
         //Graph
         Node eventGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(EventModel.class));
 
@@ -198,8 +197,8 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         Var endDateVar = makeVar(LocationObservationModel.END_DATE_FIELD);
         Var startVar = makeVar(EventModel.START_FIELD);
         Var startDateVar = makeVar(LocationObservationModel.START_DATE_FIELD);
-        Var toVar = makeVar(MoveModel.TO_FIELD);
-        Var fromVar = makeVar(MoveModel.FROM_FIELD);
+        Var toVar = makeVar(LocationModel.TO_FIELD);
+        Var fromVar = makeVar(LocationModel.FROM_FIELD);
         Var featureVar = makeVar(LocationObservationModel.FEATURE_OF_INTEREST_FIELD);
         Var soTypeVar = makeVar(ScientificObjectModel.TYPE_FIELD);
 
@@ -253,9 +252,7 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                         }
                     });
 
-            List<MoveModel> moves = moveDao.create(moveModels);
-
-            return moves;
+            return moveDao.create(moveModels);
 
         } catch (SPARQLException e) {
             throw new RuntimeException(e);
@@ -281,76 +278,74 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
 
         // Mapping FeatureOfInterest and locations
         //from move collection
-        soFromMove.forEach(move ->{
-            move.getTargetPositions().forEach(position -> {
-                //build location observation
-                LocationObservationModel locationObservation = new LocationObservationModel();
-                LocationModel location = new LocationModel();
-                URI target = position.getTarget();
+        soFromMove.forEach(move -> move.getTargetPositions().forEach(position -> {
+            //build location observation
+            LocationObservationModel locationObservation = new LocationObservationModel();
+            LocationModel location = new LocationModel();
+            URI target = position.getTarget();
 
-                //mongo
-                if(position.getPosition() != null) {
-                    if(position.getPosition().getCoordinates() != null) {
-                        location.setGeometry(position.getPosition().getCoordinates());
-                        locationObservation.setHasGeometry(true);
-                    }
-                    if(position.getPosition().getTextualPosition() != null) {
-                        location.setTextualPosition(position.getPosition().getTextualPosition());
-                    }
-                    if(position.getPosition().getX() != null) {
-                        location.setX(position.getPosition().getX());
-                    }
-                    if(position.getPosition().getY() != null) {
-                        location.setY(position.getPosition().getY());
-                    }
-                    if(position.getPosition().getZ() != null) {
-                        location.setZ(position.getPosition().getZ());
-                    }
+            //mongo
+            if(position.getPosition() != null) {
+                if(position.getPosition().getCoordinates() != null) {
+                    location.setGeometry(position.getPosition().getCoordinates());
+                    locationObservation.setHasGeometry(true);
                 }
-
-                //rdf
-                SPARQLResult moveDetails = moveURIs.values().stream().filter(sparqlResult -> SPARQLDeserializers
-                                .compareURIs(URI.create(sparqlResult.getStringValue(EventModel.GRAPH)), move.getUri()))
-                        .findFirst().orElse(null);
-
-                if (moveDetails != null) {
-                    locationObservation.setEndDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.END_DATE_FIELD)));
-
-                    if (moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
-                        locationObservation.setStartDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD)));
-                    }
-                    if (moveDetails.getStringValue(MoveModel.TO_FIELD) != null) {
-                        location.setTo(URI.create(moveDetails.getStringValue(MoveModel.TO_FIELD)));
-                    }
-                    if (moveDetails.getStringValue(MoveModel.FROM_FIELD) != null) {
-                        location.setFrom(URI.create(moveDetails.getStringValue(MoveModel.FROM_FIELD)));
-                    }
+                if(position.getPosition().getTextualPosition() != null) {
+                    location.setTextualPosition(position.getPosition().getTextualPosition());
                 }
-
-                locationObservation.setLocation(location);
-
-                //Set hasGeometry at true if the "to" facility has corresponding location
-                if(!locationObservation.isHasGeometry() && locationObservation.getLocation().getTo() != null) {
-                    LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-                    boolean hasGeometry = observationLogic.checkHasGeometry(locationObservation, locationObservation.getStartDate(), locationObservation.getEndDate());
-                    locationObservation.setHasGeometry(hasGeometry);
+                if(position.getPosition().getX() != null) {
+                    location.setX(position.getPosition().getX());
                 }
-
-                locationObservation.setFeatureOfInterest(target);
-                locationObservation.setUri(move.getUri()); //store event URI
-
-                //if a location from the geospatial collection already exists, add it to the existing list, otherwise create a new entry
-                List<LocationObservationModel> list = soLocationGeospatialListMap.get(target);
-                if(Objects.isNull(list)) {
-                    soLocationGeospatialListMap.put(target,List.of(locationObservation));
-                }else{
-                    List<LocationObservationModel> mutableList = new ArrayList<>(list);
-                    mutableList.add(locationObservation);
-
-                    soLocationGeospatialListMap.put(target,mutableList);
+                if(position.getPosition().getY() != null) {
+                    location.setY(position.getPosition().getY());
                 }
-            });
-        });
+                if(position.getPosition().getZ() != null) {
+                    location.setZ(position.getPosition().getZ());
+                }
+            }
+
+            //rdf
+            SPARQLResult moveDetails = moveURIs.values().stream().filter(sparqlResult -> SPARQLDeserializers
+                            .compareURIs(URI.create(sparqlResult.getStringValue(EventModel.GRAPH)), move.getUri()))
+                    .findFirst().orElse(null);
+
+            if (moveDetails != null) {
+                locationObservation.setEndDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.END_DATE_FIELD)));
+
+                if (moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
+                    locationObservation.setStartDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD)));
+                }
+                if (moveDetails.getStringValue(LocationModel.TO_FIELD) != null) {
+                    location.setTo(URI.create(moveDetails.getStringValue(LocationModel.TO_FIELD)));
+                }
+                if (moveDetails.getStringValue(LocationModel.FROM_FIELD) != null) {
+                    location.setFrom(URI.create(moveDetails.getStringValue(LocationModel.FROM_FIELD)));
+                }
+            }
+
+            locationObservation.setLocation(location);
+
+            //Set hasGeometry at true if the "to" facility has corresponding location
+            if(!locationObservation.isHasGeometry() && locationObservation.getLocation().getTo() != null) {
+                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+                boolean hasGeometry = observationLogic.checkHasGeometry(locationObservation, locationObservation.getStartDate(), locationObservation.getEndDate());
+                locationObservation.setHasGeometry(hasGeometry);
+            }
+
+            locationObservation.setFeatureOfInterest(target);
+            locationObservation.setUri(move.getUri()); //store event URI
+
+            //if a location from the geospatial collection already exists, add it to the existing list, otherwise create a new entry
+            List<LocationObservationModel> list = soLocationGeospatialListMap.get(target);
+            if(Objects.isNull(list)) {
+                soLocationGeospatialListMap.put(target,List.of(locationObservation));
+            }else{
+                List<LocationObservationModel> mutableList = new ArrayList<>(list);
+                mutableList.add(locationObservation);
+
+                soLocationGeospatialListMap.put(target,mutableList);
+            }
+        }));
         return soLocationGeospatialListMap;
     }
 
@@ -470,19 +465,17 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
     private void mongoSoToLocationCollection(Map<URI, List<LocationObservationModel>> soLocationListMap, Map<URI, URI> soCollectionMap, List<MoveModel> newMoves ) {
         MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
-        soLocationListMap.forEach((feature, locationList) -> {
-            locationList.forEach(location -> {
-                location.setObservationCollection(soCollectionMap.get(feature));
+        soLocationListMap.forEach((feature, locationList) -> locationList.forEach(location -> {
+            location.setObservationCollection(soCollectionMap.get(feature));
 
-                if(location.getUri() == null) {   //location from geospatial - add move URI as id_
-                     URI moveUri = newMoves.stream()
-                             .filter(move -> move.getTargets().contains(location.getFeatureOfInterest()))
-                             .map(SPARQLResourceModel::getUri)
-                             .findFirst().get();
-                    location.setUri(moveUri);
-                }
-            });
-        });
+            if(location.getUri() == null) {   //location from geospatial - add move URI as id_
+                 URI moveUri = newMoves.stream()
+                         .filter(move -> move.getTargets().contains(location.getFeatureOfInterest()))
+                         .map(SPARQLResourceModel::getUri)
+                         .findFirst().get();
+                location.setUri(moveUri);
+            }
+        }));
 
         locationCollection.insertMany(soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
     }

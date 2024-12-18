@@ -24,11 +24,9 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EventsService} from "opensilex-core/api/events.service";
 
-import PositionsView from "../../positions/view/PositionsView.vue";
-import MoveForm from "./MoveForm.vue";
 import {VueJsOntologyExtensionService} from "../../../lib";
 import EventForm from "./EventForm.vue";
-import {EventCreationDTO, MoveCreationDTO, PositionCreationDTO} from 'opensilex-core/index';
+import {EventCreationDTO, MoveCreationDTO} from 'opensilex-core/index';
 import {EventUpdateDTO} from "opensilex-core/model/eventUpdateDTO";
 import DTOConverter from '../../../models/DTOConverter';
 import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";

@@ -16,7 +16,6 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -61,6 +60,11 @@ public class LocationObservationCollectionLogic {
         return locationObservationCollectionDAO.getCollections(featureOfInterests);
     }
 
+    /**
+     * @param rdfType type of object
+     * @return for each object of the rdfType, return the object uri, rdfType, and the location observation collection linked
+     * @throws SPARQLException
+     */
     public Map<SPARQLResourceModel, LocationObservationCollectionModel> getLocationObservationCollectionListByType(URI rdfType) throws SPARQLException {
         return locationObservationCollectionDAO.getCollectionByType(rdfType);
     }

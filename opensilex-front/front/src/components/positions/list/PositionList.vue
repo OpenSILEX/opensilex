@@ -34,6 +34,14 @@
                                 :value="new Date(data.item.endDate).toLocaleString()"
                                 @click="showEventView(data.item)"
                           ></opensilex-UriLink>
+                            <!-- Warning if the endDate is equal to 1970 == default date for facility geometry from migration-->
+                            <b-alert
+                                    v-if="data.item.endDate === DEFAULT_DATE"
+                                    variant="warning"
+                                    show
+                            >
+                                {{ $t("component.facility.warning.facility-default-date") }}
+                            </b-alert>
                         </template>
 
                         <template v-slot:cell(actions)="{data}">
@@ -164,6 +172,7 @@ export default class PositionList extends Vue {
     renderCsvForm = false;
     facilityLabels:  Map<String, String> = new Map<String, String>();
     loadFacility :boolean = false;
+    private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
 
     @Watch("target")
     onTargetChange() {

@@ -1,7 +1,6 @@
 package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -19,8 +18,7 @@ public class PositionGetDTO {
     @JsonProperty("location")
     private LocationObservationDTO location;
 
-    public PositionGetDTO(MoveModel model, LocationObservationModel locationModel) throws JsonProcessingException {
-
+    public PositionGetDTO(MoveModel model, LocationObservationModel locationModel) {
         event = model.getUri();
 
         if (Objects.nonNull(locationModel)) {

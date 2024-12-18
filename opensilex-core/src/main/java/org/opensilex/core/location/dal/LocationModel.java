@@ -10,7 +10,9 @@ public class LocationModel {
 
     private Geometry geometry;
     private URI to;
+    public static final String TO_FIELD = "to";
     private URI from;
+    public static final String FROM_FIELD = "from";
     private String x;
     private String y;
     private String z;

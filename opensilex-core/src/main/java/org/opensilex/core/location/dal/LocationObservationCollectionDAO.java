@@ -66,8 +66,8 @@ public class LocationObservationCollectionDAO {
     }
 
     /**
-     * @param rdfType
-     * @return SELECT  *
+     *
+     * SELECT  *
      * WHERE
      * { ?rdfType (<http://www.w3.org/2000/01/rdf-schema#subClassOf>)* <http://www.opensilex.org/vocabulary/oeso#ScientificObject>.
      * ?uri a ?rdfType.

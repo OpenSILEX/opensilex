@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import {Prop, Component, Ref, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ProvenanceGetDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -258,6 +258,7 @@ export default class DataList extends Vue {
 
         return new Promise((resolve, reject) => {
             this.dataService.searchDataListByTargets(
+                undefined,
                 this.$opensilex.prepareGetParameter(this.filter.start_date),
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,

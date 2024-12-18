@@ -150,7 +150,6 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .createFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    console.log("http", http)
                     let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })

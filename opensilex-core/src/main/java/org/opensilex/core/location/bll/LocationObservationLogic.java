@@ -127,7 +127,6 @@ public class LocationObservationLogic {
         searchFilter.setObservationCollection(collection);
         searchFilter.setStartDate(startDate);
         searchFilter.setEndDate(endDate);
-        searchFilter.setHasGeometry(false);
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
@@ -172,7 +171,7 @@ public class LocationObservationLogic {
         if (Objects.isNull(endDate)) {
             throw new NotAllowedException("endDate cannot be null");
         }
-        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
+        if (Objects.nonNull(startDate) && endDate.isBefore(startDate)) {
             throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
         }
     }
@@ -195,7 +194,7 @@ public class LocationObservationLogic {
     //#region private
 
     /**
-     * Checks if the all observation dates are consistency
+     * Checks consistency of all observation dates
      * The object can't have 2 locations in the same time
      *
      * @param models list of location observations
@@ -206,17 +205,15 @@ public class LocationObservationLogic {
         models.forEach(model -> {
             modelsToCompare.remove(model);
 
-            NotAllowedException ex = new NotAllowedException(model.getObservationCollection().toString() + "can't be at 2 different locations in the same time (" + model.getEndDate() + ")");
-
             if (Objects.isNull(model.getStartDate())) {  // Instant
                 modelsToCompare.forEach(m -> {
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().equals(model.getEndDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     } else { // Interval
                         if (model.getEndDate().isBefore(m.getEndDate()) && model.getEndDate().isAfter(m.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     }
                 });
@@ -224,16 +221,26 @@ public class LocationObservationLogic {
                 modelsToCompare.forEach(m -> {
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().isBefore(model.getEndDate()) && m.getEndDate().isAfter(model.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     } else { // Interval
                         if (!m.getEndDate().isBefore(model.getStartDate()) && !model.getEndDate().isBefore(m.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     }
                 });
             }
         });
+    }
+
+    private void notAllowedException(LocationObservationModel model) throws NotAllowedException {
+        StringBuilder message = new StringBuilder();
+        message.append(model.getObservationCollection().toString())
+                .append("can't be at 2 different locations in the same time (")
+                .append(model.getEndDate().toString())
+                .append(")");
+
+        throw new NotAllowedException(message.toString());
     }
     //#endregion
 }

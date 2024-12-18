@@ -202,9 +202,9 @@ public class SiteAPI {
             SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
             SiteModel siteModel = siteUpdateDTO.newModel();
-            SiteModel updated = siteLogic.update(siteModel, currentUser);
+            siteLogic.update(siteModel, currentUser);
 
-            return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
+            return new ObjectUriResponse(Response.Status.OK, siteModel.getUri()).getResponse();
         } catch (BadRequestException e) {
             throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }

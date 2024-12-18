@@ -146,7 +146,7 @@ public class FacilityAPI {
         FacilitySearchFilter searchFilter = new FacilitySearchFilter();
         searchFilter.setPageSize(0);
 
-        List<FacilityModel> facilities = facilityLogic.search(searchFilter.setUser(currentUser)).getList();
+        List<FacilityModel> facilities = facilityLogic.minimalSearch(searchFilter.setUser(currentUser)).getList();
 
         List<NamedResourceDTO> dtoList = facilities.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 

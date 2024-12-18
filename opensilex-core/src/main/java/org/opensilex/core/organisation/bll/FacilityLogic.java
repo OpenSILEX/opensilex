@@ -184,6 +184,7 @@ public class FacilityLogic {
     /**
      * Search facilities with detail (sparql) and, if filter is at 'true', only facilities with location (mongo).
      *
+     * @param endDate the date before which the location existed
      * @param currentUser The current user
      * @return a Map of facilities with or without corresponding location
      * @throws Exception If some error is encountered during the search
@@ -233,7 +234,8 @@ public class FacilityLogic {
      * for further information.
      *
      * @param instance the facility to update
-     * @param user     The current user
+     * @param locations location list to update
+     * @param user  The current user
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */

@@ -22,6 +22,12 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     //#endregion
 
     //#region public
+
+    /**
+     *
+     * @param searchQuery the Search filter
+     * @return filter list
+     */
     @Override
     public List<Bson> getBsonFilters(LocationObservationSearchFilter searchQuery) {
         List<Bson> filters = new ArrayList<>();
@@ -35,6 +41,32 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
             filters.add(Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollectionList()));
         }
 
+        appendHasGeometryFilters(filters,searchQuery);
+        appendDateFilters(filters,searchQuery);
+
+        return filters;
+    }
+
+    @Override
+    public String idField() {
+        return LocationObservationModel.OBSERVATION_COLLECTION_FIELD;
+    }
+
+    @Override
+    public void upsert(ClientSession session, LocationObservationModel instance) throws MongoException {
+        Bson filter = Filters.eq(MongoModel.MONGO_ID_FIELD, instance.getUri());
+        upsert(instance, filter, session);
+    }
+    //#endregion
+
+    /**
+     * Filters are added if we want to get object locations for display on a map:
+     * - get only locations with "geometry" field filled in
+     * - locations before the end-date filter (and after start-date filter) - interval or instant
+     * - for locations from address (without date) - sites and facilities with address only - get the unique location
+     *
+     */
+    private void appendHasGeometryFilters(List<Bson> filters, LocationObservationSearchFilter searchQuery){
         //Has Geometry - if equal at "true", get only objects that can be displayed on a map (with a geometry)
         if (searchQuery.isHasGeometry()) {
             filters.add(Filters.eq(LocationObservationModel.HAS_GEOMETRY_FIELD, searchQuery.isHasGeometry()));
@@ -63,7 +95,14 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
 
                 filters.add(Filters.or(filterStartDate, filterNoEndDate));
             }
-        } else {
+        }
+    }
+
+    /**
+     * get all locations between date filters
+     */
+    private void appendDateFilters(List<Bson> filters, LocationObservationSearchFilter searchQuery){
+        if (!searchQuery.isHasGeometry()) {
             filters.add(Filters.exists(LocationObservationModel.END_DATE_FIELD, true));
             //End Date
             if (Objects.nonNull(searchQuery.getEndDate())) {
@@ -85,18 +124,5 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
                 filters.add(filterStartDate);
             }
         }
-        return filters;
     }
-
-    @Override
-    public String idField() {
-        return LocationObservationModel.OBSERVATION_COLLECTION_FIELD;
-    }
-
-    @Override
-    public void upsert(ClientSession session, LocationObservationModel instance) throws MongoException {
-        Bson filter = Filters.eq(MongoModel.MONGO_ID_FIELD, instance.getUri());
-        upsert(instance, filter, session);
-    }
-    //#endregion
 }

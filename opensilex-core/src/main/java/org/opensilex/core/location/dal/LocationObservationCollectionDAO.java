@@ -31,7 +31,7 @@ public class LocationObservationCollectionDAO {
         return sparql.getByURI(LocationObservationCollectionModel.class, collectionURI, null);
     }
 
-    public URI getCollection(URI featureOfInterest) throws SPARQLException {
+    public URI getCollectionURI(URI featureOfInterest) throws SPARQLException {
         SelectBuilder select = new SelectBuilder().addWhere(makeVar(LocationObservationCollectionModel.GRAPH), SOSA.hasFeatureOfInterest, SPARQLDeserializers.nodeURI(featureOfInterest));
         List<SPARQLResult> result = sparql.executeSelectQuery(select);
 

@@ -24,11 +24,11 @@ import java.util.Objects;
 
 public class LocationObservationDTO {
 
-    protected GeoJsonObject geojson;
+    private GeoJsonObject geojson;
 
-    protected Instant startDate;
+    private Instant startDate;
 
-    protected Instant endDate;
+    private Instant endDate;
 
     public GeoJsonObject getGeojson() {
         return geojson;
@@ -54,7 +54,7 @@ public class LocationObservationDTO {
         this.endDate = endDate;
     }
 
-    public void toModel(LocationObservationModel model) {
+    private void toModel(LocationObservationModel model) {
         try {
             LocationModel location = LocationLogic.buildLocationModel(LocationLogic.geoJsonToGeometry(geojson), null, null, null, null);
             model.setLocation(location);
@@ -77,7 +77,7 @@ public class LocationObservationDTO {
         return instance;
     }
 
-    public void fromModel(LocationObservationModel model) {
+    private void fromModel(LocationObservationModel model) {
         if (Objects.nonNull(model.getLocation())) {
             try {
                 setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));

@@ -65,7 +65,7 @@ public class LocationAPI {
 
     @GET
     @Path("history")
-    @ApiOperation("Search history of location of an object")
+    @ApiOperation("Search location history of an object")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return location list", response = LocationObservationDTO.class, responseContainer = "List")
@@ -79,12 +79,12 @@ public class LocationAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-    ) throws Exception {
+    ) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
-        List<LocationObservationDTO> locationObservationDTOList = new ArrayList<>();
+        List<LocationObservationDTO> results = new ArrayList<>();
 
-        URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
+        URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
 
         if (Objects.nonNull(collectionURI)) {
             ListWithPagination<LocationObservationModel> locationHistory = locationObservationLogic.getLocationsHistory(
@@ -96,11 +96,11 @@ public class LocationAPI {
                     pageSize
             );
 
-            locationObservationDTOList = locationHistory.getList().stream()
+            results = locationHistory.getList().stream()
                     .map(LocationObservationDTO::getDTOFromModel)
                     .collect(Collectors.toList());
         }
-        return new PaginatedListResponse<>(locationObservationDTOList).getResponse();
+        return new PaginatedListResponse<>(results).getResponse();
     }
 
     @GET
@@ -117,7 +117,7 @@ public class LocationAPI {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
 
-        URI collectionURI = observationCollectionLogic.getLocationObservationCollection(featureOfInterest);
+        URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
         int locationsCount = locationObservationLogic.countLocationsForURI(collectionURI);
 
         return new SingleObjectResponse<>(locationsCount).getResponse();

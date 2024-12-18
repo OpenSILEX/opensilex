@@ -246,7 +246,7 @@ export default class LocationsForm extends Vue {
 <i18n>
 en:
     LocationsForm:
-        positions-geospatial: Positions geospatial
+        positions-geospatial: Geospatial positions
         add-position: Add position
 fr:
     LocationsForm:

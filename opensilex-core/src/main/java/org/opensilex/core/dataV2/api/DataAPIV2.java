@@ -13,6 +13,7 @@ import org.opensilex.core.dataV2.service.DataService;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
@@ -20,6 +21,7 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -61,6 +63,8 @@ public class DataAPIV2 {
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
     public static final String CSV_EXTENSION = ".csv";
+    public static final String DATA_ALREADY_EXISTS = "Data already exists";
+    public static final String DUPLICATED_DATA_FOUND = "Duplicated data found ";
 
     @Inject
     private MongoDBService nosql;
@@ -81,7 +85,8 @@ public class DataAPIV2 {
     @Path("import_v2")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class)})
+            @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class),
+            @ApiResponse(code = 409, message = "A Data already exists", response = ErrorResponse.class)})
     @ApiProtected
     @ApiCredential(
             groupId = org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -100,7 +105,13 @@ public class DataAPIV2 {
                     example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
         String fileName = getFileName(fileDisposition);
         this.dataService = new DataService(nosql, sparql, fs, user);
-        DataCSVValidationDTO csvValidation = dataService.importCSVDataV2(provenance, experiment, file, fileName, validationKey);
+        DataCSVValidationDTO csvValidation;
+        try {
+            csvValidation = dataService.importCSVDataV2(provenance, experiment, file, fileName, validationKey);
+        } catch (MongoDbUniqueIndexConstraintViolation e) {
+            return new ErrorResponse(Response.Status.CONFLICT, DATA_ALREADY_EXISTS,
+                    DUPLICATED_DATA_FOUND + e.getMessage()).getResponse();
+        }
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 

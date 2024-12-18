@@ -157,41 +157,7 @@ public class GermplasmLogic {
                     "unknownAccession");
         }
 
-        // check that fromAccession, fromVariety or fromSpecies are given
-        boolean missingLink = true;
-        String message = "";
-        if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Species.getURI())) {
-            missingLink = false;
-        } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Variety.getURI())) {
-            message = "species";
-            if (germplasmModel.getSpecies() != null) {
-                missingLink = false;
-            }
-        } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Accession.getURI())) {
-            message = "variety or species";
-            if (germplasmModel.getSpecies() != null || germplasmModel.getVariety() != null) {
-                missingLink = false;
-            }
-        } else {
-            message = "accession, variety or species";
-            if (germplasmModel.getSpecies() != null || germplasmModel.getVariety() != null || germplasmModel.getAccession() != null) {
-                missingLink = false;
-            }
-        }
-
-        if (missingLink) {
-            final String finalMessage = message;
-            // Return error response 409 - CONFLICT if link fromSpecies, fromVariety or fromAccession is missing
-            throw new DisplayableResponseException(
-                    "you have to fill " + finalMessage,
-                    Response.Status.BAD_REQUEST,
-                    "missing attribute",
-                    "component.germplasms.errors.missingAttribute",
-                    new HashMap<>() {{
-                        put("message", finalMessage);
-                    }}
-            );
-        }
+        validateAccessionVarietyOrSpeciesAreGivenOrThrow(List.of(germplasmModel));
 
         // check coherence between species, variety and accession
         boolean isRelated;
@@ -303,6 +269,49 @@ public class GermplasmLogic {
                     errorTranslationKey,
                     new HashMap<>() {{
                         put(keyErrorTranslationValues, nonExistingUris.toString());
+                    }}
+            );
+        }
+    }
+
+    private void validateAccessionVarietyOrSpeciesAreGivenOrThrow(List<GermplasmModel> germplasmModels) throws DisplayableResponseException {
+        Map<Integer, String> messages = Map.of(
+                0, "species",
+                1, "variety or species",
+                2, "accession, variety or species"
+        );
+        int missingLinkMessage = 0;
+        List<URI> urisWithMissingLink = new ArrayList<>();
+
+        for (GermplasmModel germplasmModel : germplasmModels) {
+            if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Species.getURI())) {
+                break;
+            } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Variety.getURI())) {
+                if (germplasmModel.getSpecies() == null) {
+                    urisWithMissingLink.add(germplasmModel.getUri());
+                }
+            } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Accession.getURI())) {
+                if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null) {
+                    urisWithMissingLink.add(germplasmModel.getUri());
+                }
+                missingLinkMessage = Math.max(missingLinkMessage, 1);
+            } else {
+                if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null && germplasmModel.getAccession() == null) {
+                    urisWithMissingLink.add(germplasmModel.getUri());
+                }
+                missingLinkMessage = 2;
+            }
+        }
+
+        if (!urisWithMissingLink.isEmpty()) {
+            final String finalMessage = messages.get(missingLinkMessage);
+            throw new DisplayableResponseException(
+                    "you have to fill " + finalMessage + " for the following germplasms : " + urisWithMissingLink,
+                    Response.Status.BAD_REQUEST,
+                    "missing attribute",
+                    "component.germplasms.errors.missingAttribute",
+                    new HashMap<>() {{
+                        put("message", finalMessage);
                     }}
             );
         }

@@ -1,6 +1,6 @@
 <template>
   <opensilex-FormField
-    :rules="isMove ? 'containsPoint|wkt' : 'wkt'"
+    :rules="'wkt'"
     :label="label"
     :helpMessage="helpMessage"
     :isMove="isMove"

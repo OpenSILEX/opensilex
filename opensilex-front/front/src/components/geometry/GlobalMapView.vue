@@ -112,7 +112,7 @@
                 <!-- SO layer group-->
                 <vl-layer-group v-if="isSOLoaded" :visible="soFeaturesDisplay.visibility">
                     <!-- SO layer -->
-                    <vl-layer-vector ref="soLayerVector" :max-resolution="1" render-mode="image">
+                    <vl-layer-vector ref="soLayerVector" :max-resolution="0.5" render-mode="image">
                         <vl-source-vector :features="soFeaturesDisplay.features"></vl-source-vector>
                         <vl-style-box>
                             <vl-style-stroke
@@ -134,7 +134,7 @@
                         </vl-style-box>
                     </vl-layer-vector>
                     <!-- SO cluster-->
-                    <vl-layer-vector ref="soClusterLayerVector" :min-resolution="1" :max-resolution="3" render-mode="image">
+                    <vl-layer-vector ref="soClusterLayerVector" :min-resolution="0.5" :max-resolution="4" render-mode="image">
                         <vl-source-cluster :distance="25">
                             <vl-source-vector
                                     :features="soFeaturesDisplay.features"
@@ -408,7 +408,7 @@ export default class GlobalMapView extends Vue {
         this.buttons = [
             {id: 'site', label: 'component.common.organization.sites', state: true, disabled: false},
             {id: 'facility', label: 'component.menu.facilities', state: false, disabled: true},
-            {id: 'scientificObject', label: 'component.menu.scientificObjects', resolution: 3, state: false, disabled: true},
+            {id: 'scientificObject', label: 'component.menu.scientificObjects', resolution: 4, state: false, disabled: true},
         ]
     }
 
@@ -442,10 +442,11 @@ export default class GlobalMapView extends Vue {
 
     //Show SO only under zoom ?? and get the current map expansion
     private zoomRestriction() {
-        console.log("zoom",this.globalMapView.$view.getZoom())
-      /*  if (this.globalMapView.$view.getZoom() < 5) {
-            console.log("zoom<5")
-        } else {*/
+        if (this.globalMapView.$view.getResolution() > 4) {
+            this.isSOLoaded = false;
+            this.soFeaturesInitial = this.getFeatures();
+            this.soFeaturesDisplay = this.getFeatures();
+        } else {
             let coordinateExtent = this.getCurrentExtent();
 
             if (
@@ -471,8 +472,8 @@ export default class GlobalMapView extends Vue {
                     ],
                 };
                 this.getSOFeatures(geometry);
-        // }
-    }
+            }
+        }
     }
 
     private getFeatures() {
@@ -679,7 +680,7 @@ export default class GlobalMapView extends Vue {
     }
 
     private fitViewWithFeaturesExtent(extent) {
-        this.globalMapView.$view.fit(extent, {maxZoom: 17});
+        this.globalMapView.$view.fit(extent, {maxZoom: 20});
     }
 
     //endregion

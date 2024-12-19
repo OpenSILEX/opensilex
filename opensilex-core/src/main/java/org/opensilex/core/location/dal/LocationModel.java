@@ -6,7 +6,6 @@ import java.net.URI;
 
 public class LocationModel {
     public static final String GEOMETRY_FIELD = "location.geometry";
-    public static final String COORDINATES_GEOMETRY_FIELD = "location.geometry.coordinates";
 
     private Geometry geometry;
     private URI to;

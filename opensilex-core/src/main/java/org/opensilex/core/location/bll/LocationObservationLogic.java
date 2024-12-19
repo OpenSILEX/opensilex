@@ -44,8 +44,6 @@ public class LocationObservationLogic {
 
     //#region public
     public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel,URI moveURI) throws NoSQLAlreadyExistingUriException, URISyntaxException {
-        validateDates(endDate, startDate);
-
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
@@ -222,6 +220,24 @@ public class LocationObservationLogic {
     }
 
     /**
+     * Checks if an object with location (not from an address) is valid :
+     * - it must have one observation date;
+     * - if there is a endDate, it must be after the "begin" date.
+     *
+     * @param startDate start observation date of the geometry
+     * @param endDate   end observation date of the geometry
+     * @throws NotAllowedException If dates are invalid
+     */
+    public void validateDates(Instant endDate, Instant startDate) throws NotAllowedException {
+        if (Objects.isNull(endDate)) {
+            throw new NotAllowedException("endDate cannot be null");
+        }
+        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
+            throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
+        }
+    }
+
+    /**
      * Checks if a location has geometry, directly or indirectly through a facility (to):
      *
      * @param model location observation model
@@ -325,24 +341,6 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region private
-    /**
-     * Checks if an object with location (not from an address) is valid :
-     * - it must have one observation date;
-     * - if there is a endDate, it must be after the "begin" date.
-     *
-     * @param startDate start observation date of the geometry
-     * @param endDate   end observation date of the geometry
-     * @throws NotAllowedException If dates are invalid
-     */
-    private void validateDates(Instant endDate, Instant startDate) throws NotAllowedException {
-        if (Objects.isNull(endDate)) {
-            throw new NotAllowedException("endDate cannot be null");
-        }
-        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
-            throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
-        }
-    }
-
     /**
      * Checks the consistency of all observation by feature of interest
      *

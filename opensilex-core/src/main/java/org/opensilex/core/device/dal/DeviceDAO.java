@@ -486,11 +486,7 @@ public class DeviceDAO {
             );
 
             positionHistory.forEach(move -> {
-                try {
                     resultDTOList.add(new PositionGetDTO(move, move.getLocationObservation()));
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
             });
 
             PositionGetDTO lastPosition = resultDTOList.get(0);

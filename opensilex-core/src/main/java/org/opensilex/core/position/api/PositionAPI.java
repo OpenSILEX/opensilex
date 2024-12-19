@@ -186,14 +186,10 @@ public class PositionAPI {
 
             //
             uniqueTargetLastMoveList.forEach((targetList, move) -> {
-                try {
                     if(Objects.nonNull(targetLocationMap.get(targetList.get(0)))){
                         PositionGetDTO positionGetDTO = new PositionGetDTO(move.get(), targetLocationMap.get(targetList.get(0)));
                         positionList.add(positionGetDTO);
                     }
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
             });
 
             return new PaginatedListResponse<>(positionList).getResponse();

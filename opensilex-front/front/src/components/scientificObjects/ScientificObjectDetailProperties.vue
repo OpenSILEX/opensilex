@@ -72,6 +72,14 @@
                     </li>
                 </ul>
             </opensilex-StringView>
+            <!-- Warning if the endDate is equal to 1970 == default date for facility geometry from migration-->
+            <b-alert
+                    v-if="selected.location.endDate === DEFAULT_DATE"
+                    variant="warning"
+                    show
+            >
+                {{ $t("component.facility.warning.facility-default-date") }}
+            </b-alert>
 
             <!-- Relations -->
             <opensilex-OntologyObjectProperties
@@ -143,6 +151,14 @@
                     </li>
                 </ul>
             </opensilex-StringView>
+            <!-- Warning if the endDate is equal to 1970 == default date for facility geometry from migration-->
+            <b-alert
+                    v-if="selected.location.endDate === DEFAULT_DATE"
+                    variant="warning"
+                    show
+            >
+                {{ $t("component.facility.warning.facility-default-date") }}
+            </b-alert>
 
             <!-- Metadata -->
             <opensilex-MetadataView
@@ -186,6 +202,7 @@ export default class ScientificObjectDetailProperties extends Vue {
     facilityLabels: Map<String, String> = new Map<String, String>();
     loadFacility: boolean = false;
     relations: Array<RDFObjectRelationDTO> = [];
+    private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
 
     mounted() {
         if (this.selected) {

@@ -180,6 +180,7 @@ A scientific object can be located by geographical values (geometry) or relative
 - When the move is made over an interval (start and end dates), this means that the object was observed at this location during this period, from de start date to the end date.
 - The "from" facility is  for information purposes only, no date are linked to it.
 - The property "isHosted" is removed.
+- Now, a move can have other geometry than "point" (linestring, polygon,...).
 
 
     {

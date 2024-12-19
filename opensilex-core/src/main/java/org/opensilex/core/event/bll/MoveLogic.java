@@ -374,18 +374,23 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                         collectionURI = collectionLogic.createLocationObservationCollection(target);
                     }
 
-                     boolean hasGeometry = observationLogic.checkHasGeometry(
+                    Instant end =realModel.getEnd().getDateTimeStamp().toInstant();
+                    Instant start = Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null;
+
+                    observationLogic.validateDates(end, start);
+
+                    boolean hasGeometry = observationLogic.checkHasGeometry(
                              realModel.getLocationObservation(),
-                             Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null,
-                             realModel.getEnd().getDateTimeStamp().toInstant());
+                             start,
+                             end);
 
                     observationLogic.createLocationObservation(
                             session,
                             collectionURI,
                             target,
                             hasGeometry,
-                            Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null,
-                            realModel.getEnd().getDateTimeStamp().toInstant(),
+                            start,
+                            end,
                             realModel.getLocationObservation().getLocation(),
                             realModel.getUri()
                     );

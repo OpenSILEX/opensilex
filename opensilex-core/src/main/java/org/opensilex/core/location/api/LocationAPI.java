@@ -132,16 +132,26 @@ public class LocationAPI {
 
             Map<SPARQLResourceModel, LocationObservationCollectionModel> modelCollectionMap = observationCollectionLogic.getLocationObservationCollectionListByType(targetType);
 
-            //for each target uri, get the mongoDB Model location linked (in a current extent)
-            List<LocationObservationModel> targetLocationList = locationObservationLogic.getLastLocationObservation(
-                    modelCollectionMap.values().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
-                    true,
-                    endDate != null ? Instant.parse(endDate) : null,
-                    geoJsonToGeometry(geometry)
-            );
+            if(!modelCollectionMap.isEmpty()) {
+                //for each target uri, get the mongoDB Model location linked (in a current extent)
+                List<LocationObservationModel> targetLocationList = locationObservationLogic.getLastLocationObservation(
+                        modelCollectionMap.values().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
+                        true,
+                        endDate != null ? Instant.parse(endDate) : Instant.now(),
+                        geoJsonToGeometry(geometry)
+                );
 
-            if(!targetLocationList.isEmpty()) {
-                locationObservationDTOList = targetLocationList.stream().map(LocationObservationDTO::getDTOFromModel).collect(Collectors.toList());
+                //Get geometry from "to" facility
+                for (LocationObservationModel locationModel : targetLocationList) {
+                    //if geometry is null, get location facility
+                    if(locationModel.getLocation().getGeometry() == null && locationModel.getLocation().getTo() != null) {
+                        locationObservationLogic.getFacilityGeometry(locationModel);
+                    }
+                }
+
+                if(!targetLocationList.isEmpty()) {
+                    locationObservationDTOList = targetLocationList.stream().map(LocationObservationDTO::getDTOFromModel).collect(Collectors.toList());
+                }
             }
 
             return new PaginatedListResponse<>(locationObservationDTOList).getResponse();

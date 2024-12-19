@@ -22,6 +22,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -97,8 +98,8 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         descriptionVar = SPARQLQueryHelper.makeVar(EventModel.DESCRIPTION_FIELD);
         targetVar = SPARQLQueryHelper.makeVar(EventModel.TARGETS_FIELD);
         isInstantVar = SPARQLQueryHelper.makeVar(EventModel.IS_INSTANT_FIELD);
-        fromVar = SPARQLQueryHelper.makeVar(MoveModel.FROM_FIELD);
-        toVar = SPARQLQueryHelper.makeVar(MoveModel.TO_FIELD);
+        fromVar = SPARQLQueryHelper.makeVar(LocationModel.FROM_FIELD);
+        toVar = SPARQLQueryHelper.makeVar(LocationModel.TO_FIELD);
 
         descriptionTriple = Triple.create(uriVar, RDFS.comment.asNode(), descriptionVar);
         targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);

@@ -538,7 +538,8 @@ export default class GlobalMapView extends Vue {
                             y: result.y,
                             z: result.z,
                             geometry: result.geojson,
-                            uri: result.featureOfInterest
+                            uri: result.featureOfInterest,
+                            name: result.label
                         })
                     })
                     this.soFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, this.buttons.find(button => button.id === 'scientificObject').id, '#195999', '#fff');

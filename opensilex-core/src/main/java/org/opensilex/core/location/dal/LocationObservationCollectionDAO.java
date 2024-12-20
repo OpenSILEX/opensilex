@@ -6,11 +6,13 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -78,11 +80,12 @@ public class LocationObservationCollectionDAO {
      * }
      * }
      */
-    public Map<SPARQLResourceModel, LocationObservationCollectionModel> getCollectionByType(URI rdfType) throws SPARQLException {
+    public Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> getCollectionByType(URI rdfType) throws SPARQLException {
         //Variables
         Var collectionVar = makeVar(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
 
         //Graph
         Node graphObservationCollection = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(LocationObservationCollectionModel.class));
@@ -95,10 +98,14 @@ public class LocationObservationCollectionDAO {
         //if rdtTYpe == SO : get only the global rdfType
         if (SPARQLDeserializers.compareURIs(rdfType, URI.create(Oeso.ScientificObject.getURI()))) {
             where.addGraph(graphGlobalSO, uriVar, RDF.type, typeVar);
+            where.addGraph(graphGlobalSO, uriVar, RDFS.label.asNode(),nameVar);
 
         } else {
             where.addWhere(uriVar, RDF.type, typeVar);
+            where.addWhere( uriVar, RDFS.label.asNode(),nameVar);
         }
+
+
 
         //collection
         where.addGraph(graphObservationCollection, collectionVar, SOSA.hasFeatureOfInterest.asNode(), uriVar);
@@ -109,9 +116,10 @@ public class LocationObservationCollectionDAO {
 
         return results.stream().collect(Collectors.toMap(
                 sparqlResult -> {
-                    SPARQLResourceModel resourceModel = new SPARQLResourceModel();
+                    SPARQLNamedResourceModel resourceModel = new SPARQLNamedResourceModel();
                     resourceModel.setType(URI.create(sparqlResult.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
                     resourceModel.setUri(URI.create(sparqlResult.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                    resourceModel.setName(sparqlResult.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
                     return resourceModel;
                 },
                 sparqlResult -> {

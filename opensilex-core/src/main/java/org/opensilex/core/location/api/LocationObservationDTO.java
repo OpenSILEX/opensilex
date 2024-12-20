@@ -19,6 +19,7 @@ import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.time.Instant;
@@ -27,6 +28,8 @@ import java.util.Objects;
 public class LocationObservationDTO {
 
     protected URI featureOfInterest;
+
+    protected String label;
 
     protected GeoJsonObject geojson;
 
@@ -56,6 +59,14 @@ public class LocationObservationDTO {
 
     public void setFeatureOfInterest(URI featureOfInterest) {
         this.featureOfInterest = featureOfInterest;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public GeoJsonObject getGeojson() {
@@ -204,6 +215,14 @@ public class LocationObservationDTO {
     public static LocationObservationDTO getDTOFromModel(LocationObservationModel model) {
         LocationObservationDTO dto = new LocationObservationDTO();
         dto.fromModel(model);
+
+        return dto;
+    }
+
+    public static LocationObservationDTO getDTOFromModel(SPARQLNamedResourceModel model, LocationObservationModel location) {
+        LocationObservationDTO dto = new LocationObservationDTO();
+        dto.fromModel(location);
+        dto.setLabel(model.getName());
 
         return dto;
     }

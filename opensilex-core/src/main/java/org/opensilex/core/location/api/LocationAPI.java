@@ -30,6 +30,8 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -130,7 +132,7 @@ public class LocationAPI {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
             List<LocationObservationDTO> locationObservationDTOList = new ArrayList<>();
 
-            Map<SPARQLResourceModel, LocationObservationCollectionModel> modelCollectionMap = observationCollectionLogic.getLocationObservationCollectionListByType(targetType);
+            Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> modelCollectionMap = observationCollectionLogic.getLocationObservationCollectionListByType(targetType);
 
             if(!modelCollectionMap.isEmpty()) {
                 //for each target uri, get the mongoDB Model location linked (in a current extent)
@@ -150,10 +152,16 @@ public class LocationAPI {
                 }
 
                 if(!targetLocationList.isEmpty()) {
-                    locationObservationDTOList = targetLocationList.stream().map(LocationObservationDTO::getDTOFromModel).collect(Collectors.toList());
+                    modelCollectionMap.forEach((model, collection) -> {
+                        LocationObservationModel location = targetLocationList.stream()
+                                .filter(loc -> SPARQLDeserializers.compareURIs(loc.getObservationCollection(),collection.getUri())).findFirst().orElse(null);
+                        if(Objects.nonNull(location)) {
+                            LocationObservationDTO locationObservationDTO = LocationObservationDTO.getDTOFromModel(model, location);
+                            locationObservationDTOList.add(locationObservationDTO);
+                        }
+                    });
                 }
             }
-
             return new PaginatedListResponse<>(locationObservationDTOList).getResponse();
         }catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();

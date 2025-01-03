@@ -10,6 +10,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.query.*;
@@ -29,7 +30,7 @@ import org.opensilex.sparql.utils.SHACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.StringReader;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,10 +52,34 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private static AtomicInteger connectionCount = new AtomicInteger(0);
 
+    private org.apache.jena.rdf.model.Model jenaModel;
+
     public RDF4JConnection(RepositoryConnection rdf4JConnection) {
         super(null);
         this.rdf4JConnection = rdf4JConnection;
         LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.incrementAndGet() + ")");
+
+        LOGGER.debug("****************************************************************************************");
+        long startTime = System.currentTimeMillis();
+        Model rdf4jModel = new LinkedHashModel();
+
+        try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null)) {
+            while (result.hasNext()) {
+                Statement stmt = result.next();
+                rdf4jModel.add(stmt);
+            }
+        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        org.eclipse.rdf4j.rio.Rio.write(rdf4jModel, outputStream, RDFFormat.RDFXML);
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+// Lecture du modèle Jena à partir de l'InputStream
+        jenaModel = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
+        jenaModel.read(inputStream, "", "RDF/XML");
+        LOGGER.debug("RDF4J to Jena conversion time: " + (System.currentTimeMillis() - startTime) + "ms");
+        LOGGER.debug("****************************************************************************************");
+
     }
 
     private int timeout;

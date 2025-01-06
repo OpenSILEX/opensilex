@@ -228,7 +228,6 @@ public class DataService {
 
         // Set DataCSVValidationModel attributes
         validation.setValidCSV(!validation.hasErrors());
-        validation.setNbLinesToImport(validation.getData().size());
         validation.setValidationStep(true);
 
         return validation;
@@ -310,7 +309,16 @@ public class DataService {
             // check csv file contains values to process
             if (allRows.isEmpty()) {
                 csvValidation.setValidCSV(false);
+                csvValidation.setNbLinesToImport(0);
                 csvValidation.setErrorMessage(EMPTY_CSV_FILE_ERROR_MSG);
+                return csvValidation;
+            }
+
+            // Check for too large dataset
+            if (allRows.size() > DataAPIV2.SIZE_MAX) {
+                csvValidation.setValidCSV(false);
+                csvValidation.setTooLargeDataset(true);
+                csvValidation.setNbLinesToImport(allRows.size());
                 return csvValidation;
             }
         }
@@ -319,9 +327,8 @@ public class DataService {
         validateCSVRowsInParallel(provenance, allRows, sensingDeviceFoundFromProvenance,
                 headerByIndex, experimentContext, targetContext, deviceContext, daoContext, csvValidation);
 
-        if (csvValidation.getData().size() > DataAPIV2.SIZE_MAX) { // TODO Question : est ce que ça vaut le coup de valider le csv meme le fichier est depasser la limite des ligne ?
-            csvValidation.setTooLargeDataset(true);
-        }
+        // Set nb lines to import
+        csvValidation.setNbLinesToImport(csvValidation.getData().size());
 
         return csvValidation;
     }

@@ -78,6 +78,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         jenaModel = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
         jenaModel.read(inputStream, "", "RDF/XML");
         LOGGER.debug("RDF4J to Jena conversion time: " + (System.currentTimeMillis() - startTime) + "ms");
+        LOGGER.debug("nb statements: " + jenaModel.size());
         LOGGER.debug("****************************************************************************************");
 
     }

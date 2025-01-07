@@ -35,6 +35,7 @@
       label="GermplasmForm.subtaxa"
       helpMessage="GermplasmForm.subtaxa-help"
       variant="primary"
+      placeholder = "GermplasmForm.synonyms"
     ></opensilex-TagInputForm>
 
     <!-- synonyms -->
@@ -44,6 +45,7 @@
       label="GermplasmForm.synonyms"
       helpMessage="GermplasmForm.synonyms-help"
       variant="primary"
+      placeholder = "GermplasmForm.synonyms"
     ></opensilex-TagInputForm>
     <!-- <label for="tags-basic">Type a new tag and press enter</label>
     <b-form-tags
@@ -77,12 +79,22 @@
       helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
 
-    <!-- Public microorganism -->
+    <!-- accession -->
+    <opensilex-InputForm
+      v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.ACCESSION_TYPE_URI))"
+      :value.sync="form.accession"
+      label="GermplasmForm.accession"
+      type="text"
+      helpMessage="GermplasmForm.accession-help"
+    ></opensilex-InputForm>
+
+    <!-- public germplasm -->
     <opensilex-FormSelector
       :options="isPublicOptions"
       :selected.sync="form.is_public"
+      :required="true"
       label="GermplasmForm.isPublic_label"
-    ></opensilex-FormSelector>
+    ></opensilex-FormSelector>    
 
     <!-- institute -->
     <opensilex-InputForm
@@ -103,10 +115,11 @@
       helpMessage="GermplasmForm.website-help"
     ></opensilex-InputForm>
 
-    <!-- groupe -->
+    <!-- group -->
     <opensilex-GroupSelector
       label="GermplasmForm.groups_users"
       :groups.sync="form.groups_users"
+      :disabled="form.is_public"
       :multiple="true"
     ></opensilex-GroupSelector>
     
@@ -146,7 +159,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref  } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch  } from "vue-property-decorator";
 import Vue from "vue";
 import {GermplasmGetAllDTO, GermplasmService, GermplasmUpdateDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
@@ -164,7 +177,6 @@ export default class GermplasmForm extends Vue {
   $store: any;
   service: GermplasmService;
   existingParentUrisToLabelsMap : Map<string, string> = new Map<string, string>();
-
 
   get user() {
     return this.$store.state.user;
@@ -187,11 +199,11 @@ export default class GermplasmForm extends Vue {
   isPublicOptions = [
     {
       id: true, 
-      label: this.$i18n.t("GermplasmForm.isPublic_trueOption")
+      label: this.$i18n.t("GermplasmForm.isPublic")
     },
     {
       id: false, 
-      label: this.$i18n.t("GermplasmForm.isPublic_falseOption")
+      label: this.$i18n.t("GermplasmForm.isPrivate")
     },
   ];
 
@@ -300,6 +312,13 @@ export default class GermplasmForm extends Vue {
     this.attributesArray = AttributesTable.readAttributes(metadata);
   }
 
+  @Watch("form.is_public")
+  resetGroupsOnPublicGermplasm(){
+    if(this.form.is_public) {
+      this.form.groups_users = []
+    }
+  }
+
 }
 </script>
 
@@ -337,8 +356,8 @@ en:
     website: Web site
     website-help: the web page of the institute or the germplasm
     groups_users : Groups
-    isPublic_trueOption: Public 
-    isPublic_falseOption: Private 
+    isPublic: Public 
+    isPrivate: Private 
     isPublic_label: Define status
 
 
@@ -371,8 +390,8 @@ fr:
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
     groups_users : Groupes
-    isPublic_trueOption: Public
-    isPublic_falseOption: Privé
+    isPublic: Public
+    isPrivate: Privé
     isPublic_label: Définir le statut
 
 </i18n>

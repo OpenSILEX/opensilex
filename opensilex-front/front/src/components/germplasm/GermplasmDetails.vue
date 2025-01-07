@@ -115,7 +115,7 @@
               ></opensilex-LabelUriView>
 
               <opensilex-UriListView
-                v-if="(germplasm.groups_users.length != 0)"
+                v-if="(germplasm.groups_users.length > 0)"
                 label="GermplasmDetails.groups_users"
                 :list="groupsList"
               ></opensilex-UriListView>
@@ -237,7 +237,7 @@ import GermplasmForm from "./GermplasmForm.vue";
 
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DocumentsService} from "opensilex-core/api/documents.service";
-import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
+import {GroupDTO, SecurityService} from "opensilex-security/index";
 
 @Component
 export default class GermplasmDetails extends Vue {

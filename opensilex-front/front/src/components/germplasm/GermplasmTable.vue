@@ -1256,6 +1256,7 @@ export default class GermplasmTable extends Vue {
 
 .tabulator {
   font-size: 13px;
+  text-align: center;
 }
 
 .tabulator-row {
@@ -1320,8 +1321,8 @@ en:
     infoLot: You have to fill species, variety or accession
     infoMessageEmptyLines: empty lines
     infoMessageErrors: errors
-    infoMessageGermplInserted: microorganism inserted
-    infoMessageGermplReady: microorganism ready to be inserted
+    infoMessageGermplInserted: germplasm inserted
+    infoMessageGermplReady: germplasm ready to be inserted
     infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
     infoSynonyms: To add several synonyms or subtaxa, use | as separator
     insert : Insert
@@ -1329,6 +1330,7 @@ en:
     insertionStatusMessage: created
     institute: Institute Code
     is_public: Public
+    lotNumber: LotNumber
     mainList: Go to main list
     missingHeader: Uri or name columns missing
     missingName: The name is missing at line
@@ -1353,6 +1355,7 @@ fr:
   GermplasmTable:
     addColumn: Ajouter colonne
     addRow: Ajouter ligne
+    alertDuplicate: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
     check : Valider
@@ -1375,8 +1378,8 @@ fr:
     infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
-    infoMessageGermplInserted: microorganismes insérées
-    infoMessageGermplReady: microorganismes prêtes à être insérées
+    infoMessageGermplInserted: ressources génétiques insérées
+    infoMessageGermplReady: ressources génétiques prêtes à être insérées
     infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     insert : Insérer
@@ -1384,6 +1387,7 @@ fr:
     insertionStatusMessage: créé
     institute: Code institut
     is_public : Publique
+    lotNumber: Code lot
     mainList: Retour à la liste principale
     missingHeader: Colonne uri ou nom manquant
     missingName: Le nom n'est pas renseigné à la ligne
@@ -1403,4 +1407,7 @@ fr:
     subtaxa : Subtaxa
     synonyms: Synonymes
     toggleAll: Tout sélectionner / Tout désélectionner
+    uri: URI
+    website: Site web
+    year: Année
 </i18n>

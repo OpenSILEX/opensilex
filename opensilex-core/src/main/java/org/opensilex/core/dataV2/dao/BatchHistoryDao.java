@@ -34,6 +34,15 @@ public class BatchHistoryDao extends MongoReadWriteDao<BatchHistoryModel, BatchH
         if (filter.getUserName() != null) {
             result.add(Filters.regex(BatchHistoryModel.USERNAME, filter.getUserName(), "i"));
         }
+
+        if (filter.getStartDate() != null) {
+            result.add(Filters.gte(BatchHistoryModel.PUBLICATION_DATE_FIELD, filter.getStartDate()));
+        }
+
+        if (filter.getEndDate() != null) {
+            result.add(Filters.lte(BatchHistoryModel.PUBLICATION_DATE_FIELD, filter.getEndDate()));
+        }
+
         return result;
     }
 

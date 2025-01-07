@@ -12,6 +12,7 @@ import java.util.UUID;
 public class BatchHistoryModel extends MongoModel {
     public static final String BATCH_ID_FIELD = "batchId";
     public static final String USERNAME = "username";
+    public static final String PUBLICATION_DATE_FIELD = "publicationDate";
 
     private String batchId;
     private String username;

@@ -39,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -59,7 +60,8 @@ public class DataAPIV2 {
 
     public static final String CREDENTIAL_DATA_GROUP_ID = "Data";
     public static final String CREDENTIAL_DATA_GROUP_LABEL_KEY = "credential-groups.data";
-    public static final String DATA_EXAMPLE_MINIMAL_DATE = "2020-08-21T00:00:00+01:00";
+    public static final String DATA_EXAMPLE_MINIMAL_DATE = "2025-01-01T00:00:00+01:00";
+    public static final String DATA_EXAMPLE_MAXIMAL_DATE = "2025-02-01T00:00:00+01:00";
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
     public static final String CSV_EXTENSION = ".csv";
@@ -152,15 +154,23 @@ public class DataAPIV2 {
     })
     public Response searchBatchHistory(
             @ApiParam(value = "Regex pattern for filtering by batchId") @QueryParam("batch_id") String batchId,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
 
         BatchHistoryDao dao = new BatchHistoryDao(nosql.getServiceV2());
+
+        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
+        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
+
         BatchHistorySearchFilter filter = (BatchHistorySearchFilter) new BatchHistorySearchFilter()
                 .setBatchId(batchId)
                 .setUserName(user.getName())
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
                 .setPage(page)
                 .setPageSize(pageSize)
                 .setOrderByList(orderByList);

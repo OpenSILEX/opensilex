@@ -36,7 +36,7 @@
     <b-modal
         class="facilities-modal"
         ref="popup"
-        :title="$t('FacilitiesPopUpList.title', [hostNameForTitle])"
+        :title="$t('FacilitiesModalList.title', [hostNameForTitle])"
         hide-footer
         centered>
       <div id="facility-view">

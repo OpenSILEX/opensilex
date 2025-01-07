@@ -11,13 +11,14 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import Tour from "vue-tour";
 
 @Component
 export default class Tutorial extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("tutorial") readonly tutorial!: any;
+  @Ref("tutorial") readonly tutorial; // Correct type is supposed to be 'Tour' but does not work for some reason
 
   @Prop({ default: false })
   editMode: boolean;

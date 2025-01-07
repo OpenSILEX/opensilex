@@ -12,4 +12,4 @@ opensilex-doc/src/main/resources/generated/
 **/opensilex-data-analysis
 **/inrae-bigdatagrapes
 **/*.iml
-
+opensilex-front/front/src/opensilex.dev.ts

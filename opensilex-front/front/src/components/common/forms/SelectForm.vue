@@ -80,10 +80,12 @@ import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 
 export interface SelectableItem {
   id: string,
   label: string,
+  title?: string,
   isDisabled?: boolean
 }
 
@@ -330,11 +332,11 @@ export default class SelectForm extends Vue {
           } else {
             //Set table async view's checked items
             this.$nextTick(()=> {
-              if(this.searchModal.setInitiallySelectedItems){
-                this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
-              }
-              //Set selectedTmp and selectedCopie
+              //Set selectedTmp and selectedCopie and table async views initially selected items
               if( this.firstTimeOpening ){
+                if(this.searchModal.setInitiallySelectedItems){
+                  this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
+                }
                 this.firstTimeOpening = false;
                 if( this.selectedInJsonFormat ){
                   this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));

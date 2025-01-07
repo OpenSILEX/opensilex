@@ -182,7 +182,7 @@ public class StapleModelBuilder {
         return model;
     }
 
-    //region Build methods
+    //#region Build methods
 
     private Resource createBaseClassResource(ClassModel classModel) {
         Resource resource = createResource(classModel.getUri(), RDFS.Class);
@@ -314,9 +314,20 @@ public class StapleModelBuilder {
         }
     }
 
-    //endregion
+    //#endregion
 
-    //region Helper methods
+    //#region Helper methods
+
+    /**
+     * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
+     * the given resource to the {@link StapleModelBuilder#EXCLUDED_RESOURCES} set.
+     *
+     * @param model The resource model to check
+     * @return `true` if the model should be excluded form the Staple Model, `false` otherwise
+     */
+    private boolean isResourceExcluded(SPARQLResourceModel model) {
+        return EXCLUDED_RESOURCES.contains(URI.create(SPARQLDeserializers.getExpandedURI(model.getUri())));
+    }
 
     /**
      * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
@@ -389,5 +400,5 @@ public class StapleModelBuilder {
         return model.createResource(URIDeserializer.getExpandedURI(uri), type);
     }
 
-    //endregion
+    //#endregion
 }

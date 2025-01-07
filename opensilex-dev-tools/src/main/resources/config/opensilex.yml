@@ -107,6 +107,18 @@ system:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
         org.opensilex.phis.PhisWsModule: opensilex-phis.jar
 
+front:
+    agroportal:
+        entity:
+            - AGROVOC
+            - PO
+        trait:
+            - PATO
+        method:
+            - TRANSFORMON
+        unit:
+            - OBOE
+
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
 #     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"

@@ -9,32 +9,32 @@ package org.opensilex.core.experiment.factors.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
-import org.opensilex.core.experiment.factor.api.FactorCreationDTO;
-import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
-import org.opensilex.core.experiment.factor.api.FactorGetDTO;
-import org.opensilex.core.experiment.factor.api.FactorLevelCreationDTO;
-import org.opensilex.core.experiment.factor.api.FactorUpdateDTO;
+import org.opensilex.core.experiment.factor.api.*;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.skos.model.SkosModelTest;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static junit.framework.TestCase.*;
 
 /**
  * @author Arnaud Charleroy
@@ -45,15 +45,26 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     protected String pathFactorsLevel = "/core/experiments/factors/levels";
 
     protected String uriPath = pathFactors + "/{uri}";
-    protected String factorsLevelsPath = pathFactors + "/{uri}/levels";
     protected String searchPath = pathFactors ;
-    protected String createPath = pathFactors ;
+    public String createPath = pathFactors ;
     protected String updatePath = pathFactors ;
     protected String deleteFactorPath = pathFactors + "/{uri}";
-    protected String deleteFactorsLevelPath = pathFactorsLevel + "/{uri}";
     protected String getFactorsLevelPath = pathFactorsLevel + "/{uri}";
 
+    public final ServiceDescription create = new ServiceDescription(
+            FactorAPI.class.getMethod("createFactor", FactorCreationDTO.class),
+            createPath
+    );
+
+    public final ServiceDescription getFactorLevels = new ServiceDescription(
+            FactorAPI.class.getMethod("getFactorLevels", URI.class),
+            "/core/experiments/factors/{uri}/levels"
+    );
+
     private static int factorCount = 0;
+
+    public FactorsAPITest() throws NoSuchMethodException {
+    }
 
     public FactorCreationDTO getCreationDTO(URI experiment) throws URISyntaxException {
         factorCount++;

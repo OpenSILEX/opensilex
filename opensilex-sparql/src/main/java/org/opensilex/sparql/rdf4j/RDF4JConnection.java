@@ -6,6 +6,9 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.Rule;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -52,7 +55,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private static AtomicInteger connectionCount = new AtomicInteger(0);
 
-    private org.apache.jena.rdf.model.Model jenaModel;
+    private Reasoner reasoner;
 
     public RDF4JConnection(RepositoryConnection rdf4JConnection) {
         super(null);
@@ -75,11 +78,22 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
 // Lecture du modèle Jena à partir de l'InputStream
-        jenaModel = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
+        var jenaModel = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
         jenaModel.read(inputStream, "", "RDF/XML");
-        LOGGER.debug("RDF4J to Jena conversion time: " + (System.currentTimeMillis() - startTime) + "ms");
+        var conversionTime = System.currentTimeMillis() - startTime;
+        LOGGER.debug("RDF4J to Jena conversion time: " + conversionTime + "ms");
         LOGGER.debug("nb statements: " + jenaModel.size());
         LOGGER.debug("****************************************************************************************");
+
+        String ruleSrc = "[rule1: (?o <http://www.w3.org/ns/org/hasSite> ?s), (?o <http://www.opensilex.org/vocabulary/oes/hasPart> ?x) -> (?x <http://www.w3.org/ns/org/hasSite> ?s)]";
+        List rules = Rule.parseRules(ruleSrc);
+
+        reasoner = new GenericRuleReasoner(rules);
+        var totalTime = System.currentTimeMillis() - startTime;
+        LOGGER.debug("reasonner creation time: " + (totalTime - conversionTime)  + "ms");
+        LOGGER.debug("total time with reasoner creation: " + totalTime + "ms");
+        LOGGER.debug("****************************************************************************************");
+
 
     }
 

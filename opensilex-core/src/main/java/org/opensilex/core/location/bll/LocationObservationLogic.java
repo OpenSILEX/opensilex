@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LocationObservationLogic {
@@ -189,6 +190,48 @@ public class LocationObservationLogic {
 
         return count;
     }
+
+    /**
+     *
+     * @param fromList list of models to create map with if they have a LocationObservationCollection
+     * @param getLocationObservationCollectionFromModel pass a function to tell this method how to fetch LocationObservationCollection from a T
+     * @param optionalEndDate Sites don't have a date, Facilities do
+     * @return a map of T with or without corresponding location
+     * @param <T> the type of the keys of the returned map
+     */
+    public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
+            List<T> fromList,
+            Function<T, LocationObservationCollectionModel> getLocationObservationCollectionFromModel,
+            Instant optionalEndDate
+    ){
+        Map<T, LocationObservationModel> result = new HashMap<>();
+
+        //Get models with locations
+        Map<T, LocationObservationCollectionModel> modelsWithLocationMap = fromList.stream()
+                .filter(model -> getLocationObservationCollectionFromModel.apply(model) != null)
+                .collect(Collectors.toMap(Function.identity(), getLocationObservationCollectionFromModel));
+
+        if (!modelsWithLocationMap.isEmpty()) {
+            List<LocationObservationModel> locationObservationModels = getLastLocationObservation(
+                    new ArrayList<>(modelsWithLocationMap.values()),
+                    true,
+                    optionalEndDate
+            );
+
+            var locationObservationMap = locationObservationModels.stream()
+                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+
+            modelsWithLocationMap.forEach((model, collection) -> {
+                var observation = locationObservationMap.get(collection.getUri());
+                if (Objects.nonNull(observation)) {
+                    result.put(model, observation);
+                }
+            });
+
+        }
+        return result;
+    }
+
     //#endregion
 
     //#region private

@@ -20,7 +20,6 @@ import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
@@ -52,7 +51,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {
@@ -189,8 +187,8 @@ public class FacilityLogic {
      * @return a Map of facilities with or without corresponding location
      * @throws Exception If some error is encountered during the search
      */
-    public Map<FacilityModel, LocationObservationModel> getSitesWithPosition(Instant endDate, AccountModel currentUser) throws Exception {
-        Map<FacilityModel, LocationObservationModel> facilitiesAndLocationsMap = new HashMap<>();
+    public Map<FacilityModel, LocationObservationModel> getFacilitiesWithPosition(Instant endDate, AccountModel currentUser) throws Exception {
+
         FacilitySearchFilter facilitySearchfilter = new FacilitySearchFilter();
 
         //Set searchFilter
@@ -202,30 +200,12 @@ public class FacilityLogic {
 
         List<FacilityModel> facilityList = facilityDAO.minimalSearch(facilitySearchfilter, organizationsAndSites).getList();
 
-        //Get facility with location
-        Map<FacilityModel, LocationObservationCollectionModel> facilitiesWithLocationMap = facilityList.stream()
-                .filter(facility -> facility.getLocationObservationCollection() != null)
-                .collect(Collectors.toMap(Function.identity(), FacilityModel::getLocationObservationCollection));
-
-        if (!facilitiesWithLocationMap.isEmpty()) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
-                    new ArrayList<>(facilitiesWithLocationMap.values()),
-                    true,
-                    Objects.nonNull(endDate) ? endDate : Instant.now());
-
-            var locationObservationMap = locationObservationModels.stream()
-                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
-
-            facilitiesWithLocationMap.forEach((site, collection) -> {
-                var observation = locationObservationMap.get(collection.getUri());
-                if (Objects.nonNull(observation)) {
-                    facilitiesAndLocationsMap.put(site, observation);
-                }
-            });
-
-        }
-        return facilitiesAndLocationsMap;
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        return locationObservationLogic.generateModelObservationCollectionMap(
+                facilityList,
+                FacilityModel::getLocationObservationCollection,
+                Objects.nonNull(endDate) ? endDate : Instant.now()
+        );
     }
 
     /**
@@ -252,11 +232,13 @@ public class FacilityLogic {
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.update(instance);
 
-            if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
-                updateFacilityLocations(session, instance, existingModel, locations);
-            } else if (Objects.isNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
-                createFacilityLocations(session, instance, locations);
-            } else if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.isNull(locations) && Objects.isNull(instance.getAddress()))) {
+            if(Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())){
+                if(Objects.nonNull(existingModel.getLocationObservationCollection())){
+                    updateFacilityLocations(session, instance, existingModel, locations);
+                }else{
+                    createFacilityLocations(session, instance, locations);
+                }
+            }else{
                 deleteFacilityLocations(session, instance);
             }
 
@@ -287,19 +269,6 @@ public class FacilityLogic {
             return null;
         });
         organizationDAO.invalidateCache();
-    }
-
-    public FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList, AccountModel currentUser) {
-        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
-                .setUser(currentUser)
-                .setPattern(pattern)
-                .setOrderByList(orderByList)
-                .setPage(page)
-                .setPageSize(pageSize);
-        if (!organizations.isEmpty()) {
-            filter.setOrganizations(organizations);
-        }
-        return filter;
     }
 
     /**

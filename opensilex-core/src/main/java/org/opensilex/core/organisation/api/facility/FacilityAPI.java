@@ -227,7 +227,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
-        FacilitySearchFilter filter = facilityLogic.createSearchFilter(pattern, organizations, page, pageSize, orderByList, currentUser);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
 
@@ -255,7 +255,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
-        FacilitySearchFilter filter = facilityLogic.createSearchFilter(pattern, organizations, page, pageSize, orderByList, currentUser);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.minimalSearch(filter);
 
@@ -352,7 +352,7 @@ public class FacilityAPI {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();
 
-        Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getSitesWithPosition(
+        Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getFacilitiesWithPosition(
                 Objects.nonNull(endDate) ? Instant.parse(endDate) : null,
                 currentUser
         );
@@ -364,5 +364,18 @@ public class FacilityAPI {
         });
 
         return new PaginatedListResponse<>(facilityDTOList).getResponse();
+    }
+
+    private FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList) {
+        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
+                .setUser(currentUser)
+                .setPattern(pattern)
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        return filter;
     }
 }

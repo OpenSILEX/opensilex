@@ -91,6 +91,7 @@
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",
                 "previous": "Précédent",
+                "next": "Suivant",
                 "map": "Mapper",
                 "done": "Terminer",
                 "cancel": "Annuler"
@@ -245,7 +246,7 @@
             "scientificObjectTypes": "Objets scientifiques",
             "facilitiesTypes": "Installations (environnement)",
             "deviceTypes": "Appareils",
-            "eventTypes": "Évènements", 
+            "eventTypes": "Évènements",
             "factorCategoryTypes": "Catégories de facteurs",
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
@@ -400,6 +401,8 @@
             "delete": "Supprimer le groupe",
             "details": "Afficher ou masquer les détails du groupe",
             "filter-placeholder": "Rechercher des groupes...",
+            "group-added": "Le groupe a été crée",
+            "group-updated": "Le groupe a été mis à jour",
             "user-profiles": "Utilisateurs et profils",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
@@ -572,6 +575,9 @@
                 "orga-groups-projects": "Organisations, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
+            },
+            "errors": {
+                "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
             }
         },
         "germplasms": {

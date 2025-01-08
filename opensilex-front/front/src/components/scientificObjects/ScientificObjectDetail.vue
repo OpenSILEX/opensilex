@@ -228,7 +228,7 @@ export default class ScientificObjectDetail extends Vue {
     defaultTabsValue: string;
 
     getEventColumnToDisplay() : Set<string>{
-        return this.globalView ? EventList.getDefaultColumns() : new Set(['type', 'end', 'description']) ;
+        return new Set(['type', 'start', 'end', 'description']);
     }
 
     getPositionsColumnToDisplay() : Set<string>{

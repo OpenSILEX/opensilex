@@ -15,7 +15,7 @@ test('CRUD of an organization facility', async ({ page }) => {
 
 
   // Clicking on language options dropdown
-    const dropdownButton = page.locator('#__BVID__31__BV_toggle_');
+    const dropdownButton = page.locator('#__BVID__32__BV_toggle_');
     await dropdownButton.click();
 
   // Clicking on first option (english)

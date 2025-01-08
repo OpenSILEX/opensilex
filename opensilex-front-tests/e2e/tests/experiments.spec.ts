@@ -14,7 +14,7 @@ test('experiment visualisation', async ({ page }) => {
   await expect(page).toHaveURL('http://localhost:8080/app');
 
   // Clicking on language options dropdown
-    const dropdownButton = page.locator('#__BVID__31__BV_toggle_');
+    const dropdownButton = page.locator('#__BVID__32__BV_toggle_');
     await dropdownButton.click();
 
   // Clicking on first option (english)

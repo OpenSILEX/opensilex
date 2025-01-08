@@ -38,6 +38,7 @@
                         :conversionMethod="objectToSelectNode"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(entitySelector)"
+                        data-testid="entitySelector"
                     ></opensilex-EntitySelector>
                     <opensilex-AgroportalEntityForm
                         ref="entityForm"
@@ -87,6 +88,7 @@
                         noResultsText="VariableForm.no-characteristic"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(characteristicSelector)"
+                        data-testid="characteristicSelector"
                     ></opensilex-CharacteristicSelector>
                     <opensilex-AgroportalCharacteristicForm
                         ref="characteristicForm"
@@ -123,6 +125,7 @@
                         :conversionMethod="objectToSelectNode"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(methodSelector)"
+                        data-testid="methodSelector"
                     ></opensilex-MethodSelector>
                     <opensilex-AgroportalMethodForm
                         ref="methodForm"
@@ -173,6 +176,7 @@
                         noResultsText="VariableForm.no-unit"
                         :disabled="false"
                         @loadMoreItems="loadMoreItems(unitSelector)"
+                        data-testid="unitSelector"
                     ></opensilex-UnitSelector>
                     <opensilex-AgroportalUnitForm
                         ref="unitForm"
@@ -214,6 +218,7 @@
                         :itemLoadingMethod="loadDataType"
                         :disabled="hasLinkedData"
                         :options="datatypesNodes"
+                        data-testid="variableDataTypeSelector"
                     >
                     </opensilex-VariableDataTypeSelector>                   
                 </div>

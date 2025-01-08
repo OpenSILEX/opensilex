@@ -6,16 +6,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
-import org.opensilex.core.dataV2.dao.BatchHistoryDao;
-import org.opensilex.core.dataV2.dao.BatchHistorySearchFilter;
-import org.opensilex.core.dataV2.model.BatchHistoryModel;
+import org.opensilex.core.dataV2.service.BatchHistoryService;
 import org.opensilex.core.dataV2.service.DataService;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -39,7 +37,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -67,6 +64,11 @@ public class DataAPIV2 {
     public static final String CSV_EXTENSION = ".csv";
     public static final String DATA_ALREADY_EXISTS = "Data already exists";
     public static final String DUPLICATED_DATA_FOUND = "Duplicated data found ";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_ID = "data-delete";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY = "credential.default.delete";
+    public static final String BATCH_HISTORY_URI = "Batch history URI";
+    public static final String BATCH_HISTORY_EXAMPLE_URI = "http://opensilex.dev/id/batchHistory/cd3dde33d6f5dc2";
+
 
     @Inject
     private MongoDBService nosql;
@@ -81,6 +83,7 @@ public class DataAPIV2 {
     AccountModel user;
 
     DataService dataService;
+    BatchHistoryService batchHistoryService;
 
 
     @POST
@@ -153,35 +156,35 @@ public class DataAPIV2 {
             @ApiResponse(code = 200, message = "Return batch history list", response = BatchHistoryGetDTO.class, responseContainer = "List")
     })
     public Response searchBatchHistory(
-            @ApiParam(value = "Regex pattern for filtering by batchId") @QueryParam("batch_id") String batchId,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
-
-        BatchHistoryDao dao = new BatchHistoryDao(nosql.getServiceV2());
-
-        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
-        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
-
-        BatchHistorySearchFilter filter = (BatchHistorySearchFilter) new BatchHistorySearchFilter()
-                .setBatchId(batchId)
-                .setUserName(user.getName())
-                .setStartDate(startInstant)
-                .setEndDate(endInstant)
-                .setPage(page)
-                .setPageSize(pageSize)
-                .setOrderByList(orderByList);
-
-        ListWithPagination<BatchHistoryGetDTO> results = dao.searchWithPagination(
-                new MongoSearchQuery<BatchHistoryModel, BatchHistorySearchFilter, BatchHistoryGetDTO>()
-                        .setFilter(filter)
-                        .setConvertFunction(BatchHistoryGetDTO::fromModel)
-        );
+        this.batchHistoryService = new BatchHistoryService(user, nosql);
+        ListWithPagination<BatchHistoryGetDTO> results = batchHistoryService.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
         return new PaginatedListResponse<>(results).getResponse();
     }
+
+    @DELETE
+    @Path("batch_history/{uri}")
+    @ApiOperation("Delete batch history by URI")
+    @ApiProtected
+    @ApiCredential(credentialId = CREDENTIAL_BATCH_HISTORY_DELETE_ID, credentialLabelKey = CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response deleteBatchHistoryByURI(
+            @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+    ) throws NoSQLInvalidURIException {
+        this.batchHistoryService = new BatchHistoryService(user, nosql);
+        return new SingleObjectResponse<>(batchHistoryService.deleteBatchHistoryByURI(uri)).getResponse();
+    }
+
 
     private String getFileName(FormDataContentDisposition fileDisposition) {
         return fileDisposition.getFileName().split(CSV_EXTENSION)[0];

@@ -20,6 +20,8 @@ public class BatchHistoryGetDTO {
     private OffsetDateTime publicationDate;
     @JsonProperty("publisher")
     private URI publisher;
+    @JsonProperty("uri")
+    private URI uri;
 
     public String getUserName() {
         return userName;
@@ -53,11 +55,20 @@ public class BatchHistoryGetDTO {
         this.publisher = publisher;
     }
 
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
     public static BatchHistoryGetDTO fromModel(BatchHistoryModel batchHistoryModel) {
         BatchHistoryGetDTO batchHistoryDTO = new BatchHistoryGetDTO();
         batchHistoryDTO.setBatchId(batchHistoryModel.getBatchId());
         batchHistoryDTO.setUserName(batchHistoryModel.getUsername());
         batchHistoryDTO.setPublisher(batchHistoryModel.getPublisher());
+        batchHistoryDTO.setUri(batchHistoryModel.getUri());
         batchHistoryDTO.setPublicationDate(OffsetDateTime.ofInstant(batchHistoryModel.getPublicationDate(), ZoneOffset.UTC));
         return batchHistoryDTO;
     }

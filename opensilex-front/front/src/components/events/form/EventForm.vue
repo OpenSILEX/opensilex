@@ -115,7 +115,7 @@
             :excludedProperties="this.excludedProperties"
             :baseType="this.baseType"
             :editMode="editMode"
-            :context="context ? { experimentURI: context} : undefined"
+            :context="context"
         ></opensilex-OntologyRelationsForm>
 
         <div>

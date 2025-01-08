@@ -189,7 +189,7 @@
     color: inherit;
 }
 
-.personOrcid a {
+.personOrcid a,  .uriLinkGlobalUriSearchRes a {
     color: #007bff;
 }
 

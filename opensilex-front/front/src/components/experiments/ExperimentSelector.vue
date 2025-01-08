@@ -1,6 +1,6 @@
 <template>
   <opensilex-FormSelector
-    ref="formSelector"
+    ref="experimentSelector"
     :required="required"
     :label="label"
     :selected.sync="experimentsURI"
@@ -18,9 +18,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
 import { ExperimentGetListDTO } from "opensilex-core/index";
 import FormSelector from "../common/forms/FormSelector.vue";
 
@@ -44,7 +42,9 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   required;
 
-  @Ref("formSelector") readonly formSelector!: FormSelector;
+
+
+  @Ref("experimentSelector") readonly experimentSelector!: any;
 
   get placeholder() {
     return this.multiple
@@ -100,6 +100,14 @@ export default class ExperimentSelector extends Vue {
 
   onEnter() {
     this.$emit("handlingEnterKey")
+  }
+
+  loadMoreItems(){
+    this.pageSize = 0;
+    this.experimentSelector.refresh();
+    this.$nextTick(() => {
+      this.experimentSelector.openTreeselect();
+    })
   }
 }
 </script>

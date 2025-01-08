@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-    ref="selectForm"
+  <opensilex-FormSelector
+    ref="formSelector"
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
@@ -23,7 +23,7 @@
     :viewHandler="viewHandler"
     :required="required"
     :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -31,7 +31,8 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {ProvenanceGetDTO} from "opensilex-core/index";
-import SelectForm from "../common/forms/SelectForm.vue";
+import FormSelector from "../common/forms/FormSelector.vue";
+
 
 @Component
 export default class ProvenanceSelector extends Vue {
@@ -39,7 +40,7 @@ export default class ProvenanceSelector extends Vue {
   $i18n: any;
   pageSize = 10;
 
-  @Ref("selectForm") readonly selectForm!: SelectForm;
+  @Ref("formSelector") readonly formSelector!: FormSelector;
 
   @Prop()
   actionHandler: Function;
@@ -85,7 +86,7 @@ export default class ProvenanceSelector extends Vue {
   device;
 
   refresh() {
-    this.selectForm.refresh();
+    this.formSelector.refresh();
   }
 
   loadProvenances(provenancesURI) {
@@ -135,9 +136,9 @@ export default class ProvenanceSelector extends Vue {
 
   loadMoreItems(){
     this.pageSize = 0;
-    this.selectForm.refresh();
+    this.formSelector.refresh();
     this.$nextTick(() => {
-      this.selectForm.openTreeselect();
+      this.formSelector.openTreeselect();
     })
   }
 }

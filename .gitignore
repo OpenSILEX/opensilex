@@ -4,7 +4,6 @@
 target/
 node_modules/
 **/nb-configuration.xml
-**/site/
 **/front/dist
 **/front/src/lib
 **/front/types
@@ -13,6 +12,6 @@ opensilex-doc/src/main/resources/generated/
 **/opensilex-data-analysis
 **/inrae-bigdatagrapes
 **/*.iml
-
+opensilex-front/front/src/opensilex.dev.ts
 /opensilex-front-tests/e2e/test-results/
 /opensilex-front-tests/e2e/playwright-report/

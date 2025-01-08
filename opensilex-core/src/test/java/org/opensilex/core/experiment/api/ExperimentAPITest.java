@@ -288,7 +288,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         assertFalse(xps.isEmpty());
     }
 
-    //region GET available_facilities
+    //#region GET available_facilities
 
     /**
      * Organization in experiment
@@ -401,7 +401,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         assertTrue(facilitiesList.stream().anyMatch(facility -> Objects.equals(facility.getUri(), facilityOutOfXpInOrgInXpUri)));
     }
 
-    //endregion
+    //#endregion
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

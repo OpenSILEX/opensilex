@@ -22,7 +22,7 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.phis.ontology.OesoExt;
+import org.opensilex.phis.ontology.OesoPhis;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.ontology.OesoSecurity;
 import org.opensilex.security.profile.dal.ProfileModel;
@@ -62,15 +62,6 @@ public class InstallTest {
     public void installWithRdf4jRepository() throws Exception {
         testInstall("opensilex_rdf4j_install_test.yml",false);
     }
-
-    /**
-     * This test need a running graphdb server instance in order to success. See the configuration used
-     */
-    @Test
-    public void installWithGraphDbRepository() throws Exception {
-        testInstall("opensilex_graphdb_install_test.yml",false);
-    }
-
 
     private void testInstall(String configFile, boolean reset) throws Exception {
 
@@ -151,7 +142,7 @@ public class InstallTest {
                 Oeso.NS,
                 Oeev.NS,
                 OesoSecurity.NS,
-                OesoExt.NS,
+                OesoPhis.NS,
                 OWL.NAMESPACE,
                 Time.NS,
                 DCTERMS.NAMESPACE,

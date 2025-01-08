@@ -10,6 +10,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
@@ -31,18 +32,20 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
@@ -52,13 +55,20 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.query.SparqlMultiGraphQuery;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -70,7 +80,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHour;
 
@@ -304,26 +313,27 @@ public class DataLogic {
         dao.update(data);
     }
 
-    public Stream<VariableModel> getUsedVariablesAsStream(DataSearchFilter filter){
-        return dao.distinct(null, DataModel.VARIABLE_FIELD, VariableModel.class, filter)
-                .stream();
+    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
+        return getUsedVariablesByFilter(dataSearchFilter);
     }
 
-    public void update(DataModel model) throws Exception{
-        validData(Collections.singletonList(model));
+    public void update(DataModel model) throws Exception {
+        DataValidation validation = new DataValidation(Collections.singletonList(model), sparql, nosql, user);
+        validation.validate();
         dao.update(model);
     }
-
     public DeleteResult deleteManyByFilter(DataSearchFilter filter){
         return dao.deleteMany(filter);
     }
 
     public List<URI> createMany(List<DataModel> modelList) throws Exception {
-        return addListDataInnerCode(modelList, variablesToDevices, false, null);
+        return createMany(modelList, false, null);
     }
 
     public void createManyFromImport(List<DataModel> modelList, DataCSVValidationModel csvValidationModel) throws Exception {
-        addListDataInnerCode(modelList, csvValidationModel.getVariablesToDevices(), true, csvValidationModel);
+        createMany(modelList, true, csvValidationModel);
     }
 
     /**
@@ -359,23 +369,34 @@ public class DataLogic {
         return validation;
     }
 
-    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) {
+    /**
+     *
+     * @param devices to filter the data by device
+     * @param variables to filter the data by variable
+     * @param experiments to filter the data by experiment
+     * @param typeOfTarget Retain only targets of this type, if NULL then we return all types of target
+     *
+     * @return A list of target URIS who are target's of the filtered data
+     * @throws Exception
+     */
+    public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments, URI typeOfTarget) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
-        return dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+        List<URI> usedTargetUris = dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+
+        if(typeOfTarget != null && CollectionUtils.isNotEmpty(usedTargetUris)){
+            OntologyDAO ontologyDao = new OntologyDAO(sparql);
+            List<URITypesModel> superTypesByUri = ontologyDao.getSuperClassesByURI(usedTargetUris).stream().filter(
+                    e -> e.getRdfTypes().stream().anyMatch(
+                            f -> SPARQLDeserializers.compareURIs(f, typeOfTarget)
+                    )
+            ).toList();
+            return superTypesByUri.stream().map(URITypesModel::getUri).toList();
+
+        }
+        return usedTargetUris;
     }
 
-    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
-        DataSearchFilter dataSearchFilter = new DataSearchFilter();
-        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects).setProvenances(provenances);
-        Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
-        String userLanguage = null;
-        if(user != null){
-            userLanguage = user.getLanguage();
-        }
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
-        return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
-    }
 
     public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
@@ -411,7 +432,8 @@ public class DataLogic {
                     getUsedTargets(
                             null,
                             criteriaDTO.getCriteriaList().stream().map(SingleCriteriaDTO::getVariableUri).collect(Collectors.toList()),
-                            (experiment == null ? null : Collections.singletonList(experiment))
+                            (experiment == null ? null : Collections.singletonList(experiment)),
+                            null
                     ).stream().filter(Objects::nonNull).collect(Collectors.toList())
             );
         }
@@ -557,153 +579,62 @@ public class DataLogic {
     //#endregion
 
     //#region PRIVATE METHODS
-    /**
-     * Check variable data list before creation
-     * Complete the prov_was_associated_with provenance attribut
-     *
-     * @param dataList
-     * @throws Exception
-     */
-    private List<DataModel> validData(List<DataModel> dataList) throws Exception {
 
-        Map<URI, VariableModel> variableURIs = new HashMap<>();
-        Set<URI> notFoundedVariableURIs = new HashSet<>();
-        Set<URI> targetURIs = new HashSet<>();
-        Set<URI> notFoundedTargetURIs = new HashSet<>();
-        Set<URI> provenanceURIs = new HashSet<>();
-        Set<URI> notFoundedProvenanceURIs = new HashSet<>();
-        Set<URI> expURIs = new HashSet<>();
-        Set<URI> notFoundedExpURIs = new HashSet<>();
-        Map<DeviceModel, URI> variableCheckedDevice =  new HashMap<>();
-        Map<URI, DeviceModel> provenanceToDevice =  new HashMap<>();
-
-        List<DataModel> validData = new ArrayList<>();
-        for (DataModel data : dataList) {
-
-            boolean hasTarget = false;
-            // check variable uri and datatype
-            if (data.getVariable() != null) {  // and if null ?
-                VariableModel variable = null;
-                URI variableURI = data.getVariable();
-                if (!variableURIs.containsKey(variableURI)) {
-                    variable = new VariableDAO(sparql, nosql, fs, user).get(variableURI);
-                    if (variable == null) {
-                        notFoundedVariableURIs.add(variableURI);
-                    } else {
-                        if (variable.getDataType() == null) {
-                            throw new NoVariableDataTypeException(variableURI);
-                        }
-                        variableURIs.put(variableURI, variable);
-                    }
-                } else {
-                    variable = variableURIs.get(variableURI);
-
-                }
-                if(!notFoundedVariableURIs.contains(variableURI)) {
-                    setDataValidValue(variable, data);
-                }
-            }
-
-
-            //check targets uri
-            if (data.getTarget() != null) {
-                hasTarget = true ;
-                if (!targetURIs.contains(data.getTarget())) {
-                    targetURIs.add(data.getTarget());
-                    if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        hasTarget = false ;
-                        notFoundedTargetURIs.add(data.getTarget());
-                    }
-                }
-            }
-
-            //check provenance uri and variables device association
-            ProvenanceDaoV2 provDAO = new ProvenanceDaoV2(nosql.getServiceV2());
-            if (!provenanceURIs.contains(data.getProvenance().getUri())) {
-                provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.exists(data.getProvenance().getUri())) {
-                    notFoundedProvenanceURIs.add(data.getProvenance().getUri());
-                }
-            }
-
-            if(!notFoundedProvenanceURIs.contains(data.getProvenance().getUri())){
-                variablesDeviceAssociation(provDAO, data, hasTarget, variableCheckedDevice, provenanceToDevice);
-            }
-
-            // check experiments uri
-            if (data.getProvenance().getExperiments() != null) {
-                for (URI exp : data.getProvenance().getExperiments()) {
-                    if (!expURIs.contains(exp)) {
-                        expURIs.add(exp);
-                        if (!sparql.uriExists(ExperimentModel.class, exp)) {
-                            notFoundedExpURIs.add(exp);
-                        }
-                    }
-                }
-            }
-            validData.add(data);
+    public List<VariableModel> getUsedVariablesByFilter(DataSearchFilter filter) throws Exception {
+        Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, filter));
+        String userLanguage = null;
+        if(user != null){
+            userLanguage = user.getLanguage();
         }
-
-        if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));// NOSQL Exception ? come from sparql request
-        }
-        if (!notFoundedTargetURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedTargetURIs)); // NOSQL Exception ? come from sparql request
-        }
-        if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
-        }
-        if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs)); // NOSQL Exception ? come from sparql request
-        }
-
-        return validData;
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
+        return variableDAO.getList(new ArrayList<>(variableURIs), userLanguage);
     }
 
     /**
-     *
      * Validates - throws or inserts the models
      * Handles setting of publisher
      * Handles Annotation creation in the case of import
-     * @param modelList models to insert
-     * @param variablesToDevices device, variable map to add the links to devices
-     * @param calledFromImport so we know to run any extra code
-     * @param csvValidation null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
-     * @return a list of uris if it the caller wasn't the import function
+     *
+     * @param models          models to insert
+     * @param csvImport   so we know to run any extra code
+     * @param csvValidation      null if not for import, otherwise used to set nbOfImportedLines and to fetch any Annotations that need to be created
+     * @return a list of uris if the caller wasn't the import function
      */
-    private List<URI> addListDataInnerCode(List<DataModel> modelList, Map<DeviceModel, List<URI>> variablesToDevices, boolean calledFromImport, DataCSVValidationModel csvValidation) throws Exception{
+    private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
 
-        //TODO can the validations done for import be refactord with the validData method ?
-        if(!calledFromImport){
-            modelList = validData(modelList);
+        DataPostInsert postInsert;
+        if (!csvImport) {
+            DataValidation validation = new DataValidation(models, sparql, nosql, user);
+            postInsert = validation.validate();
+        }else{
+            postInsert = new DataPostInsert();
+            csvValidation.getVariablesToDevices().forEach((device, variables) -> {
+                postInsert.devicesToVariables.computeIfAbsent(device.getUri(), key -> new HashSet<>()).addAll(variables);
+            });
+            models.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
         }
-        //Set publisher
-        modelList.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
 
-        //Transaction to add data and to add link to device
-        List<DataModel> finalModelList = modelList;
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session->{
-            //Create data
-            dao.create(session, finalModelList);
-            //Create device links
-            if(!variablesToDevices.isEmpty()) {
-                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    new DeviceDAO(sparql, nosql, fs).associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                }
-            }
+        //Transaction to add data and to add link to devices/annotations
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+            //Create data and device links
+            dao.create(session, models);
+            new DeviceDAO(sparql, nosql, fs).linkDevicesToVariables(postInsert.devicesToVariables);
+
             //In the case of import set number of imported lines and create any annotations that were imported on the targets
-            if(calledFromImport){
-                csvValidation.setNbLinesImported(finalModelList.size());
+            if (csvImport) {
+                csvValidation.setNbLinesImported(models.size());
                 //If the data import was successful, post the annotations on objects
                 AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
                 annotationDAO.create(csvValidation.getAnnotationsOnObjects());
             }
             return 0;
         });
-        if(!calledFromImport){
-            return finalModelList.stream().map(MongoModel::getUri).collect(Collectors.toList());
+        if (csvImport) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        return models.stream()
+                .map(MongoModel::getUri)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1040,6 +971,8 @@ public class DataLogic {
                     if(existingOs == null){
                         validRow = false;
                         scientificObjectsNotInXp.add(objectNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
                     }else{
                         object = existingOs;
                         // object exist, put it into name/URI cache

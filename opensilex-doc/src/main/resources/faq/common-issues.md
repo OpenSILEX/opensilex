@@ -7,6 +7,7 @@
   * [Authentication](#authentication)
     * [Unexpected internal error - java.lang.IllegalStateException, message": "size = 2"](#unexpected-internal-error---javalangillegalstateexception-message-size--2)
   * [IntelliJ: java.lang.ClassNotFoundException](#intellij-javalangclassnotfoundexception)
+  * [External services certificate issues](#external-services-certificate-issues)
 * [OpenSilex installation errors](#opensilex-installation-errors)
   * [Failure on Tests](#failure-on-tests)
 <!-- TOC -->
@@ -87,6 +88,39 @@ java.lang.ClassNotFoundException: org.opensilex.dev.StartServer
 
 You can fix it by changing this parameter: Structure> project> compiler output
 to the target directory at the root of this directory (opensilex-dev/target)
+
+## External services certificate issues
+
+Errors with external services certificates will usually manifest as this exception :
+```json
+{
+  "title": "Unexpected internal error - javax.net.ssl.SSLHandshakeException",
+  "message": "PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+}
+```
+
+Known affected APIs are the dataverse and the agroportal APIs.
+
+To fix this issue you need to add the certificate of the certification authority (CA) to the trusted sources on your machine.
+Known issues usually relate to `Let's Encrypt` and this CA : `ISRG Root X1`.
+See [Let's Encrypt documentation](https://letsencrypt.org/certificates/).
+To add a trusted source run these commands (example here for `ISRG Root X1` but can easily be adapted to other CAs) :
+__NOTE__ : `cacerts` is an encrypted file. Its default password is `changeit`.
+
+```shell
+cd /usr/lib/jvm/default-java/lib/security; # This path can be different depending on your OS. Locate where your cacerts file is
+keytool -list -v -keystore cacerts  > java_cacerts.txt; # This is just to make a backup in case something goes wrong
+wget https://letsencrypt.org/certs/isrgrootx1.der; # Get the DER file to add to trusted sources
+keytool -import -alias isrgrootx1 -keystore cacerts -file ./isrgrootx1.der
+```
+
+If a certificate with the same alias already exists you may need to remove it first :
+
+```shell
+keytool -delete -keystore cacerts -alias isrgrootx1
+```
+
+You have to restart OpenSILEX for this to be taken into account.
 
 # OpenSilex installation errors
 

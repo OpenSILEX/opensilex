@@ -22,7 +22,7 @@
           :value.sync="lineData.value"
           type="number"
           rules="integer"
-          :disabled="criteriaOperatorIsIsNotMeasured()"
+          :disabled="criteriaOperatorIsNotMeasured()"
           :required="false"
           placeholder="XSDIntegerInput.placeholder"
       ></opensilex-InputForm>
@@ -32,7 +32,7 @@
           :value.sync="lineData.value"
           type="number"
           rules="decimal"
-          :disabled="criteriaOperatorIsIsNotMeasured()"
+          :disabled="criteriaOperatorIsNotMeasured()"
           :required="false"
           placeholder="XSDDecimalInput.placeholder"
       ></opensilex-InputForm>
@@ -41,17 +41,17 @@
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           :required="false"
-          :disabled="criteriaOperatorIsIsNotMeasured()"
+          :disabled="criteriaOperatorIsNotMeasured()"
           class="searchFilter"
       ></opensilex-DateForm>
       <opensilex-DateTimeForm
           v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.DATETIME)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
-          :disabled="criteriaOperatorIsIsNotMeasured()"
+          :disabled="criteriaOperatorIsNotMeasured()"
           :required="false"
       ></opensilex-DateTimeForm>
-      <opensilex-SelectForm
+      <opensilex-FormSelector
           v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.BOOLEAN)"
           label="CriteriaSearchModalLine.value"
           :selected.sync="lineData.value"
@@ -59,9 +59,9 @@
           placeholder="CriteriaSearchModalLine.boolean-field-placeholder"
           :showCount="false"
           :required="false"
-          :disabled="criteriaOperatorIsIsNotMeasured()"
+          :disabled="criteriaOperatorIsNotMeasured()"
           :options="trueFalseList"
-      ></opensilex-SelectForm>
+      ></opensilex-FormSelector>
       <!--  Disabledfilter if no variable has been selected or if the variable's datatype isn't registered yet, non disabled string filter if variable's datatype is deciaml or int -->
       <opensilex-InputForm
           v-else
@@ -81,7 +81,7 @@ import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import Xsd from "../../ontologies/Xsd";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import { SingleCriteriaAttributesUsedInFront } from './CriteriaSearchModalCreator.vue';
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
@@ -115,7 +115,7 @@ export default class CriteriaSearchModalLine extends Vue {
     this.variableService = this.$opensilex.getService("opensilex.VariablesService");
   }
 
-  criteriaOperatorIsIsNotMeasured() : boolean{
+  criteriaOperatorIsNotMeasured() : boolean{
     return (this.lineData.criteria_operator ? this.lineData.criteria_operator === "NotMeasured" : false);
   }
 

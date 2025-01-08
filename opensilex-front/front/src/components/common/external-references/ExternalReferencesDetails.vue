@@ -27,7 +27,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { Skos } from "../../../models/Skos";
+import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
 
 @Component
 export default class ExternalReferencesDetails extends Vue {
@@ -39,8 +39,6 @@ export default class ExternalReferencesDetails extends Vue {
   skosReferences: any;
 
   relationsInternal: any[] = [];
-
-  skosRelationsMap: Map<string,string> = Skos.getSkosRelationsMap();
 
   fields = [
     {
@@ -56,9 +54,9 @@ export default class ExternalReferencesDetails extends Vue {
   ];
  
   get relations() {
-    this.relationsInternal = [];  
-    for (let [key, value] of this.skosRelationsMap) {
-      this.updateRelations(key, this.skosReferences[key]);
+    this.relationsInternal = [];
+    for (let skosRelation of SUPPORTED_SKOS_RELATIONS) {
+      this.updateRelations(skosRelation.dtoKey, this.skosReferences[skosRelation.dtoKey]);
     }
     return this.relationsInternal;
   }
@@ -74,7 +72,7 @@ export default class ExternalReferencesDetails extends Vue {
 
   addRelation(relation: string, externalUri: string) {
     this.$set(this.relationsInternal, this.relationsInternal.length, {
-      relation: this.skosRelationsMap.get(relation),
+      relation: relation,
       relationURI: externalUri
     });
   }

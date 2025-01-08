@@ -182,17 +182,13 @@ public class StapleModelBuilder {
         return model;
     }
 
-    //region Build methods
+    //#region Build methods
 
     private Resource createBaseClassResource(ClassModel classModel) {
         Resource resource = createResource(classModel.getUri(), RDFS.Class);
-        URI parentUri = Optional.ofNullable(classModel.getParent())
+        Optional.ofNullable(classModel.getParent())
                 .map(ClassModel::getUri)
-                .orElseGet(() -> {
-                    LOGGER.debug("No superclass : <{}>", classModel.getUri());
-                    return URI.create(OWL.Thing.getURI());
-                });
-        resource.addProperty(RDFS.subClassOf, createResource(parentUri));
+                .ifPresent(parentUri -> resource.addProperty(RDFS.subClassOf, createResource(parentUri)));
         if (classModel.getLabel() != null) {
             for (Map.Entry<String, String> translation : classModel.getLabel().getAllTranslations().entrySet()) {
                 Literal literal = model.createLiteral(translation.getValue(), translation.getKey());
@@ -318,9 +314,9 @@ public class StapleModelBuilder {
         }
     }
 
-    //endregion
+    //#endregion
 
-    //region Helper methods
+    //#region Helper methods
 
     /**
      * Should the given model be excluded from the Staple Model ? This methods works by comparing the expanded URI of
@@ -393,5 +389,5 @@ public class StapleModelBuilder {
         return model.createResource(URIDeserializer.getExpandedURI(uri), type);
     }
 
-    //endregion
+    //#endregion
 }

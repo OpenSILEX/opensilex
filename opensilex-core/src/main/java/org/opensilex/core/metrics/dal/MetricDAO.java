@@ -21,11 +21,12 @@ import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFilterBuilder;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variable.dal.VariableSearchFilter;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -66,16 +67,10 @@ public class MetricDAO {
     private final static Logger Logger = LoggerFactory.getLogger(MetricDAO.class);
     public static final String METRICS_COLLECTION = "metrics";
 
-    public MetricDAO(SPARQLService sparql, MongoDBService nosql) {
-        this.sparql = sparql;
-        this.nosql = nosql;
-    }
-
-    public MetricDAO(SPARQLService sparql, MongoDBService nosql, AccountModel user, FileStorageService fs) {
+    public MetricDAO(SPARQLService sparql, MongoDBService nosql, AccountModel user) {
         this.sparql = sparql;
         this.nosql = nosql;
         this.user = user;
-        this.fs = fs;
     }
 
     public void createIndexes() {
@@ -93,7 +88,7 @@ public class MetricDAO {
 
         ListWithPagination<ExperimentSummaryModel> searchWithPagination = nosql.searchWithPagination(ExperimentSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
 
-        HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
+        HashMap<URI, String> variables = getUsedVariablesFromVariablesDAO();
 
         // for each entry in metrics
         searchWithPagination.getList().forEach(metric -> {
@@ -147,7 +142,7 @@ public class MetricDAO {
 
         ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
 
-        HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
+        HashMap<URI, String> variables = getUsedVariablesFromVariablesDAO();
 
         // for each entry in metrics
         searchWithPagination.getList().forEach(summary -> {
@@ -214,17 +209,18 @@ public class MetricDAO {
 
     public List<SystemSummaryModel> getSystemSummaryFirstAndLastByPeriod(Instant startInstant, Instant endInstant, String currentLanguage) throws Exception {
         List<SystemSummaryModel>  searchFirstLast = null;
+        HashMap<URI, String> variables = getUsedVariablesFromVariablesDAO();
 
         //latest only
         List<OrderBy> orderDescendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document latestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, null, endInstant);
-        SystemSummaryModel latestSmodel = setSystemSummaryModelForSearchResult(latestSearchFilter, orderDescendByList, currentLanguage, null, endInstant);
+        SystemSummaryModel latestSmodel = setSystemSummaryModelForSearchResult(latestSearchFilter, orderDescendByList, currentLanguage, null, endInstant,variables);
 
         if (latestSmodel != null) {
             //oldest only
             List<OrderBy> orderAscendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING));
             Document oldestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, null);
-            SystemSummaryModel oldestSmodel = setSystemSummaryModelForSearchResult(oldestSearchFilter, orderAscendByList, currentLanguage, startInstant, null);
+            SystemSummaryModel oldestSmodel = setSystemSummaryModelForSearchResult(oldestSearchFilter, orderAscendByList, currentLanguage, startInstant, null,variables);
 
             searchFirstLast = (oldestSmodel != null) ? Arrays.asList(latestSmodel, oldestSmodel) : Arrays.asList(latestSmodel);
         }
@@ -232,9 +228,8 @@ public class MetricDAO {
         return searchFirstLast;
     }
 
-    private SystemSummaryModel setSystemSummaryModelForSearchResult(Document searchFilter, List<OrderBy> orderByList, String currentLanguage, Instant startInstant, Instant endInstant) throws Exception {
+    private SystemSummaryModel setSystemSummaryModelForSearchResult(Document searchFilter, List<OrderBy> orderByList, String currentLanguage, Instant startInstant, Instant endInstant, HashMap<URI, String> variables) throws Exception {
         ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, 0, 1);
-        HashMap<URI, String> variables = getUsedVariablesFromDataDAO();
 
         SystemSummaryModel summary = (searchWithPagination.getTotal() == 0) ? null : searchWithPagination.getList().get(0);
 
@@ -328,18 +323,29 @@ public class MetricDAO {
         return summary;
     }
 
-    private HashMap<URI, String> getUsedVariablesFromDataDAO() throws Exception {
-        DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
-        List<VariableModel> usedVariables = dataBLL.getUsedVariables(null, null, null, null);
+    /**
+     * Get all variable from the triplestore
+     * @return A list of variable uri/name map
+     * @throws Exception
+     */
+    private HashMap<URI, String> getUsedVariablesFromVariablesDAO() throws Exception {
+        VariableDAO variableDAO = new VariableDAO(sparql,nosql,null,user);
+        VariableSearchFilter variableSearchFilter = new VariableSearchFilter();
+        variableSearchFilter.setPageSize(0);
+        variableSearchFilter.setUserModel(user);
+        ListWithPagination<VariableModel> searchVariables= variableDAO.search(variableSearchFilter);
+        List<VariableModel> variableList = searchVariables.getList();
 
         HashMap<URI, String> variables = new HashMap<>();
 
-        for (VariableModel usedVariable : usedVariables) {
+        for (VariableModel usedVariable : variableList) {
             variables.put(usedVariable.getUri(), usedVariable.getName());
         }
 
         return variables;
     }
+
+
 
     public Document searchFilter(String summaryType, List<URI> experiments, Instant startDate, Instant endDate) {
         Document filter = new Document();//MongoDB class Document
@@ -368,20 +374,17 @@ public class MetricDAO {
     public void createExperimentSummary() throws Exception {
 
         createIndexes();
-
-        AccountModel currentUser = AccountModel.getSystemUser();
-
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
 
-        Set<URI> experiments = experimentDAO.getUserExperiments(currentUser);
+        Set<URI> experiments = experimentDAO.getUserExperiments(user);
 
         for (URI experimentURI : experiments) {
             ExperimentSummaryModel model = new ExperimentSummaryModel();
             model.setExperimentUri(experimentURI);
             model.setCreationDate(Instant.now());
-            CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(experimentURI, currentUser, Oeso.ScientificObject, false);
-            CountListItemModel variables = getDataCountByVariables(experimentURI, currentUser);
-            CountListItemModel germplasmByCount = getCountByTypeAndContext(experimentURI, currentUser, Oeso.Germplasm, false);
+            CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(experimentURI, user, Oeso.ScientificObject, false);
+            CountListItemModel variables = getDataCountByVariables(experimentURI, user);
+            CountListItemModel germplasmByCount = getCountByTypeAndContext(experimentURI, user, Oeso.Germplasm, false);
 
             model.setScientificObjectsByType(scientificObjectTypesByCount);
             model.setDataByVariables(variables);
@@ -395,14 +398,12 @@ public class MetricDAO {
     public void createSystemSummary() throws Exception {
         createIndexes();
 
-        AccountModel currentUser = AccountModel.getSystemUser();
-
         SystemSummaryModel model = new SystemSummaryModel();
         model.setCreationDate(Instant.now());
-        CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(null, currentUser, Oeso.ScientificObject, false);
-        CountListItemModel deviceTypesByCount = getCountByTypeAndContext(null, currentUser, Oeso.Device, false);
-        CountListItemModel variablesByCount = getDataCountByVariables(null, currentUser);
-        CountListItemModel germplasmByCount = getCountByTypeAndContext(null, currentUser, Oeso.Germplasm, false);
+        CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(null, user, Oeso.ScientificObject, false);
+        CountListItemModel deviceTypesByCount = getCountByTypeAndContext(null, user, Oeso.Device, false);
+        CountListItemModel variablesByCount = getDataCountByVariables(null, user);
+        CountListItemModel germplasmByCount = getCountByTypeAndContext(null, user, Oeso.Germplasm, false);
         // TODO : Refactor experiment , don't use
         CountListItemModel experimentsByCount = new CountListItemModel();
         experimentsByCount.setName("Experiment");
@@ -426,7 +427,7 @@ public class MetricDAO {
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
         }
-        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
+        DataLogic dataLogic = new DataLogic(sparql, nosql, null, user);
 
         List<VariableModel> variables = dataLogic.getUsedVariables(experiments, null, null, null);
         Map<URI, VariableModel> tmpVariable = new HashMap<>();

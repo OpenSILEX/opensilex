@@ -1,14 +1,14 @@
-/*******************************************************************************
+/*
+ * *****************************************************************************
  *                         FacilityDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
- * Copyright © INRAE 2022.
- * Last Modification: 28/10/2022
- * Contact: valentin.rigolle@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
- *
- ******************************************************************************/
+ * Copyright © INRAE 2024.
+ * Last Modification: 25/06/2024 10:10
+ * Contact: valentin.rigolle@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr, gabriel.besombes@inrae.fr
+ * *****************************************************************************
+ */
 package org.opensilex.core.organisation.dal.facility;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,12 +22,11 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
-import org.opensilex.core.organisation.api.site.SiteAddressDTO;
+import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
@@ -62,7 +61,7 @@ public class FacilityDAO {
     private final GeospatialDAO geospatialDAO;
 
     private final OrganizationDAO organizationDAO;
-    private final SiteDAO siteDAO;
+    private final SiteLogic siteLogic;
     private final URI geometryGraphUri;
 
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
@@ -73,7 +72,7 @@ public class FacilityDAO {
         this.geocodingService = new OpenStreetMapGeocodingService();
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = organizationDAO;
-        this.siteDAO = new SiteDAO(sparql, nosql, organizationDAO);
+        this.siteLogic = new SiteLogic(sparql,nosql);
         this.geometryGraphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
@@ -102,6 +101,7 @@ public class FacilityDAO {
 
         createFacilityGeospatialModel(instance, geometry);
 
+        organizationDAO.invalidateCache();
         return instance;
     }
 
@@ -220,7 +220,7 @@ public class FacilityDAO {
                         .collect(Collectors.toList());
 
         List<URI> userSites = filter.getUser().isAdmin() ? null :
-                siteDAO.search(new SiteSearchFilter()
+                siteLogic.search(new SiteSearchFilter()
                                 .setUser(filter.getUser())
                                 .setOrganizations(filter.getOrganizations())
                                 .setUserOrganizations(userOrganizations)
@@ -265,6 +265,8 @@ public class FacilityDAO {
         }
 
         sparql.delete(FacilityModel.class, uri);
+
+        organizationDAO.invalidateCache();
     }
 
     /**
@@ -284,8 +286,6 @@ public class FacilityDAO {
         List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUris(), user.getLanguage());
         instance.setOrganizations(organizationModels);
 
-        URI graphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
-
         FacilityModel existingModel = sparql.getByURI(FacilityModel.class, instance.getUri(), user.getLanguage());
 
         if (Objects.nonNull(existingModel.getAddress()) || Objects.nonNull(geometry)) {
@@ -299,6 +299,8 @@ public class FacilityDAO {
         createFacilityGeospatialModel(instance, geometry);
 
         sparql.update(instance);
+
+        organizationDAO.invalidateCache();
         return instance;
     }
 
@@ -319,7 +321,7 @@ public class FacilityDAO {
         }
     }
 
-    private void createFacilityGeospatialModel(FacilityModel facility, Geometry geometry) throws JsonProcessingException {
+    private void createFacilityGeospatialModel(FacilityModel facility, Geometry geometry) {
         if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
             deleteFacilityGeospatialModel(facility.getUri());
             return;
@@ -370,7 +372,7 @@ public class FacilityDAO {
                         .stream().map(SPARQLResourceModel::getUri)
                         .collect(Collectors.toList());
 
-        final List<URI> userSites = siteDAO.search(new SiteSearchFilter()
+        final List<URI> userSites = siteLogic.search(new SiteSearchFilter()
                             .setUser(accountModel)
                             .setUserOrganizations(userOrganizations)
                             .setSkipUserOrganizationFetch(true))
@@ -393,31 +395,29 @@ public class FacilityDAO {
      * Checks if a facility address is valid (it must be the same as its sites).
      *
      * @param facilityModel The facility
-     * @param user The user
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      */
-    protected void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) throws Exception {
-        if (facilityModel.getUri() == null) {
-            return;
-        }
+    protected void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) {
 
         if (facilityModel.getAddress() == null) {
             return;
         }
 
-        List<SiteModel> siteModelList = this.siteDAO.getByFacility(facilityModel.getUri(), user);
+        if (facilityModel.getSites() == null) {
+            return;
+        }
+
+        List<SiteModel> siteModelList = facilityModel.getSites().stream().map(site -> {
+            try {
+                return this.siteLogic.get(site.getUri(), user);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
 
         for (SiteModel siteModel : siteModelList) {
             if (siteModel.getAddress() != null) {
-                FacilityAddressDTO facilityAddress = new FacilityAddressDTO();
-                facilityAddress.fromModel(facilityModel.getAddress());
-
-                SiteAddressDTO siteAddress = new SiteAddressDTO();
-                siteAddress.fromModel(siteModel.getAddress());
-
-                if (!Objects.equals(facilityAddress, siteAddress)) {
-                    throw new SiteFacilityInvalidAddressException(siteModel.getName(), facilityModel.getName());
-                }
+                SiteLogic.assertEqualsFacilityAndSiteAddresses(siteModel, facilityModel);
             }
         }
     }

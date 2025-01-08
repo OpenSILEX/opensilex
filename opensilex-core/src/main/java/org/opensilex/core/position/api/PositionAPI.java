@@ -2,15 +2,11 @@ package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
-import com.mongodb.client.FindIterable;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.EventSearchFilter;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
+import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -85,24 +81,24 @@ public class PositionAPI {
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel model = moveDAO.getLastMoveAfter(
+        MoveModel moveModel = moveLogic.getLastMoveAfter(
                 uri,
                 time != null ? OffsetDateTime.parse(time) : null
         );
 
-        if (model == null) {
-            //if an object has move,it's not an exception. Just no move is associated with this object
+        if (moveModel == null) {
+            //if an object has no move,it's not an exception. Just no move is associated with this object
             return new SingleObjectResponse<>(new PositionGetDTO()).getResponse();
         }
         else {
-            PositionModel position = moveDAO.getPosition(uri, model.getUri());
+            PositionModel position = moveLogic.getPosition(uri, moveModel.getUri());
 
-            if (model.getTo() == null && model.getFrom() == null && position == null) {
+            if (moveModel.getTo() == null && moveModel.getFrom() == null && position == null) {
                 throw new NotFoundURIException("No position found", uri);
             }
-            return new SingleObjectResponse<>(new PositionGetDTO(model, position)).getResponse();
+            return new SingleObjectResponse<>(new PositionGetDTO(moveModel, position)).getResponse();
         }
     }
 
@@ -124,12 +120,12 @@ public class PositionAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel moveEvent = moveDAO.getLastMoveAfter(target, null);
+        MoveModel moveEvent = moveLogic.getLastMoveAfter(target, null);
 
         if (moveEvent != null) {
-            var positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveLogic.getPositionsHistory(
                     target,
                     null,
                     startDate != null ? OffsetDateTime.parse(startDate) : null,
@@ -168,13 +164,13 @@ public class PositionAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        List<MoveEventNoSqlModel> lastTargetPositionList = new ArrayList<>();
-        List<MoveEventNoSqlModel> lastPositionListGeo = new ArrayList<>();
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        List<MoveNosqlModel> lastTargetPositionList = new ArrayList<>();
+        List<MoveNosqlModel> lastPositionListGeo = new ArrayList<>();
 
         try {
             //create search filter
-            EventSearchFilter searchFilter = new EventSearchFilter();
+            MoveSearchFilter searchFilter = new MoveSearchFilter();
             searchFilter.setStart(startDate != null ? OffsetDateTime.parse(startDate) : null)
                     .setEnd(endDate != null ? OffsetDateTime.parse(endDate) : OffsetDateTime.now())
                     .setBaseType(targetType)
@@ -184,28 +180,24 @@ public class PositionAPI {
 
 
             // search all moves between the start (and end) date of the experiment for an event type (move) and a target type
-            ListWithPagination<EventModel> moveList = moveDAO.search(searchFilter);
+            ListWithPagination<MoveModel> moveList = moveLogic.search(searchFilter);
             //get last move by unique target uri
-             Map<List<URI>,Optional<EventModel>> uniqueTargetLastMoveList = moveList.getList().stream()
+             Map<List<URI>,Optional<MoveModel>> uniqueTargetLastMoveList = moveList.getList().stream()
                                                                                     //group by unique target URI
                                                                                     .collect(Collectors.groupingBy(EventModel::getTargets,
                                                                                     // get the last move by the property end
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
             //for each unique target uri, get the mongoDB Model move linked (and the target detail?)
-            for (Optional<EventModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
+            for (Optional<MoveModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
 
-                MoveEventNoSqlModel lastTargetPosition = moveDAO.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
+                MoveNosqlModel lastTargetPosition = moveLogic.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
                 if(lastTargetPosition != null){
                     lastTargetPositionList.add(lastTargetPosition);
                 }
             }
             // Get filtered positions with coordinates not null and inside the current extend
-            FindIterable<MoveEventNoSqlModel> lastPositionFindIterable = moveDAO.getIntersectPosition(lastTargetPositionList, geoJsonToGeometry(geometry));
-            //Convert FindIterable to List
-            for (MoveEventNoSqlModel results : lastPositionFindIterable) {
-                lastPositionListGeo.add(results);
-            }
+            lastPositionListGeo = moveLogic.getIntersectPosition(lastTargetPositionList, geoJsonToGeometry(geometry));
         }catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
@@ -225,7 +217,7 @@ public class PositionAPI {
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        int moveCount = dao.countMoves(target);
+        int moveCount = dao.countForTarget(target);
 
         return new SingleObjectResponse<>(moveCount).getResponse();
     }

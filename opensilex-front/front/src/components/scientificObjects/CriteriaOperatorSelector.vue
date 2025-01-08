@@ -1,6 +1,6 @@
 <template>
-  <opensilex-SelectForm
-      ref="selectForm"
+  <opensilex-FormSelector
+      ref="formSelector"
       label="OperatorSelector.label"
       :selected.sync="operatorId"
       :multiple="false"
@@ -12,7 +12,7 @@
       @clear="$emit('clear')"
       @select="select"
       @deselect="deselect"
-  ></opensilex-SelectForm>
+  ></opensilex-FormSelector>
 </template>
 
 <script lang="ts">
@@ -21,7 +21,7 @@ import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Prop, PropSync } from 'vue-property-decorator';
 import {DataService} from "opensilex-core/api/data.service";
-import { SelectableItem } from '../common/forms/SelectForm.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 
 @Component({})
 export default class CriteriaOperatorSelector extends Vue {

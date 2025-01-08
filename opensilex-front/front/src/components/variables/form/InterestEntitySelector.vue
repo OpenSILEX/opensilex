@@ -7,6 +7,9 @@
     :searchMethod="searchInterestEntities"
     :itemLoadingMethod="loadInterestEntities"
     :placeholder="placeholder"
+    :helpMessage="helpMessage"
+    :actionHandler="actionHandler"
+    :conversionMethod="conversionMethod"
     noResultsText="component.interestEntity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -30,7 +33,7 @@ export default class InterestEntitySelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
   pageSize = 10;
 
-  @PropSync("interestEntity")
+  @PropSync("selected")
   interestEntityURI;
 
   @Prop()
@@ -38,6 +41,15 @@ export default class InterestEntitySelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  helpMessage;
+
+  @Prop()
+  actionHandler;
+
+  @Prop()
+  conversionMethod;
 
   @Prop()
   sharedResourceInstance;

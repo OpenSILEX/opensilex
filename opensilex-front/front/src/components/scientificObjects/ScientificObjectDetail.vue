@@ -131,7 +131,7 @@
             :maximizeFilterSize="true"
             :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
             :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
-            :context="{experimentURI: experiment}"
+            :context="{experimentURI: uri}"
         ></opensilex-EventList>
 
         <opensilex-PositionList
@@ -229,7 +229,7 @@ export default class ScientificObjectDetail extends Vue {
     defaultTabsValue: string;
 
     getEventColumnToDisplay() : Set<string>{
-        return this.globalView ? EventList.getDefaultColumns() : new Set(['type', 'end', 'description']) ;
+        return new Set(['type', 'start', 'end', 'description']);
     }
 
     getPositionsColumnToDisplay() : Set<string>{

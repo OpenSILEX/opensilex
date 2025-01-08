@@ -15,9 +15,11 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
@@ -49,8 +51,8 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.functionnal.ThrowingSupplier;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -58,6 +60,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLService.TYPE_VAR;
 
 /**
  *
@@ -84,7 +87,7 @@ public class DeviceDAO {
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI prop = SPARQLDeserializers.formatURI(relation.getProperty());
-                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
+                if (!ontologyDAO.validateThenAddObjectRelationValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
@@ -251,42 +254,48 @@ public class DeviceDAO {
     }
     
     /**
-     * Link variables to a device by the 'oeso:measures' relation
-     * @param device device
-     * @param variables variables to associate
-     * @throws Exception if some error is encountered 
+     * Link devices to variable(s) with {@link Oeso#measures} property
+     * @param deviceToVariables Association of devices <-> variables
      *
-     * **/
-    public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
-        List<SPARQLModelRelation> relations = device.getRelations();
-        
-        // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
-        // Works only if all relations are measure relations .. 
-        List<SPARQLModelRelation> newRelations = new ArrayList<>();
-        for (SPARQLModelRelation relation : relations) {
-            SPARQLModelRelation rel = new SPARQLModelRelation();
-            rel.setProperty(relation.getProperty());
-            rel.setValue(relation.getValue());
-            if(relation.getType() == null) {
-                rel.setType(URI.class);
-            }
-            newRelations.add(rel);
+     * @apiNote For each device, the last date of modification is updated
+     */
+    public void linkDevicesToVariables(@NotNull Map<URI, Set<URI>> deviceToVariables) throws SPARQLException {
+        Objects.requireNonNull(deviceToVariables);
+        if(deviceToVariables.isEmpty()){
+            return;
         }
-        // Fix
-       
-        for (URI variable : variables) {
-            SPARQLModelRelation relation = new SPARQLModelRelation();
-            relation.setProperty(Oeso.measures);
-            relation.setValue(variable.toString());
-            relation.setType(URI.class);
-            newRelations.add(relation);
-        }
-       device.setRelations(newRelations);
+        UpdateBuilder update = new UpdateBuilder();
 
-       device = update(device, user);
-       return device;
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
+        Node measuresNode = Oeso.measures.asNode();
+        boolean runUpdate = false;
+
+        for(var entry : deviceToVariables.entrySet()){
+            Set<URI> variables = entry.getValue();
+            if(variables.isEmpty()){
+                continue;
+            }
+            runUpdate = true;
+
+            // Update link between device and variable
+            // delete (device, measures, variable) triple and insert new (device, measures, variable) to avoid duplicate
+            Node deviceNode = NodeFactory.createURI(URIDeserializer.getExpandedURI(entry.getKey()));
+            variables.forEach(variable -> {
+                Node variableNode = NodeFactory.createURI(URIDeserializer.getExpandedURI(variable));
+                update.addDelete(graph, deviceNode, measuresNode, variableNode);
+                update.addInsert(graph, deviceNode, measuresNode, variableNode);
+            });
+
+            // Add where clause in order to match the existing device
+            update.addWhere(TYPE_VAR, Ontology.subClassAny, Oeso.Device.asNode())
+                    .addGraph(graph, new WhereBuilder().addWhere(deviceNode, RDF.type, TYPE_VAR));
+        }
+
+        if(runUpdate){
+            sparql.executeUpdateQuery(update);
+        }
     }
+
 
     public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
@@ -466,14 +475,15 @@ public class DeviceDAO {
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        MoveModel moveEvent = moveDAO.getLastMoveAfter(deviceURI, null);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+
+        MoveModel moveEvent = moveLogic.getLastMoveAfter(deviceURI, null);
 
         FacilityModel facility = null;
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
-            var positionHistory = moveDAO.getPositionsHistory(
+            var positionHistory = moveLogic.getPositionsHistory(
                     deviceURI,
                     null,
                     null,
@@ -495,7 +505,7 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                OrganizationDAO orgaDAO = new OrganizationDAO(sparql, nosql);
+                OrganizationDAO orgaDAO = new OrganizationDAO(sparql);
                 FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
                 facility = infraDAO.get(facilityUri, currentUser);
             }

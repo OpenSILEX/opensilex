@@ -17,7 +17,7 @@
 
         <div class="row">
             <div class="col">
-                <opensilex-SelectForm
+                <opensilex-FormSelector
                         label="Annotation.motivation"
                         :required="true"
                         :multiple="false"
@@ -28,7 +28,7 @@
                         noResultsText="Annotation.no-motivation"
                         helpMessage="Annotation.motivation-help"
                         placeholder="Annotation.motivation-placeholder"
-                ></opensilex-SelectForm>
+                ></opensilex-FormSelector>
             </div>
         </div>
 

@@ -231,7 +231,6 @@
             v-if="showVariableForm"
             label="label"
             ref="variableSelection"
-            :isModalSearch="true"
             :required="true"
             :multiple="true"
             @onValidate="editDeviceVar"
@@ -371,6 +370,7 @@ export default class DeviceList extends Vue {
         this.service
             .deleteDevice(uri)
             .then(() => {
+                this.tableRef.checkSelectedItems(uri);
                 this.refresh();
                 this.$emit("onDelete", uri);
                 let message = this.$i18n.t("DeviceForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
@@ -418,6 +418,7 @@ export default class DeviceList extends Vue {
         if(this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
         }
+        this.tableRef.refresh();
     }
 
     searchDevices(options) {

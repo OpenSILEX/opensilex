@@ -8,10 +8,13 @@ package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
+import org.opensilex.server.rest.serialization.uri.UriListJsonDeserializer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,9 +31,11 @@ public class DataProvenanceModel {
 
     @NotNull
     @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
+    @JsonDeserialize(using = UriJsonDeserializer.class)
     URI uri;
     
     @ApiModelProperty(value = "experiments uris on which the data has been produced")
+    @JsonDeserialize(using = UriListJsonDeserializer.class)
     List<URI> experiments;
 
     public static final String EXPERIMENT_FIELD = "experiments";

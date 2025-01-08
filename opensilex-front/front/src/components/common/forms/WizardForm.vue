@@ -1,13 +1,32 @@
 <template>
   <b-modal ref="modalRef" :size="modalSize" :static="static" no-close-on-backdrop no-close-on-esc >
-    <template v-slot:modal-title>
-      <i>
-        <slot name="icon">
-          <opensilex-Icon :icon="icon" class="icon-title" />
-        </slot>
-        <span v-if="editMode">{{ $t(editTitle) }}</span>
-        <span v-else>{{ $t(createTitle) }}</span>
-      </i>
+    <template v-slot:modal-header="modal">
+      <b-row class="mt-1" style="width:100%">
+        <b-col cols="10" >
+          <i>
+            <h4>
+              <slot name="icon">
+                <opensilex-Icon :icon="icon" class="icon-title" />
+              </slot>
+              <span v-if="editMode">{{ $t(editTitle) }}</span>
+              <span v-else>{{ $t(createTitle) }}</span>
+            </h4>
+          </i>
+        </b-col>
+        <b-col cols="2" class="modal-buttons">
+          <opensilex-HelpButton
+              v-if="currentStepHasTutorial && !editMode"
+              label="component.tutorial.name"
+              @click="startTutorial"
+              class="helpButton"
+          ></opensilex-HelpButton>
+
+          <!-- Emulate built in modal header close button action -->
+          <button type="button" class="close" @click="modal.close()" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </b-col>
+      </b-row>
     </template>
     <b-form ref="formRef" v-if="form">
       <form-wizard
@@ -17,14 +36,24 @@
         shape="square"
         :class="{'single-wizard' : steps.length == 1}"
         color="#00a38d"
+        @on-change="onChange"
       >
         <tab-content v-for="(step, index) in steps" :key="index" v-bind:title="$t(step.title)">
           <component
             :ref="'step' + index"
             v-bind:is="step.component"
+            :props="step.props"
             :editMode="editMode"
             :form.sync="form"
-          ></component>
+            @fill="fillForm"
+            @clear="clearForm"
+            @agroportalTermSelected="agroportalTermSelected"
+            @agroportalTermUnselected="agroportalTermUnselected"
+          >
+            <template v-for="slot of step.slots" v-slot:[slot]="scope">
+              <slot :name="slot" v-bind="scope"></slot>
+            </template>
+          </component>
         </tab-content>
 
         <template slot="footer" slot-scope="props">
@@ -36,23 +65,31 @@
               >{{$t('component.common.form-wizard.cancel')}}</b-button>
             </div>
 
-            <div class="wizard-footer-right">
+            <div class="wizard-footer-right" id="v-step-wizard-buttons">
+              <b-button
+                  id="btn-finish"
+                  class="greenThemeColor"
+                  variant="success"
+                  v-if="!isBlockingStep && steps[props.activeTabIndex].finish"
+                  @click="validate(props)"
+              >{{getStepBtnFinishTitle(props)}}</b-button>
+
               <b-button-group>
                 <b-button
                   variant="success"
                   v-if="props.activeTabIndex > 0"
                   @click="props.prevTab()"
-                >{{$t('component.common.form-wizard.previous')}}</b-button>
+                >{{getStepBtnPreviousTitle(props)}}</b-button>
                 <b-button
                   v-if="!props.isLastStep"
                   class="greenThemeColor"
                   @click="nextStepHandler(props)"
-                >{{$t('component.common.form-wizard.next')}}</b-button>
+                >{{getStepBtnNextTitle(props)}}</b-button>
                 <b-button
                   v-if="props.isLastStep"
                   @click="validate(props)"
                   class="greenThemeColor"
-                >{{$t('component.common.form-wizard.done')}}</b-button>
+                >{{getStepBtnDoneTitle(props)}}</b-button>
               </b-button-group>
             </div>
           </footer>
@@ -63,8 +100,19 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+
+export interface WizardFormStep {
+  component: string,
+  title: string,
+  finish?: string,
+  next?: string,
+  done?: string,
+  previous?: string,
+  props?: {[key: string]: any},
+  slots?: Array<string>
+}
 
 @Component
 export default class WizardForm extends Vue {
@@ -80,8 +128,11 @@ export default class WizardForm extends Vue {
   @Prop({ default: true })
   static;
 
+  @Prop({ default: true })
+  isBlockingStep;
+
   @Prop()
-  steps;
+  steps: Array<WizardFormStep>;
 
   @Prop()
   editTitle;
@@ -95,6 +146,8 @@ export default class WizardForm extends Vue {
   @Prop({ default: "md" })
   modalSize;
 
+  private currentStepIndex?: number = -1;
+
   @Prop()
   initForm: Function;
 
@@ -105,7 +158,50 @@ export default class WizardForm extends Vue {
   updateAction: Function;
 
   @Prop()
+  convertAction: Function;
+
+  @Prop()
   nextStepAction: Function;
+
+
+  agroportalTermSelected(){
+    this.$emit("agroportalTermSelected")
+  }
+
+  agroportalTermUnselected(){
+    this.$emit("agroportalTermUnselected")
+  }
+
+  /**
+   * Add a custom validation function to the form. This function will be called during the final validation, before
+   * `update or `create` are called.
+   */
+  @Prop()
+  validateAction: (form: unknown) => boolean;
+
+  getStepBtnFinishTitle(props) {
+    return (this.steps[props.activeTabIndex].finish)
+        ? this.$t(this.steps[props.activeTabIndex].finish)
+        : this.$t('component.common.form-wizard.finish');
+  }
+
+  getStepBtnPreviousTitle(props) {
+    return (this.steps[props.activeTabIndex].previous)
+        ? this.$t(this.steps[props.activeTabIndex].previous)
+        : this.$t('component.common.form-wizard.previous');
+  }
+
+  getStepBtnNextTitle(props) {
+    return (this.steps[props.activeTabIndex].next)
+        ? this.$t(this.steps[props.activeTabIndex].next)
+        : this.$t('component.common.form-wizard.next');
+  }
+
+  getStepBtnDoneTitle(props) {
+    return (this.steps[props.activeTabIndex].done)
+        ? this.$t(this.steps[props.activeTabIndex].done)
+        : this.$t('component.common.form-wizard.done');
+  }
 
   showCreateForm() {
     this.form = this.initForm();
@@ -120,6 +216,9 @@ export default class WizardForm extends Vue {
       }
     }
     this.wizardRef?.reset();
+    this.$nextTick(() => {
+      this.currentStepIndex = 0;
+    });
   }
 
   showEditForm(form) {
@@ -140,6 +239,9 @@ export default class WizardForm extends Vue {
       tab.checked = true;
     });
     this.wizardRef?.navigateToTab(0);
+    this.$nextTick(() => {
+      this.currentStepIndex = 0;
+    });
   }
 
   hide() {
@@ -204,6 +306,13 @@ export default class WizardForm extends Vue {
   validate(props) {
     this.validateStep(props).then(isValid => {
       if (isValid) {
+
+        if (this.validateAction) {
+          if (!this.validateAction(this.form)) {
+            return false;
+          }
+        }
+
         let submitMethod: any = null;
         if (this.createAction) {
           submitMethod = this.createAction;
@@ -229,14 +338,44 @@ export default class WizardForm extends Vue {
         }
         submitResult
           .then(result => {
-            this.$nextTick(() => {
-              this.$emit(successEvent, submitResult);
-              this.hide();
-            });
+            if (result !== false) {
+              this.$nextTick(() => {
+                this.$emit(successEvent, submitResult);
+                this.hide();
+              });
+            }
           })
           .catch(console.error);
       }
     });
+  }
+
+  fillForm(dto) {
+    if (this.convertAction) {
+      this.form = this.convertAction(this.form, dto);
+    }
+  }
+
+  clearForm() {
+      this.form = this.initForm();
+  }
+
+  skipStep() {
+    this.wizardRef.nextTab();
+  }
+
+  get currentStepHasTutorial(): boolean {
+    return !!(this.$refs["step" + this.currentStepIndex]
+        ?.[0]
+        ?.startTutorial);
+  }
+
+  startTutorial() {
+    this.$refs["step" + this.currentStepIndex][0].startTutorial();
+  }
+
+  onChange(previousStep: number, nextStepIndex: number) {
+    this.currentStepIndex = nextStepIndex;
   }
 }
 </script>
@@ -271,12 +410,42 @@ export default class WizardForm extends Vue {
   padding-bottom: 50px;
 }
 
+.wizard-tab-container {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
 .icon-title {
   margin-right: 5px;
+}
+
+#btn-finish {
+  margin-right: 10px;
 }
 
 ::v-deep .single-wizard .wizard-progress-with-circle,
 ::v-deep .single-wizard .wizard-nav {
   display: none;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: right;
+}
+
+.helpButton {
+  margin-left: 25px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
+
+.close {
+  margin-left: 1rem;
 }
 </style>;

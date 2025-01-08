@@ -87,6 +87,8 @@ import static org.opensilex.utils.LogFilter.*;
 public class SPARQLService extends BaseService implements SPARQLConnection, Service, AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
+    public static final Var URI_VAR = makeVar(SPARQLResourceModel.URI_FIELD);
+    public static final Var TYPE_VAR = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
@@ -273,7 +275,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-            LOGGER.info("SPARQL TRANSACTION START");
+            LOGGER.debug("SPARQL TRANSACTION START");
             connection.startTransaction();
         }
         transactionLevel++;
@@ -283,7 +285,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
-            LOGGER.info("SPARQL TRANSACTION COMMIT");
+            LOGGER.debug("SPARQL TRANSACTION COMMIT");
             connection.commitTransaction();
         }
     }
@@ -292,7 +294,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void rollbackTransaction(Exception ex) throws Exception {
         if (transactionLevel != 0) {
             if(ex != null){
-                LOGGER.info("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
+                LOGGER.error("SPARQL TRANSACTION ROLLBACK: {}", ex.getMessage());
             }
             transactionLevel = 0;
             connection.rollbackTransaction(ex);
@@ -1181,7 +1183,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         long durationMs = Duration.between(start, Instant.now()).toMillis();
-        LOGGER.info("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
+        LOGGER.debug("{} {}, connection: {}, insertCount: {}, duration: {} ms", kv(LOG_TYPE_KEY, "insertMany"), kv(LOG_STATUS_LOG_KEY, LOG_STATUS_OK), connection, instances.size(), kv(LOG_DURATION_MS_KEY, durationMs));
     }
 
     /**
@@ -1256,7 +1258,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
                 }
             } else if (oldFieldValue != null) {
-                if (!oldFieldValue.getUri().equals(newFieldValue.getUri())) {
+                if (!SPARQLDeserializers.compareURIs(oldFieldValue.getUri(), newFieldValue.getUri())) {
                     autoUpdateFieldsToDelete.put(oldFieldValue.getUri(), oldFieldValue.getClass());
                 } else {
                     autoUpdateFieldsToUpdate.add(newFieldValue);
@@ -1277,13 +1279,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 Map<URI, Class<? extends SPARQLResourceModel>> oldURIs = new HashMap<>();
                 if (oldFieldValue != null) {
                     for (SPARQLResourceModel ofValue : oldFieldValue) {
-                        oldURIs.put(ofValue.getUri(), ofValue.getClass());
+                        oldURIs.put(SPARQLDeserializers.formatURI(ofValue.getUri()), ofValue.getClass());
                     }
                 }
                 for (SPARQLResourceModel nfValue : newFieldValue) {
-                    if (nfValue != null && nfValue.getUri() != null && oldURIs.containsKey(nfValue.getUri())) {
+                    if (nfValue != null && nfValue.getUri() != null && oldURIs.containsKey(SPARQLDeserializers.formatURI(nfValue.getUri()))) {
                         autoUpdateFieldsToUpdate.add(nfValue);
-                        oldURIs.remove(nfValue.getUri());
+                        oldURIs.remove(SPARQLDeserializers.formatURI(nfValue.getUri()));
                     }
                 }
                 autoUpdateFieldsToDelete.putAll(oldURIs);

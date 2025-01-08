@@ -10,6 +10,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
+import org.opensilex.server.rest.serialization.uri.UriFormater;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -112,6 +113,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     public static void setPrefixes(PrefixMapping prefixesMap, boolean usePrefixes) {
         URIDeserializer.prefixes = prefixesMap;
         URIDeserializer.usePrefixes = usePrefixes;
+        UriFormater.setPrefixes(prefixesMap, usePrefixes);
     }
 
     public static PrefixMapping getPrefixes() {
@@ -121,6 +123,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
     public static void clearPrefixes() {
         prefixes = null;
         usePrefixes = false;
+        UriFormater.setPrefixes(null, false);
     }
 
     @Override

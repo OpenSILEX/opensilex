@@ -3,6 +3,7 @@ package org.opensilex.core.organisation.dal.site;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -31,6 +32,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
     private static FacilityModel facilityA, facilityB;
     private static SiteModel siteA, siteB, siteC;
     private static SiteDAO dao;
+    private static SiteLogic logic;
 
     private static SiteModel getModel(int i) {
         SiteModel model = new SiteModel();
@@ -76,7 +78,8 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         sparql.create(SiteModel.class, Arrays.asList(siteA, siteB, siteC));
 
         MongoDBService mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        dao = new SiteDAO(sparql, mongo);
+        dao = new SiteDAO(sparql);
+        logic = new SiteLogic(sparql, mongo);
     }
 
     @Test
@@ -87,7 +90,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         filter.setUserOrganizations(Arrays.asList(organization.getUri()));
         filter.setSkipUserOrganizationFetch(true);
 
-        List<SiteModel> objects = dao.search(filter).getList();
+        List<SiteModel> objects = logic.search(filter).getList();
 
         assertNotNull(objects);
         assertEquals(3, objects.size());
@@ -107,7 +110,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetListByUris() throws Exception {
         List<URI> uris = Arrays.asList(siteA.getUri(), siteB.getUri(), siteC.getUri());
-        List<SiteModel> sites = dao.getList(uris, user);
+        List<SiteModel> sites = logic.getList(uris, user);
 
         assertModelEquals(sites.get(0), siteA);
         assertModelEquals(sites.get(1), siteB);
@@ -116,14 +119,14 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByFacility() throws Exception {
-        List<SiteModel> sites = dao.getByFacility(facilityA.getUri(), user);
+        List<SiteModel> sites = logic.getByFacility(facilityA.getUri(), user);
 
         assertNotNull(sites);
         assertEquals(2, sites.size());
         assertModelEquals(sites.get(0), siteA);
         assertModelEquals(sites.get(1), siteC);
 
-        sites = dao.getByFacility(facilityB.getUri(), user);
+        sites = logic.getByFacility(facilityB.getUri(), user);
 
         assertNotNull(sites);
         assertEquals(2, sites.size());

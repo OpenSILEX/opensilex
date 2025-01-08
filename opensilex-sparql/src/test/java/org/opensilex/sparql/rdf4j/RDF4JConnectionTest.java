@@ -41,7 +41,9 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
                 B.class,
                 C.class,
                 D.class,
-                UriGeneratedTestModel.class
+                UriGeneratedTestModel.class,
+                InverseModel.class,
+                ModelInAnotherGraph.class
         );
         sparql = factory.provide();
         SPARQLServiceTest.initialize();

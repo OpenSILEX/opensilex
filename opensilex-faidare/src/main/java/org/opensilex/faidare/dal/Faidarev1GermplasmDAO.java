@@ -3,7 +3,7 @@
  *                         Faidarev1GermplasmDAO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2024.
- * Last Modification: 19/04/2024 12:04
+ * Last Modification: 06/06/2024 17:31
  * Contact: gabriel.besombes@inrae.fr
  * *****************************************************************************
  */
@@ -27,10 +27,8 @@ import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -39,6 +37,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.min;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -67,15 +66,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         accessionsCount.addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode());
 
         accessionsCount.addVar(new AggCountDistinct().toString(), countVar);
-
-        List<SPARQLResult> resultSet = sparql.executeSelectQuery(accessionsCount);
-
-        int numberOfAccessions;
-        if (resultSet.size() == 1) {
-            numberOfAccessions = Integer.parseInt(resultSet.get(0).getStringValue("count"));
-        } else {
-            throw new SPARQLException("Invalid count query");
-        }
 
         /* Get the user's experimentations
 
@@ -251,6 +241,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                 }
         ).collect(Collectors.toList());
 
-        return new ListWithPagination<>(searchResults, page, pageSize, numberOfAccessions);
+        return new ListWithPagination<>(searchResults, page, min(pageSize, searchResults.size()), searchResults.size());
     }
 }

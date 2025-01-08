@@ -90,7 +90,7 @@ import GroupGermplasmForm from './GroupGermplasmForm.vue';
 import {OpenSilexStore} from "../../models/Store";
 import {Route} from "vue-router";
 import {GermplasmGroupGetWithDetailsDTO} from "opensilex-core/model/germplasmGroupGetWithDetailsDTO";
-import {SelectableItem} from "../common/forms/SelectForm.vue";
+import {SelectableItem} from "../common/forms/FormSelector.vue";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 
 interface UpdateDtoAndGermplasmModels {
@@ -180,8 +180,8 @@ export default class GermplasmGroup extends Vue {
   showEditForm(uri) {
       this.service.getGermplasmGroupWithGermplasms(uri).then((http: HttpResponse<OpenSilexResponse<GermplasmGroupGetWithDetailsDTO>>) => {
       this.$nextTick(() => {
-          let updateDtoAndExtractedGermplasms = this.convertUpdateDtoAndExtractGermplasms(http.response.result);
-          this.groupGermplasmForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedGermplasms.germplasmModels);
+        let updateDtoAndExtractedGermplasms = this.convertUpdateDtoAndExtractGermplasms(http.response.result);
+        this.groupGermplasmForm.setSelectorsToFirstTimeOpenAndSetLabels(updateDtoAndExtractedGermplasms.germplasmModels);
         this.groupGermplasmForm.showEditForm(updateDtoAndExtractedGermplasms.updateDto);
       });
     });
@@ -206,6 +206,7 @@ export default class GermplasmGroup extends Vue {
           this.$opensilex.showSuccessToast(message);
           this.germplasmGroupList.refresh();
           this.afterUpdateGermplasmGroup(form.uri);
+          this.germplasmGroupContentList.refresh();
         })
         .catch(this.$opensilex.errorHandler);
   }

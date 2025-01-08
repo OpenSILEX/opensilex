@@ -29,18 +29,12 @@
 
     <!-- Variables -->
 
-    <!-- We use the old VariableSelector in editMode because of the edit bug -->
-    <opensilex-VariableSelector
-      v-if="editMode"
-      label="DataView.filter.variables"
-      :variables.sync="form.variables"
-      :multiple="true"
-    ></opensilex-VariableSelector>
-
     <opensilex-VariableSelectorWithFilter
-      v-else
+      ref="variablesSelectorRef"
       placeholder="VariableSelectorWithFilter.placeholder-multiple"
       :variables.sync="form.variables"
+      :variablesWithLabels="variablesWithLabels"
+      :editMode="this.editMode"
       @hideSelector='$emit("hideSelector")'
       @shownSelector='$emit("shownSelector")'
     ></opensilex-VariableSelectorWithFilter>
@@ -56,6 +50,8 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
+import VariableSelectorWithFilter from "../../components/variables/views/VariableSelectorWithFilter.vue";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
 @Component
@@ -71,6 +67,7 @@ export default class GroupVariablesForm extends Vue {
   uriGenerated;
 
   @Ref("validatorRef") readonly validatorRef!: any;
+  @Ref("variablesSelectorRef") readonly variablesSelectorRef!: VariableSelectorWithFilter;
 
   get user() {
     return this.$store.state.user;
@@ -78,6 +75,13 @@ export default class GroupVariablesForm extends Vue {
 
   @Prop()
   form;
+
+  variablesWithLabels : Array<NamedResourceDTOVariableModel> = [];
+
+  setSelectorsToFirstTimeOpenAndSetLabels(variablesWithLabels){
+    this.variablesSelectorRef.setVariableSelectorToFirstTimeOpen();
+    this.variablesWithLabels = variablesWithLabels;
+  }
 
   static getEmptyForm(){
     return {

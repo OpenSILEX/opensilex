@@ -190,6 +190,8 @@ public class GermplasmSparqlDAO {
 
     public boolean isLinkedToSth(GermplasmModel germplasm) throws SPARQLException {
         Var subject = makeVar("s");
+        Var object = makeVar("o");
+        Var parentGermplasmSubclass = makeVar("parentGermplasmSubclass");
         return sparql.executeAskQuery(
                 new AskBuilder()
                         .addWhere(subject, Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getUri()))
@@ -198,10 +200,15 @@ public class GermplasmSparqlDAO {
                         .addUnion(new WhereBuilder()
                                 .addWhere(subject, Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getUri())))
                         .addUnion(new WhereBuilder()
-                                .addWhere(subject, Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm.getUri()))
+                                .addWhere(subject, parentGermplasmSubclass, SPARQLDeserializers.nodeURI(germplasm.getUri()))
+                                .addWhere(parentGermplasmSubclass, Ontology.subPropertyAny, Oeso.hasParentGermplasm)
+                        )
+                        .addUnion(new WhereBuilder()
+                                .addWhere(SPARQLDeserializers.nodeURI(germplasm.getUri()), parentGermplasmSubclass, object)
+                                .addWhere(parentGermplasmSubclass, Ontology.subPropertyAny, Oeso.hasParentGermplasm)
+
                         )
         );
-
     }
 
     /**

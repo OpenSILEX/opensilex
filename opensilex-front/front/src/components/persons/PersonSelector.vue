@@ -1,7 +1,7 @@
 <template>
   <div>
     <opensilex-FormSelector
-        ref="formSelector"
+        ref="personSelector"
         :label="label"
         :helpMessage="helpMessage"
         :selected.sync="personsURI"
@@ -69,12 +69,11 @@ export default class PersonSelector extends Vue {
   @Prop()
   personPropertyExistsCondition: string;
 
-  @Prop()
 
   @Prop({default: false})
   allowAddPerson: boolean;
 
-  @Ref("formSelector") formSelector!: FormSelector;
+  @Ref("personSelector") personSelector!: any;
   @Ref("PersonForm") readonly personForm!: ModalForm<PersonForm, PersonDTO, PersonDTO>;
 
   get user() {
@@ -122,7 +121,7 @@ export default class PersonSelector extends Vue {
 
   async setCreatedPerson(createdPersonUri: HttpResponse<OpenSilexResponse<string>>) {
     let createdPerson = ( await this.service.getPerson(createdPersonUri.response.result) ).response.result
-    this.formSelector.select(this.personToSelectNode(createdPerson));
+    this.personSelector.select(this.personToSelectNode(createdPerson));
     this.$emit("onCreate")
   }
 

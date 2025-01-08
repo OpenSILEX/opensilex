@@ -27,7 +27,6 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -62,7 +61,6 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -82,7 +80,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -128,11 +125,8 @@ public class DataAPI {
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
-    public static final int SIZE_MAX = 50000;
-    
-    Map<URI, URI> rootDeviceTypes = null;
-    private final Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
-    
+    public static final int SIZE_MAX = 10000;
+
     @Inject
     private MongoDBService nosql;
 
@@ -162,24 +156,23 @@ public class DataAPI {
 
         try {
             if (dtoList.size() > SIZE_MAX) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", "Single data import limit reached").getResponse();
+                String errorMsg = String.format("Single import limit reached (size=%s, limit=%s). Please use a smaller import size and/or use concurrent call to this API method", dtoList.size(), SIZE_MAX);
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", errorMsg).getResponse();
             }
-            List<DataModel> dataList = new ArrayList<>();
-
+            List<DataModel> dataList = new ArrayList<>(dtoList.size());
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-            List<URI> createdResources = dataBLL.createMany(dataList);
+            dtoList.clear();
 
-            return new CreatedUriResponse(createdResources).getResponse();
+            List<URI> createdResources = dataBLL.createMany(dataList);
+            dataList.clear();
+
+            return new PaginatedListResponse<>(Response.Status.CREATED, createdResources).getResponse();
 
         } catch (MongoDbUniqueIndexConstraintViolation duplicateError){
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateError.getMessage())
-                    .getResponse();
-        }
-        catch (MongoBulkWriteException someWriteException) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "WRITE_ERROR", someWriteException.getMessage())
                     .getResponse();
         }
         catch (MongoException mongoException) {
@@ -188,10 +181,6 @@ public class DataAPI {
         }
         catch(NoSQLAlreadyExistingUriException noSQLAlreadyExistingUriException){
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_URI", noSQLAlreadyExistingUriException.getMessage())
-                    .getResponse();
-        }
-        catch(URISyntaxException uriSyntaxException){
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "URI_SYNTAX_ERROR", uriSyntaxException.getMessage())
                     .getResponse();
         }
         catch (DateValidationException e) {
@@ -704,10 +693,18 @@ public class DataAPI {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         DataSearchFilter filter = new DataSearchFilter();
         filter.setUser(user);
-        filter.setExperiments(Collections.singletonList(experimentUri));
-        filter.setTargets(Collections.singletonList(objectUri));
-        filter.setProvenances(Collections.singletonList(provenanceUri));
-        filter.setVariables(Collections.singletonList(variableUri));
+        if (experimentUri != null) {
+            filter.setExperiments(Collections.singletonList(experimentUri));
+        }
+        if (objectUri != null) {
+            filter.setTargets(Collections.singletonList(objectUri));
+        }
+        if (provenanceUri != null) {
+            filter.setProvenances(Collections.singletonList(provenanceUri));
+        }
+        if (variableUri != null) {
+            filter.setVariables(Collections.singletonList(variableUri));
+        }
 
         DeleteResult result = dataLogic.deleteManyByFilter(filter);
         return new SingleObjectResponse<>(result).getResponse();
@@ -1280,7 +1277,7 @@ public class DataAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    
+
     @GET
     @Path("variables")
     @ApiOperation("Get variables linked to data")
@@ -1304,7 +1301,7 @@ public class DataAPI {
         filter.setProvenances(provenances);
         filter.setDevices(devices);
 
-        List<VariableGetDTO> dtoList = dataLogic.getUsedVariablesAsStream(filter)
+        List<VariableGetDTO> dtoList = dataLogic.getUsedVariablesByFilter(filter).stream()
                 .map(e -> VariableGetDTO.fromModel(e, null))
                 .collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -1319,7 +1316,7 @@ public class DataAPI {
     @ApiCredential(
         groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
         groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
+        credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
         credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -1362,14 +1359,14 @@ public class DataAPI {
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
             LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-            
+
             validation.setValidCSV(!validation.hasErrors());
         }
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
         csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
-    
+
     @POST
     @Path("import_validation")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI.")

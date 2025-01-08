@@ -1,22 +1,24 @@
 <template>
-  <opensilex-FormSelector v-if="renderComponent"
-    ref="deviceSelector"
-    :label="label"
-    placeholder="DeviceSelector.placeholder"
-    noResultsText="DeviceSelector.no-results-text"
-    :selected.sync="deviceURIs"
-    :multiple="multiple"
-    :required="required"
-    :searchMethod="search"
-    :itemLoadingMethod="load"
-    :conversionMethod="dtoToSelectNode"
-    :key="lang"
-    @clear="$emit('clear')"
-    @select="$emit('select')"
-    @deselect="$emit('deselect')"
-    :showCount="true"
-    @keyup.enter.native="onEnter"
-  ></opensilex-FormSelector>
+    <div v-if="renderComponent">
+        <opensilex-FormSelector
+            ref="deviceSelector"
+            :label="label"
+            placeholder="DeviceSelector.placeholder"
+            noResultsText="DeviceSelector.no-results-text"
+            :selected.sync="deviceURIs"
+            :multiple="multiple"
+            :required="required"
+            :searchMethod="search"
+            :itemLoadingMethod="load"
+            :conversionMethod="dtoToSelectNode"
+            :key="lang"
+            @clear="$emit('clear')"
+            @select="$emit('select')"
+            @deselect="$emit('deselect')"
+            :showCount="true"
+            @keyup.enter.native="onEnter"
+        ></opensilex-FormSelector>
+    </div>
 </template>
 
 <script lang="ts">

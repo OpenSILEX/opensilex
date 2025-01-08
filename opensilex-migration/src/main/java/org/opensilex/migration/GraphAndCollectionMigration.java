@@ -14,7 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
@@ -152,7 +152,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
         oldToNewCollectionNames.put("devicesAttributes", DeviceAPI.METADATA_COLLECTION_NAME);
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
-        oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);
+        oldToNewCollectionNames.put("Moves", MoveEventNoSqlDao.COLLECTION_NAME);
 
         /* iterate over mongodb collections in order to ensure to rename only old collection which already exists.
          Unfortunately there isn't a better way to do it efficiently since 3.0 MongoDB Driver

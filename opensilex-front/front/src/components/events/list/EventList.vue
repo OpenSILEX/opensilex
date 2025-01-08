@@ -152,7 +152,7 @@
                     <template v-slot:cell(rdf_type_name)="{data}">
                         <opensilex-UriLink
                             v-if="data.item.rdf_type_name"
-                            :uri="data.item.uri"
+                            :uri="$opensilex.getShortUri(data.item.rdf_type)"
                             :value="data.item.rdf_type_name"
                         ></opensilex-UriLink>
                     </template>
@@ -218,6 +218,12 @@
             ref="eventModalView"
             :dto.sync="selectedEvent"
             :type.sync="selectedEvent.rdf_type"
+            :uriLabels="uriLabels"
+            :uriPaths="uriPaths"
+            :specificPropertiesLabels="specificPropertiesLabels"
+            :specificPropertiesPaths="specificPropertiesPaths"
+            :positionsUriLabels="positionsUriLabels"
+            :positionsUriPaths="positionsUriPaths"
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
@@ -267,8 +273,7 @@ import EventModalView from "../view/EventModalView.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import EventModalForm from "../form/EventModalForm.vue";
 import EventCsvForm from "../form/csv/EventCsvForm.vue";
-import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
-import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import { EventDetailsDTO } from 'opensilex-core/index';
 import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
@@ -285,6 +290,12 @@ export default class EventList extends Vue {
     $service: EventsService
     $i18n: any;
     $store: any;
+    uriLabels = {};
+    uriPaths = {};
+    specificPropertiesLabels = {};
+    specificPropertiesPaths = {};
+    positionsUriLabels = {};
+    positionsUriPaths = {};
 
     @Prop({
         default: false
@@ -332,7 +343,7 @@ export default class EventList extends Vue {
 
     renderComponent = true;
 
-    selectedEvent = {};
+    selectedEvent: EventDetailsDTO = {};
 
     objectsPath : {[key : string] : string} = {};
 
@@ -403,6 +414,7 @@ export default class EventList extends Vue {
 
     updateSelectedEvent(){
         this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.refresh();
     }
 
     displayAfterCreation(event) {
@@ -446,8 +458,6 @@ export default class EventList extends Vue {
     search(options) {
 
         this.cleanFilter();
-
-        /*return new Promise((resolve, reject) => {*/
           return this.$service
               .searchEvents(
                   this.filter.type,
@@ -458,7 +468,7 @@ export default class EventList extends Vue {
                   options.orderBy,
                   options.currentPage,
                   options.pageSize
-              ).then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+              ).then((http: HttpResponse<OpenSilexResponse<Array<EventDetailsDTO>>>) => {
                 let targetUris: Array<string> = Array.from(new Set(http.response.result.flatMap(event => event.targets)));
                 //Set the target paths
                 this.ontologyService
@@ -473,7 +483,6 @@ export default class EventList extends Vue {
                 this.$opensilex.loadOntologyLabelsWithType(targetUris, this.context, this.objectsLabels, this.ontologyService);
                 return http;
               })
-        /*} );*/
     }
 
     get fields() {
@@ -517,7 +526,6 @@ export default class EventList extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
-
     private getEventPromise(event): Promise<HttpResponse<OpenSilexResponse>> {
         if (this.isMove(event)) {
             return this.$service.getMoveEvent(event.uri);
@@ -533,11 +541,9 @@ export default class EventList extends Vue {
         return this.$opensilex.Oeev.checkURIs(event.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
 
-    showEventView(event) {
-        this.getEventPromise(event).then((http: HttpResponse<OpenSilexResponse>) => {
-            this.selectedEvent = http.response.result;
-            this.eventModalView.show();
-        }).catch(this.$opensilex.errorHandler);
+    async showEventView(event) {
+      let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise(event);
+      await this.eventModalView.show(http);
     }
 
     editEvent(uri, type) {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-SelectForm
+    <opensilex-FormSelector
         :label="label"
         :selected.sync="siteURIs"
         :multiple="multiple"
@@ -13,7 +13,7 @@
         noResultsText="SiteSelector.no-result"
         @select="select"
         @deselect="deselect"
-    ></opensilex-SelectForm>
+    ></opensilex-FormSelector>
   </div>
 
 </template>

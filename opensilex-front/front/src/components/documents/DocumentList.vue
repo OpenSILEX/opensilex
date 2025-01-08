@@ -239,6 +239,7 @@ export default class DocumentList extends Vue {
 
   updateSelectedDocument(){
     this.$opensilex.updateURLParameters(this.filter);
+    this.tableRef.refresh();
   }
   
   get user() {

@@ -75,24 +75,21 @@
                 <!-- Scientific objects -->
                 <div>
                   <opensilex-FilterField halfWidth="true">
-                    <opensilex-SelectForm
+                    <opensilex-ModalFormSelector
                         ref="soSelector"
                         label="DataView.filter.scientificObjects"
                         placeholder="DataView.filter.scientificObjects-placeholder"
                         :selected.sync="filter.scientificObjects"
-                        modalComponent="opensilex-ScientificObjectModalList"
+                        modalComponent="opensilex-ScientificObjectModalListByExp"
                         class="searchFilter"
                         :filter.sync="soFilter"
-                        :isModalSearch="true"
                         :clearable="true"
                         :multiple="true"
                         @clear="refreshSoSelector"
-                        @onValidate="refreshComponent"
                         @onClose="refreshComponent"
-                        @select="refreshComponent"
+                        @onValidate="refreshComponent"
                         :limit="1"
-                        :key="refreshKey"
-                    ></opensilex-SelectForm>
+                    ></opensilex-ModalFormSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -274,6 +271,15 @@ export default class ExperimentData extends Vue {
   }
 
   refreshSoSelector() {
+    this.soFilter = {
+      name: "",
+      experiment: this.uri,
+      germplasm: undefined,
+      factorLevels: [],
+      types: [],
+      existenceDate: undefined,
+      creationDate: undefined,
+    };
     this.soSelector.refreshModalSearch();
     this.refreshComponent();
   }

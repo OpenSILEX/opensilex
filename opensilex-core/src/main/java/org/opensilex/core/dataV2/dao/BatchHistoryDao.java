@@ -1,6 +1,7 @@
 package org.opensilex.core.dataV2.dao;
 
 import com.mongodb.client.model.Filters;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.dataV2.model.BatchHistoryModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
@@ -18,6 +19,7 @@ public class BatchHistoryDao extends MongoReadWriteDao<BatchHistoryModel, BatchH
 
     public static final String BATCH_HISTORY_COLLECTION_NAME = "batchHistory";
     public static final String BATCH_HISTORY_PREFIX = "batchHistory";
+    public static final String CASE_INSENSITIVE_OPTION = "i";
 
     public BatchHistoryDao(MongoDBServiceV2 mongodb) {
         super(mongodb, BatchHistoryModel.class, BATCH_HISTORY_COLLECTION_NAME, BATCH_HISTORY_PREFIX);
@@ -27,12 +29,12 @@ public class BatchHistoryDao extends MongoReadWriteDao<BatchHistoryModel, BatchH
     public List<Bson> getBsonFilters(BatchHistorySearchFilter filter) {
         List<Bson> result = new ArrayList<>();
 
-        if (filter.getBatchId() != null) {
-            result.add(Filters.regex(BatchHistoryModel.BATCH_ID_FIELD, filter.getBatchId(), "i"));
+        if (StringUtils.isNotBlank(filter.getBatchId())) {
+            result.add(Filters.regex(BatchHistoryModel.BATCH_ID_FIELD, filter.getBatchId(), CASE_INSENSITIVE_OPTION));
         }
 
-        if (filter.getUserName() != null) {
-            result.add(Filters.regex(BatchHistoryModel.USERNAME, filter.getUserName(), "i"));
+        if (StringUtils.isNotBlank(filter.getUserName())) {
+            result.add(Filters.regex(BatchHistoryModel.USERNAME, filter.getUserName(), CASE_INSENSITIVE_OPTION));
         }
 
         if (filter.getStartDate() != null) {

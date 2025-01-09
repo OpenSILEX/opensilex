@@ -287,7 +287,21 @@ merge-request:check:
     - fi
     # query the merge request description to extract changelog and ignore-changelog fields
     - export API_MR_URL="$CI_API_V4_URL/projects/$CI_MERGE_REQUEST_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID"
-    - FRONT_MATTER=$(curl -s -X GET -F "private_token=$JOB_API_TOKEN" $API_MR_URL
+    - echo $API_MR_URL
+    - MR_CONTENT_JSON=$(curl -s -X GET -F "private_token=$JOB_API_TOKEN" $API_MR_URL)
+    - ERROR=$(echo $MR_CONTENT_JSON | yq '.error // ""')
+    - ERROR_DESCRIPTION=$(echo $MR_CONTENT_JSON | yq '.error_description // ""')
+    - if [[ -n "$ERROR" ]]; then
+    -   echo 'An error occured while making the query to Gitlab. See the error message below.'
+    -   echo "$ERROR - $ERROR_DESCRIPTION"
+    -   if [[ "$ERROR" == "invalid_token" ]]; then
+    -     echo "About the error ; the token used to query the Gitlab API from the job has maybe expired. In that case,
+          please create a new Personnal Access Token (PAT) in your Gitlab account and copy the value into the 
+          JOB_API_TOKEN variable in the project CI/CD settings."
+    -   fi
+    -   exit 1
+    - fi
+    - FRONT_MATTER=$(echo $MR_CONTENT_JSON
       | yq '.description'
       | yq -f extract -o json '.')
     - CHANGELOG=$(echo $FRONT_MATTER | yq '.changelog // ""')

@@ -46,15 +46,13 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
-import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
-import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.mapping.*;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaInterface;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.*;
@@ -874,6 +872,40 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
+    //TODO javadoc
+    public <T extends SPARQLResourceModel> List<T> searchUsingSchema(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            SparqlSchemaInterface<T> modelBuilderSchema,
+            Collection<OrderBy> orderByList,
+            Integer offset,
+            Integer limit
+    ) throws Exception {
+
+        //Generate result handler function
+        ThrowingFunction<SPARQLResult, T, Exception> generatedResultHandler = null;
+
+        SparqlNoProxyFetcher<T> customFetcher = new SparqlNoProxyFetcher<>(objectClass, this);
+        //(SPARQLResult result) -> customFetcher.getInstance(result, lang)
+
+
+        //Call normal search function
+        return search(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                generatedResultHandler,
+                orderByList,
+                offset,
+                limit
+        );
+    }
+
     public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang,
                                                                     ThrowingConsumer<SelectBuilder, Exception> filterHandler,
                                                                     Map<String, WhereHandler> customHandlerByFields,
@@ -891,11 +923,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SelectBuilder select = getSelectBuilder(mapper, graph, language, filterHandler, customHandlerByFields, orderByList, offset, limit);
 
         Stream<SPARQLResult> resultStream = executeSelectQueryAsStream(select);
-        boolean hasResultHandler = resultHandler == null;
+        boolean hasNoResultHandler = resultHandler == null;
 
         return resultStream.map(result -> {
             try {
-                if (hasResultHandler) {
+                if (hasNoResultHandler) {
                     return mapper.createInstance(graph, result, language, this);
                 } else {
                     return resultHandler.apply(result);

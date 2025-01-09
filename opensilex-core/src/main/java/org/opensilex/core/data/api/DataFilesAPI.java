@@ -7,9 +7,9 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.bulk.BulkWriteError;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,7 +18,9 @@ import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.DataFileDaoV2;
+import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.data.dal.DataFileSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -26,36 +28,36 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
-import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
-import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
-import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -64,6 +66,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +78,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -82,8 +88,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
@@ -103,7 +109,11 @@ public class DataFilesAPI {
     
     public static final String DATAFILE_EXAMPLE_URI = "http://opensilex.dev/id/file/1598857852858";
     public static final String DATAFILE_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Image";
-    
+
+    private static final Set<String> THUMBNAIL_EXTENSIONS = Set.of("png", "jpg", "gif", "bmp", "jpeg", "PNG", "JPG", "GIF", "BMP");
+    private static final Set<String> TIFF_EXTENSIONS = Set.of("tiff", "tif");
+
+
     @Inject
     private MongoDBService nosql;
     
@@ -406,30 +416,51 @@ public class DataFilesAPI {
         try {
             DataFileModel description = dao.get(uri);
 
-            Pattern pattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
-            if( pattern.matcher(description.getFilename()).matches()) {
-                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+            // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
+            String fileExt = Files.getFileExtension(description.getFilename());
 
-                byte[] imageData = ImageResizer.getInstance().resize(
-                        image,
-                        scaledWidth,
-                        scaledHeight
-                );
-
-                return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                        .build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            // Non handled file type
+            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
+                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
+                return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
             }
 
+            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
 
+            // Handle tiff : convert to PNG
+            if(TIFF_EXTENSIONS.contains(fileExt)){
+                image = convertTIFFToPNG(image);
+            }
 
+            return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
         } catch (NoSQLInvalidURIException e) {
-            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            return new NotFoundException(String.format("image with uri : %s was not found in the file system", uri), "image not found").getResponse();
         } catch (java.io.IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+            return new UnexpectedErrorException(e).getResponse();
+        }
+    }
+
+    private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
+        byte[] resizedImage = ImageResizer.getInstance().resize(
+                convertedImage,
+                scaledWidth,
+                scaledHeight
+        );
+
+        return Response.ok(resizedImage, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"") //optional
+                .build();
+    }
+
+    private static byte[] convertTIFFToPNG(byte[] tiffBytes) throws IOException {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(tiffBytes);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            BufferedImage tiffImage = ImageIO.read(inputStream);
+            ImageIO.write(tiffImage, "png", outputStream);
+
+            return outputStream.toByteArray();
         }
     }
     

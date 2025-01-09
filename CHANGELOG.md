@@ -117,6 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed or optimized
 
 - (!1331) [Dataverse] Creating a dataset now works again
+- (!1334) [GlobalUriSearch] Blocked access to data details if the user shouldn't be able to see them.
+- (!1335) [Datafile] Added support for tiff format images
 
 ## [1.4.0]
 

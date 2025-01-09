@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.uriSearch.bll;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
@@ -16,7 +17,9 @@ import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.document.dal.DocumentDAO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -44,6 +47,7 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -255,9 +259,39 @@ public class UriSearchLogic {
 
         //Set DataDto
         Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
-        result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+        //For data security we set the dataDTO to emptyDTO if this user doesn't have access to the experiment from where it came.
+        //We have to set an emptyDTO as otherwise the front-end thinks there was no result
+        result.setDataDto(new DataGetSearchDTO());
+        if(userHasAccessToProvenance(dataModel.getProvenance())){
+            result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+        }
 
         return result;
+    }
+
+    //Used for data and datafile access control, looks at the provenances experiments and validates with currentUser.
+    //Returns true if user is admin, or if the provenance has no experiments
+    private boolean userHasAccessToProvenance(DataProvenanceModel provenance){
+        List<URI> xpsContainingData = provenance.getExperiments();
+        if (Boolean.TRUE.equals(currentUser.isAdmin()) || CollectionUtils.isEmpty(xpsContainingData)) {
+            return true;
+        }
+
+        Set<URI> userExperiments;
+        try {
+            userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(currentUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error when retrieving user experiments during uri search for a found data", e);
+        }
+        if (!CollectionUtils.isEmpty(userExperiments)) {
+            boolean hasMatch = userExperiments.stream()
+                    .anyMatch(xpsContainingData::contains);
+
+            if (hasMatch) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private URIGlobalSearchDTO searchInDataFiles(URI uri) throws Exception {
@@ -278,7 +312,12 @@ public class UriSearchLogic {
         setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, result.getType());
 
         //Set DatafileDto
-        result.setDatafileDto(DataFileGetDTO.fromModel(dataFileModel));
+        //For data security we set the dataFileDTO to emptyDTO if this user doesn't have access to the experiment from where it came.
+        //We have to set an emptyDTO as otherwise the front-end thinks there was no result
+        result.setDatafileDto(new DataFileGetDTO());
+        if(userHasAccessToProvenance(dataFileModel.getProvenance())){
+            result.setDatafileDto(DataFileGetDTO.fromModel(dataFileModel));
+        }
 
         return result;
     }

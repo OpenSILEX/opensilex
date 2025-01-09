@@ -270,11 +270,13 @@ public class UriSearchLogic {
     }
 
     //Used for data and datafile access control, looks at the provenances experiments and validates with currentUser.
-    //Returns true if user is admin
+    //Returns true if user is admin, or if the provenance has no experiments
     private boolean userHasAccessToProvenance(DataProvenanceModel provenance){
-        if (Boolean.TRUE.equals(currentUser.isAdmin())) {
+        List<URI> xpsContainingData = provenance.getExperiments();
+        if (Boolean.TRUE.equals(currentUser.isAdmin()) || CollectionUtils.isEmpty(xpsContainingData)) {
             return true;
         }
+
         Set<URI> userExperiments;
         try {
             userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(currentUser);
@@ -282,10 +284,6 @@ public class UriSearchLogic {
             throw new RuntimeException("Unexpected error when retrieving user experiments during uri search for a found data", e);
         }
         if (!CollectionUtils.isEmpty(userExperiments)) {
-            List<URI> xpsContainingData = provenance.getExperiments();
-            if(CollectionUtils.isEmpty(xpsContainingData)){
-                return true;
-            }
             boolean hasMatch = userExperiments.stream()
                     .anyMatch(xpsContainingData::contains);
 

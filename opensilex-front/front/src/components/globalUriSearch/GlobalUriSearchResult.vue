@@ -25,6 +25,7 @@
         ></opensilex-UriView>
 
         <opensilex-Button
+          v-if="dataDto.uri"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"

@@ -56,9 +56,7 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -71,6 +69,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author MKourdi
@@ -86,6 +86,7 @@ public class DataService {
     public static final String UNDERSCORE = "_";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
     public static final String EMPTY_CSV_FILE_ERROR_MSG = "No data imported: The CSV file contains no rows to process";
+    public static final String IMPORTED_CSV_PATH = "/home/kourdi/work/imported-csv-files/";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -140,7 +141,7 @@ public class DataService {
      * @param provenance    the provenance URI
      * @param experiment    the experiment URI
      * @param file          the CSV file to import
-     * @param fileName
+     * @param fileName      the name of the CSV file
      * @param validationKey the validation key of the csv file
      * @return a DataCSVValidationDTO containing the status of the import
      * @throws Exception if an error occurs during the import
@@ -149,11 +150,52 @@ public class DataService {
         DataLogic dataLogic = this.dataLogic;
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
-        validation = importCsvValidationStep(provenance, experiment, file, fileName, validation);
+        File tempFile = createTempFile(file);
+        try {
+            validation = importCsvValidationStep(provenance, experiment, new FileInputStream(tempFile), fileName, validation);
 
-        importCsvInsertionStep(validationKey, validation, dataLogic);
+            importCsvInsertionStep(validationKey, validation, dataLogic);
 
+            saveCsvFileAsZip(new FileInputStream(tempFile), fileName);
+        } finally {
+            if (tempFile.exists() && !tempFile.delete()) {
+                LOGGER.error("Failed to delete temp file: {}", tempFile.getAbsolutePath());
+            }
+        }
         return buildDataCSVValidationDTO(validation);
+    }
+
+    private File createTempFile(InputStream file) throws IOException {
+        File tempFile = File.createTempFile("uploaded_csv_" + user.getName() + "_", ".tmp");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            file.transferTo(fos);
+        }
+        return tempFile;
+    }
+
+    private void saveCsvFileAsZip(InputStream fileContent, String fileName) {
+
+        String outputPath = IMPORTED_CSV_PATH + user.getName() + "/" + generateBatchId(Instant.now(), fileName) + ".zip";
+        File outputFile = new File(outputPath);
+        if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
+            LOGGER.error("Failed to create directory: {}", outputFile.getParent());
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(outputPath);
+             ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+
+            ZipEntry zipEntry = new ZipEntry(generateBatchId(Instant.now(), fileName) + ".csv");
+            zipOut.putNextEntry(zipEntry);
+            // Copy the input stream to the ZIP file
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fileContent.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, bytesRead);
+            }
+            zipOut.closeEntry();
+        } catch (IOException e) {
+            LOGGER.error("Failed to save file: {}", e.getMessage());
+        }
     }
 
     /**

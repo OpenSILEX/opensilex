@@ -6,9 +6,14 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.rdf.model.InfModel;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
+import org.apache.jena.vocabulary.ORG;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -83,15 +88,34 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         var conversionTime = System.currentTimeMillis() - startTime;
         LOGGER.debug("RDF4J to Jena conversion time: " + conversionTime + "ms");
         LOGGER.debug("nb statements: " + jenaModel.size());
+        /**
+         * reasonner on the transitivity of the hasPart/hasSite property
+         */
         LOGGER.debug("****************************************************************************************");
 
-        String ruleSrc = "[rule1: (?o <http://www.w3.org/ns/org/hasSite> ?s), (?o <http://www.opensilex.org/vocabulary/oes/hasPart> ?x) -> (?x <http://www.w3.org/ns/org/hasSite> ?s)]";
+        String ruleSrc = "[rule1: (?o <http://www.w3.org/ns/org#hasSite> ?s), (?o <http://www.opensilex.org/vocabulary/oeso#hasPart> ?x) -> (?x <http://www.w3.org/ns/org#hasSite> ?s)]";
         List rules = Rule.parseRules(ruleSrc);
 
         reasoner = new GenericRuleReasoner(rules);
+        InfModel inf = ModelFactory.createInfModel(reasoner, jenaModel);
         var totalTime = System.currentTimeMillis() - startTime;
         LOGGER.debug("reasonner creation time: " + (totalTime - conversionTime)  + "ms");
         LOGGER.debug("total time with reasoner creation: " + totalTime + "ms");
+        LOGGER.debug("****************************************************************************************");
+        Property hasPart = jenaModel.getProperty("http://www.opensilex.org/vocabulary/oeso#hasPart");
+        Property hasSite = ORG.hasSite;
+        org.apache.jena.rdf.model.Resource retrievedParent = inf.getResource("http://opensilex.test/id/organization/diascope");
+        String sitesUris = inf.listStatements(retrievedParent, hasSite, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
+        String childrenUris = inf.listStatements(retrievedParent, hasPart, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
+        LOGGER.debug("Parent organization (Diascope) : ");
+        LOGGER.debug("Sites: " + sitesUris);
+        LOGGER.debug("organizations children: " + childrenUris);
+
+        LOGGER.debug("");
+        LOGGER.debug("Child organization (Diaphen) : ");
+        org.apache.jena.rdf.model.Resource retrievedChild = inf.getResource("http://opensilex.test/id/organization/diaphen");
+        sitesUris = inf.listStatements(retrievedChild, hasSite, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
+        LOGGER.debug("Sites: " + sitesUris);
         LOGGER.debug("****************************************************************************************");
 
 

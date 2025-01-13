@@ -3,6 +3,7 @@ package org.opensilex.core.dataV2.api;
 import io.swagger.annotations.*;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
@@ -35,6 +36,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
@@ -94,8 +96,8 @@ public class DataAPIV2 {
             @ApiResponse(code = 409, message = "A Data already exists", response = ErrorResponse.class)})
     @ApiProtected
     @ApiCredential(
-            groupId = org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_GROUP_ID,
-            groupLabelKey = org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
@@ -127,8 +129,8 @@ public class DataAPIV2 {
             @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
     @ApiProtected
     @ApiCredential(
-            groupId = org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_GROUP_ID,
-            groupLabelKey = org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
             credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
@@ -185,6 +187,34 @@ public class DataAPIV2 {
         return new SingleObjectResponse<>(batchHistoryService.deleteBatchHistoryByURI(uri)).getResponse();
     }
 
+    @GET
+    @Path("/download/{fileName}")
+    @ApiOperation("Download csv file")
+    @ApiProtected
+    @Produces("application/zip")
+    public Response downloadFile(@PathParam("fileName") String fileName) {
+        this.dataService = new DataService(nosql, sparql, fs, user);
+        String filePath = "/home/kourdi/work/imported-csv-files/" + user.getName() + "/" + fileName + ".zip";
+        // Construct the full file path
+        File file = new File(filePath);
+
+        // Check if the file exists
+        if (!file.exists() || !file.isFile() || !file.canRead()) {
+            LOGGER.info("File exists: {}, Can read: {}", file.exists(), file.canRead());
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("File not found or not readable: " + fileName)
+                    .build();
+        }
+
+        return Response.ok(dataService.createFileStreamingOutput(file))
+                .header("Content-Disposition", "attachment; filename=" + file.getName())
+                .header("Content-Type", "application/zip")
+                .header("Content-Length", file.length())
+                .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                .header("Content-Transfer-Encoding", "binary")
+                .header("Accept-Ranges", "none")
+                .build();
+    }
 
     private String getFileName(FormDataContentDisposition fileDisposition) {
         return fileDisposition.getFileName().split(CSV_EXTENSION)[0];

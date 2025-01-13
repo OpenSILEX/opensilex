@@ -56,6 +56,8 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -69,6 +71,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -174,23 +177,34 @@ public class DataService {
     }
 
     private void saveCsvFileAsZip(InputStream fileContent, String fileName) {
+        if (fileContent == null) {
+            throw new IllegalArgumentException("File content cannot be null");
+        }
 
-        String outputPath = IMPORTED_CSV_PATH + user.getName() + "/" + generateBatchId(Instant.now(), fileName) + ".zip";
+        String outputPath = IMPORTED_CSV_PATH + user.getName() + "/" + "mko" + ".zip";
         File outputFile = new File(outputPath);
         if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
             LOGGER.error("Failed to create directory: {}", outputFile.getParent());
         }
 
-        try (FileOutputStream fos = new FileOutputStream(outputPath);
-             ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+        try (BufferedInputStream bis = new BufferedInputStream(fileContent);
+             FileOutputStream fos = new FileOutputStream(outputFile);
+             BufferedOutputStream bos = new BufferedOutputStream(fos);
+             ZipOutputStream zipOut = new ZipOutputStream(bos)) {
 
+            // Set compression level for the smallest file size
+            zipOut.setLevel(Deflater.BEST_COMPRESSION);
+
+            // Create ZIP entry with original filename
             ZipEntry zipEntry = new ZipEntry(generateBatchId(Instant.now(), fileName) + ".csv");
             zipOut.putNextEntry(zipEntry);
+
             // Copy the input stream to the ZIP file
             byte[] buffer = new byte[8192];
             int bytesRead;
-            while ((bytesRead = fileContent.read(buffer)) != -1) {
+            while ((bytesRead = bis.read(buffer)) != -1) {
                 zipOut.write(buffer, 0, bytesRead);
+                zipOut.flush();  // Flush after each write
             }
             zipOut.closeEntry();
         } catch (IOException e) {
@@ -1209,4 +1223,27 @@ public class DataService {
         return user.getName() + UNDERSCORE + currentDate + UNDERSCORE + randomUUID;
     }
 
+    /**
+     * Creates a StreamingOutput for streaming a file to the client.
+     *
+     * @param file The file to be streamed.
+     * @return A StreamingOutput that streams the file content.
+     */
+    public StreamingOutput createFileStreamingOutput(File file) {
+        return output -> {
+            try (InputStream inputStream = new FileInputStream(file)) {
+                byte[] buffer = new byte[8192]; // Buffer for efficient streaming
+                int bytesRead;
+                long totalBytes = 0;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+                }
+                output.flush();
+                LOGGER.info("Completed streaming file: {} (transferred: {} bytes)", file.getName(), totalBytes);
+            } catch (IOException e) {
+                throw new WebApplicationException("Error streaming file: " + file.getName(), e);
+            }
+        };
+    }
 }

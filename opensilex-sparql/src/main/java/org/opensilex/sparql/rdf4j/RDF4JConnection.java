@@ -14,11 +14,10 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.vocabulary.ORG;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.base.AbstractValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.query.*;
@@ -71,7 +70,8 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         long startTime = System.currentTimeMillis();
         Model rdf4jModel = new LinkedHashModel();
 
-        try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null)) {
+        Resource organizationGraph= rdf4JConnection.getValueFactory().createIRI("http://opensilex.test/set/scientific-object");
+        try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null, organizationGraph)) {
             while (result.hasNext()) {
                 Statement stmt = result.next();
                 rdf4jModel.add(stmt);
@@ -86,8 +86,8 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         var jenaModel = org.apache.jena.rdf.model.ModelFactory.createDefaultModel();
         jenaModel.read(inputStream, "", "RDF/XML");
         var conversionTime = System.currentTimeMillis() - startTime;
-        LOGGER.debug("RDF4J to Jena conversion time: " + conversionTime + "ms");
-        LOGGER.debug("nb statements: " + jenaModel.size());
+        LOGGER.debug("RDF4J to Jena conversion time for Organization graph: " + conversionTime + "ms");
+        LOGGER.debug("nb statements in Organization graph: " + jenaModel.size());
         /**
          * reasonner on the transitivity of the hasPart/hasSite property
          */
@@ -117,8 +117,6 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         sitesUris = inf.listStatements(retrievedChild, hasSite, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
         LOGGER.debug("Sites: " + sitesUris);
         LOGGER.debug("****************************************************************************************");
-
-
     }
 
     private int timeout;

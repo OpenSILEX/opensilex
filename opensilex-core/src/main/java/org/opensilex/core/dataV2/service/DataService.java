@@ -56,9 +56,9 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -71,6 +71,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author MKourdi
@@ -86,6 +89,10 @@ public class DataService {
     public static final String UNDERSCORE = "_";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
     public static final String EMPTY_CSV_FILE_ERROR_MSG = "No data imported: The CSV file contains no rows to process";
+    public static final String IMPORTED_CSV_PATH = "data/imported-csv-files/";
+    public static final String ZIP_EXTENSION = ".zip";
+    public static final String CSV_EXTENSION = ".csv";
+    public static final String USER_HOME = "user.home";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -140,7 +147,7 @@ public class DataService {
      * @param provenance    the provenance URI
      * @param experiment    the experiment URI
      * @param file          the CSV file to import
-     * @param fileName
+     * @param fileName      the name of the CSV file
      * @param validationKey the validation key of the csv file
      * @return a DataCSVValidationDTO containing the status of the import
      * @throws Exception if an error occurs during the import
@@ -149,11 +156,65 @@ public class DataService {
         DataLogic dataLogic = this.dataLogic;
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
-        validation = importCsvValidationStep(provenance, experiment, file, fileName, validation);
+        File tempFile = createTempFile(file);
+        try {
+            validation = importCsvValidationStep(provenance, experiment, new FileInputStream(tempFile), fileName, validation);
 
-        importCsvInsertionStep(validationKey, validation, dataLogic);
+            importCsvInsertionStep(validationKey, validation, dataLogic);
 
+            saveCsvFileAsZip(new FileInputStream(tempFile), validation.getBatchId());
+        } finally {
+            if (tempFile.exists() && !tempFile.delete()) {
+                LOGGER.error("Failed to delete temp file: {}", tempFile.getAbsolutePath());
+            }
+        }
         return buildDataCSVValidationDTO(validation);
+    }
+
+    private File createTempFile(InputStream file) throws IOException {
+        File tempFile = File.createTempFile("uploaded_csv_" + user.getName(), ".tmp");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            file.transferTo(fos);
+        }
+        return tempFile;
+    }
+
+    private void saveCsvFileAsZip(InputStream fileContent, String fileName) {
+        if (fileContent == null) {
+            throw new IllegalArgumentException("File content cannot be null");
+        }
+
+        // Get User home directory
+        String rootPath = System.getProperty(USER_HOME);
+        String outputPath = rootPath + File.separator + IMPORTED_CSV_PATH + user.getName() + File.separator + fileName + ZIP_EXTENSION;
+        File outputFile = new File(outputPath);
+        if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
+            LOGGER.error("Failed to create directory: {}", outputFile.getParent());
+        }
+
+        try (BufferedInputStream bis = new BufferedInputStream(fileContent);
+             FileOutputStream fos = new FileOutputStream(outputFile);
+             BufferedOutputStream bos = new BufferedOutputStream(fos);
+             ZipOutputStream zipOut = new ZipOutputStream(bos)) {
+
+            // Set compression level for the smallest file size
+            zipOut.setLevel(Deflater.BEST_COMPRESSION);
+
+            // Create ZIP entry with original filename
+            ZipEntry zipEntry = new ZipEntry(fileName + CSV_EXTENSION);
+            zipOut.putNextEntry(zipEntry);
+
+            // Copy the input stream to the ZIP file
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = bis.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, bytesRead);
+                zipOut.flush();  // Flush after each write
+            }
+            zipOut.closeEntry();
+        } catch (IOException e) {
+            LOGGER.error("Failed to save file: {}", e.getMessage());
+        }
     }
 
     /**
@@ -1074,6 +1135,8 @@ public class DataService {
         // Set batchId and publicationDate for the data
         setBatchIdAndPublicationDateToData(batchId, startTime, data);
 
+        validation.setBatchId(batchId);
+
         try {
             dataLogic.createManyFromImport(data, validation);
             batchHistoryDao.create(batchHistoryModel);
@@ -1167,4 +1230,27 @@ public class DataService {
         return user.getName() + UNDERSCORE + currentDate + UNDERSCORE + randomUUID;
     }
 
+    /**
+     * Creates a StreamingOutput for streaming a file to the client.
+     *
+     * @param file The file to be streamed.
+     * @return A StreamingOutput that streams the file content.
+     */
+    public StreamingOutput createFileStreamingOutput(File file) {
+        return output -> {
+            try (InputStream inputStream = new FileInputStream(file)) {
+                byte[] buffer = new byte[8192]; // Buffer for efficient streaming
+                int bytesRead;
+                long totalBytes = 0;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+                }
+                output.flush();
+                LOGGER.info("Completed streaming file: {} (transferred: {} bytes)", file.getName(), totalBytes);
+            } catch (IOException e) {
+                throw new WebApplicationException("Error streaming file: " + file.getName(), e);
+            }
+        };
+    }
 }

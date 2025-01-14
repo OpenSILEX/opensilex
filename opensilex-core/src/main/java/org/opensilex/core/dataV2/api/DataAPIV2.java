@@ -41,6 +41,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
+import static org.opensilex.core.dataV2.service.DataService.*;
+
 /**
  * @author MKourdi
  */
@@ -194,7 +196,11 @@ public class DataAPIV2 {
     @Produces("application/zip")
     public Response downloadFile(@PathParam("fileName") String fileName) {
         this.dataService = new DataService(nosql, sparql, fs, user);
-        String filePath = "/home/kourdi/work/imported-csv-files/" + user.getName() + "/" + fileName + ".zip";
+
+        // Get User home directory
+        String rootPath = System.getProperty(USER_HOME);
+        String filePath = rootPath + File.separator + IMPORTED_CSV_PATH + user.getName() + File.separator + fileName + ZIP_EXTENSION;
+
         // Construct the full file path
         File file = new File(filePath);
 

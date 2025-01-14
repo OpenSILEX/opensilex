@@ -89,7 +89,10 @@ public class DataService {
     public static final String UNDERSCORE = "_";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
     public static final String EMPTY_CSV_FILE_ERROR_MSG = "No data imported: The CSV file contains no rows to process";
-    public static final String IMPORTED_CSV_PATH = "/home/kourdi/work/imported-csv-files/";
+    public static final String IMPORTED_CSV_PATH = "data/imported-csv-files/";
+    public static final String ZIP_EXTENSION = ".zip";
+    public static final String CSV_EXTENSION = ".csv";
+    public static final String USER_HOME = "user.home";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -159,7 +162,7 @@ public class DataService {
 
             importCsvInsertionStep(validationKey, validation, dataLogic);
 
-            saveCsvFileAsZip(new FileInputStream(tempFile), fileName);
+            saveCsvFileAsZip(new FileInputStream(tempFile), validation.getBatchId());
         } finally {
             if (tempFile.exists() && !tempFile.delete()) {
                 LOGGER.error("Failed to delete temp file: {}", tempFile.getAbsolutePath());
@@ -169,7 +172,7 @@ public class DataService {
     }
 
     private File createTempFile(InputStream file) throws IOException {
-        File tempFile = File.createTempFile("uploaded_csv_" + user.getName() + "_", ".tmp");
+        File tempFile = File.createTempFile("uploaded_csv_" + user.getName(), ".tmp");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             file.transferTo(fos);
         }
@@ -181,7 +184,9 @@ public class DataService {
             throw new IllegalArgumentException("File content cannot be null");
         }
 
-        String outputPath = IMPORTED_CSV_PATH + user.getName() + "/" + "mko" + ".zip";
+        // Get User home directory
+        String rootPath = System.getProperty(USER_HOME);
+        String outputPath = rootPath + File.separator + IMPORTED_CSV_PATH + user.getName() + File.separator + fileName + ZIP_EXTENSION;
         File outputFile = new File(outputPath);
         if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
             LOGGER.error("Failed to create directory: {}", outputFile.getParent());
@@ -196,7 +201,7 @@ public class DataService {
             zipOut.setLevel(Deflater.BEST_COMPRESSION);
 
             // Create ZIP entry with original filename
-            ZipEntry zipEntry = new ZipEntry(generateBatchId(Instant.now(), fileName) + ".csv");
+            ZipEntry zipEntry = new ZipEntry(fileName + CSV_EXTENSION);
             zipOut.putNextEntry(zipEntry);
 
             // Copy the input stream to the ZIP file
@@ -1129,6 +1134,8 @@ public class DataService {
 
         // Set batchId and publicationDate for the data
         setBatchIdAndPublicationDateToData(batchId, startTime, data);
+
+        validation.setBatchId(batchId);
 
         try {
             dataLogic.createManyFromImport(data, validation);

@@ -63,6 +63,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private String errorMessage;
     private String validationKey;
     private String fileName;
+    private String batchId;
 
 
     /**
@@ -506,5 +507,13 @@ public class DataCSVValidationModel extends CSVValidationModel {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+
+    public String getBatchId() {
+        return batchId;
     }
 }

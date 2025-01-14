@@ -35,6 +35,7 @@
                             label="component.common.end"
                             :minDate="position.startDate"
                             :required="!!position.geojson || !!position.startDate"
+                            @input="checkGeometryNotSaved"
                     ></opensilex-DateTimeForm>
                 </div>
             </div>
@@ -46,6 +47,8 @@
                             :value.sync="position.geojson"
                             label="component.common.geometry"
                             :required="!!position.endDate"
+                            placeholder="LocationsForm.geometry"
+                            @onUpdate="checkGeometryNotSaved"
                     >
                     </opensilex-GeometryForm>
                 </div>
@@ -104,7 +107,7 @@
         <opensilex-WizardForm
                 ref="locationForm"
                 :steps="locationSteps"
-                editTitle="LocationForm.update"
+                editTitle="LocationsForm.update"
                 icon="ik#ik-globe"
                 :static="false"
                 :initForm="getEmptyLocationForm"
@@ -176,6 +179,30 @@ export default class LocationsForm extends Vue {
     //endregion
 
     //#region Events handlers
+
+    // Check is the two fields have a value
+    private checkGeometryNotSaved() {
+        const hasEndDate = !!this.position.endDate;
+        const hasGeometry = !!this.position.geojson;
+
+        // If there are completed, check if addPosition has been validate or not (button)
+        if (hasEndDate && hasGeometry && !this.positionIsValid()) {
+            console.log("géo not saved")
+            this.$emit("geometryIsNotSaved");
+        }
+    }
+
+    // Simulate validation of addPosition
+    private positionIsValid(): boolean {
+        return (
+            this.facility.locations.some(
+                (location) =>
+                    location.endDate === this.position.endDate &&
+                    location.geojson === this.position.geojson
+            )
+        );
+    }
+
     private addPosition() {
         let isValid = this.validatorRef.validate().then(isValid => {
             return isValid
@@ -185,6 +212,7 @@ export default class LocationsForm extends Vue {
             if (this.position.geojson && this.position.endDate) {
                 this.facility.locations.push(this.position)
                 this.position = this.getPositionEmpty();
+                this.$emit("positionIsValid")
             }
         }
     }
@@ -248,8 +276,10 @@ en:
     LocationsForm:
         positions-geospatial: Geospatial positions
         add-position: Add position
+        geometry:  POINT (10 10)
 fr:
     LocationsForm:
         positions-geospatial: Positions géospatiales
         add-position: Ajouter une position
+        geometry: POINT (10 10)
 </i18n>

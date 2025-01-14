@@ -150,7 +150,7 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .createFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("OrganizationFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })
                 .catch((error) => {
@@ -191,7 +191,7 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .updateFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("OrganizationFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })
                 .catch(this.$opensilex.errorHandler);
@@ -212,6 +212,7 @@ en:
         form-name-placeholder: Enter organization facility name
         form-type-placeholder: Select organization facility type
         organization-facility-already-exists: Organization facility already exists with this URI
+        geometryIsNotSaved: Geospatial information has been entered but has not been confirmed
 fr:
     OrganizationFacilityForm:
         name: L'installation environnementale
@@ -219,4 +220,5 @@ fr:
         form-name-placeholder: Saisir le nom de l'installation environnementale
         form-type-placeholder: Sélectionner le type de l'installation environnementale
         organization-facility-already-exists: Une installation environnementale existe déjà avec cette URI
+        geometryIsNotSaved: Des informations géospatiales ont été saisies mais n'ont pas été confirmées
 </i18n>

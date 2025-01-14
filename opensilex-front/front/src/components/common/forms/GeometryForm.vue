@@ -55,6 +55,7 @@ export default class GeometryForm extends Vue {
     this.stringValue = newValue;
     let geoJson = parse(this.stringValue);
     this.geoJson = geoJson;
+    this.$emit("onUpdate");
   }
 
   @Prop()

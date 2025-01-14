@@ -70,12 +70,9 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         long startTime = System.currentTimeMillis();
         Model rdf4jModel = new LinkedHashModel();
 
-        Resource organizationGraph= rdf4JConnection.getValueFactory().createIRI("http://opensilex.test/set/scientific-object");
+        Resource organizationGraph= rdf4JConnection.getValueFactory().createIRI("http://opensilex.test/set/germplasm");
         try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null, organizationGraph)) {
-            while (result.hasNext()) {
-                Statement stmt = result.next();
-                rdf4jModel.add(stmt);
-            }
+            result.forEach(rdf4jModel::add);
         }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         org.eclipse.rdf4j.rio.Rio.write(rdf4jModel, outputStream, RDFFormat.RDFXML);

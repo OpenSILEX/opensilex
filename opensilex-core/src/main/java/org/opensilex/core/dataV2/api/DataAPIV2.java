@@ -65,7 +65,6 @@ public class DataAPIV2 {
     public static final String DATA_EXAMPLE_MAXIMAL_DATE = "2025-02-01T00:00:00+01:00";
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
-    public static final String CSV_EXTENSION = ".csv";
     public static final String DATA_ALREADY_EXISTS = "Data already exists";
     public static final String DUPLICATED_DATA_FOUND = "Duplicated data found ";
     public static final String CREDENTIAL_BATCH_HISTORY_DELETE_ID = "data-delete";
@@ -192,9 +191,14 @@ public class DataAPIV2 {
     @GET
     @Path("/download/{fileName}")
     @ApiOperation("Download csv file")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "File downloaded successfully"),
+            @ApiResponse(code = 404, message = "File not found or not readable"),
+            @ApiResponse(code = 500, message = "Internal server error")
+    })
     @ApiProtected
     @Produces("application/zip")
-    public Response downloadFile(@PathParam("fileName") String fileName) {
+    public Response downloadFile(@ApiParam(value = "Filename", example = "file_name_20250116093013", required = true) @PathParam("fileName") String fileName) {
         this.dataService = new DataService(nosql, sparql, fs, user);
 
         // Get User home directory

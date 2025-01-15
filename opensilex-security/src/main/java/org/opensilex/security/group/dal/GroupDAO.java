@@ -40,6 +40,8 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -89,7 +91,59 @@ public final class GroupDAO {
 
         SparqlNoProxyFetcher<GroupModel> customFetcher = new SparqlNoProxyFetcher<>(GroupModel.class, sparql);
 
-        ListWithPagination<GroupModel> models = sparql.searchWithPagination(
+        //TESTING MY NEW THING ================= todo revert
+
+        SparqlSchemaNode<ProfileModel> profileNode = new SparqlSchemaNode<>(
+                ProfileModel.class,
+                GroupUserProfileModel.PROFILE_FIELD,
+                new ArrayList<>(),
+                false
+        );
+
+        SparqlSchemaNode<AccountModel> accountNode = new SparqlSchemaNode<>(
+                AccountModel.class,
+                GroupUserProfileModel.USER_FIELD,
+                new ArrayList<>(),
+                false
+        );
+
+        SparqlSchemaNode<GroupUserProfileModel> groupUserProfileNode = new SparqlSchemaNode<>(
+                GroupUserProfileModel.class,
+                GroupModel.USER_PROFILES_FIELD,
+                List.of(profileNode, accountNode),
+                true
+        );
+
+        SparqlSchemaNode<GroupModel> rootNode = new SparqlSchemaNode<>(
+                GroupModel.class,
+                null,
+                Collections.singletonList(groupUserProfileNode),
+                //new ArrayList<>(),
+                false
+
+        );
+
+        SparqlSchema<GroupModel> schema = new SparqlSchema<>(rootNode);
+
+        ListWithPagination<GroupModel> models = sparql.searchWithPaginationUsingSchema(
+                sparql.getDefaultGraph(GroupModel.class),
+                GroupModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    if (nameFilter != null) {
+                        select.addFilter(nameFilter);
+                    }
+                },
+                Collections.emptyMap(),
+                schema,
+                orderByList,
+                page,
+                pageSize
+        );
+
+        //==================================================
+
+        /*ListWithPagination<GroupModel> models = sparql.searchWithPagination(
                 sparql.getDefaultGraph(GroupModel.class),
                 GroupModel.class,
                 lang,
@@ -108,7 +162,7 @@ public final class GroupDAO {
         //Load the GroupUserProfileModels associated to groups
         if(!CollectionUtils.isEmpty(models.getList())){
             loadGroupUserProfileModelsIntoGroups(models.getList(), lang);
-        }
+        }*/
 
         return models;
     }

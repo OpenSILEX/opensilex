@@ -1,21 +1,217 @@
 package org.opensilex.sparql.service.schemaQuery;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
+import org.opensilex.sparql.service.SPARQLService;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
 
-import java.util.List;
-
-//TODO implement interface with correct stuff
 public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
-    Class<T> objectClass;
+    private final Class<T> objectClass;
+    private final String fieldName;
+    private final boolean isListField;
+    private final List<SparqlSchemaNode<?>> childNodes;
 
-    //@Override
-    public Class<T> getNodeObjectClass() {
-        return objectClass;
+    public SparqlSchemaNode(Class<T> objectClass, String fieldName, List<SparqlSchemaNode<?>> childNodes, boolean isListField) {
+        this.objectClass = objectClass;
+        this.fieldName = fieldName;
+        this.childNodes = childNodes;
+        this.isListField = isListField;
+    }
+
+    public void completeNodeModels(
+            SPARQLService sparql,
+            List<?> uncastNodeModels,
+            String lang
+    ) throws Exception {
+        List<T> nodeModels = uncastNodeModels.stream().map(e -> (T) e).toList();
+
+        //If this node has no children then return the list, otherwise perform the recursive call for each child
+        if(CollectionUtils.isEmpty(childNodes)){
+            return;
+        }
+
+        //Load all list field's uris that the schema tells us to get, if any
+        List<String> listFieldNames = childNodes.stream().filter(SparqlSchemaNode::isListField).map(SparqlSchemaNode::getFieldName).toList();
+        if(!CollectionUtils.isEmpty(listFieldNames)){
+            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
+                    sparql,
+                    objectClass,
+                    sparql.getDefaultGraph(objectClass),
+                    listFieldNames,
+                    nodeModels
+            );
+            listFetcher.updateModels();
+        }
+
+        //Create mapper so we can work out how to get and set fields from field name
+        SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
+
+        //Organize all distinct uris per type (regardless of field)
+        HashMap<String, HashSet<String>> distinctUrisPerTypeName = new HashMap<>();
+        HashMap<String, String> typeNamePerFieldName = new HashMap<>();
+        //List to remember the uri values that the list fetcher got, for faster access later
+        HashMap<String, HashMap<String, List<String>>> uriValuesPerModelUriPerField = new HashMap<>();
+
+        for(SparqlSchemaNode<?> childNode : childNodes){
+            //Identify field, its getter, and the generic type
+            // then iterate over each model to place the uris into distinctUrisPerTypeName
+            Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
+            Class<?> genericType = field.getType();
+            String genericTypeName = null;
+
+            try{
+                genericTypeName = genericType.getTypeName();
+            }catch (NullPointerException ignore){}
+
+            if ( genericTypeName == null) {
+                throw new IllegalArgumentException("Unknown custom field " + childNode.getFieldName() + " from SPARQL model : " + mapper.getObjectClass().getName());
+            }
+
+            typeNamePerFieldName.put(childNode.getFieldName(), genericTypeName);
+
+            Method fieldGetter = mapper.getClassAnalyzer().getGetterFromField(field);
+
+            HashMap<String, List<String>> uriValuesPerModelUri = new HashMap<>();
+
+            for(T nodeModel : nodeModels){
+                List<String> nextUris = childNode.getUrisFromObject(fieldGetter.invoke(nodeModel)).stream().map(URI::toString).toList();
+
+                uriValuesPerModelUri.put(SPARQLDeserializers.getShortURI(nodeModel.getUri()), nextUris);
+
+                if(distinctUrisPerTypeName.containsKey(genericTypeName)){
+                    distinctUrisPerTypeName.get(genericTypeName).addAll(nextUris);
+                }else{
+                    distinctUrisPerTypeName.put(genericTypeName, new HashSet<>(nextUris));
+                }
+            }
+
+            uriValuesPerModelUriPerField.put(childNode.getFieldName(), uriValuesPerModelUri);
+        }
+
+        //Do basic search for child models, 1 search per type,
+        // to do this iterate over children filling this map as each type is visited for the first time
+        //In same iteration perform next recursive step on each child node
+        HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType = new HashMap<>();
+
+        for(SparqlSchemaNode<?> childNode : childNodes){
+            String typeName = typeNamePerFieldName.get(childNode.getFieldName());
+            //Load models of this child's type if they weren't already loaded
+            if(!calculatedChildModelsPerUriPerType.containsKey(typeName)){
+                HashMap<String, SPARQLResourceModel> calculatedModelsPerUri = new HashMap<>();
+
+                childNode.runBasicSearchFunction(
+                        distinctUrisPerTypeName.get(typeName),
+                        sparql,
+                        lang
+                ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+                calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
+            }
+            //Perform recursive call on child to complete its models
+            childNode.completeNodeModels(
+                    sparql,
+                    new ArrayList<>(calculatedChildModelsPerUriPerType.get(typeName).values()),
+                    lang
+            );
+            //Re-inject child models into this node's models
+            //Get setter method
+            Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
+            Method fieldSetter = mapper.getClassAnalyzer().getSetterFromField(field);
+            for(T nodeModel : nodeModels){
+
+                HashMap<String, SPARQLResourceModel> modelsOfCorrectType = calculatedChildModelsPerUriPerType.get(typeName);
+                List<SPARQLResourceModel> modelsToSet = new ArrayList<>();
+                uriValuesPerModelUriPerField.get(childNode.getFieldName()).get(SPARQLDeserializers.getShortURI(nodeModel.getUri())).forEach(uri -> {
+                    modelsToSet.add(modelsOfCorrectType.get(uri));
+                });
+
+                if(CollectionUtils.isEmpty(modelsToSet)){
+                    continue;
+                }
+
+                fieldSetter.invoke(
+                        nodeModel,
+                        (childNode.isListField ? modelsToSet : modelsToSet.get(0))
+                );
+            }
+        }
+
+    }
+
+    /**
+     * A function to perform a search for this node's generic type on the passed list of uris.
+     * Called from a parent to perform a search for all it's children of same type.
+     * Has to be done in the child as we need to know the type.
+     *
+     * @param uris
+     * @return
+     */
+    private HashSet<? extends SPARQLResourceModel> runBasicSearchFunction(
+            HashSet<String> uris,
+            SPARQLService sparql,
+            String lang
+    ) throws Exception {
+        SparqlNoProxyFetcher<T> customFetcher = new SparqlNoProxyFetcher<>(
+                objectClass,
+                sparql
+        );
+
+        //Call normal search function
+        List<? extends SPARQLResourceModel> nextModels = sparql.search(
+                sparql.getDefaultGraph(objectClass),
+                objectClass,
+                lang,
+                (SelectBuilder select) -> {
+                    select.addFilter(SPARQLQueryHelper.inURIFilter(
+                            SPARQLResourceModel.URI_FIELD,
+                            uris.stream().map(URI::create).toList()
+                    ));
+                },
+                null,
+                (SPARQLResult result) -> customFetcher.getInstance(result, lang),
+                Collections.emptyList(),
+                0,
+                0
+        );
+        return new HashSet<>(nextModels);
+    }
+
+    /**
+     *
+     * @param object that can be cast to either a list of T or a single T in function of isListField
+     * @return a list of all the uris from the cast model(s)
+     */
+    private List<URI> getUrisFromObject(Object object){
+        if(isListField){
+            return ((List<T>)object).stream().map(SPARQLResourceModel::getUri).toList();
+        }
+        return Collections.singletonList(((T)object).getUri());
     }
 
     //@Override
-    public List<SparqlSchemaNode> getChildren() {
-        return List.of();
+    public List<SparqlSchemaNode<?>> getChildren() {
+        return childNodes;
+    }
+
+    public Class<T> getObjectClass() {
+        return objectClass;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public boolean isListField() {
+        return isListField;
     }
 }

@@ -52,7 +52,9 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaInterface;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.*;
@@ -872,6 +874,42 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
+    //TODO refactor if i keep this (everything is same as normal searchWithPagination apart from schema instead of resHandler)
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            SparqlSchema<T> modelBuilderSchema,
+            Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
+        int total = count(graph, objectClass, lang, filterHandler, customHandlerByFields);
+
+        List<T> list;
+        if (pageSize == null || pageSize == 0) {
+            list = searchUsingSchema(graph, objectClass, lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, null, null);
+        } else if (total > 0 && (page * pageSize) < total) {
+            Integer offset = null;
+            Integer limit = null;
+            if (page < 0) {
+                page = 0;
+            }
+            if (pageSize > 0) {
+                offset = page * pageSize;
+                limit = pageSize;
+            }
+            list = searchUsingSchema(graph, objectClass, lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, offset, limit);
+        } else {
+            list = new ArrayList<>();
+        }
+
+        return new ListWithPagination<>(list, page, pageSize, total);
+
+    }
+
     //TODO javadoc
     public <T extends SPARQLResourceModel> List<T> searchUsingSchema(
             Node graph,
@@ -879,31 +917,31 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             String lang,
             ThrowingConsumer<SelectBuilder, Exception> filterHandler,
             Map<String, WhereHandler> customHandlerByFields,
-            SparqlSchemaInterface<T> modelBuilderSchema,
+            SparqlSchema<T> modelBuilderSchema,
             Collection<OrderBy> orderByList,
             Integer offset,
             Integer limit
     ) throws Exception {
 
-        //Generate result handler function
-        ThrowingFunction<SPARQLResult, T, Exception> generatedResultHandler = null;
-
         SparqlNoProxyFetcher<T> customFetcher = new SparqlNoProxyFetcher<>(objectClass, this);
-        //(SPARQLResult result) -> customFetcher.getInstance(result, lang)
-
 
         //Call normal search function
-        return search(
+        List<T> basicSearchResult = search(
                 graph,
                 objectClass,
                 lang,
                 filterHandler,
                 customHandlerByFields,
-                generatedResultHandler,
+                (SPARQLResult result) -> customFetcher.getInstance(result, lang),
                 orderByList,
                 offset,
                 limit
         );
+
+        modelBuilderSchema.getRoot().completeNodeModels(this, basicSearchResult, lang);
+
+        return basicSearchResult;
+
     }
 
     public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang,

@@ -244,7 +244,8 @@ export default class LocationsForm extends Vue {
 
     //#region Public methods
     public reset() {
-        this.validatorRef.reset();
+      this.position = this.getPositionEmpty();
+      this.validatorRef.reset();
     }
 
     public validate() {

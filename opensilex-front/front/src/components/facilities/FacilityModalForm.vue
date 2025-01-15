@@ -29,6 +29,7 @@ import {
     FacilityUpdateDTO,
     UserGetDTO
 } from "opensilex-core/index";
+import WizardForm from "../../components/common/forms/WizardForm.vue";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -44,7 +45,7 @@ export default class FacilityModalForm extends Vue {
 
     //#region Refs
     @Ref("facilityForm")
-    private readonly facilityForm!: FacilityModalForm;
+    private readonly facilityForm!: WizardForm;
     //endregion
 
     //#region Data

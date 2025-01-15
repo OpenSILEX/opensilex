@@ -17,6 +17,7 @@ package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
 import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -177,7 +178,7 @@ public class FacilityAPI {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
         if (!Objects.isNull(model.getLocationObservationCollection())) {
-            facilityGetDTO.fromLocationModel(facilityLogic.getFacilityLocationModel(model));
+            facilityGetDTO.fromLocationModel(facilityLogic.getLastFacilityLocationModel(model));
         }
 
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();

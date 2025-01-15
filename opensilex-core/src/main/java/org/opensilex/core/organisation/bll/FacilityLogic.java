@@ -45,7 +45,6 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -278,7 +277,7 @@ public class FacilityLogic {
      * @param facilityModel The facility
      * @return The Location Observation model
      */
-    public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
+    public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
         List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(

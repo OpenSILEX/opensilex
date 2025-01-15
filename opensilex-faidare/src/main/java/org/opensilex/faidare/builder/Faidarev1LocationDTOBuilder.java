@@ -55,8 +55,8 @@ public class Faidarev1LocationDTOBuilder {
                 .setLocationType(SPARQLDeserializers.getExpandedURI(model.getType()));
 
 
-        if (facilityLogic.getFacilityLocationModel(model) != null){
-            Geometry facilityGeometry = facilityLogic.getFacilityLocationModel(model).getLocation().getGeometry();
+        if (facilityLogic.getLastFacilityLocationModel(model) != null){
+            Geometry facilityGeometry = facilityLogic.getLastFacilityLocationModel(model).getLocation().getGeometry();
 
             org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
 

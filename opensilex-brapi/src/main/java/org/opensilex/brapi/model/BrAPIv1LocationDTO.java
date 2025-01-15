@@ -155,7 +155,7 @@ class BrAPIv1LocationDTO {
         this.setLocationName(model.getName());
         this.setLocationType(model.getType().toString());
 
-        LocationObservationModel locationModel = facilityLogic.getFacilityLocationModel(model);
+        LocationObservationModel locationModel = facilityLogic.getLastFacilityLocationModel(model);
 
         if (locationModel != null){
             Geometry facilityGeometry = locationModel.getLocation().getGeometry();

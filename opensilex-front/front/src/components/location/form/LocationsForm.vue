@@ -219,9 +219,6 @@ export default class LocationsForm extends Vue {
 
     private updatePosition(data) {
         this.index = data.index;
-        //Copy item to prevent the update in the modal from directly modifying "data"
-        let form = JSON.parse(JSON.stringify(data.item));
-        this.locationForm.showEditForm(form);
     }
 
     private deletePosition(data) {

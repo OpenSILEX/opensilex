@@ -81,8 +81,6 @@ export default class LocationForm extends Vue {
     //endregion
 
     //#region Public methods
-    public showEditForm(form) {
-    }
     //endregion
 
     //#region Hooks

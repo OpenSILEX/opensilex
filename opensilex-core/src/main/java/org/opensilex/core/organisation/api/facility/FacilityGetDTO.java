@@ -117,12 +117,7 @@ public class FacilityGetDTO extends FacilityDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, LocationObservationModel locationModel) {
-        fromModel(facilityModel);
-        fromLocationModel(locationModel);
-    }
-
-    public void fromLocationModel(LocationObservationModel locationObservationModel) {
+    public void setLocationsFromLocationObservationModel(LocationObservationModel locationObservationModel) {
         if (Objects.nonNull(locationObservationModel.getObservationCollection())) {
             LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(locationObservationModel);
             setLocations(Collections.singletonList(locationDto));

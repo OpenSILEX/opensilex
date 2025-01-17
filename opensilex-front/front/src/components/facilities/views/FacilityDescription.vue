@@ -114,16 +114,16 @@
             </opensilex-AddressView>
 
             <!--Last Position-->
-            <opensilex-StringView v-if="selected.locations" label="FacilityDescription.lastPosition">
+            <opensilex-StringView v-if="selected.lastPosition" label="FacilityDescription.lastPosition">
                 <!-- Position detail -->
-                <div v-if="selected.locations[0].endDate">
-                    <span>{{ new Date(selected.locations[0].endDate).toLocaleString() }}</span>
+                <div v-if="selected.lastPosition.endDate">
+                    <span>{{ new Date(selected.lastPosition.endDate).toLocaleString() }}</span>
                 </div>
                 <ul>
                     <li>
                         <opensilex-GeometryCopy
                                 label=""
-                                :value="selected.locations[0].geojson">
+                                :value="selected.lastPosition.geojson">
                         </opensilex-GeometryCopy>
                     </li>
                 </ul>

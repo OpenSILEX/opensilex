@@ -246,7 +246,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
@@ -267,7 +267,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNotNull(singleObjectResponse.getResult().getAddress());
     }
@@ -282,7 +282,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNull(singleObjectResponse.getResult().getLocations());
+        assertNull(singleObjectResponse.getResult().getLastPosition());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
 
@@ -300,7 +300,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getLocations().get(0).getGeojson();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
     }
 

@@ -81,15 +81,17 @@ export default class FacilityModalForm extends Vue {
                     editDto.publisher = publisher;
                 }).catch(this.$opensilex.errorHandler)
                 .finally(() => {
-                    if (editDto.locations) {
+                  console.debug("bitch!", JSON.stringify(editDto));
+                  if (editDto) {
                         this.locationsService.searchLocationHistory(
                                 uri,
                                 undefined,
                                 undefined,
                                 [],
                                 0,
-                                20
+                                0
                         ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) => {
+                            console.debug(http.response.result);
                             editDto.locations = http.response.result
                             this.facilityForm.showEditForm(editDto);
                         });

@@ -278,9 +278,11 @@ en:
         positions-geospatial: Geospatial positions
         add-position: Add position
         geometry:  POINT (10 10)
+        update: Update the geospatial position
 fr:
     LocationsForm:
         positions-geospatial: Positions géospatiales
         add-position: Ajouter une position
         geometry: POINT (10 10)
+        update: Mettre à jour la position géospatiale
 </i18n>

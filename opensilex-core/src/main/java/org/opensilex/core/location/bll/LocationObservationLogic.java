@@ -132,6 +132,21 @@ public class LocationObservationLogic {
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
 
+        if(pageSize == 0){
+            searchFilter.setPageSize(10);
+            int currentPage = 0;
+            boolean doContinue = true;
+            List<LocationObservationModel> finalList = new ArrayList<>();
+            while(doContinue){
+                searchFilter.setPage(currentPage);
+                ListWithPagination<LocationObservationModel> nextPage = locationObservationDAO.searchWithPagination(searchFilter);
+                finalList.addAll(nextPage.getList());
+                doContinue = nextPage.getList().size() == 10;
+                currentPage++;
+            }
+            return new ListWithPagination<>(finalList);
+        }
+
         return locationObservationDAO.searchWithPagination(searchFilter);
     }
 

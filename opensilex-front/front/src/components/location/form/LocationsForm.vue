@@ -119,9 +119,9 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {LocationObservationDTO, FacilityGetDTO} from 'opensilex-core/index';
+import {LocationObservationDTO, FacilityUpdateDTO} from 'opensilex-core/index';
 import {PropSync, Ref} from "vue-property-decorator";
-import LocationForm from "../../../components/location/form/LocationForm.vue";
+import WizardForm from "../../../components/common/forms/WizardForm.vue";
 
 @Component({})
 export default class LocationsForm extends Vue {
@@ -130,14 +130,14 @@ export default class LocationsForm extends Vue {
 
     //#region Props
     @PropSync("form")
-    private facility: FacilityGetDTO;
+    private facility: FacilityUpdateDTO;
     //endregion
 
     //#region Refs
     @Ref("validatorRef")
     readonly validatorRef!: any;
     @Ref("locationForm")
-    private readonly locationForm!: LocationForm;
+    private readonly locationForm!: WizardForm;
     //endregion
 
     //#region Data
@@ -219,6 +219,9 @@ export default class LocationsForm extends Vue {
 
     private updatePosition(data) {
         this.index = data.index;
+      //Copy item to prevent the update in the modal from directly modifying "data"
+      let form = JSON.parse(JSON.stringify(data.item));
+      this.locationForm.showEditForm(form);
     }
 
     private deletePosition(data) {

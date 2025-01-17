@@ -176,8 +176,13 @@ public class FacilityAPI {
         if (Objects.nonNull(model.getPublisher())) {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
+
         if (!Objects.isNull(model.getLocationObservationCollection())) {
-            facilityGetDTO.setLocationsFromLocationObservationModel(facilityLogic.getLastFacilityLocationModel(model));
+            LocationObservationModel lastLocationObservation = facilityLogic.getLastFacilityLocationModel(model);
+            if (Objects.nonNull(lastLocationObservation)) {
+                LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(lastLocationObservation);
+                facilityGetDTO.setLastPosition(locationDto);
+            }
         }
 
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();

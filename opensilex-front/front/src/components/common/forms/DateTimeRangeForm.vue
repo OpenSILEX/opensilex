@@ -88,11 +88,6 @@ export default class DateTimeRangeForm extends Vue {
     private canBeInstant: boolean;
     //endregion
 
-    //#region data
-    /*private startRequired: boolean = false;
-    private endRequired: boolean = true;*/
-    //#endregion
-
     //#region hooks
     private mounted(){
         if(!this.canBeInstant){

@@ -20,25 +20,15 @@
 
         <b-form>
             <!-- Dates -->
-            <div class="row">
-                <div class="col">
-                    <opensilex-DateTimeForm
-                            :value.sync="position.startDate"
-                            label="component.common.begin"
-                            :maxDate="position.endDate"
-                            :required="false"
-                    ></opensilex-DateTimeForm>
-                </div>
-                <div class="col">
-                    <opensilex-DateTimeForm
-                            :value.sync="position.endDate"
-                            label="component.common.end"
-                            :minDate="position.startDate"
-                            :required="!!position.geojson || !!position.startDate"
-                            @input="checkGeometryNotSaved"
-                    ></opensilex-DateTimeForm>
-                </div>
-            </div>
+            <opensilex-DateTimeRangeForm
+                :startDate.sync="position.startDate"
+                :endDate.sync="position.endDate"
+                :start_required="false"
+                :end_required="!!position.geojson || !!position.startDate"
+                :isInstant.sync="currentLocationIsInstant"
+                :canBeInstant="true"
+            >
+            </opensilex-DateTimeRangeForm>
 
             <div class="row">
                 <!-- Geometry -->
@@ -143,6 +133,7 @@ export default class LocationsForm extends Vue {
     //#region Data
     private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
     private position: LocationObservationDTO = this.getPositionEmpty();
+    private currentLocationIsInstant: boolean = true;
     private fields = [
         {
             key: "startDate",

@@ -287,7 +287,7 @@ public class FacilityLogic {
         );
 
         if (lastLocationByFacility.isEmpty()) {
-            return new LocationObservationModel();
+            return null;
         } else {
             return lastLocationByFacility.get(0);
         }

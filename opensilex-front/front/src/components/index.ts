@@ -225,6 +225,8 @@ components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
+import DateTimeRangeForm from './common/forms/DateTimeRangeForm.vue'
+components["opensilex-DateTimeRangeForm"] = DateTimeRangeForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;

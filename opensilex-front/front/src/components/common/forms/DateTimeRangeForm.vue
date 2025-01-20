@@ -37,8 +37,6 @@
                     :maxDate="end"
                     :required="startRequired"
                     helpMessage="Event.start-help"
-                    @input="updateRequiredProps()"
-                    @clear="updateRequiredProps()"
                 ></opensilex-DateTimeForm>
             </div>
 
@@ -49,10 +47,7 @@
                     label="Event.end"
                     :minDate="start"
                     :required="endRequired"
-                    @update:value="updateRequiredProps"
                     helpMessage="Event.end-help"
-                    @input="updateRequiredProps()"
-                    @clear="updateRequiredProps()"
                 ></opensilex-DateTimeForm>
             </div>
 
@@ -88,11 +83,6 @@ export default class DateTimeRangeForm extends Vue {
     private canBeInstant: boolean;
     //endregion
 
-    //#region data
-    /*private startRequired: boolean = false;
-    private endRequired: boolean = true;*/
-    //#endregion
-
     //#region hooks
     private mounted(){
         if(!this.canBeInstant){
@@ -117,6 +107,8 @@ export default class DateTimeRangeForm extends Vue {
 
         if (this.is_instant) {
             this.endRequired = true;
+            //Set startDate to undefined so it can't be falsely taken into account
+            this.start = undefined;
         } else {
             if(this.start == undefined && this.end == undefined) {
                 this.startRequired = true;

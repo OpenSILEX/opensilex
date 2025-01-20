@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
@@ -39,6 +39,8 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Props
+    @Prop({default: () => {}})
+    private initForm: (dto: FacilityCreationDTO) => void;
     //endregion
 
     //#region Refs
@@ -114,8 +116,10 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Private methods
+    /* return empty form by default for the facility creation from facilities page
+    and a pre-filled form for creation from an organization or a site */
     private getEmptyForm() {
-        return {
+        let emptyForm = {
             uri: undefined,
             rdf_type: undefined,
             name: undefined,
@@ -127,6 +131,8 @@ export default class FacilityModalForm extends Vue {
             relations: [],
             locations: []
         };
+        this.initForm(emptyForm);
+        return emptyForm;
     }
 
     private callOrganizationFacilityCreation(form: FacilityCreationDTO) {

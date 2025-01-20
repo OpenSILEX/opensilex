@@ -36,12 +36,11 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-import static org.opensilex.core.dataV2.service.DataService.*;
+import static org.opensilex.core.dataV2.service.DataService.CSV_EXTENSION;
 
 /**
  * @author MKourdi
@@ -186,44 +185,6 @@ public class DataAPIV2 {
     ) throws NoSQLInvalidURIException {
         this.batchHistoryService = new BatchHistoryService(user, nosql);
         return new SingleObjectResponse<>(batchHistoryService.deleteBatchHistoryByURI(uri)).getResponse();
-    }
-
-    @GET
-    @Path("/download/{fileName}")
-    @ApiOperation("Download csv file")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "File downloaded successfully"),
-            @ApiResponse(code = 404, message = "File not found or not readable"),
-            @ApiResponse(code = 500, message = "Internal server error")
-    })
-    @ApiProtected
-    @Produces("application/zip")
-    public Response downloadFile(@ApiParam(value = "Filename", example = "file_name_20250116093013", required = true) @PathParam("fileName") String fileName) {
-        this.dataService = new DataService(nosql, sparql, fs, user);
-
-        // Get User home directory
-        String rootPath = System.getProperty(USER_HOME);
-        String filePath = rootPath + File.separator + IMPORTED_CSV_PATH + user.getName() + File.separator + fileName + ZIP_EXTENSION;
-
-        // Construct the full file path
-        File file = new File(filePath);
-
-        // Check if the file exists
-        if (!file.exists() || !file.isFile() || !file.canRead()) {
-            LOGGER.info("File exists: {}, Can read: {}", file.exists(), file.canRead());
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("File not found or not readable: " + fileName)
-                    .build();
-        }
-
-        return Response.ok(dataService.createFileStreamingOutput(file))
-                .header("Content-Disposition", "attachment; filename=" + file.getName())
-                .header("Content-Type", "application/zip")
-                .header("Content-Length", file.length())
-                .header("Cache-Control", "no-cache, no-store, must-revalidate")
-                .header("Content-Transfer-Encoding", "binary")
-                .header("Accept-Ranges", "none")
-                .build();
     }
 
     private String getFileName(FormDataContentDisposition fileDisposition) {

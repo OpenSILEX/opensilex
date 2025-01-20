@@ -26,6 +26,8 @@ import org.opensilex.core.dataV2.factory.DAOFactory;
 import org.opensilex.core.dataV2.model.*;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.document.dal.DocumentDAO;
+import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -56,8 +58,6 @@ import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -89,10 +89,13 @@ public class DataService {
     public static final String UNDERSCORE = "_";
     public static final String DATE_FORMAT = "yyyyMMddHHmmss";
     public static final String EMPTY_CSV_FILE_ERROR_MSG = "No data imported: The CSV file contains no rows to process";
-    public static final String IMPORTED_CSV_PATH = "data/imported-csv-files/";
     public static final String ZIP_EXTENSION = ".zip";
     public static final String CSV_EXTENSION = ".csv";
-    public static final String USER_HOME = "user.home";
+    public static final String ZIP = "zip";
+    public static final String VOCABULARY_OESO_IMPORTED_DATASET = "http://www.opensilex.org/vocabulary/oeso#ImportedDataset";
+    public static final int BUFFER_SIZE = 8192;
+    public static final String TEMP_EXTENSION = ".tmp";
+    public static final String TEMP_FILE_PREFIX = "uploaded_csv_";
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -156,44 +159,49 @@ public class DataService {
         DataLogic dataLogic = this.dataLogic;
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
+        // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
         File tempFile = createTempFile(file);
-        try {
-            validation = importCsvValidationStep(provenance, experiment, new FileInputStream(tempFile), fileName, validation);
+        try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
+            validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
 
             importCsvInsertionStep(validationKey, validation, dataLogic);
 
-            saveCsvFileAsZip(new FileInputStream(tempFile), validation.getBatchId());
+            saveZippedCsvFile(tempFile, validation.getBatchId());
         } finally {
-            if (tempFile.exists() && !tempFile.delete()) {
-                LOGGER.error("Failed to delete temp file: {}", tempFile.getAbsolutePath());
-            }
+            deleteTempFile(tempFile);
         }
         return buildDataCSVValidationDTO(validation);
     }
 
+    private void deleteTempFile(File tempFile) {
+        if (tempFile != null && tempFile.exists()) {
+            if (!tempFile.delete()) {
+                LOGGER.warn("Failed to delete temporary file: {}", tempFile.getAbsolutePath());
+            } else {
+                LOGGER.info("Temporary file deleted: {}", tempFile.getAbsolutePath());
+            }
+        }
+    }
+
     private File createTempFile(InputStream file) throws IOException {
-        File tempFile = File.createTempFile("uploaded_csv_" + user.getName(), ".tmp");
+        File tempFile = File.createTempFile(TEMP_FILE_PREFIX + user.getName(), TEMP_EXTENSION);
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             file.transferTo(fos);
         }
         return tempFile;
     }
 
-    private void saveCsvFileAsZip(InputStream fileContent, String fileName) {
+    private void saveZippedCsvFile(File fileContent, String fileName) throws Exception {
         if (fileContent == null) {
-            throw new IllegalArgumentException("File content cannot be null");
+            LOGGER.error("File content cannot be null");
+            return;
         }
 
-        // Get User home directory
-        String rootPath = System.getProperty(USER_HOME);
-        String outputPath = rootPath + File.separator + IMPORTED_CSV_PATH + user.getName() + File.separator + fileName + ZIP_EXTENSION;
-        File outputFile = new File(outputPath);
-        if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
-            LOGGER.error("Failed to create directory: {}", outputFile.getParent());
-        }
+        File tempZipFile = File.createTempFile(fileName, ZIP_EXTENSION);
 
-        try (BufferedInputStream bis = new BufferedInputStream(fileContent);
-             FileOutputStream fos = new FileOutputStream(outputFile);
+        try (FileInputStream fis = new FileInputStream(fileContent);
+             BufferedInputStream bis = new BufferedInputStream(fis);
+             FileOutputStream fos = new FileOutputStream(tempZipFile);
              BufferedOutputStream bos = new BufferedOutputStream(fos);
              ZipOutputStream zipOut = new ZipOutputStream(bos)) {
 
@@ -201,20 +209,36 @@ public class DataService {
             zipOut.setLevel(Deflater.BEST_COMPRESSION);
 
             // Create ZIP entry with original filename
-            ZipEntry zipEntry = new ZipEntry(fileName + CSV_EXTENSION);
-            zipOut.putNextEntry(zipEntry);
+            zipOut.putNextEntry(new ZipEntry(fileName + CSV_EXTENSION));
 
             // Copy the input stream to the ZIP file
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead;
             while ((bytesRead = bis.read(buffer)) != -1) {
                 zipOut.write(buffer, 0, bytesRead);
-                zipOut.flush();  // Flush after each write
             }
             zipOut.closeEntry();
+            LOGGER.info("CSV successfully zipped: {}", fileName);
         } catch (IOException e) {
             LOGGER.error("Failed to save file: {}", e.getMessage());
+            return;
         }
+
+        // Save the document file
+        saveDocumentFile(fileName, tempZipFile);
+    }
+
+    private void saveDocumentFile(String fileName, File tempZipFile) throws Exception {
+        DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+        DocumentModel documentModel = new DocumentModel();
+        documentModel.setTitle(fileName);
+        documentModel.setFormat(ZIP);
+        documentModel.setPublisher(user.getUri());
+        documentModel.setDeprecated("false");
+        documentModel.setType(new URI(VOCABULARY_OESO_IMPORTED_DATASET));
+
+        documentDAO.createWithFile(documentModel, tempZipFile);
+        LOGGER.info("Document {} successfully saved.", fileName);
     }
 
     /**
@@ -1228,29 +1252,5 @@ public class DataService {
         // UUID unique
         String randomUUID = UUID.randomUUID().toString().substring(0, 8);
         return user.getName() + UNDERSCORE + currentDate + UNDERSCORE + randomUUID;
-    }
-
-    /**
-     * Creates a StreamingOutput for streaming a file to the client.
-     *
-     * @param file The file to be streamed.
-     * @return A StreamingOutput that streams the file content.
-     */
-    public StreamingOutput createFileStreamingOutput(File file) {
-        return output -> {
-            try (InputStream inputStream = new FileInputStream(file)) {
-                byte[] buffer = new byte[8192]; // Buffer for efficient streaming
-                int bytesRead;
-                long totalBytes = 0;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    output.write(buffer, 0, bytesRead);
-                    totalBytes += bytesRead;
-                }
-                output.flush();
-                LOGGER.info("Completed streaming file: {} (transferred: {} bytes)", file.getName(), totalBytes);
-            } catch (IOException e) {
-                throw new WebApplicationException("Error streaming file: " + file.getName(), e);
-            }
-        };
     }
 }

@@ -166,7 +166,7 @@ public class DataService {
 
             importCsvInsertionStep(validationKey, validation, dataLogic);
 
-            saveZippedCsvFile(tempFile, validation.getBatchId());
+            saveZippedCsvFile(tempFile, validation);
         } finally {
             deleteTempFile(tempFile);
         }
@@ -191,12 +191,17 @@ public class DataService {
         return tempFile;
     }
 
-    private void saveZippedCsvFile(File fileContent, String fileName) throws Exception {
+    private void saveZippedCsvFile(File fileContent, DataCSVValidationModel validationModel) throws Exception {
+        if (!validationModel.isValidCSV()) {
+            return;
+        }
+
         if (fileContent == null) {
             LOGGER.error("File content cannot be null");
             return;
         }
 
+        String fileName = validationModel.getBatchId();
         File tempZipFile = File.createTempFile(fileName, ZIP_EXTENSION);
 
         try (FileInputStream fis = new FileInputStream(fileContent);

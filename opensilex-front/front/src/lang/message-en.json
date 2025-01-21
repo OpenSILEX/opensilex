@@ -658,7 +658,14 @@
             "exception": {
                 "siteMustHaveParent": "A site must have at least one parent organization.",
                 "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
-            }
+            },
+            "update": "Update organization",
+            "delete": "Delete organization"
+        },
+        "site": {
+            "update": "Update site",
+            "delete": "Delete site"
+
         },
         "facility": {
             "warning": {

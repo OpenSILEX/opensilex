@@ -710,7 +710,14 @@
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
-            }
+            },
+            "update": "Modifier l'organisation",
+            "delete": "Supprimer l'organisation"
+        },
+        "site": {
+            "update": "Modifier le site",
+            "delete": "Supprimer le site"
+
         },
         "facility": {
             "warning": {

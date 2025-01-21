@@ -89,10 +89,6 @@ public final class GroupDAO {
 
         Expr nameFilter = SPARQLQueryHelper.regexFilter(GroupModel.NAME_FIELD, namePattern);
 
-        SparqlNoProxyFetcher<GroupModel> customFetcher = new SparqlNoProxyFetcher<>(GroupModel.class, sparql);
-
-        //TESTING MY NEW THING ================= todo revert
-
         SparqlSchemaNode<ProfileModel> profileNode = new SparqlSchemaNode<>(
                 ProfileModel.class,
                 GroupUserProfileModel.PROFILE_FIELD,
@@ -118,9 +114,7 @@ public final class GroupDAO {
                 GroupModel.class,
                 null,
                 Collections.singletonList(groupUserProfileNode),
-                //new ArrayList<>(),
                 false
-
         );
 
         SparqlSchema<GroupModel> schema = new SparqlSchema<>(rootNode);
@@ -141,172 +135,7 @@ public final class GroupDAO {
                 pageSize
         );
 
-        //==================================================
-
-        /*ListWithPagination<GroupModel> models = sparql.searchWithPagination(
-                sparql.getDefaultGraph(GroupModel.class),
-                GroupModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    if (nameFilter != null) {
-                        select.addFilter(nameFilter);
-                    }
-                },
-                Collections.emptyMap(),
-                (SPARQLResult result) -> customFetcher.getInstance(result, lang),
-                orderByList,
-                page,
-                pageSize
-        );
-
-        //Load the GroupUserProfileModels associated to groups
-        if(!CollectionUtils.isEmpty(models.getList())){
-            loadGroupUserProfileModelsIntoGroups(models.getList(), lang);
-        }*/
-
         return models;
-    }
-
-    /**
-     *
-     * @param groupModels to modify with loaded GroupUserProfileModels
-     * @param lang user language
-     * @throws Exception
-     */
-    private void loadGroupUserProfileModelsIntoGroups(List<GroupModel> groupModels, String lang) throws Exception {
-        //Fetch GroupUserProfileModel uris
-        SPARQLListFetcher<GroupModel> listFetcher = new SPARQLListFetcher<>(
-                sparql,
-                GroupModel.class,
-                sparql.getDefaultGraph(GroupModel.class),
-                Collections.singleton(GroupModel.USER_PROFILES_FIELD),
-                groupModels
-        );
-        listFetcher.updateModels();
-
-        //Maps to have fast access to GroupUserProfileModel's to update and which groups contain which UserProfiles
-        HashMap<String, List<String>> userProfileUrisPerGroup = new HashMap<>();
-        HashSet<String> encounteredUserProfileUris = new HashSet<>();
-
-        for(GroupModel groupModel : groupModels) {
-            String groupUri = SPARQLDeserializers.getShortURI(groupModel.getUri());
-            if(groupModel.getUserProfiles() != null){
-                List<String> userProfileUris = groupModel.getUserProfiles().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri())).collect(Collectors.toList());
-                userProfileUrisPerGroup.put(groupUri, userProfileUris);
-                encounteredUserProfileUris.addAll(userProfileUris);
-            }else{
-                userProfileUrisPerGroup.put(groupUri, Collections.emptyList());
-
-            }
-        }
-
-        //Complete user profile models basic fields
-        SparqlNoProxyFetcher<GroupUserProfileModel> userProfileFetcher = new SparqlNoProxyFetcher<>(GroupUserProfileModel.class, sparql);
-
-        List<URI> encounteredUserProfileUrisAsUris = new ArrayList<>();
-        for(String stringUri : encounteredUserProfileUris){
-            encounteredUserProfileUrisAsUris.add(new URI(stringUri));
-        }
-        ListWithPagination<GroupUserProfileModel> userProfileModels = sparql.searchWithPagination(
-                sparql.getDefaultGraph(GroupUserProfileModel.class),
-                GroupUserProfileModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, encounteredUserProfileUrisAsUris));
-                },
-                Collections.emptyMap(),
-                (SPARQLResult result) -> userProfileFetcher.getInstance(result, lang),
-                Collections.emptyList(),
-                0,
-                0
-        );
-        //After search generate uri-GroupUserProfileModel map
-        Map<String, GroupUserProfileModel> groupUserProfileModelMap = new HashMap<>();
-        userProfileModels.forEach(e->groupUserProfileModelMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
-
-        //Load Profiles and Accounts into GroupUserProfileModels
-        if(!CollectionUtils.isEmpty(userProfileModels.getList())){
-            loadProfileAndAccountModelsIntoGroupUserProfileModels(userProfileModels.getList(), lang);
-        }
-
-        //Set Groups userProfileModel lists
-        for(GroupModel group : groupModels){
-            if(userProfileUrisPerGroup.get(SPARQLDeserializers.getShortURI(group.getUri())) != null){
-                List<GroupUserProfileModel> newGropUserProfileModels = userProfileUrisPerGroup.get(
-                        SPARQLDeserializers.getShortURI(group.getUri()))
-                        .stream()
-                        .map(groupUserProfileModelMap::get)
-                        .collect(Collectors.toList());
-
-                group.setUserProfiles(newGropUserProfileModels);
-            }
-        }
-    }
-
-    /**
-     *
-     * @param groupUserProfileModels to update
-     * @param lang
-     * @throws Exception
-     */
-    private void loadProfileAndAccountModelsIntoGroupUserProfileModels(List<GroupUserProfileModel> groupUserProfileModels, String lang) throws Exception {
-
-        //Get embedded fields all at once : ProfileModels and AccountModels
-        //Sets to save only distinct uris we need to fetch
-        HashSet<String> encounteredProfileUris = new HashSet<>();
-        HashSet<String> encounteredAccountUris = new HashSet<>();
-
-        //Generate Uri to ProfileModels and AccountModels maps for fast setting of GroupUserProfileModels fields
-        Map<String, ProfileModel> profileMap = new HashMap<>();
-        Map<String, AccountModel> accountMap = new HashMap<>();
-
-        groupUserProfileModels.forEach(userProfileModel -> {
-            if(userProfileModel.getProfile() != null){
-                encounteredProfileUris.add(SPARQLDeserializers.getShortURI(userProfileModel.getProfile().getUri()));
-            }
-
-            if(userProfileModel.getUser() != null){
-                encounteredAccountUris.add(SPARQLDeserializers.getShortURI(userProfileModel.getUser().getUri()));
-            }
-
-        });
-
-        //Load Profile Models
-        if(!CollectionUtils.isEmpty(encounteredProfileUris)){
-            List<URI> encounteredProfileUrisAsUris = new ArrayList<>();
-            for(String stringUri : encounteredProfileUris){
-                encounteredProfileUrisAsUris.add(new URI(stringUri));
-            }
-            //TODO dont invoke profile dao here (put this code in a future logic layer)
-            ListWithPagination<ProfileModel> profileModels = new ProfileDAO(sparql).noProxySearch(encounteredProfileUrisAsUris, lang);
-            profileModels.forEach(e->profileMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
-        }
-
-        //Load AccountModels
-        if(!CollectionUtils.isEmpty(encounteredAccountUris)){
-            List<URI> encounteredAccountUrisAsUris = new ArrayList<>();
-            for(String stringUri : encounteredAccountUris){
-                encounteredAccountUrisAsUris.add(new URI(stringUri));
-            }
-            //TODO dont invoke group dao here (put this code in a future logic layer)
-            ListWithPagination<AccountModel> accountModels = new AccountDAO(sparql).searchWithNoGroupUserProfiles(
-                    null,
-                    encounteredAccountUrisAsUris,
-                    lang,
-                    false,
-                    false,
-                    Collections.emptyList(),
-                    0,
-                    0);
-
-            accountModels.forEach(e->accountMap.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
-        }
-
-        //Set GroupUserProfileModel's Accounts and Profiles with what was just fetched
-        for(GroupUserProfileModel groupUserProfileModel : groupUserProfileModels){
-            groupUserProfileModel.setProfile(profileMap.get(SPARQLDeserializers.getShortURI(groupUserProfileModel.getProfile().getUri())));
-            groupUserProfileModel.setUser(accountMap.get(SPARQLDeserializers.getShortURI(groupUserProfileModel.getUser().getUri())));
-        }
     }
 
     public List<GroupModel> getUserGroups(URI userURI) throws Exception {

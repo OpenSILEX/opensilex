@@ -53,8 +53,6 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaInterface;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.*;
@@ -938,10 +936,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 limit
         );
 
-        modelBuilderSchema.getRoot().completeNodeModels(this, basicSearchResult, lang);
-
-        return basicSearchResult;
-
+        return modelBuilderSchema.resolveSchema(this, basicSearchResult, lang);
     }
 
     public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang,

@@ -29,17 +29,26 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         this.isListField = isListField;
     }
 
+    /**
+     * Completes the models of this node by looking at each child node, organizing them by type to perform one search for each type.
+     * Then recursively performs same operation on child nodes until we reach a node that has no children.
+     *
+     * @param sparql the sparql service, needed to perform basic search for each type found among the child nodes
+     * @param uncastNodeModels The basic models to complete, they can't be initially passed as T's because the parent node can't access this information
+     * @param lang language of string fields returned inside models
+     * @throws Exception
+     */
     public void completeNodeModels(
             SPARQLService sparql,
             List<?> uncastNodeModels,
             String lang
     ) throws Exception {
-        List<T> nodeModels = uncastNodeModels.stream().map(e -> (T) e).toList();
-
-        //If this node has no children then return the list, otherwise perform the recursive call for each child
-        if(CollectionUtils.isEmpty(childNodes)){
+        //If this node has no children or no models were passed, then we have nothing to do here
+        if(CollectionUtils.isEmpty(childNodes) || CollectionUtils.isEmpty(uncastNodeModels)) {
             return;
         }
+
+        List<T> nodeModels = uncastNodeModels.stream().map(e -> (T) e).toList();
 
         //Load all list field's uris that the schema tells us to get, if any
         List<String> listFieldNames = childNodes.stream().filter(SparqlSchemaNode::isListField).map(SparqlSchemaNode::getFieldName).toList();
@@ -196,15 +205,6 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             return ((List<T>)object).stream().map(SPARQLResourceModel::getUri).toList();
         }
         return Collections.singletonList(((T)object).getUri());
-    }
-
-    //@Override
-    public List<SparqlSchemaNode<?>> getChildren() {
-        return childNodes;
-    }
-
-    public Class<T> getObjectClass() {
-        return objectClass;
     }
 
     public String getFieldName() {

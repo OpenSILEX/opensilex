@@ -35,6 +35,9 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -42,6 +45,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -49,6 +53,8 @@ import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -208,6 +214,38 @@ public class DeviceDAO {
                 filter.getPage(),
                 filter.getPageSize());
 
+        /*SparqlSchemaNode<PersonModel> personInChargeNode = new SparqlSchemaNode<>(
+                PersonModel.class,
+                DeviceModel.PERSON_IN_CHARGE_FIELD,
+                new ArrayList<>(),
+                false
+        );*/
+
+        /*SparqlSchemaNode<DeviceModel> rootNode = new SparqlSchemaNode<>(
+                DeviceModel.class,
+                null,
+                //Collections.singletonList(personInChargeNode),
+                new ArrayList<>(),
+                false
+        );
+
+        SparqlSchema<DeviceModel> schema = new SparqlSchema<>(rootNode);
+
+        ListWithPagination<DeviceModel> returnList = sparql.searchWithPaginationUsingSchema(
+                sparql.getDefaultGraph(DeviceModel.class),
+                DeviceModel.class,
+                currentUser.getLanguage(),
+                (SelectBuilder select) -> {
+                    this.addFiltersForSomeSearch(select, filter, false);
+                },
+                Collections.emptyMap(),
+                schema,
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
+        );*/
+
+        var lalalala = sparql.describeMany(sparql.getDefaultGraph(DeviceModel.class), new HashSet<>(returnList.getList().stream().map(SPARQLResourceModel::getUri).toList()));
 
         return returnList;
     }

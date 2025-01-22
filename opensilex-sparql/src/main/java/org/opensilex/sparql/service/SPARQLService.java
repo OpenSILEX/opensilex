@@ -196,6 +196,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return connection.executeDescribeQuery(describe);
     }
 
+    /**
+     * Runs a SPARQL describe query on a URI (fetch all triplets it's mentioned in)
+     *
+     * @param graph to search in to make the request run faster
+     * @param uri of the element we want to describe
+     * @return a list of SPARQLStatements (triplets)
+     * @throws SPARQLException
+     */
     public List<SPARQLStatement> describe(Node graph, URI uri) throws SPARQLException {
         DescribeBuilder describe = new DescribeBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -204,6 +212,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             describe.from(graph.getURI());
         }
         describe.addBind(new ExprFactory().iri(SPARQLDeserializers.getExpandedURI(uri.toString())), uriVar);
+        return executeDescribeQuery(describe);
+    }
+
+    /**
+     * Runs a SPARQL describe query on a set of URI (fetch all triplets they are mentioned in)
+     *
+     * @param graph to search in to make the request run faster
+     * @param uris of the elements we want to describe
+     * @return a list of SPARQLStatements (triplets)
+     * @throws SPARQLException
+     */
+    public List<SPARQLStatement> describeMany(Node graph, Set<URI> uris) throws SPARQLException {
+        DescribeBuilder describe = new DescribeBuilder();
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        describe.addVar(uriVar);
+        if (graph != null) {
+            describe.from(graph.getURI());
+        }
+        SPARQLQueryHelper.addWhereUriValues(describe, uriVar.getVarName(), uris);
         return executeDescribeQuery(describe);
     }
 

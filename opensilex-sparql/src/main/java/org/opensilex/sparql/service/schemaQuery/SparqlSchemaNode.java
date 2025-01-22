@@ -21,12 +21,20 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
     private final String fieldName;
     private final boolean isListField;
     private final List<SparqlSchemaNode<?>> childNodes;
+    private final boolean fetchDynamicRelations;
 
-    public SparqlSchemaNode(Class<T> objectClass, String fieldName, List<SparqlSchemaNode<?>> childNodes, boolean isListField) {
+    public SparqlSchemaNode(
+            Class<T> objectClass,
+            String fieldName,
+            List<SparqlSchemaNode<?>> childNodes,
+            boolean isListField,
+            boolean fetchDynamicRelations
+    ) {
         this.objectClass = objectClass;
         this.fieldName = fieldName;
         this.childNodes = childNodes;
         this.isListField = isListField;
+        this.fetchDynamicRelations = fetchDynamicRelations;
     }
 
     /**
@@ -69,8 +77,10 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         //Organize all distinct uris per type (regardless of field)
         HashMap<String, HashSet<String>> distinctUrisPerTypeName = new HashMap<>();
         HashMap<String, String> typeNamePerFieldName = new HashMap<>();
-        //List to remember the uri values that the list fetcher got, for faster access later
+        //Map to remember the uri values that the list fetcher got, for faster access later
         HashMap<String, HashMap<String, List<String>>> uriValuesPerModelUriPerField = new HashMap<>();
+        //Map to remember the uris per type that we will need to fetch the dynamic relations for
+        HashMap<String, HashSet<String>> distinctUrisToDescribePerTypeName = new HashMap<>();
 
         for(SparqlSchemaNode<?> childNode : childNodes){
             //Identify field, its getter, and the generic type
@@ -94,6 +104,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             HashMap<String, List<String>> uriValuesPerModelUri = new HashMap<>();
 
             for(T nodeModel : nodeModels){
+                //Stuff to do with the general maps
                 List<String> nextUris = childNode.getUrisFromObject(fieldGetter.invoke(nodeModel)).stream().map(URI::toString).toList();
 
                 uriValuesPerModelUri.put(SPARQLDeserializers.getShortURI(nodeModel.getUri()), nextUris);
@@ -102,6 +113,15 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                     distinctUrisPerTypeName.get(genericTypeName).addAll(nextUris);
                 }else{
                     distinctUrisPerTypeName.put(genericTypeName, new HashSet<>(nextUris));
+                }
+
+                //Stuff to do with dynamic relations
+                if(childNode.fetchDynamicRelations){
+                    if(distinctUrisToDescribePerTypeName.containsKey(genericTypeName)){
+                        distinctUrisToDescribePerTypeName.get(genericTypeName).addAll(nextUris);
+                    }else{
+                        distinctUrisToDescribePerTypeName.put(genericTypeName, new HashSet<>(nextUris));
+                    }
                 }
             }
 

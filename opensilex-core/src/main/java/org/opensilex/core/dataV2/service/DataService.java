@@ -156,21 +156,40 @@ public class DataService {
      * @throws Exception if an error occurs during the import
      */
     public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
-        DataLogic dataLogic = this.dataLogic;
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
         // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
         File tempFile = createTempFile(file);
         try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
             validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
-
-            importCsvInsertionStep(validationKey, validation, dataLogic);
-
-            saveZippedCsvFile(tempFile, validation.getBatchId());
+            if (validation.isValidCSV()) {
+                importCsvInsertionStep(validationKey, validation);
+                processAndSaveDocument(fileName, tempFile, validation);
+            }
         } finally {
             deleteTempFile(tempFile);
         }
         return buildDataCSVValidationDTO(validation);
+    }
+
+    /**
+     * Processes and saves a document by creating a zip file from the provided temporary file,
+     * saving the document with the file, and updating the batch history with the saved document.
+     *
+     * @param fileName   the name of the file to be processed and saved
+     * @param tempFile   the temporary file to be zipped and saved
+     * @param validation the validation model containing metadata for processing
+     * @throws Exception if an error occurs during file processing or saving
+     */
+    private void processAndSaveDocument(String fileName, File tempFile, DataCSVValidationModel validation) throws Exception {
+        // create zip file
+        File zipFile = createZipFile(tempFile, validation);
+
+        // Save the document file
+        DocumentModel savedDocument = saveDocumentWithFile(fileName, zipFile, validation);
+
+        // Update batch history
+        updateBatchHistoryWithDocument(validation, savedDocument);
     }
 
     private void deleteTempFile(File tempFile) {
@@ -191,12 +210,13 @@ public class DataService {
         return tempFile;
     }
 
-    private void saveZippedCsvFile(File fileContent, String fileName) throws Exception {
+    private File createZipFile(File fileContent, DataCSVValidationModel validationModel) throws Exception {
         if (fileContent == null) {
             LOGGER.error("File content cannot be null");
-            return;
+            return null;
         }
 
+        String fileName = validationModel.getBatchId();
         File tempZipFile = File.createTempFile(fileName, ZIP_EXTENSION);
 
         try (FileInputStream fis = new FileInputStream(fileContent);
@@ -221,14 +241,15 @@ public class DataService {
             LOGGER.info("CSV successfully zipped: {}", fileName);
         } catch (IOException e) {
             LOGGER.error("Failed to save file: {}", e.getMessage());
-            return;
+            return null;
+        } finally {
+            deleteTempFile(tempZipFile);
         }
 
-        // Save the document file
-        saveDocumentFile(fileName, tempZipFile);
+        return tempZipFile;
     }
 
-    private void saveDocumentFile(String fileName, File tempZipFile) throws Exception {
+    private DocumentModel saveDocumentWithFile(String fileName, File tempZipFile, DataCSVValidationModel validationModel) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
         documentModel.setTitle(fileName);
@@ -236,9 +257,27 @@ public class DataService {
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");
         documentModel.setType(new URI(VOCABULARY_OESO_IMPORTED_DATASET));
+        documentModel.setTargets(Collections.singletonList(validationModel.getBatchHistoryUri()));
+        documentModel.setDate(new Date().toString());
 
-        documentDAO.createWithFile(documentModel, tempZipFile);
+        DocumentModel savedDocument = documentDAO.createWithFile(documentModel, tempZipFile);
         LOGGER.info("Document {} successfully saved.", fileName);
+        return savedDocument;
+    }
+
+    private void updateBatchHistoryWithDocument(DataCSVValidationModel validationModel, DocumentModel savedDocument) throws NoSQLInvalidURIException {
+        if (Objects.nonNull(savedDocument) && Objects.nonNull(savedDocument.getUri())) {
+            BatchHistoryModel batchHistoryModel = batchHistoryDao.get(validationModel.getBatchHistoryUri());
+            if (Objects.nonNull(batchHistoryModel)) {
+                batchHistoryModel.setDocumentUri(savedDocument.getUri());
+                batchHistoryDao.update(batchHistoryModel);
+                LOGGER.info("[updateBatchHistoryWithDocument] Batch history {} successfully updated.", validationModel.getBatchHistoryUri());
+            } else {
+                LOGGER.error("[updateBatchHistoryWithDocument] Batch history {} not found.", validationModel.getBatchHistoryUri());
+            }
+        } else {
+            LOGGER.error("[updateBatchHistoryWithDocument] Document or document URI not found.");
+        }
     }
 
     /**
@@ -272,18 +311,11 @@ public class DataService {
      *
      * @param validationKey the validation key of the csv file
      * @param validation    the DataCSVValidationModel to insert
-     * @param dataLogic     the data logic to use for the insertion
      * @throws Exception if an error occurs during the insertion
      */
-    private void importCsvInsertionStep(String validationKey, DataCSVValidationModel validation, DataLogic dataLogic) throws Exception {
-        if (validation.isValidCSV()) {
-            LOGGER.debug("[importCsvInsertionStep] Start insertion step of {} row(s) ", validation.getNbLinesToImport());
-            handleDataInsertion(dataLogic, validation);
-            validation.setInsertionStep(true);
-            validation.setValidCSV(!validation.hasErrors());
-            removeValidationDataInCacheBy(validationKey);
-            LOGGER.debug("[importCsvInsertionStep] End insertion step.");
-        }
+    private void importCsvInsertionStep(String validationKey, DataCSVValidationModel validation) throws Exception {
+        handleDataInsertion(validation);
+        removeValidationDataInCacheBy(validationKey);
     }
 
     private void removeValidationDataInCacheBy(String key) {
@@ -293,7 +325,7 @@ public class DataService {
     }
 
     private DataCSVValidationModel importCsvValidationStep(URI provenance, URI experiment, InputStream file, String fileName, DataCSVValidationModel validation) throws Exception {
-        if (validation == null) {
+        if (Objects.isNull(validation)) {
             LOGGER.debug("[importCsvValidationStep] Start validation step.");
             validation = validateWholeCsvV2(provenance, experiment, file, fileName);
             validation.setValidationStep(true);
@@ -1148,7 +1180,8 @@ public class DataService {
         }
     }
 
-    private void handleDataInsertion(DataLogic dataLogic, DataCSVValidationModel validation) throws Exception {
+    private void handleDataInsertion(DataCSVValidationModel validation) throws Exception {
+        LOGGER.debug("[importCsvInsertionStep] Start insertion step of {} row(s) ", validation.getNbLinesToImport());
         Instant startTime = Instant.now();
         // Generate batchId
         String batchId = generateBatchId(startTime, validation.getFileName());
@@ -1164,6 +1197,9 @@ public class DataService {
         try {
             dataLogic.createManyFromImport(data, validation);
             batchHistoryDao.create(batchHistoryModel);
+            validation.setBatchHistoryUri(batchHistoryModel.getUri());
+            validation.setInsertionStep(true);
+            validation.setValidCSV(!validation.hasErrors());
         } catch (NoSQLTooLargeSetException ex) {
             validation.setTooLargeDataset(true);
         } catch (MongoBulkWriteException duplicateError) {

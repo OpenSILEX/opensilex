@@ -2,6 +2,7 @@ package org.opensilex.core.dataV2.model;
 
 import org.opensilex.nosql.mongodb.MongoModel;
 
+import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -16,6 +17,7 @@ public class BatchHistoryModel extends MongoModel {
 
     private String batchId;
     private String username;
+    private URI setDocumentUri;
 
     public String getBatchId() {
         return batchId;
@@ -33,7 +35,13 @@ public class BatchHistoryModel extends MongoModel {
         this.username = username;
     }
 
+    public void setDocumentUri(URI uri) {
+        this.setDocumentUri = uri;
+    }
 
+    public URI getDocumentUri() {
+        return setDocumentUri;
+    }
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {
         return new String[]{

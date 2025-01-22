@@ -250,6 +250,10 @@ public class DataService {
     }
 
     private DocumentModel saveDocumentWithFile(File tempZipFile, DataCSVValidationModel validationModel) throws Exception {
+        if (Objects.isNull(tempZipFile)) {
+            LOGGER.error("[saveDocumentWithFile] File cannot be null.");
+            return null;
+        }
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
         documentModel.setTitle(validationModel.getBatchId());
@@ -261,7 +265,7 @@ public class DataService {
         documentModel.setDate(new Date().toString());
 
         DocumentModel savedDocument = documentDAO.createWithFile(documentModel, tempZipFile);
-        LOGGER.info("Document {} successfully saved.", validationModel.getBatchId());
+        LOGGER.info("Document {} successfully saved.", savedDocument.getTitle());
         return savedDocument;
     }
 

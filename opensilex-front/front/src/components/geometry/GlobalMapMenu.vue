@@ -215,20 +215,21 @@ export default class GlobalMapMenu extends Vue {
 
     //#region Events
     private getDetails(item) {
-        this.$opensilex.showLoader();
-        if (this.items.title === "site") {
-            if (!item.properties.address) {
-                this.organizationsService.getSite(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
-                    let result: SiteGetDTO = http.response.result;
+        if(this.items.title === "facility" || this.items.title === "site"){
+            this.$opensilex.showLoader();
+            if (this.items.title === "site") {
+                if (!item.properties.address) {
+                    this.organizationsService.getSite(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
+                        let result: SiteGetDTO = http.response.result;
 
-                    item.properties.address = result.address;
-                    item.properties.facilities = result.facilities
-                })
-            }
-        } else if (this.items.title === "facility") {
-            if (item.properties.address && !item.properties.address.countryName) {
-                this.organizationsService.getFacility(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
-                    let result: FacilityGetDTO = http.response.result;
+                        item.properties.address = result.address;
+                        item.properties.facilities = result.facilities
+                    })
+                }
+            } else if (this.items.title === "facility") {
+                if (item.properties.address && !item.properties.address.countryName) {
+                    this.organizationsService.getFacility(item.properties.uri).then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+                        let result: FacilityGetDTO = http.response.result;
 
                     item.properties.address = result.address;
                 })
@@ -361,11 +362,11 @@ export default class GlobalMapMenu extends Vue {
                     let facilitiesSingle = [...new Set(facilitiesResult.flat())]
 
                     if (this.items.title === "site") {
-                        facilitiesSingle.forEach(facility => {
-                            for (let [k, v] of sitesFacilitiesMap) {
-                                let filter = v.filter(s => s === facility)
+                        facilitiesSingle.forEach(fac => {
+                            for (let [site, facility] of sitesFacilitiesMap) {
+                                let filter = facility.filter(s => s === fac)
                                 if (filter.length > 0) {
-                                    features.push(k)
+                                    features.push(site)
                                 }
                             }
                         })

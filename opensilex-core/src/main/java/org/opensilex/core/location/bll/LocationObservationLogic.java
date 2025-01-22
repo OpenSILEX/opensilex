@@ -29,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -156,10 +157,24 @@ public class LocationObservationLogic {
         searchFilter.setObservationCollection(collection);
         searchFilter.setStartDate(startDate);
         searchFilter.setEndDate(endDate);
-        searchFilter.setHasGeometry(false);
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
+
+        if(pageSize == 0){
+            searchFilter.setPageSize(10);
+            int currentPage = 0;
+            boolean doContinue = true;
+            List<LocationObservationModel> finalList = new ArrayList<>();
+            while(doContinue){
+                searchFilter.setPage(currentPage);
+                ListWithPagination<LocationObservationModel> nextPage = locationObservationDAO.searchWithPagination(searchFilter);
+                finalList.addAll(nextPage.getList());
+                doContinue = nextPage.getList().size() == 10;
+                currentPage++;
+            }
+            return new ListWithPagination<>(finalList);
+        }
 
         return locationObservationDAO.searchWithPagination(searchFilter);
     }
@@ -232,7 +247,7 @@ public class LocationObservationLogic {
         if (Objects.isNull(endDate)) {
             throw new NotAllowedException("endDate cannot be null");
         }
-        if (Objects.nonNull(startDate) && endDate.isBefore(endDate)) {
+        if (Objects.nonNull(startDate) && endDate.isBefore(startDate)) {
             throw new NotAllowedException("endDate (" + endDate + ") cannot be after startDate (" + startDate + ")");
         }
     }
@@ -338,6 +353,48 @@ public class LocationObservationLogic {
         location.getLocation().setGeometry(facilityLocationCorresponding.getLocation().getGeometry()) ;
         return location;
     }
+
+    /**
+     *
+     * @param fromList list of models to create map with if they have a LocationObservationCollection
+     * @param getLocationObservationCollectionFromModel pass a function to tell this method how to fetch LocationObservationCollection from a T
+     * @param optionalEndDate Sites don't have a date, Facilities do
+     * @return a map of T with or without corresponding location
+     * @param <T> the type of the keys of the returned map
+     */
+    public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
+            List<T> fromList,
+            Function<T, LocationObservationCollectionModel> getLocationObservationCollectionFromModel,
+            Instant optionalEndDate
+    ){
+        Map<T, LocationObservationModel> result = new HashMap<>();
+
+        //Get models with locations
+        Map<T, LocationObservationCollectionModel> modelsWithLocationMap = fromList.stream()
+                .filter(model -> getLocationObservationCollectionFromModel.apply(model) != null)
+                .collect(Collectors.toMap(Function.identity(), getLocationObservationCollectionFromModel));
+
+        if (!modelsWithLocationMap.isEmpty()) {
+            List<LocationObservationModel> locationObservationModels = getLastLocationObservation(
+                    new ArrayList<>(modelsWithLocationMap.values()),
+                    true,
+                    optionalEndDate
+            );
+
+            var locationObservationMap = locationObservationModels.stream()
+                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+
+            modelsWithLocationMap.forEach((model, collection) -> {
+                var observation = locationObservationMap.get(collection.getUri());
+                if (Objects.nonNull(observation)) {
+                    result.put(model, observation);
+                }
+            });
+
+        }
+        return result;
+    }
+
     //#endregion
 
     //#region private
@@ -363,7 +420,7 @@ public class LocationObservationLogic {
     }
 
     /**
-     * Checks if the all observation dates are consistency
+     * Checks consistency of all observation dates
      * The object can't have 2 locations in the same time
      *
      * @param models list of location observations
@@ -374,17 +431,15 @@ public class LocationObservationLogic {
         models.forEach(model -> {
             modelsToCompare.remove(model);
 
-            NotAllowedException ex = new NotAllowedException(model.getObservationCollection().toString() + "can't be at 2 different locations in the same time (" + model.getEndDate() + ")");
-
             if (Objects.isNull(model.getStartDate())) {  // Instant
                 modelsToCompare.forEach(m -> {
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().equals(model.getEndDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     } else { // Interval
                         if (model.getEndDate().isBefore(m.getEndDate()) && model.getEndDate().isAfter(m.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     }
                 });
@@ -392,16 +447,26 @@ public class LocationObservationLogic {
                 modelsToCompare.forEach(m -> {
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().isBefore(model.getEndDate()) && m.getEndDate().isAfter(model.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     } else { // Interval
                         if (!m.getEndDate().isBefore(model.getStartDate()) && !model.getEndDate().isBefore(m.getStartDate())) {
-                            throw ex;
+                            notAllowedException(model);
                         }
                     }
                 });
             }
         });
+    }
+
+    private void notAllowedException(LocationObservationModel model) throws NotAllowedException {
+        StringBuilder message = new StringBuilder();
+        message.append(model.getObservationCollection().toString())
+                .append("can't be at 2 different locations in the same time (")
+                .append(model.getEndDate().toString())
+                .append(")");
+
+        throw new NotAllowedException(message.toString());
     }
     //#endregion
 }

@@ -51,7 +51,7 @@ public class LocationObservationDTO {
 
     protected Instant startDate;
 
-    protected Instant endDate;
+    private Instant endDate;
 
     public URI getFeatureOfInterest() {
         return featureOfInterest;

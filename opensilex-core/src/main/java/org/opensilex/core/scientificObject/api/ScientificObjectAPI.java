@@ -18,6 +18,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -32,6 +33,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
@@ -270,10 +272,20 @@ public class ScientificObjectAPI {
                 .setExistenceDate(existenceDate)
                 .setCreationDate(creationDate);
 
-        searchFilter.setPage(page)
-                .setPageSize(pageSize)
-                .setOrderByList(orderByList)
-                .setLang(currentUser.getLanguage());
+            if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
+                DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
+                var targets = dataLogic.getUsedTargets(devices, variables, null, URI.create(Oeso.ScientificObject.getURI()));
+
+                if (targets.isEmpty()) {
+                    return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+                }
+                searchFilter.intersectionOnUris(targets);
+            }
+
+            searchFilter.setPage(page)
+                    .setPageSize(pageSize)
+                    .setOrderByList(orderByList)
+                    .setLang(currentUser.getLanguage());
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = logic.searchScientificObjects(
                 searchFilter,
@@ -382,6 +394,27 @@ public class ScientificObjectAPI {
         ScientificObjectModel soModel = scientificObjectDto.newModel();
         MoveModel moveModel = scientificObjectDto.getMove().toModel();
 
+        URI contextURI = descriptionDto.getExperiment();
+        ExperimentModel experiment = null;
+        validateContextAccess(contextURI);
+
+        URI globalScientificObjectGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        boolean globalCopy = false;
+        if (contextURI == null) {
+            contextURI = globalScientificObjectGraph;
+        } else {
+            globalCopy = true;
+            experiment = experimentDAO.get(contextURI, currentUser);
+            if(experiment == null){
+                throw new NotFoundURIException("Unknown experiment",contextURI);
+            }
+        }
+
+        checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
+
+        URI soType = descriptionDto.getType();
+
+        sparql.startTransaction();
         try {
             URI soURI = soLogic.createScientificObject(
                     soModel,
@@ -431,6 +464,30 @@ public class ScientificObjectAPI {
                     currentUser
             );
 
+            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), descriptionDto.getPublisher(), descriptionDto.getPublicationDate(), currentUser);
+
+            ExperimentModel experiment = null;
+            if (hasExperiment) {
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
+                experiment = experimentDAO.get(contextURI, currentUser);
+            }
+            checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
+
+            if (descriptionDto.getGeometry() != null) {
+                GeospatialModel geospatialModel = new GeospatialModel();
+                geospatialModel.setUri(soURI);
+                geospatialModel.setName(descriptionDto.getName());
+                geospatialModel.setRdfType(soType);
+                geospatialModel.setGraph(contextURI);
+                geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
+                geoDAO.update(geospatialModel, soURI, contextURI);
+            } else {
+                geoDAO.delete(soURI, contextURI);
+            }
+
+            sparql.commitTransaction();
+            nosql.commitTransaction();
+
             return new ObjectUriResponse(soURI).getResponse();
         } catch (DuplicateNameException e) {
             throw new BadRequestException(e.getMessage());
@@ -438,6 +495,47 @@ public class ScientificObjectAPI {
             throw ex;
         }
     }
+
+    /**
+     * Check that new factor levels we want to add to the OS are associated to the experiment. Throw an exception if not.
+     * @param descriptionDto DTO containing the new factor levels and other information about the OS to create or update.
+     * @param experiment Experiment model that is (or will be) linked to the OS.
+     * @throws InvalidValueException if a factor level is not part of the experiment.
+     */
+    private static void checkFactorLevelsBelongsToExperiment(ScientificObjectCreationDTO descriptionDto, ExperimentModel experiment) throws InvalidValueException {
+        if (descriptionDto == null || descriptionDto.getRelations() == null || descriptionDto.getRelations().isEmpty()) {
+            return;
+        }
+        if (experiment == null){
+            throw new InvalidValueException("An OS without experiment can't have factor levels");
+        }
+
+        List<URI> experimentFactorLevels = experiment.getFactors().stream()
+                .flatMap(factor -> factor.getFactorLevels().stream().map(FactorLevelModel::getUri))
+                .toList();
+        List<URI> descriptionFactorLevels = descriptionDto.getRelations().stream()
+                .filter( relation -> SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFactorLevel.getURI()))
+                .map(relation -> {
+                    try {
+                        return new URI(relation.getValue());
+                    } catch (URISyntaxException e) {
+                        throw new InvalidValueException("Invalid factor level URI"+ relation.getValue());
+                    }
+                }).toList();
+        descriptionFactorLevels.forEach(factorLevel -> {
+            if (!experimentFactorLevels.contains(factorLevel)) {
+                throw new InvalidValueException("Following factor level is not part of the experiment: "+factorLevel);
+            }
+        });
+    }
+
+    private static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
+
+    /**
+     * Name of the parameter used into translate-key about scientific object deletion error.
+     * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
+     */
+    private static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
 
     @DELETE
     @Path("{uri}")

@@ -34,6 +34,7 @@
                                     v-if="data.item.endDate === DEFAULT_DATE"
                                     variant="warning"
                                     show
+                                    class="warning-box"
                             >
                                 {{ $t("component.facility.warning.facility-default-date") }}
                             </b-alert>
@@ -55,7 +56,6 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Prop, Ref} from "vue-property-decorator";
-import LocationModalForm from "../../../components/location/form/LocationModalForm.vue";
 import {LocationsService} from "opensilex-core/api/locations.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
@@ -74,8 +74,6 @@ export default class LocationList extends Vue {
     //endregion
 
     //#region Refs
-    @Ref("locationModalForm")
-    private readonly locationModalForm: LocationModalForm;
     //endregion
 
     //#region Data
@@ -133,4 +131,10 @@ export default class LocationList extends Vue {
 
 <style scoped lang="scss">
 
+.warning-box {
+    padding: 0.6rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: fit-content;
+}
 </style>

@@ -48,9 +48,9 @@ public class LocationObservationCollectionLogic {
         return locationObservationCollectionDAO.create(locationObservationCollectionModel);
     }
 
-    public URI getLocationObservationCollection(URI featureOfInterest) {
+    public URI getLocationObservationCollectionURI(URI featureOfInterest) {
         try {
-            return locationObservationCollectionDAO.getCollection(featureOfInterest);
+            return locationObservationCollectionDAO.getCollectionURI(featureOfInterest);
         } catch (Exception e) {
             throw new NotFoundURIException("No location collection found for this URI", featureOfInterest);
         }

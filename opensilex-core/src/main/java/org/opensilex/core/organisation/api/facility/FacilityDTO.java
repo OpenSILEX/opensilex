@@ -34,8 +34,6 @@ public class FacilityDTO extends RDFObjectDTO {
 
     protected FacilityAddressDTO address;
 
-    protected List<LocationObservationDTO> locations;
-
     public String getName() {
         return name;
     }
@@ -66,14 +64,6 @@ public class FacilityDTO extends RDFObjectDTO {
 
     public void setAddress(FacilityAddressDTO address) {
         this.address = address;
-    }
-
-    public List<LocationObservationDTO> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(List<LocationObservationDTO> locations) {
-        this.locations = locations;
     }
 
     public void toModel(FacilityModel model) {

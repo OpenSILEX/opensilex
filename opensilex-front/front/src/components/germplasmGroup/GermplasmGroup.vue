@@ -206,6 +206,7 @@ export default class GermplasmGroup extends Vue {
           this.$opensilex.showSuccessToast(message);
           this.germplasmGroupList.refresh();
           this.afterUpdateGermplasmGroup(form.uri);
+          this.germplasmGroupContentList.refresh();
         })
         .catch(this.$opensilex.errorHandler);
   }

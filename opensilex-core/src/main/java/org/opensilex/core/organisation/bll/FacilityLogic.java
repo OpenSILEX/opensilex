@@ -20,7 +20,6 @@ import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
@@ -46,13 +45,11 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {
@@ -184,6 +181,7 @@ public class FacilityLogic {
     /**
      * Search facilities with detail (sparql) and, if filter is at 'true', only facilities with location (mongo).
      *
+     * @param endDate the date before which the location existed
      * @param currentUser The current user
      * @return a Map of facilities with or without corresponding location
      * @throws Exception If some error is encountered during the search
@@ -234,7 +232,8 @@ public class FacilityLogic {
      * for further information.
      *
      * @param instance the facility to update
-     * @param user     The current user
+     * @param locations location list to update
+     * @param user  The current user
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
@@ -251,11 +250,13 @@ public class FacilityLogic {
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.update(instance);
 
-            if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
-                updateFacilityLocations(session, instance, existingModel, locations);
-            } else if (Objects.isNull(existingModel.getLocationObservationCollection()) && (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress()))) {
-                createFacilityLocations(session, instance, locations);
-            } else if (Objects.nonNull(existingModel.getLocationObservationCollection()) && (Objects.isNull(locations) && Objects.isNull(instance.getAddress()))) {
+            if(Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())){
+                if(Objects.nonNull(existingModel.getLocationObservationCollection())){
+                    updateFacilityLocations(session, instance, existingModel, locations);
+                }else{
+                    createFacilityLocations(session, instance, locations);
+                }
+            }else{
                 deleteFacilityLocations(session, instance);
             }
 
@@ -292,19 +293,6 @@ public class FacilityLogic {
         organizationDAO.invalidateCache();
     }
 
-    public FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList, AccountModel currentUser) {
-        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
-                .setUser(currentUser)
-                .setPattern(pattern)
-                .setOrderByList(orderByList)
-                .setPage(page)
-                .setPageSize(pageSize);
-        if (!organizations.isEmpty()) {
-            filter.setOrganizations(organizations);
-        }
-        return filter;
-    }
-
     /**
      * Gets the last Location Observation model corresponding to the given facility. There is no access check in this method, so please
      * make sure that the user has access to the given facility (by calling {@link #get(URI, AccountModel)}, for example.
@@ -312,7 +300,7 @@ public class FacilityLogic {
      * @param facilityModel The facility
      * @return The Location Observation model
      */
-    public LocationObservationModel getFacilityLocationModel(FacilityModel facilityModel) {
+    public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
         List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
@@ -323,7 +311,7 @@ public class FacilityLogic {
         );
 
         if (lastLocationByFacility.isEmpty()) {
-            return new LocationObservationModel();
+            return null;
         } else {
             return lastLocationByFacility.get(0);
         }

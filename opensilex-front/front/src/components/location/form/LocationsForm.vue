@@ -20,24 +20,15 @@
 
         <b-form>
             <!-- Dates -->
-            <div class="row">
-                <div class="col">
-                    <opensilex-DateTimeForm
-                            :value.sync="position.startDate"
-                            label="component.common.begin"
-                            :maxDate="position.endDate"
-                            :required="false"
-                    ></opensilex-DateTimeForm>
-                </div>
-                <div class="col">
-                    <opensilex-DateTimeForm
-                            :value.sync="position.endDate"
-                            label="component.common.end"
-                            :minDate="position.startDate"
-                            :required="!!position.geojson || !!position.startDate"
-                    ></opensilex-DateTimeForm>
-                </div>
-            </div>
+            <opensilex-DateTimeRangeForm
+                :startDate.sync="position.startDate"
+                :endDate.sync="position.endDate"
+                :start_required="false"
+                :end_required="!!position.geojson || !!position.startDate"
+                :isInstant.sync="currentLocationIsInstant"
+                :canBeInstant="true"
+            >
+            </opensilex-DateTimeRangeForm>
 
             <div class="row">
                 <!-- Geometry -->
@@ -46,6 +37,8 @@
                             :value.sync="position.geojson"
                             label="component.common.geometry"
                             :required="!!position.endDate"
+                            placeholder="LocationsForm.geometry"
+                            @onUpdate="checkGeometryNotSaved"
                     >
                     </opensilex-GeometryForm>
                 </div>
@@ -104,7 +97,7 @@
         <opensilex-WizardForm
                 ref="locationForm"
                 :steps="locationSteps"
-                editTitle="LocationForm.update"
+                editTitle="LocationsForm.update"
                 icon="ik#ik-globe"
                 :static="false"
                 :initForm="getEmptyLocationForm"
@@ -116,9 +109,9 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import {LocationObservationDTO, FacilityGetDTO} from 'opensilex-core/index';
+import {LocationObservationDTO, FacilityUpdateDTO} from 'opensilex-core/index';
 import {PropSync, Ref} from "vue-property-decorator";
-import LocationForm from "../../../components/location/form/LocationForm.vue";
+import WizardForm from "../../../components/common/forms/WizardForm.vue";
 
 @Component({})
 export default class LocationsForm extends Vue {
@@ -127,19 +120,20 @@ export default class LocationsForm extends Vue {
 
     //#region Props
     @PropSync("form")
-    private facility: FacilityGetDTO;
+    private facility: FacilityUpdateDTO;
     //endregion
 
     //#region Refs
     @Ref("validatorRef")
     readonly validatorRef!: any;
     @Ref("locationForm")
-    private readonly locationForm!: LocationForm;
+    private readonly locationForm!: WizardForm;
     //endregion
 
     //#region Data
     private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"
     private position: LocationObservationDTO = this.getPositionEmpty();
+    private currentLocationIsInstant: boolean = true;
     private fields = [
         {
             key: "startDate",
@@ -176,6 +170,30 @@ export default class LocationsForm extends Vue {
     //endregion
 
     //#region Events handlers
+
+    // Check is the two fields have a value
+    private checkGeometryNotSaved() {
+        const hasEndDate = !!this.position.endDate;
+        const hasGeometry = !!this.position.geojson;
+
+        // If there are completed, check if addPosition has been validate or not (button)
+        if (hasEndDate && hasGeometry && !this.positionIsValid()) {
+            console.log("géo not saved")
+            this.$emit("geometryIsNotSaved");
+        }
+    }
+
+    // Simulate validation of addPosition
+    private positionIsValid(): boolean {
+        return (
+            this.facility.locations.some(
+                (location) =>
+                    location.endDate === this.position.endDate &&
+                    location.geojson === this.position.geojson
+            )
+        );
+    }
+
     private addPosition() {
         let isValid = this.validatorRef.validate().then(isValid => {
             return isValid
@@ -185,15 +203,16 @@ export default class LocationsForm extends Vue {
             if (this.position.geojson && this.position.endDate) {
                 this.facility.locations.push(this.position)
                 this.position = this.getPositionEmpty();
+                this.$emit("positionIsValid")
             }
         }
     }
 
     private updatePosition(data) {
         this.index = data.index;
-        //Copy item to prevent the update in the modal from directly modifying "data"
-        let form = JSON.parse(JSON.stringify(data.item));
-        this.locationForm.showEditForm(form);
+      //Copy item to prevent the update in the modal from directly modifying "data"
+      let form = JSON.parse(JSON.stringify(data.item));
+      this.locationForm.showEditForm(form);
     }
 
     private deletePosition(data) {
@@ -216,7 +235,8 @@ export default class LocationsForm extends Vue {
 
     //#region Public methods
     public reset() {
-        this.validatorRef.reset();
+      this.position = this.getPositionEmpty();
+      this.validatorRef.reset();
     }
 
     public validate() {
@@ -246,10 +266,14 @@ export default class LocationsForm extends Vue {
 <i18n>
 en:
     LocationsForm:
-        positions-geospatial: Positions geospatial
+        positions-geospatial: Geospatial positions
         add-position: Add position
+        geometry:  POINT (10 10)
+        update: Update the geospatial position
 fr:
     LocationsForm:
         positions-geospatial: Positions géospatiales
         add-position: Ajouter une position
+        geometry: POINT (10 10)
+        update: Mettre à jour la position géospatiale
 </i18n>

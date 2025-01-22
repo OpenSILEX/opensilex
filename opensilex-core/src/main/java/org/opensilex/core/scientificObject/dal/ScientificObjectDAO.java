@@ -201,6 +201,239 @@ public class ScientificObjectDAO {
         return new ListWithPagination<>(results,searchFilter.getPage(),searchFilter.getPageSize(),total);
     }
 
+    private ThrowingFunction<SPARQLResult,URI,Exception> uriListFromResult() throws Exception{
+
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        return (result) -> uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+
+    }
+
+    private ThrowingFunction<SPARQLResult,ScientificObjectModel,Exception> fromResult(String lang) throws Exception{
+
+        SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        return (result) -> {
+            ScientificObjectModel model = new ScientificObjectModel();
+
+            model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+            model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
+            SPARQLLabel typeLabel = new SPARQLLabel();
+            typeLabel.setDefaultLang(StringUtils.isEmpty(lang) ? OpenSilex.DEFAULT_LANGUAGE : lang);
+            typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+            model.setTypeLabel(typeLabel);
+
+            model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+            model.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
+            model.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+
+            String parentUri = result.getStringValue(SPARQLTreeModel.PARENT_FIELD);
+            if(parentUri != null){
+                model.setParent(new ScientificObjectModel());
+                model.getParent().setUri(new URI(parentUri));
+            }
+            return model;
+        };
+
+    }
+
+    private ThrowingFunction<SPARQLResult,ScientificObjectNodeDTO,Exception> dtoFromResult() throws Exception{
+
+        SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        return (result) -> {
+            ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
+
+            dto.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+            dto.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
+            dto.setTypeLabel(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+
+            dto.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+            dto.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
+            dto.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+
+            return dto;
+        };
+
+    }
+
+    private static final String countField = "count";
+
+    private void addSearchfilter(SelectBuilder builder, boolean isCount, ScientificObjectSearchFilter searchFilter) throws Exception {
+
+        final Node contextNode;
+        if (searchFilter.getExperiment() != null) {
+            contextNode = SPARQLDeserializers.nodeURI(searchFilter.getExperiment());
+        } else {
+            contextNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
+        }
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
+        Var parentVar = makeVar(SPARQLTreeModel.PARENT_FIELD);
+        Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
+        Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
+
+        // Define request var
+        if (!isCount) {
+            builder.addVar(uriVar);
+            builder.addVar(nameVar);
+            builder.addVar(typeVar);
+            builder.addVar(typeNameVar);
+            builder.addVar(parentVar);
+            builder.addVar(creationDateVar);
+            builder.addVar(destructionDateVar);
+        } else {
+            builder.addVar("(COUNT(DISTINCT ?" + SPARQLResourceModel.URI_FIELD + "))", makeVar(countField));
+        }
+
+        // Add label and type in where clause
+        WhereBuilder graphHandler = new WhereBuilder();
+        builder.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
+        graphHandler.addWhere(uriVar, RDFS.label, nameVar);
+        graphHandler.addWhere(uriVar, RDF.type, typeVar);
+
+        // Add rdf type label in where clause
+        WhereHandler optionalTypeLabelHandler = new WhereHandler();
+        optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeVar, RDFS.label, typeNameVar));
+        // Add rdf type label lang filter
+        Locale locale = Locale.forLanguageTag(searchFilter.getLang());
+        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        builder.getWhereHandler().addOptional(optionalTypeLabelHandler);
+
+        // Add creation and destruction date as optional fields
+        graphHandler.addOptional(uriVar, Oeso.isPartOf, parentVar);
+        graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
+        graphHandler.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+
+        // add VALUES clause with included uris
+        if(!CollectionUtils.isEmpty(searchFilter.getUris())){
+            Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getUris());
+            builder.addValueVar(SPARQLResourceModel.URI_FIELD, uriNodes);
+        }
+        // add NOT IN filter with excluded uris
+        if(!CollectionUtils.isEmpty(searchFilter.getExcludedUris())){
+            Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getExcludedUris());
+            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(uriVar, uriNodes);
+            graphHandler.addFilter(notInFilter);
+        }
+
+        builder.addGraph(contextNode, graphHandler);
+
+        // Add pattern filter
+        if (searchFilter.getPattern() != null && !searchFilter.getPattern().trim().isEmpty()) {
+            builder.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, searchFilter.getPattern()));
+        }
+
+        // Add rdf type filter
+        if (searchFilter.getRdfTypes() != null && searchFilter.getRdfTypes().size() > 0) {
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.TYPE_FIELD, searchFilter.getRdfTypes()));
+        }
+
+        // Add parent filter
+        // Only retrieve OS with no parent if getOnlyFetchOsWithNoParent() is true
+
+        if (searchFilter.getOnlyFetchOsWithNoParent() != null && searchFilter.getOnlyFetchOsWithNoParent()) {
+            if (searchFilter.getParentURI() != null) {
+                builder.addGraph(contextNode, uriVar, Oeso.isPartOf, SPARQLDeserializers.nodeURI(searchFilter.getParentURI()));
+            } else {
+                // filter OS which have a parent
+                WhereBuilder whereFilter = new WhereBuilder().addGraph(
+                        contextNode,
+                        uriVar,
+                        Oeso.isPartOf.asNode(),
+                        makeVar("parentURI")
+                );
+                builder.addFilter(SPARQLQueryHelper.getExprFactory().notexists(whereFilter));
+            }
+        } else if (searchFilter.getParentURI() != null) {
+            Path deepPartOf = new P_OneOrMore1(new P_Link(Oeso.isPartOf.asNode()));
+            builder.addGraph(contextNode, uriVar, deepPartOf, SPARQLDeserializers.nodeURI(searchFilter.getParentURI()));
+        }
+
+        // Add factor level filter
+        if (! CollectionUtils.isEmpty(searchFilter.getFactorLevels())) {
+            Var factorLevelVar = makeVar("__factorLevel");
+            for (var factorLevel : searchFilter.getFactorLevels()) {
+                if (searchFilter.getExperiment() != null) {
+                    builder.addGraph(contextNode, uriVar, Oeso.hasFactorLevel, SPARQLDeserializers.nodeURI(factorLevel));
+                } else {
+                    builder.addWhere(uriVar, Oeso.hasFactorLevel, SPARQLDeserializers.nodeURI(factorLevel));
+                }
+            }
+        }
+
+        // Add germplasm filter
+        List<URI> germplasmMulti = searchFilter.getGermplasm();
+        if (! CollectionUtils.isEmpty(germplasmMulti)) {
+            Var germplasmVar = makeVar("__germplasm");
+            if (searchFilter.getExperiment() != null) {
+                builder.addGraph(contextNode, uriVar, Oeso.hasGermplasm, germplasmVar);
+            } else {
+                // in case of no XP
+                builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar);
+            }
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(germplasmVar, germplasmMulti));
+
+        }
+
+        // Add facility filter
+        if (searchFilter.getFacility() != null) {
+            Node facilityNode = SPARQLDeserializers.nodeURI(searchFilter.getFacility());
+            Var directFacility = makeVar("__directFacility");
+            Var parentLinkURI = makeVar("__parentLinkURI");
+            Var parentFacility = makeVar("__parentFacility");
+            Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
+            if (searchFilter.getExperiment() != null) {
+                WhereBuilder graphQuery = new WhereBuilder();
+                graphQuery.addGraph(contextNode, uriVar, Oeso.isHosted, directFacility);
+                graphQuery.addGraph(contextNode, uriVar, subPartOf, parentLinkURI);
+                graphQuery.addGraph(contextNode, parentLinkURI, Oeso.isHosted, parentFacility);
+                builder.addOptional(graphQuery);
+            } else {
+                WhereBuilder graphQuery = new WhereBuilder();
+                graphQuery.addWhere(uriVar, Oeso.isHosted, directFacility);
+                graphQuery.addWhere(uriVar, subPartOf, parentLinkURI);
+                graphQuery.addWhere(parentLinkURI, Oeso.isHosted, parentFacility);
+                builder.addOptional(graphQuery);
+            }
+
+            builder.addFilter(SPARQLQueryHelper.or(
+                    SPARQLQueryHelper.eq("__directFacility", facilityNode),
+                    SPARQLQueryHelper.eq("__parentFacility", facilityNode)
+            ));
+        }
+
+        // Add filter to check if object exists at given date
+        DateDeserializer dateDeserializer = new DateDeserializer();
+        ExprFactory exprFactory = new ExprFactory();
+        if (searchFilter.getExistenceDate() != null) {
+
+            WhereBuilder optionalDestructionDate = new WhereBuilder();
+            optionalDestructionDate.addWhere(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+            builder.addFilter(
+                    exprFactory.and(
+                            exprFactory.le(creationDateVar, dateDeserializer.getNode(searchFilter.getExistenceDate())),
+                            exprFactory.or(
+                                    exprFactory.not(exprFactory.exists(optionalDestructionDate)),
+                                    exprFactory.ge(destructionDateVar, dateDeserializer.getNode(searchFilter.getExistenceDate()))
+                            )
+                    )
+            );
+        }
+
+        // Add filter for creation date
+        if (searchFilter.getCreationDate() != null) {
+            builder.addFilter(exprFactory.eq(creationDateVar, dateDeserializer.getNode(searchFilter.getCreationDate())));
+        }
+    }
+
     public List<URI> getScientificObjectUrisAssociatedWithGermplasms(
             List<URI> experiments,
             URI germplasmGroupUri,

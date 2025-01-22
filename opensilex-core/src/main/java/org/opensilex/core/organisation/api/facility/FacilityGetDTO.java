@@ -41,6 +41,8 @@ public class FacilityGetDTO extends FacilityDTO {
     @JsonProperty("variableGroups")
     protected List<NamedResourceDTO<VariablesGroupModel>> variablesGroups;
 
+    protected LocationObservationDTO lastPosition;
+
     @NotNull
     public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
         return organizations;
@@ -117,15 +119,11 @@ public class FacilityGetDTO extends FacilityDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, LocationObservationModel locationModel) {
-        fromModel(facilityModel);
-        fromLocationModel(locationModel);
+    public LocationObservationDTO getLastPosition() {
+        return lastPosition;
     }
 
-    public void fromLocationModel(LocationObservationModel locationObservationModel) {
-        if (Objects.nonNull(locationObservationModel.getObservationCollection())) {
-            LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(locationObservationModel);
-            setLocations(Collections.singletonList(locationDto));
-        }
+    public void setLastPosition(LocationObservationDTO lastPosition) {
+        this.lastPosition = lastPosition;
     }
 }

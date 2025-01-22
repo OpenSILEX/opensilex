@@ -14,23 +14,15 @@
 <template>
     <ValidationObserver ref="validatorRef">
         <!-- Dates -->
-        <div class="row">
-            <div class="col">
-                <opensilex-DateTimeForm
-                        :value.sync="form.startDate"
-                        label="component.common.begin"
-                        :maxDate="form.endDate"
-                ></opensilex-DateTimeForm>
-            </div>
-            <div class="col">
-                <opensilex-DateTimeForm
-                        :value.sync="form.endDate"
-                        label="component.common.end"
-                        :minDate="form.startDate"
-                        :required="true"
-                ></opensilex-DateTimeForm>
-            </div>
-        </div>
+        <opensilex-DateTimeRangeForm
+            :startDate.sync="form.startDate"
+            :endDate.sync="form.endDate"
+            :start_required="false"
+            :end_required="!!form.geojson || !!form.startDate"
+            :isInstant="locationIsInstant"
+            :canBeInstant="true"
+        >
+        </opensilex-DateTimeRangeForm>
 
         <!-- Geometry -->
         <div class="row">
@@ -69,6 +61,7 @@ export default class LocationForm extends Vue {
     //endregion
 
     //#region Data
+    private locationIsInstant: boolean = true;
     //endregion
 
     //#region Computed
@@ -81,11 +74,12 @@ export default class LocationForm extends Vue {
     //endregion
 
     //#region Public methods
-    public showEditForm(form) {
-    }
     //endregion
 
     //#region Hooks
+    private mounted(){
+        this.locationIsInstant = !this.form.startDate;
+    }
     //endregion
 
     //#region Private methods

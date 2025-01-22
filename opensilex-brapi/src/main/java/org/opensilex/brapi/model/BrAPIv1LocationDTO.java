@@ -11,6 +11,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -154,8 +155,10 @@ class BrAPIv1LocationDTO {
         this.setLocationName(model.getName());
         this.setLocationType(model.getType().toString());
 
-        if (facilityLogic.getFacilityLocationModel(model) != null){
-            Geometry facilityGeometry = facilityLogic.getFacilityLocationModel(model).getLocation().getGeometry();
+        LocationObservationModel locationModel = facilityLogic.getLastFacilityLocationModel(model);
+
+        if (locationModel != null){
+            Geometry facilityGeometry = locationModel.getLocation().getGeometry();
             org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
 
             if (!facilityJtsGeometry.isEmpty()){

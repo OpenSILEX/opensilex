@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
@@ -29,6 +29,7 @@ import {
     FacilityUpdateDTO,
     UserGetDTO
 } from "opensilex-core/index";
+import WizardForm from "../../components/common/forms/WizardForm.vue";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -38,11 +39,13 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Props
+    @Prop({default: () => {}})
+    private initForm: (dto: FacilityCreationDTO) => void;
     //endregion
 
     //#region Refs
     @Ref("facilityForm")
-    private readonly facilityForm!: FacilityModalForm;
+    private readonly facilityForm!: WizardForm;
     //endregion
 
     //#region Data
@@ -78,14 +81,14 @@ export default class FacilityModalForm extends Vue {
                     editDto.publisher = publisher;
                 }).catch(this.$opensilex.errorHandler)
                 .finally(() => {
-                    if (editDto.locations) {
+                  if (editDto) {
                         this.locationsService.searchLocationHistory(
                                 uri,
                                 undefined,
                                 undefined,
                                 [],
                                 0,
-                                20
+                                0
                         ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) => {
                             editDto.locations = http.response.result
                             this.facilityForm.showEditForm(editDto);
@@ -111,8 +114,10 @@ export default class FacilityModalForm extends Vue {
     //endregion
 
     //#region Private methods
+    /* return empty form by default for the facility creation from facilities page
+    and a pre-filled form for creation from an organization or a site */
     private getEmptyForm() {
-        return {
+        let emptyForm = {
             uri: undefined,
             rdf_type: undefined,
             name: undefined,
@@ -124,6 +129,8 @@ export default class FacilityModalForm extends Vue {
             relations: [],
             locations: []
         };
+        this.initForm(emptyForm);
+        return emptyForm;
     }
 
     private callOrganizationFacilityCreation(form: FacilityCreationDTO) {
@@ -150,8 +157,7 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .createFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    console.log("http", http)
-                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("OrganizationFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })
                 .catch((error) => {
@@ -192,7 +198,7 @@ export default class FacilityModalForm extends Vue {
                 .getService<OrganizationsService>("opensilex.OrganizationsService")
                 .updateFacility(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("OrganizationFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                 })
                 .catch(this.$opensilex.errorHandler);
@@ -213,6 +219,7 @@ en:
         form-name-placeholder: Enter organization facility name
         form-type-placeholder: Select organization facility type
         organization-facility-already-exists: Organization facility already exists with this URI
+        geometryIsNotSaved: Geospatial information has been entered but has not been confirmed
 fr:
     OrganizationFacilityForm:
         name: L'installation environnementale
@@ -220,4 +227,5 @@ fr:
         form-name-placeholder: Saisir le nom de l'installation environnementale
         form-type-placeholder: Sélectionner le type de l'installation environnementale
         organization-facility-already-exists: Une installation environnementale existe déjà avec cette URI
+        geometryIsNotSaved: Des informations géospatiales ont été saisies mais n'ont pas été confirmées
 </i18n>

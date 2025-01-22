@@ -55,9 +55,6 @@ export default class LocationModalForm extends Vue {
     //endregion
 
     //#region Public methods
-    public showEditForm(form) {
-        this.locationForm.showEditForm(form);
-    }
     //endregion
 
     //#region Hooks

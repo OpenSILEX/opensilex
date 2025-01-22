@@ -146,7 +146,7 @@ public class FacilityAPI {
         FacilitySearchFilter searchFilter = new FacilitySearchFilter();
         searchFilter.setPageSize(0);
 
-        List<FacilityModel> facilities = facilityLogic.search(searchFilter.setUser(currentUser)).getList();
+        List<FacilityModel> facilities = facilityLogic.minimalSearch(searchFilter.setUser(currentUser)).getList();
 
         List<NamedResourceDTO> dtoList = facilities.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
@@ -176,8 +176,13 @@ public class FacilityAPI {
         if (Objects.nonNull(model.getPublisher())) {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }
+
         if (!Objects.isNull(model.getLocationObservationCollection())) {
-            facilityGetDTO.fromLocationModel(facilityLogic.getFacilityLocationModel(model));
+            LocationObservationModel lastLocationObservation = facilityLogic.getLastFacilityLocationModel(model);
+            if (Objects.nonNull(lastLocationObservation)) {
+                LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(lastLocationObservation);
+                facilityGetDTO.setLastPosition(locationDto);
+            }
         }
 
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
@@ -227,7 +232,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
-        FacilitySearchFilter filter = facilityLogic.createSearchFilter(pattern, organizations, page, pageSize, orderByList, currentUser);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
 
@@ -255,7 +260,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
-        FacilitySearchFilter filter = facilityLogic.createSearchFilter(pattern, organizations, page, pageSize, orderByList, currentUser);
+        FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.minimalSearch(filter);
 
@@ -364,5 +369,18 @@ public class FacilityAPI {
         });
 
         return new PaginatedListResponse<>(facilityDTOList).getResponse();
+    }
+
+    private FacilitySearchFilter createSearchFilter(String pattern, List<URI> organizations, int page, int pageSize, List<OrderBy> orderByList) {
+        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
+                .setUser(currentUser)
+                .setPattern(pattern)
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        return filter;
     }
 }

@@ -163,7 +163,7 @@
       */
 
 
-     private Map<URI,URI> sparqlAddObservationCollectionToFacilityList(List<GeospatialModel> facilityPositionList) throws OpensilexModuleUpdateException, SPARQLException {
+     private Map<URI,URI> sparqlAddObservationCollectionToFacilityList(List<GeospatialModel> facilityPositionList) throws OpensilexModuleUpdateException {
 
          SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
          sparql = factory.provide();

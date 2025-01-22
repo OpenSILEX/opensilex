@@ -15,7 +15,7 @@
                 )
               "
               @click="editOrganization()"
-              label="OrganizationDetail.edit"
+              label="component.organization.update"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
@@ -25,7 +25,7 @@
                 )
               "
               @click="deleteOrganization()"
-              label="OrganizationDetail.delete"
+              label="component.organization.delete"
               :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -91,7 +91,7 @@
         ref="organizationForm"
         component="opensilex-OrganizationForm"
         createTitle="OrganizationDetail.add"
-        editTitle="OrganizationDetail.update"
+        editTitle="component.organization.update"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
@@ -218,11 +218,8 @@ export default class OrganizationDetail extends Vue {
 
 <i18n>
 en:
-  add: Add organization
-  update: Update organization
-  edit: Edit organization
-  delete: Delete organization
   OrganizationDetail:
+    add: Add organization
     parentOrganizations: Parent organizations
     groups:
       label: "Groups"
@@ -233,11 +230,8 @@ en:
     experiments:
       label: "Experiments"
 fr:
-  add: Ajouter une organisation
-  update: Modifier l'organisation
-  edit: Editer l'organisation
-  delete: Supprimer l'organisation
   OrganizationDetail:
+    add: Ajouter une organisation
     parentOrganizations: Organisations parentes
     groups:
       label: "Groupes"

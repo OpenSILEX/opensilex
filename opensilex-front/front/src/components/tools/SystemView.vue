@@ -80,7 +80,7 @@
               :fields="modulesFields"
               :showCount="false"
               :withPagination="false"
-              :pageSize="30"
+              :fixedPageSize="30"
             >
             </opensilex-TableView>
           </template>

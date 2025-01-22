@@ -164,7 +164,7 @@ public class DataService {
             validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
             if (validation.isValidCSV()) {
                 importCsvInsertionStep(validationKey, validation);
-                processAndSaveDocument(fileName, tempFile, validation);
+                processAndSaveDocument(tempFile, validation);
             }
         } finally {
             deleteTempFile(tempFile);
@@ -176,20 +176,22 @@ public class DataService {
      * Processes and saves a document by creating a zip file from the provided temporary file,
      * saving the document with the file, and updating the batch history with the saved document.
      *
-     * @param fileName   the name of the file to be processed and saved
      * @param tempFile   the temporary file to be zipped and saved
      * @param validation the validation model containing metadata for processing
      * @throws Exception if an error occurs during file processing or saving
      */
-    private void processAndSaveDocument(String fileName, File tempFile, DataCSVValidationModel validation) throws Exception {
+    private void processAndSaveDocument(File tempFile, DataCSVValidationModel validation) throws Exception {
         // create zip file
         File zipFile = createZipFile(tempFile, validation);
 
         // Save the document file
-        DocumentModel savedDocument = saveDocumentWithFile(fileName, zipFile, validation);
+        DocumentModel savedDocument = saveDocumentWithFile(zipFile, validation);
 
         // Update batch history
         updateBatchHistoryWithDocument(validation, savedDocument);
+
+        // Delete the temporary zip file
+        deleteTempFile(zipFile);
     }
 
     private void deleteTempFile(File tempFile) {
@@ -242,17 +244,15 @@ public class DataService {
         } catch (IOException e) {
             LOGGER.error("Failed to save file: {}", e.getMessage());
             return null;
-        } finally {
-            deleteTempFile(tempZipFile);
         }
 
         return tempZipFile;
     }
 
-    private DocumentModel saveDocumentWithFile(String fileName, File tempZipFile, DataCSVValidationModel validationModel) throws Exception {
+    private DocumentModel saveDocumentWithFile(File tempZipFile, DataCSVValidationModel validationModel) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
-        documentModel.setTitle(fileName);
+        documentModel.setTitle(validationModel.getBatchId());
         documentModel.setFormat(ZIP);
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");
@@ -261,7 +261,7 @@ public class DataService {
         documentModel.setDate(new Date().toString());
 
         DocumentModel savedDocument = documentDAO.createWithFile(documentModel, tempZipFile);
-        LOGGER.info("Document {} successfully saved.", fileName);
+        LOGGER.info("Document {} successfully saved.", validationModel.getBatchId());
         return savedDocument;
     }
 

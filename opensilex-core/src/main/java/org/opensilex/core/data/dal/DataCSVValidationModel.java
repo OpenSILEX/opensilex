@@ -64,6 +64,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private String validationKey;
     private String fileName;
     private String batchId;
+    private URI batchHistoryUri;
 
 
     /**
@@ -515,5 +516,13 @@ public class DataCSVValidationModel extends CSVValidationModel {
 
     public String getBatchId() {
         return batchId;
+    }
+
+    public void setBatchHistoryUri(URI uri) {
+        this.batchHistoryUri = uri;
+    }
+
+    public URI getBatchHistoryUri() {
+        return batchHistoryUri;
     }
 }

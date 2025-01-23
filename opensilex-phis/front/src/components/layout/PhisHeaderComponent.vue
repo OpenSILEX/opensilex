@@ -1,5 +1,5 @@
 <template>
-  <opensilex-DefaultHeaderComponent>
+  <opensilex-DefaultHeaderComponent @uriGlobalSearch="$emit('uriGlobalSearch')">
     <template v-slot:headerLogo>
         <img
             v-bind:src="$opensilex.getResourceURI('images/logo-phis.svg')"

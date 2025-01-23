@@ -177,7 +177,8 @@ export default class App extends Vue {
   //#region: EventHandlers
 
   private handleUriGlobalSearchPressed(){
-    this.toggleUriSearchBox();
+    console.debug("handling");
+      this.toggleUriSearchBox();
   }
 
   private handleHideUriSearch(){
@@ -287,6 +288,10 @@ main {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   z-index: 1030;
+}
+
+.uriLinkGlobalUriSearchRes a {
+    color: #007bff;
 }
 
 .notificationMessageContainer{

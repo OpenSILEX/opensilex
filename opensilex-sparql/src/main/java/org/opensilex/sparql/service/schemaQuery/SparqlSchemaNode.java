@@ -10,6 +10,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLStatement;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -132,6 +134,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         // to do this iterate over children filling this map as each type is visited for the first time
         //In same iteration perform next recursive step on each child node
         HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType = new HashMap<>();
+        //In the same way we will fetch all dynamic relations per type when the type is visited for the first time,
+        //then complete the models with correct relations after
+        HashMap<String, HashMap<String, List<SPARQLStatement>>> relationsPerUriPerType = new HashMap<>();
 
         for(SparqlSchemaNode<?> childNode : childNodes){
             String typeName = typeNamePerFieldName.get(childNode.getFieldName());
@@ -146,6 +151,18 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                 ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
                 calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
             }
+            //Load relations of this type if they were not already loaded
+            if(childNode.fetchDynamicRelations && !relationsPerUriPerType.containsKey(typeName)){
+                HashMap<String, List<SPARQLStatement>> relationsPerUri = new HashMap<>();
+
+                childNode.runBasicSearchFunction(
+                        distinctUrisPerTypeName.get(typeName),
+                        sparql,
+                        lang
+                ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+                calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
+            }
+
             //Perform recursive call on child to complete its models
             childNode.completeNodeModels(
                     sparql,

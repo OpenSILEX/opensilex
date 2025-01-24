@@ -70,16 +70,16 @@ org.opensilex.migration.GraphAndCollectionMigration
 - To be resolvable, the `Class` must exist in one OpenSILEX module (embedded or custom module).
 
 
-| Date       | Name (id)                                                                  | Tag          | Commit ID | 
-|------------|----------------------------------------------------------------------------|--------------|-----------|
-| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 |              | 46a27611  |
-| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |              |           |                                                                          
-| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
-| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
-| 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
-| 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3        |           |
-| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
-| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b> | 1.3.0 |   |
+| Date       | Name (id)                                                                  | Tag           | Commit ID | 
+|------------|----------------------------------------------------------------------------|---------------|-----------|
+| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 |               | 46a27611  |
+| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |               |           |                                                                          
+| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5  |           |                                                                          
+| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7    | 8ed0303a  |
+| 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0         | 613f6d59  |
+| 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3         |           |
+| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0         | 2e4f0cbe  |                                                                            |              |           |
+| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b> | 1.4.0         | d7ea8504  |
 
 # Descriptions
 

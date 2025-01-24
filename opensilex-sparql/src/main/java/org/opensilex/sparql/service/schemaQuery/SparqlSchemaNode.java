@@ -155,11 +155,10 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             if(childNode.fetchDynamicRelations && !relationsPerUriPerType.containsKey(typeName)){
                 HashMap<String, List<SPARQLStatement>> relationsPerUri = new HashMap<>();
 
-                childNode.runBasicSearchFunction(
-                        distinctUrisPerTypeName.get(typeName),
-                        sparql,
-                        lang
-                ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+                childNode.runRelationFetchingFunction(
+                        distinctUrisToDescribePerTypeName.get(typeName),
+                        sparql
+                ).forEach(e -> relationsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
                 calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
             }
 
@@ -242,6 +241,16 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             return ((List<T>)object).stream().map(SPARQLResourceModel::getUri).toList();
         }
         return Collections.singletonList(((T)object).getUri());
+    }
+
+    private List<SPARQLStatement> runRelationFetchingFunction(
+            HashSet<String> uris,
+            SPARQLService sparql
+    ) throws Exception {
+        return sparql.describeMany(
+                sparql.getDefaultGraph(objectClass),
+                new HashSet<>(uris.stream().map(URI::create).toList())
+        );
     }
 
     public String getFieldName() {

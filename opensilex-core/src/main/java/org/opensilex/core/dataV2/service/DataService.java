@@ -96,6 +96,8 @@ public class DataService {
     public static final int BUFFER_SIZE = 8192;
     public static final String TEMP_EXTENSION = ".tmp";
     public static final String TEMP_FILE_PREFIX = "uploaded_csv_";
+    public static final int NB_THREADS = 5;
+
 
     //Private stored data
     private Map<URI, URI> rootDeviceTypes = null;
@@ -518,9 +520,9 @@ public class DataService {
                                            DAOContext daoContext, DataCSVValidationModel csvValidation) throws InterruptedException {
 
         List<Future<DataCSVValidationModel>> futures = new ArrayList<>();
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newFixedThreadPool(NB_THREADS);
         int totalRows = allRows.size();
-        int batchSize = 2500;
+        int batchSize = determineBatchSize(totalRows);
         int numberOfBatches = (int) Math.ceil((double) totalRows / batchSize);
         AtomicInteger nbError = new AtomicInteger();
         AtomicBoolean stopProcessing = new AtomicBoolean(false);
@@ -557,6 +559,10 @@ public class DataService {
                 executor.shutdownNow();
             }
         }
+    }
+
+    private int determineBatchSize(int totalRows) {
+        return Math.max(200, totalRows / NB_THREADS);
     }
 
 

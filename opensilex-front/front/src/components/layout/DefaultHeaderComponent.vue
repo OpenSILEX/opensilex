@@ -67,10 +67,10 @@
         </div>
         <!--Uri global search-->
         <opensilex-Button
-          @click="$emit('uriGlobalSearch')"
+          @click="EventBus.$emit('uriGlobalSearch')"
           :label="$t('component.header.uriSearchHoverMessage')"
           class="burgerMenu-searchIcon ik ik-search"
-          :class="{ 'selected-searchicon': searchBoxIsActive }"
+          :class="{ 'selected-searchicon': uriSearchBoxVisible }"
           icon="ik-search"
         ></opensilex-Button>
         <div>
@@ -126,9 +126,9 @@
             <!--Uri global search-->
             <b-button
               class="searchicon"
-              :class="{ 'selected-searchicon': searchBoxIsActive }"
+              :class="{ 'selected-searchicon': uriSearchBoxVisible }"
               :title="$t('component.header.uriSearchHoverMessage')"
-              @click="$emit('uriGlobalSearch')"
+              @click="EventBus.$emit('uriGlobalSearch')"
             >
               URI
               <i class="icon ik ik-search"></i>
@@ -189,6 +189,7 @@ import Vue from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
+import {EventBus} from "../../main";
 
 
 @Component
@@ -202,14 +203,19 @@ export default class DefaultHeaderComponent extends Vue {
   title: any;
   description: any;
 
-  @Prop()
-  searchBoxIsActive: boolean;
+  get EventBus(){
+    return EventBus;
+  }
 
   /**
    * Return the current connected user
    */
   get user() {
     return this.$store.state.user;
+  }
+
+  get uriSearchBoxVisible(){
+    return this.$store.state.uriSearchBoxVisible;
   }
 
   /**

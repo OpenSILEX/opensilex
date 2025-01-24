@@ -25,8 +25,7 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -240,8 +239,8 @@ public class DeviceDAO {
         return deviceList;
     }
 
-    private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
-        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date, null, null);
+    private void appendDateFilters(SelectBuilder select, LocalDate date) throws Exception {
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, date, null, null);
         select.addFilter(dateRangeExpr);
     }
     
@@ -505,9 +504,8 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                OrganizationDAO orgaDAO = new OrganizationDAO(sparql);
-                FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
-                facility = infraDAO.get(facilityUri, currentUser);
+                FacilityLogic infraLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+                facility = infraLogic.get(facilityUri, currentUser);
             }
         }
 

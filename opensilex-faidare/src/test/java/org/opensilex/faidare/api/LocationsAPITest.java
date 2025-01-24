@@ -80,7 +80,7 @@ public class LocationsAPITest extends FaidareAPITest {
         ));
 
         // Check geometry
-        Geometry facilityGeometry = geoJsonToGeometry(facilityCreationDTO.getGeometry());
+        Geometry facilityGeometry = geoJsonToGeometry(facilityCreationDTO.getLocations().get(0).getGeojson());
         org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
         Point centroid = facilityJtsGeometry.getCentroid();
         assertEquals(centroid.getX(), actual.get("longitude").asDouble());

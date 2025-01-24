@@ -22,14 +22,14 @@
                 v-if="
                 user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
                 @click="editSite()"
-                label="SiteDetail.edit"
+                label="component.site.update"
                 :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
                 v-if="
                 user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
                 @click="deleteSite()"
-                label="SiteDetail.delete"
+                label="component.site.delete"
                 :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -216,7 +216,7 @@ export default class SiteDetail extends Vue {
 <i18n>
 en:
   add: Add site
-  edit: Edit site
+  edit: Update site
   delete: Delete site
   SiteDetail:
     organizations: Organizations
@@ -225,8 +225,8 @@ en:
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   add: Ajouter un site
-  edit: Modifier un site
-  delete: Supprimer un site
+  edit: Modifier le site
+  delete: Supprimer le site
   SiteDetail:
     facilities: Installations environnementales
     groups: Groupes

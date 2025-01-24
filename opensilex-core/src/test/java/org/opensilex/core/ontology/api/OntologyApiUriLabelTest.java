@@ -35,10 +35,7 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
@@ -96,6 +93,7 @@ public class OntologyApiUriLabelTest extends AbstractMongoIntegrationTest {
         FacilityCreationDTO facility = new FacilityCreationDTO();
         facility.setUri(uri);
         facility.setName(label);
+        facility.setLocations(new ArrayList<>());
         assertEquals(Response.Status.CREATED.getStatusCode(), getJsonPostResponseAsAdmin(target(FacilityAPI.PATH), facility).getStatus());
     }
 

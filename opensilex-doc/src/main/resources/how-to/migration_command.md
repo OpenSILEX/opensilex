@@ -70,16 +70,17 @@ org.opensilex.migration.GraphAndCollectionMigration
 - To be resolvable, the `Class` must exist in one OpenSILEX module (embedded or custom module).
 
 
-| Date       | Name (id)                                                                  | Tag          | Commit ID | 
-|------------|----------------------------------------------------------------------------|--------------|-----------|
-| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 |              | 46a27611  |
-| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |              |           |                                                                          
-| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
-| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
-| 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
-| 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                   | 1.2.3        |           |
-| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                    | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
-| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b> | 1.3.0 |   |
+| Date       | Name (id)                                                                               | Tag          | Commit ID | 
+|------------|-----------------------------------------------------------------------------------------|--------------|-----------|
+| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                              |              | 46a27611  |
+| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>                     |              |           |                                                                          
+| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b>              | 1.0.0-rc+6.5 |           |                                                                          
+| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>                         | 1.0.0-rc+7   | 8ed0303a  |
+| 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>                     | 1.0.0        | 613f6d59  |
+| 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                                | 1.2.3        |           |
+| 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                                 | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
+| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b>      | 1.3.0 |   |
+| 2024/11/04 | <b> org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel </b> | 1.3.0 |   |
 
 # Descriptions
 
@@ -205,7 +206,15 @@ Additionally, it removes the `oeso-ext` graph, which has been renamed to `oeso-p
 This migration refactors site locations with the new location model:
 
 - In RDF4J, add ObservationCollection properties for each Site with address.
-- In MongoDB, get sites from the Geospatial collection and copy them to the new Location collection with the new model and observationCollection URI.
+- In MongoDB, get sites from the Geospatial collection and copy them to the new Location collection with the new model and observationCollection URI.## org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel
+
+## org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel
+
+### Description
+This migration refactors facility locations with the new location model:
+
+- In RDF4J, add ObservationCollection properties for each facility with address or spatial coordinates.
+- In MongoDB, get facilities from the Geospatial collection and copy them to the new Location collection with the new model and observationCollection URI. For spatial coordinates not from an address, a default date is added (01/01/1970).
 
 # Create an update command (For developers)
 

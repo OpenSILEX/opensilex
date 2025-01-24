@@ -24,7 +24,7 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
@@ -310,8 +310,8 @@ public class BrAPIv1ObservationUnitDTO {
     }
 
     public static BrAPIv1ObservationUnitDTO fromModel(
-            ScientificObjectModel model, 
-            FacilityDAO facilityDAO, 
+            ScientificObjectModel model,
+            FacilityLogic facilityLogic,
             AccountModel currentUser, 
             DataDAO dataDAO, 
             ExperimentModel experimentModel, 
@@ -335,7 +335,7 @@ public class BrAPIv1ObservationUnitDTO {
         if (hosts.size() == 1){
             for (SPARQLModelRelation host:hosts) {
                 observationUnit.setLocationDbId(host.getValue());
-                observationUnit.setLocationName(facilityDAO.get(new URI(host.getValue()), currentUser).getName());
+                observationUnit.setLocationName(facilityLogic.get(new URI(host.getValue()), currentUser).getName());
             }
         }
 

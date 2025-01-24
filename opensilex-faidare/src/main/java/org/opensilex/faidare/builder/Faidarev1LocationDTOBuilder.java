@@ -13,10 +13,10 @@ package org.opensilex.faidare.builder;
 import com.mongodb.client.model.geojson.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Faidarev1LocationDTOBuilder {
-    private final FacilityDAO facilityDAO;
+    private final FacilityLogic facilityLogic;
     private final OrganizationDAO organizationDAO;
     private static final List<Countries.CountryMap> countriesList;
 
@@ -42,8 +42,8 @@ public class Faidarev1LocationDTOBuilder {
         }
     }
 
-    public Faidarev1LocationDTOBuilder(FacilityDAO facilityDAO, OrganizationDAO organizationDAO) {
-        this.facilityDAO = facilityDAO;
+    public Faidarev1LocationDTOBuilder(FacilityLogic facilityLogic, OrganizationDAO organizationDAO) {
+        this.facilityLogic = facilityLogic;
         this.organizationDAO = organizationDAO;
     }
 
@@ -55,8 +55,8 @@ public class Faidarev1LocationDTOBuilder {
                 .setLocationType(SPARQLDeserializers.getExpandedURI(model.getType()));
 
 
-        if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){
-            Geometry facilityGeometry = facilityDAO.getFacilityGeospatialModel(model.getUri()).getGeometry();
+        if (facilityLogic.getLastFacilityLocationModel(model) != null){
+            Geometry facilityGeometry = facilityLogic.getLastFacilityLocationModel(model).getLocation().getGeometry();
 
             org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeoJsonReader().read(facilityGeometry.toJson());
 

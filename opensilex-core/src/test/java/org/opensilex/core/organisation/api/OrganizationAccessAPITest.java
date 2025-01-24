@@ -181,6 +181,8 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private FacilityCreationDTO getFacilityCreationDTO(String name, URI orgURI) {
         FacilityCreationDTO facilityCreationDTO = new FacilityCreationDTO();
         facilityCreationDTO.setName(name);
+        facilityCreationDTO.setLocations(new ArrayList<>());
+
         if (Objects.nonNull(orgURI)) {
             facilityCreationDTO.setOrganizations(Collections.singletonList(orgURI));
         } else {

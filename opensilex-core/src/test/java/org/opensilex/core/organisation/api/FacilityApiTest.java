@@ -9,7 +9,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.organisation.api.facility.*;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -23,6 +25,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.*;
 
 import static junit.framework.TestCase.*;
@@ -46,6 +49,11 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         }
     }
 
+    protected final ServiceDescription getFacilities = new ServiceDescription(
+            FacilityAPI.class.getMethod("getFacilitiesWithGeometry", String.class),
+            PATH+"/with_location"
+    );
+
     protected final static String UPDATE_PATH = PATH;
     protected final static String DELETE_PATH = PATH + "/{uri}";
 
@@ -54,6 +62,9 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     // TypeReference used to parse Response into a List of FacilityGetDTO
     protected static final TypeReference<PaginatedListResponse<FacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
     protected static final TypeReference<SingleObjectResponse<FacilityGetDTO>> singleObjectResponseTypeReference = new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {};
+
+    public FacilityApiTest() throws NoSuchMethodException {
+    }
 
     @Before
     public void createOrganization() throws Exception {
@@ -72,6 +83,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         List<URI> orgaUris = new ArrayList<>();
         orgaUris.add(orga.getUri());
         facility.setOrganizations(orgaUris);
+        facility.setLocations(new ArrayList<>());
         return facility;
     }
 
@@ -89,7 +101,18 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityCreationDTO dto = new FacilityCreationDTO();
         dto.setName(name);
         dto.setAddress(address);
-        dto.setGeometry(geoJson);
+
+        List<LocationObservationDTO> locations = new ArrayList<>();
+
+        if(Objects.nonNull(geoJson)) {
+            LocationObservationDTO location = new LocationObservationDTO();
+            location.setGeojson(geoJson);
+            location.setEndDate(Instant.parse("2021-09-08T00:00:00.00Z"));
+            locations.add(location);
+        }
+
+        dto.setLocations(locations);
+
         return dto;
     }
 
@@ -97,7 +120,18 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityUpdateDTO dto = new FacilityUpdateDTO();
         dto.setUri(uri);
         dto.setAddress(address);
-        dto.setGeometry(geoJson);
+
+        List<LocationObservationDTO> locations = new ArrayList<>();
+
+        if(Objects.nonNull(geoJson)) {
+            LocationObservationDTO location = new LocationObservationDTO();
+            location.setGeojson(geoJson);
+            location.setEndDate(Instant.parse("2021-09-08T12:00:00+01:00"));
+            locations.add(location);
+        }
+
+        dto.setLocations(locations);
+
         return dto;
     }
 
@@ -167,7 +201,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME, Collections.singletonList(facility1.getUri()));
 
-        results = results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
 
@@ -186,18 +220,20 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
                 "France",
                 "Montpellier",
                 "34000",
-                "Occitanie",
-                "2 place Pierre Viala"
+                null,
+                "2 place pierre viala"
         ), null);
         Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
-        URI createdUri = new URI(objectUriResponse.getResult());
 
-        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
-        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNotNull(singleObjectResponse.getResult().getGeometry());
-        assertNotNull(singleObjectResponse.getResult().getAddress());
+        // Call "getFacilities" because this service retrieve the address spatial coordinates if there is no geometry - the "get" service retrieve only the last geometry
+        PaginatedListResponse<FacilityGetWithGeometryDTO> facilityList = new UserCallBuilder(getFacilities)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FacilityGetWithGeometryDTO>>() {
+                })
+                .getDeserializedResponse();
+        assertNotNull(facilityList.getResult().get(0).getGeometry());
+        assertNotNull(facilityList.getResult().get(0).getAddress());
     }
 
     @Test
@@ -210,7 +246,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
@@ -221,7 +257,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
                 "France",
                 "Montpellier",
                 "34000",
-                "Occitanie",
+                null,
                 "2 place Pierre Viala"
         ), new Point(49, 3));
         Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
@@ -231,7 +267,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
         assertNotNull(singleObjectResponse.getResult().getAddress());
     }
@@ -246,7 +282,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNull(singleObjectResponse.getResult().getGeometry());
+        assertNull(singleObjectResponse.getResult().getLastPosition());
         assertNull(singleObjectResponse.getResult().getAddress());
     }
 
@@ -264,7 +300,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
         response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
         assertEquals(new Point(49, 3), feature.getGeometry());
     }
 
@@ -286,20 +322,62 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
-        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
-        assertNotNull(singleObjectResponse.getResult().getGeometry());
-        assertNotNull(singleObjectResponse.getResult().getAddress());
+        // Call "getFacilities" because this service retrieve the address spatial coordinates if there is no geometry - the "get" service retrieve only the last geometry
+        PaginatedListResponse<FacilityGetWithGeometryDTO> facilityList = new UserCallBuilder(getFacilities)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FacilityGetWithGeometryDTO>>() {
+                })
+                .getDeserializedResponse();
+        assertNotNull(facilityList.getResult().get(0).getGeometry());
+        assertNotNull(facilityList.getResult().get(0).getAddress());
     }
 
+    @Test
+    public void testGetFacilities() throws Exception {
+        FacilityAddressDTO address = getFacilityAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                null,
+                "2 place pierre viala"
+        );
 
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(FacilityModel.class);
+        //create several facilities with address, positions and without
+        new UserCallBuilder(create).setBody(getCreationDTOWithGeometry("testWithout", null, null))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+        new UserCallBuilder(create).setBody(getCreationDTOWithGeometry("testWithPosition", null, new Point(49, 3)))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+        new UserCallBuilder(create).setBody(getCreationDTOWithGeometry("testWithAddress", address, null))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+        new UserCallBuilder(create).setBody(getCreationDTOWithGeometry("testWithBoth", address, new Point(49, 3)))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //search sites with spatial coordinates
+        PaginatedListResponse<FacilityGetWithGeometryDTO> facilityList = new UserCallBuilder(getFacilities)
+                    .buildAdmin()
+                    .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FacilityGetWithGeometryDTO>>() {
+                    })
+                    .getDeserializedResponse();
+
+        assertEquals(facilityList.getResult().size(), 3);
     }
+
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+        return Collections.singletonList(LocationObservationDAO.LOCATION_COLLECTION_NAME);
+    }
+
+    @Override
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        List<Class<? extends SPARQLResourceModel>> modelList = new ArrayList<>();
+
+        modelList.add(FacilityModel.class);
+        modelList.add(LocationObservationCollectionModel.class);
+        return modelList;
     }
 }

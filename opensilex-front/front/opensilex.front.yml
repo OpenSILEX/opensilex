@@ -370,6 +370,8 @@ routes:
     component: opensilex-FacilityView
   - path: /facility/document/:uri
     component: opensilex-FacilityView
+  - path: /facility/positions/:uri
+    component: opensilex-FacilityView
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes

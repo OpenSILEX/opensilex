@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.api.facility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -20,10 +21,11 @@ import java.util.stream.Collectors;
 
 /**
  * DTO representing JSON for posting facility
+ *
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address", "variableGroups"})
+@JsonPropertyOrder({"uri", "rdf_type", "name", "organizations", "sites", "address", "variableGroups", "description"})
 public
 class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
@@ -34,6 +36,8 @@ class FacilityCreationDTO extends FacilityDTO {
 
     @JsonProperty("variableGroups")
     protected List<URI> variableGroups;
+
+    protected List<LocationObservationDTO> locations;
 
     public List<URI> getOrganizations() {
         return organizations;
@@ -57,6 +61,14 @@ class FacilityCreationDTO extends FacilityDTO {
 
     public void setVariableGroups(List<URI> variableGroups) {
         this.variableGroups = variableGroups;
+    }
+
+    public List<LocationObservationDTO> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<LocationObservationDTO> locations) {
+        this.locations = locations;
     }
 
     @Override

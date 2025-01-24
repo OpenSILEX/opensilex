@@ -5,6 +5,7 @@
     :helpMessage="helpMessage"
     :isMove="isMove"
     :vid="vid"
+    :required="isRequired"
   >
     <template v-slot:field="field">
       <b-form-input
@@ -24,10 +25,11 @@
 import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { parse, stringify } from "wkt";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GeometryForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("value")
   geoJson: any;
@@ -42,19 +44,18 @@ export default class GeometryForm extends Vue {
 
   @Watch("geoJson")
   onGeoJsonChange(value) {
-    if (value != null) {
       try {
         this.stringValue = stringify(value);
       } catch (error) {
         this.stringValue = "";
       }
-    }
   }
 
   updateValue(newValue) {
     this.stringValue = newValue;
     let geoJson = parse(this.stringValue);
     this.geoJson = geoJson;
+    this.$emit("onUpdate");
   }
 
   @Prop()

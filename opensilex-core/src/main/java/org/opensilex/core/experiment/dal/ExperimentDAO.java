@@ -9,7 +9,6 @@ package org.opensilex.core.experiment.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -18,15 +17,13 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -34,8 +31,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.group.dal.GroupUserProfileModel;
-import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -569,11 +564,10 @@ public class ExperimentDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
 
         if (!organizationUriFilter.isEmpty()) {
-            facilityDAO.search(new FacilitySearchFilter()
+            facilityLogic.search(new FacilitySearchFilter()
                     .setUser(user)
                     .setOrganizations(organizationUriFilter)
             ).getList().forEach(facility -> availableFacilities.put(facility.getUri(), facility));

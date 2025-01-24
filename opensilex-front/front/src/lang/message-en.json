@@ -658,11 +658,19 @@
             "exception": {
                 "siteMustHaveParent": "A site must have at least one parent organization.",
                 "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
-            }
+            },
+            "update": "Update organization",
+            "delete": "Delete organization"
+        },
+        "site": {
+            "update": "Update site",
+            "delete": "Delete site"
+
         },
         "facility": {
             "warning": {
-                "facility-should-have-unique-site": "It is not recommended to associate a facility with multiple sites. Please verify which site this facility belongs to."
+                "facility-should-have-unique-site": "It is not recommended to associate a facility with multiple sites. Please verify which site this facility belongs to.",
+                "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
             "view": {

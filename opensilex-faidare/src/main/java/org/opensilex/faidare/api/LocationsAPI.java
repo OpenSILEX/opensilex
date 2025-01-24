@@ -11,6 +11,7 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -70,10 +71,10 @@ public class LocationsAPI extends FaidareCall {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
 
-        Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityDAO, organizationDAO);
-        if (locationDbId != null && facilityDAO.get(locationDbId, currentUser) == null) {
+        Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityLogic, organizationDAO);
+        if (locationDbId != null && facilityLogic.get(locationDbId, currentUser) == null) {
             throw new NotFoundURIException(locationDbId);
         } else {
             FacilitySearchFilter filter = new FacilitySearchFilter()
@@ -83,7 +84,7 @@ public class LocationsAPI extends FaidareCall {
             }
             filter.setPage(page)
                     .setPageSize(pageSize);
-            ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
+            ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
 
             ListWithPagination<Faidarev1LocationDTO> resultDTOList = facilities.convert(
                     Faidarev1LocationDTO.class,

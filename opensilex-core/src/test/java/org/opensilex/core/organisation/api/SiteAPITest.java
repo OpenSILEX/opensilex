@@ -1,12 +1,10 @@
 package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.area.api.AreaAPI;
 import org.opensilex.core.organisation.api.site.*;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -256,8 +254,8 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
                 "France",
                 "Montpellier",
                 "34000",
-                "Occitanie",
-                "2 place Pierre Viala"
+                null,
+                "2 place pierre viala"
         ))).buildAdmin().executeCallAndReturnURI();
 
         //search sites with spatial coordinates

@@ -710,11 +710,19 @@
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
-            }
+            },
+            "update": "Modifier l'organisation",
+            "delete": "Supprimer l'organisation"
+        },
+        "site": {
+            "update": "Modifier le site",
+            "delete": "Supprimer le site"
+
         },
         "facility": {
             "warning": {
-                "facility-should-have-unique-site": "Il est déconseillé d'associer une facility à plusieurs sites. Veuillez vérifier à quel site appartient cette facility."
+                "facility-should-have-unique-site": "Il est déconseillé d'associer une installation environnementale à plusieurs sites. Veuillez vérifier à quel site appartient cette facility.",
+                "facility-default-date": "Date par défaut"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
             "view": {

@@ -22,8 +22,6 @@
           <component
             v-bind:is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
-            :searchBoxIsActive="uriSearchBoxVisible"
-            @uriGlobalSearch="handleUriGlobalSearchPressed"
           ></component>
 
 
@@ -91,6 +89,7 @@ import {Component as ComponentAnnotation, Prop} from "vue-property-decorator";
 import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import AsyncComputed from "vue-async-computed-decorator";
+import {EventBus} from "../src/main";
 
 @ComponentAnnotation
 export default class App extends Vue {
@@ -116,8 +115,6 @@ export default class App extends Vue {
   notificationColorTheme: string = "";
   displayNotificationMessage: boolean = false;
   private langUnwatcher;
-  //The following concerns the URI global search functionality
-  private uriSearchBoxVisible: boolean = false;
 
   //#endregion
   //#region: hooks
@@ -129,6 +126,7 @@ export default class App extends Vue {
         this.notificationMessageDisplayed = this.notificationMessage[this.$i18n.locale]
       }
     );
+    EventBus.$on('uriGlobalSearch', () =>this.handleUriGlobalSearchPressed());
   }
 
   beforeDestroy() {
@@ -198,7 +196,7 @@ export default class App extends Vue {
    * @param visible if not null then sets this.uriSearchBoxVisible to this value
    */
   private toggleUriSearchBox(visible?: boolean) {
-    this.uriSearchBoxVisible = visible !== undefined ? visible : !this.uriSearchBoxVisible;
+    this.$store.state.uriSearchBoxVisible = visible !== undefined ? visible : !this.uriSearchBoxVisible;
   }
 
   //#endregion
@@ -222,6 +220,11 @@ export default class App extends Vue {
 
   get menuVisible(): boolean {
     return this.$store.state.menuVisible;
+  }
+
+  //The following concerns the URI global search functionality
+  get uriSearchBoxVisible(){
+    return this.$store.state.uriSearchBoxVisible;
   }
   //#endregion
 }

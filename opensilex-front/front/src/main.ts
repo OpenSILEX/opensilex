@@ -18,6 +18,8 @@ window.Vue = Vue;
 
 Vue.config.productionTip = false;
 
+export const EventBus = new Vue();
+
 // Import and assignation to enable auto rebuild on ws library change
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default

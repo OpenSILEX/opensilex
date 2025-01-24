@@ -94,7 +94,7 @@ en:
         title: "Organizations"
         description: "Manage and configure organizations"
         create: "Add organization"
-        update: "Edit organization"
+        update: "Update organization"
 fr:
     OrganizationView:
         title: "Organisations"

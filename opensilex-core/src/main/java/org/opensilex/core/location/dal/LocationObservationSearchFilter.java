@@ -1,6 +1,5 @@
 package org.opensilex.core.location.dal;
 
-import org.bson.Document;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
@@ -10,9 +9,9 @@ import java.util.List;
 public class LocationObservationSearchFilter extends MongoSearchFilter {
     private List<URI> observationCollectionList;
     private URI observationCollection;
-    private Instant date;
+    private Instant startDate;
+    private Instant endDate;
     private boolean hasGeometry;
-    private List<Document> locationObservationModelList;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -30,12 +29,20 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
         this.observationCollection = observationCollection;
     }
 
-    public Instant getDate() {
-        return date;
+    public Instant getStartDate() {
+        return startDate;
     }
 
-    public void setDate(Instant date) {
-        this.date = date;
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
     }
 
     public boolean isHasGeometry() {
@@ -44,13 +51,5 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setHasGeometry(boolean hasGeometry) {
         this.hasGeometry = hasGeometry;
-    }
-
-    public List<Document> getLocationObservationModelList() {
-        return locationObservationModelList;
-    }
-
-    public void setLocationObservationModelList(List<Document> locationObservationModelList) {
-        this.locationObservationModelList = locationObservationModelList;
     }
 }

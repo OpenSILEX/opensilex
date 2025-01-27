@@ -6,6 +6,8 @@
 package org.opensilex.sparql.rdf4j;
 
 import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.query.*;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -15,9 +17,7 @@ import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.vocabulary.ORG;
 import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.base.AbstractValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.query.*;
@@ -61,7 +61,7 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     private Reasoner reasoner;
 
-    public RDF4JConnection(RepositoryConnection rdf4JConnection) {
+    public RDF4JConnection(RepositoryConnection rdf4JConnection) throws SPARQLException {
         super(null);
         this.rdf4JConnection = rdf4JConnection;
         LOGGER.debug("Acquire RDF4J sparql connection: " + this.rdf4JConnection.hashCode() + " (" + RDF4JConnection.connectionCount.incrementAndGet() + ")");
@@ -70,8 +70,8 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         long startTime = System.currentTimeMillis();
         Model rdf4jModel = new LinkedHashModel();
 
-        Resource organizationGraph= rdf4JConnection.getValueFactory().createIRI("http://opensilex.test/set/germplasm");
-        try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null, organizationGraph)) {
+        Resource organizationGraph= rdf4JConnection.getValueFactory().createIRI("http://opensilex.test/set/organization");
+        try (RepositoryResult<Statement> result = rdf4JConnection.getStatements(null, null, null)) {
             result.forEach(rdf4jModel::add);
         }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -90,8 +90,9 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
          */
         LOGGER.debug("****************************************************************************************");
 
-        String ruleSrc = "[rule1: (?o <http://www.w3.org/ns/org#hasSite> ?s), (?o <http://www.opensilex.org/vocabulary/oeso#hasPart> ?x) -> (?x <http://www.w3.org/ns/org#hasSite> ?s)]";
-        List rules = Rule.parseRules(ruleSrc);
+//        String ruleSrc = "[rule1: (?o <http://www.w3.org/ns/org#hasSite> ?s), (?o <http://www.opensilex.org/vocabulary/oeso#hasPart> ?x) -> (?x <http://www.w3.org/ns/org#hasSite> ?s)]";
+        String ruleSrc = "[rule1: (?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?t), (?t <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?x) -> (?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x)]";
+        List<Rule> rules = Rule.parseRules(ruleSrc);
 
         reasoner = new GenericRuleReasoner(rules);
         InfModel inf = ModelFactory.createInfModel(reasoner, jenaModel);
@@ -102,6 +103,38 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
         Property hasPart = jenaModel.getProperty("http://www.opensilex.org/vocabulary/oeso#hasPart");
         Property hasSite = ORG.hasSite;
         org.apache.jena.rdf.model.Resource retrievedParent = inf.getResource("http://opensilex.test/id/organization/diascope");
+        String sparql = "SELECT ?o WHERE { ?o <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Organization> . }";
+        Query query = QueryFactory.create(sparql);
+        QueryExecution qexec = QueryExecutionFactory.create(query, inf);
+
+        startTime = System.currentTimeMillis();
+        ResultSet jenaResults = qexec.execSelect();
+        LOGGER.debug("Jena query execution time: " + (System.currentTimeMillis() - startTime) + "ms");
+
+        startTime = System.currentTimeMillis();
+        var rdf4jResults = executeSelectQuery(new SelectBuilder().addVar("?o")
+                .addWhere("?o", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "?t")
+                .addWhere("?t", "<http://www.w3.org/2000/01/rdf-schema#subClassOf>*", "<http://xmlns.com/foaf/0.1/Organization>"), null);
+        LOGGER.debug("RDF4J query execution time: " + (System.currentTimeMillis() - startTime) + "ms");
+
+        LOGGER.debug("jena results lenght : ");
+        AtomicInteger nbJenaResults = new AtomicInteger();
+        jenaResults.forEachRemaining(qsol -> {
+            LOGGER.debug("jena res : " + qsol.get("o"));
+            nbJenaResults.getAndIncrement();
+        });
+        rdf4jResults.forEach(res -> {
+            LOGGER.debug("rdf4j res : " + res.getStringValue("o"));
+        });
+
+        LOGGER.debug("nb jena results : " + nbJenaResults);
+        LOGGER.debug("rdf4j results lenght : "+rdf4jResults.size());
+
+//        executeSelectQuery(new SelectBuilder().addVar("?o").addWhere("<http://opensilex.test/id/organization/diascope>", "<http://www.w3.org/ns/org#hasSite>", "?o"), result -> {
+//            LOGGER.debug("Site (rdf4j): " + result.getStringValue("o"));
+//        });
+
+
         String sitesUris = inf.listStatements(retrievedParent, hasSite, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
         String childrenUris = inf.listStatements(retrievedParent, hasPart, (RDFNode) null).toList().stream().map(stmt -> stmt.getObject().toString()).reduce("", (a, b) -> a + ", " + b);
         LOGGER.debug("Parent organization (Diascope) : ");

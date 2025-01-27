@@ -2,6 +2,7 @@ package org.opensilex.sparql.service.schemaQuery;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
@@ -16,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
@@ -155,11 +157,18 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             if(childNode.fetchDynamicRelations && !relationsPerUriPerType.containsKey(typeName)){
                 HashMap<String, List<SPARQLStatement>> relationsPerUri = new HashMap<>();
 
-                childNode.runRelationFetchingFunction(
+                /*List<SPARQLStatement> dynamicRelations = */childNode.runRelationFetchingFunction(
                         distinctUrisToDescribePerTypeName.get(typeName),
                         sparql
-                ).forEach(e -> relationsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+                ).forEach(e -> {
+
+                    relationsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e)
+                });
+
+
                 calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
+
+
             }
 
             //Perform recursive call on child to complete its models
@@ -243,14 +252,23 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         return Collections.singletonList(((T)object).getUri());
     }
 
+    /**
+     *
+     * @param uris of objects to fetch dynamic relations for
+     * @param sparql service
+     * @return dynamic relations, does this by describing the uris then filtering out any triplets that are basic managed properties
+     * @throws Exception
+     */
     private List<SPARQLStatement> runRelationFetchingFunction(
             HashSet<String> uris,
             SPARQLService sparql
     ) throws Exception {
+        List<String> propertiesToIgnore = sparql.getMapperIndex().getForClass(objectClass).getClassAnalyzer().getManagedProperties()
+                .stream().map(Property::getURI).toList();
         return sparql.describeMany(
                 sparql.getDefaultGraph(objectClass),
                 new HashSet<>(uris.stream().map(URI::create).toList())
-        );
+        ).stream().filter(e -> !propertiesToIgnore.contains(e.getPredicate())).collect(Collectors.toList());
     }
 
     public String getFieldName() {

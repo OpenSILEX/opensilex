@@ -182,7 +182,6 @@ public class ScientificObjectAPI {
 
         List<SPARQLNamedResourceModel<ScientificObjectModel>> typesModel = logic.getUsedTypes(experimentURI, currentUser);
 
-        //TODO: error if empty??
         List<ListItemDTO> types = new ArrayList<>();
 
         typesModel.forEach(type -> {
@@ -329,21 +328,6 @@ public class ScientificObjectAPI {
                 .setPageSize(pageSize)
                 .setOrderByList(orderByList)
                 .setLang(currentUser.getLanguage());
-        //TODO MAX this was added since, add to logic
-        /*if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
-                DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
-                var targets = dataLogic.getUsedTargets(devices, variables, null, URI.create(Oeso.ScientificObject.getURI()));
-
-                if (targets.isEmpty()) {
-                    return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
-                }
-                searchFilter.intersectionOnUris(targets);
-            }
-
-            searchFilter.setPage(page)
-                    .setPageSize(pageSize)
-                    .setOrderByList(orderByList)
-                    .setLang(currentUser.getLanguage());*/
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = logic.searchScientificObjects(
                 searchFilter,
@@ -462,12 +446,6 @@ public class ScientificObjectAPI {
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectModel soModel = scientificObjectDto.newModel();
 
-        //TODO MAX from develop
-        /*checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
-
-        URI soType = descriptionDto.getType();
-
-        sparql.startTransaction();*/
         try {
             URI soURI = soLogic.createScientificObject(soModel,scientificObjectDto.getExperiment(),scientificObjectDto.getRelations(), currentUser);
 
@@ -503,32 +481,6 @@ public class ScientificObjectAPI {
 
         try {
             URI soURI = logic.updateScientificObject(soModel, scientificObjectDto.getExperiment(), scientificObjectDto.getRelations(), scientificObjectDto.getPublisher(), scientificObjectDto.getPublicationDate(), currentUser);
-
-            //TODO MAX something changed here, check logic
-            /*URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), descriptionDto.getPublisher(), descriptionDto.getPublicationDate(), currentUser);
-
-            ExperimentModel experiment = null;
-            if (hasExperiment) {
-                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
-                experiment = experimentDAO.get(contextURI, currentUser);
-            }
-            checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
-
-            if (descriptionDto.getGeometry() != null) {
-                GeospatialModel geospatialModel = new GeospatialModel();
-                geospatialModel.setUri(soURI);
-                geospatialModel.setName(descriptionDto.getName());
-                geospatialModel.setRdfType(soType);
-                geospatialModel.setGraph(contextURI);
-                geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
-                geoDAO.update(geospatialModel, soURI, contextURI);
-            } else {
-                geoDAO.delete(soURI, contextURI);
-            }
-
-            sparql.commitTransaction();
-            nosql.commitTransaction();*/
-
             return new ObjectUriResponse(soURI).getResponse();
         } catch (DuplicateNameException e) {
             throw new BadRequestException(e.getMessage());
@@ -536,48 +488,6 @@ public class ScientificObjectAPI {
             throw ex;
         }
     }
-
-    //TODO MAX this fucntion was added on develop since
-    /**
-     * Check that new factor levels we want to add to the OS are associated to the experiment. Throw an exception if not.
-     * @param descriptionDto DTO containing the new factor levels and other information about the OS to create or update.
-     * @param experiment Experiment model that is (or will be) linked to the OS.
-     * @throws InvalidValueException if a factor level is not part of the experiment.
-     */
-    private static void checkFactorLevelsBelongsToExperiment(ScientificObjectCreationDTO descriptionDto, ExperimentModel experiment) throws InvalidValueException {
-        if (descriptionDto == null || descriptionDto.getRelations() == null || descriptionDto.getRelations().isEmpty()) {
-            return;
-        }
-        if (experiment == null){
-            throw new InvalidValueException("An OS without experiment can't have factor levels");
-        }
-
-        List<URI> experimentFactorLevels = experiment.getFactors().stream()
-                .flatMap(factor -> factor.getFactorLevels().stream().map(FactorLevelModel::getUri))
-                .toList();
-        List<URI> descriptionFactorLevels = descriptionDto.getRelations().stream()
-                .filter( relation -> SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFactorLevel.getURI()))
-                .map(relation -> {
-                    try {
-                        return new URI(relation.getValue());
-                    } catch (URISyntaxException e) {
-                        throw new InvalidValueException("Invalid factor level URI"+ relation.getValue());
-                    }
-                }).toList();
-        descriptionFactorLevels.forEach(factorLevel -> {
-            if (!experimentFactorLevels.contains(factorLevel)) {
-                throw new InvalidValueException("Following factor level is not part of the experiment: "+factorLevel);
-            }
-        });
-    }
-
-    private static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
-
-    /**
-     * Name of the parameter used into translate-key about scientific object deletion error.
-     * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
-     */
-    private static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
 
     @DELETE
     @Path("{uri}")
@@ -635,7 +545,6 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        //TODO: pas tucheuu?
 
         try {
             sparql.startTransaction();
@@ -725,7 +634,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-//TODO: pas toucheou
+
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
                 new ScientificObjectCsvImporter(sparql, nosql, fs, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()

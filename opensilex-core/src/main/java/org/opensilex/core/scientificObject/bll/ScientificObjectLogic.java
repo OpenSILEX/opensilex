@@ -34,6 +34,7 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
@@ -49,6 +50,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -152,6 +154,7 @@ public class ScientificObjectLogic {
             }
         }
 
+        checkFactorLevelsBelongsToExperiment(relations, experiment);
         checkUniqueNameByGraph(context, model.getName(), null, true);
         Node graphNodeContext = SPARQLDeserializers.nodeURI(context);
 
@@ -355,7 +358,6 @@ public class ScientificObjectLogic {
 
     public ListWithPagination<ScientificObjectNodeDTO> searchScientificObjects(ScientificObjectSearchFilter searchFilter, CriteriaDTO criteriaDTO, List<URI> variables, List<URI> devices, AccountModel currentUser) throws Exception {
         ListWithPagination<ScientificObjectNodeDTO> emptyResult = new ListWithPagination<>(Collections.emptyList(), searchFilter.getPage(), searchFilter.getPageSize(), 0);
-        //TODO: searchFilter OK (API / logic)???
 
         if (Objects.nonNull(searchFilter.getExperiment())) {
             if (sparql.uriExists(ExperimentModel.class, searchFilter.getExperiment())) {
@@ -368,7 +370,6 @@ public class ScientificObjectLogic {
 
         //Get all object uris that has at least one data validating each all the criteria
         //This is a boolean to not bother applying other filters if criteria search returned 0 results
-       //TODO: remplacer le DTO par ???
         boolean applyNonCriteriaFilters = true;
         if(Objects.nonNull(criteriaDTO) && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
 
@@ -389,7 +390,7 @@ public class ScientificObjectLogic {
         }else{
             if (CollectionUtils.isNotEmpty(variables) || CollectionUtils.isNotEmpty(devices)) {
                 DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
-                var targets = dataLogic.getUsedTargets(devices, variables, null);
+                var targets = dataLogic.getUsedTargets(devices, variables, null, URI.create(Oeso.ScientificObject.getURI()));
 
                 if (targets.isEmpty()) {
                     return emptyResult;
@@ -494,6 +495,8 @@ public class ScientificObjectLogic {
 
             if (hasExperiment) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(context);
+                ExperimentModel experimentModel = experimentDAO.get(context, currentUser);
+                checkFactorLevelsBelongsToExperiment(relations, experimentModel);
             }
             return object.getUri();
         });
@@ -795,8 +798,40 @@ public class ScientificObjectLogic {
         }
     }
 
+    /**
+     * Check that new factor levels we want to add to the OS are associated to the experiment. Throw an exception if not.
+     * @param relations to look for the hasFactorLevel relation
+     * @param experiment Experiment model that is (or will be) linked to the OS.
+     * @throws InvalidValueException if a factor level is not part of the experiment.
+     */
+    private static void checkFactorLevelsBelongsToExperiment(List<RDFObjectRelationDTO>  relations, ExperimentModel experiment) throws InvalidValueException {
+        if (relations == null || relations.isEmpty()) {
+            return;
+        }
+        if (experiment == null){
+            throw new InvalidValueException("An OS without experiment can't have factor levels");
+        }
+
+        List<URI> experimentFactorLevels = experiment.getFactors().stream()
+                .flatMap(factor -> factor.getFactorLevels().stream().map(FactorLevelModel::getUri))
+                .toList();
+        List<URI> descriptionFactorLevels = relations.stream()
+                .filter( relation -> SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFactorLevel.getURI()))
+                .map(relation -> {
+                    try {
+                        return new URI(relation.getValue());
+                    } catch (URISyntaxException e) {
+                        throw new InvalidValueException("Invalid factor level URI"+ relation.getValue());
+                    }
+                }).toList();
+        descriptionFactorLevels.forEach(factorLevel -> {
+            if (!experimentFactorLevels.contains(factorLevel)) {
+                throw new InvalidValueException("Following factor level is not part of the experiment: "+factorLevel);
+            }
+        });
+    }
+
     private ScientificObjectModel initObject(URI contextURI,ScientificObjectModel object, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
-        //TODO: à améliorer , refacto, DTO
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(object.getType(), new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 

@@ -37,7 +37,6 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;

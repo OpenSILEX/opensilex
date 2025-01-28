@@ -184,20 +184,11 @@ export default class GlobalMapMenu extends Vue {
     //endregion
 
     //#region Props
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly items;
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly itemsInitial;
-    @Prop({
-        default: (() => {
-        })
-    })
+    @Prop({default: (() => {})})
     private readonly selectedItem;
     //endregion
 
@@ -242,6 +233,8 @@ export default class GlobalMapMenu extends Vue {
                     item.properties.address = result.address;
                 })
             }
+        } else if (this.items.title === "scientificObject") {
+        //TODO
         }
         this.$opensilex.hideLoader();
     }
@@ -341,6 +334,8 @@ export default class GlobalMapMenu extends Vue {
                 facilitiesURI = this.itemsInitial.features.map(facility => {
                     return facility.id
                 })
+            } else if (this.items.title === "scientificObject") {
+            // TODO
             }
 
             //SEARCH
@@ -378,6 +373,8 @@ export default class GlobalMapMenu extends Vue {
                         features = facilitiesSingle.map(facility => {
                             return this.$opensilex.getLongUri(facility)
                         });
+                    }else if (this.items.title === "scientificObject") {
+                    //    TODO
                     }
                 } else {
                     features = [];

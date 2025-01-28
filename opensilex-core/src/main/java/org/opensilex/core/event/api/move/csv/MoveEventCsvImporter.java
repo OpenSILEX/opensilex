@@ -5,6 +5,7 @@ import com.mongodb.client.model.geojson.Point;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
@@ -34,8 +35,8 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
     private static final LinkedHashSet<String> MOVE_HEADER = Stream.concat(
                     AbstractEventCsvImporter.EVENT_HEADER.stream(),
                     Stream.of(
-                        MoveModel.FROM_FIELD,
-                        MoveModel.TO_FIELD,
+                        LocationModel.FROM_FIELD,
+                        LocationModel.TO_FIELD,
                         PositionModel.COORDINATES_FIELD,
                         PositionModel.X_FIELD,
                         PositionModel.Y_FIELD,
@@ -75,7 +76,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         if(!StringUtils.isEmpty(from)) {
             FacilityModel fromModel = new FacilityModel();
             fromModel.setUri(new URI(from));
-            model.setFrom(fromModel);
+            model.getLocationObservation().getLocation().setFrom(fromModel.getUri());
             anyMoveFieldNonNull = true;
         }
 
@@ -83,7 +84,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         if(!StringUtils.isEmpty(to)) {
             FacilityModel toModel = new FacilityModel();
             toModel.setUri(new URI(to));
-            model.setTo(toModel);
+            model.getLocationObservation().getLocation().setTo(toModel.getUri());
             anyMoveFieldNonNull = true;
         }
 
@@ -150,7 +151,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         }
 
         if(anyMoveFieldNonNull){
-            model.setNoSqlModel(noSqlModel);
+//            model.setNoSqlModel(noSqlModel);
         }else {
             CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"from, to, x, y, z or positionDescription");
             validation.addMissingRequiredValue(cell);

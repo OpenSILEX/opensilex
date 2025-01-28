@@ -14,6 +14,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -32,6 +33,16 @@ import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GE
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
 
 public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest {
+
+    protected static FileStorageService fs;
+
+    static FileStorageService getFs(){
+
+        if(fs == null){
+            fs = getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+        }
+        return fs;
+    }
 
     private ExperimentModel experiment;
     private AccountModel user;
@@ -57,7 +68,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(getSparqlService(),getMongoDBService(),experiment,user);
+        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(getSparqlService(),getMongoDBService(),fs,experiment,user);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
         return importer.importCSV(csvFile,false);
     }

@@ -1419,8 +1419,9 @@ export default class MapView extends Vue {
             }
             else{
               res.forEach((element :any) => {
-                if (element.geometry !== null) {
-                  element.geometry.properties = {
+                  let object = element.location.geojson;
+                if (object.geometry !== null) {
+                    object.geometry.properties = {
                     creation_date: element.creation_date,
                     destruction_date:element.destruction_date,
                     uri: element.uri,
@@ -1432,12 +1433,12 @@ export default class MapView extends Vue {
                   let inserted = false;
                   this.featuresOS.forEach((item) => {
                     if (item[0].properties.type === element.rdf_type) {
-                      item.push(element.geometry);
+                      item.push(object.geometry);
                       inserted = true;
                     }
                   });
                   if (!inserted) {
-                    this.featuresOS.push([element.geometry]);
+                    this.featuresOS.push([object.geometry]);
                   }
                 }
               });
@@ -1864,6 +1865,7 @@ export default class MapView extends Vue {
 
   ///////////// TABLE METHODS ////////////
   customURIPath(data){
+      console.log("data",data)
     let uri = data.item.properties.uri;
     switch (data.item.properties.nature) {
       default: return { path : '/scientific-objects/details/' + encodeURIComponent(uri)};

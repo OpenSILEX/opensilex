@@ -142,33 +142,25 @@ export default class EventForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
     @Ref("moveForm") readonly moveForm!: MoveForm;
+    @Ref("ontologyRelationsForm") readonly ontologyRelationsForm!: OntologyRelationsForm;
+    @Ref("typeForm") readonly typeForm!: TypeForm;
 
     $opensilex: OpenSilexVuePlugin;
     ontologyService: OntologyService;
     vueOntologyService: VueJsOntologyExtensionService;
-    uriGenerated = true;
 
     @Prop({default: false})
     editMode: boolean;
-
-    errorMsg: String = "";
-
     @Prop({default: () => MoveForm.getEmptyForm()})
     form: MoveCreationDTO;
-
     @Prop({default: false})
     linkedToAreaForm: boolean;
 
-    @Ref("ontologyRelationsForm") readonly ontologyRelationsForm!: OntologyRelationsForm;
-    @Ref("typeForm") readonly typeForm!: TypeForm;
-
+    errorMsg: String = "";
+    uriGenerated = true;
     excludedProperties: Set<string>;
-
     context: string = "";
-
     baseType: string = "";
-    propertyComponents = [];
-
     startRequired = false;
     endRequired = true;
 
@@ -222,6 +214,7 @@ export default class EventForm extends Vue {
         this.updateRequiredProps(ref)
     }
 
+    //TODO
     updateRequiredProps(ref){
         if (this.form.end === "") {
             this.form.end = undefined
@@ -286,6 +279,7 @@ export default class EventForm extends Vue {
       }
     }
 
+    //TODO
     handleSubmitError(){
         let targetsPosition = this.form.targets_positions[0];
         if(this.moveForm && !this.form.to && (!targetsPosition || EventModalForm.isPositionEmpty(targetsPosition.position))){
@@ -293,7 +287,6 @@ export default class EventForm extends Vue {
         }else{
             this.$opensilex.showErrorToast(this.$i18n.t("EventForm.targets-error").toString());
         }
-
     }
 }
 </script>

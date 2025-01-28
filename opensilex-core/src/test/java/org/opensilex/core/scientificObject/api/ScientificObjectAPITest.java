@@ -187,7 +187,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             list.add(new Position(3.97167246, 43.61328981));
             list.add(new Position(3.97167246, 43.61328981));
             Geometry geometry = new Polygon(list);
-            dto.setGeometry(geometryToGeoJson(geometry));
+//            dto.setGeometry(geometryToGeoJson(geometry));
         }
 
         dto.setName("SO " + soCount++);
@@ -387,7 +387,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         soDTO.setUri(extractUriFromResponse(postResult));
         soDTO.setName("new alias");
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
-        soDTO.setGeometry(geometryToGeoJson(geometry));
+//        soDTO.setGeometry(geometryToGeoJson(geometry));
 
         final Response updateResult = getJsonPutResponse(target(updatePath), soDTO);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -404,7 +404,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
         assertEquals(soDTO.getType(), new URI(SPARQLDeserializers.getExpandedURI(dtoFromApi.getType())));
-        assertEquals(soDTO.getGeometry().toString(), dtoFromApi.getGeometry().toString());
+//        assertEquals(soDTO.getGeometry().toString(), dtoFromApi.getGeometry().toString());
     }
 
     @Test

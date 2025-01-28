@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-9">
                 <opensilex-GeometryForm
-                        :value.sync="form.point"
+                        :value.sync="form.geojson"
                         label="Position.coordinates"
                         :isMove="true"
                         helpMessage="Position.coordinates-help"
@@ -65,6 +65,7 @@
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import { PositionCreationDTO } from 'opensilex-core/index';
+    import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
     @Component
     export default class PositionForm extends Vue {
@@ -72,15 +73,19 @@
         @Ref("validatorRef") readonly validatorRef!: any;
 
         @Prop({default: () => PositionForm.getEmptyForm()})
-        form: PositionCreationDTO;
+        form: LocationObservationDTO;
 
-        static getEmptyForm() : PositionCreationDTO{
+        static getEmptyForm() : LocationObservationDTO{
             return {
-              point: undefined,
-              x: undefined,
-              y: undefined,
-              z: undefined,
-              text: undefined,
+                geojson: undefined,
+                from: undefined,
+                to: undefined,
+                startDate: undefined,
+                endDate: undefined,
+                x: undefined,
+                y: undefined,
+                z: undefined,
+                text: undefined
             };
         }
 

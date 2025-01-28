@@ -36,7 +36,7 @@
         <div data-testid="map-poster">
             <!-- Map config - "mapControls" to display the scale -->
             <vl-map ref="globalMap" :default-controls="mapControls" data-projection="EPSG:4326"
-                    style="height: 800px" @click="manageCluster">
+                    style="height: 800px" @click="manageCluster" @moveend="zoomRestriction">
                 <!-- Zoom and position -->
                 <vl-view ref="globalMapView" :min-zoom="2" :max-zoom="22" @update:center="getCurrentExtent"
                          @update:zoom="disabledLayerButtons"></vl-view>
@@ -109,6 +109,40 @@
                         </vl-source-cluster>
                     </vl-layer-vector>
                 </vl-layer-group>
+                <!-- SO layer group-->
+                <vl-layer-group v-if="isSOLoaded" :visible="soFeaturesDisplay.visibility">
+                    <!-- SO layer -->
+                    <vl-layer-vector ref="soLayerVector" :max-resolution="0.5" render-mode="image">
+                        <vl-source-vector :features="soFeaturesDisplay.features"></vl-source-vector>
+                        <vl-style-box>
+                            <vl-style-stroke
+                                    :color="soFeaturesDisplay.style.stroke"
+                                    :width="1"
+                            ></vl-style-stroke>
+                            <vl-style-fill
+                                    :color="addTransparency(soFeaturesDisplay.style.fill)"
+                            ></vl-style-fill>
+                            <vl-style-circle :radius="8">
+                                <vl-style-stroke
+                                        :color="soFeaturesDisplay.style.stroke"
+                                        :width="3"
+                                ></vl-style-stroke>
+                                <vl-style-fill
+                                        :color="soFeaturesDisplay.style.fill"
+                                ></vl-style-fill>
+                            </vl-style-circle>
+                        </vl-style-box>
+                    </vl-layer-vector>
+                    <!-- SO cluster-->
+                    <vl-layer-vector ref="soClusterLayerVector" :min-resolution="0.5" :max-resolution="4" render-mode="image">
+                        <vl-source-cluster :distance="25">
+                            <vl-source-vector
+                                    :features="soFeaturesDisplay.features"
+                            ></vl-source-vector>
+                            <vl-style-func :factory="makeSOClusterStyleFunc"></vl-style-func>
+                        </vl-source-cluster>
+                    </vl-layer-vector>
+                </vl-layer-group>
                 <!-- Interaction for selecting vector features -->
                 <vl-interaction-select ref="selectedLayerVector" @select="selectFeature" @unselect="unSelectFeature"
                                        :filter="filterInteraction">
@@ -161,6 +195,8 @@ import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import GlobalMapMenu from "../../components/geometry/GlobalMapMenu.vue";
 import {OrganizationsService, SiteGetWithGeometryDTO, FacilityGetWithGeometryDTO} from 'opensilex-core/index';
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {LocationsService} from "opensilex-core/api/locations.service";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 @Component
 export default class GlobalMapView extends Vue {
@@ -170,6 +206,7 @@ export default class GlobalMapView extends Vue {
     //#region Plugins and services
     private readonly $opensilex: OpenSilexVuePlugin;
     private organizationsService: OrganizationsService;
+    private locationsService: LocationsService;
     //endregion
 
     //#region Props
@@ -186,10 +223,14 @@ export default class GlobalMapView extends Vue {
     private readonly siteClusterLayerVector!: Layer;
     @Ref("facilityClusterLayerVector")
     private readonly facilityClusterLayerVector!: Layer;
+    @Ref("soClusterLayerVector")
+    private readonly soClusterLayerVector!: Layer;
     @Ref("siteLayerVector")
     private readonly siteLayerVector!: Layer;
     @Ref("facilityLayerVector")
     private readonly facilityLayerVector!: Layer;
+    @Ref("soLayerVector")
+    private readonly soLayerVector!: Layer;
     @Ref("selectedLayerVector")
     private readonly selectedLayerVector!: Interaction;
     //endregion
@@ -212,6 +253,10 @@ export default class GlobalMapView extends Vue {
     private facilityFeaturesInitial: Layer = this.getFeatures();
     private facilityFeaturesDisplay: Layer = this.getFeatures();
     private isFacilityLoaded: boolean = false;
+    //LAYER - FACILITY
+    private soFeaturesInitial: Layer = this.getFeatures();
+    private soFeaturesDisplay: Layer = this.getFeatures();
+    private isSOLoaded: boolean = false;
     //LAYER - SELECTION
     private selectedLayer: Layer = {};
     private selectedFeature: {} = {};
@@ -242,6 +287,9 @@ export default class GlobalMapView extends Vue {
             case this.facilityFeaturesInitial.id:
                 this.selectedLayerInitial = this.facilityFeaturesInitial;
                 break;
+            case this.soFeaturesInitial.id:
+                this.selectedLayerInitial = this.soFeaturesInitial;
+                break;
         }
         //open the menu
         this.globalMapMenu.openGlobalMapSidebar();
@@ -266,6 +314,10 @@ export default class GlobalMapView extends Vue {
                 this.facilityFeaturesDisplay.style.fill = color;
                 this.facilityClusterLayerVector.$layer.setStyle(this.makeFacilityClusterStyleFunc())
                 return;
+            case this.soFeaturesDisplay.id:
+                this.soFeaturesDisplay.style.fill = color;
+                this.soClusterLayerVector.$layer.setStyle(this.makeSOClusterStyleFunc())
+                return;
         }
     }
 
@@ -277,6 +329,8 @@ export default class GlobalMapView extends Vue {
                 return this.siteFeaturesDisplay.visibility = status;
             case this.facilityFeaturesDisplay.id:
                 return this.facilityFeaturesDisplay.visibility = status;
+            case this.soFeaturesDisplay.id:
+                return this.soFeaturesDisplay.visibility = status;
         }
     }
 
@@ -297,6 +351,9 @@ export default class GlobalMapView extends Vue {
         } else if (this.facilityFeaturesDisplay.features.find(feat => feature.getProperties().uri === feat.id)) {
             this.selectedLayer = this.facilityFeaturesDisplay;
             this.selectedLayerInitial = this.facilityFeaturesInitial;
+        } else if (this.soFeaturesDisplay.features.find(feat => feature.getProperties().uri === feat.id)) {
+            this.selectedLayer = this.soFeaturesDisplay;
+            this.selectedLayerInitial = this.soFeaturesInitial;
         }
 
         this.selectedFeature = this.selectedLayer.features.find(feat => feature.getProperties().uri === feat.id)
@@ -327,6 +384,9 @@ export default class GlobalMapView extends Vue {
                 case this.facilityFeaturesDisplay.id:
                     selectedLayer = this.facilityLayerVector;
                     break;
+                case this.soFeaturesDisplay.id:
+                    selectedLayer = this.soLayerVector;
+                    break;
             }
 
             let selection = selectedLayer.$layer.getSource().getFeatures().find(feat => feat.getId() === feature.id)
@@ -343,10 +403,12 @@ export default class GlobalMapView extends Vue {
     //#region Hooks
     private created() {
         this.organizationsService = this.$opensilex.getService("opensilex.OrganizationsService");
+        this.locationsService = this.$opensilex.getService("opensilex.LocationsService");
 
         this.buttons = [
             {id: 'site', label: 'component.common.organization.sites', state: true, disabled: false},
             {id: 'facility', label: 'component.menu.facilities', state: false, disabled: true},
+            {id: 'scientificObject', label: 'component.menu.scientificObjects', resolution: 4, state: false, disabled: true},
         ]
     }
 
@@ -376,6 +438,42 @@ export default class GlobalMapView extends Vue {
                 parseInt(color.substring(5, 7), 16) +
                 ",0.5)"
         );
+    }
+
+    //Show SO only under zoom ?? and get the current map expansion
+    private zoomRestriction() {
+        if (this.globalMapView.$view.getResolution() > 4) {
+            this.isSOLoaded = false;
+            this.soFeaturesInitial = this.getFeatures();
+            this.soFeaturesDisplay = this.getFeatures();
+        } else {
+            let coordinateExtent = this.getCurrentExtent();
+
+            if (
+                    coordinateExtent[0] >= -180 &&
+                    coordinateExtent[0] <= 180 &&
+                    coordinateExtent[2] >= -180 &&
+                    coordinateExtent[2] <= 180 &&
+                    coordinateExtent[1] >= -90 &&
+                    coordinateExtent[1] <= 90 &&
+                    coordinateExtent[3] >= -90 &&
+                    coordinateExtent[3] <= 90
+            ) {
+                let geometry = {
+                    type: "Polygon",
+                    coordinates: [
+                        [
+                            [coordinateExtent[2], coordinateExtent[1]],
+                            [coordinateExtent[0], coordinateExtent[1]],
+                            [coordinateExtent[0], coordinateExtent[3]],
+                            [coordinateExtent[2], coordinateExtent[3]],
+                            [coordinateExtent[2], coordinateExtent[1]],
+                        ],
+                    ],
+                };
+                this.getSOFeatures(geometry);
+            }
+        }
     }
 
     private getFeatures() {
@@ -425,6 +523,33 @@ export default class GlobalMapView extends Vue {
         })
     }
 
+    private getSOFeatures(geometry) {
+       this.locationsService.searchTargetLocations(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI,undefined, geometry)
+                .then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) => {
+                    let results = [];
+                    http.response.result.forEach((result: LocationObservationDTO) => {
+                        results.push({
+                            endDate: result.endDate,
+                            startDate: result.startDate,
+                            from: result.from,
+                            to: result.from,
+                            text: result.text,
+                            x: result.x,
+                            y: result.y,
+                            z: result.z,
+                            geometry: result.geojson,
+                            uri: result.featureOfInterest,
+                            name: result.label
+                        })
+                    })
+                    this.soFeaturesInitial = this.convertObjectIntoGeoJson(results, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, this.buttons.find(button => button.id === 'scientificObject').id, '#195999', '#fff');
+                    this.soFeaturesDisplay = Object.assign({}, this.soFeaturesInitial);
+                }).finally(() => {
+            this.buttonsFeaturesMap.set("scientificObject", this.soFeaturesDisplay)
+            this.isSOLoaded = true;
+        })
+    }
+
     private convertObjectIntoGeoJson(results, id, title, fillColor, strokeColor) {
         let layer = {
             id: id,
@@ -461,6 +586,9 @@ export default class GlobalMapView extends Vue {
                     case this.facilityFeaturesDisplay.id:
                         selectedLayer = this.facilityLayerVector;
                         break;
+                    case this.soFeaturesDisplay.id:
+                        selectedLayer = this.soLayerVector;
+                        break;
                 }
 
                 if (selectedLayer.getSource()) {
@@ -481,6 +609,13 @@ export default class GlobalMapView extends Vue {
     private makeFacilityClusterStyleFunc() {
         let styleStroke: string = this.facilityFeaturesDisplay.style.stroke;
         let styleFill: string = this.facilityFeaturesDisplay.style.fill;
+
+        return this.clusterStyle(styleStroke, styleFill);
+    }
+
+    private makeSOClusterStyleFunc() {
+        let styleStroke: string = this.soFeaturesDisplay.style.stroke;
+        let styleFill: string = this.soFeaturesDisplay.style.fill;
 
         return this.clusterStyle(styleStroke, styleFill);
     }
@@ -546,7 +681,7 @@ export default class GlobalMapView extends Vue {
     }
 
     private fitViewWithFeaturesExtent(extent) {
-        this.globalMapView.$view.fit(extent, {maxZoom: 17});
+        this.globalMapView.$view.fit(extent, {maxZoom: 20});
     }
 
     //endregion

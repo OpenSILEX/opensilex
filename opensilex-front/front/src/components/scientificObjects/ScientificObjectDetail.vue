@@ -175,19 +175,11 @@ export default class ScientificObjectDetail extends Vue {
     $PositionsService: PositionsService
     $DataService: DataService
 
-    @Prop({
-        default: 0,
-    })
+    @Prop({default: 0,})
     annotations: number;
-
-    @Prop({
-        default: 0,
-    })
+    @Prop({default: 0,})
     documents: number;
-
-    @Prop({
-        default: 0,
-    })
+    @Prop({default: 0,})
     events: number;
 
     positions: number;

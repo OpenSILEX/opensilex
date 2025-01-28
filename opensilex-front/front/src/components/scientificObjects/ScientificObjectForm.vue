@@ -11,12 +11,30 @@
             @onCreate="$emit('onCreate', $event)"
             @onUpdate="$emit('onUpdate', $event)"
     >
-<!--        <template v-slot:customFields="{ form }">
-            <opensilex-MoveFormV2
-                    :form.sync="form.targets_positions"
-                    ref="moveForm"
-            ></opensilex-MoveFormV2>
-        </template>-->
+        <template v-slot:customFields="{ form }">
+            <b-form-checkbox v-if="!editMode" v-model="hasMove" switches @change="onToggleMove">{{ $t("ScientificObjectForm.toggleLocation") }}</b-form-checkbox>
+            <br>
+            <div v-if="hasMove">
+                <div class="row">
+                    <div class="col">
+                        <opensilex-DateTimeForm
+                                :value.sync="formMove.start"
+                                label="Event.start"
+                        ></opensilex-DateTimeForm>
+                    </div>
+
+                    <div class="col">
+                        <opensilex-DateTimeForm
+                                :value.sync="formMove.end"
+                                label="Event.end"
+                                :required="!!formMove.start"
+                        ></opensilex-DateTimeForm>
+                    </div>
+
+                </div>
+                <opensilex-MoveForm :form.sync="formMove" ref="moveForm"></opensilex-MoveForm>
+            </div>
+        </template>
     </opensilex-ModalForm>
 </template>
 
@@ -35,7 +53,8 @@ import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUp
 import DTOConverter from "../../models/DTOConverter";
 import {UserGetDTO} from "../../../../../opensilex-security/front/src/lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import MoveFormV2 from "@/components/events/form/MoveFormV2.vue";
+import MoveForm from "@/components/events/form/MoveForm.vue";
+import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -52,10 +71,14 @@ export default class ScientificObjectForm extends Vue {
     //#region Refs
     @Ref("modalForm")
     private readonly modalForm!: ModalForm<OntologyObjectForm, ScientificObjectCreationDTO, ScientificObjectUpdateDTO>;
-    @Ref("moveFormV2") readonly moveFormV2!: MoveFormV2;
+    @Ref("moveForm")
+    private readonly moveForm!: MoveForm;
     //endregion
 
     //#region Data
+    private hasMove: boolean = false;
+    private formMove: MoveCreationDTO = MoveForm.getEmptyForm();
+    private editMode:boolean = false;
     //endregion
 
     //#region Computed
@@ -65,6 +88,9 @@ export default class ScientificObjectForm extends Vue {
     //endregion
 
     //#region Events handlers
+    public onToggleMove(){
+        this.formMove= MoveForm.getEmptyForm();
+    }
     //endregion
 
     //#region Public methods
@@ -99,6 +125,7 @@ export default class ScientificObjectForm extends Vue {
                     editDto.publisher = publisher;
 
                     this.modalForm.showEditForm(editDto);
+                    this.editMode = true;
                 });
     }
     //endregion
@@ -119,7 +146,8 @@ export default class ScientificObjectForm extends Vue {
 
         let excludedProperties = new Set<string>([
             Oeso.getShortURI(Oeso.HAS_GEOMETRY), // location with move
-            Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
+            Rdfs.getShortURI(Rdfs.LABEL), // let OntologyObjectForm handle rdfs:label by default
+            Oeso.getShortURI(Oeso.IS_HOSTED) //is_hosted has to be calculated (from move)
         ]);
 
         let xp: string = this.getExperimentURI();
@@ -176,6 +204,7 @@ export default class ScientificObjectForm extends Vue {
                     uri: form.uri,
                     name: form.name,
                     rdf_type: form.rdf_type,
+                    move: this.formMove,
                     experiment: this.getExperimentURI(),
                     relations: definedRelations,
                 })
@@ -208,6 +237,7 @@ export default class ScientificObjectForm extends Vue {
                     uri: form.uri,
                     name: form.name,
                     rdf_type: form.rdf_type,
+                    move: this.formMove,
                     publisher: form.publisher,
                     publication_date: form.publication_date,
                     experiment: this.getExperimentURI(),
@@ -223,3 +253,12 @@ export default class ScientificObjectForm extends Vue {
 </script>
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+    ScientificObjectForm:
+        toggleLocation: Add location
+fr:
+    ScientificObjectForm:
+        toggleLocation: Ajouter une localisation
+</i18n>

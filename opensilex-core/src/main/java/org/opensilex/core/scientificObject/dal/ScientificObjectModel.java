@@ -70,7 +70,6 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             ignoreUpdateIfNull = true
     )
     protected LocationObservationCollectionModel locationObservationCollection;
-    public static final String OBSERVATION_COLLECTION_FIELD = "LocationObservationCollection";
 
     public LocalDate getCreationDate() {
         return creationDate;

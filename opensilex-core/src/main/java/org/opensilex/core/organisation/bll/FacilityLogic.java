@@ -45,11 +45,13 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {
@@ -241,6 +243,10 @@ public class FacilityLogic {
                 deleteFacilityLocations(session, instance);
             }
 
+            //Update "hasGeometry" of location linked to the facility (as "to")
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            locationObservationLogic.updateAssociatedLocationModel(session, existingModel.getUri(), existingModel.getLocationObservationCollection().getUri());
+
             return null;
         });
 
@@ -281,9 +287,10 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
 
         List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
-                Collections.singletonList(facilityModel.getLocationObservationCollection()),
+                Collections.singletonList(facilityModel.getLocationObservationCollection().getUri()),
                 false,
-                Instant.now()
+                Instant.now(),
+                null
         );
 
         if (lastLocationByFacility.isEmpty()) {
@@ -438,11 +445,10 @@ public class FacilityLogic {
                 return;
             }
             LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
+            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
         //Create the LocationObservationCollection
@@ -467,11 +473,10 @@ public class FacilityLogic {
             }
 
             LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
+            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
 

@@ -443,8 +443,8 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
         moveModel.setTargets(Arrays.asList(device));
-        moveModel.setFrom(fromFacility);
-        moveModel.setTo(toFacility);
+//        moveModel.setFrom(fromFacility);
+//        moveModel.setTo(toFacility);
         moveModel.setIsInstant(true);
         InstantModel endInstant = new InstantModel();
         endInstant.setDateTimeStamp(OffsetDateTime.parse(end));

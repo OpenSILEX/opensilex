@@ -16,11 +16,13 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 public class LocationObservationCollectionLogic {
     private final SPARQLService sparql;
@@ -52,6 +54,19 @@ public class LocationObservationCollectionLogic {
         } catch (Exception e) {
             throw new NotFoundURIException("No location collection found for this URI", featureOfInterest);
         }
+    }
+
+    public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollections(featureOfInterests);
+    }
+
+    /**
+     * @param rdfType type of object
+     * @return for each object of the rdfType, return the object uri, rdfType, and the location observation collection linked
+     * @throws SPARQLException
+     */
+    public Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> getLocationObservationCollectionListByType(URI rdfType) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollectionByType(rdfType);
     }
 
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {

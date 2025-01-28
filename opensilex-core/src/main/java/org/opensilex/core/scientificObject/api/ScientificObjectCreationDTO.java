@@ -10,13 +10,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import org.geojson.GeoJsonObject;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -27,7 +25,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author vmigot
  */
-@JsonPropertyOrder({"uri", "rdf_type", "name", "experiment", "relations"})
+@JsonPropertyOrder({"uri", "rdf_type", "name", "experiment", "relations", "move"})
 public class ScientificObjectCreationDTO extends RDFObjectDTO {
 
     @NotNull
@@ -40,6 +38,9 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     @JsonProperty("experiment")
     @ApiModelProperty(value = "Scientific object experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     private URI experiment;
+
+    @JsonProperty("move")
+    private MoveCreationDTO move;
 
     @Override
     @ValidURI
@@ -70,6 +71,14 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public MoveCreationDTO getMove() {
+        return move;
+    }
+
+    public void setMove(MoveCreationDTO move) {
+        this.move = move;
     }
 
     public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {

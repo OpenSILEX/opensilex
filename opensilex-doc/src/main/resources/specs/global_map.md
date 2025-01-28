@@ -1,7 +1,8 @@
-| Date       |Author|Developer(s)| Version OpenSilex | Comment                               |
-|------------|------|------------|-------------------|---------------------------------------|
-| 16/08/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global map with site   |
-| 04/11/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | add facilities to global map |
+| Date       |Author|Developer(s)| Version OpenSilex | Comment                              |
+|------------|------|------------|-------------------|--------------------------------------|
+| 16/08/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global map with site  |
+| 04/11/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | add facilities to global map         |
+| 18/12/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | add scientific objects |
 
 ## Table of contents
 * [Needs](#needs)
@@ -17,17 +18,18 @@
 
 - Use case # 1 : As a user, I need to locate different elements in my instance on the map, apart from experiments.
 - Use case # 2 : As a user, I need to locate all the sites and the facilities in my instance on the map, even if the map is zoomed out.
-- Use case # 3 : As a user, I need to see information about each site and facility.
-- Use case # 4 : As a user, I need to filter sites and facilities.
+- Use case # 3 : As a user, I need to locate all the scientific objects in my instance on the map, from a certain zoom level.
+- Use case # 4 : As a user, I need to see information about each site, facility and scientific object.
+- Use case # 5 : As a user, I need to filter sites, facility and scientific object.
 
 ## Solution
 
 A spatial module is added to the main menu. On click, a global map is displayed, with all sites in the instance by default and focus on.
 
 If the extent of the sites is above a certain scale, they are clustered according to the distance between them. The number of sites represented by the dot is written inside. Clicking on a cluster zooms in on the extent of all the sites represented by the selected cluster.
-The same behavior is applied to facilities.
+The same behavior is applied to facilities and scientific objects.
 
-Above the map, buttons allow you to select the element to be displayed (layer). For the moment, only the site and facility layers are displayed. 
+Above the map, buttons allow you to select the element to be displayed (layer). For the moment, only the site, facility and scientific object layers are displayed. 
 There are 2 others buttons to focus on selected elements and to change the map background.
 
 On the left, a layer management menu is open (by default on sites). You can manage its visibility and color.
@@ -48,13 +50,22 @@ Added a specific `getFacilitiesWithGeometry` service to `FacilityAPI`. This serv
 As with sites, to improve performance, we get only the minimum information : facility URI/name and its last location.
 
 As with sites, to filter facilities, we call the `searchExperiments` service and filter with the facility list to search for related experiments.
+#### Scientific object
+*Used the `searchTargetLocations` service to `LocationAPI`. This service allows to get only the last location (date as parameter) of a rdf type (here scientific objects) with spatial coordinates.
+We get only the minimum information : URI/rdfType and its last location.
+
 ### Front-end
+#### Scientific object
+Scientific objects are loaded when the map view is below a certain zoom/resolution. To limit the number of scientific objects to be displayed, the search is limited to the current map extent. 
+The service request is called after each "endmove" on the map.
 
 ### Tests
 #### Site
 - `testGetSites()` in `SiteAPITest` : test the service to search only sites with address.
 #### Facility
 - `testGetFacilities()` in `FacilityAPITest` : test the service to search the last location of facilities.
+#### Scientific object
+- TODO
 
 ## Limitations and Improvements
 ### Limitations
@@ -62,4 +73,5 @@ As with sites, to filter facilities, we call the `searchExperiments` service and
 
 - add others elements (scientific objects, ...)
 - improve links between sites and experiments: add a site to the experiment form or create automatic links when moving from the OS to the installations, etc.
+- test for scientific objects
     

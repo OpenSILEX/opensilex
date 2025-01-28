@@ -20,14 +20,13 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
-import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -36,10 +35,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -52,9 +49,6 @@ import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -130,44 +124,6 @@ public class ScientificObjectDAO {
         return childCountByParent;
     }
 
-    //TODO: delete?
-    public Map<String, List<FactorLevelModel>> getScientificObjectsFactors(URI experimentURI, Collection<URI> objectsURI, String lang) throws Exception {
-        SPARQLClassObjectMapperIndex mapperIndex = sparql.getMapperIndex();
-        String language;
-        if (lang == null) {
-            language = sparql.getDefaultLang();
-        } else {
-            language = lang;
-        }
-
-        SPARQLClassObjectMapper<FactorLevelModel> mapper = mapperIndex.getForClass(FactorLevelModel.class);
-        Node graph = mapper.getDefaultGraph();
-        Var soVar = makeVar("_so_uri");
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        SelectBuilder select = sparql.getSelectBuilder(mapper, graph, language, (builder) -> {
-            builder.addVar(soVar.getVarName());
-            builder.addGraph(experimentGraph, soVar, Oeso.hasFactorLevel, makeVar(FactorLevelModel.URI_FIELD));
-            builder.addFilter(SPARQLQueryHelper.inURIFilter(soVar, objectsURI));
-        }, null,null, null, null);
-
-        Map<String, List<FactorLevelModel>> resultMap = new HashMap<>();
-        Map<String, FactorLevelModel> loadedFactors = new HashMap<>();
-
-        sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            String expandedFactorURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(FactorLevelModel.URI_FIELD));
-            if (!loadedFactors.containsKey(expandedFactorURI)) {
-                loadedFactors.put(expandedFactorURI, mapper.createInstance(graph, result, language, sparql));
-            }
-            String expandedSoURI = SPARQLDeserializers.getExpandedURI(result.getStringValue(soVar.getVarName()));
-            if (!resultMap.containsKey(expandedSoURI)) {
-                resultMap.put(expandedSoURI, new ArrayList<>());
-            }
-            resultMap.get(expandedSoURI).add(loadedFactors.get(expandedFactorURI));
-        }, Exception.class));
-
-        return resultMap;
-    }
-
     public int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
 
         SelectBuilder count = new SelectBuilder();
@@ -182,7 +138,6 @@ public class ScientificObjectDAO {
     }
 
     public ListWithPagination<ScientificObjectModel> search(ScientificObjectSearchFilter searchFilter, Collection<String> fieldsToFetch) throws Exception {
-        //TODO:Logic??
         int total = getCount(searchFilter);
         if (total == 0) {
             return new ListWithPagination<>(Collections.emptyList());
@@ -230,7 +185,6 @@ public class ScientificObjectDAO {
     }
 
     public ListWithPagination<ScientificObjectNodeDTO> searchAsDto(ScientificObjectSearchFilter searchFilter) throws Exception {
-        //TODO:Logic??
         int total = getCount(searchFilter);
         if (total == 0) {
             return new ListWithPagination<>(Collections.emptyList());
@@ -685,9 +639,9 @@ public class ScientificObjectDAO {
 
         List<URI> resultList = new ArrayList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            resultList.add(uriDeserializer.fromString((result.getStringValue("graph"))));
-        }, Exception.class));
+        sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) ->
+            resultList.add(uriDeserializer.fromString((result.getStringValue("graph")))),
+                Exception.class));
 
         return resultList;
     }
@@ -788,7 +742,7 @@ public class ScientificObjectDAO {
      * @throws Exception if some Exception is encountered during SPARQL query execution
      * @throws DuplicateNameException if multiple object are found with objectName as name into objectGraph
      */
-    public ScientificObjectModel getByNameAndContext(String objectName, URI objectGraph) throws Exception, DuplicateNameException {
+    public ScientificObjectModel getByNameAndContext(String objectName, URI objectGraph) throws Exception {
         Node experimentGraph = SPARQLDeserializers.nodeURI(objectGraph);
 
         ListWithPagination<ScientificObjectModel> searchWithPagination = sparql.searchWithPagination(
@@ -812,17 +766,7 @@ public class ScientificObjectDAO {
         return searchWithPagination.getList().get(0);
     }
 
-    //TODO: Delete?
-    public ScientificObjectModel getObjectURINameByURI(URI objectURI, URI contextURI) throws Exception {
-        SPARQLNamedResourceModel ObjectURIName = sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), SPARQLNamedResourceModel.class, objectURI, null);
-        ScientificObjectModel experimentalObjectModel = new ScientificObjectModel();
-        experimentalObjectModel.setName(ObjectURIName.getName());
-        experimentalObjectModel.setUri(ObjectURIName.getUri());
-        return experimentalObjectModel;
-    }
-
-    public List<ScientificObjectNodeDTO> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang, Collection<URI> uris) throws Exception {
-
+    public List<ScientificObjectModel> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang) throws Exception {
         Node context = SPARQLDeserializers.nodeURI(contextURI);
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -831,6 +775,7 @@ public class ScientificObjectDAO {
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
         Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
         Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
+        Var locationCollectionVar = makeVar(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
 
         SelectBuilder select = new SelectBuilder();
 
@@ -841,6 +786,7 @@ public class ScientificObjectDAO {
         select.addVar(typeNameVar);
         select.addVar(creationDateVar);
         select.addVar(destructionDateVar);
+        select.addVar(locationCollectionVar);
 
         // Add label and type in where clause
         WhereBuilder graphHandler = new WhereBuilder();
@@ -860,9 +806,6 @@ public class ScientificObjectDAO {
         optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         select.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
-        //Add uris filter
-        graphHandler.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
-
         //Add date filter
         if( startDate != null || endDate != null ){
             LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
@@ -873,14 +816,19 @@ public class ScientificObjectDAO {
 
         select.addGraph(context, graphHandler);
 
+        // Add location collection filter
+        WhereBuilder locationGraphHandler = new WhereBuilder();
+        locationGraphHandler.addWhere(locationCollectionVar, SOSA.hasFeatureOfInterest, uriVar);
+        Node graphObservationCollection = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(LocationObservationCollectionModel.class));
+        select.addGraph(graphObservationCollection, locationGraphHandler);
+
         Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
 
         if(resultStream == null){
             return new ArrayList<>(Collections.emptyList());
         }
         else{
-            List<ScientificObjectNodeDTO> results = streamToList(resultStream,dtoFromResult());
-            return results;
+            return streamToList(resultStream, fromResult(lang));
         }
     }
 
@@ -926,13 +874,12 @@ public class ScientificObjectDAO {
 
     }
 
-    //TODO:Logic?
     private ThrowingFunction<SPARQLResult,ScientificObjectModel,Exception> fromResult(String lang) throws Exception{
 
         SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
 
-        return (result) -> {
+        return result -> {
             ScientificObjectModel model = new ScientificObjectModel();
 
             model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
@@ -947,6 +894,15 @@ public class ScientificObjectDAO {
             model.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
             model.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
 
+            //set Location Collection
+            String collectionURI = result.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
+            if(collectionURI != null){
+                LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();
+                locationObservationCollectionModel.setFeatureOfInterest(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                locationObservationCollectionModel.setUri(uriDeserializer.fromString(collectionURI));
+                model.setLocationObservationCollection(locationObservationCollectionModel);
+            }
+
             String parentUri = result.getStringValue(SPARQLTreeModel.PARENT_FIELD);
             if(parentUri != null){
                 model.setParent(new ScientificObjectModel());
@@ -957,13 +913,12 @@ public class ScientificObjectDAO {
 
     }
 
-    //TODO:Logic?
     private ThrowingFunction<SPARQLResult,ScientificObjectNodeDTO,Exception> dtoFromResult() throws Exception{
 
         SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
 
-        return (result) -> {
+        return result -> {
             ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
 
             dto.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
@@ -1241,8 +1196,8 @@ public class ScientificObjectDAO {
             range = SPARQLQueryHelper.getExprFactory().or(range4, range3); // range1 OR destructionDate does not exist OR creationDate does not exist AND destructionDate > startDate
         }
         Expr notBoundedDates = SPARQLQueryHelper.getExprFactory().and(notStartBounded, notEndBounded); // If SO has no creation and destruction dates
-        Expr res = SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);
-        return res;
+
+        return SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);
     }
 
     private void appendStrictNameFilter(SelectBuilder select, String name) throws Exception {
@@ -1266,7 +1221,7 @@ public class ScientificObjectDAO {
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
 
-        return (result) -> uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+        return result -> uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD));
 
     }
     //#endregion

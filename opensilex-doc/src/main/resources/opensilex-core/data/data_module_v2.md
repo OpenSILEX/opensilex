@@ -111,5 +111,4 @@ The module is divided into the following sub-packages:
 See :
 
 - [Data_validation_import.md](./data_validation_import_csv.md)
-- [summary_import_v1.png](./summary_import_v1.png)
-- [summary_import_v2.png](./summary_import_v2.png)
+- [summary_import.png](./summary_import.png)

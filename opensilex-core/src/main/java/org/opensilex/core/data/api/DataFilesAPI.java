@@ -490,6 +490,7 @@ public class DataFilesAPI {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescriptionsBySearch(
+            @ApiParam(value = "Regex pattern for filtering by filename", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
             @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
@@ -504,7 +505,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
 
     ) throws Exception {
-        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
     }
 
     @POST
@@ -517,6 +518,7 @@ public class DataFilesAPI {
             @ApiResponse(code = 200, message = "Return data file list", response = DataFileGetDTO.class, responseContainer = "List")
     })
     public Response getDataFileDescriptionsByTargets(
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
             @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
@@ -534,10 +536,11 @@ public class DataFilesAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
     }
 
     private Response searchDataFiles(
+            String name,
             URI rdfType,
             String startDate,
             String endDate,
@@ -594,6 +597,7 @@ public class DataFilesAPI {
         }
 
         DataFileSearchFilter filter = new DataFileSearchFilter()
+                .setName(name)
                 .setUser(user)
                 .setExperiments(experiments)
                 .setTargets(targets)

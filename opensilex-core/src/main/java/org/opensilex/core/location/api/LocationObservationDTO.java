@@ -178,11 +178,32 @@ public class LocationObservationDTO {
 
         setFeatureOfInterest(model.getFeatureOfInterest());
 
-        if (Objects.nonNull(model.getLocation().getGeometry())) {
-            try {
-                setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+        //A bunch of stuff gets set via the models location, so one check here to avoid null pointer exceptions
+        if (model.getLocation() != null) {
+            if(model.getLocation().getGeometry() != null){
+                try {
+                    setGeojson(LocationLogic.geometryToGeoJson(model.getLocation().getGeometry()));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (Objects.nonNull(model.getLocation().getFrom())) {
+                setFrom(model.getLocation().getFrom());
+            }
+            if (Objects.nonNull(model.getLocation().getTo())) {
+                setTo(model.getLocation().getTo());
+            }
+            if (Objects.nonNull(model.getLocation().getY())) {
+                setY(model.getLocation().getY());
+            }
+            if (Objects.nonNull(model.getLocation().getX())) {
+                setX(model.getLocation().getX());
+            }
+            if (Objects.nonNull(model.getLocation().getZ())) {
+                setZ(model.getLocation().getZ());
+            }
+            if (Objects.nonNull(model.getLocation().getTextualPosition())) {
+                setTextualPosition(model.getLocation().getTextualPosition());
             }
         }
         if (Objects.nonNull(model.getStartDate())) {
@@ -190,24 +211,6 @@ public class LocationObservationDTO {
         }
         if (Objects.nonNull(model.getEndDate())) {
             setEndDate(model.getEndDate());
-        }
-        if (Objects.nonNull(model.getLocation().getFrom())) {
-            setFrom(model.getLocation().getFrom());
-        }
-        if (Objects.nonNull(model.getLocation().getTo())) {
-            setTo(model.getLocation().getTo());
-        }
-        if (Objects.nonNull(model.getLocation().getY())) {
-            setY(model.getLocation().getY());
-        }
-        if (Objects.nonNull(model.getLocation().getX())) {
-            setX(model.getLocation().getX());
-        }
-        if (Objects.nonNull(model.getLocation().getZ())) {
-            setZ(model.getLocation().getZ());
-        }
-        if (Objects.nonNull(model.getLocation().getTextualPosition())) {
-            setTextualPosition(model.getLocation().getTextualPosition());
         }
     }
 

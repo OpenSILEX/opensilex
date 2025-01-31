@@ -204,8 +204,10 @@ public class FacilityLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
         return locationObservationLogic.generateModelObservationCollectionMap(
                 facilityList,
-                FacilityModel::getLocationObservationCollection,
-                Objects.nonNull(endDate) ? endDate : Instant.now()
+                (FacilityModel model)-> model.getLocationObservationCollection().getUri(),
+                Objects.nonNull(endDate) ? endDate : Instant.now(),
+                true,
+                null
         );
     }
 

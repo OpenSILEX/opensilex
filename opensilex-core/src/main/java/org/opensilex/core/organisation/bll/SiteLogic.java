@@ -292,7 +292,9 @@ public class SiteLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
         return locationObservationLogic.generateModelObservationCollectionMap(
                 siteList,
-                SiteModel::getLocationObservationCollection,
+                (SiteModel model)->model.getLocationObservationCollection().getUri(),
+                null,
+                true,
                 null
         );
     }

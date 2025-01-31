@@ -380,7 +380,7 @@ public class ScientificObjectAPI {
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
 
         ScientificObjectModel soModel = scientificObjectDto.newModel();
-        MoveModel moveModel = scientificObjectDto.getMove().toModel();
+        MoveModel moveModel = scientificObjectDto.getMove() == null ? null : scientificObjectDto.getMove().toModel();
 
         try {
             URI soURI = soLogic.createScientificObject(

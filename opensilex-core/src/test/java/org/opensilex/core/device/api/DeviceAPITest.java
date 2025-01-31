@@ -443,6 +443,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
         moveModel.setTargets(Arrays.asList(device));
+        //TODO MAX run, verify geospat tests if any needed
 //        moveModel.setFrom(fromFacility);
 //        moveModel.setTo(toFacility);
         moveModel.setIsInstant(true);

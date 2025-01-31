@@ -13,10 +13,8 @@ package org.opensilex.core.location.bll;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
-import org.opensilex.core.location.dal.LocationModel;
-import org.opensilex.core.location.dal.LocationObservationDAO;
-import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.core.location.dal.LocationObservationSearchFilter;
+import org.apache.commons.collections.CollectionUtils;
+import org.opensilex.core.location.dal.*;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -115,11 +113,14 @@ public class LocationObservationLogic {
      * @param date        the date at which we search the location
      * @return list of the last locations of each feature of interest
      */
-    public List<LocationObservationModel> getLastLocationObservation(List<URI> collectionUriList, boolean hasGeometry, Instant date, Geometry intersection) {
+    public List<LocationObservationModel> getLastLocationObservation(List<URI> collectionUriList, Boolean hasGeometry, Instant date, Geometry intersection) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
 
         searchFilter.setObservationCollectionList(collectionUriList);
-        searchFilter.setHasGeometry(hasGeometry);
+
+        if(Objects.nonNull(hasGeometry)) {
+            searchFilter.setHasGeometry(hasGeometry);
+        }
 
         if (Objects.nonNull(date)) {
             searchFilter.setEndDate(date);
@@ -356,43 +357,80 @@ public class LocationObservationLogic {
 
     /**
      *
-     * @param fromList list of models to create map with if they have a LocationObservationCollection
-     * @param getLocationObservationCollectionFromModel pass a function to tell this method how to fetch LocationObservationCollection from a T
-     * @param optionalEndDate Sites don't have a date, Facilities do
-     * @return a map of T with or without corresponding location
+     * @param modelsWithLocationMap a map of T to LocationObservationCollection uri, we will look at the last position for each of these collections
+     * @param optionalEndDate endDate if we want to keep only locations before some time
+     * @param optionalHasGeometry set to true if we want only models that have a location with geospatial coordinates that can be placed on map, null if we don't care about this
+     * @return a map of T with or without corresponding location. If the initial found location's geometry is null,
+     * then we look to see if the facility's to field has a facility with geometry instead.
      * @param <T> the type of the keys of the returned map
      */
     public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
-            List<T> fromList,
-            Function<T, LocationObservationCollectionModel> getLocationObservationCollectionFromModel,
-            Instant optionalEndDate
+            Map<T, URI> modelsWithLocationMap,
+            Instant optionalEndDate,
+            Boolean optionalHasGeometry,
+            Geometry optionalIntersection
     ){
         Map<T, LocationObservationModel> result = new HashMap<>();
 
-        //Get models with locations
-        Map<T, LocationObservationCollectionModel> modelsWithLocationMap = fromList.stream()
-                .filter(model -> getLocationObservationCollectionFromModel.apply(model) != null)
-                .collect(Collectors.toMap(Function.identity(), getLocationObservationCollectionFromModel));
-
-        if (!modelsWithLocationMap.isEmpty()) {
+        if (modelsWithLocationMap!=null && !modelsWithLocationMap.isEmpty()) {
             List<LocationObservationModel> locationObservationModels = getLastLocationObservation(
                     new ArrayList<>(modelsWithLocationMap.values()),
-                    true,
-                    optionalEndDate
+                    optionalHasGeometry,
+                    optionalEndDate,
+                    optionalIntersection
             );
 
-            var locationObservationMap = locationObservationModels.stream()
+            Map<URI, LocationObservationModel> locationObservationModelPerLocationObservationUri = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
-            modelsWithLocationMap.forEach((model, collection) -> {
-                var observation = locationObservationMap.get(collection.getUri());
-                if (Objects.nonNull(observation)) {
-                    result.put(model, observation);
+            modelsWithLocationMap.forEach((model, collectionUri) -> {
+                var locationObservation = locationObservationModelPerLocationObservationUri.get(collectionUri);
+                if (Objects.nonNull(locationObservation)) {
+                    //if geometry is null, try to get location facility
+                    if(locationObservation.getLocation().getGeometry() == null && locationObservation.getLocation().getTo() != null) {
+                        locationObservation = getFacilityGeometry(locationObservation);
+                    }
+                    result.put(model, locationObservation);
                 }
             });
 
         }
         return result;
+    }
+
+
+    /**
+     *
+     * @param fromList list of models to create map with if they have a LocationObservationCollection
+     * @param getLocationObservationCollectionFromModel pass a function to tell this method how to fetch LocationObservationCollection from a T
+     * @param optionalEndDate endDate if we want to keep only locations before some time
+     * @param optionalHasGeometry set to true if we want only models that have a location with geospatial coordinates that can be placed on map, null if we don't care about this
+     * @return a map of T with or without corresponding location. If the initial found location's geometry is null,
+     * then we look to see if the facility's to field has a facility with geometry instead.
+     * @param <T> the type of the keys of the returned map
+     */
+    public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
+            List<T> fromList,
+            Function<T, URI> getLocationObservationCollectionFromModel,
+            Instant optionalEndDate,
+            Boolean optionalHasGeometry,
+            Geometry optionalIntersection
+    ){
+        if(CollectionUtils.isEmpty(fromList)){
+            return new HashMap<>();
+        }
+
+        //Get models with locations
+        Map<T, URI> modelsWithLocationMap = fromList.stream()
+                .filter(model -> getLocationObservationCollectionFromModel.apply(model) != null)
+                .collect(Collectors.toMap(Function.identity(), getLocationObservationCollectionFromModel));
+
+        return generateModelObservationCollectionMap(
+                modelsWithLocationMap,
+                optionalEndDate,
+                optionalHasGeometry,
+                optionalIntersection
+        );
     }
 
     //#endregion

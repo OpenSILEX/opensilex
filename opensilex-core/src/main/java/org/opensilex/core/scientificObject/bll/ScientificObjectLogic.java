@@ -61,6 +61,7 @@ import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.*;
 import java.util.*;
 import java.util.function.Function;
@@ -166,7 +167,7 @@ public class ScientificObjectLogic {
                 MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser);
                 move.setTargets(Collections.singletonList(soURI));
                 move.setIsInstant(Objects.isNull(move.getStart()));
-                moveLogic.create(move);
+                moveLogic.createNoTransaction(move, session);
             }
 
             //If OS in experiment --> update species of XP
@@ -203,7 +204,7 @@ public class ScientificObjectLogic {
         return dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
     }
 
-    //TODO MAX should this be private?
+    //TODO MAX should this be private? and WTF is it me or is this the same as get with posiitions??????!!!!!!! ahhhhhhhhhhhhh
     public Map<ScientificObjectModel, LocationObservationModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser) throws Exception {
         Map<ScientificObjectModel, LocationObservationModel> soLocationMap = new HashMap<>();
 
@@ -229,7 +230,7 @@ public class ScientificObjectLogic {
 
         //TODO max, i believe there was something very similar in Facility logic or something with the setting of the date filter to now
 
-        if(!soCollectionList.isEmpty()){
+        if(!CollectionUtils.isEmpty(soCollectionList)){
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
             locationObservationModels = locationObservationLogic.getLastLocationObservation(
                     soCollectionList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
@@ -301,7 +302,7 @@ public class ScientificObjectLogic {
             ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
             graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
-            if (graphFilterURIs.isEmpty()) {
+            if (CollectionUtils.isEmpty(graphFilterURIs)) {
                 return Collections.emptyList();
             }
         }
@@ -316,7 +317,12 @@ public class ScientificObjectLogic {
             searchFilter.setExperiment(defaultGraphURI);
         }
 
-        if(!searchFilter.getRdfTypes().isEmpty() || !searchFilter.getFactorLevels().isEmpty() || !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") || searchFilter.getFacility() != null) {
+        if(
+                !CollectionUtils.isEmpty(searchFilter.getRdfTypes())
+                || !CollectionUtils.isEmpty(searchFilter.getFactorLevels())
+                || (searchFilter.getPattern()!=null && !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") )
+                || searchFilter.getFacility() != null
+        ) {
             searchFilter.setOnlyFetchOsWithNoParent(false);
         } else {
             searchFilter.setOnlyFetchOsWithNoParent(true);
@@ -324,7 +330,7 @@ public class ScientificObjectLogic {
 
         ListWithPagination<ScientificObjectNodeDTO> results = dao.searchAsDto(searchFilter);
 
-        if(results.getList().isEmpty()){
+        if(CollectionUtils.isEmpty(results.getList())){
             return new ListWithPagination<>(Collections.emptyList());
         }
 
@@ -403,7 +409,7 @@ public class ScientificObjectLogic {
                 DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
                 var targets = dataLogic.getUsedTargets(devices, variables, null, URI.create(Oeso.ScientificObject.getURI()));
 
-                if (targets.isEmpty()) {
+                if (CollectionUtils.isEmpty(targets)) {
                     return emptyResult;
                 }
                 searchFilter.intersectionOnUris(targets);
@@ -424,44 +430,29 @@ public class ScientificObjectLogic {
      */
     public Map<ScientificObjectModel, LocationObservationModel> getSOWithPosition(URI contextURI, String startDate, String endDate, AccountModel currentUser) throws Exception {
         validateContextAccess(contextURI, currentUser);
-
         Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = new HashMap<>();
         List<ScientificObjectModel> soList = dao.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage());
 
-        if(!soList.isEmpty()) {
-            List<LocationObservationCollectionModel> collectionList = soList.stream().map(ScientificObjectModel::getLocationObservationCollection).collect(Collectors.toList());
-
+        if(!CollectionUtils.isEmpty(soList)) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
 
-            //Get last location for the experiment
+            //Parse endDate or try to parse experiment's endDate if it was null, use current date if both of those things were null
             Instant end;
             if(endDate == null){
                 ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
                 ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
-                end = experiment.getEndDate() != null ? Instant.from(experiment.getEndDate()) : Instant.now();
+                end = experiment.getEndDate() != null ? experiment.getEndDate().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC) : Instant.now();
             } else {
                 end = Instant.parse(endDate);
             }
 
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
-                    collectionList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
-                    true,
+            soAndLocationsMap = locationObservationLogic.generateModelObservationCollectionMap(
+                    soList,
+                    (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
                     end,
-                    null);
-
-            var locationObservationMap = locationObservationModels.stream()
-                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
-
-            soList.forEach(so -> {
-                var observation = locationObservationMap.get(so.getLocationObservationCollection().getUri());
-                if (Objects.nonNull(observation)) {
-                    //if geometry is null, get location facility
-                    if(observation.getLocation().getGeometry() == null && observation.getLocation().getTo() != null) {
-                      observation = locationObservationLogic.getFacilityGeometry(observation);
-                    }
-                    soAndLocationsMap.put(so, observation);
-                }
-            });
+                    null,
+                    null
+            );
         }
         return soAndLocationsMap;
     }
@@ -488,14 +479,14 @@ public class ScientificObjectLogic {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        if(!collectionModelList.isEmpty()) {
+        if(!CollectionUtils.isEmpty(collectionModelList)) {
             soXpMap.forEach((so,xp) ->{
                 List<LocationObservationModel> lastLocation = locationObservationLogic.getLastLocationObservation(
                         Collections.singletonList(so.getLocationObservationCollection().getUri()),
                         false,
                         Objects.nonNull(xp.getEndDate()) ? xp.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant() : Instant.now(),
                         null);
-                if(!lastLocation.isEmpty()){
+                if(!CollectionUtils.isEmpty(lastLocation)){
                     xpLocationMap.put(xp.getUri(), lastLocation.get(0));
                 }
             });
@@ -611,7 +602,6 @@ public class ScientificObjectLogic {
             }
 
             //check that no moves are associated
-            //TODO max , this seems wierd, if a move is created upon creation how do we ever delete
             MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser);
             int moveCount = moveLogic.countForTarget(objectURI);
             if(moveCount > 0){
@@ -781,7 +771,7 @@ public class ScientificObjectLogic {
 
         Map<String,URI> existingUriByName = dao.checkUniqueNameByGraph(objects, objectGraph);
 
-        if(!existingUriByName.isEmpty()){
+        if(existingUriByName!=null && !existingUriByName.isEmpty()){
             throw new DuplicateNameListException(existingUriByName);
         }
     }
@@ -888,7 +878,7 @@ public class ScientificObjectLogic {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(object.getType(), new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
-        if(!relations.isEmpty()){
+        if(!CollectionUtils.isEmpty(relations)){
             RDFObjectDTO.validatePropertiesAndAddToObject(contextURI, model, object, relations, ontologyDAO);
         }
 
@@ -920,7 +910,7 @@ public class ScientificObjectLogic {
             }
         });
 
-        if(!localDuplicatesByUri.isEmpty()){
+        if(!CollectionUtils.isEmpty(localDuplicatesByUri.keySet())){
             throw new DuplicateNameListException(localDuplicatesByUri);
         }
     }

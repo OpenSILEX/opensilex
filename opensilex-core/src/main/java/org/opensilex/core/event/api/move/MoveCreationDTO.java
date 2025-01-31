@@ -28,7 +28,7 @@ public class MoveCreationDTO extends EventCreationDTO {
     }
 
     public MoveModel toModel() {
-        MoveModel model = toModel(new MoveModel());
+        MoveModel model = super.toModel(new MoveModel());
 
         if (Objects.nonNull(location)) {
             LocationObservationModel locationObservationModel = location.newModel();

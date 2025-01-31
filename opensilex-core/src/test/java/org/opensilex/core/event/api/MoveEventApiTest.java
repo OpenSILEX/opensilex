@@ -38,6 +38,8 @@ import static org.junit.Assert.*;
 
 public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
+    //TODO MAX verify geospat stuff
+
     public static String path = EventAPI.MOVE_PATH;
 
     public static String getByUriPath = path + "/{uri}";
@@ -100,7 +102,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         Node facilityGraph = sparql.getDefaultGraph(FacilityModel.class);
         sparql.create(facilityGraph,Arrays.asList(facilityA, facilityB, facilityC));
 
-        //
         fromFacilities = new ArrayList<>(nbMoveMax);
         toFacilities = new ArrayList<>(nbMoveMax);
 

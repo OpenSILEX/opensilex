@@ -85,7 +85,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         //A move can exist that does not have any positions, if the location observation does not exist then return our Move instead of throwing an error
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        URI collectionURI = collectionLogic.getLocationObservationCollection(model.getTargets().get(0));
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
         if(Objects.nonNull(collectionURI)) {
             LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
@@ -152,7 +152,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
                     try {
                         //Check if a location collection exists for this target
-                        URI targetCollection = collectionLogic.getLocationObservationCollection(target);
+                        URI targetCollection = collectionLogic.getLocationObservationCollectionURI(target);
                         if(Objects.isNull(targetCollection)){
                             targetCollection = collectionLogic.createLocationObservationCollection(target);
                         }
@@ -190,31 +190,22 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @throws NoSuchElementException
      * @throws SPARQLException
      */
-    public Map<URI, LocationObservationModel> getTargetWithPosition(List<URI> targetUris, Instant endDate, Geometry intersection) throws NoSuchElementException, SPARQLException {
-        Map<URI, LocationObservationModel> targetLocationMap = new HashMap<>();
+    public Map<URI, LocationObservationModel> getTargetWithPosition(
+            List<URI> targetUris,
+            Instant endDate,
+            Geometry intersection
+    ) throws NoSuchElementException, SPARQLException {
 
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(targetUris);
-
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-        if(!targetCollectionMap.isEmpty()){
-            List<LocationObservationModel> locationObservationModels = locationObservationLogic.getLastLocationObservation(
-                    targetCollectionMap.values().stream().toList(),
-                    true,
-                    Objects.nonNull(endDate) ? endDate : Instant.now(),
-                    intersection);
 
-            var locationObservationMap = locationObservationModels.stream()
-                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
-
-            targetCollectionMap.forEach((target, collection) -> {
-                var observation = locationObservationMap.get(collection);
-                if (Objects.nonNull(observation)) {
-                    targetLocationMap.put(target, observation);
-                }
-            });
-        }
-        return targetLocationMap;
+        return locationObservationLogic.generateModelObservationCollectionMap(
+                targetCollectionMap,
+                Objects.nonNull(endDate) ? endDate : Instant.now(),
+                true,
+                intersection
+        );
     }
 
     /**
@@ -254,7 +245,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         //For each move event get location
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        URI collectionURI = collectionLogic.getLocationObservationCollection(target);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(target);
         List<LocationObservationModel> locationHistory;
 
         if (Objects.nonNull(collectionURI)) {
@@ -318,7 +309,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      */
     public LocationObservationModel getPosition(MoveModel move) throws Exception {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        URI collectionURI = collectionLogic.getLocationObservationCollection(move.getTargets().get(0));
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(move.getTargets().get(0));
 
         //Get last location
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
@@ -326,6 +317,53 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 collectionURI,
                 move.getEnd().getDateTimeStamp().toInstant(),
                 move.getStart() != null ? move.getStart().getDateTimeStamp().toInstant() : null );
+    }
+
+    public MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
+        //Validate and set publisher
+        MoveModel realModel = super.create(model);
+        // insert move event as location in mongodb
+        LocationObservationModel observation = realModel.getLocationObservation();
+
+        if (Objects.nonNull(observation)) {
+            LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+
+            realModel.getTargets().forEach(target -> {
+                try {
+                    URI collectionURI = collectionLogic.getLocationObservationCollectionURI(target);
+
+                    if (Objects.isNull(collectionURI)) {
+                        collectionURI = collectionLogic.createLocationObservationCollection(target);
+                    }
+
+                    Instant end =realModel.getEnd().getDateTimeStamp().toInstant();
+                    Instant start = Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null;
+
+                    observationLogic.validateDates(end, start);
+
+                    boolean hasGeometry = observationLogic.checkHasGeometry(
+                            realModel.getLocationObservation(),
+                            start,
+                            end);
+
+                    observationLogic.createLocationObservation(
+                            session,
+                            collectionURI,
+                            target,
+                            hasGeometry,
+                            start,
+                            end,
+                            realModel.getLocationObservation().getLocation(),
+                            realModel.getUri()
+                    );
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        return realModel;
     }
     //#endregion
 
@@ -356,58 +394,11 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return models;
     }
 
-    private MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
-        //Validate and set publisher
-        MoveModel realModel = super.create(model);
-        // insert move event as location in mongodb
-        LocationObservationModel observation = realModel.getLocationObservation();
-
-        if (Objects.nonNull(observation)) {
-            LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-
-            realModel.getTargets().forEach(target -> {
-                try {
-                    URI collectionURI = collectionLogic.getLocationObservationCollection(target);
-
-                    if (Objects.isNull(collectionURI)) {
-                        collectionURI = collectionLogic.createLocationObservationCollection(target);
-                    }
-
-                    Instant end =realModel.getEnd().getDateTimeStamp().toInstant();
-                    Instant start = Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null;
-
-                    observationLogic.validateDates(end, start);
-
-                    boolean hasGeometry = observationLogic.checkHasGeometry(
-                             realModel.getLocationObservation(),
-                             start,
-                             end);
-
-                    observationLogic.createLocationObservation(
-                            session,
-                            collectionURI,
-                            target,
-                            hasGeometry,
-                            start,
-                            end,
-                            realModel.getLocationObservation().getLocation(),
-                            realModel.getUri()
-                    );
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
-        return realModel;
-    }
-
     private void deleteNoTransaction(URI uri, ClientSession session) throws Exception{
         MoveModel model= dao.get(uri,currentUser);
 
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        URI collectionURI = collectionLogic.getLocationObservationCollection(model.getTargets().get(0));
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
         LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
         observationLogic.deleteASpecificLocationObservation(
@@ -422,7 +413,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     private MoveModel updateMoveNoTransaction(MoveModel model, ClientSession session) throws Exception {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        URI collectionURI = collectionLogic.getLocationObservationCollection(model.getTargets().get(0));
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
         LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
         LocationObservationModel observation = observationLogic.getASpecificLocationObservation(collectionURI, model.getLocationObservation().getEndDate(), model.getLocationObservation().getStartDate());

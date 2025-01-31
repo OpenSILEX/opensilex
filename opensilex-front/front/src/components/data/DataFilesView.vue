@@ -24,6 +24,21 @@
           class="searchFilterField"
         >
           <template v-slot:filters>
+            <!-- FileName -->
+            <div>
+              <opensilex-FilterField>
+                <label for="name">{{ $t("DataFilesView.fileName") }}</label>
+                <opensilex-StringFilter
+                  id="name"
+                  :filter.sync="filter.name"
+                  placeholder="DataFilesView.fileName-placeholder"               
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></opensilex-StringFilter>
+                <br>
+              </opensilex-FilterField>
+            </div>
+
             <!-- Type -->
             <div>
               <opensilex-FilterField>
@@ -223,6 +238,7 @@ export default class DataFilesView extends Vue {
   @Ref("soSelector") readonly soSelector!: any;
 
   filter = {
+    name: undefined,
     start_date: undefined,
     end_date: undefined,
     rdf_type: undefined,
@@ -234,6 +250,7 @@ export default class DataFilesView extends Vue {
 
   resetFilter() {
     this.filter = {
+      name: undefined,
       start_date: undefined,
       end_date: undefined,
       rdf_type: undefined,
@@ -351,10 +368,14 @@ en:
     description: View datafiles
     details: view datafile metadata
     imagesView: Images view
+    fileName: File Name
+    fileName-placeholder: Enter file name
 
 fr:
   DataFilesView:
     description: Voir les fichiers de données
     details: Voir les métadonnées du fichier
     imagesView: Visualisation des images
+    fileName: Nom de fichier
+    fileName-placeholder: Saisir un nom de fichier
 </i18n>

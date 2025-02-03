@@ -78,6 +78,9 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     @JsonProperty("datatype")
     private URI dataType;
 
+    @JsonProperty("dimensions")
+    private List<DimensionModel> dimensions;
+
     @ValidURI
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -217,6 +220,14 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.species = species;
     }
 
+    public List<DimensionModel> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionModel> dimensions) {
+        this.dimensions = dimensions;
+    }
+
     public VariableModel newModel() {
         VariableModel model = new VariableModel();
         model.setUri(uri);
@@ -263,6 +274,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         if(!StringUtils.isEmpty(samplingInterval)){
             model.setSamplingInterval(samplingInterval);
         }
+        model.setDimensions(dimensions);
         setSkosReferencesToModel(model);
         return model;
     }

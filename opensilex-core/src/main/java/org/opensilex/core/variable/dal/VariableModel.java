@@ -112,6 +112,15 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDimensions",
+            required = true
+    )
+    private List<DimensionModel> dimensions;
+    public static final String DIMENSIONS_FIELD_NAME = "dimensions";
+
+
     public String getAlternativeName() { return alternativeName; }
 
     public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
@@ -186,6 +195,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     public void setSpecies(List<SpeciesModel> species) {
         this.species = species;
+    }
+
+    public List<DimensionModel> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionModel> dimensions) {
+        this.dimensions = dimensions;
     }
 
 }

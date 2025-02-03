@@ -52,6 +52,8 @@ public class Oeso {
     public static final Resource Characteristic = Ontology.resource(NS, "Characteristic");
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
+    public static final Resource Dimension = Ontology.resource(NS, "Dimension");
+
 
     public static final Property hasEntity = Ontology.property(NS, "hasEntity");
     public static final Property hasCharacteristic = Ontology.property(NS, "hasCharacteristic");
@@ -62,6 +64,8 @@ public class Oeso {
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
     public static final Property hasDataType = Ontology.property(NS, "hasDataType");
     public static final Property hasEntityOfInterest = Ontology.property(NS, "hasEntityOfInterest");
+    public static final Property hasDimensions = Ontology.property(NS, "hasDimensions");
+
 
     public static final Property fromSharedResourceInstance = Ontology.property(NS, "fromSharedResourceInstance");
 

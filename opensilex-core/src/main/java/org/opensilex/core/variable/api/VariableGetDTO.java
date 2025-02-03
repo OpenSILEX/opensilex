@@ -58,6 +58,9 @@ public class VariableGetDTO {
     @JsonProperty("sharedResourceInstance")
     private SharedResourceInstanceDTO sharedResourceInstance;
 
+    @JsonProperty("dimensions")
+    private List<DimensionModel> dimensions;
+
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
@@ -132,6 +135,14 @@ public class VariableGetDTO {
         this.sharedResourceInstance = sharedResourceInstance;
     }
 
+    public List<DimensionModel> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionModel> dimensions) {
+        this.dimensions = dimensions;
+    }
+
     /**
      * Creates a {@link VariableGetDTO} from a {@link VariableModel}. The list of shared resource instances should be
      * provided to set the field {@link VariableGetDTO#sharedResourceInstance} correctly.
@@ -176,6 +187,7 @@ public class VariableGetDTO {
                 dto.setSharedResourceInstance(new SharedResourceInstanceDTO().setUri(sriUri));
             }
         }
+        dto.setDimensions(model.getDimensions());
         return dto;
     }
 }

@@ -1,8 +1,7 @@
 import { User } from './User';
-import Vue from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
-import VueRouter from 'vue-router';
+import { MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO } from '../lib';
+import { createRouter, createWebHistory, Router, RouteRecordRaw } from 'vue-router';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 
 export class OpenSilexRouter {
@@ -10,16 +9,16 @@ export class OpenSilexRouter {
     private frontConfig: FrontConfigDTO;
     private userFrontConfig: UserFrontConfigDTO;
     private menu: Array<MenuItemDTO> = [];
-    private router: any;
-    private pathPrefix: string
+    private router: Router;
+    private pathPrefix: string;
     private PUBLIC_ROUTE: string = "public";
-    private sectionAttributes : any = {};
+    private sectionAttributes: any = {};
 
     constructor(pathPrefix: string) {
         this.pathPrefix = pathPrefix;
         this.router = this.createRouter(User.ANONYMOUS());
     }
-    
+
     public getSectionAttributes() {
         return this.sectionAttributes;
     }
@@ -36,60 +35,54 @@ export class OpenSilexRouter {
         this.userFrontConfig = userConfig;
     }
 
-    public getRouter() {
+    public getRouter(): Router {
         return this.router;
     }
 
-    private createRouter(user: User) {
-        let routes = this.computeMenuRoutes(user);
-
-        this.router = new VueRouter({
-            base: this.pathPrefix + "/app",
-            mode: 'history',
+    private createRouter(user: User): Router {
+        const routes = this.computeMenuRoutes(user);
+        
+        return createRouter({
+            history: createWebHistory("/app"),
             routes: routes
-        })
+        });
+    }
 
+    public resetRouter(user: User): Router {
+        this.router = this.createRouter(user);
         return this.router;
     }
 
-    public resetRouter(user: User) {
-        const newRouter: any = this.createRouter(user);
-        this.router.matcher = newRouter.matcher;
-        return this.router;
-    }
+    public computeMenuRoutes(user: User): Array<RouteRecordRaw> {
+        const routes: Array<RouteRecordRaw> = [];
 
-    public computeMenuRoutes(user: User) {
-        let routes: Array<any> = [];
+        const $opensilex: OpenSilexVuePlugin = (globalThis as any).$opensilex;
+        const frontConfig = this.frontConfig;
 
-        let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
-        let frontConfig = this.frontConfig;
-        if (frontConfig != undefined) {
+        if (frontConfig) {
             routes.push({
                 path: "/",
                 component: this.getAsyncComponentLoader($opensilex, frontConfig.homeComponent)
             });
 
-            for (let i in frontConfig.routes) {
-                let route = frontConfig.routes[i];
-
+            for (const route of frontConfig.routes) {
                 if (user.hasAllCredentials(route.credentials)) {
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component),
-                        meta:{public: false}
+                        meta: { public: false }
                     });
                 }
-                if(route.credentials.includes(this.PUBLIC_ROUTE)){ 
+
+                if (route.credentials.includes(this.PUBLIC_ROUTE)) {
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component),
-                        meta:{public: true}
+                        meta: { public: true }
                     });
-                    
                 }
             }
 
-            
             routes.push({
                 path: "*",
                 component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
@@ -103,49 +96,48 @@ export class OpenSilexRouter {
         return routes;
     }
 
-    private getAsyncComponentLoader($opensilex, componentId) {
+    private getAsyncComponentLoader($opensilex: OpenSilexVuePlugin, componentId: string) {
         return () => {
             return new Promise((resolve, reject) => {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
-                let override = $opensilex.themeConfig.componentOverrides[componentId];
+                // const override = $opensilex.themeConfig.componentOverrides[componentId];
+                const override = $opensilex.getThemeConfig()?.componentOverrides[componentId];
+
+                
                 if (override) {
                     componentDef = ModuleComponentDefinition.fromString(override);
                 }
+
                 $opensilex.loadComponentModule(componentDef)
                     .then(() => {
-                        let component: any = Vue.component(componentDef.getId());
+                        const component: any = (globalThis as any).Vue?.component(componentDef.getId());
                         if (component) {
-                            resolve(component)
+                            resolve(component);
                         } else {
-                            let result = this.getAsyncComponentLoader($opensilex, this.frontConfig.notFoundComponent)();
+                            const result = this.getAsyncComponentLoader($opensilex, this.frontConfig.notFoundComponent)();
                             if (result instanceof Promise) {
-                                result
-                                    .then(resolve)
-                                    .catch(reject);
+                                result.then(resolve).catch(reject);
                             } else {
                                 resolve(result);
                             }
                         }
                     })
                     .catch(reject);
-            })
-        }
+            });
+        };
     }
 
     public refresh() {
-        this.router.go();
+        this.router.go(0);
     }
 
-    private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
-        let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
-        let menu: Array<MenuItemDTO> = [];
-        for (let i in items) {
-            let item: MenuItemDTO = items[i];
+    private buildMenu(items: Array<MenuItemDTO>, routes: Array<RouteRecordRaw>, user: User): Array<MenuItemDTO> {
+        const $opensilex: OpenSilexVuePlugin = (globalThis as any).$opensilex;
+        const menu: Array<MenuItemDTO> = [];
 
-
-            
+        for (const item of items) {
             if (item.route) {
-                let route = item.route;
+                const route = item.route;
                 menu.push(item);
                 routes.push({
                     path: route.path,
@@ -158,14 +150,12 @@ export class OpenSilexRouter {
                 };
             }
 
-            let childItems: Array<MenuItemDTO> = [];
             if (item.children.length > 0) {
-                childItems = this.buildMenu(item.children, routes, user);
-            }
-
-            if (!item.route && childItems.length > 0) {
-                item.children = childItems;
-                menu.push(item);
+                const childItems = this.buildMenu(item.children, routes, user);
+                if (!item.route && childItems.length > 0) {
+                    item.children = childItems;
+                    menu.push(item);
+                }
             }
         }
 

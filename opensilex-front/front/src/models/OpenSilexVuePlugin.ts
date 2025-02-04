@@ -105,6 +105,10 @@ export default class OpenSilexVuePlugin {
         return this.baseApi;
     }
 
+    public getThemeConfig() {
+        return this.themeConfig;
+    }
+
     // get ressources linked to loaded theme
     getResourceURI(path: string, acceptedExt: Array<string> = []): string {
         if (this.config.themeModule && this.config.themeName) {

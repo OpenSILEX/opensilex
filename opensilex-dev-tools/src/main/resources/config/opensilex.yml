@@ -1,40 +1,34 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://phenome.inrae.fr/m3p/
+    baseURIAlias: m3p
     sparql:
-        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://138.102.159.37/rdf4j-server/
+            repository: optimization_m3p
 
 file-system:
     fs:
         config:
-            defaultFS: local
+            # Default file system storage (String)
+            defaultFS: gridfs
+            # Map of file storage connection definition by identifier (Map<String,FileStorageConnection>)
             connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
-                    config:
-                        basePath: ../../opensilex-data
-                #     irods:
-                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-                #         config:
-                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
                 gridfs:
+                    # Service implementation class for: gridfs (FileStorageConnection)
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:
-                        host: localhost
-                        port: 8668
-                        database: opensilex
-            # customPath:
-            #     datafile/: irods
+                        # MongoDB main host (String)
+                        host: 138.102.159.98
+                        # MongoDB main host port (int)
+                        port: 27017
+                        database: optimization_m3p
 
 big-data:
-    mongodb:
-        config:
-            host: localhost
-            port: 8668
-            database: opensilex
+  mongodb:
+    config:
+      host: 138.102.159.98
+      port: 27017
+      database: optimization_m3p
     #            timezone: Europe/Paris
 
 phisws:
@@ -54,8 +48,51 @@ phisws:
 #                 userId : ""
 #                 userPassword : ""
 
-#core:
-#    enableLogs: true
+core:
+    enableOntologyCaching: false 
+   # Activate access metrics (boolean)
+   # Metrics options (MetricsConfig)
+    metrics:
+      enableMetrics: true
+      # Metrics configs about system (SystemMetricsConfig)
+      system:
+        # First metrics for any time depending on is time unit (int)
+        timeBeforeFirstMetric: 1
+        # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+        delayBetweenMetrics: 10
+        # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+        metricsTimeUnit: DAYS
+      # Metrics configs about experiments (ExperimentsMetricsConfig)
+      experiments:
+        # First metrics for any time depending on is time unit (int)
+        timeBeforeFirstMetric: 1
+        # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+        delayBetweenMetrics: 2
+        # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+        metricsTimeUnit: DAYS
+    sharedResourceInstances:
+      - uri: http://138.102.159.36:8083/rest
+        label:
+            fr: "PHENOME"
+            en: "PHENOME"
+        accountName: guest@opensilex.org
+        accountPassword: guest
+        apiUrl: http://138.102.159.36:8083/rest
+      - uri: http://138.102.159.36:8082/rest
+        label:
+            fr: "EMPHASIS"
+            en: "EMPHASIS"
+        accountName: guest@opensilex.org
+        accountPassword: guest
+        apiUrl: http://138.102.159.36:8082/rest
+      - uri: https://vitioeno.mistea.inrae.fr/resource/rest
+        label:
+            fr: "VitiOeno"
+            en: "VitiOeno"
+        accountName: guest@opensilex.org
+        accountPassword: guest
+        apiUrl: https://vitioeno.mistea.inrae.fr/resource/rest
+
 #server:
 #    pathPrefix: /sunagri
 
@@ -76,24 +113,16 @@ system:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
 front:
-    agroportal:
-        entity:
-            - AGROVOC
-            - PO
-        trait:
-            - PATO
-        method:
-            - TRANSFORMON
-        unit:
-            - OBOE
-
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr
+    dashboard:
+        graph1:
+            variable: "http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius"
+            dataLocationInformations: "Config Seb"
+    notificationMessage:
+        fr: '<img src="https://tenor.com/fr/view/wilk4-wilk-wolf-dance-gif-15706258.gif" alt="gif" width="40"/> 
+        Bienvenue sur mon instance ! 
+        <img src="https://www.freeiconspng.com/uploads/howling-wolf-icon-4.png" width="50" alt="Howling Wolf icon" />'
+        en: '<img src="https://tenor.com/fr/view/wilk4-wilk-wolf-dance-gif-15706258.gif" alt="gif" width="40"/>
+        Welcome to my instance !
+        <img src="https://www.freeiconspng.com/uploads/howling-wolf-icon-4.png" width="50" alt="Howling Wolf icon" />'
+    notificationColorTheme: ""
+    notificationEndDate: "2026-02-13"

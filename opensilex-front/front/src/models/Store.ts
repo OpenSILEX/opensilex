@@ -2,14 +2,14 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import {User} from './User'
 import VueRouter from 'vue-router';
+import { createRouter, createWebHistory, Router, RouteRecordRaw } from 'vue-router';
 import {Menu} from './Menu';
 import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
+import { createStore } from 'vuex';
 
-Vue.use(Vuex)
-Vue.use(VueRouter)
 
 declare var window: any;
 
@@ -100,7 +100,7 @@ export class SearchStore {
 
 }
 
-let store = new Vuex.Store({
+let store = createStore({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,

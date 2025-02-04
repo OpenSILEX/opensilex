@@ -620,7 +620,7 @@ $opensilex.loadModules([
                 // Init routing
                 console.debug("Initialize routing");
                 store.commit("resetRouter");
-                let router: VueRouter = store.state.openSilexRouter.getRouter();
+                let router: typeof VueRouter = store.state.openSilexRouter.getRouter();
 
                 // Initialise main layout components from configuration
                 console.debug("Define initial modules to load...");

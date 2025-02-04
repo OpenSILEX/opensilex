@@ -73,29 +73,37 @@
                 </configuration>
             </plugin>
 
-            <!-- Front Node & Yarn management -->
+            <!-- Front Node & bun management -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.plugin.version}</version>
+                  
                 <executions>
-                    <!-- install node and yarn globally -->
+                    <!-- install node and bun globally -->
                     <execution>
                         <id>install node and package manager</id>
                         <goals>
-                            <goal>install-node-and-yarn</goal>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution> 
+                    <execution>
+                        <id>install bun</id>
+                        <goals>
+                            <goal>install-bun</goal>
                         </goals>
                         <phase>initialize</phase>
                     </execution>
-
+                    
                     <!-- install typescript and dts-generator types definition generator globally -->
                     <execution>
                         <id>install typescript and dts-generator globally</id>
                         <goals>
-                            <goal>yarn</goal>
+                            <goal>bun</goal>
                         </goals>
                         <configuration>
-                            <arguments>global add typescript dts-generator</arguments>
+                            <arguments>add -d bun-plugin-dts</arguments>
                         </configuration>
                         <phase>initialize</phase>
                     </execution>
@@ -104,10 +112,10 @@
                     <execution>
                         <id>install common js dependencies</id>
                         <goals>
-                            <goal>yarn</goal>
+                            <goal>bun</goal>
                         </goals>
                         <configuration>
-                            <arguments>--network-timeout 1000000 install</arguments>
+                            <arguments>install</arguments>
                             <workingDirectory>../</workingDirectory>
                         </configuration>
                         <phase>initialize</phase>
@@ -118,7 +126,7 @@
                         <id>install browserlist</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>yarn</goal>
+                            <goal>bun</goal>
                         </goals>
 
                         <configuration>
@@ -132,7 +140,7 @@
                         <id>check common js outdated dependencies</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>yarn</goal>
+                            <goal>bun</goal>
                         </goals>
 
                         <configuration>
@@ -147,7 +155,7 @@
                         <id>check common js dependencies security issues</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>yarn</goal>
+                            <goal>bun</goal>
                         </goals>
 
                         <configuration>

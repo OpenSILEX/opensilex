@@ -17,6 +17,9 @@
         "skipLibCheck": true,
         "types": ["node", "opensilex-security", "opensilex-core", "opensilex-phis"],
         "paths": {
+            "@/*": [
+            "src/*"
+        ],
             "opensilex-security": ["../../opensilex-security/front/src"],
             "opensilex-core": ["../../opensilex-core/front/src"]
         },
@@ -26,12 +29,7 @@
             "dom.iterable",
             "scripthost"
         ]
-    },
-    "paths": {
-        "@/*": [
-            "src/*"
-        ]
-    },
+    }, 
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx",

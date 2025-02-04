@@ -12,9 +12,9 @@
   "scripts": {
     "build": "tsc --outDir dist/",
     "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
-    "check:outdated": "yarn outdated || cd .",
-    "check:security": "yarn audit || cd .",
-    "check:browserlist": "yarn add caniuse-lite && yarn remove caniuse-lite",
+    "check:outdated": "bun outdated || cd .",
+    "check:security": "bun audit || cd .",
+    "check:browserlist": "bun add caniuse-lite && yarn remove caniuse-lite",
     "build:types": "dts-generator --project $(pwd) --out ../../types/{{{npmName}}}.d.ts --prefix {{{npmName}}}"
   },
   "dependencies": {

@@ -46,7 +46,8 @@
         <!-- Front-end Node & Yarn version -->
         <node.version>v18.20.4</node.version>
         <yarn.version>v1.22.10</yarn.version>
-        <npm.version>v8.5.2</npm.version>
+        <npm.version>11.1.0</npm.version>
+        <bun.version>v1.2.2</bun.version>
 
         <!-- Java supported version -->
         <java.compiler.version>17</java.compiler.version>
@@ -121,7 +122,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>5.3.2</owasp.dependency.check.maven.plugin.version>
-        <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
+        <frontend.maven.plugin.version>1.15.1</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
@@ -861,11 +862,14 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
 
                     <configuration>
                         <nodeVersion>${node.version}</nodeVersion>
-                        <yarnVersion>${yarn.version}</yarnVersion>
+                        <!-- <yarnVersion>${yarn.version}</yarnVersion> -->
                         <npmVersion>${npm.version}</npmVersion>
+                        <bunVersion>${bun.version}</bunVersion>
                         <installDirectory>../.node</installDirectory>
                         <workingDirectory>front</workingDirectory>
+                        
                     </configuration>
+                    
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
@@ -1444,12 +1448,12 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>install Vue application dependencies</id>
                                 <phase>generate-sources</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>bun</goal>
                                 </goals>
 
                                 <configuration>
                                     <skip>${skipFrontLibInstall}</skip>
-                                    <arguments>--network-timeout 1000000 install</arguments>
+                                    <arguments>install</arguments>
                                 </configuration>
                             </execution>
                             <!-- Build typescript definition for auto-generated webservice access service library -->
@@ -1457,7 +1461,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>build-typescript-definition</id>
                                 <phase>process-classes</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>bun</goal>
                                 </goals>
 
                                 <configuration>
@@ -1471,7 +1475,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>build Vue application</id>
                                 <phase>process-classes</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>bun</goal>
                                 </goals>
 
                                 <configuration>
@@ -1485,7 +1489,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>check Vue application outdated dependencies</id>
                                 <phase>verify</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>bun</goal>
                                 </goals>
 
                                 <configuration>
@@ -1499,7 +1503,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>check Vue application security issues</id>
                                 <phase>verify</phase>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>bun</goal>
                                 </goals>
 
                                 <configuration>

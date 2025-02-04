@@ -3,21 +3,23 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
-        "build": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --target lib --formats commonjs,umd-min src/index.ts --mode production",
+        "serve": "vite serve",
+        "build": "vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
-        "check:browserlist": "yarn add caniuse-lite && yarn remove caniuse-lite",
-        "check:outdated": "yarn outdated || cd .",
-        "check:security": "yarn audit || cd ."
+        "check:browserlist": "bun add caniuse-lite && bun remove caniuse-lite",
+        "check:outdated": "bun outdated || cd .",
+        "check:security": "bun audit || cd ."
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "5.0.8",
+        
         "@vue/cli-plugin-eslint": "5.0.8",
         "@vue/cli-plugin-router": "5.0.8",
-        "@vue/cli-plugin-typescript": "5.0.8",
+        
         "@vue/cli-plugin-vuex": "5.0.8",
         "@vue/cli-service": "5.0.8",
-        "@vue/eslint-config-typescript": "7.0.0"
+        "@vue/eslint-config-typescript": "7.0.0",
+
+        "vite": "^6.0.11"
     },
     "eslintConfig": {
         "root": true,
@@ -44,5 +46,7 @@
         "> 1%",
         "last 2 versions"
     ],
-    "dependencies": {}
+    "dependencies": {
+
+    }
 }

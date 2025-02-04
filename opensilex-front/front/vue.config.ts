@@ -20,7 +20,8 @@ module.exports = {
         resolve: {
             extensions: ['.md'],
             alias: {
-                'Vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                // 'Vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                'Vue$': '@vue/runtime-dom',
                 "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
                 "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),
                 "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src")
@@ -50,7 +51,7 @@ module.exports = {
             .use('yaml')
             .loader('yaml-loader')
             .end()
-
+    
         // Add markdown file parsing
         config.module.rule('md')
             .test(/\.md$/)
@@ -65,15 +66,15 @@ module.exports = {
             config.module.rule('vue')
             .test(/\.vue$/)
             .use('vue-loader')
-            .loader('vue-loader') 
+            .loader('vue-loader')
             .options({
                 compilerOptions: {
                     compatConfig: {
-                      MODE: 2
+                      MODE: 3
                     }
                   }
             })
-
+    
         if (process.env.NODE_ENV === 'production') {
             config.module.rule('vue').uses.delete('cache-loader');
             config.module.rule('js').uses.delete('cache-loader');

@@ -13,13 +13,16 @@ import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.utils.VariableUtils;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author vidalmor
@@ -228,7 +231,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.dimensions = dimensions;
     }
 
-    public VariableModel newModel() {
+    public VariableModel newModel() throws URISyntaxException {
         VariableModel model = new VariableModel();
         model.setUri(uri);
         model.setName(name);
@@ -238,6 +241,11 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         }
         if(!StringUtils.isEmpty(description)){
             model.setDescription(description);
+        }
+        if (Objects.nonNull(dataType) && VariableUtils.getDataTypesURIs().contains(dataType)) {
+            model.setDataType(dataType);
+        } else {
+            throw new IllegalArgumentException("[Variable] Invalid datatype");
         }
         model.setDataType(dataType);
 
@@ -274,9 +282,23 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         if(!StringUtils.isEmpty(samplingInterval)){
             model.setSamplingInterval(samplingInterval);
         }
-        model.setDimensions(dimensions);
+        if (validateDimensions()) {
+            model.setDimensions(dimensions);
+        }
         setSkosReferencesToModel(model);
         return model;
     }
 
+    private boolean validateDimensions() throws URISyntaxException {
+        if (CollectionUtils.isEmpty(dimensions)) {
+            throw new IllegalArgumentException("[Dimension] Variable must have at least one dimension");
+        } else {
+            for (DimensionModel dimension : dimensions) {
+                if (Objects.isNull(dimension.getDataType()) || !VariableUtils.getDataTypesURIs().contains(dimension.getDataType())) {
+                    throw new IllegalArgumentException("[Dimension] Invalid datatype");
+                }
+            }
+        }
+        return true;
+    }
 }

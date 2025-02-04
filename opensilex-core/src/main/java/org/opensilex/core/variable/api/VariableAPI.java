@@ -13,7 +13,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
@@ -29,6 +28,7 @@ import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
 import org.opensilex.core.variable.api.unit.UnitAPI;
 import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
+import org.opensilex.core.variable.api.utils.VariableUtils;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -37,9 +37,9 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -381,17 +381,7 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatatypes() throws URISyntaxException {
-
-        List<VariableDatatypeDTO> variablesXsdTypes = Arrays.asList(
-                new VariableDatatypeDTO(XSDDatatype.XSDboolean, "datatypes.boolean"),
-                new VariableDatatypeDTO(XSDDatatype.XSDdate, "datatypes.date"),
-                new VariableDatatypeDTO(XSDDatatype.XSDdateTime, "datatypes.datetime"),
-                new VariableDatatypeDTO(XSDDatatype.XSDdecimal, "datatypes.decimal"),
-                new VariableDatatypeDTO(XSDDatatype.XSDinteger, "datatypes.number"),
-                new VariableDatatypeDTO(XSDDatatype.XSDstring, "datatypes.string")
-        );
-
-        return new PaginatedListResponse<>(variablesXsdTypes).getResponse();
+        return new PaginatedListResponse<>(VariableUtils.getVariablesXsdTypes()).getResponse();
     }
 
     /**

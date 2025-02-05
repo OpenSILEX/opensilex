@@ -85,50 +85,50 @@ Vue.use(VueCookies);
 console.debug("Cookie plugin initialized !");
 
 // Initialise bootstrap
-console.debug("Initialize Bootstrap plugin...");
-import BootstrapVue from 'bootstrap-vue'
-Vue.use(BootstrapVue);
-console.debug("Bootstrap plugin initialized !");
+// console.debug("Initialize Bootstrap plugin...");
+// import BootstrapVue from 'bootstrap-vue'
+// Vue.use(BootstrapVue);
+// console.debug("Bootstrap plugin initialized !");
 
 // Initialise font awesome
-console.debug("Initialize FontAwesomeIcon plugin...");
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-library.add(fas);
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-let faIconLib: any = library;
-let iconsIDs = [];
-for (let i in faIconLib.definitions) {
-  for (let j in faIconLib.definitions[i]) {
-    iconsIDs.push("fa#" + j);
-  }
-}
-console.debug("FontAwesomeIcon plugin initialized !");
-
-import ikIcons from './models/IkIcons';
-iconsIDs = iconsIDs.concat(ikIcons);
-console.debug("IconKit icons loaded !");
-
-// Initialize Vue wizard form
-import VueFormWizard from 'vue-form-wizard'
-import 'vue-form-wizard/dist/vue-form-wizard.min.css'
-Vue.use(VueFormWizard)
-console.debug("VueFormWizard plugin initialized !");
-
-// Initialize Vue Country flag
-import CountryFlag from 'vue-country-flag'
-Vue.component('country-flag', CountryFlag);
-
-// Initialize Tree selector
-import Treeselect from '@riophae/vue-treeselect'
-Vue.component("treeselect", Treeselect);
-
-//Initialize Vue tour
-import VueTour from 'vue-tour'
-Vue.use(VueTour)
-require('vue-tour/dist/vue-tour.css')
-console.debug("VueTour plugin initialized !");
+// console.debug("Initialize FontAwesomeIcon plugin...");
+// import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+// import { library } from '@fortawesome/fontawesome-svg-core'
+// import { fas } from '@fortawesome/free-solid-svg-icons'
+// library.add(fas);
+// Vue.component('font-awesome-icon', FontAwesomeIcon)
+// let faIconLib: any = library;
+// let iconsIDs = [];
+// for (let i in faIconLib.definitions) {
+//   for (let j in faIconLib.definitions[i]) {
+//     iconsIDs.push("fa#" + j);
+//   }
+// // }
+// console.debug("FontAwesomeIcon plugin initialized !");
+//
+// import ikIcons from './models/IkIcons';
+// iconsIDs = iconsIDs.concat(ikIcons);
+// console.debug("IconKit icons loaded !");
+//
+// // Initialize Vue wizard form
+// import VueFormWizard from 'vue-form-wizard'
+// import 'vue-form-wizard/dist/vue-form-wizard.min.css'
+// Vue.use(VueFormWizard)
+// console.debug("VueFormWizard plugin initialized !");
+//
+// // Initialize Vue Country flag
+// import CountryFlag from 'vue-country-flag'
+// Vue.component('country-flag', CountryFlag);
+//
+// // Initialize Tree selector
+// import Treeselect from '@riophae/vue-treeselect'
+// Vue.component("treeselect", Treeselect);
+//
+// //Initialize Vue tour
+// import VueTour from 'vue-tour'
+// Vue.use(VueTour)
+// require('vue-tour/dist/vue-tour.css')
+// console.debug("VueTour plugin initialized !");
 
 // Initialize GlobalEvents selector
 import GlobalEvents from 'vue-global-events'
@@ -162,14 +162,14 @@ vSelect.props.components.default = () => ({
 
 Vue.component("v-select", vSelect);
 //Initialize Highcharts & Highstocks
-import HighchartsVue from 'highcharts-vue'
-import Highcharts from 'highcharts'
-import stockInit from 'highcharts/modules/stock'
-import exportingInit from 'highcharts/modules/exporting'
-
-Vue.use(HighchartsVue);
-stockInit(Highcharts);
-exportingInit(Highcharts);
+// import HighchartsVue from 'highcharts-vue'
+// import Highcharts from 'highcharts'
+// import stockInit from 'highcharts/modules/stock'
+// import exportingInit from 'highcharts/modules/exporting'
+//
+// Vue.use(HighchartsVue);
+// stockInit(Highcharts);
+// exportingInit(Highcharts);
 
 import VueLayers from 'vuelayers'
 // Vue.component("vuelayers", VueLayers);
@@ -183,9 +183,9 @@ Vue.use(ToggleButton);
 
 // Initialize EasyLighBox ->  https://github.com/XiongAmao/vue-easy-lightbox/tree/vue2.x
 
-import VueEasyLightbox from "vue-easy-lightbox";
-// Method 1. via Vue.use
-Vue.use(VueEasyLightbox)
+// import VueEasyLightbox from "vue-easy-lightbox";
+// // Method 1. via Vue.use
+// Vue.use(VueEasyLightbox)
 
 //component used for the personForm : 09-21-2023
 import VueTelInput from 'vue-tel-input'
@@ -193,229 +193,229 @@ import 'vue-tel-input/dist/vue-tel-input.css'
 Vue.use(VueTelInput)
 
 // Initialize i18n
-import VueI18n from 'vue-i18n'
-import en from './lang/message-en.json';
-import fr from './lang/message-fr.json';
-
-let lang = navigator.language;
-
-if (urlParams.has('lang')) {
-  lang = urlParams.get("lang");
-}
-
-if (lang && lang.length > 2) {
-  lang = lang.substr(0, 2);
-}
-
-console.debug("Detected language", lang);
-store.commit("lang", lang);
-let i18nOptions = {
-  fallbackLocale: 'en',
-  locale: lang,
-  silentTranslationWarn: !isDebug,
-  silentFallbackWarn: !isDebug,
-  messages: {
-    "en": {
-      "dateTimeLocale": "en-GB" // Necessary for date & time formatting
-    },
-    "fr": {
-      "dateTimeLocale": "fr-FR"
-    }
-  },
-  dateTimeFormats: {
-    "en": {
-      short: {
-        year: 'numeric', month: '2-digit', day: '2-digit'
-      }
-    },
-    "fr": {
-      short: {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-      }
-    }
-  },
-  numberFormats: {
-    "en": {
-      decimal: {
-        style: 'decimal',  
-      },
-    },
-    "fr": {
-      decimal: {
-        style: 'decimal' 
-      },
-    }
-  }
-}
-const i18n = new VueI18n(i18nOptions);
-
-//Initialise validation 
-//https://logaretm.github.io/vee-validate/
-import { ValidationProvider, ValidationObserver } from 'vee-validate';
-Vue.component('ValidationProvider', ValidationProvider);
-Vue.component('ValidationObserver', ValidationObserver);
-
-import { configure, extend } from 'vee-validate';
-import validationMessagesEN from 'vee-validate/dist/locale/en.json';
-import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
-import * as rules from 'vee-validate/dist/rules';
-import {email, excluded} from 'vee-validate/dist/rules';
-
-for (let [rule, validation] of Object.entries(rules)) {
-  let anyVal: any = validation;
-  extend(rule, {
-    ...anyVal
-  });
-}
-
-extend("url", (value) => {
-  try {
-    new URL(value);
-    return true;
-  } catch (error) {
-    return false;
-  }
-});
-
-extend("emailOrUrl", (value) => {
-  try {
-    new URL(value);
-    return true;
-  } catch (error) {
-    return email.validate(value);
-  }
-});
-
-extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
-  if (value === null || value === undefined || value === '') {
-    return {
-      valid: false
-    };
-  }
-  if (Number(decimals) === 0) {
-    return {
-      valid: /^-?\d*$/.test(value),
-    };
-  }
-  const regexPart = decimals === '*' ? '+' : `{1,${decimals}}`;
-  const regex = new RegExp(`^[-+]?\\d*(\\${separator}\\d${regexPart})?([eE]{1}[-]?\\d+)?$`);
-
-  return {
-    valid: regex.test(value),
-  };
-});
-
-extend("dateDiff", {
-  params: ["startDate"],
-  validate: (value, { startDate }: any) => {
-
-    if (startDate === null) {
-      return true;
-    }
-    return new Date(value).getTime()  >= new Date(startDate).getTime();
-  }
-});
-
-extend("nameFiltered", ( value) => {
-  let substrings = ['-','+','=','<','>','=','?','/','*','&'];
-  let valid = true;
-  substrings.forEach((substring) => {
-    console.log(value,substring,value.indexOf(substring))
-    if (value.indexOf(substring) != -1) {
-      console.log(value)
-      valid = false;
-    }
-  }); 
-
-  return valid;
-});
-
-//Has the same functionality as the existing vee-validate excluded rule. But ignores case and white spaces
-extend("existingProperty", {
-  validate: (value: string, args: string[])=>{
-    //Remove white spaces and turn all capital letters into normal letters
-    let flattenedValue = value.toLowerCase().replaceAll(" ", "");
-    let flattenedArgs: string[] = [];
-    args.forEach(arg=>flattenedArgs.push(arg.toLowerCase().replaceAll(" ", "")))
-    return !flattenedArgs.includes(flattenedValue);
-}
-});
-
-
-//To refuse some operators
-extend('refuseOperators', {
-  ...excluded,
-});
-
-import { parse } from "wkt";
-extend("wkt", {
-  validate: (value) => {
-    return parse(value) != null;
-  }
-});
-
-extend("containsPoint",{
-  validate: value =>{
-    const regex= /^point/i;
-    return regex.test(value);
-  }
-})
-
-// created on 09-26-2023 for the vue-tel-input component in the personForm.
-// used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)
-extend('falsy', {
-    validate: value => { return false; },
-    message: 'incorrect value'
-});
-
-
-let validationTranslations = {
-  "validations": validationMessagesEN.messages
-}
-
-i18n.mergeLocaleMessage("en", validationTranslations);
-i18n.mergeLocaleMessage("en", en);
-
-validationTranslations = {
-  "validations": validationMessagesFR.messages
-}
-i18n.mergeLocaleMessage("fr", validationTranslations);
-i18n.mergeLocaleMessage("fr", fr);
-
-configure({
-  classes: {
-    valid: 'is-valid',
-    invalid: 'is-invalid'
-  },
-  defaultMessage: (_, values) => {
-    return "" + i18n.t(`validations.${values._rule_}`, values)
-  }
-});
-
-import JqxRangeSelector from 'jqwidgets-scripts/jqwidgets-vue/vue_jqxrangeselector.vue';
-Vue.component('JqxRangeSelector', JqxRangeSelector);
-
-import { GridLayout, GridItem, GridItemData } from 'vue-grid-layout';
-Vue.component('GridLayout', GridLayout);
-Vue.component('GridItem', GridItem);
-
-// Load vue draggable component
-import draggable from 'vuedraggable'
-Vue.component('draggable', draggable);
-
-// Enable Vue front plugin manager for OpenSilex API
-console.debug("Enable OpenSilex plugin...");
+// import VueI18n from 'vue-i18n'
+// import en from './lang/message-en.json';
+// import fr from './lang/message-fr.json';
+//
+// let lang = navigator.language;
+//
+// if (urlParams.has('lang')) {
+//   lang = urlParams.get("lang");
+// }
+//
+// if (lang && lang.length > 2) {
+//   lang = lang.substr(0, 2);
+// }
+//
+// console.debug("Detected language", lang);
+// store.commit("lang", lang);
+// let i18nOptions = {
+//   fallbackLocale: 'en',
+//   locale: lang,
+//   silentTranslationWarn: !isDebug,
+//   silentFallbackWarn: !isDebug,
+//   messages: {
+//     "en": {
+//       "dateTimeLocale": "en-GB" // Necessary for date & time formatting
+//     },
+//     "fr": {
+//       "dateTimeLocale": "fr-FR"
+//     }
+//   },
+//   dateTimeFormats: {
+//     "en": {
+//       short: {
+//         year: 'numeric', month: '2-digit', day: '2-digit'
+//       }
+//     },
+//     "fr": {
+//       short: {
+//         day: '2-digit', month: '2-digit', year: 'numeric'
+//       }
+//     }
+//   },
+//   numberFormats: {
+//     "en": {
+//       decimal: {
+//         style: 'decimal',
+//       },
+//     },
+//     "fr": {
+//       decimal: {
+//         style: 'decimal'
+//       },
+//     }
+//   }
+// }
+// const i18n = new VueI18n(i18nOptions);
+//
+// //Initialise validation
+// //https://logaretm.github.io/vee-validate/
+// import { ValidationProvider, ValidationObserver } from 'vee-validate';
+// Vue.component('ValidationProvider', ValidationProvider);
+// Vue.component('ValidationObserver', ValidationObserver);
+//
+// import { configure, extend } from 'vee-validate';
+// import validationMessagesEN from 'vee-validate/dist/locale/en.json';
+// import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
+// import * as rules from 'vee-validate/dist/rules';
+// import {email, excluded} from 'vee-validate/dist/rules';
+//
+// for (let [rule, validation] of Object.entries(rules)) {
+//   let anyVal: any = validation;
+//   extend(rule, {
+//     ...anyVal
+//   });
+// }
+//
+// extend("url", (value) => {
+//   try {
+//     new URL(value);
+//     return true;
+//   } catch (error) {
+//     return false;
+//   }
+// });
+//
+// extend("emailOrUrl", (value) => {
+//   try {
+//     new URL(value);
+//     return true;
+//   } catch (error) {
+//     return email.validate(value);
+//   }
+// });
+//
+// extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
+//   if (value === null || value === undefined || value === '') {
+//     return {
+//       valid: false
+//     };
+//   }
+//   if (Number(decimals) === 0) {
+//     return {
+//       valid: /^-?\d*$/.test(value),
+//     };
+//   }
+//   const regexPart = decimals === '*' ? '+' : `{1,${decimals}}`;
+//   const regex = new RegExp(`^[-+]?\\d*(\\${separator}\\d${regexPart})?([eE]{1}[-]?\\d+)?$`);
+//
+//   return {
+//     valid: regex.test(value),
+//   };
+// });
+//
+// extend("dateDiff", {
+//   params: ["startDate"],
+//   validate: (value, { startDate }: any) => {
+//
+//     if (startDate === null) {
+//       return true;
+//     }
+//     return new Date(value).getTime()  >= new Date(startDate).getTime();
+//   }
+// });
+//
+// extend("nameFiltered", ( value) => {
+//   let substrings = ['-','+','=','<','>','=','?','/','*','&'];
+//   let valid = true;
+//   substrings.forEach((substring) => {
+//     console.log(value,substring,value.indexOf(substring))
+//     if (value.indexOf(substring) != -1) {
+//       console.log(value)
+//       valid = false;
+//     }
+//   });
+//
+//   return valid;
+// });
+//
+// //Has the same functionality as the existing vee-validate excluded rule. But ignores case and white spaces
+// extend("existingProperty", {
+//   validate: (value: string, args: string[])=>{
+//     //Remove white spaces and turn all capital letters into normal letters
+//     let flattenedValue = value.toLowerCase().replaceAll(" ", "");
+//     let flattenedArgs: string[] = [];
+//     args.forEach(arg=>flattenedArgs.push(arg.toLowerCase().replaceAll(" ", "")))
+//     return !flattenedArgs.includes(flattenedValue);
+// }
+// });
+//
+//
+// //To refuse some operators
+// extend('refuseOperators', {
+//   ...excluded,
+// });
+//
+// import { parse } from "wkt";
+// extend("wkt", {
+//   validate: (value) => {
+//     return parse(value) != null;
+//   }
+// });
+//
+// extend("containsPoint",{
+//   validate: value =>{
+//     const regex= /^point/i;
+//     return regex.test(value);
+//   }
+// })
+//
+// // created on 09-26-2023 for the vue-tel-input component in the personForm.
+// // used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)
+// extend('falsy', {
+//     validate: value => { return false; },
+//     message: 'incorrect value'
+// });
+//
+//
+// let validationTranslations = {
+//   "validations": validationMessagesEN.messages
+// }
+//
+// i18n.mergeLocaleMessage("en", validationTranslations);
+// i18n.mergeLocaleMessage("en", en);
+//
+// validationTranslations = {
+//   "validations": validationMessagesFR.messages
+// }
+// i18n.mergeLocaleMessage("fr", validationTranslations);
+// i18n.mergeLocaleMessage("fr", fr);
+//
+// configure({
+//   classes: {
+//     valid: 'is-valid',
+//     invalid: 'is-invalid'
+//   },
+//   defaultMessage: (_, values) => {
+//     return "" + i18n.t(`validations.${values._rule_}`, values)
+//   }
+// });
+//
+// import JqxRangeSelector from 'jqwidgets-scripts/jqwidgets-vue/vue_jqxrangeselector.vue';
+// Vue.component('JqxRangeSelector', JqxRangeSelector);
+//
+// import { GridLayout, GridItem, GridItemData } from 'vue-grid-layout';
+// Vue.component('GridLayout', GridLayout);
+// Vue.component('GridItem', GridItem);
+//
+// // Load vue draggable component
+// import draggable from 'vuedraggable'
+// Vue.component('draggable', draggable);
+//
+// // Enable Vue front plugin manager for OpenSilex API
+// console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);
-$opensilex.setIconIDs(iconsIDs);
-Vue.use($opensilex);
-console.debug("OpenSilex plugin enabled !");
-
-// Define global error manager
-console.debug("Define global error manager");
-const manageError = function manageError(error) {
-  console.error(error);
-  document.getElementById('opensilex-error-loading').style.visibility = 'visible';
-}
+// $opensilex.setIconIDs(iconsIDs);
+// Vue.use($opensilex);
+// console.debug("OpenSilex plugin enabled !");
+//
+// // Define global error manager
+// console.debug("Define global error manager");
+// const manageError = function manageError(error) {
+//   console.error(error);
+//   document.getElementById('opensilex-error-loading').style.visibility = 'visible';
+// }
 
 // Load tree component
 console.debug("Load tree component...");

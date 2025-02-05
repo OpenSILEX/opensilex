@@ -5,7 +5,7 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
   build: {
-    outDir: 'lib', // Dossier de sortie
+    outDir: 'dist', // Dossier de sortie
     lib: {
       entry: resolve(__dirname, 'src/lib/index.ts'), // Point d'entrée
       name: 'opensilex-front', // Nom de la bibliothèque

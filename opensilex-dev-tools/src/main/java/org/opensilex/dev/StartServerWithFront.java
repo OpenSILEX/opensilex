@@ -118,7 +118,7 @@ public class StartServerWithFront {
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/npm").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);

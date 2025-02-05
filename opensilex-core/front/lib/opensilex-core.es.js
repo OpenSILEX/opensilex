@@ -1054,20 +1054,6 @@ let oe = class {
    * Export data
    * 
    * @param Authorization Authentication token
-   * @param body CSV export configuration
-   * @param Accept_Language Request accepted language
-   
-   */
-  exportDataPath() {
-    return "/core/data/export";
-  }
-  exportData(e, n = "body", t = {}) {
-    return t.Accept = "text/plain", t["Content-Type"] = "application/json", this.httpClient.post(`${this.basePath}/core/data/export`, e, t);
-  }
-  /**
-   * Export data
-   * 
-   * @param Authorization Authentication token
    * @param start_date Search by minimal date
    * @param end_date Search by maximal date
    * @param timezone Precise the timezone corresponding to the given dates
@@ -1088,10 +1074,10 @@ let oe = class {
    * @param Accept_Language Request accepted language
    
    */
-  exportData1Path() {
+  exportDataPath() {
     return "/core/data/export";
   }
-  exportData1(e, n, t, o, r, i, s, a, p, c, l, g, P, m, y, R, f, C = "body", $ = {}) {
+  exportData(e, n, t, o, r, i, s, a, p, c, l, g, P, m, y, R, f, C = "body", $ = {}) {
     let d = [];
     return e !== void 0 && d.push("start_date=" + encodeURIComponent(String(e))), n !== void 0 && d.push("end_date=" + encodeURIComponent(String(n))), t !== void 0 && d.push("timezone=" + encodeURIComponent(String(t))), o && o.forEach((S) => {
       d.push("experiments=" + encodeURIComponent(String(S)));
@@ -1108,6 +1094,20 @@ let oe = class {
     }), P !== void 0 && d.push("mode=" + encodeURIComponent(String(P))), m !== void 0 && d.push("with_raw_data=" + encodeURIComponent(String(m))), y && y.forEach((S) => {
       d.push("order_by=" + encodeURIComponent(String(S)));
     }), R !== void 0 && d.push("page=" + encodeURIComponent(String(R))), f !== void 0 && d.push("page_size=" + encodeURIComponent(String(f))), $.Accept = "text/plain", this.httpClient.get(`${this.basePath}/core/data/export${d.length > 0 ? "?" + d.join("&") : ""}`, $);
+  }
+  /**
+   * Export data
+   * 
+   * @param Authorization Authentication token
+   * @param body CSV export configuration
+   * @param Accept_Language Request accepted language
+   
+   */
+  exportData1Path() {
+    return "/core/data/export";
+  }
+  exportData1(e, n = "body", t = {}) {
+    return t.Accept = "text/plain", t["Content-Type"] = "application/json", this.httpClient.post(`${this.basePath}/core/data/export`, e, t);
   }
   /**
    * Get data

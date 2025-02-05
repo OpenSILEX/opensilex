@@ -88,13 +88,6 @@
                         </goals>
                         <phase>initialize</phase>
                     </execution> 
-                    <!-- <execution>
-                        <id>install bun</id>
-                        <goals>
-                            <goal>install-bun</goal>
-                        </goals>
-                        <phase>initialize</phase>
-                    </execution> -->
                     
                     <!-- install typescript and dts-generator types definition generator globally -->
                     <execution>

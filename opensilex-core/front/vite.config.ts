@@ -21,10 +21,6 @@ export default defineConfig({
         },
       },
     },
-  }, 
- // for dev
-  server: {
-    port: 8080,
   },
   base: '/lib/', // Chemin de base pour les ressources
 });

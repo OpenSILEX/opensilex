@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
   build: {
     outDir: 'dist', // Dossier de sortie
-    lib: {
-      entry: resolve(__dirname, 'src/lib/index.ts'), // Point d'entrée
-      name: 'opensilex-front', // Nom de la bibliothèque
-      fileName: (format) => `opensilex-front.${format}.js`, // Nom du fichier de sortie
-      formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
-    },
+    // lib: {
+    //   entry: resolve(__dirname, 'src/lib/index.ts'), // Point d'entrée
+    //   name: 'opensilex-front', // Nom de la bibliothèque
+    //   fileName: (format) => `opensilex-front.${format}.js`, // Nom du fichier de sortie
+    //   formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
+    // },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)
       external: ['vue'],
@@ -22,5 +22,9 @@ export default defineConfig({
       },
     },
   },
-  base: '/lib/', // Chemin de base pour les ressources
+   // for dev
+  server: {
+    port: 8080,
+  },
+  base: '/app/', // Chemin de base pour les ressources
 });

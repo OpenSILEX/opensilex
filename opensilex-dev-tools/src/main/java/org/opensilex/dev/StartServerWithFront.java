@@ -33,7 +33,8 @@ public class StartServerWithFront {
     private final static Logger LOGGER = LoggerFactory.getLogger(StartServerWithFront.class);
 
     private static Path baseDirectory;
-    private static String nodeBin = "node";
+    private static String nodeBin = "node"; 
+
     private static CountDownLatch countDownLatch;
 
     public static void main(String[] args) throws Exception {
@@ -42,8 +43,9 @@ public class StartServerWithFront {
 
     public static void start(Path baseDirectory) throws Exception {
 
+        
         if (DevModule.isWindows()) {
-            nodeBin += ".exe";
+            nodeBin += ".exe"; 
         }
 
         StartServerWithFront.baseDirectory = baseDirectory;
@@ -106,7 +108,7 @@ public class StartServerWithFront {
 
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
@@ -118,7 +120,7 @@ public class StartServerWithFront {
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/npm").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);

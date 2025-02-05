@@ -29,12 +29,16 @@ public class ResetNodeModules {
     }
 
     private static String nodeBin = "node";
+    private static String npmBin = "npm";
+
     private static CountDownLatch countDownLatch;
 
     public static void start(Path baseDirectory, boolean reinstall) throws Exception {
 
+        
         if (DevModule.isWindows()) {
             nodeBin += ".exe";
+            npmBin += ".cmd";
         }
 
         Map<String, String> customArgs = new HashMap<>();
@@ -107,7 +111,7 @@ public class ResetNodeModules {
     private static void yarnCleanCache(Path baseDirectory) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/" + npmBin).toFile().getCanonicalPath());
         args.add("cache");
         args.add("clean");
         ProcessBuilder yarnCleanCacheProcess = new ProcessBuilder(args);
@@ -122,7 +126,7 @@ public class ResetNodeModules {
     private static void createYarnInstallProcess(Path baseDirectory, Path moduleDirectory) throws IOException {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/yarn/dist/bin/yarn.js").toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/" + npmBin).toFile().getCanonicalPath());
         args.add("install");
         ProcessBuilder nodeModulesBuilder = new ProcessBuilder(args);
 

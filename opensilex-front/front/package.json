@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "npx vite serve",
+        "serve": "npx vite serve --config vite.config.ts",
         "build": "vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
         "check:browserlist": "yarn add caniuse-lite && yarn remove caniuse-lite",

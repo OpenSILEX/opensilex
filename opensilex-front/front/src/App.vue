@@ -1,188 +1,15 @@
 <template>
-  <div>
-    <global-events @keydown.enter.exact="keydownEnter"></global-events>
-    <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000" :fullscreen="true">
-      <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
-         <!-- if route as credentials public -->
-        <div v-if="this.$route.meta.public">
-          <component v-bind:is="headerComponent"></component>
- 
-          <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
-            <div id="main-content">
-              <main class="main-content">
-                <router-view :key="$route.fullPath" />
-              </main>
 
-          <!--    <footer v-if="!embed">
-                <component v-bind:is="footerComponent"></component>
-              </footer> -->
-            </div>
-          </section>
-        </div>  
-        <div v-else>
-          <component
-            v-bind:is="headerComponent"
-            v-if="user.isLoggedIn() && !disconnected && !embed"
-          ></component>
-
-            
-          <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
-            <component class="header-login" v-bind:is="loginComponent"></component>
-          </header>
-
-          <!-- notification message  -->
-          <div 
-            v-if="displayNotificationMessage && notificationMessageDisplayed"
-            :class="{
-              'notificationWithMenu' : this.$store.state.menuVisible, 
-              [notificationColorClass]: true
-            }"
-            class="notificationMessageContainer notificationMessageDefaultColor"
-          >
-            <span class="notificationText" v-html="$t(this.notificationMessageDisplayed)"></span>
-            <span class="notificationButtonContainer">
-              <opensilex-Button
-                label="component.common.close"
-                icon="ik#ik-x"
-                class="closeNotificationButton"
-                @click="closeNotification()"
-              ></opensilex-Button>
-            </span>
-          </div>
-
-          <section 
-            id="content-wrapper" 
-            class="page-wrap"  
-            v-bind:class="{ 'hidden-menu': !menuVisible }" 
-            v-if="user.isLoggedIn() && !disconnected"
-          >
-            <div>
-              <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
-            </div>
-
-            <div id="main-content">
-              <main class="main-content">
-                <router-view :key="$route.fullPath" />
-              </main>
-
-              <!--<footer v-if="!embed">
-                <component v-bind:is="footerComponent"></component>
-              </footer> -->
-            </div>
-          </section>
-        </div>
-      </div>
-    </opensilex-Overlay>
-  </div>
 </template>
 
 <script lang="ts">
-import { Component as ComponentAnnotation, Prop, Watch } from "vue-property-decorator";
-import Vue, { Component } from "vue";
-import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
-import AsyncComputed from "vue-async-computed-decorator";
+import { defineComponent } from 'vue'
 
-@ComponentAnnotation
-export default class App extends Vue {
-  @Prop() embed: boolean;
-
-  @Prop() headerComponent!: string | Component;
-  @Prop() loginComponent!: string | Component;
-  @Prop() menuComponent!: string | Component;
-  @Prop() footerComponent!: string | Component;
-
-  $opensilex: OpenSilexVuePlugin;
-  $i18n: any;
-  $bvToast: any;
-  $store: any;
-  notificationMessage: {[ k : string]:string} = undefined;
-  notificationMessageDisplayed: string = "";
-  notificationEndDate: string = "";
-  notificationColorTheme: string = "";
-  displayNotificationMessage: boolean = false;
-
-  private langUnwatcher;
-
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      () => {
-        this.notificationMessageDisplayed = this.notificationMessage[this.$i18n.locale]
-      }
-    );
-  }
-
-  beforeDestroy() {
-      this.langUnwatcher();
-  } 
-
-
-  created() {
-    this.$opensilex.$bvToast = this.$bvToast;
-    const currentDate = new Date();
-    const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
-    this.notificationMessage = this.$opensilex.getConfig().notificationMessage;
-    this.notificationEndDate = this.$opensilex.getConfig().notificationEndDate;
-    this.notificationColorTheme = this.$opensilex.getConfig().notificationColorTheme;
-
-    try { 
-      if(this.notificationEndDate){
-        new Date(this.notificationEndDate)
-      }
-      if (!this.notificationEndDate || this.notificationEndDate > formattedCurrentDate) {
-        this.displayNotificationMessage = true;
-        this.notificationMessageDisplayed = this.notificationMessage[this.$i18n.locale]
-      }
-    } catch {
-      this.$opensilex.showErrorToast(this.$i18n.t("component.header.bad-notification-end-date"));
-    }
-  }
-
-  @AsyncComputed()
-  notificationColorClass() {
-    const theme = this.notificationColorTheme.toLowerCase();
-
-    if (theme === 'information') {
-      return 'notificationMessageInfoColor';
-    } else if (theme === 'warning') {
-      return 'notificationMessageWarningColor';
-    } else {
-      return 'notificationMessageDefaultColor';
-    }
-  }
-
-  closeNotification(){
-    this.displayNotificationMessage = false;
-  }
-
-  get lang() {
-    return this.$store.state.lang;
-  }
-
-  get disconnected() {
-    return this.$store.state.disconnected;
-  }
-
-  get user() {
-    return this.$store.state.user;
-  }
-
-  get isLoaderVisible() {
-    return this.$store.state.loaderVisible;
-  }
-
-  get menuVisible(): boolean {
-    return this.$store.state.menuVisible;
-  }
-
-  keydownEnter(event) {
-    console.debug("Keydown enter");
-  }  
-}
+export default defineComponent({})
 </script>
 
 <style lang="scss">
-@import "./styles/common.scss";
+//@import "./styles/common.scss";
 
 header {
   display: flex;
@@ -269,7 +96,7 @@ main {
   position: inherit;
   right: 0;
 }
-  
+
 .closeNotificationButton{
   border: none;
   padding: 1px 8px;

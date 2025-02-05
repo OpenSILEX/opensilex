@@ -5,7 +5,7 @@
     "license": "MIT",
     "scripts": {
         "serve": "vite serve",
-        "build": "vite --base= lib src/index.ts",
+        "build": "vite build",
         "lint": "vite lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
         "check:outdated": "npm outdated || cd .",

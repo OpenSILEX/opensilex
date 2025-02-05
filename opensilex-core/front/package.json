@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "serve": "npx vite serve --config vite.config.ts",
-        "build": "vite build --config vite.config.ts",
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
         "check:outdated": "npm outdated || cd .",

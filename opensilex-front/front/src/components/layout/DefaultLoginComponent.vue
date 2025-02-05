@@ -489,43 +489,43 @@ animation-direction: normal;
 
 </style>
 
-<i18n>
-en:
-  LoginComponent:
-    selectLoginMethod: Select login method
-    passwordConnectionTitle: Connect with password
-    forgotPassword: Forgot your password ?
-    defaultOpenIDConnectionTitle: Log in with SSO (OpenID)
-    defaultSAMLConnectionTitle: Log in with SSO (SAML)
-    infoGuest: You can connect as guest
-    loginAsGuest: Connect as guest
-    email: Email or URI
-    password: Password
-    language:
-      fr: French
-      en: English
-    copyright: 
-      1: PHIS - Phenotyping Hybrid Information System
-      2: Version {version}
-      3: Based on OpenSILEX version {version}
-      4: Copyright ©2021 INRAE
-fr:
-  LoginComponent:
-    selectLoginMethod: Choisir la méthode de connexion
-    passwordConnectionTitle: Connexion par mot de passe
-    forgotPassword: Mot de passe oublié ?
-    defaultOpenIDConnectionTitle: Connexion par SSO (OpenID)
-    defaultSAMLConnectionTitle: Connexion par SSO (SAML)
-    infoGuest: Vous pouvez vous connecter en tant qu'invité
-    loginAsGuest: Connexion en tant qu'invité
-    email: Email ou URI
-    password: Mot de passe
-    language:
-      fr: Français
-      en: Anglais
-    copyright: 
-      1: PHIS - Phenotyping Hybrid Information System
-      2: Version {version}
-      3: Basé sur OpenSILEX version {version}
-      4: Copyright ©2021 INRAE
-</i18n>
+<!--<i18n>-->
+<!--en:-->
+<!--  LoginComponent:-->
+<!--    selectLoginMethod: Select login method-->
+<!--    passwordConnectionTitle: Connect with password-->
+<!--    forgotPassword: Forgot your password ?-->
+<!--    defaultOpenIDConnectionTitle: Log in with SSO (OpenID)-->
+<!--    defaultSAMLConnectionTitle: Log in with SSO (SAML)-->
+<!--    infoGuest: You can connect as guest-->
+<!--    loginAsGuest: Connect as guest-->
+<!--    email: Email or URI-->
+<!--    password: Password-->
+<!--    language:-->
+<!--      fr: French-->
+<!--      en: English-->
+<!--    copyright: -->
+<!--      1: PHIS - Phenotyping Hybrid Information System-->
+<!--      2: Version {version}-->
+<!--      3: Based on OpenSILEX version {version}-->
+<!--      4: Copyright ©2021 INRAE-->
+<!--fr:-->
+<!--  LoginComponent:-->
+<!--    selectLoginMethod: Choisir la méthode de connexion-->
+<!--    passwordConnectionTitle: Connexion par mot de passe-->
+<!--    forgotPassword: Mot de passe oublié ?-->
+<!--    defaultOpenIDConnectionTitle: Connexion par SSO (OpenID)-->
+<!--    defaultSAMLConnectionTitle: Connexion par SSO (SAML)-->
+<!--    infoGuest: Vous pouvez vous connecter en tant qu'invité-->
+<!--    loginAsGuest: Connexion en tant qu'invité-->
+<!--    email: Email ou URI-->
+<!--    password: Mot de passe-->
+<!--    language:-->
+<!--      fr: Français-->
+<!--      en: Anglais-->
+<!--    copyright: -->
+<!--      1: PHIS - Phenotyping Hybrid Information System-->
+<!--      2: Version {version}-->
+<!--      3: Basé sur OpenSILEX version {version}-->
+<!--      4: Copyright ©2021 INRAE-->
+<!--</i18n>-->

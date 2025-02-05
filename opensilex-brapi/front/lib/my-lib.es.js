@@ -20,36 +20,36 @@ function Je() {
   var e;
   return function(t) {
     (function(i) {
-      var s = typeof ie == "object" ? ie : typeof self == "object" ? self : typeof this == "object" ? this : Function("return this;")(), u = a(t);
-      typeof s.Reflect > "u" ? s.Reflect = t : u = a(s.Reflect, u), i(u);
-      function a(d, g) {
-        return function(l, v) {
-          typeof d[l] != "function" && Object.defineProperty(d, l, { configurable: !0, writable: !0, value: v }), g && g(l, v);
+      var u = typeof ie == "object" ? ie : typeof self == "object" ? self : typeof this == "object" ? this : Function("return this;")(), s = a(t);
+      typeof u.Reflect > "u" ? u.Reflect = t : s = a(u.Reflect, s), i(s);
+      function a(d, m) {
+        return function(c, g) {
+          typeof d[c] != "function" && Object.defineProperty(d, c, { configurable: !0, writable: !0, value: g }), m && m(c, g);
         };
       }
     })(function(i) {
-      var s = Object.prototype.hasOwnProperty, u = typeof Symbol == "function", a = u && typeof Symbol.toPrimitive < "u" ? Symbol.toPrimitive : "@@toPrimitive", d = u && typeof Symbol.iterator < "u" ? Symbol.iterator : "@@iterator", g = typeof Object.create == "function", l = { __proto__: [] } instanceof Array, v = !g && !l, w = {
+      var u = Object.prototype.hasOwnProperty, s = typeof Symbol == "function", a = s && typeof Symbol.toPrimitive < "u" ? Symbol.toPrimitive : "@@toPrimitive", d = s && typeof Symbol.iterator < "u" ? Symbol.iterator : "@@iterator", m = typeof Object.create == "function", c = { __proto__: [] } instanceof Array, g = !m && !c, R = {
         // create an object in dictionary mode (a.k.a. "slow" mode in v8)
-        create: g ? function() {
+        create: m ? function() {
           return F(/* @__PURE__ */ Object.create(null));
-        } : l ? function() {
+        } : c ? function() {
           return F({ __proto__: null });
         } : function() {
           return F({});
         },
-        has: v ? function(r, n) {
-          return s.call(r, n);
+        has: g ? function(r, n) {
+          return u.call(r, n);
         } : function(r, n) {
           return n in r;
         },
-        get: v ? function(r, n) {
-          return s.call(r, n) ? r[n] : void 0;
+        get: g ? function(r, n) {
+          return u.call(r, n) ? r[n] : void 0;
         } : function(r, n) {
           return r[n];
         }
-      }, O = Object.getPrototypeOf(Function), N = typeof process == "object" && process.env && process.env.REFLECT_METADATA_USE_MAP_POLYFILL === "true", $ = !N && typeof Map == "function" && typeof Map.prototype.entries == "function" ? Map : He(), ge = !N && typeof Set == "function" && typeof Set.prototype.entries == "function" ? Set : qe(), we = !N && typeof WeakMap == "function" ? WeakMap : Ve(), k = new we();
+      }, O = Object.getPrototypeOf(Function), N = typeof process == "object" && process.env && process.env.REFLECT_METADATA_USE_MAP_POLYFILL === "true", $ = !N && typeof Map == "function" && typeof Map.prototype.entries == "function" ? Map : qe(), ge = !N && typeof Set == "function" && typeof Set.prototype.entries == "function" ? Set : He(), we = !N && typeof WeakMap == "function" ? WeakMap : Ve(), k = new we();
       function _e(r, n, o, f) {
-        if (_(o)) {
+        if (w(o)) {
           if (!ee(r))
             throw new TypeError();
           if (!te(n))
@@ -58,101 +58,101 @@ function Je() {
         } else {
           if (!ee(r))
             throw new TypeError();
-          if (!I(n))
+          if (!S(n))
             throw new TypeError();
-          if (!I(f) && !_(f) && !B(f))
+          if (!S(f) && !w(f) && !D(f))
             throw new TypeError();
-          return B(f) && (f = void 0), o = P(o), Me(r, n, o, f);
+          return D(f) && (f = void 0), o = E(o), Me(r, n, o, f);
         }
       }
       i("decorate", _e);
       function Ae(r, n) {
-        function o(f, h) {
-          if (!I(f))
+        function o(f, l) {
+          if (!S(f))
             throw new TypeError();
-          if (!_(h) && !Ne(h))
+          if (!w(l) && !Ne(l))
             throw new TypeError();
-          X(r, n, f, h);
+          X(r, n, f, l);
         }
         return o;
       }
       i("metadata", Ae);
-      function Re(r, n, o, f) {
-        if (!I(o))
+      function Se(r, n, o, f) {
+        if (!S(o))
           throw new TypeError();
-        return _(f) || (f = P(f)), X(r, n, o, f);
+        return w(f) || (f = E(f)), X(r, n, o, f);
       }
-      i("defineMetadata", Re);
-      function Se(r, n, o) {
-        if (!I(n))
-          throw new TypeError();
-        return _(o) || (o = P(o)), W(r, n, o);
-      }
-      i("hasMetadata", Se);
+      i("defineMetadata", Se);
       function Ie(r, n, o) {
-        if (!I(n))
+        if (!S(n))
           throw new TypeError();
-        return _(o) || (o = P(o)), G(r, n, o);
+        return w(o) || (o = E(o)), W(r, n, o);
       }
-      i("hasOwnMetadata", Ie);
-      function Ee(r, n, o) {
-        if (!I(n))
+      i("hasMetadata", Ie);
+      function Re(r, n, o) {
+        if (!S(n))
           throw new TypeError();
-        return _(o) || (o = P(o)), z(r, n, o);
+        return w(o) || (o = E(o)), G(r, n, o);
       }
-      i("getMetadata", Ee);
+      i("hasOwnMetadata", Re);
+      function Pe(r, n, o) {
+        if (!S(n))
+          throw new TypeError();
+        return w(o) || (o = E(o)), z(r, n, o);
+      }
+      i("getMetadata", Pe);
       function Te(r, n, o) {
-        if (!I(n))
+        if (!S(n))
           throw new TypeError();
-        return _(o) || (o = P(o)), Y(r, n, o);
+        return w(o) || (o = E(o)), Y(r, n, o);
       }
       i("getOwnMetadata", Te);
-      function Pe(r, n) {
-        if (!I(r))
+      function Ee(r, n) {
+        if (!S(r))
           throw new TypeError();
-        return _(n) || (n = P(n)), Z(r, n);
+        return w(n) || (n = E(n)), Z(r, n);
       }
-      i("getMetadataKeys", Pe);
+      i("getMetadataKeys", Ee);
       function Oe(r, n) {
-        if (!I(r))
+        if (!S(r))
           throw new TypeError();
-        return _(n) || (n = P(n)), Q(r, n);
+        return w(n) || (n = E(n)), Q(r, n);
       }
       i("getOwnMetadataKeys", Oe);
       function Ce(r, n, o) {
-        if (!I(n))
+        if (!S(n))
           throw new TypeError();
-        _(o) || (o = P(o));
+        w(o) || (o = E(o));
         var f = j(
           n,
           o,
           /*Create*/
           !1
         );
-        if (_(f) || !f.delete(r))
+        if (w(f) || !f.delete(r))
           return !1;
         if (f.size > 0)
           return !0;
-        var h = k.get(n);
-        return h.delete(o), h.size > 0 || k.delete(n), !0;
+        var l = k.get(n);
+        return l.delete(o), l.size > 0 || k.delete(n), !0;
       }
       i("deleteMetadata", Ce);
       function Ue(r, n) {
         for (var o = r.length - 1; o >= 0; --o) {
-          var f = r[o], h = f(n);
-          if (!_(h) && !B(h)) {
-            if (!te(h))
+          var f = r[o], l = f(n);
+          if (!w(l) && !D(l)) {
+            if (!te(l))
               throw new TypeError();
-            n = h;
+            n = l;
           }
         }
         return n;
       }
       function Me(r, n, o, f) {
-        for (var h = r.length - 1; h >= 0; --h) {
-          var R = r[h], p = R(n, o, f);
-          if (!_(p) && !B(p)) {
-            if (!I(p))
+        for (var l = r.length - 1; l >= 0; --l) {
+          var A = r[l], p = A(n, o, f);
+          if (!w(p) && !D(p)) {
+            if (!S(p))
               throw new TypeError();
             f = p;
           }
@@ -161,25 +161,25 @@ function Je() {
       }
       function j(r, n, o) {
         var f = k.get(r);
-        if (_(f)) {
+        if (w(f)) {
           if (!o)
             return;
           f = new $(), k.set(r, f);
         }
-        var h = f.get(n);
-        if (_(h)) {
+        var l = f.get(n);
+        if (w(l)) {
           if (!o)
             return;
-          h = new $(), f.set(n, h);
+          l = new $(), f.set(n, l);
         }
-        return h;
+        return l;
       }
       function W(r, n, o) {
         var f = G(r, n, o);
         if (f)
           return !0;
-        var h = L(n);
-        return B(h) ? !1 : W(r, h, o);
+        var l = L(n);
+        return D(l) ? !1 : W(r, l, o);
       }
       function G(r, n, o) {
         var f = j(
@@ -188,15 +188,15 @@ function Je() {
           /*Create*/
           !1
         );
-        return _(f) ? !1 : ke(f.has(r));
+        return w(f) ? !1 : ke(f.has(r));
       }
       function z(r, n, o) {
         var f = G(r, n, o);
         if (f)
           return Y(r, n, o);
-        var h = L(n);
-        if (!B(h))
-          return z(r, h, o);
+        var l = L(n);
+        if (!D(l))
+          return z(r, l, o);
       }
       function Y(r, n, o) {
         var f = j(
@@ -205,34 +205,34 @@ function Je() {
           /*Create*/
           !1
         );
-        if (!_(f))
+        if (!w(f))
           return f.get(r);
       }
       function X(r, n, o, f) {
-        var h = j(
+        var l = j(
           o,
           f,
           /*Create*/
           !0
         );
-        h.set(r, n);
+        l.set(r, n);
       }
       function Z(r, n) {
         var o = Q(r, n), f = L(r);
         if (f === null)
           return o;
-        var h = Z(f, n);
-        if (h.length <= 0)
+        var l = Z(f, n);
+        if (l.length <= 0)
           return o;
         if (o.length <= 0)
-          return h;
-        for (var R = new ge(), p = [], y = 0, c = o; y < c.length; y++) {
-          var b = c[y], m = R.has(b);
-          m || (R.add(b), p.push(b));
+          return l;
+        for (var A = new ge(), p = [], y = 0, h = o; y < h.length; y++) {
+          var v = h[y], b = A.has(v);
+          b || (A.add(v), p.push(v));
         }
-        for (var C = 0, ne = h; C < ne.length; C++) {
-          var b = ne[C], m = R.has(b);
-          m || (R.add(b), p.push(b));
+        for (var C = 0, ne = l; C < ne.length; C++) {
+          var v = ne[C], b = A.has(v);
+          b || (A.add(v), p.push(v));
         }
         return p;
       }
@@ -243,20 +243,20 @@ function Je() {
           /*Create*/
           !1
         );
-        if (_(f))
+        if (w(f))
           return o;
-        for (var h = f.keys(), R = $e(h), p = 0; ; ) {
-          var y = Le(R);
+        for (var l = f.keys(), A = $e(l), p = 0; ; ) {
+          var y = Le(A);
           if (!y)
             return o.length = p, o;
-          var c = Ge(y);
+          var h = Ge(y);
           try {
-            o[p] = c;
-          } catch (b) {
+            o[p] = h;
+          } catch (v) {
             try {
-              Fe(R);
+              Fe(A);
             } finally {
-              throw b;
+              throw v;
             }
           }
           p++;
@@ -282,19 +282,19 @@ function Je() {
             return 6;
         }
       }
-      function _(r) {
+      function w(r) {
         return r === void 0;
       }
-      function B(r) {
+      function D(r) {
         return r === null;
       }
-      function Be(r) {
+      function De(r) {
         return typeof r == "symbol";
       }
-      function I(r) {
+      function S(r) {
         return typeof r == "object" ? r !== null : typeof r == "function";
       }
-      function De(r, n) {
+      function je(r, n) {
         switch (K(r)) {
           case 0:
             return r;
@@ -311,26 +311,26 @@ function Je() {
         }
         var o = "string", f = re(r, a);
         if (f !== void 0) {
-          var h = f.call(r, o);
-          if (I(h))
+          var l = f.call(r, o);
+          if (S(l))
             throw new TypeError();
-          return h;
+          return l;
         }
-        return je(r);
+        return Be(r);
       }
-      function je(r, n) {
-        var o, f, h;
+      function Be(r, n) {
+        var o, f, l;
         {
-          var R = r.toString;
-          if (x(R)) {
-            var f = R.call(r);
-            if (!I(f))
+          var A = r.toString;
+          if (x(A)) {
+            var f = A.call(r);
+            if (!S(f))
               return f;
           }
           var o = r.valueOf;
           if (x(o)) {
             var f = o.call(r);
-            if (!I(f))
+            if (!S(f))
               return f;
           }
         }
@@ -342,9 +342,9 @@ function Je() {
       function xe(r) {
         return "" + r;
       }
-      function P(r) {
-        var n = De(r);
-        return Be(n) ? n : xe(n);
+      function E(r) {
+        var n = je(r);
+        return De(n) ? n : xe(n);
       }
       function ee(r) {
         return Array.isArray ? Array.isArray(r) : r instanceof Object ? r instanceof Array : Object.prototype.toString.call(r) === "[object Array]";
@@ -378,7 +378,7 @@ function Je() {
         if (!x(n))
           throw new TypeError();
         var o = n.call(r);
-        if (!I(o))
+        if (!S(o))
           throw new TypeError();
         return o;
       }
@@ -400,15 +400,15 @@ function Je() {
         var o = r.prototype, f = o && Object.getPrototypeOf(o);
         if (f == null || f === Object.prototype)
           return n;
-        var h = f.constructor;
-        return typeof h != "function" || h === r ? n : h;
+        var l = f.constructor;
+        return typeof l != "function" || l === r ? n : l;
       }
-      function He() {
+      function qe() {
         var r = {}, n = [], o = (
           /** @class */
           function() {
-            function p(y, c, b) {
-              this._index = 0, this._keys = y, this._values = c, this._selector = b;
+            function p(y, h, v) {
+              this._index = 0, this._keys = y, this._values = h, this._selector = v;
             }
             return p.prototype["@@iterator"] = function() {
               return this;
@@ -417,8 +417,8 @@ function Je() {
             }, p.prototype.next = function() {
               var y = this._index;
               if (y >= 0 && y < this._keys.length) {
-                var c = this._selector(this._keys[y], this._values[y]);
-                return y + 1 >= this._keys.length ? (this._index = -1, this._keys = n, this._values = n) : this._index++, { value: c, done: !1 };
+                var h = this._selector(this._keys[y], this._values[y]);
+                return y + 1 >= this._keys.length ? (this._index = -1, this._keys = n, this._values = n) : this._index++, { value: h, done: !1 };
               }
               return { value: void 0, done: !0 };
             }, p.prototype.throw = function(y) {
@@ -447,28 +447,28 @@ function Je() {
                 !1
               ) >= 0;
             }, p.prototype.get = function(y) {
-              var c = this._find(
+              var h = this._find(
                 y,
                 /*insert*/
                 !1
               );
-              return c >= 0 ? this._values[c] : void 0;
-            }, p.prototype.set = function(y, c) {
-              var b = this._find(
+              return h >= 0 ? this._values[h] : void 0;
+            }, p.prototype.set = function(y, h) {
+              var v = this._find(
                 y,
                 /*insert*/
                 !0
               );
-              return this._values[b] = c, this;
+              return this._values[v] = h, this;
             }, p.prototype.delete = function(y) {
-              var c = this._find(
+              var h = this._find(
                 y,
                 /*insert*/
                 !1
               );
-              if (c >= 0) {
-                for (var b = this._keys.length, m = c + 1; m < b; m++)
-                  this._keys[m - 1] = this._keys[m], this._values[m - 1] = this._values[m];
+              if (h >= 0) {
+                for (var v = this._keys.length, b = h + 1; b < v; b++)
+                  this._keys[b - 1] = this._keys[b], this._values[b - 1] = this._values[b];
                 return this._keys.length--, this._values.length--, y === this._cacheKey && (this._cacheKey = r, this._cacheIndex = -2), !0;
               }
               return !1;
@@ -477,29 +477,29 @@ function Je() {
             }, p.prototype.keys = function() {
               return new o(this._keys, this._values, f);
             }, p.prototype.values = function() {
-              return new o(this._keys, this._values, h);
+              return new o(this._keys, this._values, l);
             }, p.prototype.entries = function() {
-              return new o(this._keys, this._values, R);
+              return new o(this._keys, this._values, A);
             }, p.prototype["@@iterator"] = function() {
               return this.entries();
             }, p.prototype[d] = function() {
               return this.entries();
-            }, p.prototype._find = function(y, c) {
-              return this._cacheKey !== y && (this._cacheIndex = this._keys.indexOf(this._cacheKey = y)), this._cacheIndex < 0 && c && (this._cacheIndex = this._keys.length, this._keys.push(y), this._values.push(void 0)), this._cacheIndex;
+            }, p.prototype._find = function(y, h) {
+              return this._cacheKey !== y && (this._cacheIndex = this._keys.indexOf(this._cacheKey = y)), this._cacheIndex < 0 && h && (this._cacheIndex = this._keys.length, this._keys.push(y), this._values.push(void 0)), this._cacheIndex;
             }, p;
           }()
         );
         function f(p, y) {
           return p;
         }
-        function h(p, y) {
+        function l(p, y) {
           return y;
         }
-        function R(p, y) {
+        function A(p, y) {
           return [p, y];
         }
       }
-      function qe() {
+      function He() {
         return (
           /** @class */
           function() {
@@ -535,77 +535,77 @@ function Je() {
         );
       }
       function Ve() {
-        var r = 16, n = w.create(), o = f();
+        var r = 16, n = R.create(), o = f();
         return (
           /** @class */
           function() {
-            function c() {
+            function h() {
               this._key = f();
             }
-            return c.prototype.has = function(b) {
-              var m = h(
-                b,
+            return h.prototype.has = function(v) {
+              var b = l(
+                v,
                 /*create*/
                 !1
               );
-              return m !== void 0 ? w.has(m, this._key) : !1;
-            }, c.prototype.get = function(b) {
-              var m = h(
-                b,
+              return b !== void 0 ? R.has(b, this._key) : !1;
+            }, h.prototype.get = function(v) {
+              var b = l(
+                v,
                 /*create*/
                 !1
               );
-              return m !== void 0 ? w.get(m, this._key) : void 0;
-            }, c.prototype.set = function(b, m) {
-              var C = h(
-                b,
+              return b !== void 0 ? R.get(b, this._key) : void 0;
+            }, h.prototype.set = function(v, b) {
+              var C = l(
+                v,
                 /*create*/
                 !0
               );
-              return C[this._key] = m, this;
-            }, c.prototype.delete = function(b) {
-              var m = h(
-                b,
+              return C[this._key] = b, this;
+            }, h.prototype.delete = function(v) {
+              var b = l(
+                v,
                 /*create*/
                 !1
               );
-              return m !== void 0 ? delete m[this._key] : !1;
-            }, c.prototype.clear = function() {
+              return b !== void 0 ? delete b[this._key] : !1;
+            }, h.prototype.clear = function() {
               this._key = f();
-            }, c;
+            }, h;
           }()
         );
         function f() {
-          var c;
+          var h;
           do
-            c = "@@WeakMap@@" + y();
-          while (w.has(n, c));
-          return n[c] = !0, c;
+            h = "@@WeakMap@@" + y();
+          while (R.has(n, h));
+          return n[h] = !0, h;
         }
-        function h(c, b) {
-          if (!s.call(c, o)) {
-            if (!b)
+        function l(h, v) {
+          if (!u.call(h, o)) {
+            if (!v)
               return;
-            Object.defineProperty(c, o, { value: w.create() });
+            Object.defineProperty(h, o, { value: R.create() });
           }
-          return c[o];
+          return h[o];
         }
-        function R(c, b) {
-          for (var m = 0; m < b; ++m)
-            c[m] = Math.random() * 255 | 0;
-          return c;
+        function A(h, v) {
+          for (var b = 0; b < v; ++b)
+            h[b] = Math.random() * 255 | 0;
+          return h;
         }
-        function p(c) {
-          return typeof Uint8Array == "function" ? typeof crypto < "u" ? crypto.getRandomValues(new Uint8Array(c)) : typeof msCrypto < "u" ? msCrypto.getRandomValues(new Uint8Array(c)) : R(new Uint8Array(c), c) : R(new Array(c), c);
+        function p(h) {
+          return typeof Uint8Array == "function" ? typeof crypto < "u" ? crypto.getRandomValues(new Uint8Array(h)) : typeof msCrypto < "u" ? msCrypto.getRandomValues(new Uint8Array(h)) : A(new Uint8Array(h), h) : A(new Array(h), h);
         }
         function y() {
-          var c = p(r);
-          c[6] = c[6] & 79 | 64, c[8] = c[8] & 191 | 128;
-          for (var b = "", m = 0; m < r; ++m) {
-            var C = c[m];
-            (m === 4 || m === 6 || m === 8) && (b += "-"), C < 16 && (b += "0"), b += C.toString(16).toLowerCase();
+          var h = p(r);
+          h[6] = h[6] & 79 | 64, h[8] = h[8] & 191 | 128;
+          for (var v = "", b = 0; b < r; ++b) {
+            var C = h[b];
+            (b === 4 || b === 6 || b === 8) && (v += "-"), C < 16 && (v += "0"), v += C.toString(16).toLowerCase();
           }
-          return b;
+          return v;
         }
       }
       function F(r) {
@@ -625,36 +625,36 @@ var We = "named", ze = "inject", Ye = "inversify:tagged", Xe = "inversify:tagged
     return this.key === We ? "named: " + this.value.toString() + " " : "tagged: { key:" + this.key.toString() + ", value: " + this.value + " }";
   }, e;
 }();
-function nt(e, t, i, s) {
-  var u = Ye;
-  pe(u, e, t, s, i);
+function nt(e, t, i, u) {
+  var s = Ye;
+  pe(s, e, t, u, i);
 }
 function it(e, t, i) {
-  var s = Xe;
-  pe(s, e.constructor, t, i);
+  var u = Xe;
+  pe(u, e.constructor, t, i);
 }
-function pe(e, t, i, s, u) {
-  var a = {}, d = typeof u == "number", g = u !== void 0 && d ? u.toString() : i;
+function pe(e, t, i, u, s) {
+  var a = {}, d = typeof s == "number", m = s !== void 0 && d ? s.toString() : i;
   if (d && i !== void 0)
     throw new Error(tt);
   Reflect.hasOwnMetadata(e, t) && (a = Reflect.getMetadata(e, t));
-  var l = a[g];
-  if (!Array.isArray(l))
-    l = [];
+  var c = a[m];
+  if (!Array.isArray(c))
+    c = [];
   else
-    for (var v = 0, w = l; v < w.length; v++) {
-      var O = w[v];
-      if (O.key === s.key)
+    for (var g = 0, R = c; g < R.length; g++) {
+      var O = R[g];
+      if (O.key === u.key)
         throw new Error(Ke + " " + O.key.toString());
     }
-  l.push(s), a[g] = l, Reflect.defineMetadata(e, a, t);
+  c.push(u), a[m] = c, Reflect.defineMetadata(e, a, t);
 }
 function ue(e) {
-  return function(t, i, s) {
+  return function(t, i, u) {
     if (e === void 0)
       throw new Error(et(t.name));
-    var u = new rt(ze, e);
-    typeof s == "number" ? nt(t, i, s, u) : it(t, i, u);
+    var s = new rt(ze, e);
+    typeof u == "number" ? nt(t, i, u, s) : it(t, i, s);
   };
 }
 function ye() {
@@ -665,12 +665,12 @@ function ye() {
     return Reflect.defineMetadata(se, t, e), e;
   };
 }
-var ot = Object.getOwnPropertyDescriptor, at = (e, t, i, s) => {
-  for (var u = s > 1 ? void 0 : s ? ot(t, i) : t, a = e.length - 1, d; a >= 0; a--)
-    (d = e[a]) && (u = d(u) || u);
-  return u;
-}, fe = (e, t) => (i, s) => t(i, s, e);
-let q = class {
+var ot = Object.getOwnPropertyDescriptor, at = (e, t, i, u) => {
+  for (var s = u > 1 ? void 0 : u ? ot(t, i) : t, a = e.length - 1, d; a >= 0; a--)
+    (d = e[a]) && (s = d(s) || s);
+  return s;
+}, fe = (e, t) => (i, u) => t(i, u, e);
+let H = class {
   constructor(e, t) {
     this.httpClient = e, this.APIConfiguration = t, this.basePath = "https://${host}", this.APIConfiguration.basePath && (this.basePath = this.APIConfiguration.basePath);
   }
@@ -685,9 +685,9 @@ let q = class {
   getCallsPath() {
     return "/brapi/v1/calls";
   }
-  getCalls(e, t, i, s = "body", u = {}) {
+  getCalls(e, t, i, u = "body", s = {}) {
     let a = [];
-    return e !== void 0 && a.push("page=" + encodeURIComponent(String(e))), t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("dataType=" + encodeURIComponent(String(i))), u.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/calls${a.length > 0 ? "?" + a.join("&") : ""}`, u);
+    return e !== void 0 && a.push("page=" + encodeURIComponent(String(e))), t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("dataType=" + encodeURIComponent(String(i))), s.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/calls${a.length > 0 ? "?" + a.join("&") : ""}`, s);
   }
   /**
    * Submit a search request for germplasm (type accession in OpenSILEX
@@ -705,9 +705,9 @@ let q = class {
   getGermplasmBySearchPath() {
     return "/brapi/v1/germplasm";
   }
-  getGermplasmBySearch(e, t, i, s, u, a, d = "body", g = {}) {
-    let l = [];
-    return e !== void 0 && l.push("germplasmDbId=" + encodeURIComponent(String(e))), t !== void 0 && l.push("germplasmPUI=" + encodeURIComponent(String(t))), i !== void 0 && l.push("germplasmName=" + encodeURIComponent(String(i))), s !== void 0 && l.push("commonCropName=" + encodeURIComponent(String(s))), u !== void 0 && l.push("page=" + encodeURIComponent(String(u))), a !== void 0 && l.push("page_size=" + encodeURIComponent(String(a))), g.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/germplasm${l.length > 0 ? "?" + l.join("&") : ""}`, g);
+  getGermplasmBySearch(e, t, i, u, s, a, d = "body", m = {}) {
+    let c = [];
+    return e !== void 0 && c.push("germplasmDbId=" + encodeURIComponent(String(e))), t !== void 0 && c.push("germplasmPUI=" + encodeURIComponent(String(t))), i !== void 0 && c.push("germplasmName=" + encodeURIComponent(String(i))), u !== void 0 && c.push("commonCropName=" + encodeURIComponent(String(u))), s !== void 0 && c.push("page=" + encodeURIComponent(String(s))), a !== void 0 && c.push("page_size=" + encodeURIComponent(String(a))), m.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/germplasm${c.length > 0 ? "?" + c.join("&") : ""}`, m);
   }
   /**
    * List all the observation units measured in the study.
@@ -723,9 +723,9 @@ let q = class {
   getObservationUnitsPath() {
     return "/brapi/v1/studies/${encodeURIComponent(String(studyDbId))}/observationunits";
   }
-  getObservationUnits(e, t, i, s, u = "body", a = {}) {
+  getObservationUnits(e, t, i, u, s = "body", a = {}) {
     let d = [];
-    return t !== void 0 && d.push("observationLevel=" + encodeURIComponent(String(t))), i !== void 0 && d.push("pageSize=" + encodeURIComponent(String(i))), s !== void 0 && d.push("page=" + encodeURIComponent(String(s))), a.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observationunits${d.length > 0 ? "?" + d.join("&") : ""}`, a);
+    return t !== void 0 && d.push("observationLevel=" + encodeURIComponent(String(t))), i !== void 0 && d.push("pageSize=" + encodeURIComponent(String(i))), u !== void 0 && d.push("page=" + encodeURIComponent(String(u))), a.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observationunits${d.length > 0 ? "?" + d.join("&") : ""}`, a);
   }
   /**
    * List all the observation variables measured in the study.
@@ -740,9 +740,9 @@ let q = class {
   getObservationVariablesPath() {
     return "/brapi/v1/studies/${encodeURIComponent(String(studyDbId))}/observationvariables";
   }
-  getObservationVariables(e, t, i, s = "body", u = {}) {
+  getObservationVariables(e, t, i, u = "body", s = {}) {
     let a = [];
-    return t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("page=" + encodeURIComponent(String(i))), u.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observationvariables${a.length > 0 ? "?" + a.join("&") : ""}`, u);
+    return t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("page=" + encodeURIComponent(String(i))), s.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observationvariables${a.length > 0 ? "?" + a.join("&") : ""}`, s);
   }
   /**
    * Get the observations associated to a specific study
@@ -758,11 +758,11 @@ let q = class {
   getObservationsPath() {
     return "/brapi/v1/studies/${encodeURIComponent(String(studyDbId))}/observations";
   }
-  getObservations(e, t, i, s, u = "body", a = {}) {
+  getObservations(e, t, i, u, s = "body", a = {}) {
     let d = [];
-    return t && t.forEach((l) => {
-      d.push("observationVariableDbIds=" + encodeURIComponent(String(l)));
-    }), i !== void 0 && d.push("pageSize=" + encodeURIComponent(String(i))), s !== void 0 && d.push("page=" + encodeURIComponent(String(s))), a.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observations${d.length > 0 ? "?" + d.join("&") : ""}`, a);
+    return t && t.forEach((c) => {
+      d.push("observationVariableDbIds=" + encodeURIComponent(String(c)));
+    }), i !== void 0 && d.push("pageSize=" + encodeURIComponent(String(i))), u !== void 0 && d.push("page=" + encodeURIComponent(String(u))), a.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies/${encodeURIComponent(String(e))}/observations${d.length > 0 ? "?" + d.join("&") : ""}`, a);
   }
   /**
    * Retrieve studies information
@@ -780,9 +780,9 @@ let q = class {
   getStudiesPath() {
     return "/brapi/v1/studies";
   }
-  getStudies(e, t, i, s, u, a, d = "body", g = {}) {
-    let l = [];
-    return e !== void 0 && l.push("studyDbId=" + encodeURIComponent(String(e))), t !== void 0 && l.push("active=" + encodeURIComponent(String(t))), i !== void 0 && l.push("sortBy=" + encodeURIComponent(String(i))), s !== void 0 && l.push("sortOrder=" + encodeURIComponent(String(s))), u !== void 0 && l.push("page=" + encodeURIComponent(String(u))), a !== void 0 && l.push("pageSize=" + encodeURIComponent(String(a))), g.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies${l.length > 0 ? "?" + l.join("&") : ""}`, g);
+  getStudies(e, t, i, u, s, a, d = "body", m = {}) {
+    let c = [];
+    return e !== void 0 && c.push("studyDbId=" + encodeURIComponent(String(e))), t !== void 0 && c.push("active=" + encodeURIComponent(String(t))), i !== void 0 && c.push("sortBy=" + encodeURIComponent(String(i))), u !== void 0 && c.push("sortOrder=" + encodeURIComponent(String(u))), s !== void 0 && c.push("page=" + encodeURIComponent(String(s))), a !== void 0 && c.push("pageSize=" + encodeURIComponent(String(a))), m.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies${c.length > 0 ? "?" + c.join("&") : ""}`, m);
   }
   /**
    * Retrieve studies information
@@ -800,9 +800,9 @@ let q = class {
   getStudiesSearchPath() {
     return "/brapi/v1/studies-search";
   }
-  getStudiesSearch(e, t, i, s, u, a, d = "body", g = {}) {
-    let l = [];
-    return e !== void 0 && l.push("studyDbId=" + encodeURIComponent(String(e))), t !== void 0 && l.push("active=" + encodeURIComponent(String(t))), i !== void 0 && l.push("sortBy=" + encodeURIComponent(String(i))), s !== void 0 && l.push("sortOrder=" + encodeURIComponent(String(s))), u !== void 0 && l.push("pageSize=" + encodeURIComponent(String(u))), a !== void 0 && l.push("page=" + encodeURIComponent(String(a))), g.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies-search${l.length > 0 ? "?" + l.join("&") : ""}`, g);
+  getStudiesSearch(e, t, i, u, s, a, d = "body", m = {}) {
+    let c = [];
+    return e !== void 0 && c.push("studyDbId=" + encodeURIComponent(String(e))), t !== void 0 && c.push("active=" + encodeURIComponent(String(t))), i !== void 0 && c.push("sortBy=" + encodeURIComponent(String(i))), u !== void 0 && c.push("sortOrder=" + encodeURIComponent(String(u))), s !== void 0 && c.push("pageSize=" + encodeURIComponent(String(s))), a !== void 0 && c.push("page=" + encodeURIComponent(String(a))), m.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/studies-search${c.length > 0 ? "?" + c.join("&") : ""}`, m);
   }
   /**
    * Retrieve study details
@@ -845,16 +845,16 @@ let q = class {
   getVariablesListPath() {
     return "/brapi/v1/variables";
   }
-  getVariablesList(e, t, i, s = "body", u = {}) {
+  getVariablesList(e, t, i, u = "body", s = {}) {
     let a = [];
-    return e !== void 0 && a.push("observationVariableDbId=" + encodeURIComponent(String(e))), t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("page=" + encodeURIComponent(String(i))), u.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/variables${a.length > 0 ? "?" + a.join("&") : ""}`, u);
+    return e !== void 0 && a.push("observationVariableDbId=" + encodeURIComponent(String(e))), t !== void 0 && a.push("pageSize=" + encodeURIComponent(String(t))), i !== void 0 && a.push("page=" + encodeURIComponent(String(i))), s.Accept = "application/json", this.httpClient.get(`${this.basePath}/brapi/v1/variables${a.length > 0 ? "?" + a.join("&") : ""}`, s);
   }
 };
-q = at([
+H = at([
   ye(),
   fe(0, ue("IApiHttpClient")),
   fe(1, ue("IAPIConfiguration"))
-], q);
+], H);
 var ce;
 ((e) => {
   e.LevelEnum = {
@@ -870,29 +870,28 @@ const _t = "", At = {
   ssv: " ",
   pipes: "|"
 };
-class Rt {
+class St {
   static with(t) {
-    t.bind("BRAPIService").to(q).inSingletonScope();
+    t.bind("BRAPIService").to(H).inSingletonScope();
   }
 }
-var S = typeof globalThis < "u" && globalThis || typeof self < "u" && self || // eslint-disable-next-line no-undef
-typeof global < "u" && global || {}, E = {
-  searchParams: "URLSearchParams" in S,
-  iterable: "Symbol" in S && "iterator" in Symbol,
-  blob: "FileReader" in S && "Blob" in S && function() {
+var I = typeof globalThis < "u" && globalThis || typeof self < "u" && self || typeof I < "u" && I, P = {
+  searchParams: "URLSearchParams" in I,
+  iterable: "Symbol" in I && "iterator" in Symbol,
+  blob: "FileReader" in I && "Blob" in I && function() {
     try {
       return new Blob(), !0;
     } catch {
       return !1;
     }
   }(),
-  formData: "FormData" in S,
-  arrayBuffer: "ArrayBuffer" in S
+  formData: "FormData" in I,
+  arrayBuffer: "ArrayBuffer" in I
 };
 function st(e) {
   return e && DataView.prototype.isPrototypeOf(e);
 }
-if (E.arrayBuffer)
+if (P.arrayBuffer)
   var ut = [
     "[object Int8Array]",
     "[object Uint8Array]",
@@ -906,9 +905,9 @@ if (E.arrayBuffer)
   ], ft = ArrayBuffer.isView || function(e) {
     return e && ut.indexOf(Object.prototype.toString.call(e)) > -1;
   };
-function D(e) {
+function B(e) {
   if (typeof e != "string" && (e = String(e)), /[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(e) || e === "")
-    throw new TypeError('Invalid character in header field name: "' + e + '"');
+    throw new TypeError("Invalid character in header field name");
   return e.toLowerCase();
 }
 function V(e) {
@@ -921,67 +920,63 @@ function J(e) {
       return { done: i === void 0, value: i };
     }
   };
-  return E.iterable && (t[Symbol.iterator] = function() {
+  return P.iterable && (t[Symbol.iterator] = function() {
     return t;
   }), t;
 }
-function A(e) {
-  this.map = {}, e instanceof A ? e.forEach(function(t, i) {
+function _(e) {
+  this.map = {}, e instanceof _ ? e.forEach(function(t, i) {
     this.append(i, t);
   }, this) : Array.isArray(e) ? e.forEach(function(t) {
-    if (t.length != 2)
-      throw new TypeError("Headers constructor: expected name/value pair to be length 2, found" + t.length);
     this.append(t[0], t[1]);
   }, this) : e && Object.getOwnPropertyNames(e).forEach(function(t) {
     this.append(t, e[t]);
   }, this);
 }
-A.prototype.append = function(e, t) {
-  e = D(e), t = V(t);
+_.prototype.append = function(e, t) {
+  e = B(e), t = V(t);
   var i = this.map[e];
   this.map[e] = i ? i + ", " + t : t;
 };
-A.prototype.delete = function(e) {
-  delete this.map[D(e)];
+_.prototype.delete = function(e) {
+  delete this.map[B(e)];
 };
-A.prototype.get = function(e) {
-  return e = D(e), this.has(e) ? this.map[e] : null;
+_.prototype.get = function(e) {
+  return e = B(e), this.has(e) ? this.map[e] : null;
 };
-A.prototype.has = function(e) {
-  return this.map.hasOwnProperty(D(e));
+_.prototype.has = function(e) {
+  return this.map.hasOwnProperty(B(e));
 };
-A.prototype.set = function(e, t) {
-  this.map[D(e)] = V(t);
+_.prototype.set = function(e, t) {
+  this.map[B(e)] = V(t);
 };
-A.prototype.forEach = function(e, t) {
+_.prototype.forEach = function(e, t) {
   for (var i in this.map)
     this.map.hasOwnProperty(i) && e.call(t, this.map[i], i, this);
 };
-A.prototype.keys = function() {
+_.prototype.keys = function() {
   var e = [];
   return this.forEach(function(t, i) {
     e.push(i);
   }), J(e);
 };
-A.prototype.values = function() {
+_.prototype.values = function() {
   var e = [];
   return this.forEach(function(t) {
     e.push(t);
   }), J(e);
 };
-A.prototype.entries = function() {
+_.prototype.entries = function() {
   var e = [];
   return this.forEach(function(t, i) {
     e.push([i, t]);
   }), J(e);
 };
-E.iterable && (A.prototype[Symbol.iterator] = A.prototype.entries);
-function H(e) {
-  if (!e._noBody) {
-    if (e.bodyUsed)
-      return Promise.reject(new TypeError("Already read"));
-    e.bodyUsed = !0;
-  }
+P.iterable && (_.prototype[Symbol.iterator] = _.prototype.entries);
+function q(e) {
+  if (e.bodyUsed)
+    return Promise.reject(new TypeError("Already read"));
+  e.bodyUsed = !0;
 }
 function ve(e) {
   return new Promise(function(t, i) {
@@ -996,16 +991,16 @@ function ct(e) {
   var t = new FileReader(), i = ve(t);
   return t.readAsArrayBuffer(e), i;
 }
-function lt(e) {
-  var t = new FileReader(), i = ve(t), s = /charset=([A-Za-z0-9_-]+)/.exec(e.type), u = s ? s[1] : "utf-8";
-  return t.readAsText(e, u), i;
-}
 function ht(e) {
-  for (var t = new Uint8Array(e), i = new Array(t.length), s = 0; s < t.length; s++)
-    i[s] = String.fromCharCode(t[s]);
+  var t = new FileReader(), i = ve(t);
+  return t.readAsText(e), i;
+}
+function lt(e) {
+  for (var t = new Uint8Array(e), i = new Array(t.length), u = 0; u < t.length; u++)
+    i[u] = String.fromCharCode(t[u]);
   return i.join("");
 }
-function le(e) {
+function he(e) {
   if (e.slice)
     return e.slice(0);
   var t = new Uint8Array(e.byteLength);
@@ -1013,9 +1008,9 @@ function le(e) {
 }
 function be() {
   return this.bodyUsed = !1, this._initBody = function(e) {
-    this.bodyUsed = this.bodyUsed, this._bodyInit = e, e ? typeof e == "string" ? this._bodyText = e : E.blob && Blob.prototype.isPrototypeOf(e) ? this._bodyBlob = e : E.formData && FormData.prototype.isPrototypeOf(e) ? this._bodyFormData = e : E.searchParams && URLSearchParams.prototype.isPrototypeOf(e) ? this._bodyText = e.toString() : E.arrayBuffer && E.blob && st(e) ? (this._bodyArrayBuffer = le(e.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : E.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(e) || ft(e)) ? this._bodyArrayBuffer = le(e) : this._bodyText = e = Object.prototype.toString.call(e) : (this._noBody = !0, this._bodyText = ""), this.headers.get("content-type") || (typeof e == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : E.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
-  }, E.blob && (this.blob = function() {
-    var e = H(this);
+    this.bodyUsed = this.bodyUsed, this._bodyInit = e, e ? typeof e == "string" ? this._bodyText = e : P.blob && Blob.prototype.isPrototypeOf(e) ? this._bodyBlob = e : P.formData && FormData.prototype.isPrototypeOf(e) ? this._bodyFormData = e : P.searchParams && URLSearchParams.prototype.isPrototypeOf(e) ? this._bodyText = e.toString() : P.arrayBuffer && P.blob && st(e) ? (this._bodyArrayBuffer = he(e.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : P.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(e) || ft(e)) ? this._bodyArrayBuffer = he(e) : this._bodyText = e = Object.prototype.toString.call(e) : this._bodyText = "", this.headers.get("content-type") || (typeof e == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : P.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
+  }, P.blob && (this.blob = function() {
+    var e = q(this);
     if (e)
       return e;
     if (this._bodyBlob)
@@ -1025,38 +1020,35 @@ function be() {
     if (this._bodyFormData)
       throw new Error("could not read FormData body as blob");
     return Promise.resolve(new Blob([this._bodyText]));
-  }), this.arrayBuffer = function() {
+  }, this.arrayBuffer = function() {
     if (this._bodyArrayBuffer) {
-      var e = H(this);
+      var e = q(this);
       return e || (ArrayBuffer.isView(this._bodyArrayBuffer) ? Promise.resolve(
         this._bodyArrayBuffer.buffer.slice(
           this._bodyArrayBuffer.byteOffset,
           this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
         )
       ) : Promise.resolve(this._bodyArrayBuffer));
-    } else {
-      if (E.blob)
-        return this.blob().then(ct);
-      throw new Error("could not read as ArrayBuffer");
-    }
-  }, this.text = function() {
-    var e = H(this);
+    } else
+      return this.blob().then(ct);
+  }), this.text = function() {
+    var e = q(this);
     if (e)
       return e;
     if (this._bodyBlob)
-      return lt(this._bodyBlob);
+      return ht(this._bodyBlob);
     if (this._bodyArrayBuffer)
-      return Promise.resolve(ht(this._bodyArrayBuffer));
+      return Promise.resolve(lt(this._bodyArrayBuffer));
     if (this._bodyFormData)
       throw new Error("could not read FormData body as text");
     return Promise.resolve(this._bodyText);
-  }, E.formData && (this.formData = function() {
+  }, P.formData && (this.formData = function() {
     return this.text().then(yt);
   }), this.json = function() {
     return this.text().then(JSON.parse);
   }, this;
 }
-var dt = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"];
+var dt = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
 function pt(e) {
   var t = e.toUpperCase();
   return dt.indexOf(t) > -1 ? t : e;
@@ -1069,23 +1061,18 @@ function M(e, t) {
   if (e instanceof M) {
     if (e.bodyUsed)
       throw new TypeError("Already read");
-    this.url = e.url, this.credentials = e.credentials, t.headers || (this.headers = new A(e.headers)), this.method = e.method, this.mode = e.mode, this.signal = e.signal, !i && e._bodyInit != null && (i = e._bodyInit, e.bodyUsed = !0);
+    this.url = e.url, this.credentials = e.credentials, t.headers || (this.headers = new _(e.headers)), this.method = e.method, this.mode = e.mode, this.signal = e.signal, !i && e._bodyInit != null && (i = e._bodyInit, e.bodyUsed = !0);
   } else
     this.url = String(e);
-  if (this.credentials = t.credentials || this.credentials || "same-origin", (t.headers || !this.headers) && (this.headers = new A(t.headers)), this.method = pt(t.method || this.method || "GET"), this.mode = t.mode || this.mode || null, this.signal = t.signal || this.signal || function() {
-    if ("AbortController" in S) {
-      var a = new AbortController();
-      return a.signal;
-    }
-  }(), this.referrer = null, (this.method === "GET" || this.method === "HEAD") && i)
+  if (this.credentials = t.credentials || this.credentials || "same-origin", (t.headers || !this.headers) && (this.headers = new _(t.headers)), this.method = pt(t.method || this.method || "GET"), this.mode = t.mode || this.mode || null, this.signal = t.signal || this.signal, this.referrer = null, (this.method === "GET" || this.method === "HEAD") && i)
     throw new TypeError("Body not allowed for GET or HEAD requests");
   if (this._initBody(i), (this.method === "GET" || this.method === "HEAD") && (t.cache === "no-store" || t.cache === "no-cache")) {
-    var s = /([?&])_=[^&]*/;
-    if (s.test(this.url))
-      this.url = this.url.replace(s, "$1_=" + (/* @__PURE__ */ new Date()).getTime());
+    var u = /([?&])_=[^&]*/;
+    if (u.test(this.url))
+      this.url = this.url.replace(u, "$1_=" + (/* @__PURE__ */ new Date()).getTime());
     else {
-      var u = /\?/;
-      this.url += (u.test(this.url) ? "&" : "?") + "_=" + (/* @__PURE__ */ new Date()).getTime();
+      var s = /\?/;
+      this.url += (s.test(this.url) ? "&" : "?") + "_=" + (/* @__PURE__ */ new Date()).getTime();
     }
   }
 }
@@ -1096,25 +1083,18 @@ function yt(e) {
   var t = new FormData();
   return e.trim().split("&").forEach(function(i) {
     if (i) {
-      var s = i.split("="), u = s.shift().replace(/\+/g, " "), a = s.join("=").replace(/\+/g, " ");
-      t.append(decodeURIComponent(u), decodeURIComponent(a));
+      var u = i.split("="), s = u.shift().replace(/\+/g, " "), a = u.join("=").replace(/\+/g, " ");
+      t.append(decodeURIComponent(s), decodeURIComponent(a));
     }
   }), t;
 }
 function vt(e) {
-  var t = new A(), i = e.replace(/\r?\n[\t ]+/g, " ");
-  return i.split("\r").map(function(s) {
-    return s.indexOf(`
-`) === 0 ? s.substr(1, s.length) : s;
-  }).forEach(function(s) {
-    var u = s.split(":"), a = u.shift().trim();
+  var t = new _(), i = e.replace(/\r?\n[\t ]+/g, " ");
+  return i.split(/\r?\n/).forEach(function(u) {
+    var s = u.split(":"), a = s.shift().trim();
     if (a) {
-      var d = u.join(":").trim();
-      try {
-        t.append(a, d);
-      } catch (g) {
-        console.warn("Response " + g.message);
-      }
+      var d = s.join(":").trim();
+      t.append(a, d);
     }
   }), t;
 }
@@ -1122,22 +1102,20 @@ be.call(M.prototype);
 function T(e, t) {
   if (!(this instanceof T))
     throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
-  if (t || (t = {}), this.type = "default", this.status = t.status === void 0 ? 200 : t.status, this.status < 200 || this.status > 599)
-    throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].");
-  this.ok = this.status >= 200 && this.status < 300, this.statusText = t.statusText === void 0 ? "" : "" + t.statusText, this.headers = new A(t.headers), this.url = t.url || "", this._initBody(e);
+  t || (t = {}), this.type = "default", this.status = t.status === void 0 ? 200 : t.status, this.ok = this.status >= 200 && this.status < 300, this.statusText = "statusText" in t ? t.statusText : "", this.headers = new _(t.headers), this.url = t.url || "", this._initBody(e);
 }
 be.call(T.prototype);
 T.prototype.clone = function() {
   return new T(this._bodyInit, {
     status: this.status,
     statusText: this.statusText,
-    headers: new A(this.headers),
+    headers: new _(this.headers),
     url: this.url
   });
 };
 T.error = function() {
-  var e = new T(null, { status: 200, statusText: "" });
-  return e.ok = !1, e.status = 0, e.type = "error", e;
+  var e = new T(null, { status: 0, statusText: "" });
+  return e.type = "error", e;
 };
 var bt = [301, 302, 303, 307, 308];
 T.redirect = function(e, t) {
@@ -1145,81 +1123,75 @@ T.redirect = function(e, t) {
     throw new RangeError("Invalid status code");
   return new T(null, { status: t, headers: { location: e } });
 };
-var U = S.DOMException;
+var U = I.DOMException;
 try {
   new U();
 } catch {
   U = function(t, i) {
     this.message = t, this.name = i;
-    var s = Error(t);
-    this.stack = s.stack;
+    var u = Error(t);
+    this.stack = u.stack;
   }, U.prototype = Object.create(Error.prototype), U.prototype.constructor = U;
 }
 function me(e, t) {
-  return new Promise(function(i, s) {
-    var u = new M(e, t);
-    if (u.signal && u.signal.aborted)
-      return s(new U("Aborted", "AbortError"));
+  return new Promise(function(i, u) {
+    var s = new M(e, t);
+    if (s.signal && s.signal.aborted)
+      return u(new U("Aborted", "AbortError"));
     var a = new XMLHttpRequest();
     function d() {
       a.abort();
     }
     a.onload = function() {
-      var v = {
+      var c = {
+        status: a.status,
         statusText: a.statusText,
         headers: vt(a.getAllResponseHeaders() || "")
       };
-      u.url.indexOf("file://") === 0 && (a.status < 200 || a.status > 599) ? v.status = 200 : v.status = a.status, v.url = "responseURL" in a ? a.responseURL : v.headers.get("X-Request-URL");
-      var w = "response" in a ? a.response : a.responseText;
+      c.url = "responseURL" in a ? a.responseURL : c.headers.get("X-Request-URL");
+      var g = "response" in a ? a.response : a.responseText;
       setTimeout(function() {
-        i(new T(w, v));
+        i(new T(g, c));
       }, 0);
     }, a.onerror = function() {
       setTimeout(function() {
-        s(new TypeError("Network request failed"));
+        u(new TypeError("Network request failed"));
       }, 0);
     }, a.ontimeout = function() {
       setTimeout(function() {
-        s(new TypeError("Network request timed out"));
+        u(new TypeError("Network request failed"));
       }, 0);
     }, a.onabort = function() {
       setTimeout(function() {
-        s(new U("Aborted", "AbortError"));
+        u(new U("Aborted", "AbortError"));
       }, 0);
     };
-    function g(v) {
+    function m(c) {
       try {
-        return v === "" && S.location.href ? S.location.href : v;
+        return c === "" && I.location.href ? I.location.href : c;
       } catch {
-        return v;
+        return c;
       }
     }
-    if (a.open(u.method, g(u.url), !0), u.credentials === "include" ? a.withCredentials = !0 : u.credentials === "omit" && (a.withCredentials = !1), "responseType" in a && (E.blob ? a.responseType = "blob" : E.arrayBuffer && (a.responseType = "arraybuffer")), t && typeof t.headers == "object" && !(t.headers instanceof A || S.Headers && t.headers instanceof S.Headers)) {
-      var l = [];
-      Object.getOwnPropertyNames(t.headers).forEach(function(v) {
-        l.push(D(v)), a.setRequestHeader(v, V(t.headers[v]));
-      }), u.headers.forEach(function(v, w) {
-        l.indexOf(w) === -1 && a.setRequestHeader(w, v);
-      });
-    } else
-      u.headers.forEach(function(v, w) {
-        a.setRequestHeader(w, v);
-      });
-    u.signal && (u.signal.addEventListener("abort", d), a.onreadystatechange = function() {
-      a.readyState === 4 && u.signal.removeEventListener("abort", d);
-    }), a.send(typeof u._bodyInit > "u" ? null : u._bodyInit);
+    a.open(s.method, m(s.url), !0), s.credentials === "include" ? a.withCredentials = !0 : s.credentials === "omit" && (a.withCredentials = !1), "responseType" in a && (P.blob ? a.responseType = "blob" : P.arrayBuffer && s.headers.get("Content-Type") && s.headers.get("Content-Type").indexOf("application/octet-stream") !== -1 && (a.responseType = "arraybuffer")), t && typeof t.headers == "object" && !(t.headers instanceof _) ? Object.getOwnPropertyNames(t.headers).forEach(function(c) {
+      a.setRequestHeader(c, V(t.headers[c]));
+    }) : s.headers.forEach(function(c, g) {
+      a.setRequestHeader(g, c);
+    }), s.signal && (s.signal.addEventListener("abort", d), a.onreadystatechange = function() {
+      a.readyState === 4 && s.signal.removeEventListener("abort", d);
+    }), a.send(typeof s._bodyInit > "u" ? null : s._bodyInit);
   });
 }
 me.polyfill = !0;
-S.fetch || (S.fetch = me, S.Headers = A, S.Request = M, S.Response = T);
+I.fetch || (I.fetch = me, I.Headers = _, I.Request = M, I.Response = T);
 class mt {
-  constructor(t, i, s) {
-    this.response = t, this.status = i, this.headers = s;
+  constructor(t, i, u) {
+    this.response = t, this.status = i, this.headers = u;
   }
 }
-class he {
-  constructor(t, i, s, u) {
-    this.message = t, this.level = i, this.translationKey = s, this.translationValues = u;
+class le {
+  constructor(t, i, u, s) {
+    this.message = t, this.level = i, this.translationKey = u, this.translationValues = s;
   }
 }
 ((e) => {
@@ -1229,11 +1201,11 @@ class he {
     INFO: "INFO",
     DEBUG: "DEBUG"
   };
-})(he || (he = {}));
-var gt = Object.getOwnPropertyDescriptor, wt = (e, t, i, s) => {
-  for (var u = s > 1 ? void 0 : s ? gt(t, i) : t, a = e.length - 1, d; a >= 0; a--)
-    (d = e[a]) && (u = d(u) || u);
-  return u;
+})(le || (le = {}));
+var gt = Object.getOwnPropertyDescriptor, wt = (e, t, i, u) => {
+  for (var s = u > 1 ? void 0 : u ? gt(t, i) : t, a = e.length - 1, d; a >= 0; a--)
+    (d = e[a]) && (s = d(s) || s);
+  return s;
 };
 let de = class {
   get(e, t) {
@@ -1257,21 +1229,21 @@ let de = class {
       "Content-Type": "application/json"
     }, e);
   }
-  performNetworkCall(e, t, i, s) {
-    let u;
-    return typeof window > "u" ? u = require("node-fetch") : u = window.fetch, u(e, {
+  performNetworkCall(e, t, i, u) {
+    let s;
+    return typeof window > "u" ? s = require("node-fetch") : s = window.fetch, s(e, {
       method: t,
       body: i,
       mode: "cors",
-      headers: s
+      headers: u
     }).then((d) => {
-      let g = {};
-      return d.headers.forEach((l, v) => {
-        g[v.toString().toLowerCase()] = l;
-      }), d.text().then((l) => {
-        let v = g["content-type"] || "", w;
-        v.match("application/json") ? (w = JSON.parse(l), w.metadata && w.metadata) : w = l;
-        let O = new mt(w, d.status, g);
+      let m = {};
+      return d.headers.forEach((c, g) => {
+        m[g.toString().toLowerCase()] = c;
+      }), d.text().then((c) => {
+        let g = m["content-type"] || "", R;
+        g.match("application/json") ? (R = JSON.parse(c), R.metadata && R.metadata) : R = c;
+        let O = new mt(R, d.status, m);
         if (d.status >= 400)
           throw O;
         return O;
@@ -1283,8 +1255,8 @@ de = wt([
   ye()
 ], de);
 export {
-  Rt as ApiServiceBinder,
-  q as BRAPIService,
+  St as ApiServiceBinder,
+  H as BRAPIService,
   At as COLLECTION_FORMATS,
   ce as StatusDTO,
   _t as __fakeExport

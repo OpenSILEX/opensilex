@@ -1,0 +1,343 @@
+opensilex-vue-extension@0.1.0 /home/charleroy/GIT/GITLAB/opensilex-dev
+├─┬ @fortawesome/fontawesome-svg-core@6.4.0
+│ └── @fortawesome/fontawesome-common-types@6.4.0
+├─┬ @fortawesome/free-brands-svg-icons@6.4.0
+│ └── @fortawesome/fontawesome-common-types@6.4.0 deduped
+├─┬ @fortawesome/free-regular-svg-icons@6.4.0
+│ └── @fortawesome/fontawesome-common-types@6.4.0 deduped
+├─┬ @fortawesome/free-solid-svg-icons@6.4.0
+│ └── @fortawesome/fontawesome-common-types@6.4.0 deduped
+├─┬ @types/node@18.19.75
+│ └── undici-types@5.26.5
+├─┬ @vitejs/plugin-vue@5.2.1
+│ ├── vite@6.0.11 deduped
+│ └── vue@3.5.13 deduped
+├─┬ @vue/compat@3.5.13
+│ ├─┬ @babel/parser@7.26.7
+│ │ └── @babel/types@7.26.7
+│ ├── estree-walker@2.0.2
+│ ├── source-map-js@1.2.1
+│ └── vue@3.5.13 deduped
+├─┬ @vue/compiler-sfc@3.5.13
+│ ├── @babel/parser@7.26.7 deduped
+│ ├─┬ @vue/compiler-core@3.5.13
+│ │ ├── @babel/parser@7.26.7 deduped
+│ │ ├── @vue/shared@3.5.13 deduped
+│ │ ├── entities@4.5.0
+│ │ ├── estree-walker@2.0.2 deduped
+│ │ └── source-map-js@1.2.1 deduped
+│ ├─┬ @vue/compiler-dom@3.5.13
+│ │ ├── @vue/compiler-core@3.5.13 deduped
+│ │ └── @vue/shared@3.5.13 deduped
+│ ├─┬ @vue/compiler-ssr@3.5.13
+│ │ ├── @vue/compiler-dom@3.5.13 deduped
+│ │ └── @vue/shared@3.5.13 deduped
+│ ├── @vue/shared@3.5.13
+│ ├── estree-walker@2.0.2 deduped
+│ ├─┬ magic-string@0.30.17
+│ │ └── @jridgewell/sourcemap-codec@1.5.0
+│ ├─┬ postcss@8.5.1
+│ │ ├── nanoid@3.3.8
+│ │ ├── picocolors@1.1.1
+│ │ └── source-map-js@1.2.1 deduped
+│ └── source-map-js@1.2.1 deduped
+├─┬ @vue/eslint-config-typescript@14.3.0
+│ ├─┬ @typescript-eslint/utils@8.23.0
+│ │ ├── @eslint-community/eslint-utils@4.4.1
+│ │ ├── @typescript-eslint/scope-manager@8.23.0
+│ │ ├── @typescript-eslint/types@8.23.0
+│ │ ├── @typescript-eslint/typescript-estree@8.23.0
+│ │ ├── eslint@9.19.0 deduped
+│ │ └── typescript@5.5.4 deduped
+│ ├─┬ eslint-plugin-vue@9.32.0
+│ │ ├── @eslint-community/eslint-utils@4.4.1 deduped
+│ │ ├── eslint@9.19.0 deduped
+│ │ ├── globals@13.24.0
+│ │ ├── natural-compare@1.4.0
+│ │ ├── nth-check@2.1.1
+│ │ ├── postcss-selector-parser@6.1.2
+│ │ ├── semver@7.7.1
+│ │ ├── vue-eslint-parser@9.4.3 deduped
+│ │ └── xml-name-validator@4.0.0
+│ ├─┬ eslint@9.19.0
+│ │ ├── @eslint-community/eslint-utils@4.4.1 deduped
+│ │ ├── @eslint-community/regexpp@4.12.1
+│ │ ├── @eslint/config-array@0.19.2
+│ │ ├── @eslint/core@0.10.0
+│ │ ├── @eslint/eslintrc@3.2.0
+│ │ ├── @eslint/js@9.19.0
+│ │ ├── @eslint/plugin-kit@0.2.5
+│ │ ├── @humanfs/node@0.16.6
+│ │ ├── @humanwhocodes/module-importer@1.0.1
+│ │ ├── @humanwhocodes/retry@0.4.1
+│ │ ├── @types/estree@1.0.6 deduped
+│ │ ├── @types/json-schema@7.0.15
+│ │ ├── ajv@6.12.6
+│ │ ├── chalk@4.1.0
+│ │ ├── cross-spawn@7.0.6
+│ │ ├── debug@4.4.0
+│ │ ├── escape-string-regexp@4.0.0
+│ │ ├── eslint-scope@8.2.0
+│ │ ├── eslint-visitor-keys@4.2.0
+│ │ ├── espree@10.3.0
+│ │ ├── esquery@1.6.0
+│ │ ├── esutils@2.0.3
+│ │ ├── fast-deep-equal@3.1.3
+│ │ ├── file-entry-cache@8.0.0
+│ │ ├── find-up@5.0.0
+│ │ ├── glob-parent@6.0.2
+│ │ ├── ignore@5.3.2
+│ │ ├── imurmurhash@0.1.4
+│ │ ├── is-glob@4.0.3
+│ │ ├── UNMET OPTIONAL DEPENDENCY jiti@*
+│ │ ├── json-stable-stringify-without-jsonify@1.0.1
+│ │ ├── lodash.merge@4.6.2
+│ │ ├── minimatch@3.1.2
+│ │ ├── natural-compare@1.4.0 deduped
+│ │ └── optionator@0.9.4
+│ ├─┬ fast-glob@3.3.3
+│ │ ├── @nodelib/fs.stat@2.0.4
+│ │ ├── @nodelib/fs.walk@1.2.6
+│ │ ├── glob-parent@5.1.2
+│ │ ├── merge2@1.4.1
+│ │ └── micromatch@4.0.8
+│ ├─┬ typescript-eslint@8.23.0
+│ │ ├── @typescript-eslint/eslint-plugin@8.23.0
+│ │ ├── @typescript-eslint/parser@8.23.0
+│ │ ├── @typescript-eslint/utils@8.23.0 deduped
+│ │ ├── eslint@9.19.0 deduped
+│ │ └── typescript@5.5.4 deduped
+│ ├── typescript@5.5.4 deduped
+│ └─┬ vue-eslint-parser@9.4.3
+│   ├── debug@4.4.0 deduped
+│   ├── eslint-scope@7.2.2
+│   ├── eslint-visitor-keys@3.4.3
+│   ├── eslint@9.19.0 deduped
+│   ├── espree@9.6.1
+│   ├── esquery@1.6.0 deduped
+│   ├── lodash@4.17.21
+│   └── semver@7.7.1 deduped
+├── core-js@3.6.5
+├── csv-string@4.0.1
+├── inversify@5.0.5
+├── node-fetch@2.6.1
+├── reflect-metadata@0.1.13
+├─┬ sass-loader@16.0.4
+│ ├── UNMET OPTIONAL DEPENDENCY @rspack/core@0.x || 1.x
+│ ├── neo-async@2.6.2
+│ ├── UNMET OPTIONAL DEPENDENCY node-sass@^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+│ ├── UNMET OPTIONAL DEPENDENCY sass-embedded@*
+│ ├── sass@1.83.4 deduped
+│ └── webpack@5.97.1 deduped
+├─┬ sass@1.83.4
+│ ├─┬ @parcel/watcher@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-android-arm64@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-darwin-arm64@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-darwin-x64@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-freebsd-x64@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-linux-arm-glibc@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-linux-arm-musl@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-linux-arm64-glibc@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-linux-arm64-musl@2.5.1
+│ │ ├── @parcel/watcher-linux-x64-glibc@2.5.1
+│ │ ├── @parcel/watcher-linux-x64-musl@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-win32-arm64@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-win32-ia32@2.5.1
+│ │ ├── UNMET OPTIONAL DEPENDENCY @parcel/watcher-win32-x64@2.5.1
+│ │ ├── detect-libc@1.0.3
+│ │ ├── is-glob@4.0.3 deduped
+│ │ ├── micromatch@4.0.8 deduped
+│ │ └── node-addon-api@7.1.1
+│ ├─┬ chokidar@4.0.3
+│ │ └── readdirp@4.1.1
+│ ├── immutable@5.0.3
+│ └── source-map-js@1.2.1 deduped
+├─┬ terser-webpack-plugin@5.3.11
+│ ├─┬ @jridgewell/trace-mapping@0.3.25
+│ │ ├── @jridgewell/resolve-uri@3.1.2
+│ │ └── @jridgewell/sourcemap-codec@1.5.0 deduped
+│ ├─┬ jest-worker@27.5.1
+│ │ ├── @types/node@14.14.31
+│ │ ├── merge-stream@2.0.0
+│ │ └── supports-color@8.1.1
+│ ├─┬ schema-utils@4.3.0
+│ │ ├── @types/json-schema@7.0.15 deduped
+│ │ ├── ajv-formats@2.1.1
+│ │ ├── ajv-keywords@5.1.0
+│ │ └── ajv@8.17.1
+│ ├─┬ serialize-javascript@6.0.2
+│ │ └── randombytes@2.1.0
+│ ├─┬ terser@5.37.0
+│ │ ├── @jridgewell/source-map@0.3.6
+│ │ ├── acorn@8.14.0 deduped
+│ │ ├── commander@2.20.3
+│ │ └── source-map-support@0.5.21
+│ └── webpack@5.97.1 deduped
+├── typescript@5.5.4
+├─┬ vee-validate@4.15.0
+│ ├─┬ @vue/devtools-api@7.7.1
+│ │ └── @vue/devtools-kit@7.7.1
+│ ├── type-fest@4.33.0
+│ └── vue@3.5.13 deduped
+├─┬ vite@6.0.11
+│ ├── @types/node@18.19.75 deduped
+│ ├─┬ esbuild@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/aix-ppc64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/android-arm@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/android-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/android-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/darwin-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/darwin-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/freebsd-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/freebsd-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-arm@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-ia32@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-loong64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-mips64el@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-ppc64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-riscv64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/linux-s390x@0.24.2
+│ │ ├── @esbuild/linux-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/netbsd-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/netbsd-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/openbsd-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/openbsd-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/sunos-x64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/win32-arm64@0.24.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @esbuild/win32-ia32@0.24.2
+│ │ └── UNMET OPTIONAL DEPENDENCY @esbuild/win32-x64@0.24.2
+│ ├── UNMET OPTIONAL DEPENDENCY fsevents@~2.3.3
+│ ├── UNMET OPTIONAL DEPENDENCY jiti@>=1.21.0
+│ ├── UNMET OPTIONAL DEPENDENCY less@*
+│ ├── UNMET OPTIONAL DEPENDENCY lightningcss@^1.21.0
+│ ├── postcss@8.5.1 deduped
+│ ├─┬ rollup@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-android-arm-eabi@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-android-arm64@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-darwin-arm64@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-darwin-x64@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-freebsd-arm64@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-freebsd-x64@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-arm-gnueabihf@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-arm-musleabihf@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-arm64-gnu@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-arm64-musl@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-loongarch64-gnu@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-powerpc64le-gnu@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-riscv64-gnu@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-linux-s390x-gnu@4.34.2
+│ │ ├── @rollup/rollup-linux-x64-gnu@4.34.2
+│ │ ├── @rollup/rollup-linux-x64-musl@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-win32-arm64-msvc@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-win32-ia32-msvc@4.34.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rollup/rollup-win32-x64-msvc@4.34.2
+│ │ ├── @types/estree@1.0.6 deduped
+│ │ └── UNMET OPTIONAL DEPENDENCY fsevents@~2.3.2
+│ ├── UNMET OPTIONAL DEPENDENCY sass-embedded@*
+│ ├── sass@1.83.4 deduped
+│ ├── UNMET OPTIONAL DEPENDENCY stylus@*
+│ ├── UNMET OPTIONAL DEPENDENCY sugarss@*
+│ ├── terser@5.37.0 deduped
+│ ├── UNMET OPTIONAL DEPENDENCY tsx@^4.8.1
+│ └── yaml@2.7.0
+├─┬ vue-class-migrator@0.0.3
+│ ├── commander@11.1.0
+│ ├─┬ ts-morph@19.0.0
+│ │ ├── @ts-morph/common@0.20.0
+│ │ └── code-block-writer@12.0.0
+│ └─┬ winston@3.17.0
+│   ├── @colors/colors@1.6.0
+│   ├── @dabh/diagnostics@2.0.3
+│   ├── async@3.2.6
+│   ├── is-stream@2.0.0
+│   ├── logform@2.7.0
+│   ├── one-time@1.0.0
+│   ├── readable-stream@3.6.2
+│   ├── safe-stable-stringify@2.5.0
+│   ├── stack-trace@0.0.10
+│   ├── triple-beam@1.4.1
+│   └── winston-transport@4.9.0
+├── vue-router@3.4.9
+├─┬ vue-tel-input@5.3.0
+│ ├── core-js@3.21.1
+│ ├── libphonenumber-js@1.10.48
+│ └─┬ vue@2.7.14
+│   ├── @vue/compiler-sfc@2.7.14
+│   └── csstype@3.1.3
+├─┬ vue@3.5.13
+│ ├── @vue/compiler-dom@3.5.13 deduped
+│ ├── @vue/compiler-sfc@3.5.13 deduped
+│ ├─┬ @vue/runtime-dom@3.5.13
+│ │ ├── @vue/reactivity@3.5.13
+│ │ ├── @vue/runtime-core@3.5.13
+│ │ ├── @vue/shared@3.5.13 deduped
+│ │ └── csstype@3.1.3 deduped
+│ ├─┬ @vue/server-renderer@3.5.13
+│ │ ├── @vue/compiler-ssr@3.5.13 deduped
+│ │ ├── @vue/shared@3.5.13 deduped
+│ │ └── vue@3.5.13 deduped
+│ ├── @vue/shared@3.5.13 deduped
+│ └── typescript@5.5.4 deduped
+├─┬ vuex@4.1.0
+│ ├── @vue/devtools-api@6.6.4
+│ └── vue@3.5.13 deduped
+├─┬ webpack@5.97.1
+│ ├─┬ @types/eslint-scope@3.7.7
+│ │ ├── @types/eslint@9.6.1
+│ │ └── @types/estree@1.0.6 deduped
+│ ├── @types/estree@1.0.6
+│ ├─┬ @webassemblyjs/ast@1.14.1
+│ │ ├── @webassemblyjs/helper-numbers@1.13.2
+│ │ └── @webassemblyjs/helper-wasm-bytecode@1.13.2
+│ ├─┬ @webassemblyjs/wasm-edit@1.14.1
+│ │ ├── @webassemblyjs/ast@1.14.1 deduped
+│ │ ├── @webassemblyjs/helper-buffer@1.14.1
+│ │ ├── @webassemblyjs/helper-wasm-bytecode@1.13.2 deduped
+│ │ ├── @webassemblyjs/helper-wasm-section@1.14.1
+│ │ ├── @webassemblyjs/wasm-gen@1.14.1
+│ │ ├── @webassemblyjs/wasm-opt@1.14.1
+│ │ ├── @webassemblyjs/wasm-parser@1.14.1 deduped
+│ │ └── @webassemblyjs/wast-printer@1.14.1
+│ ├─┬ @webassemblyjs/wasm-parser@1.14.1
+│ │ ├── @webassemblyjs/ast@1.14.1 deduped
+│ │ ├── @webassemblyjs/helper-api-error@1.13.2
+│ │ ├── @webassemblyjs/helper-wasm-bytecode@1.13.2 deduped
+│ │ ├── @webassemblyjs/ieee754@1.13.2
+│ │ ├── @webassemblyjs/leb128@1.13.2
+│ │ └── @webassemblyjs/utf8@1.13.2
+│ ├── acorn@8.14.0
+│ ├─┬ browserslist@4.24.4
+│ │ ├── caniuse-lite@1.0.30001697
+│ │ ├── electron-to-chromium@1.5.91
+│ │ ├── node-releases@2.0.19
+│ │ └── update-browserslist-db@1.1.2
+│ ├─┬ chrome-trace-event@1.0.2
+│ │ └── tslib@1.14.1
+│ ├─┬ enhanced-resolve@5.18.0
+│ │ ├── graceful-fs@4.2.11 deduped
+│ │ └── tapable@2.2.1 deduped
+│ ├── es-module-lexer@1.6.0
+│ ├─┬ eslint-scope@5.1.1
+│ │ ├── esrecurse@4.3.0
+│ │ └── estraverse@4.3.0
+│ ├── events@3.3.0
+│ ├── glob-to-regexp@0.4.1
+│ ├── graceful-fs@4.2.11
+│ ├── json-parse-even-better-errors@2.3.1
+│ ├── loader-runner@4.3.0
+│ ├─┬ mime-types@2.1.35
+│ │ └── mime-db@1.52.0
+│ ├── neo-async@2.6.2 deduped
+│ ├─┬ schema-utils@3.3.0
+│ │ ├── @types/json-schema@7.0.15 deduped
+│ │ ├── ajv-keywords@3.5.2
+│ │ └── ajv@6.12.6 deduped
+│ ├── tapable@2.2.1
+│ ├── terser-webpack-plugin@5.3.11 deduped
+│ ├─┬ watchpack@2.4.2
+│ │ ├── glob-to-regexp@0.4.1 deduped
+│ │ └── graceful-fs@4.2.6
+│ └── webpack-sources@3.2.3
+└── whatwg-fetch@3.4.1
+

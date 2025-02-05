@@ -88,22 +88,34 @@
                         </goals>
                         <phase>initialize</phase>
                     </execution> 
-                    <execution>
+                    <!-- <execution>
                         <id>install bun</id>
                         <goals>
                             <goal>install-bun</goal>
                         </goals>
                         <phase>initialize</phase>
-                    </execution>
+                    </execution> -->
                     
                     <!-- install typescript and dts-generator types definition generator globally -->
                     <execution>
                         <id>install typescript and dts-generator globally</id>
                         <goals>
-                            <goal>bun</goal>
+                            <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>add -d bun-plugin-dts</arguments>
+                            <arguments>install -g typescript</arguments>
+                        </configuration>
+                        <phase>initialize</phase>
+                    </execution>
+
+                    <!-- install typescript and dts-generator types definition generator globally -->
+                    <execution>
+                        <id>install npm dts</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install -i npm-dts</arguments>
                         </configuration>
                         <phase>initialize</phase>
                     </execution>
@@ -112,7 +124,7 @@
                     <execution>
                         <id>install common js dependencies</id>
                         <goals>
-                            <goal>bun</goal>
+                            <goal>npm</goal>
                         </goals>
                         <configuration>
                             <arguments>install</arguments>
@@ -126,7 +138,7 @@
                         <id>install browserlist</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>bun</goal>
+                            <goal>npm</goal>
                         </goals>
 
                         <configuration>
@@ -140,7 +152,7 @@
                         <id>check common js outdated dependencies</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>bun</goal>
+                            <goal>npm</goal>
                         </goals>
 
                         <configuration>
@@ -155,7 +167,7 @@
                         <id>check common js dependencies security issues</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>bun</goal>
+                            <goal>npm</goal>
                         </goals>
 
                         <configuration>

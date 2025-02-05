@@ -15,7 +15,7 @@
     "check:outdated": "npm outdated || cd .",
     "check:security": "npm audit || cd .",
     "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
-    "build:types": "npm-dts generate -f -L debug --root $(pwd) --output ../../types/{{{npmName}}}.d.ts "
+    "build:types": "npm-dts generate -f --root $(pwd) --output ../../types/{{{npmName}}}.d.ts "
   },
   "dependencies": {
     "inversify": "^4.3.0",

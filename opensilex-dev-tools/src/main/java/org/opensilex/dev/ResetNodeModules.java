@@ -28,8 +28,7 @@ public class ResetNodeModules {
         start(OpenSilex.getDefaultBaseDirectory(), false);
     }
 
-    private static String nodeBin = "node";
-    private static String npmBin = "npm";
+    private static String nodeBin = "node"; 
 
     private static CountDownLatch countDownLatch;
 
@@ -37,8 +36,7 @@ public class ResetNodeModules {
 
         
         if (DevModule.isWindows()) {
-            nodeBin += ".exe";
-            npmBin += ".cmd";
+            nodeBin += ".exe"; 
         }
 
         Map<String, String> customArgs = new HashMap<>();
@@ -58,7 +56,7 @@ public class ResetNodeModules {
 
         }
 
-        Path rfPath = baseDirectory.resolve("../yarn.lock");
+        Path rfPath = baseDirectory.resolve("../package-lock.lock");
         File rf = rfPath.toFile();
         if (rf.exists() && rf.isFile()) {
             FileUtils.deleteQuietly(rf);
@@ -80,7 +78,7 @@ public class ResetNodeModules {
                         .forEach(File::delete);
             }
 
-            Path fPath = baseDirectory.resolve("..").resolve(modulePath).resolve("front/yarn.lock");
+            Path fPath = baseDirectory.resolve("..").resolve(modulePath).resolve("front/package-lock.lock");
             File f = fPath.toFile();
             if (f.exists() && f.isFile()) {
                 FileUtils.deleteQuietly(f);
@@ -111,7 +109,7 @@ public class ResetNodeModules {
     private static void yarnCleanCache(Path baseDirectory) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/" + npmBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
         args.add("cache");
         args.add("clean");
         ProcessBuilder yarnCleanCacheProcess = new ProcessBuilder(args);
@@ -126,7 +124,7 @@ public class ResetNodeModules {
     private static void createYarnInstallProcess(Path baseDirectory, Path moduleDirectory) throws IOException {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/" + npmBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
         args.add("install");
         ProcessBuilder nodeModulesBuilder = new ProcessBuilder(args);
 

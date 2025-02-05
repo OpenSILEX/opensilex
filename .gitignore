@@ -14,3 +14,18 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-bigdatagrapes
 **/*.iml
 
+**/brapi/dist
+**/brapi/src/lib
+**/brapi/types
+
+**/core/dist
+**/core/src/lib
+**/core/types
+
+**/security/dist
+**/security/src/lib
+**/security/types
+
+**/phis/dist
+**/phis/src/lib
+**/phis/types

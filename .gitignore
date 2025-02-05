@@ -9,23 +9,31 @@ node_modules/
 **/front/types
 opensilex-doc/src/main/resources/generated/
 **/inrae-sixtine
-**/opensilex-data-analysis
-**/inrae-bigdatagrapes
+**/opensilex-data-analysis 
 **/*.iml
 opensilex-front/front/src/opensilex.dev.ts
 
-**/brapi/dist
-**/brapi/src/lib
-**/brapi/types
+**/opensilex-brapi/dist
+**/opensilex-brapi/src/lib
+**/opensilex-brapi/front/lib
+**/opensilex-brapi/types
 
-**/core/dist
-**/core/src/lib
-**/core/types
+**/opensilex-core/dist
+**/opensilex-core/src/lib
+**/opensilex-core/front/lib
+**/opensilex-core/types
 
-**/security/dist
-**/security/src/lib
-**/security/types
+**/opensilex-security/dist
+**/opensilex-security/front/lib
+**/opensilex-security/src/lib
+**/opensilex-security/types
+ 
+**/opensilex-phis/dist
+**/opensilex-phis/front/lib
+**/opensilex-phis/src/lib
+**/opensilex-phis/types 
 
-**/phis/dist
-**/phis/src/lib
-**/phis/types
+**/opensilex-front/dist
+**/opensilex-front/front/lib
+**/opensilex-front/src/lib
+**/opensilex-front/types

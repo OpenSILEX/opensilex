@@ -6,19 +6,12 @@
         "serve": "vite serve",
         "build": "vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
-        "check:browserlist": "bun add caniuse-lite && bun remove caniuse-lite",
-        "check:outdated": "bun outdated || cd .",
-        "check:security": "bun audit || cd ."
+        "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
+        "check:outdated": "npm outdated || cd .",
+        "check:security": "npm audit || cd ."
     },
     "devDependencies": { 
-        
-        "@vue/cli-plugin-eslint": "5.0.8",
-        "@vue/cli-plugin-router": "5.0.8",
-        
-        "@vue/cli-plugin-vuex": "5.0.8",
-        "@vue/cli-service": "5.0.8",
-        "@vue/eslint-config-typescript": "7.0.0",
-        "@types/node": "18"
+        "@types/node": "20"
     },
     "eslintConfig": {
         "root": true,

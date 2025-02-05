@@ -9,8 +9,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/lib/index.ts'), // Point d'entrée
       name: 'opensilex-brapi', // Nom de la bibliothèque
-      fileName: (format) => `my-lib.${format}.js`, // Nom du fichier de sortie
-      formats: ['es', 'umd','cjs'], // Formats de sortie (ES Module et UMD)
+      fileName: (format) => `opensilex-brapi.${format}.js`, // Nom du fichier de sortie
+      formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
     },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)

@@ -44,7 +44,7 @@
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
         <!-- Front-end Node & Yarn version -->
-        <node.version>v18.20.4</node.version>
+        <node.version>v22.9.0</node.version>
         <yarn.version>v1.22.10</yarn.version>
         <npm.version>11.1.0</npm.version>
         <bun.version>v1.2.2</bun.version>
@@ -864,7 +864,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <nodeVersion>${node.version}</nodeVersion>
                         <!-- <yarnVersion>${yarn.version}</yarnVersion> -->
                         <npmVersion>${npm.version}</npmVersion>
-                        <bunVersion>${bun.version}</bunVersion>
+                        <!-- <bunVersion>${bun.version}</bunVersion> -->
                         <installDirectory>../.node</installDirectory>
                         <workingDirectory>front</workingDirectory>
                         
@@ -1448,7 +1448,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>install Vue application dependencies</id>
                                 <phase>generate-sources</phase>
                                 <goals>
-                                    <goal>bun</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <configuration>
@@ -1461,7 +1461,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>build-typescript-definition</id>
                                 <phase>process-classes</phase>
                                 <goals>
-                                    <goal>bun</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <configuration>
@@ -1475,7 +1475,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>build Vue application</id>
                                 <phase>process-classes</phase>
                                 <goals>
-                                    <goal>bun</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <configuration>
@@ -1489,7 +1489,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>check Vue application outdated dependencies</id>
                                 <phase>verify</phase>
                                 <goals>
-                                    <goal>bun</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <configuration>
@@ -1503,7 +1503,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <id>check Vue application security issues</id>
                                 <phase>verify</phase>
                                 <goals>
-                                    <goal>bun</goal>
+                                    <goal>npm</goal>
                                 </goals>
 
                                 <configuration>

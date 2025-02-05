@@ -12,10 +12,10 @@
   "scripts": {
     "build": "tsc --outDir dist/",
     "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
-    "check:outdated": "bun outdated || cd .",
-    "check:security": "bun audit || cd .",
-    "check:browserlist": "bun add caniuse-lite && yarn remove caniuse-lite",
-    "build:types": "dts-generator --project $(pwd) --out ../../types/{{{npmName}}}.d.ts --prefix {{{npmName}}}"
+    "check:outdated": "npm outdated || cd .",
+    "check:security": "npm audit || cd .",
+    "check:browserlist": "npm add caniuse-lite && yarn remove caniuse-lite",
+    "build:types": "npm-dts generate -f -L debug --root $(pwd) --output ../../types/{{{npmName}}}.d.ts "
   },
   "dependencies": {
     "inversify": "^4.3.0",
@@ -24,8 +24,8 @@
     "reflect-metadata": "0.1.8"
   },
   "devDependencies": {
-    "@types/node": "^12.12.14",
-    "dts-generator": "^3.0.0"
+    "@types/node": "20",
+    "npm-dts": "^1.3.13"
   }{{#npmRepository}},{{/npmRepository}}
 {{#npmRepository}}
   "publishConfig": {

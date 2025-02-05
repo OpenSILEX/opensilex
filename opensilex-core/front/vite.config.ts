@@ -9,7 +9,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/lib/index.ts'), // Point d'entrée
       name: 'opensilex-core', // Nom de la bibliothèque
-      fileName: (format) => `my-lib.${format}.js`, // Nom du fichier de sortie
+      fileName: (format) => `opensilex-core.${format}.js`, // Nom du fichier de sortie
       formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
     },
     rollupOptions: {

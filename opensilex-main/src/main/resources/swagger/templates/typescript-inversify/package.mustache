@@ -11,10 +11,10 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --outDir dist/",
-    "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
+    "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && npm run build",
     "check:outdated": "npm outdated || cd .",
     "check:security": "npm audit || cd .",
-    "check:browserlist": "npm add caniuse-lite && yarn remove caniuse-lite",
+    "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
     "build:types": "npm-dts generate -f -L debug --root $(pwd) --output ../../types/{{{npmName}}}.d.ts "
   },
   "dependencies": {

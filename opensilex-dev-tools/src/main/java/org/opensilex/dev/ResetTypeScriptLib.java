@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ResetTypeScriptLib {
 
-    private static String nodeBin = "node";
-    private static String npmBin = "npm";
+    private static String nodeBin = "node"; 
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ResetTypeScriptLib.class);
 
@@ -54,8 +53,7 @@ public class ResetTypeScriptLib {
                 customArgs);
 
         if (DevModule.isWindows()) {
-            nodeBin += ".exe";
-            npmBin += ".cmd";
+            nodeBin += ".exe"; 
         }
 
         for (OpenSilexModule module : opensilex.getModules()) {
@@ -111,7 +109,7 @@ public class ResetTypeScriptLib {
     private static Process createFrontTypes(Path baseDirectory, Path libDirectory) throws Exception {
         List<String> args = new ArrayList<>();
         args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/" + npmBin).toFile().getCanonicalPath());
+        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
         args.add("run");
         args.add("build:types");
         ProcessBuilder typeBuilder = new ProcessBuilder(args);

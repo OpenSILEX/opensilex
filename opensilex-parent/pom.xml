@@ -43,12 +43,9 @@
         <skipFrontTypesGeneration>false</skipFrontTypesGeneration>
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
-        <!-- Front-end Node & Yarn version -->
+        <!-- Front-end Node & Npm version -->
         <node.version>v22.9.0</node.version>
-        <yarn.version>v1.22.10</yarn.version>
         <npm.version>11.1.0</npm.version>
-        <bun.version>v1.2.2</bun.version>
-
         <!-- Java supported version -->
         <java.compiler.version>11</java.compiler.version>
 
@@ -854,7 +851,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Front Node & Yarn management -->
+                <!-- Front Node & Npm management -->
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
@@ -862,9 +859,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
 
                     <configuration>
                         <nodeVersion>${node.version}</nodeVersion>
-                        <!-- <yarnVersion>${yarn.version}</yarnVersion> -->
                         <npmVersion>${npm.version}</npmVersion>
-                        <!-- <bunVersion>${bun.version}</bunVersion> -->
                         <installDirectory>../.node</installDirectory>
                         <workingDirectory>front</workingDirectory>
                         
@@ -1443,7 +1438,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>${frontend.maven.plugin.version}</version>
                         <executions>
-                            <!-- install Vue.js application dependencies with yarn package manager -->
+                            <!-- install Vue.js application dependencies with npm package manager -->
                             <execution>
                                 <id>install Vue application dependencies</id>
                                 <phase>generate-sources</phase>

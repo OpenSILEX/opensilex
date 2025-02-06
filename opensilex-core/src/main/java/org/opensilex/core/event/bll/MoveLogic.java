@@ -16,6 +16,7 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -145,9 +146,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             }
 
             // build location observations
-            LocationObservationModel locationObservation = model.getLocationObservation();
-            if (Objects.nonNull(locationObservation)) {
+            if (Objects.nonNull(model.getLocationObservation())) {
                 model.getTargets().forEach(target -> {
+                    LocationObservationModel locationObservation = model.getLocationObservation().createCopy();
                     LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
 
                     try {

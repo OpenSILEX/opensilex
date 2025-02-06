@@ -150,6 +150,14 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     }
 
     private MoveCreationDTO getCreationDtoWithoutPosition() {
+        return getCreationDto(false);
+    }
+
+    private MoveCreationDTO getCreationDtoWithPosition(){
+        return getCreationDto(true);
+    }
+
+    private MoveCreationDTO getCreationDto(boolean withPosition){
         MoveCreationDTO dto = new MoveCreationDTO();
         dto.setDescription("A test event");
         dto.setIsInstant(false);
@@ -169,20 +177,17 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         locationModel.setTo(facilityB.getUri());
 
         LocationObservationModel locationObservationModel = new LocationObservationModel();
-        locationObservationModel.setHasGeometry(false);
+        locationObservationModel.setHasGeometry(!withPosition);
         locationObservationModel.setLocation(locationModel);
 
         dto.setLocation(LocationObservationDTO.getDTOFromModel(locationObservationModel));
 
+        if(withPosition){
+            dto.getLocation().setX("72");
+            dto.getLocation().setY("500");
+            dto.getLocation().setZ("400");
+        }
 
-        return dto;
-    }
-
-    private MoveCreationDTO getCreationDtoWithPosition(){
-        MoveCreationDTO dto = getCreationDtoWithoutPosition();
-        dto.getLocation().setX("72");
-        dto.getLocation().setY("500");
-        dto.getLocation().setZ("400");
         return dto;
     }
 

@@ -22,6 +22,17 @@ public class LocationObservationModel extends MongoModel {
     private LocationModel location;
     public static final String LOCATION_TO_FIELD = "location.to";
 
+    public LocationObservationModel createCopy() {
+        LocationObservationModel copy = new LocationObservationModel();
+        copy.observationCollection = this.observationCollection;
+        copy.featureOfInterest = this.featureOfInterest;
+        copy.startDate = this.startDate;
+        copy.endDate = this.endDate;
+        copy.hasGeometry = this.hasGeometry;
+        copy.location = this.location.createCopy();
+        return copy;
+    }
+
     @Override
     @BsonId
     public URI getUri() {

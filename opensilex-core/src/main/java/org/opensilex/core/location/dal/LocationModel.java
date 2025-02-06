@@ -17,6 +17,18 @@ public class LocationModel {
     private String z;
     private String textualPosition;
 
+    public LocationModel createCopy() {
+        LocationModel copy = new LocationModel();
+        copy.x = this.x;
+        copy.y = this.y;
+        copy.z = this.z;
+        copy.textualPosition = this.textualPosition;
+        copy.to = this.to;
+        copy.from = this.from;
+        copy.geometry = this.geometry;
+        return copy;
+    }
+
     public Geometry getGeometry() {
         return geometry;
     }

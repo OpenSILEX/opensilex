@@ -42,7 +42,21 @@ public class LocationObservationLogic {
     //#endregion
 
     //#region public
-    public void createLocationObservation(ClientSession session, URI locationObservationCollectionURI, URI featureOfInterest, boolean hasGeometry, Instant startDate, Instant endDate, LocationModel locationModel,URI moveURI) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    public ListWithPagination<LocationObservationModel> searchLocationObservations(LocationObservationSearchFilter filter){
+        return locationObservationDAO.searchWithPagination(filter);
+    }
+
+    public LocationObservationModel createLocationObservation(
+            ClientSession session,
+            URI locationObservationCollectionURI,
+            URI featureOfInterest,
+            boolean hasGeometry,
+            Instant startDate,
+            Instant endDate,
+            LocationModel locationModel,
+            URI moveURI
+    ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+
         LocationObservationModel locationObservationModel = new LocationObservationModel();
 
         locationObservationModel.setLocation(locationModel);
@@ -59,6 +73,7 @@ public class LocationObservationLogic {
         }
 
         locationObservationDAO.create(session, locationObservationModel);
+        return locationObservationModel;
     }
 
     public void createLocationObservations(ClientSession session, List<LocationObservationModel> observations) throws Exception {

@@ -26,9 +26,15 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -42,6 +48,7 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.api.GroupAPI;
 import org.opensilex.security.group.api.GroupCreationDTO;
 import org.opensilex.security.group.api.GroupDTO;
@@ -443,14 +450,23 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
         moveModel.setTargets(Arrays.asList(device));
-        //TODO MAX run, verify geospat tests if any needed
-//        moveModel.setFrom(fromFacility);
-//        moveModel.setTo(toFacility);
+
+        //Moves now depend on LocationObservations so we first need to make that
+        LocationModel locationModel = new LocationModel();
+        locationModel.setFrom(fromFacility.getUri());
+        locationModel.setTo(toFacility.getUri());
         moveModel.setIsInstant(true);
         InstantModel endInstant = new InstantModel();
         endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
         moveModel.setEnd(endInstant);
-        getSparqlService().create(moveModel);
+
+        LocationObservationModel locationObservationModel = new LocationObservationModel();
+        locationObservationModel.setHasGeometry(false);
+        locationObservationModel.setLocation(locationModel);
+        moveModel.setLocationObservation(locationObservationModel);
+
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), AccountModel.getSystemUser());
+        moveLogic.create(moveModel);
 
         return moveModel;
     }

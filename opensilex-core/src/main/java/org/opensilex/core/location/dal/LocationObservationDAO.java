@@ -58,6 +58,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
             filters.add(Filters.geoWithin(LocationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
         }
 
+        if(Objects.nonNull(searchQuery.getTo())){
+            filters.add(Filters.eq(LocationObservationModel.LOCATION_TO_FIELD, searchQuery.getTo()));
+        }
+
         return filters;
     }
 

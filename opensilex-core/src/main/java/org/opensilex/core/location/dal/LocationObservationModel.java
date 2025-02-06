@@ -20,6 +20,7 @@ public class LocationObservationModel extends MongoModel {
     public static final String HAS_GEOMETRY_FIELD = "hasGeometry";
     private boolean hasGeometry;
     private LocationModel location;
+    public static final String LOCATION_TO_FIELD = "location.to";
 
     @Override
     @BsonId

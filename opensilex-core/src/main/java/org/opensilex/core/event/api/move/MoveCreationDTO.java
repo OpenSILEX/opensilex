@@ -8,6 +8,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @JsonPropertyOrder({
@@ -31,6 +32,13 @@ public class MoveCreationDTO extends EventCreationDTO {
         MoveModel model = super.toModel(new MoveModel());
 
         if (Objects.nonNull(location)) {
+            //Set start and end date in function of the move's ones in case we didn't duplicate this information from the front
+            if(location.getEndDate() == null){
+                location.setEndDate(Instant.parse(super.getEnd()));
+            }
+            if(super.getStart() != null && location.getStartDate() == null){
+                location.setStartDate(Instant.parse(super.getStart()));
+            }
             LocationObservationModel locationObservationModel = location.newModel();
             model.setLocationObservation(locationObservationModel);
         }

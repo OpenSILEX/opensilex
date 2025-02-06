@@ -343,7 +343,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                     observationLogic.validateDates(end, start);
 
                     boolean hasGeometry = observationLogic.checkHasGeometry(
-                            realModel.getLocationObservation(),
+                            observation,
                             start,
                             end);
 
@@ -354,7 +354,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                             hasGeometry,
                             start,
                             end,
-                            realModel.getLocationObservation().getLocation(),
+                            observation.getLocation(),
                             realModel.getUri()
                     );
                 } catch (Exception e) {

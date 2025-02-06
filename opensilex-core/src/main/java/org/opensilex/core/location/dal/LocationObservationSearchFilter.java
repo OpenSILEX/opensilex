@@ -15,6 +15,7 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     private Instant endDate;
     private boolean hasGeometry;
     private Geometry intersection;
+    private URI to;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -70,5 +71,13 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setIntersection(Geometry intersection) {
         this.intersection = intersection;
+    }
+
+    public URI getTo() {
+        return to;
+    }
+
+    public void setTo(URI to) {
+        this.to = to;
     }
 }

@@ -148,7 +148,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             // build location observations
             if (Objects.nonNull(model.getLocationObservation())) {
                 model.getTargets().forEach(target -> {
-                    LocationObservationModel locationObservation = model.getLocationObservation().createCopy();
+                    //LocationObservationModel locationObservation = model.getLocationObservation().createCopy();
+                    LocationObservationModel locationObservation = new LocationObservationModel();
                     LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
 
                     try {
@@ -158,11 +159,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                             targetCollection = collectionLogic.createLocationObservationCollection(target);
                         }
 
-                        locationObservation.setUri(model.getUri());
+                        //locationObservation.setUri(model.getUri());
                         locationObservation.setObservationCollection(targetCollection);
                         locationObservation.setFeatureOfInterest(target);
                         locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
                         locationObservation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
+                        locationObservation.setLocation(model.getLocationObservation().getLocation());
 
                         boolean hasGeometry = observationLogic.checkHasGeometry(
                                 model.getLocationObservation(),
@@ -390,7 +392,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         dao.create(models);
         if (!locations.isEmpty()) {
             LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-            observationLogic.createLocationObservations(clientSech, locations);
+            observationLogic.createLocationObservations(clientSech, locations, sparql, currentUser);
         }
         return models;
     }

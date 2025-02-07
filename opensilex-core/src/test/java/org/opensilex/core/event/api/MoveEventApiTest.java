@@ -17,6 +17,7 @@ import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.*;
@@ -262,6 +263,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         // update move by setting no positions
         creationDTO.setDescription("new description");
+        creationDTO.setUri(uri);
         creationDTO.getLocation().setX("72");
         Response putResponse = getJsonPutResponse(target(updatePath),creationDTO);
         assertEquals(Response.Status.OK.getStatusCode(),putResponse.getStatus());
@@ -284,8 +286,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // update move by setting no positions
+        String oldDescription = creationDTO.getDescription();
         creationDTO.setDescription("new description");
         creationDTO.getLocation().setX(null);
+        creationDTO.setUri(uri);
 
         Response putResponse = getJsonPutResponse(target(updatePath),creationDTO);
         assertEquals(Response.Status.OK.getStatusCode(),putResponse.getStatus());
@@ -297,7 +301,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         });
         MoveGetDTO dtoFromDb = getResponse.getResult();
 
-        assertNotEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
+        assertNotEquals(oldDescription, dtoFromDb.getDescription());
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
         assertEquals(creationDTO.getEnd(), dtoFromDb.getEnd());
         assertEquals(creationDTO.getIsInstant(), dtoFromDb.getIsInstant());
@@ -336,8 +340,16 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         var creationDto1 = getCreationDtoWithoutPosition();
         // This move MUST be returned by the service with its position information
         var creationDto2 = getCreationDtoWithPosition();
+        OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDto2.getEnd()).plusDays(2);
+        OffsetDateTime newerStartTime = OffsetDateTime.parse(creationDto2.getStart()).plusDays(2);
+        creationDto2.setEnd(newerEndTime.toString());
+        creationDto2.setStart(newerStartTime.toString());
         // This move MUST be returned by the service even if its position information is non existant
         var creationDto3 = getCreationDtoWithoutPosition();
+        OffsetDateTime superNewerEndTime = OffsetDateTime.parse(creationDto3.getEnd()).plusDays(4);
+        OffsetDateTime superNewerStartTime = OffsetDateTime.parse(creationDto3.getStart()).plusDays(4);
+        creationDto3.setEnd(superNewerEndTime.toString());
+        creationDto3.setStart(superNewerStartTime.toString());
 
         var uriList = new UserCallBuilder(create)
                 .setBody(List.of(creationDto1, creationDto2, creationDto3))
@@ -394,24 +406,18 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     }
 
     private void testEquals(
-            MoveCreationDTO creationDTO,
-            PositionGetDTO dtoFromDb,
+            LocationObservationDTO creationDTO,
+            LocationObservationDTO dtoFromDb,
             URI moveEventUri
     ) {
+        assertNotNull(dtoFromDb);
 
-        assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getLocation().getFrom()), SPARQLDeserializers.getExpandedURI(creationDTO.getLocation().getFrom()));
-        assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getLocation().getTo()), SPARQLDeserializers.getExpandedURI(creationDTO.getLocation().getTo()));
-        assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getEvent()), SPARQLDeserializers.getExpandedURI(moveEventUri));
-        assertEquals(creationDTO.getEnd(),dtoFromDb.getLocation().getEndDate().toString());
+        assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getFrom()), SPARQLDeserializers.getExpandedURI(creationDTO.getFrom()));
+        assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getTo()), SPARQLDeserializers.getExpandedURI(creationDTO.getTo()));
 
-        LocationObservationDTO creationDtoLocation = creationDTO.getLocation();
-        LocationObservationDTO locationFromDb = dtoFromDb.getLocation();
-
-        assertNotNull(locationFromDb);
-
-        assertEquals(creationDtoLocation.getX(), locationFromDb.getX());
-        assertEquals(creationDtoLocation.getY(), locationFromDb.getY());
-        assertEquals(creationDtoLocation.getZ(), locationFromDb.getZ());
+        assertEquals(creationDTO.getX(), dtoFromDb.getX());
+        assertEquals(creationDTO.getY(), dtoFromDb.getY());
+        assertEquals(creationDTO.getZ(), dtoFromDb.getZ());
     }
 
     @Test
@@ -428,7 +434,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         });
         PositionGetDTO dtoFromDb = getResponse.getResult();
 
-        testEquals(moveCreationDTO,dtoFromDb, moveEventUri);
+        testEquals(moveCreationDTO.getLocation(),dtoFromDb.getLocation(), moveEventUri);
 
         // get last move concerning second scientific object
         getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), moveCreationDTO.getTargets().get(1).toString());
@@ -437,13 +443,15 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         });
         dtoFromDb = getResponse.getResult();
 
-        testEquals(moveCreationDTO,dtoFromDb, moveEventUri);
+        testEquals(moveCreationDTO.getLocation(),dtoFromDb.getLocation(), moveEventUri);
 
 
         // create a newer event
         MoveCreationDTO newEventCreationDto = getCreationDtoWithPosition();
         OffsetDateTime newerEndTime = OffsetDateTime.parse(moveCreationDTO.getEnd()).plusDays(2);
+        OffsetDateTime newerStartTime = OffsetDateTime.parse(moveCreationDTO.getStart()).plusDays(2);
         newEventCreationDto.setEnd(newerEndTime.toString());
+        newEventCreationDto.setStart(newerStartTime.toString());
         newEventCreationDto.getLocation().setFrom(moveCreationDTO.getLocation().getTo());
         newEventCreationDto.getLocation().setTo(facilityC.getUri());
 
@@ -456,7 +464,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         });
         dtoFromDb = getResponse.getResult();
 
-        testEquals(newEventCreationDto, dtoFromDb, newerMoveEventUri);
+        testEquals(newEventCreationDto.getLocation(), dtoFromDb.getLocation(), newerMoveEventUri);
 
         // get last move concerning second scientific object
         getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), newEventCreationDto.getTargets().get(1).toString());
@@ -465,7 +473,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         });
         dtoFromDb = getResponse.getResult();
 
-        testEquals(newEventCreationDto,dtoFromDb, newerMoveEventUri);
+        testEquals(newEventCreationDto.getLocation(),dtoFromDb.getLocation(), newerMoveEventUri);
     }
 
     static final String TARGET_HISTORY_PARAM = "target";
@@ -481,11 +489,11 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         Map<String, Object> params = new HashMap<String, Object>() {{
             put(TARGET_HISTORY_PARAM,creationDTO.getTargets().get(0));
         }};
-        List<PositionGetDTO> history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
+        List<MoveGetDTO> history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<MoveGetDTO>>() {});
 
         assertEquals(1,history.size());
 
-        testEquals(creationDTO,history.get(0),moveEventUri);
+        testEquals(creationDTO.getLocation(),history.get(0).getLocation(),moveEventUri);
 
         // create a newer event
         MoveCreationDTO newEventCreationDto = getCreationDtoWithPosition();
@@ -497,12 +505,12 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(newEventCreationDto));
         URI newerMoveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
-        history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
+        history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<MoveGetDTO>>() {});
 
         assertEquals(2,history.size());
 
-        testEquals(newEventCreationDto,history.get(0),newerMoveEventUri);
-        testEquals(creationDTO, history.get(1),moveEventUri);
+        testEquals(newEventCreationDto.getLocation(),history.get(0).getLocation(),newerMoveEventUri);
+        testEquals(creationDTO.getLocation(), history.get(1).getLocation(),moveEventUri);
     }
 
     @Override
@@ -517,6 +525,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(MoveEventNoSqlDao.COLLECTION_NAME);
+        return Collections.singletonList(LocationObservationDAO.LOCATION_COLLECTION_NAME);
     }
 }

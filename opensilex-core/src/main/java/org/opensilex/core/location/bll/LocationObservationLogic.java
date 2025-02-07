@@ -11,14 +11,20 @@
 
 package org.opensilex.core.location.bll;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.location.dal.*;
+import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -35,9 +41,12 @@ public class LocationObservationLogic {
 
     private final LocationObservationDAO locationObservationDAO;
 
+    private final MongoDBServiceV2 nosql;
+
     //#region constructor
     public LocationObservationLogic(MongoDBServiceV2 nosql) {
         this.locationObservationDAO = new LocationObservationDAO(nosql);
+        this.nosql = nosql;
     }
     //#endregion
 
@@ -76,7 +85,31 @@ public class LocationObservationLogic {
         return locationObservationModel;
     }
 
-    public void createLocationObservations(ClientSession session, List<LocationObservationModel> observations) throws Exception {
+    public void createLocationObservations(
+            ClientSession session,
+            List<LocationObservationModel> observations,
+            SPARQLService sparql,
+            AccountModel currentUser
+    ) throws Exception {
+        //Validate that from/to facilities exist
+        for(LocationObservationModel observation : observations) {
+            if(observation.getLocation()!=null && (observation.getLocation().getFrom()!=null || observation.getLocation().getTo()!=null)) {
+                FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+                List<URI> facilityUrisToCheck = new ArrayList<>();
+                if(observation.getLocation().getFrom()!=null){
+                    facilityUrisToCheck.add(observation.getLocation().getFrom());
+                }
+                if(observation.getLocation().getTo()!=null){
+                    facilityUrisToCheck.add(observation.getLocation().getTo());
+                }
+                List<FacilityModel> foundFacilities = facilityLogic.getList(facilityUrisToCheck, currentUser);
+                if(foundFacilities.size()!=facilityUrisToCheck.size()){
+                    throw new BadRequestException("The to, or from facility's given don't exist, try again!");
+                }
+
+            }
+        }
+        //Validate dates
         validateCollectionsConsistency(observations);
 
         locationObservationDAO.create(session, observations);

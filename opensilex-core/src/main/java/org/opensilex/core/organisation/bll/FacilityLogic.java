@@ -134,7 +134,8 @@ public class FacilityLogic {
 
     /**
      * Gets a list of facilities by URI. Shorthand for calling {@link #search(FacilitySearchFilter)} with the
-     * {@link FacilitySearchFilter#setFacilities(List)} filter.
+     * {@link FacilitySearchFilter#setFacilities(List)} filter. WARNING if some uris are not found then no Exception is thrown
+     * This method simply returns any uris that ARE found.
      *
      * @param uris The URI of the facilities
      * @param user The current user

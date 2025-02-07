@@ -148,7 +148,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             // build location observations
             if (Objects.nonNull(model.getLocationObservation())) {
                 model.getTargets().forEach(target -> {
-                    //LocationObservationModel locationObservation = model.getLocationObservation().createCopy();
                     LocationObservationModel locationObservation = new LocationObservationModel();
                     LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
 
@@ -159,7 +158,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                             targetCollection = collectionLogic.createLocationObservationCollection(target);
                         }
 
-                        //locationObservation.setUri(model.getUri());
+                        locationObservation.setMoveUri(model.getUri());
                         locationObservation.setObservationCollection(targetCollection);
                         locationObservation.setFeatureOfInterest(target);
                         locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
@@ -266,14 +265,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         }
 
         moveHistory.forEach(move -> locationHistory.forEach(loc ->{
-            if(loc.getEndDate().equals(move.getEnd().getDateTimeStamp().toInstant())){
-                if(Objects.nonNull(move.getStart())){
-                    if(loc.getStartDate().equals(move.getStart().getDateTimeStamp().toInstant())){
-                        move.setLocationObservation(loc);
-                    }
-                }else{
-                    move.setLocationObservation(loc);
-                }
+            if(SPARQLDeserializers.compareURIs(loc.getMoveUri(), move.getUri())){
+                move.setLocationObservation(loc);
             }
         }));
 

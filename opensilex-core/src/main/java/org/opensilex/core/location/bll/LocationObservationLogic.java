@@ -78,7 +78,7 @@ public class LocationObservationLogic {
         locationObservationModel.setFeatureOfInterest(featureOfInterest);
         locationObservationModel.setHasGeometry(hasGeometry);
         if(Objects.nonNull(moveURI)) {
-            locationObservationModel.setUri(moveURI);
+            locationObservationModel.setMoveUri(moveURI);
         }
 
         locationObservationDAO.create(session, locationObservationModel);

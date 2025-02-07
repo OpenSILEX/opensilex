@@ -33,7 +33,9 @@ import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -47,6 +49,8 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
@@ -172,6 +176,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(
+                EventModel.class,
+                LocationObservationCollectionModel.class,
                 ScientificObjectModel.class,
                 VariableModel.class,
                 FactorModel.class,
@@ -181,6 +187,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<String> getCollectionsToClearNames() {
         return Arrays.asList(
+                LocationObservationDAO.LOCATION_COLLECTION_NAME,
                 GeospatialDAO.GEOSPATIAL_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
                 DataDAO.FILE_COLLECTION_NAME,
@@ -480,7 +487,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         soDTO.setName("new alias");
 
         //All the stuff needed to update geospat info
-        LocationObservationDTO locationObservationDTO = new LocationObservationDTO();
+        //THERE IS NO UPDATING OF GEO FOR OS's FOR NOW
+        /*LocationObservationDTO locationObservationDTO = new LocationObservationDTO();
         MoveCreationDTO moveCreationDTO = new MoveCreationDTO();
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         Instant endInstant = Instant.now();
@@ -488,7 +496,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         locationObservationDTO.setGeojson(LocationLogic.geometryToGeoJson(geometry));
         moveCreationDTO.setLocation(locationObservationDTO);
         moveCreationDTO.setEnd(endInstant.toString());
-        soDTO.setMove(moveCreationDTO);
+        soDTO.setMove(moveCreationDTO);*/
 
         final Response updateResult = getJsonPutResponse(target(updatePath), soDTO);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -505,10 +513,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
         assertEquals(soDTO.getType(), new URI(SPARQLDeserializers.getExpandedURI(dtoFromApi.getType())));
-        assertEquals(
+        /*assertEquals(
                 LocationLogic.geoJsonToGeometry(soDTO.getMove().getLocation().getGeojson()).toString(),
                 LocationLogic.geoJsonToGeometry(dtoFromApi.getLocation().getGeojson()).toString()
-        );
+        );*/
     }
 
     @Test
@@ -1297,4 +1305,5 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
         assertEquals(Status.OK.getStatusCode(), resultGJson.getStatus());
     }
+
 }

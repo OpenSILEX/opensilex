@@ -464,7 +464,9 @@ public class ScientificObjectLogic {
         if(Objects.nonNull(model.getLocationObservationCollection())){
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
             List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservation(Collections.singletonList(model.getLocationObservationCollection().getUri()),false, Instant.now(),null);
-            soLastLocation = locationList.get(0);
+            if(!CollectionUtils.isEmpty(locationList)){
+                soLastLocation = locationList.get(0);
+            }
         }
         return soLastLocation;
     }

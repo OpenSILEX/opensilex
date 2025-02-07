@@ -22,16 +22,9 @@ public class LocationObservationModel extends MongoModel {
     private LocationModel location;
     public static final String LOCATION_TO_FIELD = "location.to";
 
-    public LocationObservationModel createCopy() {
-        LocationObservationModel copy = new LocationObservationModel();
-        copy.observationCollection = this.observationCollection;
-        copy.featureOfInterest = this.featureOfInterest;
-        copy.startDate = this.startDate;
-        copy.endDate = this.endDate;
-        copy.hasGeometry = this.hasGeometry;
-        copy.location = this.location.createCopy();
-        return copy;
-    }
+    //TODO temporary link to a move, delete this if we ever get rid of moves
+    private URI moveUri;
+
 
     @Override
     @BsonId
@@ -85,6 +78,14 @@ public class LocationObservationModel extends MongoModel {
 
     public void setLocation(LocationModel location) {
         this.location = location;
+    }
+
+    public URI getMoveUri() {
+        return moveUri;
+    }
+
+    public void setMoveUri(URI moveUri) {
+        this.moveUri = moveUri;
     }
 
     @Override

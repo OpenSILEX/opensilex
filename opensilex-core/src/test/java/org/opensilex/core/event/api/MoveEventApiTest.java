@@ -43,8 +43,6 @@ import static org.junit.Assert.*;
 
 public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
-    //TODO MAX verify geospat stuff
-
     public static String path = EventAPI.MOVE_PATH;
 
     public static String getByUriPath = path + "/{uri}";
@@ -241,6 +239,12 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
             FacilityModel toFacility = toFacilities.get(i);
 
             MoveCreationDTO creationDTO = getCreationDtoWithoutPosition();
+
+            OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDTO.getEnd()).plusDays(i);
+            creationDTO.setEnd(newerEndTime.toString());
+            OffsetDateTime newerStartTime = OffsetDateTime.parse(creationDTO.getStart()).plusDays(i);
+            creationDTO.setStart(newerStartTime.toString());
+
             creationDTO.setDescription("Description "+i);
 
             creationDTO.getLocation().setFrom(fromFacility.getUri());
@@ -499,6 +503,8 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         MoveCreationDTO newEventCreationDto = getCreationDtoWithPosition();
         OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDTO.getEnd()).plusDays(2);
         newEventCreationDto.setEnd(newerEndTime.toString());
+        OffsetDateTime newerStartTime = OffsetDateTime.parse(creationDTO.getStart()).plusDays(2);
+        newEventCreationDto.setStart(newerStartTime.toString());
         newEventCreationDto.getLocation().setFrom(creationDTO.getLocation().getTo());
         newEventCreationDto.getLocation().setTo(facilityC.getUri());
 

@@ -1089,7 +1089,7 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         //TODO these next few lines that call other logic classes should be in a DeviceLogic class in the future
-        //TODO MAX No control on devices being in two facilities at once, plus once a device has been moved somewhere else,
+        //TODO No control on devices being in two facilities at once, plus once a device has been moved somewhere else,
         // it will still always be included in facilities that used to have it
 
         //First fetch the correct LocationObservations, whose Location's 'to' field is our Facility

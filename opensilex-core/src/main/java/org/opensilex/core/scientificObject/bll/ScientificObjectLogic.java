@@ -204,9 +204,7 @@ public class ScientificObjectLogic {
         return dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
     }
 
-    //TODO MAX should this be private? and WTF is it me or is this the same as get with posiitions??????!!!!!!! ahhhhhhhhhhhhh
     public Map<ScientificObjectModel, LocationObservationModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser) throws Exception {
-        Map<ScientificObjectModel, LocationObservationModel> soLocationMap = new HashMap<>();
 
         if (Objects.isNull(objectsURI)) {
             objectsURI = new ArrayList<>();
@@ -220,34 +218,15 @@ public class ScientificObjectLogic {
 
         List<ScientificObjectModel> soList = searchByURIs(contextURI, objectsURI, currentUser,false);
 
-        //Get so with location
-        List<LocationObservationCollectionModel> soCollectionList = soList.stream()
-                .map(ScientificObjectModel::getLocationObservationCollection)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
 
-        List<LocationObservationModel> locationObservationModels = new ArrayList<>();
-
-        //TODO max, i believe there was something very similar in Facility logic or something with the setting of the date filter to now
-
-        if(!CollectionUtils.isEmpty(soCollectionList)){
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
-            locationObservationModels = locationObservationLogic.getLastLocationObservation(
-                    soCollectionList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
-                    false,
-                    Instant.now(),
-                    null);
-        }
-
-        var solocationObservationMap = locationObservationModels.stream()
-                .collect(Collectors.toMap(LocationObservationModel::getFeatureOfInterest, Function.identity()));
-
-        soList.forEach(so -> {
-            var observation = solocationObservationMap.get(so.getUri());
-            soLocationMap.put(so, observation);
-        });
-
-        return soLocationMap;
+        return locationObservationLogic.generateModelObservationCollectionMap(
+                soList,
+                (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
+                Instant.now(),
+                null,
+                null
+        );
     }
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {

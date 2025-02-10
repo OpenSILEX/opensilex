@@ -144,15 +144,14 @@ public class LocationObservationDTO {
         model.setFeatureOfInterest(getFeatureOfInterest());
 
         try {
-            //TODO MAX wtf is this, am i crazy or can we simply pass from, to ,x etc without all this mess. we do a null check to then potetialy just pass null??
             LocationModel location = LocationLogic.buildLocationModel(
                     Objects.nonNull(getGeojson()) ? LocationLogic.geoJsonToGeometry(geojson) : null,
-                    Objects.nonNull(getFrom()) ? from : null,
-                    Objects.nonNull(getTo()) ? to : null,
-                    Objects.nonNull(getX()) ? x : null,
-                    Objects.nonNull(getY()) ? y : null,
-                    Objects.nonNull(getZ()) ? z : null,
-                    Objects.nonNull(getTextualPosition()) ? textualPosition : null
+                    from,
+                    to,
+                    x,
+                    y,
+                    z,
+                    textualPosition
             );
             model.setLocation(location);
         } catch (JsonProcessingException e) {

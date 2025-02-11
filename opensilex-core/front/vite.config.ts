@@ -4,6 +4,14 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
+  resolve: {
+    alias: {
+      vue: resolve(__dirname, 'node_modules/vue')
+    }
+  },
+  optimizeDeps: {
+    include: ['vue']
+  },
   build: {
     outDir: 'dist', // Dossier de sortie
     lib: {

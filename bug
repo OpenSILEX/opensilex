@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" >
+<rect  x="0" y="0" width="800" height="600" fill="rgb(128, 128, 150)" />
+<clipPath id="stateArea"><path d = "M 160 54L 160 600L 800 600L 800 54 Z"/></clipPath><g clip-path="url(#stateArea)"></g><g clip-path="url(#stateArea)"></g><rect x="-nan" y="18" width="-nan" height="33" fill="rgb(0,0,256)" style="stroke:white;stroke-width:0.05" />
+<rect x="-nan" y="0" width="-nan" height="18" fill="rgb(0,0,0)" style="stroke:white;stroke-width:0.05" />
+<text x="-nan" y="18" font-size="14" fill="white">min: 0</text>
+<text x="-nan" y="18" font-size="14" fill="white">max: 0</text>
+<g clip-path="url(#stateArea)"></g></svg>

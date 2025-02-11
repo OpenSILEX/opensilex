@@ -1,7 +1,6 @@
 import {Container} from 'inversify';
 import {VueJsOntologyExtensionService} from './../lib/api/vueJsOntologyExtension.service';
 import {SystemService} from '../../../../opensilex-core/front/src/lib/api/system.service';
-import Vue from 'vue';
 import {VueCookies} from 'vue-cookies';
 import VueI18n from 'vue-i18n';
 import {Store} from 'vuex';
@@ -169,7 +168,8 @@ export default class OpenSilexVuePlugin {
             .getURILabelsList(objectsToLoad, context, true)
             .then((httpObj) => {
                 for (let obj of httpObj.response.result) {
-                    Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
+                    //@todo corriger
+                    // Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
                 }
             });
     }
@@ -192,10 +192,12 @@ export default class OpenSilexVuePlugin {
     }
 
     setConfig(config: FrontConfigDTO) {
+        console.log("-------vuePluging Setconfig -------", this.config)
         this.config = config;
     }
 
     getConfig() {
+        console.log("-------vuePluging Getconfig -------", this.config)
         return this.config;
     }
 
@@ -361,10 +363,12 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadComponentTranslations(component) {
-        if (component.options.__i18n) {
-            let componentTranslations = JSON.parse(component.options.__i18n);
-            this.loadTranslations(componentTranslations);
-        }
+        console.log("VuePlugin - loadComponentTranslations - component : ", component)
+        // @todo : trouver une methode de remplacement, component n'a pas d'options
+        // if (component.options.__i18n) {
+        //     let componentTranslations = JSON.parse(component.options.__i18n);
+        //     this.loadTranslations(componentTranslations);
+        // }
     }
 
     public loadModule(name) {
@@ -388,7 +392,8 @@ export default class OpenSilexVuePlugin {
             script.addEventListener('load', () => {
                 self.loadedModules.push(name);
                 const plugin = window[name].default;
-                Vue.use(plugin);
+                //@todo trouver la nouvelle manière de charger dynamiquement des modules en vue 3
+                // Vue.use(plugin);
 
                 if (plugin.lang) {
                     self.loadTranslations(plugin.lang);
@@ -434,8 +439,9 @@ export default class OpenSilexVuePlugin {
                         promises.push(Promise.reject(error));
                     }
                 }
-                console.debug("Register component", componentId, component);
-                Vue.component(componentId, components[componentId]);
+                console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
+                //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
+                // Vue.component(componentId, components[componentId]);
             }
         }
 

@@ -15,7 +15,7 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "skipLibCheck": true,
-        "types": ["node", "opensilex-security", "opensilex-core", "opensilex-phis"],
+        "types": ["node", "opensilex-security", "opensilex-core", "opensilex-phis", "vite/client"],
         "paths": {
             "@/*": [
             "src/*"

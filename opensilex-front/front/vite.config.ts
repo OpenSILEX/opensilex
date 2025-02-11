@@ -3,6 +3,11 @@ import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 
 export default defineConfig({
+
+    // optimizeDeps: {
+    //   include: ['vue', 'vue-router']
+    // },
+  
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
   build: {
     outDir: 'dist', // Dossier de sortie
@@ -14,10 +19,11 @@ export default defineConfig({
     // },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)
-      external: ['vue'],
+      external: ['vue', 'vue-router'],
       output: {
         globals: {
           vue: 'Vue',
+          'vue-router': 'VueRouter',
         },
       },
     },

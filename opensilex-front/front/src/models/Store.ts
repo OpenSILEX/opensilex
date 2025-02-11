@@ -1,15 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import {User} from './User'
-import VueRouter from 'vue-router';
+import Router from 'vue-router';
 import {Menu} from './Menu';
-import {OpenSilexRouter} from './OpenSilexRouter';
+// import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
 import { createStore } from 'vuex'
 
-Vue.use(VueRouter)
+// Vue.use(VueRouter)
 
 declare var window: any;
 
@@ -22,7 +22,7 @@ let renewStarted = false;
 let currentUser = undefined;
 
 let getOpenSilexPlugin = function (): OpenSilexVuePlugin {
-  return Vue["$opensilex"];
+  return undefined; //@todo Vue["$opensilex"];
 }
 
 let renewTokenOnEvent = function (event) {
@@ -246,12 +246,12 @@ let store = createStore({
     },
     setConfig(state, config: FrontConfigDTO) {
       state.config = config;
-      state.openSilexRouter = new OpenSilexRouter(config.pathPrefix);
-      state.openSilexRouter.setConfig(config);
+      // state.openSilexRouter = new OpenSilexRouter(config.pathPrefix);
+      // state.openSilexRouter.setConfig(config);
     },
     setUserConfig(state, userConfig: UserFrontConfigDTO) {
       state.userConfig = userConfig;
-      state.openSilexRouter.setUserConfig(userConfig);
+      // state.openSilexRouter.setUserConfig(userConfig);
     },
     showLoader(state) {
       if (loaderCount == 0) {
@@ -305,7 +305,7 @@ let store = createStore({
       state.menuVisible = true;
     },
     refresh(state) {
-      state.openSilexRouter.refresh();
+      // state.openSilexRouter.refresh();
     },
     lang(state, lang) {
       console.debug("Define user language", lang);

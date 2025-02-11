@@ -1,5 +1,6 @@
 <template>
-
+<h2>Composant App</h2>
+<p>{{ $t('component.common.uri-help-message') }}</p>
 </template>
 
 <script lang="ts">

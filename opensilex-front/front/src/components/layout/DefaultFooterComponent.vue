@@ -14,6 +14,7 @@ import Vue, { defineComponent } from "vue";
 import { versionInfoDTO } from "opensilex-core/index";
 
 export default defineComponent({
+  name: 'defaultFooterComponent',
     data() {
         const versionInfo: versionInfoDTO = undefined;
         const $store: any = undefined;

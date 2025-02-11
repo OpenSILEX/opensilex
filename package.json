@@ -27,13 +27,13 @@
         "vee-validate": "4.15.0",
         "vue": "3.5.13",
         "vue-class-migrator": "^0.0.3",
-        "vue-router": "3.4.9",
-        "vue-tel-input": "5.3.0",
+        "vue-router": "^4.5.0",
         "vuex": "4.1.0",
         "whatwg-fetch": "3.4.1"
     },
     "devDependencies": {
         "@types/node": "20",
+        "@types/vue-router": "^2.0.0",
         "@vitejs/plugin-vue": "^5.2.1",
         "@vue/compiler-sfc": "^3.5.13",
         "eslint": "^9.19.0",

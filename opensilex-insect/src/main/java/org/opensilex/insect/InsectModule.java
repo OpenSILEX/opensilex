@@ -12,18 +12,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
-//import java.util.Set;
+import java.util.Map;
+import java.util.Set;
 import org.apache.jena.riot.Lang;
 
-//import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilex;
+import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.insect.ontology.OesoInsect;
-//import org.opensilex.sparql.deserializer.URIDeserializer;
-//import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
-//import org.opensilex.core.CoreModule;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-//import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
@@ -42,12 +42,6 @@ import org.slf4j.LoggerFactory;
 public class InsectModule extends OpenSilexModule implements APIExtension, SPARQLExtension {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(InsectModule.class);
-/*
-    @Override
-    public void setup() {
-        SPARQLService.addPrefix(OesoInsect.PREFIX, OesoInsect.NS);
-        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
-    }*/
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
@@ -57,7 +51,9 @@ public class InsectModule extends OpenSilexModule implements APIExtension, SPARQ
                 OesoInsect.NS,
                 "ontologies/oeso-insect.owl",
                 Lang.RDFXML,
-                OesoInsect.PREFIX
+                OesoInsect.PREFIX,
+                null,
+                true
         ));
         return list;
     }
@@ -70,6 +66,7 @@ public class InsectModule extends OpenSilexModule implements APIExtension, SPARQ
 
     private void insertInsectDefaultSpecies()  {
         try {
+
             SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
             SPARQLService sparql = factory.provide();
 

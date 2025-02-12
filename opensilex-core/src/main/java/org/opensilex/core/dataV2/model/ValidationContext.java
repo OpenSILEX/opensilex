@@ -21,6 +21,8 @@ public class ValidationContext {
     private final DAOContext daoContext;
     private final DataCSVValidationModel localCsvValidation;
     private final DataCSVValidationModel csvValidation;
+    private Map<Integer, Map<URI, URI>> variableByDimensionAndIndex;
+
 
     private boolean validRow = true;
     private boolean missingTargetOrDevice = false;
@@ -39,9 +41,13 @@ public class ValidationContext {
     private int targetColIndex = 0;
     private int deviceColIndex = 0;
     private int annotationIndex = 0;
+    private Integer multiDimDataColumnIndex;
 
 
-    public ValidationContext(ProvenanceModel provenance, String[] values, int rowIndex, Map<Integer, String> headerByIndex, ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext, DAOContext daoContext, DataCSVValidationModel localCsvValidation, DataCSVValidationModel csvValidation, boolean sensingDeviceFoundFromProvenance) {
+    public ValidationContext(ProvenanceModel provenance, String[] values, int rowIndex, Map<Integer, String> headerByIndex,
+                             ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext,
+                             DAOContext daoContext, DataCSVValidationModel localCsvValidation, DataCSVValidationModel csvValidation,
+                             boolean sensingDeviceFoundFromProvenance, Map<Integer, Map<URI, URI>> variableByDimensionAndIndex, Integer multiDimDataColumnIndex) {
         this.provenance = provenance;
         this.values = values;
         this.rowIndex = rowIndex;
@@ -52,6 +58,9 @@ public class ValidationContext {
         this.daoContext = daoContext;
         this.localCsvValidation = localCsvValidation;
         this.csvValidation = csvValidation;
+        this.sensingDeviceFoundFromProvenance = sensingDeviceFoundFromProvenance;
+        this.variableByDimensionAndIndex = variableByDimensionAndIndex;
+        this.multiDimDataColumnIndex = multiDimDataColumnIndex;
     }
 
     public ProvenanceModel getProvenance() {
@@ -188,5 +197,21 @@ public class ValidationContext {
 
     public boolean isSensingDeviceFoundFromProvenance() {
         return sensingDeviceFoundFromProvenance;
+    }
+
+    public Map<Integer, Map<URI, URI>> getVariableByDimensionAndIndex() {
+        return variableByDimensionAndIndex;
+    }
+
+    public void setVariableByDimensionAndIndex(Map<Integer, Map<URI, URI>> variableByDimensionAndIndex) {
+        this.variableByDimensionAndIndex = variableByDimensionAndIndex;
+    }
+
+    public Integer getMultiDimDataColumnIndex() {
+        return this.multiDimDataColumnIndex;
+    }
+
+    public void setMultiDimDataColumnIndex(Integer multiDimDataColumnIndex) {
+        this.multiDimDataColumnIndex = multiDimDataColumnIndex;
     }
 }

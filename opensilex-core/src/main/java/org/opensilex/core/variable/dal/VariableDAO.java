@@ -20,7 +20,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -59,6 +58,8 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  */
 public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
+    public static final String DIMENSION = "dimension";
+    public static final String VARIABLE = "variable";
     static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
     static Var entityOfInterestLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_OF_INTEREST_FIELD_NAME));
     static Var characteristicLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.CHARACTERISTIC_FIELD_NAME));
@@ -191,7 +192,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      *     _method_name : the name of the variable method
      *     _unit_name : the name of the variable unit
      * </pre>
-     * <p>
+     * <p>VariableModel.GRAPH
      * You can use them into the orderByList
      *
      * @return the list of {@link VariableModel} founds
@@ -289,7 +290,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         Stream<URI> uris = models.stream().map(SPARQLResourceModel::getUri);
 
-        Var variableVar = makeVar("variable");
+        Var variableVar = makeVar(VARIABLE);
         Var speciesVar = makeVar("species");
         Var speciesNameVar = makeVar("species_name");
         Node speciesGraph = sparql.getDefaultGraph(SpeciesModel.class);
@@ -457,5 +458,27 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
 
     }
-}
 
+    public VariableModel getVariableByDimension(URI dimensionURI) throws Exception {
+        var builder = new SelectBuilder();
+        var variableVar = makeVar(VARIABLE);
+        builder.addVar(variableVar);
+        builder.addWhere(variableVar, Oeso.hasDimensions.asNode(), SPARQLDeserializers.nodeURI(dimensionURI));
+
+        var result = sparql.executeSelectQueryAsStream(builder).findFirst();
+
+        var variableUri = URI.create(result.orElseThrow(() -> new Exception("No result found")).getStringValue(variableVar.getVarName()));
+
+        return get(variableUri);
+    }
+
+    public List<URI> getAllDimensionsByVariable(URI variableURI) throws SPARQLException {
+        var builder = new SelectBuilder();
+        var variableVar = makeVar(DIMENSION);
+        builder.addVar(variableVar);
+        builder.addWhere(SPARQLDeserializers.nodeURI(variableURI), Oeso.hasDimensions, variableVar);
+        var result = sparql.executeSelectQueryAsStream(builder);
+
+        return result.map(elm -> URI.create(elm.getStringValue(variableVar.getVarName()))).toList();
+    }
+}

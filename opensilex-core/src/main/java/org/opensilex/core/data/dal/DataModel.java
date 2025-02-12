@@ -7,10 +7,13 @@
 package org.opensilex.core.data.dal;
 
 import org.bson.Document;
+import org.opensilex.core.dataV2.model.DataValueModel;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +46,8 @@ public class DataModel extends MongoModel {
 
     private Object value;
     public static final String VALUE_FIELD = "value";
+
+    private List<DataValueModel> multiValues = Collections.synchronizedList(new ArrayList<>());
     
     private List<Object> rawData;
     
@@ -125,6 +130,14 @@ public class DataModel extends MongoModel {
 
     public void setValue(Object value) {
         this.value = value;
+    }
+
+    public List<DataValueModel> getMultiValues() {
+        return multiValues;
+    }
+
+    public void setMultiValues(List<DataValueModel> multiValues) {
+        this.multiValues = multiValues;
     }
 
     public List<Object> getRawData() {

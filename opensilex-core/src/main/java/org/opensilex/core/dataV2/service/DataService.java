@@ -38,6 +38,8 @@ import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.DimensionModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -97,6 +99,9 @@ public class DataService {
     public static final String TEMP_EXTENSION = ".tmp";
     public static final String TEMP_FILE_PREFIX = "uploaded_csv_";
     public static final int NB_THREADS = 5;
+    public static final String LINKED_VARIABLE_NOT_FOUND_FOR_THIS_DIMENSION = "linked variable not found for this dimension";
+    public static final char LEFT_PARENTHESIS = '(';
+    public static final char RIGHT_PARENTHESIS = ')';
 
 
     //Private stored data
@@ -576,13 +581,14 @@ public class DataService {
 
         // Start row validation
         for (String[] row : batch) {
+            Integer multiDimDataColumnIndex = localRowIndex;
             if (stopProcessing.get()) {
                 // Early termination of threads when the nbError limit is reached by one of the threads
                 break;
             }
             // Initialize the validation context for each row validation
             validationContext = new ValidationContext(provenance, row, localRowIndex, headerByIndex, experimentContext, targetContext, deviceContext,
-                    daoContext, localValidation, csvValidation, sensingDeviceFoundFromProvenance);
+                    daoContext, localValidation, csvValidation, sensingDeviceFoundFromProvenance, csvValidation.getVariableByDimensionAndIndex(), multiDimDataColumnIndex);
             try {
                 boolean isValid = validateCSVRowV2(validationContext);
                 if (!isValid) {
@@ -616,6 +622,7 @@ public class DataService {
 
     private void processHeadersValue(String[] ids, Map<Integer, String> headerByIndex, DeviceContext deviceContext,
                                      DataCSVValidationModel csvValidation, VariableDAO variableDAO) {
+        BaseVariableDAO<DimensionModel> dimensionDAO = new BaseVariableDAO<>(DimensionModel.class, sparql);
         for (int i = 0; i < ids.length; i++) {
             String header = ids[i];
             if (header == null) {
@@ -630,12 +637,33 @@ public class DataService {
                     if (!URIDeserializer.validateURI(header)) {
                         csvValidation.addInvalidHeaderURI(i, header);
                     } else {
-                        VariableModel var = variableDAO.get(uri);
-                        if (var == null) {
-                            csvValidation.addInvalidHeaderURI(i, header);
+                        // get dimension by uri
+                        DimensionModel dim = dimensionDAO.get(uri);
+                        if (Objects.isNull(dim)) {
+                            csvValidation.addInvalidHeaderURI(i, uri.toString());
                         } else {
-                            deviceContext.getMapVariableUriDataType().put(var.getUri(), var.getDataType());
-                            headerByIndex.put(i, header);
+                            // get variable by dimension uri
+                            VariableModel var = variableDAO.getVariableByDimension(dim.getUri());
+                            if (Objects.isNull(var)) {
+                                CSVCell cell = new CSVCell(0, i, LINKED_VARIABLE_NOT_FOUND_FOR_THIS_DIMENSION, uri.toString());
+                                csvValidation.addURINotFoundError(cell, uri, uri);
+                            } else {
+                                // check & retrieve dimension uri linked to the variable
+                                List<URI> dimURIs = variableDAO.getAllDimensionsByVariable(var.getUri());
+                                // check if all dim URIs exist in header & add the variable uri to the list of VariableURI to check it in the next var2
+                                List<URI> missingDimUris = checkAndCollectMissingDimensionUris(ids, dimURIs);
+                                if (missingDimUris.isEmpty()) {
+                                    // All URIs exist
+                                    deviceContext.getMapVariableUriDataType().put(dim.getUri(), dim.getDataType());
+                                    headerByIndex.put(i, header);
+                                    csvValidation.addVariableByDimensionAndIndex(i, dim.getUri(), var.getUri());
+                                } else {
+                                    // Handle missing URIs
+                                    HashMap<URI, List<URI>> missingDimUrisByVarMap = new HashMap<>();
+                                    missingDimUrisByVarMap.put(var.getUri(), missingDimUris);
+                                    csvValidation.addMissingDimensionURIsHeadersByVariable(missingDimUrisByVarMap);
+                                }
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -643,6 +671,16 @@ public class DataService {
                 }
             }
         }
+    }
+
+    private List<URI> checkAndCollectMissingDimensionUris(String[] ids, List<URI> uris) {
+        List<URI> missingUris = new ArrayList<>();
+        for (URI uri : uris) {
+            if (!Arrays.asList(ids).contains(uri.toString())) {
+                missingUris.add(uri);
+            }
+        }
+        return missingUris;
     }
 
     private boolean isFixedHeader(String header) {
@@ -735,19 +773,40 @@ public class DataService {
             }
             processVariableColumn(context, colIndex);
             processDataModelColumn(context, colIndex);
+            context.setMultiDimDataColumnIndex(context.getMultiDimDataColumnIndex() + 1);
         }
     }
 
-    private void processDataModelColumn(ValidationContext context, Integer colIndex) throws Exception {
-        if (context.isValidRow()) {
-            String variable = context.getHeaderByIndex().get(colIndex);
-            URI varURI = URI.create(variable);
-            DataModel dataModel = createDataModel(context, colIndex, varURI);
-            checkAndAddData(dataModel, context, colIndex, varURI);
+    private void processDataModelColumn(ValidationContext validationContext, Integer colIndex) throws Exception {
+        if (validationContext.isValidRow()) {
+            URI dimensionURI = URI.create(validationContext.getHeaderByIndex().get(colIndex));
+            URI varURI = validationContext.getVariableByDimensionAndIndex().get(colIndex).get(dimensionURI);
+            // get the data model from validated data list if already exist by row index to manage the multidimensional data
+            DataModel dataModel = validationContext.getLocalCsvValidation().getData().entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().equals(validationContext.getRowIndex()))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(null);
+
+            if (Objects.isNull(dataModel) || !dataModel.getVariable().equals(varURI)) {
+                dataModel = createDataModel(validationContext, colIndex, dimensionURI, varURI);
+            } else if (validationContext.getRowIndex() != validationContext.getMultiDimDataColumnIndex()) {
+                // Update the data model if we have multidimensional data column
+                updateDataModel(validationContext, colIndex, dataModel, dimensionURI);
+            }
+
+            checkAndAddData(dataModel, validationContext, colIndex, dimensionURI);
         }
     }
 
-    private void checkAndAddData(DataModel dataModel, ValidationContext validationContext, int colIndex, URI varURI) {
+    private synchronized void updateDataModel(ValidationContext validationContext, Integer colIndex, DataModel dataModel, URI dimensionURI) throws CSVDataTypeException, DataTypeException {
+        List<DataValueModel> multiValues = dataModel.getMultiValues();
+        multiValues.add(new DataValueModel(dimensionURI, DataValidateUtils.checkAndConvertValue(dimensionURI, validationContext.getValues()[colIndex].trim(), validationContext.getDeviceContext().getMapVariableUriDataType().get(dimensionURI), validationContext.getRowIndex(), colIndex, validationContext.getCsvValidation())));
+        dataModel.setMultiValues(multiValues);
+    }
+
+    private void checkAndAddData(DataModel dataModel, ValidationContext validationContext, int colIndex, URI dimURI) {
         SPARQLNamedResourceModel target = validationContext.getTarget();
         SPARQLNamedResourceModel object = validationContext.getObject();
         DataCSVValidationModel localCsvValidation = validationContext.getLocalCsvValidation();
@@ -763,18 +822,18 @@ public class DataService {
         if (validationContext.getDeviceFromDeviceColumn() != null) {
             deviceUri = validationContext.getDeviceFromDeviceColumn().getUri();
         }
-        ImportDataIndex importDataIndex = new ImportDataIndex(validationContext.getParsedDateTimeMongo().getInstant(), varURI, validationContext.getProvenance().getUri(), targetUri, deviceUri);
+        ImportDataIndex importDataIndex = new ImportDataIndex(validationContext.getParsedDateTimeMongo().getInstant(), dimURI, validationContext.getProvenance().getUri(), targetUri, deviceUri);
         if (!deviceContext.getDuplicateDataByIndex().contains(importDataIndex)) {
             deviceContext.getDuplicateDataByIndex().add(importDataIndex);
         } else {
-            String variableName = validationContext.getCsvValidation().getHeadersLabels().get(colIndex) + '(' + validationContext.getCsvValidation().getHeaders().get(colIndex) + ')';
+            String variableName = validationContext.getCsvValidation().getHeadersLabels().get(colIndex) + LEFT_PARENTHESIS + validationContext.getCsvValidation().getHeaders().get(colIndex) + RIGHT_PARENTHESIS;
             CSVCell duplicateCell = new CSVCell(validationContext.getRowIndex(), colIndex, validationContext.getValues()[colIndex].trim(), variableName);
             localCsvValidation.addDuplicatedDataError(duplicateCell);
         }
         localCsvValidation.addData(dataModel, validationContext.getRowIndex());
     }
 
-    private DataModel createDataModel(ValidationContext validationContext, Integer colIndex, URI varURI) throws Exception {
+    private DataModel createDataModel(ValidationContext validationContext, Integer colIndex, URI dimURI, URI varURI) throws Exception {
         DeviceContext deviceContext = validationContext.getDeviceContext();
         List<URI> experiments = validationContext.getExperiments();
         DeviceModel deviceFromDeviceColumn = validationContext.getDeviceFromDeviceColumn();
@@ -782,7 +841,6 @@ public class DataService {
         DataModel dataModel = new DataModel();
         DataProvenanceModel provenanceModel = new DataProvenanceModel();
         provenanceModel.setUri(validationContext.getProvenance().getUri());
-        String variable = validationContext.getHeaderByIndex().get(colIndex);
 
         if (!experiments.isEmpty()) {
             provenanceModel.setExperiments(experiments);
@@ -792,7 +850,7 @@ public class DataService {
             ProvEntityModel agent = createProvEntityModel(validationContext.getDaoContext(), rootDeviceTypes, deviceFromDeviceColumn);
             provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
         } else if (validationContext.isSensingDeviceFoundFromProvenance()) {
-            DeviceModel checkedDevice = validationContext.getDeviceContext().getVariableCheckedProvDevice().get(variable);
+            DeviceModel checkedDevice = validationContext.getDeviceContext().getVariableCheckedProvDevice().get(varURI.toString());
             ProvEntityModel agent = createProvEntityModel(validationContext.getDaoContext(), rootDeviceTypes, checkedDevice);
             provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
         }
@@ -811,11 +869,12 @@ public class DataService {
         }
         dataModel.setProvenance(provenanceModel);
         dataModel.setVariable(varURI);
-        DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), deviceContext.getMapVariableUriDataType().get(varURI), validationContext.getRowIndex(), colIndex, validationContext.getCsvValidation());
+        dataModel.getMultiValues().add(new DataValueModel(dimURI, DataValidateUtils.checkAndConvertValue(dimURI, values[colIndex].trim(), deviceContext.getMapVariableUriDataType().get(dimURI), validationContext.getRowIndex(), colIndex, validationContext.getCsvValidation())));
+
 
         if (colIndex + 1 < values.length) {
             if (validationContext.getHeaderByIndex().get(colIndex + 1).equalsIgnoreCase(RAW_DATA_HEADER) && values[colIndex + 1] != null) {
-                dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), deviceContext.getMapVariableUriDataType().get(varURI), validationContext.getRowIndex(), colIndex + 1, validationContext.getCsvValidation()));
+                dataModel.setRawData(DataValidateUtils.returnValidRawData(dimURI, values[colIndex + 1].trim(), deviceContext.getMapVariableUriDataType().get(dimURI), validationContext.getRowIndex(), colIndex + 1, validationContext.getCsvValidation()));
             }
         }
 
@@ -1279,7 +1338,7 @@ public class DataService {
     }
 
     private String buildVariableName(DataCSVValidationModel validation, int variableIndex) {
-        return validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
+        return validation.getHeadersLabels().get(variableIndex) + LEFT_PARENTHESIS + validation.getHeaders().get(variableIndex) + RIGHT_PARENTHESIS;
     }
 
     public DataCSVValidationDTO buildDataCSVValidationDTO(DataCSVValidationModel validation) {

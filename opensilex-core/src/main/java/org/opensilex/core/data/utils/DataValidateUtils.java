@@ -337,6 +337,22 @@ public class DataValidateUtils {
     }
 
     /**
+     * Validates and converts the "value" field of a data model with the correct Java type.
+     *
+     * @param variable      The variable URI
+     * @param value         The value to set
+     * @param dataType      The data type of the value
+     * @param dataIndex     The index of the data (for error reporting)
+     * @param colIndex      The column of the data (for error reporting)
+     * @param csvValidation The validation model
+     * @return The value field converted to the correct Java type
+     * @throws CSVDataTypeException If the value is invalid
+     */
+    public static Object checkAndConvertValue(URI variable, Object value, URI dataType, Integer dataIndex, Integer colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException, DataTypeException {
+        return returnValidCSVDatum(variable, value, dataType, dataIndex, colIndex, csvValidation);
+    }
+
+    /**
      * Validates and returns the "value" field converted to the correct Java type.
      *
      * @param variable      The variable URI

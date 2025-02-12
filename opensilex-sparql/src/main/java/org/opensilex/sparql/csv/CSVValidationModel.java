@@ -40,7 +40,11 @@ public class CSVValidationModel {
     private Map<String, List<URI>> uriByNames = new HashMap<>();
 
     private List<String> missingHeaders = new ArrayList<>();
-    
+
+    private Map<URI, List<URI>> missingDimensionURIsHeadersByVariable = new HashMap<>();
+
+    private Map<Integer, Map<URI, URI>> variableByDimensionAndIndex = new HashMap<>();
+
     private Set<Integer> emptyHeaders = new HashSet<>();
 
     private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
@@ -139,22 +143,31 @@ public class CSVValidationModel {
     }
 
     public boolean hasErrors() {
-        return getMissingHeaders().size() > 0
-                || getDatatypeErrors().size() > 0
-                || getInvalidDateErrors().size() > 0
-                || getUriNotFoundErrors().size() > 0
-                || getInvalidURIErrors().size() > 0
-                || getMissingRequiredValueErrors().size() > 0
-                || getInvalidHeaderURIs().size() > 0
-                || getInvalidValueErrors().size() > 0
-                || getAlreadyExistingURIErrors().size() > 0
-                || getDuplicateURIErrors().size() > 0
-                || getEmptyHeaders().size() > 0
-                || ! invalidRowSizeErrors.isEmpty();
+        return !getMissingHeaders().isEmpty()
+                || !getDatatypeErrors().isEmpty()
+                || !getInvalidDateErrors().isEmpty()
+                || !getUriNotFoundErrors().isEmpty()
+                || !getInvalidURIErrors().isEmpty()
+                || !getMissingRequiredValueErrors().isEmpty()
+                || !getInvalidHeaderURIs().isEmpty()
+                || !getInvalidValueErrors().isEmpty()
+                || !getAlreadyExistingURIErrors().isEmpty()
+                || !getDuplicateURIErrors().isEmpty()
+                || !getEmptyHeaders().isEmpty()
+                || !getInvalidRowSizeErrors().isEmpty()
+                || !getMissingDimensionURIsHeadersByVariable().isEmpty();
     }
 
     public void addMissingHeaders(Collection<String> headers) {
         missingHeaders.addAll(headers);
+    }
+
+    public Map<URI, List<URI>> getMissingDimensionURIsHeadersByVariable() {
+        return missingDimensionURIsHeadersByVariable;
+    }
+
+    public void addMissingDimensionURIsHeadersByVariable(Map<URI, List<URI>> missingDimensionURIsHeadersByVariable) {
+        this.missingDimensionURIsHeadersByVariable.putAll(missingDimensionURIsHeadersByVariable);
     }
 
     public void addInvalidHeaderURI(int i, String invalidURI) {
@@ -274,6 +287,14 @@ public class CSVValidationModel {
         invalidRowSizeErrors
                 .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
                 .add(cell);
+    }
+
+    public void addVariableByDimensionAndIndex(int i, URI dimURI, URI varURI) {
+        this.variableByDimensionAndIndex.computeIfAbsent(i, index -> new HashMap<>()).put(dimURI, varURI);
+    }
+
+    public Map<Integer, Map<URI, URI>> getVariableByDimensionAndIndex() {
+        return variableByDimensionAndIndex;
     }
 
 }

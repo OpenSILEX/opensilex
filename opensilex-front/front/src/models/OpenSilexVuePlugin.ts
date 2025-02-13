@@ -1,8 +1,7 @@
 import {Container} from 'inversify';
 import {VueJsOntologyExtensionService} from './../lib/api/vueJsOntologyExtension.service';
 import {SystemService} from '../../../../opensilex-core/front/src/lib/api/system.service';
-import Vue from 'vue';
-import {VueCookies} from 'vue-cookies';
+import {useCookies} from 'vue3-cookies';
 import VueI18n from 'vue-i18n';
 import {Store} from 'vuex';
 import {
@@ -33,8 +32,9 @@ import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import { App } from 'vue';
 
-declare var $cookies: VueCookies;
+const { cookies: $cookies } = useCookies();
 
 declare var window: Window | any;
 
@@ -63,6 +63,7 @@ export default class OpenSilexVuePlugin {
     private baseApi: string;
     private config: FrontConfigDTO;
     private themeConfig: ThemeConfigDTO;
+    private app : App
 
     public $store: Store<any>;
     public $i18n;
@@ -217,7 +218,8 @@ export default class OpenSilexVuePlugin {
             .getURILabelsList(objectsToLoad, context, true)
             .then((httpObj) => {
                 for (let obj of httpObj.response.result) {
-                    Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
+                    //@todo corriger
+                    // Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
                 }
             });
     }
@@ -240,10 +242,12 @@ export default class OpenSilexVuePlugin {
     }
 
     setConfig(config: FrontConfigDTO) {
+        console.log("-------vuePluging Setconfig -------", this.config)
         this.config = config;
     }
 
     getConfig() {
+        console.log("-------vuePluging Getconfig -------", this.config)
         return this.config;
     }
 
@@ -281,9 +285,11 @@ export default class OpenSilexVuePlugin {
         this.$store.commit("hideLoader");
     }
 
-    public install(Vue, options) {
-        Vue.prototype.$opensilex = this;
-        Vue.$opensilex = this;
+    public install(app, options) {
+        this.app = app;
+        // app.prototype.$opensilex = this;
+        app.config.globalProperties.$opensilex = this;
+        app.$opensilex = this;
     }
 
     public loadService<T>(id: string): Promise<T> {
@@ -409,10 +415,12 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadComponentTranslations(component) {
-        if (component.options.__i18n) {
-            let componentTranslations = JSON.parse(component.options.__i18n);
-            this.loadTranslations(componentTranslations);
-        }
+        console.log("VuePlugin - loadComponentTranslations - component : ", component)
+        // @todo : trouver une methode de remplacement, component n'a pas d'options
+        // if (component.options.__i18n) {
+        //     let componentTranslations = JSON.parse(component.options.__i18n);
+        //     this.loadTranslations(componentTranslations);
+        // }
     }
 
     public loadModule(name) {
@@ -435,28 +443,38 @@ export default class OpenSilexVuePlugin {
             script.async = true;
             script.addEventListener('load', () => {
                 self.loadedModules.push(name);
+                //@todo on doit trouver comment obtenir l'export par défaut du module importé par le script (HtmlScriptElement)
+                // Vincent utilise une façon bizarre d'importer le code JS des autres modules. D'après ce que j'ai compris :
+                // - Les modules (par exemple le fichier index.ts de opensilex-security) a un export par défaut sous forme d'un plugin Vue (avec une méthode install())
+                // - Dans la méthode loadModule(), donc ici, on crée une balise <script> qui a comme attribut src le lien vers le fichier JS du module
+                // - Lors de l'événement load, on récupère `window[name].default` qui est censé correspondre à l'export par défaut du composant
+            
                 const plugin = window[name].default;
-                Vue.use(plugin);
+                // Vue.use(plugin);
+                console.log("Register plugin", plugin);
+                this.app.use(plugin)
 
-                if (plugin.lang) {
-                    self.loadTranslations(plugin.lang);
-                }
+                resolve(plugin)
 
-                if (plugin.components) {
-                    for (let componentId in plugin.components) {
-                        this.loadComponentTranslations(plugin.components[componentId]);
-                    }
-                }
+            //     if (plugin.lang) {
+            //         self.loadTranslations(plugin.lang);
+            //     }
 
-                self.initAsyncComponents(plugin.components)
-                    .then(function () {
-                        self.hideLoader();
-                        resolve(plugin);
-                    })
-                    .catch(function (error) {
-                        self.hideLoader();
-                        reject(error);
-                    });
+            //     if (plugin.components) {
+            //         for (let componentId in plugin.components) {
+            //             this.loadComponentTranslations(plugin.components[componentId]);
+            //         }
+            //     }
+
+                // self.initAsyncComponents(plugin.components)
+                //     .then(function () {
+                //         self.hideLoader();
+                //         resolve(plugin);
+                //     })
+                //     .catch(function (error) {
+                //         self.hideLoader();
+                //         reject(error);
+                //     });
             });
             script.addEventListener('error', () => {
                 self.hideLoader();
@@ -482,8 +500,9 @@ export default class OpenSilexVuePlugin {
                         promises.push(Promise.reject(error));
                     }
                 }
-                console.debug("Register component", componentId, component);
-                Vue.component(componentId, components[componentId]);
+                console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
+                //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
+                this.app.component(componentId, components[componentId]);
             }
         }
 

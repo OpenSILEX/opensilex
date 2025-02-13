@@ -5,24 +5,29 @@
 //******************************************************************************
 package org.opensilex.dev;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.opensilex.*;
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModule;
 import org.opensilex.front.FrontModule;
 import org.opensilex.front.api.FrontAPI;
-import org.opensilex.OpenSilexModule;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
@@ -144,6 +149,19 @@ public class StartServerWithFront {
         FileAlterationMonitor monitor = new FileAlterationMonitor(200);
         FileAlterationListener listener = new FileAlterationListenerAdaptor() {
             @Override
+            public void onStart(FileAlterationObserver observer){
+                File file = observer.getDirectory();
+                if (file.getName().equals(filename)) {
+                    LOGGER.debug("File exist: " + file.getName());
+                    try {
+                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
+                    } catch (IOException ex) {
+                        LOGGER.error("Error while copying lib file: " + filename, ex);
+                    }
+                    countDownLatch.countDown();
+                }
+            }
+            @Override
             public void onFileCreate(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File created: " + file.getName());
@@ -155,6 +173,7 @@ public class StartServerWithFront {
                     countDownLatch.countDown();
                 }
             }
+
 
             @Override
             public void onFileDelete(File file) {

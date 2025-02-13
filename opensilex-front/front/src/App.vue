@@ -1,5 +1,7 @@
 <template>
-
+<h2>Composant App</h2>
+<p>{{ $t('component.common.uri-help-message') }}</p>
+<opensilex-DefaultLoginComponent></opensilex-DefaultLoginComponent>
 </template>
 
 <script lang="ts">

@@ -83,6 +83,8 @@ class OpenSilexHttpClient implements IHttpClient {
                 headers: <any>headers
             }).then(response => {
                 let headers: Headers = {};
+                console.log("OpensilexHttpClient - performNetworkCall - url ", url)
+                console.log("OpensilexHttpClient - response ", response)
                 response.headers.forEach((value, name) => {
                     headers[name.toString().toLowerCase()] = value;
                 });

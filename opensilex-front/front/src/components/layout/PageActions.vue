@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class=" row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
+    <!-- <div class=" row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
       <div class="d-inline-block w-100 float-left">
         <slot name="buttons"></slot>
         <b-nav :tabs="(tabs == true ? true : false)">
@@ -36,44 +36,44 @@
       <div class="card-header-right">
         <slot name="rightHeader"></slot>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script lang="ts">
-import Vue, { defineComponent } from "vue";
+import { defineComponent } from "vue";
 
 export default defineComponent({
-    computed: {
-        returnTo() {
-            if (this.$store.state.previousPage.length > 0) {
-              return this.$store.state.previousPage[
-                this.$store.state.previousPage.length - 1
-              ];
-            } else {
-              return false;
-            }
-        }
-    },
-    methods: {
-        goBack() {
-            this.$store.commit("goBack");
-        }
-    },
-    props: {
-        returnToTitle: { default: "component.pageActions.returnToTitle",
-            type: String
-        },
-        returnButton: { default: false,
-            type: Boolean
-        },
-        tabs: { default: false,
-            type: Boolean
-        },
-        small: { default: false,
-            type: Boolean
-        }
-    }
+    // computed: {
+    //     returnTo() {
+    //         if (this.$store.state.previousPage.length > 0) {
+    //           return this.$store.state.previousPage[
+    //             this.$store.state.previousPage.length - 1
+    //           ];
+    //         } else {
+    //           return false;
+    //         }
+    //     }
+    // },
+    // methods: {
+    //     goBack() {
+    //         this.$store.commit("goBack");
+    //     }
+    // },
+    // props: {
+    //     returnToTitle: { default: "component.pageActions.returnToTitle",
+    //         type: String
+    //     },
+    //     returnButton: { default: false,
+    //         type: Boolean
+    //     },
+    //     tabs: { default: false,
+    //         type: Boolean
+    //     },
+    //     small: { default: false,
+    //         type: Boolean
+    //     }
+    // }
 })
 
 </script>
@@ -94,16 +94,6 @@ li:first-child.nav-item {
 </style>
 
 <i18n>
-en:
-  component: 
-    pageActions: 
-        returnToTitle: Return to the previous page
-         
-    
-            
-fr:
-  component: 
-    pageActions: 
-        returnToTitle: Retourner à la page précédente
+
 
 </i18n>

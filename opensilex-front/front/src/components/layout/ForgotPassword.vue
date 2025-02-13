@@ -148,32 +148,3 @@ export default defineComponent({
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-  en:
-    ForgotPasswordComponent:
-      title: "Forgot password ?"
-      enter-email: Enter the e-mail linked to your account
-      reset-password: Send an e-mail to this adress
-      steps: "Change your password in three easy steps. This will help you to secure your password!"
-      step-one: "Enter your email address below."
-      step-two: "Our system will send you a temporary link."
-      step-three: "Use the link to reset your password."
-      service-not-available: Service not available
-      invalid-identifier: Identifiant invalide
-      link-email: An e-mail has been sent to you
-      returnHome: return to homepage
-  fr:
-    ForgotPasswordComponent:
-      title: "Mot de passe oublié ?"
-      enter-email: Entrez l'adresse e-mail liée à votre compte
-      reset-password: Envoyer un e-mail à cette adresse
-      steps: "Changez votre mot de passe en trois étapes simples. Cela vous aidera à sécuriser votre mot de passe !"
-      step-one: "Saisissez votre adresse électronique ci-dessous."
-      step-two: "Notre système vous enverra un lien temporaire."
-      step-three: "Utilisez le lien pour réinitialiser votre mot de passe."
-      service-not-available: Service not available
-      invalid-identifier: Identifiant invalide
-      link-email: Un email vous a été envoyé
-      returnHome: Retourner à la page d'acceuil
-</i18n>

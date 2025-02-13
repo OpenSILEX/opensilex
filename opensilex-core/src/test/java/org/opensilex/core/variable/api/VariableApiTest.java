@@ -90,6 +90,12 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         unit.setAlternativeSymbol("mn");
         service.create(unit);
 
+        DimensionModel dimension = new DimensionModel();
+        dimension.setDataType(new URI("http://www.w3.org/2001/XMLSchema#decimal"));
+        dimension.setUnit(unit);
+        dimension.setName("minute");
+        service.create(dimension);
+
         VariableCreationDTO variableDto = new VariableCreationDTO();
         variableDto.setName(entity.getName() + characteristic.getName());
         variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
@@ -103,7 +109,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         variableDto.setTrait(new URI("http://purl.obolibrary.org/obo/TO_0002644"));
         variableDto.setTraitName("dry matter digestibility");
         variableDto.setTimeInterval("minutes");
-        variableDto.setDataType(new URI("xsd:decimal"));
+        variableDto.setDataType(new URI("http://www.w3.org/2001/XMLSchema#decimal"));
+        variableDto.setDimensions(List.of(dimension));
 
         return variableDto;
     }
@@ -415,6 +422,32 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         Response response = getDeleteByUriResponse(target(deletePath), unexistantUri);
 
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    /*
+     * Test that the variable creation fail if the dataType in dimension is invalid
+     */
+    public void testFailWithInvalidDataTypeInDimension() throws Exception {
+        // create variable with invalid dataType in dimension
+        VariableCreationDTO dto = getCreationDto();
+        dto.getDimensions().get(0).setDataType(new URI("test:invalidDataTypeURI"));
+
+        //test the expected error message provided by the exception
+        Assert.assertThrows("[Dimension] Invalid datatype", IllegalArgumentException.class, dto::newModel);
+    }
+
+    @Test
+    /*
+     * Test that the variable creation fail if the dimension is null
+     */
+    public void testFailWithoutDimension() throws Exception {
+        // create variable without dimension
+        VariableCreationDTO dto = getCreationDto();
+        dto.setDimensions(null);
+
+        //test the expected error message provided by the exception
+        Assert.assertThrows("[Dimension] Variable must have at least one dimension", IllegalArgumentException.class, dto::newModel);
     }
 
 

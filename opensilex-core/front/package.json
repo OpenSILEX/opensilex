@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "npx vite serve --config vite.config.ts",
+        "serve": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
         "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",

@@ -2,7 +2,11 @@ import { User } from './User';
 import Vue from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
-import VueRouter from 'vue-router';
+// import { createRouter, createWebHistory, Router, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, type Router, type RouteRecordRaw } from 'vue-router';
+
+// const { createRouter, createWebHistory, Router, RouteRecordRaw } = VueRouter;
+
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 
 export class OpenSilexRouter {
@@ -10,7 +14,7 @@ export class OpenSilexRouter {
     private frontConfig: FrontConfigDTO;
     private userFrontConfig: UserFrontConfigDTO;
     private menu: Array<MenuItemDTO> = [];
-    private router: any;
+    private router: Router;
     private pathPrefix: string
     private PUBLIC_ROUTE: string = "public";
     private sectionAttributes : any = {};
@@ -41,22 +45,28 @@ export class OpenSilexRouter {
     }
 
     private createRouter(user: User) {
-        let routes = this.computeMenuRoutes(user);
-
-        this.router = new VueRouter({
-            base: this.pathPrefix + "/app",
-            mode: 'history',
-            routes: routes
-        })
-
+        let routes: Array<RouteRecordRaw> = this.computeMenuRoutes(user);
+    
+        this.router = createRouter({
+            history: createWebHistory(this.pathPrefix + "/app"),
+            routes: routes,
+        });
+    
         return this.router;
     }
 
+    // public resetRouter(user: User) {
+    //     const newRouter: any = this.createRouter(user);
+    //     this.router.matcher = newRouter.matcher;
+    //     return this.router;
+    // }
+    
     public resetRouter(user: User) {
-        const newRouter: any = this.createRouter(user);
-        this.router.matcher = newRouter.matcher;
-        return this.router;
+        const newRouter = this.createRouter(user);
+        this.router.getRoutes().forEach(route => this.router.removeRoute(route.name as string));
+        newRouter.getRoutes().forEach(route => this.router.addRoute(route));
     }
+    
 
     public computeMenuRoutes(user: User) {
         let routes: Array<any> = [];
@@ -91,7 +101,8 @@ export class OpenSilexRouter {
 
             
             routes.push({
-                path: "*",
+                // path: "*",
+                path: "/:catchAll(.*)",
                 component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
             });
         }
@@ -133,7 +144,9 @@ export class OpenSilexRouter {
     }
 
     public refresh() {
-        this.router.go();
+        // this.router.go();
+        this.router.push(this.router.currentRoute.value.fullPath);
+
     }
 
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {

@@ -488,3 +488,8 @@ routes:
     component: opensilex-ResetPassword
     credentials:
       - public
+
+  - path: /test
+  component: opensilex-TestPage
+  credentials:
+    - public

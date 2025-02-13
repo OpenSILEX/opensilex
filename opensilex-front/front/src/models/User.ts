@@ -1,4 +1,4 @@
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export class User {
     private firstName: string = "Jean";
@@ -83,7 +83,7 @@ export class User {
 
     public setToken(token: string) {
         this.token = token;
-        this.tokenData = jwt_decode(token);
+        this.tokenData = jwtDecode(token);
 
         this.firstName = this.getTokenData(User.CLAIM_FIRST_NAME);
         this.lastName = this.getTokenData(User.CLAIM_LAST_NAME);

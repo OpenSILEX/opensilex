@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import vueDevTools from 'vite-plugin-vue-devtools';
 
 export default defineConfig({
-  plugins: [vue()], // Utilisez le plugin Vue pour Vite
+
+    // optimizeDeps: {
+    //   include: ['vue', 'vue-router']
+    // },
+  
+  plugins: [vue(), vueDevTools()], // Utilisez le plugin Vue pour Vite
   build: {
     outDir: 'dist', // Dossier de sortie
     // lib: {
@@ -14,10 +20,11 @@ export default defineConfig({
     // },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)
-      external: ['vue'],
+      external: ['vue', 'vue-router'],
       output: {
         globals: {
           vue: 'Vue',
+          'vue-router': 'VueRouter',
         },
       },
     },

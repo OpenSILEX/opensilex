@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "npx vite serve --config vite.config.ts",
+        "serve": "vite build --config vite.config.ts --watch",
         "build": "vite build --config vite.config.ts",
         "lint": "vite lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",

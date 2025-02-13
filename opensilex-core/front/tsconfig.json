@@ -17,7 +17,8 @@
         "typeRoots": ["node_modules"],
         "types": [
             "node",
-            "webpack-env"
+            "webpack-env",
+            "vite/client"
         ],
         "paths": {
             "@/*": [

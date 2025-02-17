@@ -84,6 +84,9 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     @JsonProperty("dimensions")
     private List<DimensionModel> dimensions;
 
+    @JsonProperty("is_multi_dimensional")
+    private boolean isMultiDimensional;
+
     @ValidURI
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -167,8 +170,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @ValidURI
-    @NotNull
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/centimeter", required = true)
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/centimeter")
     public URI getUnit() {
         return unit;
     }
@@ -197,7 +199,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @ValidURI
-    @NotNull
     @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public URI getDataType() { return dataType; }
 
@@ -231,6 +232,14 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.dimensions = dimensions;
     }
 
+    public boolean isMultiDimensional() {
+        return isMultiDimensional;
+    }
+
+    public void setMultiDimensional(boolean multiDimensional) {
+        isMultiDimensional = multiDimensional;
+    }
+
     public VariableModel newModel() throws URISyntaxException {
         VariableModel model = new VariableModel();
         model.setUri(uri);
@@ -242,12 +251,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         if(!StringUtils.isEmpty(description)){
             model.setDescription(description);
         }
-        if (Objects.nonNull(dataType) && VariableUtils.getDataTypesURIs().contains(dataType)) {
-            model.setDataType(dataType);
-        } else {
-            throw new IllegalArgumentException("[Variable] Invalid datatype");
-        }
-        model.setDataType(dataType);
 
         model.setEntity(new EntityModel(entity));
         
@@ -269,7 +272,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
                 speciesModelList.add(speciesModel);
             };
             model.setSpecies(speciesModelList);
-
         }
 
         if(trait != null){
@@ -282,21 +284,61 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         if(!StringUtils.isEmpty(samplingInterval)){
             model.setSamplingInterval(samplingInterval);
         }
-        if (validateDimensions()) {
-            model.setDimensions(dimensions);
+
+        if (isMultiDimensional) {
+            if (validateDimensions()) {
+                model.setDimensions(dimensions);
+                model.setUnit(null);
+                model.setDataType(null);
+            }
+        } else {
+            DimensionModel dimension = new DimensionModel();
+            dimension.setName(name);
+            if (Objects.nonNull(dataType) && VariableUtils.getDataTypesURIs().contains(dataType)) {
+                dimension.setDataType(dataType);
+            } else {
+                throw new IllegalArgumentException("[Variable] Invalid datatype");
+            }
+            dimension.setUnit(new UnitModel(unit));
+            model.setDimensions(List.of(dimension));
         }
         setSkosReferencesToModel(model);
         return model;
     }
 
-    private boolean validateDimensions() throws URISyntaxException {
-        if (CollectionUtils.isEmpty(dimensions)) {
-            throw new IllegalArgumentException("[Dimension] Variable must have at least one dimension");
+    private boolean validateDimensions() {
+        // Check if variable has more than one dimension
+        if (dimensions.size() < 2) {
+            throw new IllegalArgumentException("[Dimension] Variable must have more than one dimension");
         } else {
-            for (DimensionModel dimension : dimensions) {
-                if (Objects.isNull(dimension.getDataType()) || !VariableUtils.getDataTypesURIs().contains(dimension.getDataType())) {
-                    throw new IllegalArgumentException("[Dimension] Invalid datatype");
+            // Check if all dimensions have a name and a valid datatype
+            dimensions.forEach(dimension -> {
+                if (StringUtils.isBlank(dimension.getName())) {
+                    throw new IllegalArgumentException("[Dimension] name cannot be null or empty");
                 }
+                if (Objects.isNull(dimension.getDataType())) {
+                    throw new IllegalArgumentException("[Dimension] datatype cannot be null");
+                }
+                try {
+                    if (!VariableUtils.getDataTypesURIs().contains(dimension.getDataType())) {
+                        throw new IllegalArgumentException("[Dimension] Invalid datatype : " + dimension.getDataType());
+                    }
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // Check if all dimensions have a unique name
+            long uniqueNamesCount = dimensions.stream()
+                    .map(DimensionModel::getName)
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .distinct()
+                    .count();
+
+            if (uniqueNamesCount != dimensions.size()) {
+                throw new IllegalArgumentException("[Dimension] Duplicate dimension name found");
             }
         }
         return true;

@@ -78,8 +78,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasUnit",
-            required = true
+            property = "hasUnit"
     )
     private UnitModel unit;
     public static final String UNIT_FIELD_NAME = "unit";
@@ -99,8 +98,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDataType",
-            required = true
+            property = "hasDataType"
     )
     private URI dataType;
     public static final String DATA_TYPE_FIELD_NAME = "dataType";
@@ -114,8 +112,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDimensions",
-            required = true
+            property = "hasDimensions"
     )
     private List<DimensionModel> dimensions;
     public static final String DIMENSIONS_FIELD_NAME = "dimensions";

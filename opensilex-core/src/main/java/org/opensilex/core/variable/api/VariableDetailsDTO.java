@@ -6,30 +6,30 @@ package org.opensilex.core.variable.api;
  * and open the template in the editor.
  */
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
+import org.opensilex.core.variable.api.dimension.DimensionDetailsDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
-import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 /**
@@ -85,6 +85,9 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     @JsonProperty("datatype")
     private URI dataType;
 
+    @JsonProperty("dimensions")
+    private List<DimensionDetailsDTO> dimensions;
+
     public VariableDetailsDTO(VariableModel model) {
         this(model, null);
     }
@@ -106,8 +109,10 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         MethodModel method = model.getMethod();
         this.method = new MethodGetDTO(method);
 
-        UnitModel unit = model.getUnit();
-        this.unit = new UnitDetailsDTO(unit);
+        UnitModel unit = Objects.nonNull(model.getUnit()) ? model.getUnit() : model.getDimensions().get(0).getUnit();
+        if (Objects.nonNull(unit)) {
+            this.unit = new UnitDetailsDTO(unit);
+        }
 
         this.alternativeName = model.getAlternativeName();
 
@@ -122,11 +127,21 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.timeInterval = model.getTimeInterval();
         this.samplingInterval = model.getSamplingInterval();
 
-        URI dataType = model.getDataType();
-        try {
-            this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        URI dataType = Objects.nonNull(model.getDataType()) ? model.getDataType() : model.getDimensions().get(0).getDataType();
+        if (Objects.nonNull(dataType)) {
+            try {
+                this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        List<DimensionModel> dimensions = model.getDimensions();
+        if (dimensions != null) {
+            this.dimensions = dimensions
+                    .stream()
+                    .map(DimensionDetailsDTO::new)
+                    .toList();
         }
 
         trait = model.getTraitUri();
@@ -253,6 +268,14 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     public void setSpecies(List<SpeciesDTO> species) {
         this.species = species;
+    }
+
+    public List<DimensionDetailsDTO> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionDetailsDTO> dimensions) {
+        this.dimensions = dimensions;
     }
 
     @Override

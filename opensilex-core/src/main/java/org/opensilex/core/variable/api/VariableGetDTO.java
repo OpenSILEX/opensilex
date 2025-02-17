@@ -18,6 +18,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -174,8 +175,9 @@ public class VariableGetDTO {
         dto.setMethod(new MethodGetDTO(method));
 
         UnitModel unit = model.getUnit();
-        dto.setUnit(new UnitGetDTO(unit));
-
+        if (Objects.nonNull(unit)) {
+            dto.setUnit(new UnitGetDTO(unit));
+        }
         URI sriUri = model.getFromSharedResourceInstance();
         if(sriUri != null){
             if (sharedResourceInstanceList != null) {

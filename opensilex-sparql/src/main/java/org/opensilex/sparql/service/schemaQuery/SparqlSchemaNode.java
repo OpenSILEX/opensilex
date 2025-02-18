@@ -1,59 +1,95 @@
 package org.opensilex.sparql.service.schemaQuery;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.graph.Node;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLStatement;
+import org.opensilex.sparql.utils.Ontology;
 
+import javax.accessibility.AccessibleComponent;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+
 public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
     private final Class<T> objectClass;
     private final String fieldName;
+    private final Node graph;
     private final boolean isListField;
     private final List<SparqlSchemaNode<?>> childNodes;
     private final boolean fetchDynamicRelations;
+    private final SPARQLService sparql;
+    private final String lang;
 
     public SparqlSchemaNode(
             Class<T> objectClass,
             String fieldName,
             List<SparqlSchemaNode<?>> childNodes,
             boolean isListField,
-            boolean fetchDynamicRelations
-    ) {
+            boolean fetchDynamicRelations,
+            SPARQLService sparql,
+            String lang
+    ) throws SPARQLException {
         this.objectClass = objectClass;
         this.fieldName = fieldName;
+        this.graph = sparql.getDefaultGraph(objectClass);
         this.childNodes = childNodes;
         this.isListField = isListField;
         this.fetchDynamicRelations = fetchDynamicRelations;
+        this.sparql = sparql;
+        this.lang = lang;
+    }
+
+    public SparqlSchemaNode(
+            Class<T> objectClass,
+            String fieldName,
+            Node graph,
+            List<SparqlSchemaNode<?>> childNodes,
+            boolean isListField,
+            boolean fetchDynamicRelations,
+            SPARQLService sparql,
+            String lang
+    ) {
+        this.objectClass = objectClass;
+        this.fieldName = fieldName;
+        this.graph = graph;
+        this.childNodes = childNodes;
+        this.isListField = isListField;
+        this.fetchDynamicRelations = fetchDynamicRelations;
+        this.sparql = sparql;
+        this.lang = lang;
     }
 
     /**
      * Completes the models of this node by looking at each child node, organizing them by type to perform one search for each type.
      * Then recursively performs same operation on child nodes until we reach a node that has no children.
      *
-     * @param sparql the sparql service, needed to perform basic search for each type found among the child nodes
      * @param uncastNodeModels The basic models to complete, they can't be initially passed as T's because the parent node can't access this information
-     * @param lang language of string fields returned inside models
      * @throws Exception
      */
     public void completeNodeModels(
-            SPARQLService sparql,
-            List<?> uncastNodeModels,
-            String lang
+            List<?> uncastNodeModels
     ) throws Exception {
         //If this node has no children or no models were passed, then we have nothing to do here
         if(CollectionUtils.isEmpty(childNodes) || CollectionUtils.isEmpty(uncastNodeModels)) {
@@ -68,7 +104,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                     sparql,
                     objectClass,
-                    sparql.getDefaultGraph(objectClass),
+                    graph,
                     listFieldNames,
                     nodeModels
             );
@@ -78,6 +114,155 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         //Create mapper so we can work out how to get and set fields from field name
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
 
+        //Calculate the data we need for faster access later
+        RecursiveIterationData recursiveIterationData = calculateIterationData(mapper, nodeModels);
+
+        //Do basic search for child models, 1 search per type,
+        // to do this iterate over children filling this map as each type is visited for the first time
+        //In same iteration perform next recursive step on each child node
+        HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType = new HashMap<>();
+        //In the same way we will fetch all dynamic relations per type when the type is visited for the first time,
+        //then complete the models with correct relations after
+        HashMap<String, HashMap<String, List<SPARQLModelRelation>>> relationsPerUriPerType = new HashMap<>();
+
+        for(SparqlSchemaNode<?> childNode : childNodes){
+            String typeName = recursiveIterationData.getTypeNamePerFieldName().get(childNode.getFieldName());
+
+            //Load models of this child's type if they weren't already loaded
+            loadModelsOfTypeIfUnvisited(
+                    calculatedChildModelsPerUriPerType,
+                    typeName,
+                    recursiveIterationData,
+                    childNode
+            );
+
+            //Load relations of this type if they were not already loaded
+            loadRelationsOfTypeIfUnvisited(
+                    relationsPerUriPerType,
+                    typeName,
+                    recursiveIterationData,
+                    childNode
+            );
+
+            //Extract only the calculated models for childNode's field
+            HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectField = getModelMapOfCorrectField(
+                    recursiveIterationData,
+                    calculatedChildModelsPerUriPerType.get(typeName),
+                    childNode
+            );
+
+            //Extract only the calculated relations for childNode's field
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectField = getRelationsMapOfCorrectField(
+                    recursiveIterationData,
+                    relationsPerUriPerType.get(typeName),
+                    childNode
+            );
+
+            //Perform recursive call on child to complete its models, then set their relations
+            if(!MapUtils.isEmpty(modelsPerUriOfCorrectField)){
+                childNode.completeNodeModels(
+                        new ArrayList<>(modelsPerUriOfCorrectField.values())
+                );
+
+                if(!MapUtils.isEmpty(relationsPerUriOfCorrectField)){
+                    if(!MapUtils.isEmpty(relationsPerUriOfCorrectField)){
+                        for(SPARQLResourceModel childModel: modelsPerUriOfCorrectField.values()){
+                            childModel.setRelations(relationsPerUriOfCorrectField.get(SPARQLDeserializers.getShortURI(childModel.getUri())));
+                        }
+                    }
+                }
+            }
+
+            //Get setter method
+            Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
+            Method fieldSetter = mapper.getClassAnalyzer().getSetterFromField(field);
+
+            //Re-inject child models into this node's models
+            for(T nodeModel : nodeModels){
+
+                List<SPARQLResourceModel> modelsToSet = new ArrayList<>();
+                if(!MapUtils.isEmpty(modelsPerUriOfCorrectField)){
+                    List<String> uriValues= recursiveIterationData
+                            .getUriValuesPerModelUriPerField()
+                            .get(childNode.getFieldName())
+                            .get(SPARQLDeserializers.getShortURI(nodeModel.getUri()));
+
+                    if(!CollectionUtils.isEmpty(uriValues)){
+                        uriValues.forEach(uri -> {
+                            modelsToSet.add(modelsPerUriOfCorrectField.get(uri));
+                        });
+                    }
+                }
+
+                if(CollectionUtils.isEmpty(modelsToSet)){
+                    continue;
+                }
+
+                fieldSetter.invoke(
+                        nodeModel,
+                        (childNode.isListField ? modelsToSet : modelsToSet.get(0))
+                );
+            }
+        }
+
+    }
+
+    //TODO refacto these next to functions if i can be bothered (they are basicaly same)
+
+    /**
+     *
+     * @param recursiveIterationData
+     * @param modelsPerUriOfCorrectType
+     * @param childNode
+     * @return a uri -> child model map, for all models corresponding to the field represented by childNode
+     */
+    private HashMap<String, SPARQLResourceModel> getModelMapOfCorrectField(
+                RecursiveIterationData recursiveIterationData,
+                HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectType,
+                SparqlSchemaNode<?> childNode
+    ){
+        HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectField = new HashMap<>();
+        recursiveIterationData.getUriValuesPerModelUriPerField()
+                .get(childNode.getFieldName())
+                .values()
+                .forEach((List<String> uriList) -> {
+                    uriList.forEach(uri -> modelsPerUriOfCorrectField.put(uri, modelsPerUriOfCorrectType.get(uri)));
+                });
+        return modelsPerUriOfCorrectField;
+    }
+
+    /**
+     *
+     * @param recursiveIterationData
+     * @param relationsPerUriOfCorrectType
+     * @param childNode
+     * @return a uri -> list of relations map, for all models corresponding to the field represented by childNode
+     */
+    private HashMap<String, List<SPARQLModelRelation>> getRelationsMapOfCorrectField(
+            RecursiveIterationData recursiveIterationData,
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectType,
+            SparqlSchemaNode<?> childNode
+    ){
+        HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectField = new HashMap<>();
+        recursiveIterationData.getUriValuesPerModelUriPerField()
+                .get(childNode.getFieldName())
+                .values()
+                .forEach((List<String> uriList) -> {
+                    uriList.forEach(uri -> relationsPerUriOfCorrectField.put(uri, relationsPerUriOfCorrectType.get(uri)));
+                });
+        return relationsPerUriOfCorrectField;
+    }
+
+    /**
+     * Iterates over each field (child node) and each model to organise some things into Maps for faster access afterward.
+     *
+     * @param mapper used tyo fetch type and getters of fields on a class
+     * @param nodeModels to iterate over for each field
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    private RecursiveIterationData calculateIterationData(SPARQLClassObjectMapper<T> mapper, List<T> nodeModels) throws InvocationTargetException, IllegalAccessException {
         //Organize all distinct uris per type (regardless of field)
         HashMap<String, HashSet<String>> distinctUrisPerTypeName = new HashMap<>();
         HashMap<String, String> typeNamePerFieldName = new HashMap<>();
@@ -90,7 +275,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             //Identify field, its getter, and the generic type
             // then iterate over each model to place the uris into distinctUrisPerTypeName
             Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
-            Class<?> genericType = field.getType();
+            Class<?> genericType = field.getDeclaringClass();
             String genericTypeName = null;
 
             try{
@@ -109,7 +294,11 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
             for(T nodeModel : nodeModels){
                 //Stuff to do with the general maps
-                List<String> nextUris = childNode.getUrisFromObject(fieldGetter.invoke(nodeModel)).stream().map(URI::toString).toList();
+                Object uriValueAsObject = fieldGetter.invoke(nodeModel);
+                if(uriValueAsObject == null){
+                    continue;
+                }
+                List<String> nextUris = childNode.getUrisFromObject(uriValueAsObject).stream().map(URI::toString).toList();
 
                 uriValuesPerModelUri.put(SPARQLDeserializers.getShortURI(nodeModel.getUri()), nextUris);
 
@@ -131,75 +320,137 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
             uriValuesPerModelUriPerField.put(childNode.getFieldName(), uriValuesPerModelUri);
         }
+        RecursiveIterationData result = new RecursiveIterationData();
+        result.setDistinctUrisPerTypeName(distinctUrisPerTypeName);
+        result.setTypeNamePerFieldName(typeNamePerFieldName);
+        result.setUriValuesPerModelUriPerField(uriValuesPerModelUriPerField);
+        result.setDistinctUrisToDescribePerTypeName(distinctUrisToDescribePerTypeName);
 
-        //Do basic search for child models, 1 search per type,
-        // to do this iterate over children filling this map as each type is visited for the first time
-        //In same iteration perform next recursive step on each child node
-        HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType = new HashMap<>();
-        //In the same way we will fetch all dynamic relations per type when the type is visited for the first time,
-        //then complete the models with correct relations after
-        HashMap<String, HashMap<String, List<SPARQLStatement>>> relationsPerUriPerType = new HashMap<>();
+        return result;
+    }
 
-        for(SparqlSchemaNode<?> childNode : childNodes){
-            String typeName = typeNamePerFieldName.get(childNode.getFieldName());
-            //Load models of this child's type if they weren't already loaded
-            if(!calculatedChildModelsPerUriPerType.containsKey(typeName)){
-                HashMap<String, SPARQLResourceModel> calculatedModelsPerUri = new HashMap<>();
-
-                childNode.runBasicSearchFunction(
-                        distinctUrisPerTypeName.get(typeName),
-                        sparql,
-                        lang
-                ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
-                calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
-            }
-            //Load relations of this type if they were not already loaded
-            if(childNode.fetchDynamicRelations && !relationsPerUriPerType.containsKey(typeName)){
-                HashMap<String, List<SPARQLStatement>> relationsPerUri = new HashMap<>();
-
-                /*List<SPARQLStatement> dynamicRelations = */childNode.runRelationFetchingFunction(
-                        distinctUrisToDescribePerTypeName.get(typeName),
-                        sparql
-                ).forEach(e -> {
-
-                    relationsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e)
-                });
-
-
-                calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
-
-
-            }
-
-            //Perform recursive call on child to complete its models
-            childNode.completeNodeModels(
+    private void loadModelsOfTypeIfUnvisited(
+            HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType,
+            String typeName,
+            RecursiveIterationData recursiveIterationData,
+            SparqlSchemaNode<?> nextNode
+    ) throws Exception {
+        if(calculatedChildModelsPerUriPerType.containsKey(typeName)){
+            return;
+        }
+        HashMap<String, SPARQLResourceModel> calculatedModelsPerUri = new HashMap<>();
+        HashSet<String> distinctUris = recursiveIterationData.getDistinctUrisPerTypeName().get(typeName);
+        if(!CollectionUtils.isEmpty(distinctUris)){
+            nextNode.runBasicSearchFunction(
+                    recursiveIterationData.getDistinctUrisPerTypeName().get(typeName),
                     sparql,
-                    new ArrayList<>(calculatedChildModelsPerUriPerType.get(typeName).values()),
                     lang
-            );
-            //Re-inject child models into this node's models
-            //Get setter method
-            Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
-            Method fieldSetter = mapper.getClassAnalyzer().getSetterFromField(field);
-            for(T nodeModel : nodeModels){
+            ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+            calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
+        }
+    }
 
-                HashMap<String, SPARQLResourceModel> modelsOfCorrectType = calculatedChildModelsPerUriPerType.get(typeName);
-                List<SPARQLResourceModel> modelsToSet = new ArrayList<>();
-                uriValuesPerModelUriPerField.get(childNode.getFieldName()).get(SPARQLDeserializers.getShortURI(nodeModel.getUri())).forEach(uri -> {
-                    modelsToSet.add(modelsOfCorrectType.get(uri));
-                });
-
-                if(CollectionUtils.isEmpty(modelsToSet)){
-                    continue;
-                }
-
-                fieldSetter.invoke(
-                        nodeModel,
-                        (childNode.isListField ? modelsToSet : modelsToSet.get(0))
-                );
-            }
+    private void loadRelationsOfTypeIfUnvisited(
+            HashMap<String, HashMap<String, List<SPARQLModelRelation>>> relationsPerUriPerType,
+            String typeName,
+            RecursiveIterationData recursiveIterationData,
+            SparqlSchemaNode<?> nextNode
+    ) throws Exception {
+        if(!nextNode.fetchDynamicRelations || relationsPerUriPerType.containsKey(typeName)){
+            return;
         }
 
+        HashSet<String> distinctUrisToDescribe =
+                recursiveIterationData.getDistinctUrisToDescribePerTypeName().get(typeName);
+
+        if(!CollectionUtils.isEmpty(distinctUrisToDescribe)){
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUri = getRelationsAndCreateUriRelationsMap(
+                    nextNode,
+                    distinctUrisToDescribe,
+                    sparql
+            );
+
+            relationsPerUriPerType.put(typeName, relationsPerUri);
+        }
+    }
+
+    /**
+     *
+     * @param node so we know which class to read to remove already handled, non-dynamic relations
+     * @param distinctUrisToDescribe
+     * @return a uri-relationList map for all dynamic relations found. Public method so it can be used for the root node from SparqlSchema
+     * @throws Exception
+     */
+    public static HashMap<String, List<SPARQLModelRelation>> getRelationsAndCreateUriRelationsMap(
+            SparqlSchemaNode<?> node,
+            HashSet<String> distinctUrisToDescribe,
+            SPARQLService sparql
+    ) throws Exception {
+        HashMap<String, List<SPARQLModelRelation>> relationsPerUri = new HashMap<>();
+        //Fetch dynamic relations where the uris to describe are subjects
+        if(!CollectionUtils.isEmpty(distinctUrisToDescribe)){
+            node.runRelationFetchingFunction(
+                    distinctUrisToDescribe,
+                    sparql,
+                    true
+            ).forEach(statement -> {
+                addToRelationsPerUri(
+                        relationsPerUri,
+                        statement,
+                        true
+                );
+            });
+            //Fetch dynamic relations where the uris to describe are objects
+            node.runRelationFetchingFunction(
+                    distinctUrisToDescribe,
+                    sparql,
+                    false
+            ).forEach(statement -> {
+                addToRelationsPerUri(
+                        relationsPerUri,
+                        statement,
+                        false
+                );
+            });
+        }
+
+        return relationsPerUri;
+    }
+
+    /**
+     * Function to create a SPARQLModelRelation from a statement, then add to map
+     *
+     * @param relationsPerUri the map to modify
+     * @param statement the sparql statement to read from
+     * @param subjectIsConcernedUri if true then not a reverse relation, else it is
+     */
+    private static void addToRelationsPerUri(
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUri,
+            SPARQLStatement statement,
+            boolean subjectIsConcernedUri
+    ){
+        SPARQLModelRelation nextRelation = new SPARQLModelRelation();
+
+        nextRelation.setReverse(!subjectIsConcernedUri);
+
+        String currentConcernedUri = SPARQLDeserializers.getShortURI(statement.getSubject());
+
+        if(subjectIsConcernedUri){
+            nextRelation.setValue(statement.getObject());
+        }else{
+            nextRelation.setValue(statement.getSubject());
+            currentConcernedUri = SPARQLDeserializers.getShortURI(statement.getObject());
+        }
+
+        nextRelation.setProperty(Ontology.property(statement.getPredicate()));
+
+        List<SPARQLModelRelation> listOfRelations = relationsPerUri.get(currentConcernedUri);
+        if(listOfRelations==null){
+            listOfRelations = new ArrayList<>();
+        }
+        listOfRelations.add(nextRelation);
+
+        relationsPerUri.put(currentConcernedUri, listOfRelations);
     }
 
     /**
@@ -222,7 +473,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
         //Call normal search function
         List<? extends SPARQLResourceModel> nextModels = sparql.search(
-                sparql.getDefaultGraph(objectClass),
+                graph,
                 objectClass,
                 lang,
                 (SelectBuilder select) -> {
@@ -256,19 +507,41 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
      *
      * @param uris of objects to fetch dynamic relations for
      * @param sparql service
-     * @return dynamic relations, does this by describing the uris then filtering out any triplets that are basic managed properties
+     * @param urisAreSubjects if true then get relations where uris are subjects, else relations where uris are objects
+     * @return dynamic relations where uris are subjects or objects in function of urisAreSubjects boolean,
+     * does this by running a construct query then filtering out any triplets that are basic managed properties
      * @throws Exception
      */
     private List<SPARQLStatement> runRelationFetchingFunction(
             HashSet<String> uris,
-            SPARQLService sparql
+            SPARQLService sparql,
+            boolean urisAreSubjects
     ) throws Exception {
         List<String> propertiesToIgnore = sparql.getMapperIndex().getForClass(objectClass).getClassAnalyzer().getManagedProperties()
                 .stream().map(Property::getURI).toList();
-        return sparql.describeMany(
-                sparql.getDefaultGraph(objectClass),
-                new HashSet<>(uris.stream().map(URI::create).toList())
-        ).stream().filter(e -> !propertiesToIgnore.contains(e.getPredicate())).collect(Collectors.toList());
+
+        ConstructBuilder constructBuilder = new ConstructBuilder();
+
+        Var SUBJECT_VAR = makeVar("s");
+        Var PREDICATE_VAR = makeVar("p");
+        Var OBJECT_VAR = makeVar("o");
+
+        constructBuilder.addConstruct(SUBJECT_VAR, PREDICATE_VAR, OBJECT_VAR);
+
+        WhereBuilder innerWhere = new WhereBuilder()
+                .addGraph(graph, SUBJECT_VAR, PREDICATE_VAR, OBJECT_VAR);
+
+        if(urisAreSubjects){
+            SPARQLQueryHelper.addWhereUriStringValues(innerWhere, "s", uris.stream(), true, uris.size());
+        }else{
+            SPARQLQueryHelper.addWhereUriStringValues(innerWhere, "o", uris.stream(), true, uris.size());
+        }
+
+        constructBuilder.addWhere(innerWhere);
+
+        return sparql.executeConstructQuery(constructBuilder).stream()
+                .filter(e -> !propertiesToIgnore.contains(e.getPredicate())).toList();
+
     }
 
     public String getFieldName() {
@@ -277,5 +550,52 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
     public boolean isListField() {
         return isListField;
+    }
+
+    public boolean isFetchDynamicRelations() {
+        return fetchDynamicRelations;
+    }
+
+    /**
+     * Class to store all the maps we use for faster access during a completeNodeModels iteration
+     */
+    private static class RecursiveIterationData{
+
+        private HashMap<String, HashSet<String>> distinctUrisPerTypeName = new HashMap<>();
+        private HashMap<String, String> typeNamePerFieldName = new HashMap<>();
+        private HashMap<String, HashMap<String, List<String>>> uriValuesPerModelUriPerField = new HashMap<>();
+        private HashMap<String, HashSet<String>> distinctUrisToDescribePerTypeName = new HashMap<>();
+
+        public HashMap<String, HashSet<String>> getDistinctUrisPerTypeName() {
+            return distinctUrisPerTypeName;
+        }
+
+        public void setDistinctUrisPerTypeName(HashMap<String, HashSet<String>> distinctUrisPerTypeName) {
+            this.distinctUrisPerTypeName = distinctUrisPerTypeName;
+        }
+
+        public HashMap<String, String> getTypeNamePerFieldName() {
+            return typeNamePerFieldName;
+        }
+
+        public void setTypeNamePerFieldName(HashMap<String, String> typeNamePerFieldName) {
+            this.typeNamePerFieldName = typeNamePerFieldName;
+        }
+
+        public HashMap<String, HashMap<String, List<String>>> getUriValuesPerModelUriPerField() {
+            return uriValuesPerModelUriPerField;
+        }
+
+        public void setUriValuesPerModelUriPerField(HashMap<String, HashMap<String, List<String>>> uriValuesPerModelUriPerField) {
+            this.uriValuesPerModelUriPerField = uriValuesPerModelUriPerField;
+        }
+
+        public HashMap<String, HashSet<String>> getDistinctUrisToDescribePerTypeName() {
+            return distinctUrisToDescribePerTypeName;
+        }
+
+        public void setDistinctUrisToDescribePerTypeName(HashMap<String, HashSet<String>> distinctUrisToDescribePerTypeName) {
+            this.distinctUrisToDescribePerTypeName = distinctUrisToDescribePerTypeName;
+        }
     }
 }

@@ -93,28 +93,40 @@ public final class GroupDAO {
                 ProfileModel.class,
                 GroupUserProfileModel.PROFILE_FIELD,
                 new ArrayList<>(),
-                false
+                false,
+                false,
+                sparql,
+                lang
         );
 
         SparqlSchemaNode<AccountModel> accountNode = new SparqlSchemaNode<>(
                 AccountModel.class,
                 GroupUserProfileModel.USER_FIELD,
                 new ArrayList<>(),
-                false
+                false,
+                false,
+                sparql,
+                lang
         );
 
         SparqlSchemaNode<GroupUserProfileModel> groupUserProfileNode = new SparqlSchemaNode<>(
                 GroupUserProfileModel.class,
                 GroupModel.USER_PROFILES_FIELD,
                 List.of(profileNode, accountNode),
-                true
+                true,
+                false,
+                sparql,
+                lang
         );
 
         SparqlSchemaNode<GroupModel> rootNode = new SparqlSchemaNode<>(
                 GroupModel.class,
                 null,
                 Collections.singletonList(groupUserProfileNode),
-                false
+                false,
+                false,
+                sparql,
+                lang
         );
 
         SparqlSchema<GroupModel> schema = new SparqlSchema<>(rootNode);

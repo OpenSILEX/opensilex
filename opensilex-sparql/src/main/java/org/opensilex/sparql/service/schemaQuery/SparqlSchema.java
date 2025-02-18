@@ -1,8 +1,15 @@
 package org.opensilex.sparql.service.schemaQuery;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -10,11 +17,13 @@ import java.util.List;
  * simple schema to follow for the fetching of nested models. This will most of the time be faster than the proxy search
  * as we will only perform 1 search per type per node.
  * A node represents a field on a given model, it has some information about the field in question and a list of child nodes.
+ * We can laod the dynamic relations on the models of a particular field by setting the node's fetchDynamicRelations boolean attribute.
  *
  * Here is a simple example of a schema to fetch user Groups, inside these models we want to load the 'userProfiles' field
  * that contains GroupUserProfileModels. Then inside them we want to load the 'user' and 'profile' fields that contain
  * AccountModels and ProfileModels respectively.
  *
+ * TODO update the below example when finished
  * <pre>
  *     {@code
  *     SparqlSchemaNode<ProfileModel> profileNode = new SparqlSchemaNode<>(
@@ -59,7 +68,29 @@ public class SparqlSchema<T extends SPARQLResourceModel> {
     }
 
     public List<T> resolveSchema(SPARQLService sparql, List<T> initialSearchResult, String lang) throws Exception {
-        root.completeNodeModels(sparql, initialSearchResult, lang);
+        if(CollectionUtils.isEmpty(initialSearchResult)) {
+            return initialSearchResult;
+        }
+
+        //If we want to handle relation in root node then handle them here as normally each node fetches relations for its children
+        //(Did it that way so we can fetch relations all at once for a same type across multiple fields)
+        if(root.isFetchDynamicRelations()){
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUri = SparqlSchemaNode.getRelationsAndCreateUriRelationsMap(
+                    root,
+                    new HashSet<>(initialSearchResult.stream().map(e-> SPARQLDeserializers.getShortURI(e.getUri())).toList()),
+                    sparql
+            );
+
+            if(!MapUtils.isEmpty(relationsPerUri)){
+                for(T model: initialSearchResult){
+                    model.setRelations(relationsPerUri.get(SPARQLDeserializers.getShortURI(model.getUri())));
+                }
+            }
+        }
+
+        //Call the recursive function to load the tree of children
+        root.completeNodeModels(initialSearchResult);
+
         return initialSearchResult;
     }
 

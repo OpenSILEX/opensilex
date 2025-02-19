@@ -80,7 +80,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
+import {DimensionDetailsDTO, VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import Xsd from "../../../ontologies/Xsd";
@@ -373,56 +373,93 @@ export default class GenerateDataTemplateFrom extends Vue {
         line3.push( this.getDataTypeLabel("xsd:date") +
           "\n" + this.$t("DataHelp.required"));
 
-        this.service.getVariablesByURIs(this.variables)
+        this.service.getVariablesByURIs(this.variables, true)
           .then((http) => {
             for (let element of http.response.result) {
-
-              //column variable
-              line1.push(element.uri);
-              line2.push(element.name);
-              if (element.datatype === undefined || element.datatype === null) {
-                element.datatype = Xsd.STRING;
-              }
-              let variableHelp = this.$t("DataHelp.column-type-help").toString() +
-                  this.$opensilex.getVariableDatatypeLabel(element.datatype);
-              if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
-                variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
-                variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
-                variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
-              }
-              line3.push(variableHelp);
-
-              //column raw_data
-              if (this.withRawData) {
-                line1.push("raw_data");
-                line2.push(this.$t("DataTemplateForm.raw-data"));
-                line3.push(
-                  this.$t("DataHelp.column-type-help").toString() +
-                  this.$t("DataTemplateForm.type-list") +
-                  this.$opensilex.getVariableDatatypeLabel(element.datatype));
+              if (element.dimensions != null && element.dimensions.length > 0) {
+                for (let dim of element.dimensions) {
+                  this.fulfillLinesOfVariableMultiDim(dim, element, line1, line2, line3);
+                }
+              } else {
+                this.fulfillLinesOfVariable(element, line1, line2, line3);
               }
             }
 
             //column annotation on object
             if (this.selectedColumns.includes(this.annotationColumn)) {
-                line1.push(this.annotationColumn);
-                line2.push(this.$t("DataTemplate.annotationHelp"));
-                line3.push(this.$t("DataHelp.column-type-help")+"String");
+              line1.push(this.annotationColumn);
+              line2.push(this.$t("DataTemplate.annotationHelp"));
+              line3.push(this.$t("DataHelp.column-type-help") + "String");
             }
 
             arrData = [line1, line2, line3];
             this.$papa.download(
-              this.$papa.unparse(arrData, { delimiter: this.separator }),
-              "datasetTemplate"
+                this.$papa.unparse(arrData, {delimiter: this.separator}),
+                "datasetTemplate"
             );
           }).catch((error) => {
-            this.$opensilex.showErrorToast(this.$i18n.t("DataTemplateForm.variable-not-found-error"));
-            throw error;
-          });
+          this.$opensilex.showErrorToast(this.$i18n.t("DataTemplateForm.variable-not-found-error"));
+          throw error;
+        });
       }
     });
+  }
+
+  fulfillLinesOfVariable(element: VariableDetailsDTO, line1: any[], line2: any[], line3: any[]) {
+    //column variable
+    line1.push(element.uri);
+    line2.push(element.name);
+    if (element.datatype === undefined || element.datatype === null) {
+      element.datatype = Xsd.STRING;
+    }
+    let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+        this.$opensilex.getVariableDatatypeLabel(element.datatype);
+    if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+    } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+    } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
+    }
+    line3.push(variableHelp);
+
+    //column raw_data
+    if (this.withRawData) {
+      line1.push("raw_data");
+      line2.push(this.$t("DataTemplateForm.raw-data"));
+      line3.push(
+          this.$t("DataHelp.column-type-help").toString() +
+          this.$t("DataTemplateForm.type-list") +
+          this.$opensilex.getVariableDatatypeLabel(element.datatype));
+    }
+  }
+
+  fulfillLinesOfVariableMultiDim(dim: DimensionDetailsDTO, element: VariableDetailsDTO, line1: any[], line2: any[], line3: any[]) {
+    line1.push(dim.uri);
+    line2.push(element.name + '$' + dim.name);
+    if (dim.datatype === undefined || dim.datatype === null) {
+      dim.datatype = Xsd.STRING;
+    }
+    let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+        this.$opensilex.getVariableDatatypeLabel(this.$opensilex.getLongUri(dim.datatype));
+    if (this.$opensilex.checkURIs(dim.datatype, Xsd.DATE)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+    } else if (this.$opensilex.checkURIs(this.$opensilex.getLongUri(dim.datatype), Xsd.DATETIME)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+    } else if (this.$opensilex.checkURIs(this.$opensilex.getLongUri(dim.datatype), Xsd.BOOLEAN)) {
+      variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
+    }
+    line3.push(variableHelp);
+
+    //column raw_data
+    if (this.withRawData) {
+      line1.push("raw_data");
+      line2.push(this.$t("DataTemplateForm.raw-data"));
+      line3.push(
+          this.$t("DataHelp.column-type-help").toString() +
+          this.$t("DataTemplateForm.type-list") +
+          this.$opensilex.getVariableDatatypeLabel(this.$opensilex.getLongUri(dim.datatype)));
+    }
   }
 
   getDataTypeLabel(dataTypeUri: string): string {

@@ -10,18 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
-
-import static java.lang.Double.NaN;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
@@ -33,6 +21,17 @@ import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static java.lang.Double.NaN;
 
 /**
  * @author sammy
@@ -69,6 +68,8 @@ public class DataCreationDTO {
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
+
+    private Object multiValue;
 
     @JsonProperty("raw_data")
     @ApiModelProperty(value = "list of repetition values")
@@ -140,6 +141,14 @@ public class DataCreationDTO {
 
     public void setValue(Object value) {
         this.value = value;
+    }
+
+    public Object getMultiValue() {
+        return multiValue;
+    }
+
+    public void setMultiValue(Object multiValue) {
+        this.multiValue = multiValue;
     }
 
     public List<Object> getRawData() {

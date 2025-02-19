@@ -403,10 +403,15 @@ public class VariableAPI {
             @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getVariablesByURIs(
-            @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
+            @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris, @ApiParam(value = "With proxy") @QueryParam("withProxy") @DefaultValue("false") boolean withProxy
     ) throws Exception {
         VariableDAO dao = getDao();
-        List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
+        List<VariableModel> models;
+        if (withProxy) {
+            models = dao.getListWithProxy(uris, currentUser.getLanguage());
+        } else {
+            models = dao.getList(uris, currentUser.getLanguage());
+        }
 
         if (!models.isEmpty()) {
             List<VariableDetailsDTO> resultDTOList = new ArrayList<>(models.size());

@@ -106,6 +106,11 @@ public class DataGetDTO extends DataCreationDTO {
             setValue(model.getValue());
         }
 
+        // Todo mko : check how to handle dateVariables.contains(getVariable()) in this case
+        if (Objects.nonNull(model.getMultiValues())) {
+            setMultiValue(model.getMultiValues());
+        }
+
         if (Objects.nonNull(model.getPublicationDate())) {
             setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }
@@ -116,6 +121,7 @@ public class DataGetDTO extends DataCreationDTO {
         setMetadata(model.getMetadata());   
         setProvenance(model.getProvenance());
         setRawData(model.getRawData());
+
     }
 
     /**

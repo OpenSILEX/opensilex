@@ -9,6 +9,7 @@ package org.opensilex.core.variable.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
@@ -109,9 +110,12 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         MethodModel method = model.getMethod();
         this.method = new MethodGetDTO(method);
 
-        UnitModel unit = Objects.nonNull(model.getUnit()) ? model.getUnit() : model.getDimensions().get(0).getUnit();
+        UnitModel unit = model.getUnit();
         if (Objects.nonNull(unit)) {
             this.unit = new UnitDetailsDTO(unit);
+        } else if (CollectionUtils.isNotEmpty(model.getDimensions())) {
+            //todo : mko check the value to be return in this case
+            this.unit = new UnitDetailsDTO(model.getDimensions().get(0).getUnit());
         }
 
         this.alternativeName = model.getAlternativeName();
@@ -127,7 +131,13 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.timeInterval = model.getTimeInterval();
         this.samplingInterval = model.getSamplingInterval();
 
-        URI dataType = Objects.nonNull(model.getDataType()) ? model.getDataType() : model.getDimensions().get(0).getDataType();
+        URI dataType = null;
+        if (Objects.nonNull(model.getDataType())) {
+            dataType = model.getDataType();
+        } else if (CollectionUtils.isNotEmpty(model.getDimensions())) {
+            //todo : mko check the value to be return in this case
+            dataType = model.getDimensions().get(0).getDataType();
+        }
         if (Objects.nonNull(dataType)) {
             try {
                 this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));

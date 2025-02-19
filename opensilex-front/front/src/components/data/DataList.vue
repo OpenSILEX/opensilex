@@ -28,6 +28,16 @@
                 ></opensilex-UriLink>
             </template>
 
+          <template v-slot:cell(multiValue)="{ data }">
+            <span v-if="data.item.multiValue != null && data.item.multiValue.length > 0">
+               [
+               <span v-for="(item, index) in data.item.multiValue" :key="index">
+                 {{ item.value }}<span v-if="index < data.item.multiValue.length - 1"> , </span>
+              </span>
+               ]
+            </span>
+          </template>
+
             <template v-slot:cell(provenance)="{ data }">
                 <opensilex-UriLink
                     :uri="data.item.provenance.uri"
@@ -136,7 +146,7 @@ export default class DataList extends Vue {
                 sortable: true,
             },
             {
-                key: "value",
+              key: "multiValue",
                 label: "DataView.list.value",
                 sortable: false,
             },

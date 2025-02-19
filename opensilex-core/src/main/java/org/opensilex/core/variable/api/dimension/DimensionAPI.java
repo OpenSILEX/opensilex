@@ -129,9 +129,9 @@ public class DimensionAPI {
                 currentUser.getLanguage()
         );
 
-        ListWithPagination<DimensionGetDTO> resultDTOList = resultList.convert(
-                DimensionGetDTO.class,
-                DimensionGetDTO::new
+        ListWithPagination<DimensionDetailsDTO> resultDTOList = resultList.convert(
+                DimensionDetailsDTO.class,
+                DimensionDetailsDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

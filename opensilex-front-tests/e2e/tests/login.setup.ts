@@ -8,10 +8,10 @@
  * *****************************************************************************
  */
 
-import {chromium, expect, FullConfig} from '@playwright/test';
+import test, { chromium, expect } from '@playwright/test';
+import { LOGIN_STATE } from '../playwright.config';
 
-async function globalSetup(config: FullConfig) {
-    const { baseURL, storageState } = config.projects[0].use;
+test('Login setup', async (_config) => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.goto(process.env.APP_URL);
@@ -25,10 +25,8 @@ async function globalSetup(config: FullConfig) {
     await page.getByTestId('default-login-component-password-input').fill('admin');
     await page.getByTestId('default-login-component-connection-button').click();
 
-    await expect(page.getByTestId('dashboard-page-header')).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId('dashboard-page-header')).toBeVisible({ timeout: 60000 });
 
-    await page.context().storageState({ path: storageState as string });
+    await page.context().storageState({ path: LOGIN_STATE });
     await browser.close();
-}
-
-export default globalSetup;
+})

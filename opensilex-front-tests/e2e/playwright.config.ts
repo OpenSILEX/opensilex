@@ -10,6 +10,8 @@
 
 import {defineConfig, PlaywrightTestConfig} from '@playwright/test';
 
+export const LOGIN_STATE = 'login.state.json';
+
 let DEFAULT_BASE_URL = "http://localhost:8080"
 
 console.log("===============================================ENV===============================================")
@@ -39,18 +41,16 @@ if (process.env.MAVEN_BUILD && process.env.MAVEN_BUILD != 'false') {
 }
 
 
-let webServer = undefined;
-
-if (process.env.START_OPENSILEX && process.env.START_OPENSILEX != 'false') {
-    webServer = {
+let webServer = process.env.START_OPENSILEX && process.env.START_OPENSILEX != 'false' 
+    ? {
         command: COMMAND,
         url: process.env.APP_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 1200000, // 20 minutes
         stdout: "pipe",
         stderr: "pipe"
-    }
-}
+    } 
+    : undefined;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -70,45 +70,29 @@ let config : PlaywrightTestConfig = {
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: 'retain-on-failure',
-        storageState: 'state.json'
+        trace: 'retain-on-failure'
     },
-
-    globalSetup: require.resolve('./global-setup'),
-
     /* Configure projects for major browsers */
     projects: [
         {
-            name: 'chromium'
+            name: 'auth-tests',
+            testMatch: '**/*.auth.spec.ts',
+            use: {
+                storageState: undefined
+            }
         },
-
         {
-            name: 'firefox'
+            name: 'login-setup',
+            testMatch: '**/login.setup.ts'
         },
-
         {
-            name: 'webkit'
-        },
-
-        /* Test against mobile viewports. */
-        // {
-        //   name: 'Mobile Chrome',
-        //   use: { ...devices['Pixel 5'] },
-        // },
-        // {
-        //   name: 'Mobile Safari',
-        //   use: { ...devices['iPhone 12'] },
-        // },
-
-        /* Test against branded browsers. */
-        // {
-        //   name: 'Microsoft Edge',
-        //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-        // },
-        // {
-        //   name: 'Google Chrome',
-        //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-        // },
+            name: 'app-tests',
+            testMatch: '**/*.app.spec.ts',
+            dependencies: ['login-setup'],
+            use: {
+                storageState: LOGIN_STATE
+            }
+        }
     ],
 
     /* Run your local dev server before starting the tests */

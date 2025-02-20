@@ -5,12 +5,12 @@ ontologies:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            repository: front-tests
 
 file-system:
     fs:
         config:
-            defaultFS: local
+            defaultFS: gridfs
             connections:
                 local:
                     implementation: org.opensilex.fs.local.LocalFileSystemConnection
@@ -25,7 +25,7 @@ file-system:
                     config:
                         host: localhost
                         port: 8668
-                        database: opensilex
+                        database: front-tests
             # customPath:
             #     datafile/: irods
 
@@ -34,7 +34,7 @@ big-data:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: front-tests
     #            timezone: Europe/Paris
 
 phisws:
@@ -86,6 +86,7 @@ front:
             - TRANSFORMON
         unit:
             - OBOE
+    connectAsGuest: true
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"

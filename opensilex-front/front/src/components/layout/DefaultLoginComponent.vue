@@ -91,6 +91,7 @@
                 </slot>
                 <b-button
                   class="greenThemeColor"
+                  data-testid="guest-connexion-button"
                   @click="onLoginAsGuest"
                   v-text="$t('LoginComponent.loginAsGuest')"
                 ></b-button>

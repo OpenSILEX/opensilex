@@ -33,43 +33,42 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
+    //Final attributes
     private final Class<T> objectClass;
     private final String fieldName;
-    private final Node graph;
     private final boolean isListField;
     private final List<SparqlSchemaNode<?>> childNodes;
     private final boolean fetchDynamicRelations;
-    private final SPARQLService sparql;
-    private final String lang;
 
+    //non final variables
+    /**
+     * Do not call this directly, call getPassedOrDefaultGraph, otherwise a null pointer exception could be thrown
+     */
+    private Node graph;
+
+    //Constructor with no passed graph
     public SparqlSchemaNode(
             Class<T> objectClass,
             String fieldName,
             List<SparqlSchemaNode<?>> childNodes,
             boolean isListField,
-            boolean fetchDynamicRelations,
-            SPARQLService sparql,
-            String lang
-    ) throws SPARQLException {
+            boolean fetchDynamicRelations
+    ) {
         this.objectClass = objectClass;
         this.fieldName = fieldName;
-        this.graph = sparql.getDefaultGraph(objectClass);
         this.childNodes = childNodes;
         this.isListField = isListField;
         this.fetchDynamicRelations = fetchDynamicRelations;
-        this.sparql = sparql;
-        this.lang = lang;
     }
 
+    //Constructor to make this node use a specific graph
     public SparqlSchemaNode(
             Class<T> objectClass,
             String fieldName,
             Node graph,
             List<SparqlSchemaNode<?>> childNodes,
             boolean isListField,
-            boolean fetchDynamicRelations,
-            SPARQLService sparql,
-            String lang
+            boolean fetchDynamicRelations
     ) {
         this.objectClass = objectClass;
         this.fieldName = fieldName;
@@ -77,8 +76,6 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         this.childNodes = childNodes;
         this.isListField = isListField;
         this.fetchDynamicRelations = fetchDynamicRelations;
-        this.sparql = sparql;
-        this.lang = lang;
     }
 
     /**
@@ -89,7 +86,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
      * @throws Exception
      */
     public void completeNodeModels(
-            List<?> uncastNodeModels
+            List<?> uncastNodeModels,
+            SPARQLService sparql,
+            String lang
     ) throws Exception {
         //If this node has no children or no models were passed, then we have nothing to do here
         if(CollectionUtils.isEmpty(childNodes) || CollectionUtils.isEmpty(uncastNodeModels)) {
@@ -104,7 +103,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                     sparql,
                     objectClass,
-                    graph,
+                    getPassedOrDefaultGraph(sparql),
                     listFieldNames,
                     nodeModels
             );
@@ -133,7 +132,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                     calculatedChildModelsPerUriPerType,
                     typeName,
                     recursiveIterationData,
-                    childNode
+                    childNode,
+                    sparql,
+                    lang
             );
 
             //Load relations of this type if they were not already loaded
@@ -141,18 +142,19 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                     relationsPerUriPerType,
                     typeName,
                     recursiveIterationData,
-                    childNode
+                    childNode,
+                    sparql
             );
 
             //Extract only the calculated models for childNode's field
-            HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectField = getModelMapOfCorrectField(
+            HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectField = extractPerFieldMapFromPerTypeMap(
                     recursiveIterationData,
                     calculatedChildModelsPerUriPerType.get(typeName),
                     childNode
             );
 
             //Extract only the calculated relations for childNode's field
-            HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectField = getRelationsMapOfCorrectField(
+            HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectField = extractPerFieldMapFromPerTypeMap(
                     recursiveIterationData,
                     relationsPerUriPerType.get(typeName),
                     childNode
@@ -161,7 +163,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             //Perform recursive call on child to complete its models, then set their relations
             if(!MapUtils.isEmpty(modelsPerUriOfCorrectField)){
                 childNode.completeNodeModels(
-                        new ArrayList<>(modelsPerUriOfCorrectField.values())
+                        new ArrayList<>(modelsPerUriOfCorrectField.values()),
+                        sparql,
+                        lang
                 );
 
                 if(!MapUtils.isEmpty(relationsPerUriOfCorrectField)){
@@ -207,48 +211,25 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
     }
 
-    //TODO refacto these next to functions if i can be bothered (they are basicaly same)
-
     /**
      *
      * @param recursiveIterationData
-     * @param modelsPerUriOfCorrectType
+     * @param somethingPerUriOfCorrectType an existing uri -> U map, containing key -value pairs for every field of a certain type
      * @param childNode
-     * @return a uri -> child model map, for all models corresponding to the field represented by childNode
+     * @param <U> the concerned type that is being mapped
+     * @return a uri -> U map, for all models corresponding to the field represented by childNode
      */
-    private HashMap<String, SPARQLResourceModel> getModelMapOfCorrectField(
-                RecursiveIterationData recursiveIterationData,
-                HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectType,
-                SparqlSchemaNode<?> childNode
-    ){
-        HashMap<String, SPARQLResourceModel> modelsPerUriOfCorrectField = new HashMap<>();
-        recursiveIterationData.getUriValuesPerModelUriPerField()
-                .get(childNode.getFieldName())
-                .values()
-                .forEach((List<String> uriList) -> {
-                    uriList.forEach(uri -> modelsPerUriOfCorrectField.put(uri, modelsPerUriOfCorrectType.get(uri)));
-                });
-        return modelsPerUriOfCorrectField;
-    }
-
-    /**
-     *
-     * @param recursiveIterationData
-     * @param relationsPerUriOfCorrectType
-     * @param childNode
-     * @return a uri -> list of relations map, for all models corresponding to the field represented by childNode
-     */
-    private HashMap<String, List<SPARQLModelRelation>> getRelationsMapOfCorrectField(
+    private <U> HashMap<String, U> extractPerFieldMapFromPerTypeMap(
             RecursiveIterationData recursiveIterationData,
-            HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectType,
+            HashMap<String, U> somethingPerUriOfCorrectType,
             SparqlSchemaNode<?> childNode
     ){
-        HashMap<String, List<SPARQLModelRelation>> relationsPerUriOfCorrectField = new HashMap<>();
+        HashMap<String, U> relationsPerUriOfCorrectField = new HashMap<>();
         recursiveIterationData.getUriValuesPerModelUriPerField()
                 .get(childNode.getFieldName())
                 .values()
                 .forEach((List<String> uriList) -> {
-                    uriList.forEach(uri -> relationsPerUriOfCorrectField.put(uri, relationsPerUriOfCorrectType.get(uri)));
+                    uriList.forEach(uri -> relationsPerUriOfCorrectField.put(uri, somethingPerUriOfCorrectType.get(uri)));
                 });
         return relationsPerUriOfCorrectField;
     }
@@ -333,7 +314,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             HashMap<String, HashMap<String, SPARQLResourceModel>> calculatedChildModelsPerUriPerType,
             String typeName,
             RecursiveIterationData recursiveIterationData,
-            SparqlSchemaNode<?> nextNode
+            SparqlSchemaNode<?> nextNode,
+            SPARQLService sparql,
+            String lang
     ) throws Exception {
         if(calculatedChildModelsPerUriPerType.containsKey(typeName)){
             return;
@@ -354,7 +337,8 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             HashMap<String, HashMap<String, List<SPARQLModelRelation>>> relationsPerUriPerType,
             String typeName,
             RecursiveIterationData recursiveIterationData,
-            SparqlSchemaNode<?> nextNode
+            SparqlSchemaNode<?> nextNode,
+            SPARQLService sparql
     ) throws Exception {
         if(!nextNode.fetchDynamicRelations || relationsPerUriPerType.containsKey(typeName)){
             return;
@@ -473,7 +457,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
         //Call normal search function
         List<? extends SPARQLResourceModel> nextModels = sparql.search(
-                graph,
+                getPassedOrDefaultGraph(sparql),
                 objectClass,
                 lang,
                 (SelectBuilder select) -> {
@@ -529,7 +513,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         constructBuilder.addConstruct(SUBJECT_VAR, PREDICATE_VAR, OBJECT_VAR);
 
         WhereBuilder innerWhere = new WhereBuilder()
-                .addGraph(graph, SUBJECT_VAR, PREDICATE_VAR, OBJECT_VAR);
+                .addGraph(getPassedOrDefaultGraph(sparql), SUBJECT_VAR, PREDICATE_VAR, OBJECT_VAR);
 
         if(urisAreSubjects){
             SPARQLQueryHelper.addWhereUriStringValues(innerWhere, "s", uris.stream(), true, uris.size());
@@ -542,6 +526,13 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         return sparql.executeConstructQuery(constructBuilder).stream()
                 .filter(e -> !propertiesToIgnore.contains(e.getPredicate())).toList();
 
+    }
+
+    private Node getPassedOrDefaultGraph(SPARQLService sparql) throws SPARQLException {
+        if(this.graph==null){
+            this.graph = sparql.getDefaultGraph(objectClass);
+        }
+        return graph;
     }
 
     public String getFieldName() {

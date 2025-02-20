@@ -42,6 +42,7 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -94,9 +95,7 @@ public final class GroupDAO {
                 GroupUserProfileModel.PROFILE_FIELD,
                 new ArrayList<>(),
                 false,
-                false,
-                sparql,
-                lang
+                false
         );
 
         SparqlSchemaNode<AccountModel> accountNode = new SparqlSchemaNode<>(
@@ -104,9 +103,7 @@ public final class GroupDAO {
                 GroupUserProfileModel.USER_FIELD,
                 new ArrayList<>(),
                 false,
-                false,
-                sparql,
-                lang
+                false
         );
 
         SparqlSchemaNode<GroupUserProfileModel> groupUserProfileNode = new SparqlSchemaNode<>(
@@ -114,19 +111,13 @@ public final class GroupDAO {
                 GroupModel.USER_PROFILES_FIELD,
                 List.of(profileNode, accountNode),
                 true,
-                false,
-                sparql,
-                lang
+                false
         );
 
-        SparqlSchemaNode<GroupModel> rootNode = new SparqlSchemaNode<>(
+        SparqlSchemaRootNode<GroupModel> rootNode = new SparqlSchemaRootNode<>(
                 GroupModel.class,
-                null,
                 Collections.singletonList(groupUserProfileNode),
-                false,
-                false,
-                sparql,
-                lang
+                false
         );
 
         SparqlSchema<GroupModel> schema = new SparqlSchema<>(rootNode);

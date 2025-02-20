@@ -935,7 +935,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
-    //TODO javadoc
+    /**
+     *
+     * @param graph to perform the top layer search in
+     * @param objectClass generic type of results
+     * @param lang
+     * @param filterHandler
+     * @param customHandlerByFields
+     * @param modelBuilderSchema the schema used to tell the system what else needs to be fetched and loaded into the results
+     * @param orderByList
+     * @param offset
+     * @param limit
+     * @return a list of T, with basic data fields filled and any object fields filled in function of passed schema
+     * @param <T>
+     * @throws Exception
+     */
     public <T extends SPARQLResourceModel> List<T> searchUsingSchema(
             Node graph,
             Class<T> objectClass,

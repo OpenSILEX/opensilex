@@ -7,7 +7,6 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,19 +16,19 @@ import java.util.List;
  * simple schema to follow for the fetching of nested models. This will most of the time be faster than the proxy search
  * as we will only perform 1 search per type per node.
  * A node represents a field on a given model, it has some information about the field in question and a list of child nodes.
- * We can laod the dynamic relations on the models of a particular field by setting the node's fetchDynamicRelations boolean attribute.
+ * We can load the dynamic relations on the models of a particular field by setting the node's fetchDynamicRelations boolean attribute.
  *
  * Here is a simple example of a schema to fetch user Groups, inside these models we want to load the 'userProfiles' field
  * that contains GroupUserProfileModels. Then inside them we want to load the 'user' and 'profile' fields that contain
  * AccountModels and ProfileModels respectively.
  *
- * TODO update the below example when finished
  * <pre>
  *     {@code
  *     SparqlSchemaNode<ProfileModel> profileNode = new SparqlSchemaNode<>(
  *                 ProfileModel.class,
  *                 GroupUserProfileModel.PROFILE_FIELD,
  *                 new ArrayList<>(),
+ *                 false,
  *                 false
  *         );
  *
@@ -37,6 +36,7 @@ import java.util.List;
  *                 AccountModel.class,
  *                 GroupUserProfileModel.USER_FIELD,
  *                 new ArrayList<>(),
+ *                 false,
  *                 false
  *         );
  *
@@ -44,12 +44,12 @@ import java.util.List;
  *                 GroupUserProfileModel.class,
  *                 GroupModel.USER_PROFILES_FIELD,
  *                 List.of(profileNode, accountNode),
- *                 true
+ *                 true,
+ *                 false
  *         );
  *
- *         SparqlSchemaNode<GroupModel> rootNode = new SparqlSchemaNode<>(
+ *         SparqlSchemaRootNode<GroupModel> rootNode = new SparqlSchemaRootNode<>(
  *                 GroupModel.class,
- *                 null,
  *                 Collections.singletonList(groupUserProfileNode),
  *                 false
  *         );
@@ -89,7 +89,7 @@ public class SparqlSchema<T extends SPARQLResourceModel> {
         }
 
         //Call the recursive function to load the tree of children
-        root.completeNodeModels(initialSearchResult);
+        root.completeNodeModels(initialSearchResult, sparql, lang);
 
         return initialSearchResult;
     }

@@ -7,7 +7,8 @@ import {Menu} from './Menu';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
-import { createStore } from 'vuex'
+import { createStore } from 'vuex';
+import { getCurrentInstance } from 'vue';
 
 // Vue.use(VueRouter)
 
@@ -21,9 +22,14 @@ let inactivityRenewTimeoutInMin = 1;
 let renewStarted = false;
 let currentUser = undefined;
 
-let getOpenSilexPlugin = function (): OpenSilexVuePlugin {
-  return undefined; //@todo Vue["$opensilex"];
-}
+
+let getOpenSilexPlugin = function (): OpenSilexVuePlugin | undefined {
+  const storeInstance = (store as any); // Accès direct à l'instance du store
+  console.log("storeInstance:", storeInstance);
+  return storeInstance.$opensilex;
+};
+
+
 
 let renewTokenOnEvent = function (event) {
   if (event && event.keyCode
@@ -49,7 +55,13 @@ let renewTokenOnEvent = function (event) {
   }
 
   let $opensilex: OpenSilexVuePlugin = getOpenSilexPlugin();
+  if (!$opensilex) {
+    console.log("OpenSilex plugin introuvable");
+    return;
+  }
 
+  if($opensilex) {
+    console.log("opensilex plugin trouvé")
   $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
     .renewToken()
     .then((http) => {
@@ -58,7 +70,11 @@ let renewTokenOnEvent = function (event) {
       $opensilex.$store.commit("login", currentUser);
     })
     .catch(console.error);
+} else {
+  console.log("OPENSILEX PLUGIN not found")
 }
+}
+
 
 let defaultConfig: FrontConfigDTO = {
   pathPrefix: "/",
@@ -186,8 +202,8 @@ let store = createStore({
         let method: any = "logout";
         this.commit(method);
         let opensilex = getOpenSilexPlugin();
-        let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
-        opensilex.showErrorToast("" + message);
+        // let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
+        opensilex.showErrorToast("erreur login");
       }, expireAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
@@ -235,7 +251,22 @@ let store = createStore({
 
       console.debug("Set user to anonymous");
       state.user = User.ANONYMOUS();
-      getOpenSilexPlugin().clearCookie();
+
+
+      // getOpenSilexPlugin().clearCookie();
+
+      const opensilexPlugin = (this as any).$opensilex;
+      console.log("Instance OpenSilexVuePlugin:", (this as any).$opensilex);
+
+      if (opensilexPlugin) {
+        
+          opensilexPlugin.clearCookie();
+      } else {
+          console.error("OpenSilexVuePlugin n'est pas initialisé dans le store.");
+      }
+
+
+
       state.disconnected = true;
       if (state.openSilexRouter) {
         console.debug("Reset router");

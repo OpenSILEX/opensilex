@@ -285,11 +285,12 @@ export default class OpenSilexVuePlugin {
         this.$store.commit("hideLoader");
     }
 
-    public install(app, options) {
+    public install(app: App) {
         this.app = app;
-        // app.prototype.$opensilex = this;
+        // const pluginInstance = new OpenSilexVuePlugin(app, options, undefined);
         app.config.globalProperties.$opensilex = this;
-        app.$opensilex = this;
+        // app.prototype.$opensilex = this;
+        // app.$opensilex = this;
     }
 
     public loadService<T>(id: string): Promise<T> {
@@ -540,6 +541,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public clearCookie() {
+        console.log("opensilexvuePlugin clear cookie-------")
         console.debug("Clear cookie " + this.getCookieName() + " with path " + this.getPathPrefix());
         $cookies.remove(this.getCookieName(), this.getPathPrefix(), (window as Window).location.hostname);
     }
@@ -666,7 +668,8 @@ export default class OpenSilexVuePlugin {
     public showErrorToast(message: string) {
         this.showToast(message, {
             variant: "danger",
-            title: this.$i18n.t("component.common.errors.error-title").toString()
+            // title: this.$i18n.t("component.common.errors.error-title").toString()
+            title: "error showErrorToast"
         });
     }
 
@@ -727,7 +730,7 @@ export default class OpenSilexVuePlugin {
         let toastElement = document.getElementById(toastID);
 
         if (!toastElement) {
-            this.$bvToast.toast(message, options);
+            ("error showToast OpensilexVuePlugi");
         }
     }
 

@@ -94,8 +94,9 @@ import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
 console.debug("Local file imports done !");
 
 
+
 // console.debug("Enable OpenSilex plugin...");
-let $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
+// const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
 
 const manageError = function manageError(error) {
   console.error(error);
@@ -108,6 +109,18 @@ import components from './components';
 // import { Router } from 'vue-router';
 // @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
+import App from './App.vue'
+
+const app = createApp(App);
+const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
+app.config.globalProperties.$opensilex = $opensilex;
+app.use(i18n)
+app.use($opensilex);
+app.use(store);
+
+(store as any).$opensilex = $opensilex;
+
+
 
 for (let componentName in components) {
   console.log("Load default components : ", componentName);
@@ -117,7 +130,6 @@ for (let componentName in components) {
   $opensilex.loadComponentTranslations(component);
 }
 
-import App from './App.vue'
 
 
 function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {
@@ -199,9 +211,6 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
   })
 }
 
-const app = createApp(App)
-.use(i18n)
-.use($opensilex);
 
 $opensilex.loadModules([
   "opensilex-security",

@@ -163,6 +163,9 @@ let store = new Vuex.Store({
   getters: {
     language: (state) => {
       return state.lang;
+    },
+    pathPrefix: (state) => {
+      return state.config.pathPrefix || "/";
     }
   },
   mutations: {

@@ -19,7 +19,7 @@
               <opensilex-Icon icon="ik#ik-layers"/>
               <span>{{ nbExperiments }} ({{ deltaExperiments }}) 
                 <a 
-                  href="/app/experiments" 
+                  :href="getFullPath('/app/experiments')" 
                   class="metricsElementTitle" 
                   :title="$t('DataMonitoring.redirectionToExpe')"
                 >
@@ -33,7 +33,7 @@
               <opensilex-Icon icon="ik#ik-target"/>
               <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }})
                 <a 
-                  href="/app/scientific-objects" 
+                  :href="getFullPath('/app/scientific-objects')" 
                   :title="$t('DataMonitoring.redirectionToOS')"
                   class="metricsElementTitle"
                 >
@@ -54,7 +54,7 @@
               <opensilex-Icon icon="ik#ik-target"/>
               <span>{{ nbScientificObjects }} ({{ deltaScientificObjects }}) 
                 <a 
-                  href="/app/scientific-objects" 
+                  :href="getFullPath('/app/scientific-objects')"  
                   :title="$t('DataMonitoring.redirectionToOS')" 
                   class="metricsElementTitle"
                 >
@@ -68,7 +68,7 @@
               <opensilex-Icon icon="ik#ik-bar-chart"/>
               <span>{{ nbData }} ({{ deltaData }})
                 <a 
-                  href="/app/data" 
+                  :href="getFullPath('/app/data')"  
                   class="metricsElementTitle" 
                   :title="$t('DataMonitoring.redirectionToData')"
                 > 
@@ -205,6 +205,14 @@ export default class DataMonitoring extends Vue {
       {text: this.$i18n.t("DataMonitoring.month"), value: this.month},
       {text: this.$i18n.t("DataMonitoring.year"), value: this.year},
     ];
+  }
+
+  getFullPath(path) {
+    let basePath = this.$store.getters.pathPrefix;
+    if (!basePath || basePath === "/") {
+      basePath = window.location.origin
+    }
+    return basePath + path;
   }
 
   private langUnwatcher;

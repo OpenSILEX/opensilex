@@ -122,6 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed or optimized
 
 - (!1342) [ApiDocs] Fixed link to api-docs on some instances where a "/" was missing from the url.
+- (!1343) [Dashboard] Metric links now correctly redirect to other pages on all instances.
 
 ## [1.4.2]
 

@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('Login as guest should fail', async ({ page }) => {
-  await page.getByTestId('guest-connexion-button').click()
+  await page.getByTestId('guest-connection-button').click()
   //attendu: afficher le message d'erreur
 });
 

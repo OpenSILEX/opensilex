@@ -9,6 +9,7 @@ stages:
   - build
   - test
   - deploy
+  - front-test
   - release
 
 ########################
@@ -206,6 +207,89 @@ variables:
   artifacts:
     reports:
       dotenv: deploy.env
+
+##############################
+### FRONT TEST REMOTE INSTANCE
+##############################
+
+.front-test:remote:instance: &front_test_remote_template
+    stage: front-test
+    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+    #  parallel: 7    This option can be used for parallelization
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+
+        ## make BASE_ADDRESS
+        - BASE_ADDRESS=false
+
+        ##
+        ## Create the SSH directory and give it the right permissions
+        ##
+        - echo "$REMOTE_SERVER_IP"
+        - mkdir -p ${HOME}/.ssh
+        - chmod 700 ${HOME}/.ssh
+
+        ##
+        ## Run ssh-agent (inside the build environment)
+        ##
+        - eval $(ssh-agent -s)
+
+        ##
+        ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+        ## We're using tr to fix line endings which makes ed25519 keys work
+        ## without extra base64 encoding.
+        ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+        ##
+        - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+        - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+        - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
+        - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
+        - chmod 600 ${HOME}/.ssh/id_rsa
+
+        ## SSH tunnel to test server
+        - echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
+        - ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
+
+        - npm ci &&
+        - START_OPENSILEX=false DOCKERISED_BASES=false BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+
+    after_script:
+        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
+        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+    artifacts:
+        when: always
+        paths:
+            - artifacts
+
+##############################
+### FRONT TEST LOCAL INSTANCE
+##############################
+
+.front-test:local:instance: &front_test_local_template
+    stage: front-test
+    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+    #  parallel: 7    This option can be used for parallelization
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+
+        - mkdir -p $CI_PROJECT_DIR/opensilex-release/target/opensilex
+        - cp -r $CI_PROJECT_DIR/artifacts/INSTANCE-SNAPSHOT/* $CI_PROJECT_DIR/opensilex-release/target/opensilex
+
+        - npm ci &&
+        - MAVEN_BUILD=false START_OPENSILEX=true DOCKERISED_BASES=true BASE_ADDRESS=false PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+
+    after_script:
+        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
+        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+    artifacts:
+        when: always
+        paths:
+            - artifacts
+
 
 ##################
 ### DEFAULT BUILDS
@@ -789,6 +873,7 @@ test:bernhard:deploy:
 ###################################
 
 test:gabriel:build:
+  stage: build
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
@@ -796,6 +881,7 @@ test:gabriel:build:
     - if: $CI_COMMIT_BRANCH == "test/gabriel"
 
 test:gabriel:deploy:
+  stage: deploy
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -813,181 +899,167 @@ test:gabriel:deploy:
   needs:
     - test:gabriel:build
 
-# Front tests
-
-test:gabriel:front-test:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
-
-# See : https://playwright.dev/docs/ci#gitlab-ci
-# TODO : make it into a template
-test:gabriel:front-test:
-  # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
-  # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
-  image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
-  #  parallel: 7    This option can be used for parallelization
-  script:
-    # The config is in the opensilex-dev-tools repository : instances-configuration > mistea > front-test > opensilex.yml
-    - echo "SETTING UP CONFIG"
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN_DEV_TOOLS" "https://forgemia.inra.fr/api/v4/projects/403/repository/files/instances-configuration%2Fmistea%2Ffront-test%2Fopensilex%2Eyml/raw" >> /opensilex.yml
-    - echo "$(</opensilex.yml)"
-    # The following lines aren't needed yet as everything is done locally but could be useful if we want to have the databases on a remote vm.
-    # - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-    # - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-    # - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
-    - echo "$(</opensilex.yml)"
-    # TODO : comment next line out once everything works
-    - printenv
-    - envsubst < /opensilex.yml > /opensilex_mod.yml
-    - echo "/opensilex_mod.yml config file content :" && echo "$(</opensilex_mod.yml)"
-    - echo "START DOCKERS :"
-    - cd opensilex-dev-tools/src/main/resources/docker
-    - dockerd &
-    - docker compose -p test up &
-    - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --email=admin@opensilex.org --lang=fr --firstName=firstName --lastName=lastName --password=admin"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar user add --admin --email=admin@opensilex.org --lang=fr --firstName=firstName --lastName=lastName --password=admin
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar server start --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
-    - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-    - |
-      # Check if OpenSILEX process has started on port 8080 three times, once every 10 seconds
-      for attempt in {1..3}; do
-        # Check if port 8080 is in use
-        if sudo ss -ltnp | grep ':8080 '; then
-          echo "Process started on port 8080."
-          break # Break the loop if port 8080 is in use
-        else
-          echo "Port 8080 is not in use. Attempt $attempt of 3."
-          sleep 10 # Wait for 10 seconds before the next attempt
-        fi
-      done
-
-      # Check if port 8080 was never in use during the attempts
-      if [[ $attempt -eq 3 ]]; then
-        echo "Error: OpenSILEX never started on port 8080 during the allowed 30 seconds." >&2
-        exit 1
-      fi
-
-      echo "OpenSILEX has started on port 8080."
-    - sleep 30 # Check port opened in a for or while
-    - npm ci
-    - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
-
-  after_script:
-    - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
-      when: on_success
-    - if: '$FRONT_TESTS == "true"'
-  needs:
-    - test:gabriel:front-test:build
-  artifacts:
-    when: always
-    paths:
-      - artifacts
+    # # See : https://playwright.dev/docs/ci#gitlab-ci
+# # TODO : make it into a template
+# gabriel-front-test:
+#     stage: front-test
+#     # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+#     # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+#     image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+#     #  parallel: 7    This option can be used for parallelization
+#     variables:
+#         START_OPENSILEX: false
+#         DOCKERISED_BASES: false
+#         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+#         OPENSILEX_JAR_PORT: 8091
+#         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+#         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+#     script:
+#         - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+#
+#         ##
+#         ## Create the SSH directory and give it the right permissions
+#         ##
+#         - echo "$REMOTE_SERVER_IP"
+#         - mkdir -p ${HOME}/.ssh
+#         - chmod 700 ${HOME}/.ssh
+#         ##
+#         ## Install ssh-agent if not already installed, it is required by Docker.
+#         ## (change apt-get to yum if you use an RPM-based image)
+#         ##
+#         - "which ssh-agent || ( apt-get update && apt-get install openssh-client -y )"
+#         ##
+#         ## Run ssh-agent (inside the build environment)
+#         ##
+#         - eval $(ssh-agent -s)
+#         ##
+#         ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+#         ## We're using tr to fix line endings which makes ed25519 keys work
+#         ## without extra base64 encoding.
+#         ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+#         ##
+#         - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+#         - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+#         - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
+#         - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
+#         - chmod 600 ${HOME}/.ssh/id_rsa
+#
+#         ## SSH tunnel to test server
+#         - echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
+#         - ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
+#
+#         - npm ci &&
+#         - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+#
+#     after_script:
+#         - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+#     rules:
+#         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+#             when: on_success
+#         -   if: '$FRONT_TESTS == "true"'
+#     needs:
+#         - gabriel-deploy
+#     artifacts:
+#         when: always
+#         paths:
+#             - artifacts
 
 
-test:gabriel:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4091
-    OPENSILEX_JAR_PORT: 8091
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/gabriel"
-      when: on_success
-  needs:
-    - test:gabriel:build
+#gabriel-front-test-independent:
+#    stage: front-test
+#    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+#    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
+#    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
+#    #  parallel: 7    This option can be used for parallelization
+#    variables:
+#        START_OPENSILEX: true
+#        DOCKERISED_BASES: true
+#        REMOTE_SERVER_IP: false
+#        OPENSILEX_JAR_PORT: false
+#        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+#        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+#    script:
+#        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
+#
+#        ## make BASE_ADDRESS
+#        - |
+#            if [[ "$OPENSILEX_JAR_PORT" == "false" ]] && [[ "$REMOTE_SERVER_IP" == "false" ]]; then
+#                echo "1"
+#                BASE_ADDRESS=false
+#            else
+#                echo "2"
+#                BASE_ADDRESS="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
+#            fi
+#
+#        - |
+#            if [[ "$START_OPENSILEX" != "true" ]]; then
+#
+#                ##
+#                ## Create the SSH directory and give it the right permissions
+#                ##
+#                echo "$REMOTE_SERVER_IP"
+#                mkdir -p ${HOME}/.ssh
+#                chmod 700 ${HOME}/.ssh
+#
+#                ##
+#                ## Run ssh-agent (inside the build environment)
+#                ##
+#                eval $(ssh-agent -s)
+#
+#                ##
+#                ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+#                ## We're using tr to fix line endings which makes ed25519 keys work
+#                ## without extra base64 encoding.
+#                ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+#                ##
+#                mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
+#                ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+#                echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
+#                echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
+#                chmod 600 ${HOME}/.ssh/id_rsa
+#
+#                ## SSH tunnel to test server
+#                echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
+#                ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
+#            fi
+#
+#        - npm ci &&
+#        - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+#
+#    after_script:
+#        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
+#        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+#    rules:
+#        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+#            when: on_success
+#        -   if: '$FRONT_TESTS == "true"'
+#    artifacts:
+#        when: always
+#        paths:
+#            - artifacts
 
-
-gabriel-front-test-independent:
-    stage: front-test
-    # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
-    # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
-    image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
-    #  parallel: 7    This option can be used for parallelization
+front-test:gabriel:remote:
+    <<: *front_test_remote_template
     variables:
-        START_OPENSILEX: true
-        DOCKERISED_BASES: true
         REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
         OPENSILEX_JAR_PORT: 8091
         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    script:
-        - cd $CI_PROJECT_DIR/opensilex-front-tests/e2e
-
-        ## make BASE_ADDRESS
-        - |
-            if [OPENSILEX_JAR_PORT == false] && [REMOTE_SERVER_IP == false]; then
-                BASE_ADDRESS=false
-            else
-                BASE_ADDRESS="$REMOTE_SERVER_IP:$OPENSILEX_JAR_PORT"
-            fi
-
-        - |
-            if ["$START_OPENSILEX" == true]; then
-            
-                ## Install maven
-                apt-get update -y
-                apt-get install maven -y
-    
-                ##
-                ## Create the SSH directory and give it the right permissions
-                ##
-                echo "$REMOTE_SERVER_IP"
-                mkdir -p ${HOME}/.ssh
-                chmod 700 ${HOME}/.ssh
-                ##
-                ## Install ssh-agent if not already installed, it is required by Docker.
-                ## (change apt-get to yum if you use an RPM-based image)
-                ##
-                which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
-                ##
-                ## Run ssh-agent (inside the build environment)
-                ##
-                eval $(ssh-agent -s)
-                ##
-                ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-                ## We're using tr to fix line endings which makes ed25519 keys work
-                ## without extra base64 encoding.
-                ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-                ##
-                mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-                ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
-                echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
-                echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
-                chmod 600 ${HOME}/.ssh/id_rsa
-        
-                ## SSH tunnel to test server
-                echo "ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &"
-                ssh $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP -NT -L 8080:localhost:$OPENSILEX_JAR_PORT &
-            fi
-
-        - npm ci &&
-        - START_OPENSILEX=$START_OPENSILEX DOCKERISED_BASES=$DOCKERISED_BASES BASE_ADDRESS=$BASE_ADDRESS PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
-
-    after_script:
-        - cp -r $CI_PROJECT_DIR/opensilex-front-tests/e2e/opensilex_test_instance/logs $CI_PROJECT_DIR/artifacts/front-tests
-        - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
+    needs:
+        - test:gabriel:deploy
     rules:
         -   if: $CI_COMMIT_BRANCH == "test/gabriel"
             when: on_success
         -   if: '$FRONT_TESTS == "true"'
-    artifacts:
-        when: always
-        paths:
-            - artifacts
 
+front-test:gabriel:local:
+    <<: *front_test_local_template
+    needs:
+        - test:gabriel:build
+    rules:
+        -   if: $CI_COMMIT_BRANCH == "test/gabriel"
+            when: on_success
+        -   if: '$FRONT_TESTS == "true"'
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT
 ######################################

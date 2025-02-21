@@ -6,6 +6,7 @@
           <opensilex-Card
               label="component.common.informations"
               icon="ik#ik-clipboard"
+              data-testid="deviceDescriptionCard"
           >
               <template v-slot:rightHeader>
                 <opensilex-FavoriteButton

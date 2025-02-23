@@ -25,6 +25,7 @@ import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -98,10 +99,19 @@ public final class GroupDAO {
                 false
         );
 
+        SparqlSchemaNode<PersonModel> personNode = new SparqlSchemaNode<>(
+                PersonModel.class,
+                AccountModel.LINKED_PERSON_FIELD,
+                new ArrayList<>(),
+                false,
+                false
+        );
+
         SparqlSchemaNode<AccountModel> accountNode = new SparqlSchemaNode<>(
                 AccountModel.class,
                 GroupUserProfileModel.USER_FIELD,
-                new ArrayList<>(),
+                Collections.singletonList(personNode),
+                //Collections.emptyList(),
                 false,
                 false
         );

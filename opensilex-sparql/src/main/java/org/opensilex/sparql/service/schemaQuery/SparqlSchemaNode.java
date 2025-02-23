@@ -20,6 +20,7 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ClassUtils;
 
 import javax.accessibility.AccessibleComponent;
 import java.lang.reflect.Field;
@@ -225,6 +226,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             SparqlSchemaNode<?> childNode
     ){
         HashMap<String, U> relationsPerUriOfCorrectField = new HashMap<>();
+        if(MapUtils.isEmpty(somethingPerUriOfCorrectType)){
+            return relationsPerUriOfCorrectField;
+        }
         recursiveIterationData.getUriValuesPerModelUriPerField()
                 .get(childNode.getFieldName())
                 .values()
@@ -256,7 +260,13 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             //Identify field, its getter, and the generic type
             // then iterate over each model to place the uris into distinctUrisPerTypeName
             Field field = mapper.getClassAnalyzer().getFieldFromName(childNode.getFieldName());
-            Class<?> genericType = field.getDeclaringClass();
+            //If it is a list field then getType will return java.util.List,
+            // so we will instead use ClassUtils which depends on Field.getGenericInfo which is null when it is not a list
+            //(ClassUtils.getGenericTypeFromField(field) only works on list fields is this normal?)
+            Class<?> genericType = field.getType();
+            if(childNode.isListField()){
+                genericType = ClassUtils.getGenericTypeFromField(field);
+            }
             String genericTypeName = null;
 
             try{

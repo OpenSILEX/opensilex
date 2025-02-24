@@ -8,6 +8,7 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.dataV2.model.DataValueModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DataTypeException;
@@ -17,10 +18,12 @@ import org.opensilex.core.provenance.dal.GlobalProvenanceEntity;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.DimensionModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
@@ -33,6 +36,7 @@ import org.opensilex.sparql.service.query.SparqlMultiGraphQuery;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * Class used for performing the validation of {@link DataModel} during insertion
@@ -180,14 +184,21 @@ public class DataValidation {
 
     private void variableAndDataTypeValidation() throws Exception {
 
-        // Load variable list -> throw SPARQLInvalidUriListException if any variable is unknown
-        List<VariableModel> variables = sparql.loadListByURIs(
-                sparql.getDefaultGraph(VariableModel.class),
+        // Load variable list -> throw SPARQLInvalidUriListException if any variable is unknow
+        //    List<VariableModel> variables = sparql.loadListByURIs(
+//                sparql.getDefaultGraph(VariableModel.class),
+//                VariableModel.class,
+//                variableURIs,
+//                user.getLanguage(),
+//                result -> variableFetcher.getInstance(result, user.getLanguage()),
+//                Collections.singleton(VariableModel.DIMENSIONS_FIELD_NAME)
+//        );
+
+        // todo to check if this is still needed
+        List<VariableModel> variables = sparql.getListByURIs(
                 VariableModel.class,
                 variableURIs,
-                user.getLanguage(),
-                result -> variableFetcher.getInstance(result, user.getLanguage()),
-                null
+                user.getLanguage()
         );
 
         // Here we assume that models from the Dao return a well formatted URI (Same format as variableByUri)
@@ -279,6 +290,33 @@ public class DataValidation {
         DataValidateUtils.checkAndConvertValue(data, variableUri, value, dataType);
     }
 
+    /**
+     * Check that value is coherent with the dimension datatype
+     */
+    private void setDimensionDataValidValue(VariableModel variable, DataModel data)
+            throws CSVDataTypeException, DataTypeException {
+
+        for (DimensionModel dimension : variable.getDimensions()) {
+            // Find the matching dimension value
+            Optional<DataValueModel> dimensionValue = data.getMultiValues().stream()
+                    .filter(v -> SPARQLDeserializers.compareURIs(v.getDimension(), dimension.getUri()))
+                    .findFirst();
+
+            if (dimensionValue.isPresent()) {
+                Object validValue = DataValidateUtils.checkAndConvertValue(
+                        dimension.getUri(),
+                        dimensionValue.get().getValue(),
+                        dimension.getDataType(),
+                        null,
+                        null,
+                        null
+                );
+
+                // Set the validated value
+                dimensionValue.get().setValue(validValue);
+            }
+        }
+    }
 
     private DataPostInsert updateModels() throws CSVDataTypeException, DataTypeException {
 
@@ -295,7 +333,8 @@ public class DataValidation {
 
             // Check variable uri and check and set datatype
             VariableModel variable = variableByUri.get(data.getVariable().toString());
-            setDataValidValue(variable, data);
+            // setDataValidValue(variable, data);
+            setDimensionDataValidValue(variable, data);
 
             // Update data provenance
             DataProvenanceModel dataProvenance = data.getProvenance();

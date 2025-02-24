@@ -108,6 +108,7 @@ import java.util.stream.Collectors;
 public class DataAPI {
 
     public static final String PATH = "/core/data";
+    public static final String DATA_EXAMPLE_MULTI_DIMENSION_VALUE = "[{ \"dimension\" : \"http://opensilex.dev/id/variable/dimension.name \", \"value\" : \"90\"}]";
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(DataAPI.class);
 
@@ -163,6 +164,7 @@ public class DataAPI {
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
+        BatchHistoryDao batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
 
         try {
             if (dtoList.size() > SIZE_MAX) {
@@ -171,14 +173,17 @@ public class DataAPI {
             }
             List<DataModel> dataList = new ArrayList<>(dtoList.size());
             Instant currentTime = Instant.now();
+            String batchId = dataBLL.generateBatchId(currentTime, user.getName(), JSON, dtoList.size());
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
-                model.setBatchId(dataBLL.generateBatchId(currentTime, user.getName(), JSON, dtoList.size()));
+                model.setBatchId(batchId);
                 dataList.add(model);
             }
             dtoList.clear();
 
             List<URI> createdResources = dataBLL.createMany(dataList);
+            batchHistoryDao.create(dataBLL.createBatchHistoryModel(batchId, currentTime));
+
             dataList.clear();
 
             return new PaginatedListResponse<>(Response.Status.CREATED, createdResources).getResponse();

@@ -15,6 +15,7 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.dataV2.model.DataValueModel;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
@@ -30,8 +31,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import static java.lang.Double.NaN;
 
 /**
  * @author sammy
@@ -65,11 +64,11 @@ public class DataCreationDTO {
     @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI variable;
 
-    @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
 
-    private Object multiValue;
+    @ApiModelProperty(value = "List of dimension values", example = DataAPI.DATA_EXAMPLE_MULTI_DIMENSION_VALUE)
+    private Object multiValues;
 
     @JsonProperty("raw_data")
     @ApiModelProperty(value = "list of repetition values")
@@ -143,12 +142,12 @@ public class DataCreationDTO {
         this.value = value;
     }
 
-    public Object getMultiValue() {
-        return multiValue;
+    public Object getMultiValues() {
+        return multiValues;
     }
 
-    public void setMultiValue(Object multiValue) {
-        this.multiValue = multiValue;
+    public void setMultiValues(Object multiValues) {
+        this.multiValues = multiValues;
     }
 
     public List<Object> getRawData() {
@@ -195,17 +194,8 @@ public class DataCreationDTO {
             model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         }
 
-        if (value instanceof String) {
-            if (NA_VALUES.contains(value)) {
-                model.setValue(null);
-            } else if (NAN_VALUES.contains(value)) {
-                model.setValue(NaN);
-            } else {
-                model.setValue(value);
-            }
-        } else {
-            model.setValue(value);
-        }
+        List<DataValueModel> dataValueModels = DataValueModel.fromLinkedHashMap(multiValues, target);
+        model.setMultiValues(dataValueModels);
 
         if (rawData != null) {
             model.setRawData(rawData);

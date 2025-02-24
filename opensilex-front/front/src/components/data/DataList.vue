@@ -28,11 +28,11 @@
                 ></opensilex-UriLink>
             </template>
 
-          <template v-slot:cell(multiValue)="{ data }">
-            <span v-if="data.item.multiValue != null && data.item.multiValue.length > 0">
+          <template v-slot:cell(multiValues)="{ data }">
+            <span v-if="data.item.multiValues != null && data.item.multiValues.length > 0">
                [
-               <span v-for="(item, index) in data.item.multiValue" :key="index">
-                 {{ item.value }}<span v-if="index < data.item.multiValue.length - 1"> , </span>
+               <span v-for="(item, index) in data.item.multiValues" :key="index">
+                 {{ item.value }}<span v-if="index < data.item.multiValues.length - 1"> , </span>
               </span>
                ]
             </span>
@@ -146,7 +146,7 @@ export default class DataList extends Vue {
                 sortable: true,
             },
             {
-              key: "multiValue",
+              key: "multiValues",
                 label: "DataView.list.value",
                 sortable: false,
             },

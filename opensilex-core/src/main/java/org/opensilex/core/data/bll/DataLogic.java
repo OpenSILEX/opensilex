@@ -23,6 +23,7 @@ import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.dataV2.model.BatchHistoryModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -334,6 +335,16 @@ public class DataLogic {
         String dateTime = DateTimeFormatter.ofPattern(DATE_FORMAT).format(start.atZone(ZoneId.systemDefault()));
         return userName + UNDERSCORE + dataSize + UNDERSCORE + importMethod + UNDERSCORE + dateTime;
     }
+
+    public BatchHistoryModel createBatchHistoryModel(String batchId, Instant startTime) {
+        BatchHistoryModel batchHistoryModel = new BatchHistoryModel();
+        batchHistoryModel.setBatchId(batchId);
+        batchHistoryModel.setPublicationDate(startTime);
+        batchHistoryModel.setUsername(user.getName());
+        batchHistoryModel.setPublisher(user.getUri());
+        return batchHistoryModel;
+    }
+
     /**
      * Validates the csv for data import after verifying provenance and experiment
      */

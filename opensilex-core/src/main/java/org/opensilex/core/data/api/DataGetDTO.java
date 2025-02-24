@@ -108,7 +108,7 @@ public class DataGetDTO extends DataCreationDTO {
 
         // Todo mko : check how to handle dateVariables.contains(getVariable()) in this case
         if (Objects.nonNull(model.getMultiValues())) {
-            setMultiValue(model.getMultiValues());
+            setMultiValues(model.getMultiValues());
         }
 
         if (Objects.nonNull(model.getPublicationDate())) {

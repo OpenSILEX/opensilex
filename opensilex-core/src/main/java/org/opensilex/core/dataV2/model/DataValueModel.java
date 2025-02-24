@@ -6,8 +6,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @JsonPropertyOrder({"dimension", "value"})
 public class DataValueModel {
@@ -29,21 +30,49 @@ public class DataValueModel {
     }
 
     /**
-     * It takes a list of LinkedHashMaps and returns a list of DataValueModels
+     * It takes the list of LinkedHashMap objects and returns a list of DataValueModels
      *
-     * @param listHashMap The list of LinkedHashMap objects that you want to convert to a list of
-     *                    DataValueModel objects.
+     * @param data The list of LinkedHashMap objects that you want to convert to a list of DataValueModel objects.
+     * @param target The target URI.
+     *
      * @return A list of DataValueModel objects.
      */
-    public static List<DataValueModel> fromLinkedHashMap(List<LinkedHashMap> listHashMap) {
-        List<DataValueModel> list = new ArrayList<>();
-        listHashMap.forEach(linkedHashMap -> {
-            list.add(new DataValueModel(
-                    URI.create(linkedHashMap.get("dimension").toString()),
-                    linkedHashMap.get("value"))
-            );
-        });
-        return list;
+    public static List<DataValueModel> fromLinkedHashMap(Object data, URI target) {
+        List<DataValueModel> dataValueModelList = new ArrayList<>();
+
+        if (Objects.isNull(data)) {
+            return dataValueModelList;
+        }
+
+        if (!(data instanceof List<?> inputList)) {
+            throw new IllegalArgumentException("Expected a List but got: " + data.getClass().getName());
+        }
+
+        for (Object item : inputList) {
+            if (!(item instanceof Map<?, ?> map)) {
+                throw new IllegalArgumentException("Item at target " + target.toString() + " is not a Map.");
+            }
+
+            Object dimensionObj = map.get("dimension");
+            if (Objects.isNull(dimensionObj)) {
+                throw new IllegalArgumentException("Missing 'dimension' key at target " + target.toString());
+            }
+
+            URI dimension;
+            try {
+                dimension = URI.create(dimensionObj.toString());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid URI for 'dimension' at target " + target.toString() + ": " + dimensionObj);
+            }
+
+            Object value = map.get("value");
+            if (Objects.isNull(value)) {
+                throw new IllegalArgumentException("Missing 'value' key at target " + target.toString());
+            }
+            dataValueModelList.add(new DataValueModel(dimension, value));
+        }
+
+        return dataValueModelList;
     }
 
     public URI getDimension() {

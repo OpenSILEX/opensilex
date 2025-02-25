@@ -11,7 +11,6 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
-import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,8 +28,6 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.dataV2.dao.BatchHistoryDao;
-import org.opensilex.core.dataV2.dao.BatchHistorySearchFilter;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -729,23 +726,9 @@ public class DataAPI {
             filter.setBatchId(batchId);
         }
 
-        DeleteResult result = dataLogic.deleteManyByFilter(filter);
-        deleteDataBatchHistory(batchId, result);
-        return new SingleObjectResponse<>(result).getResponse();
+        return new SingleObjectResponse<>(dataLogic.deleteManyByFilter(filter)).getResponse();
     }
 
-    /**
-     * Deletes batch history data from the database
-     *
-     * @param batchId the ID of the batch to delete history for
-     * @param result  the result of a previous delete operation
-     */
-    private void deleteDataBatchHistory(String batchId, DeleteResult result) {
-        if (StringUtils.isNotBlank(batchId) && result.getDeletedCount() > 0) {
-            BatchHistoryDao batchHistoryDao = new BatchHistoryDao(nosql.getServiceV2());
-            batchHistoryDao.deleteMany(new BatchHistorySearchFilter().setBatchId(batchId));
-        }
-    }
 
     /**
      * @param startDate     startDate

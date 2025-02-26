@@ -13,14 +13,23 @@ export default defineConfig({
       fileName: (format) => `opensilex-security.${format}.min.js`, // Nom du fichier de sortie
       formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
     },
-    // rollupOptions: {
-    //   // Externaliser les dépendances (si nécessaire)
-    //   external: ['vue'],
-    //   output: {
-    //     globals: {
-    //       vue: 'Vue',
-    //     },
-    //   },
-    // },
-  }
+    rollupOptions: {
+      // Externaliser les dépendances (si nécessaire)
+      external: ['vue'],
+      output: {
+        globals: {
+          vue: 'Vue',
+        },
+      },
+    },
+  },
+  experimental: {
+    renderBuiltUrl(filename, { hostType }) {
+      if (hostType === 'js') {
+        return { runtime: `window.__toCdnUrl(${JSON.stringify(filename)})` }
+      } else {
+        return { relative: true }
+      }
+    },
+  },
 });

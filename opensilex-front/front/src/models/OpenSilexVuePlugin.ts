@@ -12,6 +12,9 @@ import {
     VueDataTypeDTO,
     VueObjectTypeDTO
 } from '../lib';
+import { ApiServiceBinder as SecurityApiServiceBinder } from './../../../../opensilex-security/front/src/lib';
+import { ApiServiceBinder as CoreApiServiceBinder } from './../../../../opensilex-core/front/src/lib';
+
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
 import Foaf from '../ontologies/Foaf';
@@ -91,6 +94,8 @@ export default class OpenSilexVuePlugin {
         this.$dateTimeFormatter = new DateTimeFormatter(i18n);
         this.$numberFormatter = new NumberFormatter(i18n);
         ApiServiceBinder.with(this.container);
+        SecurityApiServiceBinder.with(this.container);
+        CoreApiServiceBinder.with(this.container);
         ServiceBinder.with(this.container);
     }
 
@@ -347,8 +352,12 @@ export default class OpenSilexVuePlugin {
     public getServiceSync<T>(id: string): T | null {
         console.debug("Get API service", this.baseApi, id);
         let idParts = this.parseServiceId(id);
+        console.log("-----")
+        console.log("id ", id)
+        console.log("idParts : ", idParts)
         if (idParts.module == null) {
             return this.getServiceContainer().get<T>(idParts.service);
+
         } else {
             if (this.loadedModules.indexOf(idParts.module) >= 0) {
                 return this.getServiceContainer().get<T>(idParts.service);
@@ -426,14 +435,13 @@ export default class OpenSilexVuePlugin {
 
     public loadModule(name) {
         if (window[name]) return window[name];
-
         console.debug("Load module", name);
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
         let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
         let self = this;
 
-        var link = document.createElement('link');
+        const link = document.createElement('link');
         link.setAttribute("rel", "stylesheet");
         link.setAttribute("type", "text/css");
         link.setAttribute("href", cssURI);
@@ -442,20 +450,51 @@ export default class OpenSilexVuePlugin {
         window[name] = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.async = true;
+            script.src = url;
             script.addEventListener('load', () => {
+                console.debug(`module ${name} chargé`);
+
                 self.loadedModules.push(name);
+
+            console.log(`window["${name}"] après chargement :`, window[name]);
+            console.log(`window["${name}"].default après chargement :`, window[name]?.default);
+            console.log("name : " , name)
+
                 //@todo on doit trouver comment obtenir l'export par défaut du module importé par le script (HtmlScriptElement)
                 // Vincent utilise une façon bizarre d'importer le code JS des autres modules. D'après ce que j'ai compris :
                 // - Les modules (par exemple le fichier index.ts de opensilex-security) a un export par défaut sous forme d'un plugin Vue (avec une méthode install())
                 // - Dans la méthode loadModule(), donc ici, on crée une balise <script> qui a comme attribut src le lien vers le fichier JS du module
                 // - Lors de l'événement load, on récupère `window[name].default` qui est censé correspondre à l'export par défaut du composant
             
-                const plugin = window[name].default;
-                // Vue.use(plugin);
-                console.log("Register plugin", plugin);
-                this.app.use(plugin)
+                // const plugin = window[name]?.default;
+                const plugin = window[name];
 
-                resolve(plugin)
+                // Vue.use(plugin);
+                console.log("plugin detecté : ", plugin);
+
+
+                 // Vérification si le plugin est valide pour Vue 3
+            // if (plugin && (typeof plugin.install === 'function')) {
+                if (plugin) {
+
+                console.log("Plugin enregistré avec Vue : ", plugin);
+                this.app.use(plugin);
+                resolve(plugin);
+            } else {
+                console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
+                reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
+            }
+        
+
+                // this.app.use(plugin)
+
+                // resolve(plugin)
+                // console.log("log window",this.app);
+
+
+
+
+
 
             //     if (plugin.lang) {
             //         self.loadTranslations(plugin.lang);
@@ -479,10 +518,13 @@ export default class OpenSilexVuePlugin {
             });
             script.addEventListener('error', () => {
                 self.hideLoader();
-                reject(new Error(`Error loading ${url}`));
+                // reject(new Error(`Error loading ${url}`));
+                console.error(`Échec du chargement du module "${name}".`);
+                reject(new Error(`Impossible de charger le module "${name}"`));
             });
-            script.src = url;
-            document.head.appendChild(script);
+            // script.src = url;
+            // document.head.appendChild(script);
+            document.body.appendChild(script);
         });
 
         return window[name];
@@ -519,6 +561,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public getServiceContainer() {
+        console.log("getServiceContainer container ", this.container)
         return this.container;
     }
 

@@ -93,6 +93,11 @@ public class GermplasmDAO {
         return model;
     }
 
+    public List<GermplasmModel> createList(List<GermplasmModel> instanceList) throws Exception {
+        sparql.create(instanceList);
+        return instanceList;
+    }
+
     /**
      * Get a germplasm by its URI
      * @param uri URI of the germplasm

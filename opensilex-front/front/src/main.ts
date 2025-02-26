@@ -5,8 +5,9 @@
  */
 const DEV_BASE_API_PATH = "http://localhost:8666/rest";
 
+
 // import App from './App.vue'
-import { createApp } from "vue";
+import { createApp,  ref, reactive, computed  } from "vue";
 import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
@@ -31,16 +32,16 @@ import "reflect-metadata"
 // Allow access to global "document" variable
 declare var document: any;
 
-// Import Vue as a global window variable
-// import Vue from 'vue';
+// Import Vue as a global window variable 
 // import VueMatomo from 'vue-matomo';
 declare var window: any;
-// window.Vue = Vue;
+// Attach Vue APIs to window
+window.Vue = { createApp, ref, reactive, computed };
 
 // Vue.config.productionTip = false;
 
 // Import and assignation to enable auto rebuild on ws library change
-//@todo je sais pas ce que c'est
+// @todo je sais pas ce que c'est
 // import * as LATEST_UPDATE from "./opensilex.dev";
 // Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
 
@@ -210,6 +211,8 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
     }
   })
 }
+
+
 
 
 $opensilex.loadModules([

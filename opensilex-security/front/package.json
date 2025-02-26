@@ -1,5 +1,13 @@
 {
     "name": "opensilex-security",
+    "files": ["dist"],
+    "main": "./dist/mopensilex-security.umd.min.js",
+    "module": "./dist/opensilex-security.umd.min.js",
+    "exports": {
+        ".": {
+        "import": "./dist/opensilex-security.umd.min.js"
+        }
+    },
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -10,7 +18,7 @@
         "check:outdated": "npm outdated || cd .",
         "check:security": "npm audit || cd ."
     },
-    "devDependencies": { 
+    "devDependencies": {
         "@types/node": "20"
     },
     "eslintConfig": {

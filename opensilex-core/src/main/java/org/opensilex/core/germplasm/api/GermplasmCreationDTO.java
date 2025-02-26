@@ -213,7 +213,7 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.website = website;
     }
 
-    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
+    public GermplasmModel newModel(SPARQLService sparql, String lang, ClassModel classModel) throws SPARQLException, URISyntaxException {
         GermplasmModel model = new GermplasmModel();
         
         if (uri != null) {
@@ -221,7 +221,9 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         }
         if(relations != null){
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            if (classModel == null) {
+                classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            }
             RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
         }
         if (name != null) {

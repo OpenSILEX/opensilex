@@ -13,131 +13,141 @@
 
     <b-input-group class="mt-2 mb-2" size="sm">
       <downloadCsv
-        ref="downloadCsv"
-        class="btn downloadTemplateBtn mb-2 mr-2"
-        :data="[jsonForTemplate]"
-        :advancedOptions="{'header': false}"
-        name="template.csv"
+          ref="downloadCsv"
+          class="btn downloadTemplateBtn mb-2 mr-2"
+          :data="[jsonForTemplate]"
+          :advancedOptions="{'header': false}"
+          name="template.csv"
       >
         {{ $t("GermplasmTable.downloadTemplate") }}
       </downloadCsv>
       <opensilex-CSVInputFile
-        v-on:updated="uploaded"
-        :returnDataAsArrayOfArrays="true"
-        :duplicatableHeaders="existingDuplicatablePropertiesNameList"
-        :headersPresent="['name']"
+          v-on:updated="uploaded"
+          :returnDataAsArrayOfArrays="true"
+          :duplicatableHeaders="existingDuplicatablePropertiesNameList"
+          :headersPresent="['name']"
       >
       </opensilex-CSVInputFile>
       <b-button
-        class="mb-2 mr-2"
-        @click="onResetTableBtnClick"
-        variant="outline-secondary"
-        >{{ $t("GermplasmTable.resetTable") }}</b-button
+          class="mb-2 mr-2"
+          @click="onResetTableBtnClick"
+          variant="outline-secondary"
+      >{{ $t("GermplasmTable.resetTable") }}
+      </b-button
       >
       <b-button class="mb-2 mr-2" @click="onAddRowBtnClick" variant="outline-dark">{{
-        $t("GermplasmTable.addRow")
-      }}</b-button>
+          $t("GermplasmTable.addRow")
+        }}
+      </b-button>
       <b-button
-        class="mb-2 mr-2"
-        @click="onAddColumnBtnClick"
-        variant="outline-dark"
-        >{{ $t("GermplasmTable.addColumn") }}</b-button
+          class="mb-2 mr-2"
+          @click="onAddColumnBtnClick"
+          variant="outline-dark"
+      >{{ $t("GermplasmTable.addColumn") }}
+      </b-button
       >
       <b-form-select
-        v-if="this.checkedLines > 0"
-        id="filter"
-        v-model="filter"
-        :options="checkBoxOptions"
-        name="filter"
-        size="sm"
-        @input="onFilterLinesInput()"
+          v-if="this.checkedLines > 0"
+          id="filter"
+          v-model="filter"
+          :options="checkBoxOptions"
+          name="filter"
+          size="sm"
+          @input="onFilterLinesInput()"
       ></b-form-select>
     </b-input-group>
 
     <b-input-group size="sm">
       <b-button
-        class="mb-2 mr-2 greenThemeColor"
-        @click="onCheckBtnClick()"
-        v-bind:disabled="disableCheck"
-        >{{ $t("GermplasmTable.check") }}</b-button
+          class="mb-2 mr-2 greenThemeColor"
+          @click="onCheckBtnClick()"
+          v-bind:disabled="disableCheck"
+      >{{ $t("GermplasmTable.check") }}
+      </b-button
       >
       <b-button
-        class="mb-2 mr-2"
-        @click="onInsertDataBtnClick"
-        variant="success"
-        v-bind:disabled="disableInsert"
-        >{{ $t("GermplasmTable.insert") }}</b-button
+          class="mb-2 mr-2"
+          @click="onInsertDataBtnClick"
+          variant="success"
+          v-bind:disabled="disableInsert"
+      >{{ $t("GermplasmTable.insert") }}
+      </b-button
       >
     </b-input-group>
 
     <div ref="table"></div>
 
     <b-modal
-      id="progressModal"
-      size="lg"
-      :no-close-on-backdrop="true"
-      :no-close-on-esc="true"
-      hide-header
-      @shown="onProgressmodalShown"
+        id="progressModal"
+        size="lg"
+        :no-close-on-backdrop="true"
+        :no-close-on-esc="true"
+        hide-header
+        @shown="onProgressmodalShown"
     >
       <b-alert ref="progressAlert" variant="light" show>
         {{ this.max }} {{ $t("GermplasmTable.progressTitle") }}
         <b-progress :max="max" show-progress animated>
           <b-progress-bar :value="progressValue" :max="max" variant="info">
-            <strong> {{ $t("GermplasmTable.progressValue") }}  {{ progressValue }} / {{ max }}</strong>
+            <strong> {{ $t("GermplasmTable.progressValue") }} {{ progressValue }} / {{ max }}</strong>
           </b-progress-bar>
         </b-progress>
       </b-alert>
       <b-alert variant="primary" :show="infoMessage">{{
-        this.summary
-      }}</b-alert>
+          this.summary
+        }}
+      </b-alert>
       <b-alert variant="danger" :show="alertEmptyTable">{{
-        $t("GermplasmTable.emptyMessage")
-      }}</b-alert>
+          $t("GermplasmTable.emptyMessage")
+        }}
+      </b-alert>
       <b-alert
-        v-if="onlyChecking"
-        variant="warning"
-        :show="onlyChecking && !alertEmptyTable"
-        >{{ $t("GermplasmTable.infoProposeInsertion") }}</b-alert
+          v-if="onlyChecking"
+          variant="warning"
+          :show="onlyChecking && !alertEmptyTable"
+      >{{ $t("GermplasmTable.infoProposeInsertion") }}
+      </b-alert
       >
       <template v-slot:modal-footer>
         <b-button
-          v-if="onlyChecking && !alertEmptyTable"
-          class="mb-2 mr-2"
-          @click="onPorgressModalInsertBtnClick()"
-          variant="success"
-          >{{ $t("GermplasmTable.insert") }}</b-button
+            v-if="onlyChecking && !alertEmptyTable"
+            class="mb-2 mr-2"
+            @click="onPorgressModalInsertBtnClick()"
+            variant="success"
+        >{{ $t("GermplasmTable.insert") }}
+        </b-button
         >
         <b-button
-          v-bind:disabled="disableCloseButton"
-          class="mb-2 mr-2 greenThemeColor"
-          @click="$bvModal.hide('progressModal')"
-          >{{ $t("GermplasmTable.close") }}</b-button
+            v-bind:disabled="disableCloseButton"
+            class="mb-2 mr-2 greenThemeColor"
+            @click="$bvModal.hide('progressModal')"
+        >{{ $t("GermplasmTable.close") }}
+        </b-button
         >
       </template>
     </b-modal>
 
     <b-modal
-      :no-close-on-backdrop="true"
-      :no-close-on-esc="true"
-      @hidden="onNewColsModalHidden"
-      ref="newcolsModal"
-      centered
-      hide-footer
-   
-      :title="$t('GermplasmTable.newColumns')"
+        :no-close-on-backdrop="true"
+        :no-close-on-esc="true"
+        @hidden="onNewColsModalHidden"
+        ref="newcolsModal"
+        centered
+        hide-footer
+
+        :title="$t('GermplasmTable.newColumns')"
     >
       <b-form-group
-        :label="$t('GermplasmTable.newColumnsHelp')"
-        v-slot="{ ariaDescribedby }"
+          :label="$t('GermplasmTable.newColumnsHelp')"
+          v-slot="{ ariaDescribedby }"
       >
         <b-form-checkbox
-          v-for="columnCheckboxData in newColumnModalCheckboxData"
-          v-model="newColumnsselected"
-          :key="columnCheckboxData.value"
-          :value="columnCheckboxData.value"
-          :aria-describedby="ariaDescribedby"
-          :name="columnCheckboxData.name"
+            v-for="columnCheckboxData in newColumnModalCheckboxData"
+            v-model="newColumnsselected"
+            :key="columnCheckboxData.value"
+            :value="columnCheckboxData.value"
+            :aria-describedby="ariaDescribedby"
+            :name="columnCheckboxData.name"
         >
           {{ columnCheckboxData.name }}
         </b-form-checkbox>
@@ -152,16 +162,16 @@
       </b-form-checkbox>
 
       <b-button
-        type="button"
-        class="btn greenThemeColor loadCsvButton"
-        v-on:click="addNewColumns()"
+          type="button"
+          class="btn greenThemeColor loadCsvButton"
+          v-on:click="addNewColumns()"
       >
         {{ $t('component.common.ok') }}
       </b-button>
       <b-button
-        type="button"
-        class="btn loadCsvButton"
-        v-on:click="addNewColumnsCancel()"
+          type="button"
+          class="btn loadCsvButton"
+          v-on:click="addNewColumnsCancel()"
       >
         {{ $t('component.common.cancel') }}
       </b-button>
@@ -171,18 +181,19 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Ref } from "vue-property-decorator";
+import {Component, Vue, Watch, Ref} from "vue-property-decorator";
 // @ts-ignore
-import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import {GermplasmCreationDTO, GermplasmService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
+
 Vue.component("downloadCsv", JsonCSV);
 // @ts-ignore
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import { SelectableItem } from '../common/forms/FormSelector.vue';
+import {SelectableItem} from '../common/forms/FormSelector.vue';
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import VueRouter from "vue-router";
 import {OpenSilexStore} from "../../models/Store";
@@ -255,18 +266,19 @@ export default class GermplasmTable extends Vue {
    * The values represent the current id for the tabulator, a digit is added each time.
    * Example hasParentGermplasmM0, hasParentGermplasmF1, etc...
    */
-  private addedDuplicatableRdfColumnsToMaxUsedIdMap : Map<string, number> = new Map<string, number>();
+  private addedDuplicatableRdfColumnsToMaxUsedIdMap: Map<string, number> = new Map<string, number>();
 
   private existingDuplicatableRdfAttributesObjects: Array<SelectableItem> = [];
 
-  private existingRdfAttributesStringRule:string = "";
+  private existingRdfAttributesStringRule: string = "";
 
   private existingDuplicatablePropertiesNameList: string[] = [];
 
-  private tabulator:Tabulator = null;
+  private tabulator: Tabulator = null;
 
   private tableData = [];
-  @Watch("tableData", { deep: true })
+
+  @Watch("tableData", {deep: true})
   newData(value: string, oldValue: string) {
     this.tabulator.replaceData(value);
   }
@@ -280,8 +292,8 @@ export default class GermplasmTable extends Vue {
   private jsonForTemplate = [];
 
   private readonly checkBoxOptions = [
-    { text: "See all lines", value: "all" },
-    { text: "See lines with errors", value: "NOK" },
+    {text: "See all lines", value: "all"},
+    {text: "See lines with errors", value: "NOK"},
   ];
 
   private filter = "all";
@@ -301,16 +313,19 @@ export default class GermplasmTable extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
+
   //endregion
 
   //#region Event handlers
   private onAddColumnBtnClick() {
     this.colModal.show();
   }
+
   private onColModalAddExistingColumn(columnName: string, propertyUri: string) {
     this.colModal.hide();
     this.addExistingColumn(columnName, propertyUri, "comment");
   }
+
   private onColModalAddingUncontrolledColumn(columnName: string) {
     this.colModal.hide();
     this.addNonExistingColumn(columnName, "comment");
@@ -318,7 +333,7 @@ export default class GermplasmTable extends Vue {
 
   private onAddRowBtnClick() {
     let size = this.tabulator.getData().length;
-    this.tabulator.addRow({ rowNumber: size + 1 });
+    this.tabulator.addRow({rowNumber: size + 1});
   }
 
   private onCheckBtnClick() {
@@ -331,10 +346,10 @@ export default class GermplasmTable extends Vue {
   }
 
   private onResetTableBtnClick() {
-    this. updateColumns();
+    this.updateColumns();
   }
 
-  private onInsertDataBtnClick(){
+  private onInsertDataBtnClick() {
     this.insertData();
   }
 
@@ -346,7 +361,7 @@ export default class GermplasmTable extends Vue {
     }
   }
 
-  private onProgressmodalShown(){
+  private onProgressmodalShown() {
     this.insertOrCheckData();
   }
 
@@ -355,12 +370,12 @@ export default class GermplasmTable extends Vue {
     this.insertData();
   }
 
-  private onNewColsModalHidden(){
+  private onNewColsModalHidden() {
     this.tableData = this.csvUploadedData;
   }
 
   private onSelectAllColumnSwitchChange(checked) {
-    this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map( column => column.value) : []
+    this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map(column => column.value) : []
   }
 
   //#endregion
@@ -368,10 +383,10 @@ export default class GermplasmTable extends Vue {
   //#region Hooks
   mounted() {
     this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      (lang) => {
-        this.updateColumns();
-      }
+        () => this.$store.getters.language,
+        (lang) => {
+          this.updateColumns();
+        }
     );
     this.updateColumns();
   }
@@ -379,6 +394,7 @@ export default class GermplasmTable extends Vue {
   beforeDestroy() {
     this.langUnwatcher();
   }
+
   //endregion
 
   //#region Private methods
@@ -400,14 +416,14 @@ export default class GermplasmTable extends Vue {
   private addNewColumns() {
     this.$opensilex.showLoader()
     this.colModal.hide();
-    let addedNonDuplicatableCols : string[] = [];
+    let addedNonDuplicatableCols: string[] = [];
     for (let col of this.newColumns) {
-      if(this.newColumnsselected.includes(col)){
+      if (this.newColumnsselected.includes(col)) {
         let existingProperty = this.tryToGetExistingPropertyFromColumnName(col);
-        if(existingProperty){
+        if (existingProperty) {
           this.addExistingColumn(existingProperty.label, existingProperty.id, existingProperty.id)
-        }else{
-          if(!addedNonDuplicatableCols.includes(col)){
+        } else {
+          if (!addedNonDuplicatableCols.includes(col)) {
             this.addNonExistingColumn(col, col);
             addedNonDuplicatableCols.push(col);
           }
@@ -434,7 +450,7 @@ export default class GermplasmTable extends Vue {
       formatter: "rownum",
     };
 
-    let statusCol = { title: "status", field: "status", visible: false };
+    let statusCol = {title: "status", field: "status", visible: false};
 
     let uriCol = {
       title: "URI",
@@ -466,24 +482,24 @@ export default class GermplasmTable extends Vue {
     };
     let speciesCol = {
       title:
-        this.$t("GermplasmTable.fromSpecies") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromSpecies") +
+          '<span class="requiredOnCondition">*</span>',
       field: "species",
       visible: true,
       editor: true,
     };
     let varietyCol = {
       title:
-        this.$t("GermplasmTable.fromVariety") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromVariety") +
+          '<span class="requiredOnCondition">*</span>',
       field: "variety",
       visible: true,
       editor: true,
     };
     let accessionCol = {
       title:
-        this.$t("GermplasmTable.fromAccession") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromAccession") +
+          '<span class="requiredOnCondition">*</span>',
       field: "accession",
       visible: true,
       editor: true,
@@ -538,7 +554,7 @@ export default class GermplasmTable extends Vue {
         insertionStatusCol,
       ];
     } else if (
-      Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
+        Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
     ) {
       let codeVar = {
         title: this.$t("GermplasmTable.varietyCode"),
@@ -561,7 +577,7 @@ export default class GermplasmTable extends Vue {
         insertionStatusCol,
       ];
     } else if (
-      Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
+        Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
     ) {
       let codeAcc = {
         title: this.$t("GermplasmTable.accessionNumber"),
@@ -611,10 +627,12 @@ export default class GermplasmTable extends Vue {
     }
 
     //Add stuff to existing property string rule (to prevent duplicates)
-    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+ this._removeSpanRequiredBlockFromTitle(col.title)}).toString();
-    if(this.existingRdfAttributesStringRule===""){
+    let tableStartingHeaderTitlesFields: string = this.tableColumns.map((col, index) => {
+      return col.field + "," + this._removeSpanRequiredBlockFromTitle(col.title)
+    }).toString();
+    if (this.existingRdfAttributesStringRule === "") {
       this.existingRdfAttributesStringRule = "existingProperty:" + tableStartingHeaderTitlesFields;
-    }else{
+    } else {
       this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + tableStartingHeaderTitlesFields;
     }
 
@@ -655,9 +673,9 @@ export default class GermplasmTable extends Vue {
     this.disableInsert = false;
   }
 
-  private _removeSpanRequiredBlockFromTitle(title: string): string{
+  private _removeSpanRequiredBlockFromTitle(title: string): string {
     let result = title;
-    if(title.includes("<span")){
+    if (title.includes("<span")) {
       result = result.substring(0, title.indexOf("<span"));
     }
     return result;
@@ -665,7 +683,7 @@ export default class GermplasmTable extends Vue {
 
   private addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
-      this.tableData.push({ rowNumber: i });
+      this.tableData.push({rowNumber: i});
     }
   }
 
@@ -673,11 +691,11 @@ export default class GermplasmTable extends Vue {
    * Generates a new name in function of how many times this rdf column has been added, then adds it.
    */
   private addExistingColumn(columnName: string, propertyUri: string, positionTarget: string) {
-    let currentMaxExcludedIndex : number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(propertyUri);
-    if(currentMaxExcludedIndex == null){
+    let currentMaxExcludedIndex: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(propertyUri);
+    if (currentMaxExcludedIndex == null) {
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.set(propertyUri, 1)
       currentMaxExcludedIndex = 0;
-    }else{
+    } else {
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.set(propertyUri, currentMaxExcludedIndex + 1);
     }
     this.addColumnToTabulator(columnName, propertyUri + currentMaxExcludedIndex, positionTarget);
@@ -693,9 +711,9 @@ export default class GermplasmTable extends Vue {
     this.suppColumnsNames.push(columnName);
   }
 
-  private addColumnToTabulator(columnLabel: string, columnID: string, positionTarget: string){
+  private addColumnToTabulator(columnLabel: string, columnID: string, positionTarget: string) {
     this.tabulator.addColumn(
-        { title: columnLabel, field: columnID, editor: true },
+        {title: columnLabel, field: columnID, editor: true},
         false,
         "comment"
     );
@@ -730,6 +748,166 @@ export default class GermplasmTable extends Vue {
   }
 
   private insertOrCheckData() {
+    let dtos: GermplasmCreationDTO[] = this.getDtosFromTableData();
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
+    this.service.createGermplasms(this.onlyChecking, dtos)
+        .catch((error) => {
+          this.$opensilex.errorHandler("error", error);
+        })
+        .finally(() => {
+          this.$opensilex.hideLoader()
+          this.$opensilex.disableLoader();
+        })
+  }
+
+  private getDtosFromTableData(): GermplasmCreationDTO[] {
+    let dtos: GermplasmCreationDTO[] = [];
+    let dataToInsert = this.tabulator.getData();
+
+    for (let idx = 0; idx < dataToInsert.length; idx++) {
+      let form: GermplasmCreationDTO = {
+        rdf_type: null,
+        name: null,
+        uri: null,
+        species: null,
+        variety: null,
+        accession: null,
+        institute: null,
+        production_year: null,
+        description: null,
+        code: null,
+        synonyms: [],
+        metadata: null,
+        website: null,
+        relations: []
+      };
+
+      form.rdf_type = this.$attrs.germplasmType;
+
+      if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
+        form.uri = dataToInsert[idx].uri;
+      }
+      if (dataToInsert[idx].name != null && dataToInsert[idx].name != "") {
+        form.name = dataToInsert[idx].name;
+      }
+      if (
+          dataToInsert[idx].species != null &&
+          dataToInsert[idx].species != ""
+      ) {
+        form.species = dataToInsert[idx].species;
+      }
+      if (
+          dataToInsert[idx].variety != null &&
+          dataToInsert[idx].variety != ""
+      ) {
+        form.variety = dataToInsert[idx].variety;
+      }
+      if (
+          dataToInsert[idx].accession != null &&
+          dataToInsert[idx].accession != ""
+      ) {
+        form.accession = dataToInsert[idx].accession;
+      }
+      if (
+          dataToInsert[idx].institute != null &&
+          dataToInsert[idx].institute != ""
+      ) {
+        form.institute = dataToInsert[idx].institute;
+      }
+      if (
+          dataToInsert[idx].productionYear != null &&
+          dataToInsert[idx].productionYear != ""
+      ) {
+        form.production_year = dataToInsert[idx].productionYear;
+      }
+      if (
+          dataToInsert[idx].comment != null &&
+          dataToInsert[idx].comment != ""
+      ) {
+        form.description = dataToInsert[idx].comment;
+      }
+      if (dataToInsert[idx].code != null && dataToInsert[idx].code != "") {
+        form.code = dataToInsert[idx].code;
+      }
+
+      if (
+          dataToInsert[idx].synonyms != null &&
+          dataToInsert[idx].synonyms != ""
+      ) {
+        let stringSynonyms = dataToInsert[idx].synonyms;
+        form.synonyms = stringSynonyms.split("|");
+      }
+
+      if (
+          dataToInsert[idx].website != null &&
+          dataToInsert[idx].website != ""
+      ) {
+        form.website = dataToInsert[idx].website;
+      }
+
+      this.addedDuplicatableRdfColumnsToMaxUsedIdMap.forEach(
+          (currentMaxIndexExcluded, extraRdfAttribute) => {
+            for (let duplicationIndex: number = 0; duplicationIndex < currentMaxIndexExcluded; duplicationIndex++) {
+              let currentTabulatorIdentifier = extraRdfAttribute + duplicationIndex;
+              let currentValue = dataToInsert[idx][currentTabulatorIdentifier];
+              if (currentValue != null && currentValue != "") {
+                let nextRelationDTO: RDFObjectRelationDTO = {};
+                nextRelationDTO.inverse = false;
+                nextRelationDTO.value = currentValue;
+                nextRelationDTO.property = extraRdfAttribute;
+                form.relations.push(nextRelationDTO);
+              }
+            }
+          });
+
+      if (
+          dataToInsert[idx].subtaxa != null &&
+          dataToInsert[idx].subtaxa != ""
+      ) {
+        let stringSynonyms = dataToInsert[idx].subtaxa;
+        form.synonyms = stringSynonyms.split("|");
+      }
+
+      if (this.suppColumnsNames.length > 0) {
+        let attributes = {};
+        for (let y = 0; y < this.suppColumnsNames.length; y++) {
+          let key = this.suppColumnsNames[y];
+          if (dataToInsert[idx][key] != null && dataToInsert[idx][key] != "") {
+            attributes[key] = dataToInsert[idx][key];
+          }
+        }
+
+        if (Object.keys(attributes).length !== 0) {
+          form.metadata = attributes;
+        }
+      }
+
+      if (
+          form.name == null &&
+          form.uri == null &&
+          form.species == null &&
+          form.variety == null &&
+          form.accession == null &&
+          form.institute == null &&
+          form.production_year == null &&
+          form.description == null &&
+          form.code == null &&
+          form.synonyms.length == 0 &&
+          form.metadata == null &&
+          (form.relations == null || form.relations.length === 0) &&
+          form.website == null
+      ) {
+        this.emptyLines = this.emptyLines + 1;
+        this.progressValue = this.progressValue + 1;
+      } else {
+        dtos.push(form);
+      }
+    }
+    return dtos;
+  }
+
+  private insertOrCheckDataSave() {
     this.disableCloseButton = true;
     let dataToInsert = this.tabulator.getData();
 
@@ -765,38 +943,38 @@ export default class GermplasmTable extends Vue {
         form.name = dataToInsert[idx].name;
       }
       if (
-        dataToInsert[idx].species != null &&
-        dataToInsert[idx].species != ""
+          dataToInsert[idx].species != null &&
+          dataToInsert[idx].species != ""
       ) {
         form.species = dataToInsert[idx].species;
       }
       if (
-        dataToInsert[idx].variety != null &&
-        dataToInsert[idx].variety != ""
+          dataToInsert[idx].variety != null &&
+          dataToInsert[idx].variety != ""
       ) {
         form.variety = dataToInsert[idx].variety;
       }
       if (
-        dataToInsert[idx].accession != null &&
-        dataToInsert[idx].accession != ""
+          dataToInsert[idx].accession != null &&
+          dataToInsert[idx].accession != ""
       ) {
         form.accession = dataToInsert[idx].accession;
       }
       if (
-        dataToInsert[idx].institute != null &&
-        dataToInsert[idx].institute != ""
+          dataToInsert[idx].institute != null &&
+          dataToInsert[idx].institute != ""
       ) {
         form.institute = dataToInsert[idx].institute;
       }
       if (
-        dataToInsert[idx].productionYear != null &&
-        dataToInsert[idx].productionYear != ""
+          dataToInsert[idx].productionYear != null &&
+          dataToInsert[idx].productionYear != ""
       ) {
         form.production_year = dataToInsert[idx].productionYear;
       }
       if (
-        dataToInsert[idx].comment != null &&
-        dataToInsert[idx].comment != ""
+          dataToInsert[idx].comment != null &&
+          dataToInsert[idx].comment != ""
       ) {
         form.description = dataToInsert[idx].comment;
       }
@@ -805,27 +983,27 @@ export default class GermplasmTable extends Vue {
       }
 
       if (
-        dataToInsert[idx].synonyms != null &&
-        dataToInsert[idx].synonyms != ""
+          dataToInsert[idx].synonyms != null &&
+          dataToInsert[idx].synonyms != ""
       ) {
         let stringSynonyms = dataToInsert[idx].synonyms;
         form.synonyms = stringSynonyms.split("|");
       }
 
       if (
-        dataToInsert[idx].website != null &&
-        dataToInsert[idx].website != ""
+          dataToInsert[idx].website != null &&
+          dataToInsert[idx].website != ""
       ) {
         form.website = dataToInsert[idx].website;
       }
 
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.forEach(
-          (currentMaxIndexExcluded, extraRdfAttribute)=>{
-            for(let duplicationIndex: number = 0 ; duplicationIndex<currentMaxIndexExcluded ; duplicationIndex++){
+          (currentMaxIndexExcluded, extraRdfAttribute) => {
+            for (let duplicationIndex: number = 0; duplicationIndex < currentMaxIndexExcluded; duplicationIndex++) {
               let currentTabulatorIdentifier = extraRdfAttribute + duplicationIndex;
               let currentValue = dataToInsert[idx][currentTabulatorIdentifier];
               if (currentValue != null && currentValue != "") {
-                let nextRelationDTO : RDFObjectRelationDTO = {};
+                let nextRelationDTO: RDFObjectRelationDTO = {};
                 nextRelationDTO.inverse = false;
                 nextRelationDTO.value = currentValue;
                 nextRelationDTO.property = extraRdfAttribute;
@@ -835,8 +1013,8 @@ export default class GermplasmTable extends Vue {
           });
 
       if (
-        dataToInsert[idx].subtaxa != null &&
-        dataToInsert[idx].subtaxa != ""
+          dataToInsert[idx].subtaxa != null &&
+          dataToInsert[idx].subtaxa != ""
       ) {
         let stringSynonyms = dataToInsert[idx].subtaxa;
         form.synonyms = stringSynonyms.split("|");
@@ -857,25 +1035,25 @@ export default class GermplasmTable extends Vue {
       }
 
       if (
-        form.name == null &&
-        form.uri == null &&
-        form.species == null &&
-        form.variety == null &&
-        form.accession == null &&
-        form.institute == null &&
-        form.production_year == null &&
-        form.description == null &&
-        form.code == null &&
-        form.synonyms.length == 0 &&
-        form.metadata == null &&
-        (form.relations == null || form.relations.length === 0) &&
-        form.website == null
+          form.name == null &&
+          form.uri == null &&
+          form.species == null &&
+          form.variety == null &&
+          form.accession == null &&
+          form.institute == null &&
+          form.production_year == null &&
+          form.description == null &&
+          form.code == null &&
+          form.synonyms.length == 0 &&
+          form.metadata == null &&
+          (form.relations == null || form.relations.length === 0) &&
+          form.website == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
       } else {
         promises.push(
-          this.callCreateGermplasmService(form, idx + 1, this.onlyChecking)
+            this.callCreateGermplasmService(form, idx + 1, this.onlyChecking)
         );
       }
     }
@@ -883,30 +1061,30 @@ export default class GermplasmTable extends Vue {
     doAllSequentually(promises).then(() => {
       if (this.onlyChecking) {
         this.summary =
-          this.okNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageGermplReady") +
-          ", " +
-          this.errorNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageErrors") +
-          ", " +
-          this.emptyLines +
-          " " +
-          this.$t("GermplasmTable.infoMessageEmptyLines");
+            this.okNumber +
+            " " +
+            this.$t("GermplasmTable.infoMessageGermplReady") +
+            ", " +
+            this.errorNumber +
+            " " +
+            this.$t("GermplasmTable.infoMessageErrors") +
+            ", " +
+            this.emptyLines +
+            " " +
+            this.$t("GermplasmTable.infoMessageEmptyLines");
       } else {
         this.summary =
-          this.okNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageGermplInserted") +
-          ", " +
-          this.errorNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageErrors") +
-          ", " +
-          this.emptyLines +
-          " " +
-          this.$t("GermplasmTable.infoMessageEmptyLines");
+            this.okNumber +
+            " " +
+            this.$t("GermplasmTable.infoMessageGermplInserted") +
+            ", " +
+            this.errorNumber +
+            " " +
+            this.$t("GermplasmTable.infoMessageErrors") +
+            ", " +
+            this.emptyLines +
+            " " +
+            this.$t("GermplasmTable.infoMessageEmptyLines");
       }
       this.tabulator.redraw(true);
       this.infoMessage = true;
@@ -938,14 +1116,15 @@ export default class GermplasmTable extends Vue {
     existingProperties.forEach(property => {
           this.existingDuplicatableRdfAttributesObjects.push({
             id: property.uri,
-            label: property.name});
-            this.existingDuplicatablePropertiesNameList.push(property.name);
+            label: property.name
+          });
+          this.existingDuplicatablePropertiesNameList.push(property.name);
         }
     );
     //Add stuff to existing property string rule (to prevent duplicates)
-    if(this.existingRdfAttributesStringRule===""){
+    if (this.existingRdfAttributesStringRule === "") {
       this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
-    }else{
+    } else {
       this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
     }
   }
@@ -955,11 +1134,11 @@ export default class GermplasmTable extends Vue {
    * @param columnName
    * white spaces will be ignored (example parentA will be registered as parent A)
    */
-  private tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem{
-    let filtered:Array<SelectableItem> = this.existingDuplicatableRdfAttributesObjects.filter(
+  private tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem {
+    let filtered: Array<SelectableItem> = this.existingDuplicatableRdfAttributesObjects.filter(
         e => e.label.toLowerCase().replaceAll(" ", "") == columnName.toLowerCase().replaceAll(" ", "")
     );
-    if(filtered.length>0){
+    if (filtered.length > 0) {
       return filtered[0];
     }
     return null;
@@ -967,98 +1146,98 @@ export default class GermplasmTable extends Vue {
 
 
   private callCreateGermplasmService(
-    form: GermplasmCreationDTO,
-    index: number,
-    onlyChecking: boolean
+      form: GermplasmCreationDTO,
+      index: number,
+      onlyChecking: boolean
   ) {
     return () =>
-      new Promise((resolve, reject) => {
-        this.service
-          .createGermplasm(onlyChecking, form)
-          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            if (onlyChecking) {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  checkingStatus: this.$t(
-                    "GermplasmTable.checkingStatusMessage"
-                  ),
-                  status: "OK",
-                },
-              ]);
-            } else {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  insertionStatus: this.$t(
-                    "GermplasmTable.insertionStatusMessage"
-                  ),
-                  status: "OK",
-                  uri: http.response.result,
-                },
-              ]);
-            }
-
-            let row = this.tabulator.getRow(index);
-            row.reformat();
-            this.okNumber = this.okNumber + 1;
-            this.progressValue = this.progressValue + 1;
-
-            resolve(http);
-          })
-          .catch((error) => {
-            let errorMessage: string;
-            let failure = true;
-            try {
-              if (error.response.result.translationKey) {
-                errorMessage = this.$t(error.response.result.translationKey, error.response.result.translationValues).toString();
-              } else {
-                errorMessage = error.response.result.message;
-              }
-              failure = false;
-            } catch (e1) {
-              failure = true;
-            }
-
-            if (failure) {
-              try {
-                errorMessage =
-                  error.response.metadata.status[0].exception.details;
-              } catch (e2) {
-                if(error.response[0].message.includes("is not a valid URI")){
-                  errorMessage= this.$t("component.common.errors.not-a-valid-uri").toString();
+        new Promise((resolve, reject) => {
+          this.service
+              .createGermplasm(onlyChecking, form)
+              .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                if (onlyChecking) {
+                  this.tabulator.updateData([
+                    {
+                      rowNumber: index,
+                      checkingStatus: this.$t(
+                          "GermplasmTable.checkingStatusMessage"
+                      ),
+                      status: "OK",
+                    },
+                  ]);
                 } else {
-                  errorMessage = this.$t("component.common.errors.unexpected-error").toString();
+                  this.tabulator.updateData([
+                    {
+                      rowNumber: index,
+                      insertionStatus: this.$t(
+                          "GermplasmTable.insertionStatusMessage"
+                      ),
+                      status: "OK",
+                      uri: http.response.result,
+                    },
+                  ]);
                 }
 
-              }
-            }
+                let row = this.tabulator.getRow(index);
+                row.reformat();
+                this.okNumber = this.okNumber + 1;
+                this.progressValue = this.progressValue + 1;
 
-            if (onlyChecking) {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  checkingStatus: errorMessage,
-                  status: "NOK",
-                },
-              ]);
-            } else {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  insertionStatus: errorMessage,
-                  status: "NOK",
-                },
-              ]);
-            }
+                resolve(http);
+              })
+              .catch((error) => {
+                let errorMessage: string;
+                let failure = true;
+                try {
+                  if (error.response.result.translationKey) {
+                    errorMessage = this.$t(error.response.result.translationKey, error.response.result.translationValues).toString();
+                  } else {
+                    errorMessage = error.response.result.message;
+                  }
+                  failure = false;
+                } catch (e1) {
+                  failure = true;
+                }
 
-            let row = this.tabulator.getRow(index);
-            row.reformat();
-            this.errorNumber = this.errorNumber + 1;
-            this.progressValue = this.progressValue + 1;
-            resolve(error);
-          });
-      });
+                if (failure) {
+                  try {
+                    errorMessage =
+                        error.response.metadata.status[0].exception.details;
+                  } catch (e2) {
+                    if (error.response[0].message.includes("is not a valid URI")) {
+                      errorMessage = this.$t("component.common.errors.not-a-valid-uri").toString();
+                    } else {
+                      errorMessage = this.$t("component.common.errors.unexpected-error").toString();
+                    }
+
+                  }
+                }
+
+                if (onlyChecking) {
+                  this.tabulator.updateData([
+                    {
+                      rowNumber: index,
+                      checkingStatus: errorMessage,
+                      status: "NOK",
+                    },
+                  ]);
+                } else {
+                  this.tabulator.updateData([
+                    {
+                      rowNumber: index,
+                      insertionStatus: errorMessage,
+                      status: "NOK",
+                    },
+                  ]);
+                }
+
+                let row = this.tabulator.getRow(index);
+                row.reformat();
+                this.errorNumber = this.errorNumber + 1;
+                this.progressValue = this.progressValue + 1;
+                resolve(error);
+              });
+        });
   }
 
   /**
@@ -1107,7 +1286,7 @@ export default class GermplasmTable extends Vue {
       if (insertionOK) {
         //Prepare pop-up to add any required columns
 
-        let csvColumns : string[] = data[0];
+        let csvColumns: string[] = data[0];
         let tableColNames = [];
 
         for (let colNumber in this.tableColumns) {
@@ -1116,37 +1295,38 @@ export default class GermplasmTable extends Vue {
         let duplicatableProperyOccurencesInCsv: Map<string, number> = new Map<string, number>();
         //Add new column to metadata if it is not already present.
         //If the column is one that can be duplicated, then calculate number of times it comes up
-        for(let csvCol of csvColumns){
+        for (let csvCol of csvColumns) {
           let existingDuplicatableProperty: SelectableItem = this.tryToGetExistingPropertyFromColumnName(csvCol);
-          if(existingDuplicatableProperty){
-            if(duplicatableProperyOccurencesInCsv.has(existingDuplicatableProperty.label)){
+          if (existingDuplicatableProperty) {
+            if (duplicatableProperyOccurencesInCsv.has(existingDuplicatableProperty.label)) {
               duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, duplicatableProperyOccurencesInCsv.get(existingDuplicatableProperty.label) + 1);
-            }else{
+            } else {
               duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, 1);
             }
-          }else{
-            if(!tableColNames.includes(csvCol)){
+          } else {
+            if (!tableColNames.includes(csvCol)) {
               this.newColumns.push(csvCol);
-              if(this.newColumnModalCheckboxData.filter((e) => e.value===csvCol).length === 0){
+              if (this.newColumnModalCheckboxData.filter((e) => e.value === csvCol).length === 0) {
                 this.newColumnModalCheckboxData.push({"value": csvCol, "name": csvCol});
               }
             }
           }
         }
         //Calculate the amount of missing columns for the duplicatable ones
-        for(let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()){
-          let duplicatableColumn : SelectableItem = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv);
+        for (let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()) {
+          let duplicatableColumn: SelectableItem = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv);
           let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumn.id);
-          if(!tableColumnQuantity){
+          if (!tableColumnQuantity) {
             tableColumnQuantity = 0;
           }
           let missingColumnQuantity: number = duplicatableProperyOccurencesInCsv.get(duplicatablePropertyNameInCsv) - tableColumnQuantity;
-          if(missingColumnQuantity > 0){
+          if (missingColumnQuantity > 0) {
             this.newColumnModalCheckboxData.push(
-                {"value": duplicatableColumn.label,
+                {
+                  "value": duplicatableColumn.label,
                   "name": duplicatableColumn.label + " (x" + missingColumnQuantity + ")"
                 });
-            for(let index = 0; index < missingColumnQuantity; index++){
+            for (let index = 0; index < missingColumnQuantity; index++) {
               this.newColumns.push(duplicatableColumn.label);
             }
           }
@@ -1154,21 +1334,21 @@ export default class GermplasmTable extends Vue {
 
         //Reconstruct data as a json before sending it to tabulator
         let dataInJsonFormat = [];
-        for(let rowIndex = 1 ; rowIndex<data.length; rowIndex++){
+        for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
           let nextJsonRow = {};
           nextJsonRow["rowNumber"] = rowIndex;
           //Save indexes of duplicatable columns
           let currentDuplicatableColumnsIndexes = {};
-          duplicatableProperyOccurencesInCsv.forEach((value, key)=>{
+          duplicatableProperyOccurencesInCsv.forEach((value, key) => {
             currentDuplicatableColumnsIndexes[this.tryToGetExistingPropertyFromColumnName(key).id] = 0;
           });
-          for(let colIndex in csvColumns){
+          for (let colIndex in csvColumns) {
             let colName = csvColumns[colIndex];
             let existingDuplcatableProperty = this.tryToGetExistingPropertyFromColumnName(colName);
-            if(existingDuplcatableProperty){
+            if (existingDuplcatableProperty) {
               nextJsonRow[existingDuplcatableProperty.id + currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]] = data[rowIndex][colIndex]
               currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]++;
-            }else{
+            } else {
               //Note : for now this means that any column that isn't listed as duplicatable will simply be overwritten if there are multiple columns
               nextJsonRow[colName] = data[rowIndex][colIndex]
             }
@@ -1185,6 +1365,7 @@ export default class GermplasmTable extends Vue {
       }
     }
   }
+
   //endregion
 
 }
@@ -1238,18 +1419,18 @@ en:
     name: Name
     uri: URI
     rdfType: Type
-    fromSpecies : Species URI
-    fromVariety : Variety URI
+    fromSpecies: Species URI
+    fromVariety: Variety URI
     fromAccession: Accession URI
     institute: Institute Code
     comment: Comment
     year: ProductionYear
     checkingStatus: Checking status
     insertionStatus: Insertion Status
-    downloadTemplate : Dowload template
-    resetTable : Reset table
-    check : Check
-    insert : Insert
+    downloadTemplate: Dowload template
+    resetTable: Reset table
+    check: Check
+    insert: Insert
     progressTitle: lines to scan
     progressValue: Progress
     emptyMessage: The table is empty
@@ -1290,28 +1471,28 @@ fr:
     name: Nom
     uri: URI
     rdfType: Type
-    fromSpecies : URI de l'espèce
-    fromVariety : URI de variété
+    fromSpecies: URI de l'espèce
+    fromVariety: URI de variété
     fromAccession: URI d'accession
     institute: Code institut
     comment: Commentaire
     year: Année
     checkingStatus: Statut
     insertionStatus: Statut
-    downloadTemplate : Télécharger un gabarit
-    resetTable : Vider tableau
-    check : Valider
-    insert : Insérer
+    downloadTemplate: Télécharger un gabarit
+    resetTable: Vider tableau
+    check: Valider
+    insert: Insérer
     progressTitle: lignes à parcourir
     progressValue: Progression
     emptyMessage: Le tableau est vide
-    close : Fermer
+    close: Fermer
     addRow: Ajouter ligne
     accessionNumber: Code Accession
     varietyCode: Code Variété
     lotNumber: Code Lot
     synonyms: Synonymes
-    subtaxa : Subtaxa
+    subtaxa: Subtaxa
     website: Site web
     addColumn: Ajouter colonne
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
@@ -1327,9 +1508,9 @@ fr:
     checkingStatusMessage: validé
     insertionStatusMessage: créé
     seeErrorLines: See lines
-    seeAll : see all 
+    seeAll: see all
     infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
-    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
+    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
     missingName: Le nom n'est pas renseigné à la ligne
     newColumns: Colonnes additionnelles

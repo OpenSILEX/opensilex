@@ -39,6 +39,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -128,7 +129,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
-        GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
+        GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
 
         if (!checkOnly) {
 
@@ -178,8 +179,10 @@ public class GermplasmAPI {
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
         List<GermplasmModel> models = new ArrayList<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        ClassModel classModel = ontologyDAO.getClassModel(germplasmDTOs.get(0).getType(), new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage());
         for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
-            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage()));
+            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModel));
         }
 
         if (!checkOnly) {
@@ -639,7 +642,7 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
     ) throws Exception {
         try {
-            GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
+            GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
             model = new GermplasmLogic(sparql, nosql, currentUser)
                     .update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();

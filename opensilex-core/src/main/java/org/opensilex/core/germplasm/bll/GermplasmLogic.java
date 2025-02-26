@@ -75,6 +75,13 @@ public class GermplasmLogic {
         return model;
     }
 
+    public List<GermplasmModel> create(List<GermplasmModel> germplasmModels) throws Exception, DisplayableResponseException {
+        checkBeforeCreateOrUpdate(germplasmModels, false);
+        germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
+        germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
+        return dao.createList(germplasmModels);
+    }
+
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
         checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
         retrieveLinkedSpeciesAndVariety(germplasmModel);

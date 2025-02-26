@@ -150,6 +150,59 @@ public class GermplasmAPI {
     }
 
     /**
+     *  create many germplasms if everything is correct, block everything if there is an error
+     * @param germplasmDTOs
+     * @param checkOnly
+     * @return
+     * @throws Exception
+     */
+    @POST
+    @Path("import")
+    @ApiOperation("Add many germplasms")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+            @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+
+    public Response createGermplasms(
+            @ApiParam("List of germplasm description") @Valid List<GermplasmCreationDTO> germplasmDTOs,
+            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+    ) throws Exception {
+        GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
+        List<GermplasmModel> models = new ArrayList<>();
+        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
+            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage()));
+        }
+
+        if (!checkOnly) {
+
+            try {
+                List<GermplasmModel> germplasms = germplasmBusiness.create(models);
+                List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
+                return new CreatedUriResponse(uris).getResponse();
+            } catch (DisplayableResponseException exception){
+                return exception.getResponse();
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+
+        } else {
+            //raise a Displayable Exception if the germplasm already exists or is incorrect
+            germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            return new ObjectUriResponse().getResponse();
+        }
+
+    }
+
+    /**
      *
      * @param uri
      * @return

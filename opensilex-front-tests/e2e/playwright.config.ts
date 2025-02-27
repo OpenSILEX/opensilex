@@ -10,7 +10,7 @@
 
 import {defineConfig, PlaywrightTestConfig} from '@playwright/test';
 
-let DEFAULT_BASE_URL = "http://localhost:8080"
+let DEFAULT_BASE_URL = "http://localhost:8081"
 
 console.log("===============================================ENV===============================================")
 console.log(process.env)

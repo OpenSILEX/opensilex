@@ -267,7 +267,7 @@ export default class AnnotationList extends Vue {
     let tableFields = [];
 
     if (this.columnsToDisplay.has("published")) {
-      tableFields.push({key: "published", label: "Annotation.published", sortable: true});
+      tableFields.push({key: "published", label: "Annotation.date", sortable: true});
     }
     if (this.columnsToDisplay.has("publisher")) {
       tableFields.push({key: "publisher", label: "Annotation.publisher", sortable: false});
@@ -330,7 +330,7 @@ en:
     motivation-help: Intent or motivation for the creation of the Annotation.
     description: Description
     publisher: Publisher
-    published: Published
+    date: Date
     target: Target
     list-title: Annotations
     already-exist: the annotation already exist
@@ -345,7 +345,7 @@ fr:
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"
     description: Description
-    published: Publié le
+    date: Date
     publisher: Publieur
     target: Cible
     list-title: Annotations

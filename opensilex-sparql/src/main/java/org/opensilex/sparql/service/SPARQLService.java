@@ -71,6 +71,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -899,15 +900,32 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
-    //TODO refactor if i keep this (everything is same as normal searchWithPagination apart from schema instead of resHandler)
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(
+    private static class SearchWithPaginationProps{
+        String lang;
+        Integer offset;
+        Integer limit;
+
+        public SearchWithPaginationProps(String lang, Integer offset, Integer limit) {
+            this.lang = lang;
+            this.offset = offset;
+            this.limit = limit;
+        }
+    }
+
+    /**
+     * Private function to hold the code that is in common of the search with pagination functions
+     * @param innerSearchFunction the inner search function to get list from a SearchWithPaginationProps
+     */
+    private <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationInnerCode(
             Node graph,
             Class<T> objectClass,
             String lang,
             ThrowingConsumer<SelectBuilder, Exception> filterHandler,
             Map<String, WhereHandler> customHandlerByFields,
-            SparqlSchema<T> modelBuilderSchema,
-            Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+            Integer page,
+            Integer pageSize,
+            Function<SearchWithPaginationProps, List<T>> innerSearchFunction
+    ) throws Exception {
         if (lang == null) {
             lang = getDefaultLang();
         }
@@ -915,7 +933,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         List<T> list;
         if (pageSize == null || pageSize == 0) {
-            list = searchUsingSchema(graph, objectClass, lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, null, null);
+            list = innerSearchFunction.apply(new SearchWithPaginationProps(lang, null, null));
         } else if (total > 0 && (page * pageSize) < total) {
             Integer offset = null;
             Integer limit = null;
@@ -926,13 +944,42 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 offset = page * pageSize;
                 limit = pageSize;
             }
-            list = searchUsingSchema(graph, objectClass, lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, offset, limit);
+            list = innerSearchFunction.apply(new SearchWithPaginationProps(lang, offset, limit));
         } else {
             list = new ArrayList<>();
         }
 
         return new ListWithPagination<>(list, page, pageSize, total);
+    }
 
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            SparqlSchema<T> modelBuilderSchema,
+            Collection<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws Exception {
+        Function<SearchWithPaginationProps, List<T>> innerSearchFunction = (props) -> {
+            try {
+                return searchUsingSchema(graph, objectClass, props.lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, props.offset, props.limit);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+        return searchWithPaginationInnerCode(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                page,
+                pageSize,
+                innerSearchFunction
+        );
     }
 
     /**
@@ -1063,37 +1110,35 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return searchWithPagination(getDefaultGraph(objectClass), objectClass, lang, filterHandler, null, null, orderByList, page, pageSize);
     }
 
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph,
-                                                                                      Class<T> objectClass,
-                                                                                      String lang,
-                                                                                      ThrowingConsumer<SelectBuilder, Exception> filterHandler,
-                                                                                      Map<String, WhereHandler> customHandlerByFields,
-                                                                                      ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                                      Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-        if (lang == null) {
-            lang = getDefaultLang();
-        }
-        int total = count(graph, objectClass, lang, filterHandler, customHandlerByFields);
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+            Collection<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws Exception {
 
-        List<T> list;
-        if (pageSize == null || pageSize == 0) {
-            list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, null, null);
-        } else if (total > 0 && (page * pageSize) < total) {
-            Integer offset = null;
-            Integer limit = null;
-            if (page < 0) {
-                page = 0;
+        Function<SearchWithPaginationProps, List<T>> innerSearchFunction = (props) -> {
+            try {
+                return search(graph, objectClass, props.lang, filterHandler, customHandlerByFields, resultHandler, orderByList, props.offset, props.limit);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            if (pageSize > 0) {
-                offset = page * pageSize;
-                limit = pageSize;
-            }
-            list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, offset, limit);
-        } else {
-            list = new ArrayList<>();
-        }
-
-        return new ListWithPagination<>(list, page, pageSize, total);
+        };
+        return searchWithPaginationInnerCode(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                page,
+                pageSize,
+                innerSearchFunction
+        );
 
     }
 

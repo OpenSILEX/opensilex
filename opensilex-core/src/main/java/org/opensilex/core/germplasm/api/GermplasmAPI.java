@@ -178,12 +178,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
-        List<GermplasmModel> models = new ArrayList<>();
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel classModel = ontologyDAO.getClassModel(germplasmDTOs.get(0).getType(), new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage());
-        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
-            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModel));
-        }
+        List<GermplasmModel> models = getGermplasmModels(germplasmDTOs);
 
         if (!checkOnly) {
 
@@ -207,6 +202,27 @@ public class GermplasmAPI {
             return new ObjectUriResponse().getResponse();
         }
 
+    }
+
+    /**
+     *  get models from DTOs. Create each needed classModel only one time.
+     */
+    private List<GermplasmModel> getGermplasmModels(List<GermplasmCreationDTO> germplasmDTOs) throws URISyntaxException, SPARQLException {
+        List<GermplasmModel> models = new ArrayList<>();
+
+        Map<URI, ClassModel> classModels = new HashMap<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        //get every different types from DTOs
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getType).distinct().toList();
+        for (URI type : germplasmsTypes) {
+            classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
+        }
+
+        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
+            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getType())));
+        }
+
+        return models;
     }
 
     /**

@@ -192,14 +192,18 @@ public class GermplasmAPI {
                 List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
                 return new CreatedUriResponse(uris).getResponse();
             } catch (DisplayableResponseException exception){
-                return exception.getResponse();
+                return new MultipleErrorResponse(Response.Status.BAD_REQUEST, "Germplasm creation error", Map.of("prefix:uri/bidon", exception.getMessage())).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }
 
         } else {
-            //raise a Displayable Exception if the germplasm already exists or is incorrect
-            germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            try {
+                germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            } catch (DisplayableResponseException e) {
+                return new MultipleErrorResponse(Response.Status.BAD_REQUEST, "Germplasm creation error", Map.of("prefix:uri/bidon", e.getMessage())).getResponse();
+            }
+
             return new ObjectUriResponse().getResponse();
         }
 

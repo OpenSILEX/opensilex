@@ -25,7 +25,8 @@
                 <opensilex-Icon :icon="icon" class="icon-title" />
               </slot>
               <span v-if="editMode">{{ $t(editTitle) }}</span>
-              <span v-else>{{ $t(createTitle) }}</span>         
+              <span v-else-if="readOnlyMode">{{ $t('Annotation.details') }}</span>
+              <span v-else>{{ $t(createTitle) }}</span>
             </h4>
           </i>
         </b-col>
@@ -108,6 +109,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   @Ref("componentRef") readonly componentRef!: any;
 
   editMode = false;
+  readOnlyMode = false;
 
   form: CreationDTOType | UpdateDTOType | {} = {};
 
@@ -257,7 +259,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
    */
   showCreateForm(passedForm?: UpdateDTOType | CreationDTOType) {
     this.opened = true;
-    
+    this.editMode = false;
+    this.readOnlyMode = false;
+
     if(!this.static) {
       this.modalRef.show();
     } 
@@ -293,21 +297,46 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   showEditForm(form: UpdateDTOType) {
-    this.opened = true;
+      this.opened = true;
+      this.editMode = true;
+      this.readOnlyMode = false;
 
-    this.editMode = true;
+      this.$nextTick(() => {
+          this.form = form;
 
-    this.$nextTick(() => {
-      this.form = form;
-      this.modalRef.show();
-      this.validatorRef.reset();
-      if (this.getFormRef().reset) {
-        this.getFormRef().reset();
-      }
-      if(this.getFormRef().onShowEditForm){
-        this.getFormRef().onShowEditForm();
-      }
-    });
+          // Correction ici
+          if (this.getFormRef().readOnlyMode !== undefined) {
+              this.getFormRef().readOnlyMode = false; // On force le mode édition
+          }
+
+          this.modalRef.show();
+          this.validatorRef.reset();
+          if (this.getFormRef().reset) {
+              this.getFormRef().reset();
+          }
+          if(this.getFormRef().onShowEditForm){
+              this.getFormRef().onShowEditForm();
+          }
+      });
+  }
+
+
+  showDetailsForm(form: UpdateDTOType) {
+      this.opened = true;
+      this.editMode = false;
+      this.readOnlyMode = true;
+      this.$nextTick(() => {
+          this.form = form;
+          this.modalRef.show();
+          this.validatorRef.reset();
+          if (this.getFormRef().reset) {
+              this.getFormRef().reset();
+          }
+          // Passer le mode readOnlyMode à true
+          if (this.getFormRef().readOnlyMode !== undefined) {
+              this.getFormRef().readOnlyMode = true;
+          }
+      });
   }
 
   hide() {

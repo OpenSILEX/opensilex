@@ -3,42 +3,56 @@
 
         <div class="row">
             <div class="col">
-
+                <!-- Si en lecture seule, afficher juste le texte -->
+                <div v-if="readOnlyMode">
+                    <label class="font-weight-bold">{{ $t("component.common.uri") }} :</label>
+                    <p>{{ form.uri }}</p>
+                </div>
+                <!-- Sinon, afficher le champ de formulaire -->
                 <opensilex-UriForm
-                        :uri.sync="form.uri"
-                        label="component.common.uri"
-                        :editMode="editMode"
-                        :generated.sync="uriGenerated"
-                        :required="true"
-                        helpMessage="component.common.uri-help-message"
+                    v-else
+                    :uri.sync="form.uri"
+                    label="component.common.uri"
+                    :editMode="editMode"
+                    :generated.sync="uriGenerated"
+                    :required="true"
+                    helpMessage="component.common.uri-help-message"
                 ></opensilex-UriForm>
             </div>
         </div>
 
         <div class="row">
             <div class="col">
+                <!-- Si en lecture seule, afficher la motivation en texte -->
+                <div v-if="readOnlyMode">
+                    <label class="font-weight-bold">{{ $t("Annotation.motivation") }} :</label>
+                    <p v-if="form.motivation && form.motivation.name">{{ form.motivation.name }}</p>
+                    <p v-else>Motivation inconnue</p>
+                </div>
+
+                <!-- Sinon, afficher le champ de sélection -->
                 <opensilex-FormSelector
-                        label="Annotation.motivation"
-                        :required="true"
-                        :multiple="false"
-                        :disabled="viewMode"
-                        :selected.sync="form.motivation"
-                        :options="motivations"
-                        :itemLoadingMethod="loadMotivation"
-                        noResultsText="Annotation.no-motivation"
-                        helpMessage="Annotation.motivation-help"
-                        placeholder="Annotation.motivation-placeholder"
+                    v-else
+                    label="Annotation.motivation"
+                    :required="true"
+                    :multiple="false"
+                    :disabled="viewMode"
+                    :selected.sync="form.motivation"
+                    :options="motivations"
+                    :itemLoadingMethod="loadMotivation"
+                    noResultsText="Annotation.no-motivation"
+                    helpMessage="Annotation.motivation-help"
+                    placeholder="Annotation.motivation-placeholder"
                 ></opensilex-FormSelector>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row" v-if="!readOnlyMode">
             <div class="col">
-                <!-- bodyValue -->
                 <opensilex-TextAreaForm
-                        :value.sync="form.description"
-                        :required="true"
-                        label="Annotation.description">
+                    :value.sync="form.description"
+                    :required="true"
+                    label="Annotation.description">
                 </opensilex-TextAreaForm>
             </div>
         </div>
@@ -47,100 +61,100 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {AnnotationsService} from "opensilex-core/api/annotations.service";
-    import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-    import {AnnotationCreationDTO, NamedResourceDTO } from 'opensilex-core/index';
+import {Component, Prop, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import {AnnotationCreationDTO, NamedResourceDTO } from 'opensilex-core/index';
 
-    @Component
-    export default class AnnotationForm extends Vue {
+@Component
+export default class AnnotationForm extends Vue {
 
-        @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("validatorRef") readonly validatorRef!: any;
 
-        $opensilex: OpenSilexVuePlugin;
-        $service: AnnotationsService
+    $opensilex: OpenSilexVuePlugin;
+    $service: AnnotationsService
 
-        uriGenerated = true;
-        editMode = false;
-        viewMode = false;
+    uriGenerated = true;
+    editMode = false;
+    viewMode = false;
 
-        errorMsg: String = "";
+    errorMsg: String = "";
 
-        motivations = [];
+    motivations = [];
 
-        @Prop({
-            default: () => AnnotationForm.getEmptyForm()
-        })
-        form;
+    @Prop({ default: () => AnnotationForm.getEmptyForm() }) form;
+    @Prop({ type: Boolean, default: false }) readOnlyMode;
 
-        private langUnwatcher;
-        mounted() {
-            this.langUnwatcher = this.$store.watch(
-                () => this.$store.getters.language,
-                () => {
-                    this.searchMotivations();
-                }
-            );
-        }
-
-        beforeDestroy() {
-            this.langUnwatcher();
-        }
-
-        created(){
-            this.$service = this.$opensilex.getService("opensilex.AnnotationsService");
-            this.searchMotivations();
-        }
-
-        searchMotivations() {
-            this.$service.searchMotivations(undefined, ["name=asc"], undefined, undefined)
-                .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-                    if (http && http.response) {
-                        this.motivations = [];
-                        http.response.result.forEach(motivationDto => {
-                            this.motivations.push({label: motivationDto.name, id: motivationDto.uri})
-                        })
-                    }
-                }).catch(this.$opensilex.errorHandler);
-        }
-
-        loadMotivation(motivations: Array<any>): Array<any>{
-
-            if(! motivations || motivations.length == 0){
-                return undefined;
+    private langUnwatcher;
+    mounted() {
+        this.langUnwatcher = this.$store.watch(
+            () => this.$store.getters.language,
+            () => {
+                this.searchMotivations();
             }
-            // in edit mode, the loaded motivation is an object composed of uri and name
-            if(motivations[0].uri){
-                let motivation = [{label: this.form.motivation.name, id: this.form.motivation.uri}];
-                this.form.motivation = this.form.motivation.uri;
-                return motivation;
-            }
-
-            return [this.motivations.find(motivation => motivation.id == motivations[0])];
-        }
-
-        static getEmptyForm(): AnnotationCreationDTO {
-            return {
-                uri: undefined,
-                motivation: undefined,
-                targets: [],
-                description: undefined
-            };
-        }
-
-        getEmptyForm(): AnnotationCreationDTO {
-            return AnnotationForm.getEmptyForm();
-        }
-
-        reset() {
-            this.uriGenerated = true;
-            return this.validatorRef.reset();
-        }
-
-        validate() {
-            return this.validatorRef.validate();
-        }
+        );
     }
+
+    beforeDestroy() {
+        this.langUnwatcher();
+    }
+
+    created(){
+        this.$service = this.$opensilex.getService("opensilex.AnnotationsService");
+        this.searchMotivations();
+    }
+
+    searchMotivations() {
+        this.$service.searchMotivations(undefined, ["name=asc"], undefined, undefined)
+            .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+                if (http && http.response) {
+                    this.motivations = [];
+                    http.response.result.forEach(motivationDto => {
+                        this.motivations.push({label: motivationDto.name, id: motivationDto.uri})
+                    })
+                }
+            }).catch(this.$opensilex.errorHandler);
+    }
+
+    loadMotivation(motivations: Array<any>): Array<any>{
+        if(!motivations || motivations.length == 0){
+            return undefined;
+        }
+        if(motivations[0].uri){
+            let motivation = [{label: this.form.motivation.name, id: this.form.motivation.uri}];
+            this.form.motivation = this.form.motivation.uri;
+            return motivation;
+        }
+        return [this.motivations.find(motivation => motivation.id == motivations[0])];
+    }
+
+    getMotivationLabel(motivationUri: string) {
+        const found = this.motivations.find(m => m.id === motivationUri);
+        return found ? found.label : motivationUri;
+    }
+
+    static getEmptyForm(): AnnotationCreationDTO {
+        return {
+            uri: undefined,
+            motivation: undefined,
+            targets: [],
+            description: undefined
+        };
+    }
+
+    getEmptyForm(): AnnotationCreationDTO {
+        return AnnotationForm.getEmptyForm();
+    }
+
+    reset() {
+        this.uriGenerated = true;
+        return this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
+    }
+}
 </script>

@@ -27,9 +27,9 @@
                 </opensilex-TextView>
               </template>
 
-              <template v-slot:cell(author)="{data}">
-                <opensilex-TextView v-if="data.item.author"
-                                    :value="getAccountNames(data.item.author)">
+              <template v-slot:cell(publisher)="{data}">
+                <opensilex-TextView v-if="data.item.publisher"
+                                    :value="getAccountNames(data.item.publisher)">
                 </opensilex-TextView>
               </template>
 
@@ -55,6 +55,12 @@
 
               <template v-slot:cell(actions)="{data}">
                 <b-button-group size="sm">
+                  <opensilex-DetailButton
+                      v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                      @click="showDetails(data.item)"
+                      label="Annotation details"
+                      :small="true"
+                  />
                   <opensilex-EditButton
                       v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
                       @click="editAnnotation(data.item)"
@@ -242,8 +248,9 @@ export default class AnnotationList extends Vue {
       return undefined;
     }
     let accountDTO = this.accountsByUri.get(accounturi);
+
     if (accountDTO){
-      return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
+     return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
     }
     return undefined;
   }
@@ -262,6 +269,10 @@ export default class AnnotationList extends Vue {
     this.annotationModalForm.showEditForm(copy);
   }
 
+  showDetails(annotation) {
+      this.annotationModalForm.showDetails(annotation);
+  }
+
   get fields() {
 
     let tableFields = [];
@@ -276,12 +287,13 @@ export default class AnnotationList extends Vue {
       tableFields.push({key: "description", label: "Annotation.description", sortable: true});
     }
 
-    if (this.columnsToDisplay.has("motivation")) {
-      tableFields.push({key: "motivation", label: "Annotation.motivation", sortable: true});
-    }
-    if (this.columnsToDisplay.has("uri")) {
-      tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
-    }
+      // Retirer "motivation" et "uri" des colonnes affichées
+      // if (this.columnsToDisplay.has("motivation")) {
+      //   tableFields.push({ key: "motivation", label: "Annotation.motivation", sortable: true });
+      // }
+      // if (this.columnsToDisplay.has("uri")) {
+      //   tableFields.push({ key: "uri", label: "component.common.uri", sortable: true });
+      // }
     if (this.columnsToDisplay.has("targets")) {
       tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
     }

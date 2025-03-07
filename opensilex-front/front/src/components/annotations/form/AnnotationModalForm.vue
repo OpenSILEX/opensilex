@@ -57,6 +57,10 @@ export default class AnnotationModalForm extends Vue {
         this.modalForm.showEditForm(form);
     }
 
+    showDetails(annotation: AnnotationUpdateDTO) {
+        this.modalForm.showDetailsForm(annotation);
+    }
+
     @Prop()
     editMode;
 

@@ -4,6 +4,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
@@ -21,6 +22,7 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.NotFoundURIListException;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlMinimalFetcher;
@@ -32,7 +34,9 @@ import org.opensilex.sparql.service.query.SparqlMultiGraphQuery;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class used for performing the validation of {@link DataModel} during insertion
@@ -76,8 +80,8 @@ public class DataValidation {
     final Map<String, VariableModel> variableByUri;
     final Map<String, Map<String, URI>> targetsByXp;
     final Map<String, ProvenanceModel> provenancesByUri;
-    final Map<String, SPARQLResourceModel> agentByUri;
-    final Map<String, SPARQLResourceModel> activitiesByUri;
+    final Map<String, ProvEntityModel> agentByUri;
+    final Map<String, ProvEntityModel> activitiesByUri;
 
     final Set<URI> variableURIs;
     final Set<URI> experimentURIs;
@@ -88,6 +92,8 @@ public class DataValidation {
     final MongoDBService mongodb;
     final AccountModel user;
 
+    private final DataFileDaoV2 datafileDao;
+
     final SparqlNoProxyFetcher<VariableModel> variableFetcher;
 
     private static final List<Class<? extends SPARQLResourceModel>> agentClasses = List.of(DeviceModel.class, AccountModel.class);
@@ -97,6 +103,8 @@ public class DataValidation {
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.user = user;
+
+        datafileDao = new DataFileDaoV2(this.mongodb, this.sparql);
 
         try {
             variableFetcher =  new SparqlNoProxyFetcher<>(VariableModel.class, sparql, true);
@@ -251,15 +259,23 @@ public class DataValidation {
             new SparqlMultiClassQuery<>(agentClasses, agentByUri.keySet(), sparql).getResults(
                     result -> fetcher.getInstance(result, null),
                     NO_AGENT_FOUND_ERROR_MSG
-            ).forEach(agent -> agentByUri.put(agent.getUri().toString(), agent));
+            ).forEach(agent -> agentByUri.put(agent.getUri().toString(), new ProvEntityModel(agent)));
         }
 
-        // Get existing activities (find inside all the repository)
+        // Get existing activities (find inside all the repository + mongo)
         if(! activitiesByUri.isEmpty()){
-            new SparqlMultiGraphQuery<>(sparql, Collections.emptyMap(), activitiesByUri.keySet()).getResults(
-                    result -> fetcher.getInstance(result, null),
-                    NO_ACTIVITY_FOUND_ERROR_MSG
-            ).forEach(activity -> activitiesByUri.put(activity.getUri().toString(), activity));
+            var sparqlActivities = new SparqlMultiGraphQuery<>(sparql, Collections.emptyMap(), activitiesByUri.keySet())
+                    .resultsAsStream(result -> fetcher.getInstance(result, null)).map(ProvEntityModel::new);
+
+            var mongoActivities = datafileDao.findByUris(activitiesByUri.keySet().stream().map(URI::create), activitiesByUri.size())
+                    .stream().map(ProvEntityModel::new);
+
+            var activityMap = Stream.concat(sparqlActivities, mongoActivities)
+                    .collect(Collectors.toMap(entity -> entity.getUri().toString(), Function.identity()));
+            if (activityMap.size() != activitiesByUri.size()) {
+                throw new NotFoundURIListException(activitiesByUri.keySet().stream().map(URI::create));
+            }
+            activitiesByUri.putAll(activityMap);
         }
     }
 
@@ -321,14 +337,14 @@ public class DataValidation {
 
     private List<ProvEntityModel> updateProvenanceEntities(DataProvenanceModel dataProvenance,
                                                            List<ProvEntityModel> globalProvEntities,
-                                                           Map<String, SPARQLResourceModel> entityByUri,
+                                                           Map<String, ProvEntityModel> entityByUri,
                                                            Map<String, List<ProvEntityModel>> agentsToProvEntity
                                                            ) {
 
         // Complete agent with type from associated agent
         if (!CollectionUtils.isEmpty(globalProvEntities)) {
             globalProvEntities.forEach(entity -> {
-                SPARQLResourceModel cachedModel = entityByUri.get(entity.getUri().toString());
+                var cachedModel = entityByUri.get(entity.getUri().toString());
                 entity.setType(cachedModel.getType());
             });
             return globalProvEntities;

@@ -9,8 +9,10 @@ package org.opensilex.core.data.dal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.opensilex.core.provenance.dal.GlobalProvenanceEntity;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.server.rest.serialization.uri.UriJsonDeserializer;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -34,9 +36,21 @@ public class ProvEntityModel {
 
     public ProvEntityModel(){}
 
+    public ProvEntityModel(URI uri, URI type) {
+        setUri(uri);
+        setType(type);
+    }
+
+    public ProvEntityModel(SPARQLResourceModel model) {
+        this(model.getUri(), model.getType());
+    }
+
+    public ProvEntityModel(MongoModel model) {
+        this(model.getUri(), model.getRdfType());
+    }
+
     public ProvEntityModel(GlobalProvenanceEntity entity){
-        setUri(entity.getUri());
-        setType(entity.getRdfType());
+        this(entity.getUri(), entity.getRdfType());
     }
 
     public static final String URI_FIELD = "uri";

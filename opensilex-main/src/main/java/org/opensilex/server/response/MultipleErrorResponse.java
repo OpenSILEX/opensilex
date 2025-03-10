@@ -15,8 +15,8 @@ import java.util.Map;
 
 public class MultipleErrorResponse extends JsonResponse<MultipleErrorDTO> {
 
-    public MultipleErrorResponse(Status status, String title, Map<String, String> errors) {
-        super(status);
+    public MultipleErrorResponse(String title, Map<String, String> errors) {
+        super(Status.BAD_REQUEST);
         metadata = new MetadataDTO(new PaginationDTO());
         result = new MultipleErrorDTO(
                 title,

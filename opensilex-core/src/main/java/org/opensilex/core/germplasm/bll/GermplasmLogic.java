@@ -21,6 +21,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.MultipleErrorException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -77,7 +78,11 @@ public class GermplasmLogic {
     }
 
     public List<GermplasmModel> create(List<GermplasmModel> germplasmModels) throws Exception, DisplayableResponseException {
-        checkBeforeCreateOrUpdate(germplasmModels, false);
+        var errors = checkBeforeCreateOrUpdate(germplasmModels, false);
+        if ( ! errors.isEmpty()){
+            throw new MultipleErrorException("getting errors while creating germplasms", errors);
+        }
+
         germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
         germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
         return dao.createList(germplasmModels);
@@ -280,9 +285,7 @@ public class GermplasmLogic {
                 }
             });
 
-            germplasmsErrorByType.forEach((type, uris) -> {
-                uris.forEach(uri -> errors.put(uri.toString(), type+" : rdfType doesn't exist in the ontology"));
-            });
+            germplasmsErrorByType.forEach((type, uris) -> uris.forEach(uri -> errors.put(uri.toString(), type+" : rdfType doesn't exist in the ontology")));
         }
     }
 

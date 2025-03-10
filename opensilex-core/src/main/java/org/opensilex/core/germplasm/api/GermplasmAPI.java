@@ -32,6 +32,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.MultipleErrorException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
@@ -168,9 +169,8 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-            @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
+            @ApiResponse(code = 201, message = "Added germplasms (variety, accession, plantMaterialLot)", response = URI.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
     public Response createGermplasms(
@@ -186,19 +186,17 @@ public class GermplasmAPI {
                 List<GermplasmModel> germplasms = germplasmBusiness.create(models);
                 List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
                 return new CreatedUriResponse(uris).getResponse();
-            } catch (DisplayableResponseException exception){
-                return new MultipleErrorResponse(Response.Status.BAD_REQUEST, "Germplasm creation error", Map.of("prefix:uri/bidon", exception.getMessage())).getResponse();
+            } catch (MultipleErrorException exception){
+                return exception.getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }
 
         } else {
-            try {
-                germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
-            } catch (DisplayableResponseException e) {
-                return new MultipleErrorResponse(Response.Status.BAD_REQUEST, "Germplasm creation error", Map.of("prefix:uri/bidon", e.getMessage())).getResponse();
+            var errors = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            if (!errors.isEmpty()) {
+                return new MultipleErrorResponse("Germplasm creation error", errors).getResponse();
             }
-
             return new ObjectUriResponse().getResponse();
         }
 

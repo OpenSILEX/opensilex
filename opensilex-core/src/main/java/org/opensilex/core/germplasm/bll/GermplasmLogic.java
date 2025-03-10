@@ -32,6 +32,7 @@ import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -128,14 +129,18 @@ public class GermplasmLogic {
         return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 
-    public void checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws
-            Exception, DisplayableResponseException {
+    /**
+     * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
+     */
+    public Map<String, String> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException, URISyntaxException {
+        Map<String, String> errors = new HashMap<>();
 
         if (!update) {
-            validateUrisDoesNotExistOrThrow(germplasmModels.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()));
+            var uriList = germplasmModels.stream().map(SPARQLResourceModel::getUri).toList();
+            lookForAlreadyExistantUri(uriList, errors);
         }
 
-        validateTypesOrThrow(germplasmModels);
+        validateTypesOrThrow(germplasmModels, errors);
 
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
         List<URI> speciesUris = new ArrayList<>();
@@ -227,9 +232,15 @@ public class GermplasmLogic {
                 }
             }
         });
+
+        return errors;
     }
 
-    private void validateUrisDoesNotExistOrThrow(List<URI> germplasmsUris) throws SPARQLException, DisplayableResponseException {
+    /**
+     * @param germplasmsUris to check if they are not already in the database
+     * @param errors map in which to put the errors
+     */
+    private void lookForAlreadyExistantUri(List<URI> germplasmsUris, Map<String, String> errors) throws SPARQLException {
         Set<URI> uniqueUris = new HashSet<>(germplasmsUris);
         Set<URI> nonExistingUris = new HashSet<>();
         for (URI germplasmUri : uniqueUris) {
@@ -238,23 +249,18 @@ public class GermplasmLogic {
             }
         }
 
-        if (!nonExistingUris.isEmpty()) {
-            throw new DisplayableResponseException(
-                    "Duplicated URIs: " + nonExistingUris,
-                    Response.Status.CONFLICT,
-                    "Germplasm URI already exists",
-                    "component.germplasms.errors.duplicateUri",
-                    new HashMap<>() {{
-                        put("uri", nonExistingUris.toString());
-                    }}
-            );
-        }
+        nonExistingUris.forEach(uri -> errors.put(uri.toString(), "Germplasm URI already exists"));
     }
 
-    private void validateTypesOrThrow(List<GermplasmModel> germplasmModels) throws DisplayableResponseException{
+    /**
+     * @param germplasmModels to check if their types exist in the database
+     * @param errors map in which to put the errors. Error format : key = germplasm URI, value = error message (explaining which type doesn't exist)
+     */
+    private void validateTypesOrThrow(List<GermplasmModel> germplasmModels, Map<String, String> errors) {
         Set<URI> uniqueTypes = germplasmModels.stream()
                 .map(GermplasmModel::getType)
                 .collect(Collectors.toSet());
+
         Set<URI> nonExistingTypes = new HashSet<>();
         for (URI type : uniqueTypes) {
             boolean isType = cacheType.get(new GermplasmLogic.KeyType(type), this::checkType);
@@ -263,16 +269,20 @@ public class GermplasmLogic {
             }
         }
 
+        nonExistingTypes.forEach(type -> errors.put(type.toString(), "rdfType doesn't exist in the ontology"));
+
         if (!nonExistingTypes.isEmpty()) {
-            throw new DisplayableResponseException(
-                    "Unknown types: " + nonExistingTypes,
-                    Response.Status.BAD_REQUEST,
-                    "rdfType doesn't exist in the ontology",
-                    "component.germplasms.errors.wrongRdfType",
-                    new HashMap<>() {{
-                        put("type", nonExistingTypes.toString());
-                    }}
-            );
+            Map<URI, List<URI>> germplasmsErrorByType = new HashMap<>();
+            nonExistingTypes.forEach(type -> germplasmsErrorByType.put(type, new ArrayList<>()));
+            germplasmModels.forEach(germplasmModel -> {
+                if (nonExistingTypes.contains(germplasmModel.getType())) {
+                    germplasmsErrorByType.get(germplasmModel.getType()).add(germplasmModel.getUri());
+                }
+            });
+
+            germplasmsErrorByType.forEach((type, uris) -> {
+                uris.forEach(uri -> errors.put(uri.toString(), type+" : rdfType doesn't exist in the ontology"));
+            });
         }
     }
 

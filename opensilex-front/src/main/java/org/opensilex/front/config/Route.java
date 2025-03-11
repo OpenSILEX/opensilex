@@ -30,4 +30,7 @@ public interface Route {
 
     @ConfigDescription("Associated RDF type")
     public String rdfType();
+
+    @ConfigDescription("Route name")
+    public String name();
 }

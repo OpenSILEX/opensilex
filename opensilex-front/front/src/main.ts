@@ -11,10 +11,8 @@ import { createApp,  ref, reactive, computed  } from "vue";
 import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
+import "bootstrap-icons/font/bootstrap-icons.css";
 
-console.log("Début du main.ts")
-
-console.log("mount app")
 const i18n = createI18n({
   locale: 'fr',
   messages: {
@@ -22,10 +20,6 @@ const i18n = createI18n({
     fr
   }
 });
-// const app = createApp(App)
-// .use(i18n);
-
-// app.mount('#app');
 
 import "reflect-metadata"
 
@@ -107,14 +101,20 @@ const manageError = function manageError(error) {
 // Load default components
 console.debug("Load default components...");
 import components from './components';
-// import { Router } from 'vue-router';
+import { Router } from 'vue-router';
 // @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
-import App from './App.vue'
+import App from './App.vue';
 
 const app = createApp(App);
 const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
+
+// Fournit l'instance pour injection dans Vue 3
+app.provide("$opensilex", $opensilex);
+
+// Ajout aux propriétés globales (utile pour l'option API)
 app.config.globalProperties.$opensilex = $opensilex;
+
 app.use(i18n)
 app.use($opensilex);
 app.use(store);
@@ -237,7 +237,7 @@ $opensilex.loadModules([
       const config: FrontConfigDTO = configResponse.response.result;
       $opensilex.setConfig(config);
 
-      store.commit("setConfig", config);
+      store.commit("setConfig", { config, app });
       console.debug("Configuration loaded", config);
 
       // Define user
@@ -323,7 +323,8 @@ $opensilex.loadModules([
                 // Init routing
                 console.debug("Initialize routing");
                 store.commit("resetRouter");
-                // let router: Router = store.state.openSilexRouter.getRouter();
+                let router: Router = store.state.openSilexRouter.getRouter();
+                app.use(router);
 
                 // Initialise main layout components from configuration
                 console.debug("Define initial modules to load...");
@@ -357,7 +358,7 @@ $opensilex.loadModules([
                   // Initialize main application rendering
                   console.debug("Initialize main application rendering");
                   let vueOptions: any = {
-                    // router,
+                    router,
                     store,
                     render: h => h(App, {
                       props: {

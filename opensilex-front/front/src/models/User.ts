@@ -179,7 +179,9 @@ export class User {
     }
 
     public getTokenData(key: string) {
-        console.debug("Get token data", key, this.tokenData[key], this.tokenData);
+        // console.debug("Get token data", key, this.tokenData[key], this.tokenData);
+        console.debug("Get token data",  this.tokenData);
+
         return this.tokenData[key];
     }
 }

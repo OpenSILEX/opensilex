@@ -13,6 +13,7 @@ package org.opensilex.core.germplasm.bll;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -34,9 +35,9 @@ import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class GermplasmLogic {
@@ -78,7 +79,7 @@ public class GermplasmLogic {
         return model;
     }
 
-    public List<GermplasmModel> create(List<GermplasmModel> germplasmModels) throws Exception, DisplayableResponseException {
+    public List<GermplasmModel> create(List<GermplasmModel> germplasmModels) throws Exception {
         var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, false);
         if (multipleErrorObject.hasErrors()){
             throw new MultipleErrorException("getting errors while creating germplasms", multipleErrorObject);
@@ -138,7 +139,7 @@ public class GermplasmLogic {
     /**
      * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
      */
-    public MultipleErrorObject checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException, URISyntaxException {
+    public MultipleErrorObject checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
         MultipleErrorObject errors = new MultipleErrorObject();
 
         if (!update) {
@@ -148,45 +149,7 @@ public class GermplasmLogic {
 
         validateTypes(germplasmModels, errors);
 
-        List<URI> speciesUris = new ArrayList<>();
-        List<URI> varietyUris = new ArrayList<>();
-        List<URI> accessionUris = new ArrayList<>();
-        germplasmModels.forEach(germplasmModel -> {
-            if (germplasmModel.getSpecies() != null) {
-                speciesUris.add(germplasmModel.getSpecies().getUri());
-            }
-            if (germplasmModel.getVariety() != null) {
-                varietyUris.add(germplasmModel.getVariety().getUri());
-            }
-            if (germplasmModel.getAccession() != null) {
-                accessionUris.add(germplasmModel.getAccession().getUri());
-            }
-        });
-
-        if ( ! speciesUris.isEmpty() ) {
-            validateGermplasmDependenciesExists(
-                    speciesUris,
-                    new URI(Oeso.Species.getURI()),
-                    "species");
-        }
-
-        if ( ! varietyUris.isEmpty() ) {
-            validateGermplasmDependenciesExists(
-                    varietyUris,
-                    new URI(Oeso.Variety.getURI()),
-                    "variety",
-                    "component.germplasms.errors.unknownVariety",
-                    "unknownVariety");
-        }
-
-        if ( ! accessionUris.isEmpty() ) {
-            validateGermplasmDependenciesExists(
-                    accessionUris,
-                    new URI(Oeso.Accession.getURI()),
-                    "accession",
-                    "component.germplasms.errors.unknownAccession",
-                    "unknownAccession");
-        }
+        validateGermplasmDependenciesExists(germplasmModels, errors);
 
         validateAccessionVarietyOrSpeciesAreGivenOrThrow(germplasmModels);
 
@@ -286,42 +249,74 @@ public class GermplasmLogic {
     }
 
     /**
-     * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database
+     * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database and has the right type
      */
-    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, Map<String, String> errors) throws SPARQLException, DisplayableResponseException {
-        List<URI> speciesUris = new ArrayList<>();
-        List<URI> varietyUris = new ArrayList<>();
-        List<URI> accessionUris = new ArrayList<>();
+    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObject errors) throws SPARQLException, DisplayableResponseException {
+        //list every URI by type, type being species, variety or accession
+        Map<Resource, Set<URI>> urisByType = Map.of(Oeso.Species, new HashSet<>(), Oeso.Variety, new HashSet<>(), Oeso.Accession, new HashSet<>());
         germplasmModels.forEach(germplasmModel -> {
             if (germplasmModel.getSpecies() != null) {
-                speciesUris.add(germplasmModel.getSpecies().getUri());
+                urisByType.get(Oeso.Species).add(germplasmModel.getSpecies().getUri());
             }
             if (germplasmModel.getVariety() != null) {
-                varietyUris.add(germplasmModel.getVariety().getUri());
+                urisByType.get(Oeso.Variety).add(germplasmModel.getVariety().getUri());
             }
             if (germplasmModel.getAccession() != null) {
-                accessionUris.add(germplasmModel.getAccession().getUri());
+                urisByType.get(Oeso.Accession).add(germplasmModel.getAccession().getUri());
             }
         });
 
-        Set<URI> uniqueUris = new HashSet<>(uris);
-        Set<URI> nonExistingUris = new HashSet<>();
-        for (URI uri : uniqueUris) {
-            if (!sparql.uriExists(rdfType, uri)) {
-                nonExistingUris.add(uri);
-            }
+        //list every URI that doesn't exist in the database with the right type
+        Map<Resource, List<URI>> uriThatDoesntExistWithThisType = new HashMap<>();
+        for (Map.Entry<Resource, Set<URI>> entry : urisByType.entrySet()) {
+            checkUrisExistsWithType(entry.getKey(), entry.getValue(), uriThatDoesntExistWithThisType);
         }
 
-        if (!nonExistingUris.isEmpty()) {
-            throw new DisplayableResponseException(
-                    "Unknown "+type+": " + nonExistingUris,
-                    Response.Status.BAD_REQUEST,
-                    "The given "+type+" doesn't exist in the database",
-                    errorTranslationKey,
-                    new HashMap<>() {{
-                        put(keyErrorTranslationValues, nonExistingUris.toString());
-                    }}
-            );
+        BiConsumer<URI, Resource> addErrorIfUriDoesntExistWithType = (uri, type) -> {
+            var uriList = uriThatDoesntExistWithThisType.get(type);
+            if (uriList != null && uriList.contains(uri)) {
+                errors.addError(uri.toString(), String.format("no %s found with this uri : %s .",type.getLocalName() ,uri));
+            }
+        };
+
+        // fill the errors map
+        if (!uriThatDoesntExistWithThisType.isEmpty()) {
+            germplasmModels.forEach(germplasmModel -> {
+                if (germplasmModel.getSpecies() != null) {
+                    var specieUri = germplasmModel.getSpecies().getUri();
+                    var typeToCheck = Oeso.Species;
+                    addErrorIfUriDoesntExistWithType.accept(specieUri, typeToCheck);
+                }
+                if (germplasmModel.getVariety() != null) {
+                    var varietyUri = germplasmModel.getVariety().getUri();
+                    var typeToCheck = Oeso.Variety;
+                    addErrorIfUriDoesntExistWithType.accept(varietyUri, typeToCheck);
+                }
+                if (germplasmModel.getAccession() != null) {
+                    var accessionUri = germplasmModel.getAccession().getUri();
+                    var typeToCheck = Oeso.Accession;
+                    addErrorIfUriDoesntExistWithType.accept(accessionUri, typeToCheck);
+                }
+            });
+        }
+    }
+
+    /**
+     * if a URI does not exist with the good type, add it to the map uriThatDoesntExistWithThisType
+     */
+    private void checkUrisExistsWithType(Resource type, Collection<URI> uris, Map<Resource, List<URI>> uriThatDoesntExistWithThisType) throws SPARQLException {
+        URI typeURI = URI.create(type.getURI());
+
+        for (URI uri : uris) {
+            if (!sparql.uriExists(typeURI, uri)) {
+                var uriList = uriThatDoesntExistWithThisType.get(type);
+                if (uriList == null) {
+                    uriList = new ArrayList<>();
+                    uriThatDoesntExistWithThisType.put(type, uriList);
+                } else {
+                    uriList.add(uri);
+                }
+            }
         }
     }
 

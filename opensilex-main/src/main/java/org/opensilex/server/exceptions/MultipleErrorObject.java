@@ -10,7 +10,6 @@
 
 package org.opensilex.server.exceptions;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +20,10 @@ import java.util.Map;
  * @see org.opensilex.server.response.MultipleErrorDTO to a better understanding of the structure and the usage.
  */
 public class MultipleErrorObject {
-    private Map<String, List<String>> errors;
+    private final Map<String, List<String>> errors;
 
     public MultipleErrorObject() {
         this.errors = new HashMap<>();
-    }
-
-    public MultipleErrorObject(Map<String, List<String>> errors) {
-        this.errors = errors;
     }
 
     public Map<String, List<String>> getErrors() {
@@ -36,8 +31,14 @@ public class MultipleErrorObject {
     }
 
     public void addError(String key, String error) {
-        errors.computeIfAbsent(key, k -> new ArrayList<>());
-        errors.get(key).add(error);
+        var errorList = errors.get(key);
+        if (errorList == null) {
+            errorList = List.of(error);
+            errors.put(key, errorList);
+            return;
+        }
+
+        errorList.add(error);
     }
 
     public boolean hasErrors() {

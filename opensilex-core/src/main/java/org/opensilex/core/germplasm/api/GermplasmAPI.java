@@ -193,9 +193,9 @@ public class GermplasmAPI {
             }
 
         } else {
-            var errors = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
-            if (!errors.isEmpty()) {
-                return new MultipleErrorResponse("Germplasm creation error", errors).getResponse();
+            var multipleErrorObject = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            if (multipleErrorObject.hasErrors()) {
+                return new MultipleErrorResponse("Germplasm creation error", multipleErrorObject.getErrors()).getResponse();
             }
             return new ObjectUriResponse().getResponse();
         }

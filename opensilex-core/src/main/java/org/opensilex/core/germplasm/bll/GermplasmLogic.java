@@ -145,7 +145,7 @@ public class GermplasmLogic {
             lookForAlreadyExistantUri(uriList, errors);
         }
 
-        validateTypesOrThrow(germplasmModels, errors);
+        validateTypes(germplasmModels, errors);
 
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
         List<URI> speciesUris = new ArrayList<>();
@@ -261,7 +261,7 @@ public class GermplasmLogic {
      * @param germplasmModels to check if their types exist in the database
      * @param errors map in which to put the errors. Error format : key = germplasm URI, value = error message (explaining which type doesn't exist)
      */
-    private void validateTypesOrThrow(List<GermplasmModel> germplasmModels, Map<String, String> errors) {
+    private void validateTypes(List<GermplasmModel> germplasmModels, Map<String, String> errors) {
         Set<URI> uniqueTypes = germplasmModels.stream()
                 .map(GermplasmModel::getType)
                 .collect(Collectors.toSet());

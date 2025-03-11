@@ -11,11 +11,12 @@
 package org.opensilex.server.response;
 
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
 import java.util.Map;
 
 public class MultipleErrorResponse extends JsonResponse<MultipleErrorDTO> {
 
-    public MultipleErrorResponse(String title, Map<String, String> errors) {
+    public MultipleErrorResponse(String title, Map<String, List<String>> errors) {
         super(Status.BAD_REQUEST);
         metadata = new MetadataDTO(new PaginationDTO());
         result = new MultipleErrorDTO(

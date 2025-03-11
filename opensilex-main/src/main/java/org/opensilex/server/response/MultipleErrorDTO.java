@@ -18,22 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Error DTO class.
- * <pre>
- * This class define an error DTO used by {@code org.opensilex.server.response.ErrorResponse}
- * It's defined by a title and a message and eventually a source exception.
- * A translation key (and values) can also be provided if the error should be displayed to the user.
- *
- * ONLY IN DEBUG MODE:
- * If error result is constructed with an exception result will contains two version of the stack trace arrays
- * - "stack" contains exception stack trace array filtered by packages org.opensilex.*
- * - "fullstack" contains complete exception stack trace array
- * </pre>
- *
- * @see ErrorResponse
- * @author Vincent Migot
- */
 @ApiModel
 public class MultipleErrorDTO {
 
@@ -46,11 +30,11 @@ public class MultipleErrorDTO {
     /**
      * every errors
      */
-    @ApiModelProperty(value = "every errors")
-    public Map<String, String> errors;
+    @ApiModelProperty(value = "every errors", example = "http://example.com : {error1, error 2}")
+    public Map<String, List<String>> errors;
 
 
-    public MultipleErrorDTO(String title, Map<String, String> errors) {
+    public MultipleErrorDTO(String title, Map<String, List<String>> errors) {
         this.title = title;
         this.errors = errors;
     }

@@ -11,6 +11,7 @@ package org.opensilex.server.exceptions;
 import org.opensilex.server.response.MultipleErrorResponse;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,19 +20,19 @@ import java.util.Map;
  * @author Valentin RIGOLLE
  */
 public class MultipleErrorException extends Exception {
-    Map<String, String> errors;
+    MultipleErrorObject errors;
     String title;
 
-    public MultipleErrorException(String title, Map<String, String> errors) {
+    public MultipleErrorException(String title, MultipleErrorObject errors) {
         this.title = title;
         this.errors = errors;
     }
 
     public Response getResponse(){
-        return new MultipleErrorResponse(title, errors).getResponse();
+        return new MultipleErrorResponse(title, errors.getErrors()).getResponse();
     }
 
-    public Map<String, String> getErrors() {
+    public MultipleErrorObject getErrors() {
         return errors;
     }
 

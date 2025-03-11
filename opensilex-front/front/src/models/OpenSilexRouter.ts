@@ -1,13 +1,15 @@
 import { User } from './User';
-import Vue from 'vue';
+import { App } from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
+import {useStore} from 'vuex';
 // import { createRouter, createWebHistory, Router, RouteRecordRaw } from 'vue-router';
-import { createRouter, createWebHistory, type Router, type RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, NavigationGuardNext, type Router, type RouteRecordRaw } from 'vue-router';
 
 // const { createRouter, createWebHistory, Router, RouteRecordRaw } = VueRouter;
 
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
+import store from './Store';
 
 export class OpenSilexRouter {
 
@@ -18,10 +20,14 @@ export class OpenSilexRouter {
     private pathPrefix: string
     private PUBLIC_ROUTE: string = "public";
     private sectionAttributes : any = {};
+    private app : App;
 
-    constructor(pathPrefix: string) {
+    constructor(pathPrefix: string, app: App) {
         this.pathPrefix = pathPrefix;
+        this.app = app;
         this.router = this.createRouter(User.ANONYMOUS());
+        // const store = useStore();
+       
     }
     
     public getSectionAttributes() {
@@ -52,6 +58,57 @@ export class OpenSilexRouter {
             routes: routes,
         });
     
+        console.log("this.router ", this.router)
+        console.log("Routes avant beforeEach :", this.router.getRoutes().map(route => route.name));
+
+
+        this.router.beforeResolve(async (to, from) => {
+            console.log ("😁 from ", from , " to : ", to)
+            // si ce n'est pas faux - donc vrai - donc qu'il est log ET qu'on va pas vers test
+            if ( store.state.user.isLoggedIn() && to.path !== '/test') {
+              console.log("😀 if ")
+              return { path: '/test' , replace : true}
+            } else {
+                console.log("😀 else ")
+                // return { path: '/app'}
+            }
+          })
+
+
+
+        // this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
+
+        //     console.log("routerBefore from  : ", from, " / to : ", to)
+        //     console.log("😶‍🌫️ thisrouter.getRoutes : ", this.router.getRoutes())
+        //     // if (
+        //     //   // make sure the user is authenticated
+        //     //   !store.state.user.isLoggedIn() &&
+        //     //   // ❗️ Avoid an infinite redirect
+        //     //   to.name !== 'opensilex-DefaultLoginComponent'
+        //     // ) {
+        //     //   // redirect the user to the login page
+        //     //   console.log(" try to return ")
+        //     //   next({ name: 'testPage' })
+        //     // return { name: 'testPage' }
+        //     // console.log("loggeeeed ? : ", )
+
+
+        //     // ici condition if store.state.user.isLoggedIn()   ( si c'est false, qu'on est pas log, pour le test...)
+        //     if ( store.state.user.isLoggedIn() && to.fullPath !== '/app') {
+
+
+        //         next({
+        //             path:'/test'
+        //         })
+        //     }
+
+
+        //     // }
+        //   })
+        //   console.log(" 😶‍🌫️ Routes enregistrées :", this.router.getRoutes().map(route => route.name));
+
+
+
         return this.router;
     }
 
@@ -63,48 +120,70 @@ export class OpenSilexRouter {
     
     public resetRouter(user: User) {
         const newRouter = this.createRouter(user);
-        this.router.getRoutes().forEach(route => this.router.removeRoute(route.name as string));
-        newRouter.getRoutes().forEach(route => this.router.addRoute(route));
+        // this.router.getRoutes().forEach(route => this.router.removeRoute(route.name as string));
+        // this.router.getRoutes().forEach(route => console.log("routes : " , routes));
+        // newRouter.getRoutes().forEach(route => this.router.addRoute(route));  
+        this.router = newRouter;
+        return this.router
     }
     
 
     public computeMenuRoutes(user: User) {
+        console.log("🧨 compute menu route")
         let routes: Array<any> = [];
 
-        let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
+        let $opensilex: OpenSilexVuePlugin = this.app.config.globalProperties.$opensilex ;
         let frontConfig = this.frontConfig;
         if (frontConfig != undefined) {
+            console.log("frontConfigDefined")
             routes.push({
                 path: "/",
-                component: this.getAsyncComponentLoader($opensilex, frontConfig.homeComponent)
+                component: this.getAsyncComponentLoader($opensilex, frontConfig.loginComponent)
             });
 
-            for (let i in frontConfig.routes) {
-                let route = frontConfig.routes[i];
+            for (let routeConfig in frontConfig.routes) {
+                let route = frontConfig.routes[routeConfig];
+                // Crée la route en incluant la propriété name si elle est définie dans la config
+                routes.push({
+                  path: route.path,
+                  name: route.name || undefined, // Si routeConfig.name est défini, l'utiliser, sinon undefined
+                  component: this.getAsyncComponentLoader($opensilex, route.component),
+                  meta: { public: true }
+                });
+              }
 
-                if (user.hasAllCredentials(route.credentials)) {
-                    routes.push({
-                        path: route.path,
-                        component: this.getAsyncComponentLoader($opensilex, route.component),
-                        meta:{public: false}
-                    });
-                }
-                if(route.credentials.includes(this.PUBLIC_ROUTE)){ 
-                    routes.push({
-                        path: route.path,
-                        component: this.getAsyncComponentLoader($opensilex, route.component),
-                        meta:{public: true}
-                    });
+              console.log("🙃 routesz ", routes)
+            // for (let i in frontConfig.routes) {
+            //     let route = frontConfig.routes[i];
+
+            //     if (user.hasAllCredentials(route.credentials)) {
+            //         console.log("🧨 user have credentials")
+            //         routes.push({
+            //             path: route.path,
+            //             name: route["name"],
+            //             component: this.getAsyncComponentLoader($opensilex, route.component),
+            //             meta:{public: false}
+            //         });
+            //     }
+            //     if(route.credentials.includes(this.PUBLIC_ROUTE)){ 
+            //         console.log("🧨 public routes")
+            //         console.log(" 🧨 path : ", route.path, " component : ", route.component)
+            //         routes.push({
+            //             path: route.path,
+            //             name: route["name"],
+            //             component: this.getAsyncComponentLoader($opensilex, route.component),
+            //             meta:{public: true}
+            //         });
                     
-                }
-            }
+            //     }
+            // }
 
-            
-            routes.push({
-                // path: "*",
-                path: "/:catchAll(.*)",
-                component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
-            });
+            // ??????
+            // routes.push({
+            //     // path: "*",
+            //     path: "/:catchAll(.*)",
+            //     component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
+            // });
         }
 
         if (this.userFrontConfig) {
@@ -118,13 +197,13 @@ export class OpenSilexRouter {
         return () => {
             return new Promise((resolve, reject) => {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
-                let override = $opensilex.themeConfig.componentOverrides[componentId];
-                if (override) {
-                    componentDef = ModuleComponentDefinition.fromString(override);
-                }
+                // let override = $opensilex.themeConfig.componentOverrides[componentId];
+                // if (override) {
+                //     componentDef = ModuleComponentDefinition.fromString(override);
+                // }
                 $opensilex.loadComponentModule(componentDef)
                     .then(() => {
-                        let component: any = Vue.component(componentDef.getId());
+                        let component: any = this.app.component(componentDef.getId());
                         if (component) {
                             resolve(component)
                         } else {
@@ -150,7 +229,7 @@ export class OpenSilexRouter {
     }
 
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
-        let $opensilex: OpenSilexVuePlugin = Vue["$opensilex"];
+        let $opensilex: OpenSilexVuePlugin = this.app["$opensilex"];
         let menu: Array<MenuItemDTO> = [];
         for (let i in items) {
             let item: MenuItemDTO = items[i];

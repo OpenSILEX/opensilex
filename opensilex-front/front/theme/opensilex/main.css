@@ -590,7 +590,11 @@ a.external-url-link:hover {
     background-color: #007969;
 }
 
-.addChildButton, .DeviceImportHelpEyeIcon, .ScientificObjectImportHelpEyeIcon, .EventHelpTableViewHelpEyeIcon, .DataHelpTableViewHelpEyeIcon {
+.addChildButton,
+.DeviceImportHelpEyeIcon,
+.ScientificObjectImportHelpEyeIcon,
+.EventHelpTableViewHelpEyeIcon,
+.DataHelpTableViewHelpEyeIcon {
     color: #00A38D;
     border-color: #00A38D;
     margin-bottom: 5px;
@@ -602,7 +606,7 @@ a.external-url-link:hover {
 }
 
 .page-header {
-    height: 20px
+    height: 20px;
 }
 
 .downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon {
@@ -612,7 +616,14 @@ a.external-url-link:hover {
 
 .downloadTemplateBtn:hover, .cardAdvancedSearchIcon:hover, .cardAnnotationIcon:hover {
     background-color: #00A38D;
-    color: #f1f1f1
+    color: #f1f1f1;
+}
+
+.greenThemeColorText {
+    color: #00A38D;
+}
+.greenThemeColorText:hover {
+    color: #018371;
 }
 
 /********************************

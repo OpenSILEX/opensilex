@@ -3,12 +3,13 @@ import Vuex from 'vuex'
 import {User} from './User'
 import Router from 'vue-router';
 import {Menu} from './Menu';
-// import {OpenSilexRouter} from './OpenSilexRouter';
+import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
 import { createStore } from 'vuex';
 import { getCurrentInstance } from 'vue';
+import { App } from 'vue';
 
 // Vue.use(VueRouter)
 
@@ -66,6 +67,8 @@ let renewTokenOnEvent = function (event) {
     .renewToken()
     .then((http) => {
       console.debug("Token renewed", http.response.result.token);
+      console.log("🍅 current User : ", currentUser)
+      console.log("🍅 token set : " , http.response.result.token)
       currentUser.setToken(http.response.result.token);
       $opensilex.$store.commit("login", currentUser);
     })
@@ -231,6 +234,7 @@ let store = createStore({
           state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
         }
       }
+      
     },
     logout(state) {
       console.debug("Logout");
@@ -275,14 +279,14 @@ let store = createStore({
         state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
       }
     },
-    setConfig(state, config: FrontConfigDTO) {
-      state.config = config;
-      // state.openSilexRouter = new OpenSilexRouter(config.pathPrefix);
-      // state.openSilexRouter.setConfig(config);
+    setConfig(state, args: { config: FrontConfigDTO, app: App }) {
+      state.config = args.config;
+      state.openSilexRouter = new OpenSilexRouter(args.config.pathPrefix, args.app);
+      state.openSilexRouter.setConfig(args.config);
     },
     setUserConfig(state, userConfig: UserFrontConfigDTO) {
       state.userConfig = userConfig;
-      // state.openSilexRouter.setUserConfig(userConfig);
+      state.openSilexRouter.setUserConfig(userConfig);
     },
     showLoader(state) {
       if (loaderCount == 0) {
@@ -336,7 +340,7 @@ let store = createStore({
       state.menuVisible = true;
     },
     refresh(state) {
-      // state.openSilexRouter.refresh();
+      state.openSilexRouter.refresh();
     },
     lang(state, lang) {
       console.debug("Define user language", lang);
@@ -361,6 +365,7 @@ let store = createStore({
     resetRouter(state) {
       if (state.openSilexRouter) {
         console.debug("Reset router");
+        // console.log(" Logged ? " , state.user.isLoggedIn())
         state.openSilexRouter.resetRouter(state.user);
         console.debug("Reset menu");
         state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());

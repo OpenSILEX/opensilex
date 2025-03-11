@@ -70,8 +70,11 @@ public class GermplasmLogic {
      * @param germplasmModel Germplasm to create
      * @return Created germplasm as {@link GermplasmModel}
      */
-    public GermplasmModel create(GermplasmModel germplasmModel) throws Exception, DisplayableResponseException {
-        checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), false);
+    public GermplasmModel create(GermplasmModel germplasmModel) throws Exception {
+        var multipleErrorObject = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), false);
+        if (multipleErrorObject.hasErrors()){
+            throw new MultipleErrorException("getting errors while creating germplasm", multipleErrorObject);
+        }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         GermplasmModel model = germplasmModel;
         model.setPublisher(currentUser.getUri());

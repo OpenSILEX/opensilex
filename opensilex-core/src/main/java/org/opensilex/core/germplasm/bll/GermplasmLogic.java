@@ -167,9 +167,7 @@ public class GermplasmLogic {
             validateUrisExistOrThrow(
                     speciesUris,
                     new URI(Oeso.Species.getURI()),
-                    "species",
-                    "component.germplasms.errors.unknownSpecies",
-                    "unknownSpecies");
+                    "species");
         }
 
         if ( ! varietyUris.isEmpty() ) {
@@ -258,7 +256,7 @@ public class GermplasmLogic {
     }
 
     /**
-     * @param germplasmModels to check if their types exist in the database
+     * @param germplasmModels to check if their types exist in the database (basically if they are species, variety or accession)
      * @param errors map in which to put the errors. Error format : key = germplasm URI, value = error message (explaining which type doesn't exist)
      */
     private void validateTypes(List<GermplasmModel> germplasmModels, Map<String, String> errors) {
@@ -274,8 +272,6 @@ public class GermplasmLogic {
             }
         }
 
-        nonExistingTypes.forEach(type -> errors.put(type.toString(), "rdfType doesn't exist in the ontology"));
-
         if (!nonExistingTypes.isEmpty()) {
             Map<URI, List<URI>> germplasmsErrorByType = new HashMap<>();
             nonExistingTypes.forEach(type -> germplasmsErrorByType.put(type, new ArrayList<>()));
@@ -289,7 +285,7 @@ public class GermplasmLogic {
         }
     }
 
-    private void validateUrisExistOrThrow(List<URI> uris, URI rdfType, String type, String errorTranslationKey, String keyErrorTranslationValues) throws SPARQLException, DisplayableResponseException {
+    private void validateUrisExistOrThrow(List<URI> uris, URI rdfType, String type, Map<String, String>) throws SPARQLException, DisplayableResponseException {
         Set<URI> uniqueUris = new HashSet<>(uris);
         Set<URI> nonExistingUris = new HashSet<>();
         for (URI uri : uniqueUris) {

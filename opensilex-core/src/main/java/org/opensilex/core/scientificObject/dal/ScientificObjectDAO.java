@@ -1338,16 +1338,4 @@ public class ScientificObjectDAO {
 
     }
 
-//    public void copyXPIntoSOGlobalGraph(ScientificObjectModel scientificObject, URI experimentURI) throws SPARQLException {
-//        Objects.requireNonNull(scientificObject);
-//        UpdateBuilder update = new UpdateBuilder();
-//        try {
-//            Node uriNode = SPARQLDeserializers.nodeURI(scientificObject.getUri());
-//            // write type and name triple
-//            update.addInsert(defaultGraphNode, uriNode, Oeso.isPresentIn, SPARQLDeserializers.nodeURI(experimentURI));
-//            sparql.executeUpdateQuery(update);
-//        } catch (Exception e) {
-//            throw new SPARQLException(e);
-//        }
-//    }
 }

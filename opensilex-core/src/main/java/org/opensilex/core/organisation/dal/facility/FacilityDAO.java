@@ -16,6 +16,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
@@ -71,17 +72,8 @@ public class FacilityDAO {
         return sparql.getByURI(FacilityModel.class, uri, lang);
     }
 
-    /**
-     * Search the facilities among the ones accessible to the user. See {@link OrganizationSPARQLHelper#addFacilityAccessClause(WhereClause, Var, Collection, Collection, URI)}
-     * for further information on access validation.
-     *
-     * @param filter The search filters
-     * @return The list of facilities
-     */
-    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter) throws Exception {
+    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, FacilityLogic.FacilitySearchRights organizationsAndSites) throws Exception {
         filter.validate();
-
-        FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
         SparqlSchemaNode<OrganizationModel> orgaNode = new SparqlSchemaNode<>(
                 OrganizationModel.class,

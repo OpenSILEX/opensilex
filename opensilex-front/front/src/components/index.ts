@@ -225,6 +225,8 @@ components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
+import DateTimeRangeForm from './common/forms/DateTimeRangeForm.vue'
+components["opensilex-DateTimeRangeForm"] = DateTimeRangeForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -282,6 +284,8 @@ import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
 components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
+import NbElementPerPageSelector from "./common/views/NbElementPerPageSelector.vue";
+components["opensilex-NbElementPerPageSelector"] = NbElementPerPageSelector;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
 import ModalListBuilder from './common/views/ModalListBuilder.vue'
@@ -772,6 +776,16 @@ import GlobalMapView from "./geometry/GlobalMapView.vue";
 components["opensilex-GlobalMapView"] = GlobalMapView;
 import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
 components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
+
+//LOCATION
+import LocationModalForm from "./location/form/LocationModalForm.vue";
+components["opensilex-LocationModalForm"] = LocationModalForm;
+import LocationForm from "./location/form/LocationForm.vue";
+components["opensilex-LocationForm"] = LocationForm;
+import LocationsForm from "./location/form/LocationsForm.vue";
+components["opensilex-LocationsForm"] = LocationsForm;
+import LocationList from "./location/list/LocationList.vue";
+components["opensilex-LocationList"] = LocationList;
 
 // VISUALIZATION
 

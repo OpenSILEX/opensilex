@@ -136,6 +136,7 @@ public class UriSearchSparqlDao {
         String lastUpdateDate = result.getStringValue(SPARQLResourceModel.LAST_UPDATE_DATE_FIELD);
         if (Objects.nonNull(publisherUri)) {
             model.setPublisher(URI.create(publisherUri));
+            publisher.setUri(URI.create(publisherUri));
             publisher.setFirstName(result.getStringValue(PersonModel.FIRST_NAME_FIELD));
             publisher.setLastName(result.getStringValue(PersonModel.LAST_NAME_FIELD));
         }
@@ -199,6 +200,8 @@ public class UriSearchSparqlDao {
         result.addVar(isStudyEffectInVar);
         result.addVar(factorVar);
 
+        result.setDistinct(true);
+
         //Everything that concerns our uri needs to be by distinct graph to avoid duplicates when same uri is present in multiple graphs
         //To do this make a subwhere to put in an addGraph operation
         WhereBuilder inGraphWhere = new WhereBuilder();
@@ -223,12 +226,7 @@ public class UriSearchSparqlDao {
         inGraphWhere.getWhereHandler().addOptional(optionalLabelHandler);
 
         //publisher, published, updated
-        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.publisher, publisherVar));
-        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
-        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
-
         //Extra details for publisher info, search in user graph and in an optional for the admin use-case (no first or last name)
-        result.addGraph(graphVar, inGraphWhere);
         WhereBuilder foafDetails = new WhereBuilder().addGraph(
                 sparql.getDefaultGraph(AccountModel.class),
                 new WhereBuilder()
@@ -236,7 +234,15 @@ public class UriSearchSparqlDao {
                         .addWhere(publisherPersonVar, FOAF.firstName.asNode(), publisherFirstName)
                         .addWhere(publisherPersonVar, FOAF.lastName.asNode(), publisherLastName)
         );
-        result.addOptional(foafDetails);
+        WhereBuilder publisherStuff = new WhereBuilder()
+                .addWhere(uriVar, DCTerms.publisher, publisherVar)
+                .addOptional(foafDetails);
+
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(publisherStuff));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.issued, publishedVar));
+        inGraphWhere.addOptional(new WhereBuilder().addWhere(uriVar, DCTerms.modified, updated));
+
+        result.addGraph(graphVar, inGraphWhere);
 
         //Rdf type label outside of graph as this information is stored in global graph
         WhereHandler optionalTypeLabelHandler = new WhereHandler();

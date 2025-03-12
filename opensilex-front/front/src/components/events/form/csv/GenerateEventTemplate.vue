@@ -75,6 +75,15 @@ export default class GenerateEventTemplate extends Vue {
 
     created(){
        this.vueOntologyService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+        this.moveFormatToEventFormatMapping = {
+          'uri': 'uri',
+          'rdfType': 'rdfType',
+          'isInstant': this.$opensilex.getShortUri(this.$opensilex.Oeev.IS_INSTANT),
+          'start': this.$opensilex.getShortUri(this.$opensilex.Time.HAS_BEGINNING),
+          'end': this.$opensilex.getShortUri(this.$opensilex.Time.HAS_END),
+          'targets': this.$opensilex.getShortUri(this.$opensilex.Oeev.CONCERNS),
+          'description': this.$opensilex.getShortUri(this.$opensilex.Rdfs.COMMENT)
+        };
     }
 
     get user() {
@@ -171,19 +180,15 @@ export default class GenerateEventTemplate extends Vue {
         return promises;
     }
 
+    //A const to remember the order and index of columns
+    orderedHeaders = ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"];
+    //A const to remember mapping from label format (Moves) to uri format (Generic Events)
+    //Set in created()
+    moveFormatToEventFormatMapping = {}
+
     generateCSV(typeModels) {
 
-      let headers = (this.isMove ?
-        ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"] :
-        [
-          "uri",
-          "rdfType",
-          this.$opensilex.getShortUri(this.$opensilex.Oeev.IS_INSTANT),
-          this.$opensilex.getShortUri(this.$opensilex.Time.HAS_BEGINNING),
-          this.$opensilex.getShortUri(this.$opensilex.Time.HAS_END),
-          this.$opensilex.getShortUri(this.$opensilex.Oeev.CONCERNS),
-          this.$opensilex.getShortUri(this.$opensilex.Rdfs.COMMENT),
-        ]);
+      let headers = (this.isMove ? this.orderedHeaders : this.orderedHeaders.map(e => this.moveFormatToEventFormatMapping[e]));
 
       // list of properties URI to exclude from custom properties
       let managedProperties = [
@@ -245,10 +250,10 @@ export default class GenerateEventTemplate extends Vue {
 
         let data = [headers, headersDescription];
 
-        let typeIndex = headers.indexOf("rdfType");
-        let isInstantIndex = headers.indexOf("isInstant");
-        let endIndex = headers.indexOf("end");
-        let targetIndex = headers.indexOf("targets");
+        let typeIndex = this.orderedHeaders.indexOf("rdfType");
+        let isInstantIndex = this.orderedHeaders.indexOf("isInstant");
+        let endIndex = this.orderedHeaders.indexOf("end");
+        let targetIndex = this.orderedHeaders.indexOf("targets");
 
         // generate a row per target and per type
 

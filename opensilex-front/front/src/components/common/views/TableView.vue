@@ -15,6 +15,11 @@
           ></opensilex-StringFilter>
         </div>
       </div>
+      <br/>
+      <opensilex-NbElementPerPageSelector
+          v-if="fixedPageSize == null"
+          @change="OnNbElementPerPageChange"
+      />
       <div v-if="showCount">
         <div v-if="totalRows > 0">
           <strong>
@@ -110,8 +115,11 @@ export default class TableView extends Vue {
   @Prop({default: "TableView.filter.placeholder"})
   private readonly filterPlaceholder: string;
 
-  @Prop({default: 10})
-  private readonly pageSize: number;
+  /**
+   * If fixedPageSize is set, the number of items per page will be fixed to this value and the selector will not be displayed
+   */
+  @Prop({default: null})
+  private readonly fixedPageSize: number;
 
   @Prop({default: false})
   private readonly globalFilterField: boolean;
@@ -142,6 +150,8 @@ export default class TableView extends Vue {
   private filter: string = null;
 
   private totalRows: number = 1;
+
+  private pageSize: number = 20
   //#endregion
 
   //#region Computed
@@ -165,6 +175,11 @@ export default class TableView extends Vue {
     this.currentPage = 1;
   }
 
+  private OnNbElementPerPageChange(nbElementPerPage: string) {
+    this.currentPage = 1;
+    this.pageSize = parseInt(nbElementPerPage);
+  }
+
   //#endregion
 
   //#region Public methods
@@ -177,6 +192,9 @@ export default class TableView extends Vue {
   private mounted() {
     // Set the initial number of items
     this.totalRows = this.data.length;
+    if (this.fixedPageSize != null) {
+      this.pageSize = this.fixedPageSize;
+    }
   }
 
   //#endregion

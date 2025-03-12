@@ -13,9 +13,9 @@
             <p class="h5"> {{ $t("Position.title") }}</p>
             <hr/>
             <opensilex-PositionsView
-                :positions="event.targets_positions"
-                :positionsUriLabels="positionsUriLabels"
-                :positionsUriPaths="positionsUriPaths"
+              :positions="event.targets_positions"
+              :positionsUriLabels="positionsUriLabels"
+              :positionsUriPaths="positionsUriPaths"
             >
             </opensilex-PositionsView>
         </div>

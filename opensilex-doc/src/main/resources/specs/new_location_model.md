@@ -1,10 +1,12 @@
-| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                    |
-|------------|------|------------|-------------------|------------------------------------------------------------|
-| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case                        |
+| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                                |
+|------------|------|------------|-------------------|------------------------------------------------------------------------|
+| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case                                    |
 | 20/09/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add featureOfInterest field in Mongo + add Improvements |
+| 04/10/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add facility case + definitions                         |
 
 ## Table of contents
 * [Needs](#needs)
+* [Definitions](#definitions)
 * [Solution](#solution)
   * [Business logic](#business-logic)
 * [Technical specifications](#technical-specifications)
@@ -48,12 +50,20 @@ inconsistencies.
 We need to homogenize and simplify the location model of the elements, their storage and control consistency.
 In second stage, we would also like to store spatial dataset (e.g. drone flight sessions). . 
 
+## Definitions
+
+**Location**: The act of determining the location of a thing, phenomenon or its origin.
+**Position**: Place where a thing is positioned in relation to a whole (in a coordinate system, the orientation of an object, for example: facing east).
+**Geometry**: Science of space and the figures that can occupy it (shape and size of spatial objects).
+**Spatial coordinates**: Numerical representation of the position of an object in space, expressed in various forms according to the spatial coordinate system (sexagesimal or decimal degrees, longitude and latitude).
+**Move**: Oriented distance separating the starting point from the finishing point, in a straight line over a given time.
+**Trajectory**: The trajectory of a moving object is the set of positions it has occupied throughout its movement. A line describes the object's movement with a time dimension (x positions at x times).
+
 ## Solution
 
 To simplify and homogenize the location model, we need to store all the location information (spatial coordinates from 
 address or not, from/to a facility, X/Y/Z and/or textual position) in the same database and with the same format : in
-MongoDB, in a "location" collection with a new model based on the [extension SOSA ontology](https://www.w3.org/TR/vocab-ssn-ext/#sosa:ObservationCollection
-).
+MongoDB, in a "location" collection with a new model based on the [extension SOSA ontology](https://www.w3.org/TR/vocab-ssn-ext/#sosa:ObservationCollection).
 
 In SOSA Ontology, the "Collection of Observation" class contains at least one observation (or a collection of observation)
 of a property on a feature of interest at a given time.
@@ -138,11 +148,38 @@ As a site is only located by one address, the localization model must be adjuste
               },
     }
 
+#### Facility
+A facility can be located by an address and positions (at different times):
+
+- if the facility is only located by an address, no date can be associated with it, as in the site case.
+- if the facility has one or more positions, each position will be associated with a time (instantaneous or interval) and spatial coordinates. Each position is an observation of the facility geometry at time "i". The position must have at least a "endDate".
+- as before, if facility has an address and positions, the address spatial coordinates will be replaced by position coordinates.
+
+
+    {
+        “observationCollection” : URI,
+        "featureOfInterest": URI,
+        “hasGeometry” : boolean,
+        “location”: {
+              "geometry" : {
+                  "type": Point, Line or Polygon
+                  "coordinates": [ X , Y ]
+              },
+        },
+        "endDate" : 2024-10-15T06:48:15.777+00:00,
+        "startDate" : 2024-11-15T06:48:15.777+00:00
+    }
+
 ## Technical specifications
 
 ### Front-end
 #### Site
 No change
+
+#### Facility
+As a facility can now have several positions associated with time,a few components has to be modified:
+- create/update form : add a position form with a position table.
+- facility detail : add last position and position list tab.
 
 ### API
 The concepts of observation collection, observation and location are represented by three distinct models. They follow the
@@ -153,6 +190,12 @@ class only queries the MongoDB database.
 
 ![Diagramme_classe_models_location](png/Diagramme_classe_models_location.png)
 
+A `LocationAPI` has been created. It will replace the `PositionAPI`. For the moment, it has only 2 services:
+ - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.
+ - `countLocations` : gets the location count of a feature of interest.
+
+These services only retrieve locations with associated dates(not spatial coordinates from an address).
+
 #### Ontology
 Only classes of the SOSA ontology related with had be added to the OpenSilex
 
@@ -162,11 +205,22 @@ by  the `LocationObservationCollection` and `LocationObservation` models.
 
 The `LocationObservationCollectionModel` is added to the `SiteModel`.
 
+#### Facility
+As the site case, the API and DAO classes for facilities are refactoring to respect the layered architecture and the `geospatial` model is replaced
+by  the `LocationObservationCollection` and `LocationObservation` models.
+
+The `LocationObservationCollectionModel` is added to the `FacilityModel`.
+
+Because there is a difference between the "address" location (no date) and "position" location (date), the API services don't always retrieve the same type of locations:
+`getAllFacilities` / `getFacilitiesByURI` / `searchFacilities` / `minimalSearchFacilities`: no location.
+`getFacility`:  only the last position, if the stored spatial coordinates come from an address (no date), they are not retrieved.
+`getFacilitiesWithGeometry`: the last position or, if there is no position, the address spatial coordinates.
+
 ## Limitations and Improvements
 ### Limitations
 ### Improvements
 
-- Refactoring the new location model for the rest of the elements : scientific objects, devices, facilties and areas.
+- Refactoring the new location model for the rest of the elements : scientific objects, devices and areas.
 - Tests mongoDB queries and indexes.
 
 

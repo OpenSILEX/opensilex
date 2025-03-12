@@ -62,9 +62,9 @@ import java.util.List;
  */
 public class SparqlSchema<T extends SPARQLResourceModel> {
 
-    private final SparqlSchemaNode<T> root;
+    private final SparqlSchemaRootNode<T> root;
 
-    public SparqlSchema(SparqlSchemaNode<T> root) {
+    public SparqlSchema(SparqlSchemaRootNode<T> root) {
         this.root = root;
     }
 

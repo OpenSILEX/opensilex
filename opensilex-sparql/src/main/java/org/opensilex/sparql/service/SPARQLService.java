@@ -1110,6 +1110,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return searchWithPagination(getDefaultGraph(objectClass), objectClass, lang, filterHandler, null, null, orderByList, page, pageSize);
     }
 
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, SparqlSchema<T> schema, Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        return searchWithPaginationUsingSchema(getDefaultGraph(objectClass), objectClass, lang, filterHandler, null, schema, orderByList, page, pageSize);
+    }
+
     public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(
             Node graph,
             Class<T> objectClass,

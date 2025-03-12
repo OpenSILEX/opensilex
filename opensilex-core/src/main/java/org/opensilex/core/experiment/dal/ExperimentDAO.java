@@ -29,9 +29,11 @@ import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
@@ -43,6 +45,9 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -182,7 +187,31 @@ public class ExperimentDAO {
             endDate = null;
         }
 
-        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
+        SparqlSchemaNode<FacilityModel> facilityNode = new SparqlSchemaNode<>(
+                FacilityModel.class,
+                ExperimentModel.FACILITY_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<SpeciesModel> speciesNode = new SparqlSchemaNode<>(
+                SpeciesModel.class,
+                ExperimentModel.SPECIES_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
+                ExperimentModel.class,
+                List.of(facilityNode, speciesNode),
+                false
+        );
+
+        SparqlSchema<ExperimentModel> schema = new SparqlSchema<>(rootNode);
+
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPaginationUsingSchema(
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
@@ -196,6 +225,7 @@ public class ExperimentDAO {
                     appendPublicFilter(select, filter.isPublic());
                     appendFacilitiesFilter(select, filter.getFacilities());
                 },
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()

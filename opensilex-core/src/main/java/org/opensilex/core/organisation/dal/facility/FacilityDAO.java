@@ -30,15 +30,21 @@ import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -146,10 +152,51 @@ public class FacilityDAO {
 
         FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
-        return sparql.searchWithPagination(
+        SparqlSchemaNode<OrganizationModel> orgaNode = new SparqlSchemaNode<>(
+                OrganizationModel.class,
+                FacilityModel.ORGANIZATION_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<SiteModel> siteNode = new SparqlSchemaNode<>(
+                SiteModel.class,
+                FacilityModel.SITE_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<VariablesGroupModel> variablesNode = new SparqlSchemaNode<>(
+                VariablesGroupModel.class,
+                FacilityModel.VARIABLE_GROUPS_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<FacilityAddressModel> addressNode = new SparqlSchemaNode<>(
+                FacilityAddressModel.class,
+                FacilityModel.ADDRESS_FIELD,
+                Collections.emptyList(),
+                false,
+                false
+        );
+
+        SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
+                FacilityModel.class,
+                List.of(orgaNode, siteNode, variablesNode, addressNode),
+                true
+        );
+
+        SparqlSchema<FacilityModel> schema = new SparqlSchema<>(rootNode);
+
+        return sparql.searchWithPaginationUsingSchema(
                 FacilityModel.class,
                 filter.getUser().getLanguage(),
                 (select -> filterHandler(select, organizationsAndSites, filter)),
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()

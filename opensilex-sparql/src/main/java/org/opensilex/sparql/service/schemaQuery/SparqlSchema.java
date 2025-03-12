@@ -7,6 +7,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +84,12 @@ public class SparqlSchema<T extends SPARQLResourceModel> {
 
             if(!MapUtils.isEmpty(relationsPerUri)){
                 for(T model: initialSearchResult){
-                    model.setRelations(relationsPerUri.get(SPARQLDeserializers.getShortURI(model.getUri())));
+                    List<SPARQLModelRelation> relationsForUri = relationsPerUri.get(SPARQLDeserializers.getShortURI(model.getUri()));
+                    if(relationsForUri == null){
+                        //If null set to an empty list as the dtos expect an empty list, null pointer exception otherwise
+                        relationsForUri = new ArrayList<>();
+                    }
+                    model.setRelations(relationsForUri);
                 }
             }
         }

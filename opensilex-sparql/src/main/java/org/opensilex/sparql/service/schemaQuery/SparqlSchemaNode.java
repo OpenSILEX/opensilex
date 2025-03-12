@@ -169,11 +169,14 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                         lang
                 );
 
-                if(!MapUtils.isEmpty(relationsPerUriOfCorrectField)){
-                    if(!MapUtils.isEmpty(relationsPerUriOfCorrectField)){
-                        for(SPARQLResourceModel childModel: modelsPerUriOfCorrectField.values()){
-                            childModel.setRelations(relationsPerUriOfCorrectField.get(SPARQLDeserializers.getShortURI(childModel.getUri())));
+                if(childNode.fetchDynamicRelations){
+                    for(String childModelUri : modelsPerUriOfCorrectField.keySet()){
+                        List<SPARQLModelRelation> relationsForUri = relationsPerUriOfCorrectField.get(childModelUri);
+                        if(relationsForUri == null){
+                            //If there were no relations then set to an empty list as the dtos expect a non null object
+                            relationsForUri = new ArrayList<>();
                         }
+                        modelsPerUriOfCorrectField.get(childModelUri).setRelations(relationsForUri);
                     }
                 }
             }
@@ -289,7 +292,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                 if(uriValueAsObject == null){
                     continue;
                 }
-                List<String> nextUris = childNode.getUrisFromObject(uriValueAsObject).stream().map(URI::toString).toList();
+                List<String> nextUris = childNode.getUrisFromObject(uriValueAsObject).stream().map(SPARQLDeserializers::getShortURI).toList();
 
                 uriValuesPerModelUri.put(SPARQLDeserializers.getShortURI(nodeModel.getUri()), nextUris);
 
@@ -339,6 +342,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                     sparql,
                     lang
             ).forEach(e -> calculatedModelsPerUri.put(SPARQLDeserializers.getShortURI(e.getUri()), e));
+
             calculatedChildModelsPerUriPerType.put(typeName, calculatedModelsPerUri);
         }
     }
@@ -453,9 +457,11 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
      * Has to be done in the child as we need to know the type.
      *
      * @param uris
-     * @return
+     * @return a list of distinct models, we know they will be distinct because we pass a distinct uri list,
+     * we return a list of models instead of a set because the search function returns a list and the conversion
+     * from list to set was sometimes creating issues because it uses the .equals function.
      */
-    private HashSet<? extends SPARQLResourceModel> runBasicSearchFunction(
+    private List<? extends SPARQLResourceModel> runBasicSearchFunction(
             HashSet<String> uris,
             SPARQLService sparql,
             String lang
@@ -466,7 +472,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         );
 
         //Call normal search function
-        List<? extends SPARQLResourceModel> nextModels = sparql.search(
+        return sparql.search(
                 getPassedOrDefaultGraph(sparql),
                 objectClass,
                 lang,
@@ -482,7 +488,6 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
                 0,
                 0
         );
-        return new HashSet<>(nextModels);
     }
 
     /**

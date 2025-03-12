@@ -1,5 +1,6 @@
 package org.opensilex.core.scientificObject.dal;
 
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -142,6 +143,48 @@ public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
         Assert.assertFalse(dao.isInvolvedIntoAnyExperiment(Stream.of(globalModel.getUri()),1));
         Assert.assertTrue(dao.isInvolvedIntoAnyExperiment(Stream.of(modelWithXp.getUri(), globalModel.getUri()), 2));
     }
+
+    @Test
+    public void testDoesSOParticipatesInExperiment() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+        ExperimentModel xp = new ExperimentModel();
+        xp.setStartDate(LocalDate.now());
+        xp.setObjective("testDoesSOParticipatesInExperiment");
+        xp.setName("testDoesSOParticipatesInExperiment");
+        sparql.create(xp);
+
+        ScientificObjectModel modelWithXp = new ScientificObjectModel();
+        modelWithXp.setName("testDoesSOParticipatesInExperiment");
+        modelWithXp.setExperiment(xp);
+        URI xpUri = xp.getUri();
+
+        // create so in xp and into global
+        sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
+        sparql.create(NodeFactory.createURI(xpUri.toString()), modelWithXp);
+
+        boolean doesSOParticipatesInXP = sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(xpUri)));
+        Assert.assertTrue(doesSOParticipatesInXP);
+    }
+
+    @Test
+    public void testDoesSOHasAnyXP() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+
+        ScientificObjectModel modelWithXp = new ScientificObjectModel();
+        modelWithXp.setName("testDoesSOHasAnyXP");
+
+        // create so into global
+        sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
+
+        var URIvar = "?uri";
+        boolean doesSOHasAnyXP = sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, URIvar));
+        Assert.assertFalse(doesSOHasAnyXP);
+    }
+
     @Test
     public void testHasChildren() throws Exception{
 

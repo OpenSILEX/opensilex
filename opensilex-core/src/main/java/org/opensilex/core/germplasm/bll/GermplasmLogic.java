@@ -154,7 +154,7 @@ public class GermplasmLogic {
 
         validateGermplasmDependenciesExists(germplasmModels, errors);
 
-        validateAccessionVarietyOrSpeciesAreGivenOrThrow(germplasmModels);
+        validateAccessionVarietyOrSpeciesAreGiven(germplasmModels, errors);
 
         // check coherence between species, variety and accession
         germplasmModels.forEach( germplasmModel -> {
@@ -323,46 +323,26 @@ public class GermplasmLogic {
         }
     }
 
-    private void validateAccessionVarietyOrSpeciesAreGivenOrThrow(List<GermplasmModel> germplasmModels) throws DisplayableResponseException {
-        Map<Integer, String> messages = Map.of(
-                0, "species",
-                1, "variety or species",
-                2, "accession, variety or species"
+    /**
+     * A Variety should have a species, an Accession should have a variety or a species, and other types should have a specie, a variety or an accession
+     */
+    private void validateAccessionVarietyOrSpeciesAreGiven(List<GermplasmModel> germplasmModels, MultipleErrorObject errors) throws DisplayableResponseException {
+        Map<String, String> messages = Map.of(
+                SPARQLDeserializers.getExpandedURI(Oeso.Variety.getURI()), "species",
+                SPARQLDeserializers.getExpandedURI(Oeso.Accession.getURI()), "variety or species"
         );
-        int missingLinkMessage = 0;
-        List<URI> urisWithMissingLink = new ArrayList<>();
+        String missingLinkMessage = "you have to fill %s for this germplam";
 
         for (GermplasmModel germplasmModel : germplasmModels) {
-            if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Species.getURI())) {
-                break;
-            } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Variety.getURI())) {
-                if (germplasmModel.getSpecies() == null) {
-                    urisWithMissingLink.add(germplasmModel.getUri());
-                }
-            } else if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Accession.getURI())) {
-                if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null) {
-                    urisWithMissingLink.add(germplasmModel.getUri());
-                }
-                missingLinkMessage = Math.max(missingLinkMessage, 1);
-            } else {
-                if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null && germplasmModel.getAccession() == null) {
-                    urisWithMissingLink.add(germplasmModel.getUri());
-                }
-                missingLinkMessage = 2;
-            }
-        }
 
-        if (!urisWithMissingLink.isEmpty()) {
-            final String finalMessage = messages.get(missingLinkMessage);
-            throw new DisplayableResponseException(
-                    "you have to fill " + finalMessage + " for the following germplasms : " + urisWithMissingLink,
-                    Response.Status.BAD_REQUEST,
-                    "missing attribute",
-                    "component.germplasms.errors.missingAttribute",
-                    new HashMap<>() {{
-                        put("message", finalMessage);
-                    }}
-            );
+            if (SPARQLDeserializers.compareURIs(germplasmModel.getType().toString(), Oeso.Species.getURI())) { break; }
+            else {
+                if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null && germplasmModel.getAccession() == null) {
+                    String typeOfGermplasmMissing = messages.getOrDefault(SPARQLDeserializers.getExpandedURI(germplasmModel.getType().toString()),
+                            "accession, variety or species");
+                    errors.addError(germplasmModel.getUri().toString(), String.format(missingLinkMessage, typeOfGermplasmMissing));
+                }
+            }
         }
     }
 

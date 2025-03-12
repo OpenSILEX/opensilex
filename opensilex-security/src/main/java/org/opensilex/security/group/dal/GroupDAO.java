@@ -111,7 +111,6 @@ public final class GroupDAO {
                 AccountModel.class,
                 GroupUserProfileModel.USER_FIELD,
                 Collections.singletonList(personNode),
-                //Collections.emptyList(),
                 false,
                 false
         );

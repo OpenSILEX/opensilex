@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "organizations", "sites", "address", "variableGroups", "description"})
-public
-class FacilityCreationDTO extends FacilityDTO {
+public class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;
 

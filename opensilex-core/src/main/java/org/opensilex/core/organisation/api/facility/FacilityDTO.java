@@ -11,8 +11,11 @@ import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLService;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +28,8 @@ import java.util.Objects;
 @ApiModel
 public class FacilityDTO extends RDFObjectDTO {
 
+
+
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
@@ -33,6 +38,8 @@ public class FacilityDTO extends RDFObjectDTO {
     protected String description;
 
     protected FacilityAddressDTO address;
+
+
 
     public String getName() {
         return name;
@@ -125,4 +132,6 @@ public class FacilityDTO extends RDFObjectDTO {
 
         return dto;
     }
+
+
 }

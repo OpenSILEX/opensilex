@@ -9,16 +9,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
-import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -126,4 +124,6 @@ public class FacilityGetDTO extends FacilityDTO {
     public void setLastPosition(LocationObservationDTO lastPosition) {
         this.lastPosition = lastPosition;
     }
+
+
 }

@@ -12,6 +12,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -72,10 +73,19 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     public static final String SITE_FIELD = "sites";
 
     @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasVariable",
+            ignoreUpdateIfNull = true
+    )
+    private VariableModel variable;
+    public static final String VARIABLE_FIELD = "variable";
+
+    @SPARQLProperty(
             ontology = VCARD4.class,
             property = "hasAddress",
             cascadeDelete = true
     )
+
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
@@ -120,6 +130,9 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
                 .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
     }
+
+    public VariableModel getVariable() {return variable;}
+    public void setVariable(VariableModel variable) {this.variable = variable;}
 
     public List<SiteModel> getSites() {
         return sites;

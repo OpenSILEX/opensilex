@@ -32,6 +32,7 @@ import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
@@ -292,6 +293,12 @@ public class FacilityLogic {
             return lastLocationByFacility.get(0);
         }
     }
+
+    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
+        FacilityDAO dao = new FacilityDAO(sparql);
+
+        return dao.getFacilityVariables(uri, language);
+    }
     //#endregion
 
     //region Search rights
@@ -499,5 +506,6 @@ public class FacilityLogic {
         }
     }
     //#endregion
+
 }
 

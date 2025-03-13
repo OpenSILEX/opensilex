@@ -18,6 +18,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -52,7 +53,6 @@ public class FacilityDAO {
     //#region public
     public FacilityModel create(FacilityModel instance) throws Exception {
         sparql.create(instance);
-
         return instance;
     }
 
@@ -136,6 +136,11 @@ public class FacilityDAO {
         organizationSPARQLHelper.addFacilityAccessClause(ask, uriVar, userOrganizations, userSites, accountModel.getUri());
 
         return sparql.executeAskQuery(ask);
+    }
+
+    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
+        List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(FacilityModel.class), uri, Oeso.hasVariable, URI.class);
+        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }
     //endregion
 

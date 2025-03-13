@@ -115,7 +115,7 @@ public class Oeso {
     public static final Property withinSite = Ontology.property(NS, "withinSite");
     public static final Property hasGeometry = Ontology.property(NS, "hasGeometry");
     public static final Property hasVariablesGroup = Ontology.property(NS, "hasVariablesGroup");
-
+    public static final Property hasVariable = Ontology.property(NS, "hasVariable");
 
     // ---- SPECIES ----
     // public static final Resource Species = Ontology.resource(NS, "Species");

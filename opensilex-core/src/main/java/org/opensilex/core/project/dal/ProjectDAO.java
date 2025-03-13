@@ -170,7 +170,7 @@ public class ProjectDAO {
                 false
         );
 
-        SparqlSchemaNode<ProjectModel> rootNode = new SparqlSchemaRootNode<>(
+        SparqlSchemaRootNode<ProjectModel> rootNode = new SparqlSchemaRootNode<>(
                 ProjectModel.class,
                 List.of(adminContactsNode, sciContactsNode, coordinatorsNode, relatedProjectsNode),
                 false

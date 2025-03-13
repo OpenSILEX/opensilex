@@ -207,7 +207,7 @@ public class DeviceDAO {
                 false
         );
 
-        SparqlSchemaNode<DeviceModel> rootNode = new SparqlSchemaRootNode<>(
+        SparqlSchemaRootNode<DeviceModel> rootNode = new SparqlSchemaRootNode<>(
                 DeviceModel.class,
                 Collections.singletonList(personInChargeNode),
                 true

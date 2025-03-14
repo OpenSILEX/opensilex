@@ -186,17 +186,7 @@ public class DataCreationDTO {
             model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         }
 
-        if (value instanceof String) {
-            if (NA_VALUES.contains(value)) {
-                model.setValue(null);
-            } else if (NAN_VALUES.contains(value)) {
-                model.setValue(NaN);
-            } else {
-                model.setValue(value);
-            }
-        } else {
-            model.setValue(value);
-        }
+        model.setValue(value);
 
         if (rawData != null) {
             model.setRawData(rawData);

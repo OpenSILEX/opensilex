@@ -124,6 +124,11 @@ public class DataValidation {
         variableURIs = new HashSet<>();
     }
 
+    /**
+     * Validates the data models. Also modifies values to correctly desired ones in the case of NA, NaN
+     *
+     * @throws Exception
+     */
     public DataPostInsert validate() throws Exception {
         // Perform validation
         collectValidation();

@@ -123,7 +123,7 @@ public class StudiesAPI extends BrapiCall {
                     .setPage(page)
                     .setPageSize(pageSize);
 
-            resultList = xpDao.search(filter);
+            resultList = xpDao.search(filter, true, false, false);
         }
         ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, experimentModel -> {
             try {

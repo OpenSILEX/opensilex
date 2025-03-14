@@ -26,11 +26,13 @@ import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -170,7 +172,21 @@ public class ExperimentDAO {
 
     }
 
-    public ListWithPagination<ExperimentModel> search(ExperimentSearchFilter filter) throws Exception {
+    /**
+     *
+     * @param filter search filter to use
+     * @param fetchProjects, if true then fetch projects associated to experiments, otherwise no extra request will be made.
+     * @param fetchScientificSupervisors, if true then fetch scientific supervisors, otherwise no extra request will be made.
+     * @param fetchTechnicalSupervisors, if true then fetch technical supervisors, otherwise no extra request will be made.
+     * @return list of experiments, with embedded fields loaded according to the used sparql schema
+     * @throws Exception
+     */
+    public ListWithPagination<ExperimentModel> search(
+            ExperimentSearchFilter filter,
+            boolean fetchProjects,
+            boolean fetchScientificSupervisors,
+            boolean fetchTechnicalSupervisors
+            ) throws Exception {
         LocalDate startDate;
         LocalDate endDate;
         if (filter.getYear() != null) {
@@ -181,6 +197,30 @@ public class ExperimentDAO {
             startDate = null;
             endDate = null;
         }
+
+        SparqlSchemaNode<ProjectModel> projectsNode = new SparqlSchemaNode<>(
+                ProjectModel.class,
+                ExperimentModel.PROJECT_URI_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<PersonModel> scientificSupervisorsNode = new SparqlSchemaNode<>(
+                PersonModel.class,
+                ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaNode<PersonModel> technicalSupervisorsNode = new SparqlSchemaNode<>(
+                PersonModel.class,
+                ExperimentModel.TECHNICAL_SUPERVISOR_FIELD,
+                Collections.emptyList(),
+                true,
+                false
+        );
 
         SparqlSchemaNode<FacilityModel> facilityNode = new SparqlSchemaNode<>(
                 FacilityModel.class,
@@ -198,9 +238,20 @@ public class ExperimentDAO {
                 false
         );
 
+        ArrayList<SparqlSchemaNode<?>> childrenOfRoot = new ArrayList<>(List.of(facilityNode, speciesNode));
+        if(fetchProjects){
+            childrenOfRoot.add(projectsNode);
+        }
+        if(fetchScientificSupervisors){
+            childrenOfRoot.add(scientificSupervisorsNode);
+        }
+        if(fetchTechnicalSupervisors){
+            childrenOfRoot.add(technicalSupervisorsNode);
+        }
+
         SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
                 ExperimentModel.class,
-                List.of(facilityNode, speciesNode),
+                childrenOfRoot,
                 false
         );
 

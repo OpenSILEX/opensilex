@@ -1018,7 +1018,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 lang,
                 filterHandler,
                 customHandlerByFields,
-                (SPARQLResult result) -> customFetcher.getInstance(result, lang),
+                (SPARQLResult result) -> {
+                    T nextRes = customFetcher.getInstance(result, lang);
+                    nextRes.setUri(URI.create(SPARQLDeserializers.getShortURI(nextRes.getUri())));
+                    return nextRes;
+                },
                 orderByList,
                 offset,
                 limit

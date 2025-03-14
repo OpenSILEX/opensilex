@@ -10,6 +10,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
@@ -183,6 +184,30 @@ public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
         boolean doesSOHasAnyXP = sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, URIvar));
         Assert.assertFalse(doesSOHasAnyXP);
+    }
+
+    @Test
+    public void testCreateSOInExperiment() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+        ExperimentModel xp = new ExperimentModel();
+        xp.setStartDate(LocalDate.now());
+        xp.setObjective("testCreateSOInExperiment");
+        xp.setName("testCreateSOInExperiment");
+        sparql.create(xp);
+
+        ScientificObjectModel modelWithXp = new ScientificObjectModel();
+        modelWithXp.setName("testCreateSOInExperiment");
+        modelWithXp.setType(new URI("vocabulary:Sample"));
+        modelWithXp.setExperiment(xp);
+        URI xpUri = xp.getUri();
+        sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
+
+        dao.create(xpUri, xp, modelWithXp.getType(), null, modelWithXp.getName(), null, AccountModel.getAnonymous());
+
+        boolean doesSOParticipatesInXP = sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(xpUri)));
+        Assert.assertTrue(doesSOParticipatesInXP);
     }
 
     @Test

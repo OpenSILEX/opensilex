@@ -2,10 +2,7 @@
 <template>
   <div id="main-content">
     <main class="main-content">
-<!-- <opensilex-DefaultLoginComponent></opensilex-DefaultLoginComponent> -->
       <router-view></router-view>
-<!-- <div> test </div>
-<div> {{ $route}} </div> -->
 
 <!-- <div v-if="this.$route.meta.public"> -->
 
@@ -159,10 +156,6 @@ const currentDate = new Date();
 //   width: 100%;
 // }
 
-main {
-  padding: 15px;
-  width: 5px;
-}
 
 // .header-top.logged-out {
 //   box-shadow: none;

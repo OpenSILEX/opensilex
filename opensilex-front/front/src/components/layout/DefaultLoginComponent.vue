@@ -1,6 +1,5 @@
 <template>
-  <!-- <div class="fullmodal auth-wrapper" v-if="!user.isLoggedIn() || forceRefresh"> -->
-      <div class="fullmodal auth-wrapper">
+      <div class="fullmodal auth-wrapper" v-if="!isLoggedIn" >
 
 <div class="container-fluid h-100">
   <div class="row h-100 bg-white">
@@ -102,69 +101,8 @@
             ></opensilex-FormSelector> -->
 
 
-            <!-- <ValidationObserver v-if="loginMethod == 'password'" ref="validatorRef"> -->
-              <!-- <b-form @submit.prevent="onLogin" class="fullmodal-form">
-                <b-form-group id="login-group" required>
-                  <ValidationProvider
-                    :name="$t('component.login.validation.email')"
-                    rules="required|emailOrUrl"
-                    v-slot="{ errors }"
-                  >
-                    <b-form-input
-                      id="email"
-                      v-model="form.email"
-                      required
-                      :placeholder="$t('LoginComponent.email')"
-                    ></b-form-input>
-                    <i class="ik ik-user"></i>
-                    <div
-                      v-if="errors.length > 0"
-                      class="error-message alert alert-danger"
-                    >{{ errors[0] }}</div>
-                  </ValidationProvider>
-                </b-form-group>
-
-                <b-form-group id="password-group" required>
-                  <ValidationProvider
-                    :name="$t('component.login.validation.password')"
-                    rules="required"
-                    v-slot="{ errors }"
-                  >
-                    <b-form-input
-                      id="password"
-                      type="password"
-                      v-model="form.password"
-                      required
-                      :placeholder="$t('LoginComponent.password')"
-                    ></b-form-input>
-                    <i class="ik ik-lock"></i>
-                    <div
-                      v-if="errors.length > 0"
-                      class="error-message alert alert-danger"
-                    >{{ errors[0] }}</div>
-                  </ValidationProvider>
-                </b-form-group>
-                <a
-                    v-if="isResetPassword()"
-                    :href="resetPasswordPath"
-                >
-                  <span>{{ $t('LoginComponent.forgotPassword') }}</span>
-                </a>
-                <div class="sign-btn text-center">
-                  <b-button
-                    type="submit"
-                    class="greenThemeColor"
-                    v-text="$t('component.login.button.login')"
-                  ></b-button>
-                </div>
-              </b-form>
-            </ValidationObserver> -->
 
               <form @submit.prevent="onLogin" class="fullmodal-form">
-            <!-- <form  class="fullmodal-form"> -->
-
-
-            <!-- classe .authentication-form -->
 
               <!-- Email -->
               <div class="mb-3 input-group">
@@ -241,7 +179,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { defineComponent, ref, onMounted, nextTick, inject, computed } from "vue";
+import Vue, { defineComponent, ref, onMounted, nextTick, inject, computed, watchEffect } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
 
@@ -268,8 +206,9 @@ export default defineComponent({
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
     const store = useStore();
     const user = computed(() => store.state.user);
+    const isLoggedIn = computed(() => store.state.user.loggedIn);
 
-    const forceRefresh = ref(false);
+  
 
     // définition du formulaire
     const form = ref({
@@ -389,9 +328,9 @@ export default defineComponent({
         const user = User.fromToken(response.response.result.token);
         console.log("🌲 user ", user)
         $opensilex.setCookieValue(user);
-        forceRefresh.value = true;
         store.commit("login", user);
         store.commit("refresh");
+        
 
       } catch (error: any) {
         if (error.status === 403) {
@@ -414,6 +353,7 @@ export default defineComponent({
       connectAsGuest,
       form,
       versionInfo,
+      isLoggedIn,
       login,
       onLogin
     };

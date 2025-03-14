@@ -62,52 +62,64 @@ export class OpenSilexRouter {
         console.log("Routes avant beforeEach :", this.router.getRoutes().map(route => route.name));
 
 
-        this.router.beforeResolve(async (to, from) => {
-            console.log ("😁 from ", from , " to : ", to)
-            // si ce n'est pas faux - donc vrai - donc qu'il est log ET qu'on va pas vers test
-            if ( store.state.user.isLoggedIn() && to.path !== '/test') {
-              console.log("😀 if ")
-              return { path: '/test' , replace : true}
-            } else {
-                console.log("😀 else ")
-                // return { path: '/app'}
-            }
-          })
-
-
-
-        // this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
-
-        //     console.log("routerBefore from  : ", from, " / to : ", to)
-        //     console.log("😶‍🌫️ thisrouter.getRoutes : ", this.router.getRoutes())
-        //     // if (
-        //     //   // make sure the user is authenticated
-        //     //   !store.state.user.isLoggedIn() &&
-        //     //   // ❗️ Avoid an infinite redirect
-        //     //   to.name !== 'opensilex-DefaultLoginComponent'
-        //     // ) {
-        //     //   // redirect the user to the login page
-        //     //   console.log(" try to return ")
-        //     //   next({ name: 'testPage' })
-        //     // return { name: 'testPage' }
-        //     // console.log("loggeeeed ? : ", )
-
-
-        //     // ici condition if store.state.user.isLoggedIn()   ( si c'est false, qu'on est pas log, pour le test...)
-        //     if ( store.state.user.isLoggedIn() && to.fullPath !== '/app') {
-
-
-        //         next({
-        //             path:'/test'
-        //         })
+        // this.router.beforeResolve(async (to, from) => {
+        //     console.log ("😁 from ", from , " to : ", to)
+        //     // si ce n'est pas faux - donc vrai - donc qu'il est log ET qu'on va pas vers test
+        //     if ( store.state.user.isLoggedIn() && to.path !== '/test') {
+        //       console.log("😀 if ")
+        //       return { path: '/test' , replace : true}
+        //     } else {
+        //         console.log("😀 else ")
+        //         // return { path: '/app'}
         //     }
-
-
-        //     // }
         //   })
+        //   this.refresh();
+          
+
+        this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
+            console.log("routerBefore from  : ", from, " / to : ", to);
+
+            const isLoggedIn = store.state.user.loggedIn;
+            const redirectTo = to.query.redirect ? to.query.redirect.toString() : undefined;
+
+            //////////////////////
+            // si pas deja log et veut aller sur autre chose que /app : renvoi sur /app
+            if (!isLoggedIn && to.path !== '/') {
+                console.log ("🍫 pas deja log et veut aller sur autre chose que app -> renvoi /app")
+                // return next({ path: this.pathPrefix }); 
+                return next({ path: '/', query: { redirect: to.fullPath } });
+            }
+
+            // si deja log et veut aller sur /app : renvoi sur /test
+            if (isLoggedIn && to.path === '/' && !redirectTo) {
+                console.log("🍫 deja log et veut aller sur /app -> renvoi /test")
+                return next({ path: '/test', query: { redirect: redirectTo } }); 
+            }
+
+            console.log("redirectTo : ", redirectTo)
+            // a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app : 
+                // redirect soit sur /test si pas d'historique, 
+                // sinon renvoi sur la derniere page consulté
+            // if (isLoggedIn && from.path === '/' && to.path !== '/') {
+                if (isLoggedIn && to.path === '/' && redirectTo) {
+            
+                // to.redirectedFrom.query.redirect
+                console.log("to.redirectedFrom : ", to.redirectedFrom)
+                console.log("🍫 Redirection après login vers:", redirectTo);
+                return next({ path: redirectTo });
+            }
+
+
+             // Vérification pour éviter la redirection infinie
+            if (to.path === from.path) {
+                console.log("🍫 déjà sur la même page, redirection annulée");
+                return next(); 
+            }
+
+            next(); // aucun des cas ? on laisse passer
+        });
+
         //   console.log(" 😶‍🌫️ Routes enregistrées :", this.router.getRoutes().map(route => route.name));
-
-
 
         return this.router;
     }
@@ -223,8 +235,9 @@ export class OpenSilexRouter {
     }
 
     public refresh() {
-        // this.router.go();
-        this.router.push(this.router.currentRoute.value.fullPath);
+        this.router.go(0);
+        console.log( " 💩 ", this.router.currentRoute)
+        // this.router.push(this.router.currentRoute.value.fullPath);
 
     }
 

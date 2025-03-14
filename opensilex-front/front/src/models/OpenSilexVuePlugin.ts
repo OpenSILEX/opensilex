@@ -252,7 +252,7 @@ export default class OpenSilexVuePlugin {
     }
 
     getConfig() {
-        console.log("-------vuePluging Getconfig -------", this.config)
+        // console.log("-------vuePluging Getconfig -------", this.config)
         return this.config;
     }
 
@@ -425,7 +425,8 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadComponentTranslations(component) {
-        console.log("VuePlugin - loadComponentTranslations - component : ", component)
+        // console.log("VuePlugin - loadComponentTranslations - component : ", component)
+
         // @todo : trouver une methode de remplacement, component n'a pas d'options
         // if (component.options.__i18n) {
         //     let componentTranslations = JSON.parse(component.options.__i18n);
@@ -543,7 +544,8 @@ export default class OpenSilexVuePlugin {
                         promises.push(Promise.reject(error));
                     }
                 }
-                console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
+                // console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
+
                 //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
                 this.app.component(componentId, components[componentId]);
             }

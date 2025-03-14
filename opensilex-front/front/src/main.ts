@@ -335,12 +335,12 @@ $opensilex.loadModules([
 
                 if (!embed) {
                   console.log("Application is not embed");
-                  // modulesToLoad = modulesToLoad.concat([
-                  //   ModuleComponentDefinition.fromString(config.footerComponent),
-                  //   ModuleComponentDefinition.fromString(config.headerComponent),
-                    // ModuleComponentDefinition.fromString(config.loginComponent)
-                  //   ModuleComponentDefinition.fromString(config.menuComponent)
-                  // ]);
+                  modulesToLoad = modulesToLoad.concat([
+                    ModuleComponentDefinition.fromString(config.footerComponent),
+                    ModuleComponentDefinition.fromString(config.headerComponent),
+                    ModuleComponentDefinition.fromString(config.loginComponent),
+                    ModuleComponentDefinition.fromString(config.menuComponent)
+                  ]);
                 } else {
                   console.log("Application is embed");
                   console.debug("Application is embed");

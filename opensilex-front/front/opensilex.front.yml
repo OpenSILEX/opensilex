@@ -494,6 +494,16 @@ routes:
     name: testPage
     credentials: []
 
+  - path: /super
+    component: opensilex-MySuperComponent
+    name: mySuperComponent
+    credentials: []
+
+  - path: /dash
+    component: opensilex-HomeView
+    name: HomeView
+    credentials: []
+
   # - path: /app
   #   component: opensilex-DefaultLoginComponent
   #   name: defaultLoginComponent

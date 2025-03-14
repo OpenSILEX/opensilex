@@ -187,6 +187,15 @@ let store = createStore({
     login(state, user: User) {
       console.debug("Login", user);
 
+       
+      console.debug("🔄 Avant mise à jour:", state.user);
+
+      currentUser = user;
+      state.user = user;
+  
+      console.debug("✅ Après mise à jour:", state.user);
+      console.debug("✅ loggedIn:", state.user?.loggedIn);
+
       if (expireTimeout != undefined) {
         console.debug("Clear token timeout");
         clearTimeout(expireTimeout);

@@ -1,15 +1,15 @@
 <template>
-  <div class="testComponentContainer">
-    <header>
-      <h1>
-        Voici mon composant test 
-        <span class="media">🐶</span>
-      </h1>
-      <h3> 
-        <button class="btn logout" @click="logout">Logout</button>
-        <button class="btn super" @click="redirectToSuper">Vers Super Composant 🦖</button>
-      </h3>
-    </header>
+<div class="superComponentContainer">
+  <header>
+    <h1>
+      Voici mon SUPER composant ! 
+      <span class="media">🦖</span>
+    </h1>
+    <h3> 
+      <button class="btn logout" @click="logout">Logout</button>
+      <button class="btn super" @click="redirectToTest"> vers Composant Test 🐶</button>
+    </h3>
+  </header>
   </div>
 </template>
 
@@ -19,7 +19,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  name: "TestPage",
+  name: "mySUperComponent",
   setup() {
     const store = useStore();
     const router = useRouter();
@@ -32,44 +32,44 @@ export default defineComponent({
       store.commit("refresh");
     };
 
-    const redirectToSuper = () => {
-      router.push('/super'); // Redirection vers "/super"
+    const redirectToTest = () => {
+      router.push('/test');
     };
 
     return {
       logout, 
-      redirectToSuper
+      redirectToTest
     };
   }
 });
 </script>
 
 <style scoped>
-.testComponentContainer {
+
+.superComponentContainer{
   width: 100vw;
   height: 100vh;
-  background: rgb(12,26,115);
+  /* background-color: #777; */
+  background: rgb(115,64,12);
   background: linear-gradient(
-    183deg, rgba(12,26,115,0.7035189075630253) 16%,
-    rgba(126,97,215,0.700717787114846) 40%,
-    rgba(117,103,222,0.6951155462184874) 61%, 
-    rgba(69,46,128,0.7035189075630253) 85%
+    183deg, rgba(115,64,12,0.7035189075630253) 16%,
+    rgba(215,161,97,0.700717787114846) 40%,
+    rgba(222,167,103,0.6951155462184874) 61%,
+    rgba(128,86,46,0.7035189075630253) 85%
   );
+  position: relative;
 }
+
 header {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border-image: linear-gradient(to right, #8bc0c2 0%, #8891cc 100%) 1;
-  border-width: 4px;
-  border-style: solid;
-  padding: 5px;
   
   min-width: 500px;
   padding: 20px;
   border-radius: 15px;
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  background: linear-gradient(135deg, #fbab6e, #e3e177);
   color: white;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
   text-align: center;

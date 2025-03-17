@@ -110,7 +110,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <maven.failsafe.plugin.version>3.1.2</maven.failsafe.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
-        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
+        <maven.site.plugin.version>4.0.0-M16</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.1</maven.assembly.plugin.version>
         <maven.archetype.plugin.version>3.1.2</maven.archetype.plugin.version>
         <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
@@ -119,17 +119,17 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
-        <owasp.dependency.check.maven.plugin.version>5.3.2</owasp.dependency.check.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
+        <owasp.dependency.check.maven.plugin.version>12.1.0</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
-        <maven.pmd.plugin.version>3.13.0</maven.pmd.plugin.version>
+        <maven.pmd.plugin.version>3.26.0</maven.pmd.plugin.version>
         <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
-        <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
+        <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <csv.parser.version>2.9.1</csv.parser.version>
         <email.simple.java.mail>6.7.6</email.simple.java.mail>
@@ -1265,7 +1265,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         </plugins>
     </build>
 
-    <!-- Standart maven site reports -->
+    <!-- Standard maven site reports -->
     <reporting>
         <plugins>
             <plugin>
@@ -1277,7 +1277,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
-                    <source>8</source>
+                    <source>${java.compiler.version}</source>
                     <quiet>true</quiet>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <failOnError>false</failOnError>

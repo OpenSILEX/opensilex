@@ -156,51 +156,7 @@ public class GermplasmLogic {
 
         validateAccessionVarietyOrSpeciesAreGiven(germplasmModels, errors);
 
-        // check coherence between species, variety and accession
-        germplasmModels.forEach( germplasmModel -> {
-            boolean isRelated;
-            if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
-                //check coherence between variety and species
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
-                if (!isRelated) {
-                    throw new DisplayableResponseException(
-                            "wrong species : " + germplasmModel.getSpecies().toString(),
-                            Response.Status.BAD_REQUEST,
-                            "The given species doesn't match with the given variety",
-                            null,
-                            null
-                    );
-                }
-            }
-
-            if (germplasmModel.getSpecies() != null && germplasmModel.getAccession() != null) {
-                //check coherence between accession and species
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
-                if (!isRelated) {
-                    throw new DisplayableResponseException(
-                            "wrong species : " + germplasmModel.getSpecies().toString(),
-                            Response.Status.BAD_REQUEST,
-                            "The given species doesn't match with the given variety",
-                            null,
-                            null
-                    );
-                }
-            }
-
-            if (germplasmModel.getVariety() != null && germplasmModel.getAccession() != null) {
-                //check coherence between variety and accession
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
-                if (!isRelated) {
-                    throw new DisplayableResponseException(
-                            "wrong species : " + germplasmModel.getSpecies().toString(),
-                            Response.Status.BAD_REQUEST,
-                            "The given species doesn't match with the given variety",
-                            null,
-                            null
-                    );
-                }
-            }
-        });
+        checkSpeciesCoherency(germplasmModels, errors);
 
         return errors;
     }
@@ -344,6 +300,35 @@ public class GermplasmLogic {
                 }
             }
         }
+    }
+
+    private void checkSpeciesCoherency(List<GermplasmModel> germplasmModels, MultipleErrorObject errors){
+        germplasmModels.forEach( germplasmModel -> {
+            boolean isRelated;
+            if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
+                //check coherence between variety and species
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
+                if (!isRelated) {
+                    errors.addError(germplasmModel.getUri().toString(), "The given species doesn't match with the given variety. Wrong species : "+germplasmModel.getSpecies().toString());
+                }
+            }
+
+            if (germplasmModel.getSpecies() != null && germplasmModel.getAccession() != null) {
+                //check coherence between accession and species
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
+                if (!isRelated) {
+                    errors.addError(germplasmModel.getUri().toString(), "The given species doesn't match with the given accession. Wrong species : "+germplasmModel.getSpecies().toString());
+                }
+            }
+
+            if (germplasmModel.getVariety() != null && germplasmModel.getAccession() != null) {
+                //check coherence between variety and accession
+                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
+                if (!isRelated) {
+                    errors.addError(germplasmModel.getUri().toString(), "The given variety doesn't match with the given accession. Wrong variety : "+germplasmModel.getVariety().toString());
+                }
+            }
+        });
     }
 
     /**

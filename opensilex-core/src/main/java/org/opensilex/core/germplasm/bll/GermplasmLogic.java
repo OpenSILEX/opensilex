@@ -33,7 +33,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +89,7 @@ public class GermplasmLogic {
 
         germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
         germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
-        return dao.createList(germplasmModels);
+        return dao.createListWithoutUriExistsCheck(germplasmModels);
     }
 
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {

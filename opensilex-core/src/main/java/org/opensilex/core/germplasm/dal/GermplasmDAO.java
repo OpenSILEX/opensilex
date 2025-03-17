@@ -93,8 +93,8 @@ public class GermplasmDAO {
         return model;
     }
 
-    public List<GermplasmModel> createList(List<GermplasmModel> instanceList) throws Exception {
-        sparql.create(instanceList);
+    public List<GermplasmModel> createListWithoutUriExistsCheck(List<GermplasmModel> instanceList) throws Exception {
+        sparql.create(sparql.getDefaultGraph(GermplasmModel.class), instanceList, null, false, true);
         return instanceList;
     }
 

@@ -883,11 +883,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @return a list of T
      * @throws Exception
      */
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang,
-                                                          ThrowingConsumer<SelectBuilder, Exception> filterHandler,
-                                                          Map<String, WhereHandler> customHandlerByFields,
-                                                          ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                          Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+            Collection<OrderBy> orderByList,
+            Integer offset,
+            Integer limit) throws Exception {
 
         Stream<T> stream = searchAsStream(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, offset, limit);
 

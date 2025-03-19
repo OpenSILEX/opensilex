@@ -12,6 +12,7 @@ import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups"})
 public class FacilityGetDTO extends FacilityDTO {
 
+    protected List<NamedResourceDTO<VariableModel>> variables;
     @JsonProperty("organizations")
     protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
@@ -125,5 +127,11 @@ public class FacilityGetDTO extends FacilityDTO {
         this.lastPosition = lastPosition;
     }
 
+    public List<NamedResourceDTO<VariableModel>> getVariables() {
+        return variables;
+    }
 
+    public void setVariables(List<NamedResourceDTO<VariableModel>> variables) {
+        this.variables = variables;
+    }
 }

@@ -231,7 +231,6 @@ public class FacilityLogic {
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.update(instance);
-
             if(Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())){
                 if(Objects.nonNull(existingModel.getLocationObservationCollection())){
                     updateFacilityLocations(session, instance, existingModel, locations);
@@ -296,9 +295,10 @@ public class FacilityLogic {
 
     public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
         FacilityDAO dao = new FacilityDAO(sparql);
-
         return dao.getFacilityVariables(uri, language);
     }
+
+
     //#endregion
 
     //region Search rights
@@ -459,6 +459,9 @@ public class FacilityLogic {
         locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations, true);
     }
 
+    private void updateFacilityVariable(ClientSession session, FacilityModel facilityModel, FacilityModel existingModel, VariableModel variableModel){
+
+    }
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
         //Delete existing
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);

@@ -34,6 +34,8 @@ import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
+import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -69,6 +71,7 @@ import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 
+import javax.swing.text.html.Option;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -601,6 +604,23 @@ public class DataLogic {
      * @return a list of uris if the caller wasn't the import function
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
+        // @todo SI la target est une facility, alors ajouter le lien entre la variable et la facility
+        var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        //appeler facility logic pour ajouter le lien
+        for(DataModel model : models){
+            if(model.getTarget() != null){
+                var facilityModel = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
+                if(facilityModel != null){
+                    var variableModel = new VariableModel();
+                    variableModel.setUri(model.getVariable());
+//                    var facilityVariables = Optional.ofNullable(facilityModel.getVariables()).orElse(new ArrayList<>());
+                    var facilityVariables = facilityModel.getVariables();
+                    facilityVariables.add(variableModel);
+                    facilityModel.setVariables(facilityVariables);
+                    facilityLogic.update(facilityModel,null , user);
+                }
+            }
+        }
 
         DataPostInsert postInsert;
         if (!csvImport) {

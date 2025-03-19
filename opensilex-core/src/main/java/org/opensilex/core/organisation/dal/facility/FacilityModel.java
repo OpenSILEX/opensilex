@@ -77,8 +77,8 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             property = "hasVariable",
             ignoreUpdateIfNull = true
     )
-    private VariableModel variable;
-    public static final String VARIABLE_FIELD = "variable";
+    private List<VariableModel> variables;
+    public static final String VARIABLE_FIELD = "variables";
 
     @SPARQLProperty(
             ontology = VCARD4.class,
@@ -131,8 +131,13 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
                 .collect(Collectors.toList());
     }
 
-    public VariableModel getVariable() {return variable;}
-    public void setVariable(VariableModel variable) {this.variable = variable;}
+    public List<VariableModel> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableModel> variables) {
+        this.variables = variables;
+    }
 
     public List<SiteModel> getSites() {
         return sites;

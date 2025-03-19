@@ -7,6 +7,7 @@ package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.github.jsonldjava.utils.Obj;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -69,6 +70,7 @@ public class FacilityCreationDTO extends FacilityDTO {
     public void setLocations(List<LocationObservationDTO> locations) {
         this.locations = locations;
     }
+
 
     @Override
     public void toModel(FacilityModel model) {

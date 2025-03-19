@@ -1078,10 +1078,11 @@ public class DataService {
 
         if (!StringUtils.isEmpty(targetNameOrUri)) {
             if (targetContext.getNameURITargets().containsKey(targetNameOrUri)) {
-                context.setTarget(targetContext.getNameURITargets().get(targetNameOrUri));
+                target = targetContext.getNameURITargets().get(targetNameOrUri);
             } else {
                 // test not in uri list
                 if (targetContext.getDuplicatedTargets().contains(targetNameOrUri)) {
+                    //TODO MAX what is duplicated targets? pointless? We never write to targetContext.getDuplicatedTargets
                     CSVCell cell = new CSVCell(context.getRowIndex(), colIndex, targetNameOrUri, TARGET_ID);
                     localCsvValidation.addDuplicateTargetError(cell);
                     context.setValidRow(false);

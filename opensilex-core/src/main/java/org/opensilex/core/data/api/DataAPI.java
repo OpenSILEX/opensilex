@@ -28,6 +28,9 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
+import org.opensilex.core.dataV2.service.BatchHistoryService;
+import org.opensilex.core.dataV2.service.DataService;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -91,6 +94,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.opensilex.core.dataV2.service.DataService.CSV_EXTENSION;
 
 
 /**
@@ -1331,59 +1336,33 @@ public class DataAPI {
     @Path("import")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class)})
+            @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class),
+            @ApiResponse(code = 409, message = "A Data already exists", response = ErrorResponse.class)})
     @ApiProtected
     @ApiCredential(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-        credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
-        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-
-        DataCSVValidationModel validation = dataLogic.validateWholeCSV(true, provenance, experiment, file, LOGGER);
-
-        if (validation.isValidCSV()) {
-            Instant start = Instant.now();
-            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
-            try {
-                dataLogic.createManyFromImport(data, validation);
-
-            } catch (NoSQLTooLargeSetException ex) {
-                validation.setTooLargeDataset(true);
-            } catch (MongoBulkWriteException duplicateError) {
-                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
-                for (int i = 0; i < bulkErrors.size(); i++) {
-                    int index = bulkErrors.get(i).getIndex();
-                    DataModel dataModel = data.get(index);
-                    int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
-                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
-                    validation.addDuplicatedDataError(csvCell);
-                }
-            } catch (MongoCommandException e) {
-                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
-                validation.addDuplicatedDataError(csvCell);
-            } catch (DataTypeException e) {
-                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
-                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
-                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-            }
-            Instant finish = Instant.now();
-            long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-
-            validation.setValidCSV(!validation.hasErrors());
+            @FormDataParam("file") FormDataContentDisposition fileDisposition,
+            @ApiParam(value = "The key for file that have already been validated by the API (/core/data-v2/import_validation_v2)",
+                    example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
+        String fileName = getFileName(fileDisposition);
+        this.dataService = new DataService(nosql, sparql, fs, user);
+        DataCSVValidationDTO csvValidation;
+        try {
+            csvValidation = dataService.importCSVDataV2(provenance, experiment, file, fileName, validationKey);
+        } catch (MongoDbUniqueIndexConstraintViolation e) {
+            return new ErrorResponse(Response.Status.CONFLICT, DATA_ALREADY_EXISTS,
+                    DUPLICATED_DATA_FOUND + e.getMessage()).getResponse();
         }
-        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
-        csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1391,7 +1370,7 @@ public class DataAPI {
     @Path("import_validation")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
+            @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -1403,16 +1382,13 @@ public class DataAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-
-        DataCSVValidationModel validation = dataLogic.validateWholeCSV(false, provenance, experiment, file, LOGGER);
-
-        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
-        csvValidation.setDataErrors(validation);
-
+            @FormDataParam("file") FormDataContentDisposition fileDisposition) throws Exception {
+        this.dataService = new DataService(nosql, sparql, fs, user);
+        String fileName = getFileName(fileDisposition);
+        DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file, fileName);
+        DataCSVValidationDTO csvValidation = dataService.buildDataCSVValidationDTO(csvValidationModel);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1442,6 +1418,49 @@ public class DataAPI {
                         calculatedOnly,
                         LOGGER)
         ).getResponse();
+    }
+
+    @GET
+    @Path("batch_history")
+    @ApiOperation("Get data batch history")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return batch history list", response = BatchHistoryGetDTO.class, responseContainer = "List")
+    })
+    public Response searchBatchHistory(
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) {
+        this.batchHistoryService = new BatchHistoryService(user, nosql);
+        ListWithPagination<BatchHistoryGetDTO> results = batchHistoryService.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
+        return new PaginatedListResponse<>(results).getResponse();
+    }
+
+    @DELETE
+    @Path("batch_history/{uri}")
+    @ApiOperation("Delete batch history by URI")
+    @ApiProtected
+    @ApiCredential(credentialId = CREDENTIAL_BATCH_HISTORY_DELETE_ID, credentialLabelKey = CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response deleteBatchHistoryByURI(
+            @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+    ) throws NoSQLInvalidURIException {
+        this.batchHistoryService = new BatchHistoryService(user, nosql);
+        return new SingleObjectResponse<>(batchHistoryService.deleteBatchHistoryByURI(uri)).getResponse();
+    }
+
+    private String getFileName(FormDataContentDisposition fileDisposition) {
+        return fileDisposition.getFileName().split(CSV_EXTENSION)[0];
     }
 
 }

@@ -106,8 +106,8 @@ public class DataAPIV2 {
     public Response importCSVData(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file, @FormDataParam("file") FormDataContentDisposition fileDisposition,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileDisposition,
             @ApiParam(value = "The key for file that have already been validated by the API (/core/data-v2/import_validation_v2)",
                     example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
         String fileName = getFileName(fileDisposition);
@@ -139,8 +139,8 @@ public class DataAPIV2 {
     public Response validateCSV(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file, @FormDataParam("file") FormDataContentDisposition fileDisposition,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
+            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileDisposition) throws Exception {
         this.dataService = new DataService(nosql, sparql, fs, user);
         String fileName = getFileName(fileDisposition);
         DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file, fileName);

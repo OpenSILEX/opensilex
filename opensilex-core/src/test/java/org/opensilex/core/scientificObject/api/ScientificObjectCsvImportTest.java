@@ -19,7 +19,6 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.io.BufferedReader;
@@ -116,17 +115,10 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
             // Split the line based on the delimiter , and assign to the ScientificObjectModel
             values = br.readLine().split(",");
             so1.setUri(new URI(values[0]));
-            so1.setType(new URI(values[1]));
-            so1.setName(values[2]);
 
             values = br.readLine().split(",");
             so2.setUri(new URI(values[0]));
-            so2.setType(new URI(values[1]));
-            so2.setName(values[2]);
-            List<SPARQLModelRelation> relationList = new ArrayList<>();
-            so2.setRelations(relationList);
 
-            System.out.println(so1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -135,7 +127,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         Assert.assertTrue(doesSO1ParticipatesInXP);
 
         boolean doesSO2ParticipatesInXP = getSparqlService().executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(so1.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(experiment.getUri())));
+                .addWhere(SPARQLDeserializers.nodeURI(so2.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(experiment.getUri())));
         Assert.assertTrue(doesSO2ParticipatesInXP);
     }
 

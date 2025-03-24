@@ -12,6 +12,13 @@ import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+
+// Ajoute toutes les icônes solides à la bibliothèque
+library.add(fas);
+
 
 const i18n = createI18n({
   locale: 'fr',
@@ -118,6 +125,8 @@ app.config.globalProperties.$opensilex = $opensilex;
 app.use(i18n)
 app.use($opensilex);
 app.use(store);
+app.component('font-awesome-icon', FontAwesomeIcon);
+
 
 (store as any).$opensilex = $opensilex;
 

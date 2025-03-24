@@ -1,24 +1,32 @@
 
 <template>
-  <div id="main-content">
-    <main class="main-content">
+  <!-- <div id="main-content"> -->
+    <!-- <main class="main-content"> -->
+      <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
+                    <div id="main-content">
+              <main class="main-content">
+      <opensilex-DefaultMenuComponent></opensilex-DefaultMenuComponent>
+      <opensilex-DefaultHeaderComponent></opensilex-DefaultHeaderComponent>
       <router-view></router-view>
+      </main>
+      </div>
+      </section>
 
 <!-- <div v-if="this.$route.meta.public"> -->
 
 
-          <!-- <component v-bind:is="headerComponent"></component>
+          <component v-bind:is="headerComponent"></component>
  
-          <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
-            <div id="main-content">
-              <main class="main-content">
-                <router-view :key="$route.fullPath" />
-              </main>
+          <!-- <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" > -->
+            <!-- <div id="main-content">
+              <main class="main-content"> -->
+                <!-- <router-view :key="$route.fullPath" /> -->
+              <!-- </main> -->
 
-            </div>
-          </section> -->
-              </main>
-            </div>
+            <!-- </div> -->
+          <!-- </section> -->
+              <!-- </main> -->
+            <!-- </div> -->
 </template>
 
 <script setup>

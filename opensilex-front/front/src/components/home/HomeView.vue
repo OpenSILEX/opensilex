@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
-    <!-- <opensilex-Dashboard></opensilex-Dashboard> -->
-    <div>test import home view component</div>
+    <opensilex-Dashboard></opensilex-Dashboard>
+    <!-- <div>Import composant HomeView </div> -->
   </div>
 </template>
 
@@ -23,4 +23,8 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+
+.container-fluid {
+  background-color: rgba(95, 158, 160, 0.559);
+}
 </style>

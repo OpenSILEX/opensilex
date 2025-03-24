@@ -7,7 +7,8 @@
       </h1>
       <h3> 
         <button class="btn logout" @click="logout">Logout</button>
-        <button class="btn super" @click="redirectToSuper">Vers Super Composant 🦖</button>
+        <button class="btn super" @click="redirectToSuper">Vers Un Super Composant 🦖</button>
+        <button class="btn dash" @click="redirectToDash">Vers Un Dashboard Extraordinaire 🙈</button>
       </h3>
     </header>
   </div>
@@ -33,12 +34,17 @@ export default defineComponent({
     };
 
     const redirectToSuper = () => {
-      router.push('/super'); // Redirection vers "/super"
+      router.push('/super'); 
+    };
+
+    const redirectToDash = () => {
+      router.push('/dash'); 
     };
 
     return {
       logout, 
-      redirectToSuper
+      redirectToSuper,
+      redirectToDash
     };
   }
 });
@@ -117,6 +123,11 @@ h3 {
 
 .super {
   background: #4caf50;
+  color: white;
+}
+
+.dash {
+  background: #4ca0af;
   color: white;
 }
 

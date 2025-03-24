@@ -1,314 +1,289 @@
 <template>
-<div>
-  <div class="header-top" header-theme="light">
-    <router-link :to="{path: '/'}" :title="$t('component.menu.backToDashboard')">
-      <div class="app-logo">
-        <div class="header-brand">
-          <div class="logo-img">
-            <slot name="headerLogo">
-              <img
-                v-bind:src="$opensilex.getResourceURI('images/logo-opensilex_miniature.png')"
-                class="header-brand-img"
-                alt="lavalite"
-              />
-            </slot>
+  <div>
+    <div class="header-top" header-theme="light">
+      <router-link :to="{ path: '/' }" :title="t('component.menu.backToDashboard')">
+        <div class="app-logo">
+          <div class="header-brand">
+            <div class="logo-img">
+              <slot name="headerLogo">
+                <img
+                  :src="$opensilex.getResourceURI('images/logo-opensilex_miniature.png')"
+                  class="header-brand-img"
+                  alt="lavalite"
+                />
+              </slot>
+            </div>
+            <span class="text">
+              {{ applicationName }}
+            </span>
           </div>
-          <span class="text">
-            {{ this.applicationName }}
-          </span>
         </div>
-      </div>
-    </router-link>
+      </router-link>
 
-    <div class="container-fluid boxed-layout">
-      <h5 v-if="iconvalue" class="header-title">
-        <opensilex-Icon :icon.sync="iconvalue" class="title-icon"/>
-        <slot name="title">&nbsp;{{ $t(titlevalue) }}</slot>
-      </h5>
-      <span v-else> <br> </span>
+      <div class="container-fluid boxed-layout">
+        <h5 v-if="iconvalue" class="header-title">
+          <opensilex-Icon :icon="iconvalue" class="title-icon" />
+          <!-- <opensilex-Icon :icon.sync="iconvalue" class="title-icon" /> -->
+          <slot name="title">&nbsp;{{ t(titlevalue) }}</slot>
+        </h5>
+        <span v-else> <br> </span>
         <span class="title-description">
-          <slot name="description" >{{ $t(descriptionevalue) }}</slot>
+          <slot name="description">{{ descriptionevalue ? t(descriptionevalue) : '' }}</slot>
         </span>
 
-      <div class="d-flex justify-content-end">
-        <div class="top-menu d-flex align-items-center">
-          <!--
-            Label to indicate the deployment version if needed (develop or release)
-            For development purposes only
-           -->
-          <div
-              v-if="versionLabel"
-              class="version-label-box"
-              v-bind:class="[versionLabelClass]"
-          >
-            {{ versionLabel }}
-          </div>
+        <div class="d-flex justify-content-end">
+          <div class="top-menu d-flex align-items-center">
+            <div v-if="versionLabel" class="version-label-box" :class="[versionLabelClass]">
+              {{ versionLabel }}
+            </div>
 
-      <!-- Burger menu start -->
-      <button
-        class="hamburger headerburger"
-        type="button"
-        v-on:click="HeaderBurgerToggle = !HeaderBurgerToggle"
-      >
-        <span class="hamburger-box">
-          <span class="hamburger-inner"></span>
-        </span>
-      </button>
-
-    <Transition>
-      <div v-show="HeaderBurgerToggle"
-        class="burgerMenuContainer"><br>
-        <div>
-          <opensilex-HelpButton
-            class="burgerMenuHelp"
-            @click="$opensilex.getGuideFile()"
-            label="component.header.user-guide"
-          ></opensilex-HelpButton>
-        </div>
-        <!--Uri global search-->
-        <opensilex-Button
-          @click="$emit('uriGlobalSearch')"
-          :label="$t('component.header.uriSearchHoverMessage')"
-          class="burgerMenu-searchIcon ik ik-search"
-          :class="{ 'selected-searchicon': searchBoxIsActive }"
-          icon="ik-search"
-        ></opensilex-Button>
-        <div>
-          <div>
-            <b-dropdown
-              class="langDropdown"
-              :title="`language - ${this.language}`"
-              variant="link"
-              right
+            <!-- Burger menu start -->
+            <button
+              class="hamburger headerburger"
+              type="button"
+              @click="HeaderBurgerToggle = !HeaderBurgerToggle"
             >
-              <template v-slot:button-content>
-                <i class="icon ik ik-globe"></i>
-              </template>
+              <span class="hamburger-box">
+                <span class="hamburger-inner"></span>
+              </span>
+            </button>
 
-              <b-dropdown-item
-                v-for="item in languages"
-                :key="`language-${item}`"
-                href="#"
-                @click.prevent="setLanguage(item)"
-                >{{ $t("component.header.language." + item) }}
-              </b-dropdown-item>
-            </b-dropdown>
-          </div>
-            <b-dropdown
-              v-if="user.isLoggedIn()"
-              id="userDropdown"
-              :title="user.getEmail()"
-              variant="link"
-              right
-            >
-              <template v-slot:button-content class="userIcon">
-                <i class="icon ik ik-user"></i>
-              </template>
-              <b-dropdown-item href="#" @click.prevent="logout">
-                <i class="ik ik-log-out dropdown-icon"></i>
-                {{ $t("component.header.account.logout") }}
-              </b-dropdown-item>
-            </b-dropdown>
-        </div>
-      </div>
-    </Transition>
-    <!-- Burger menu end -->
+            <Transition>
+              <div v-show="HeaderBurgerToggle" class="burgerMenuContainer"><br>
+                <div>
+                  <opensilex-HelpButton
+                    class="burgerMenuHelp"
+                    @click="$opensilex.getGuideFile()"
+                    :label="t('component.header.user-guide')"
+                  ></opensilex-HelpButton>
+                </div>
+                <div>
+                  <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="icon ik ik-globe"></i> {{ `language - ${language}` }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                      <li v-for="item in languages" :key="`language-${item}`">
+                        <a class="dropdown-item" href="#" @click.prevent="setLanguage(item)">
+                          {{ t('component.header.language.' + item) }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div v-if="user.isLoggedIn()">
+                  <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="icon ik ik-user"></i> {{ user.getEmail() }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                      <li>
+                        <a class="dropdown-item" href="#" @click.prevent="logout">
+                          <i class="ik ik-log-out dropdown-icon"></i> {{ t('component.header.account.logout') }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+            <!-- Burger menu end -->
 
-          <!--help button-->
-          <opensilex-HelpButton
-            class="topbarBtnHelp"
-            @click="$opensilex.getGuideFile()"
-            label="component.header.user-guide"
-          ></opensilex-HelpButton>
+            <!-- help button -->
+            <opensilex-HelpButton
+              class="topbarBtnHelp"
+              @click="$opensilex.getGuideFile()"
+              :label="t('component.header.user-guide')"
+              :small="true"
+            ></opensilex-HelpButton>
 
-          <div class="headerMenuIcons">
+            <span class="headerMenuIcons">
+              <!-- language button -->
+              <div class="dropdown btn-group">
 
-            <!--Uri global search-->
-            <b-button
-              class="searchicon"
-              :class="{ 'selected-searchicon': searchBoxIsActive }"
-              :title="$t('component.header.uriSearchHoverMessage')"
-              @click="$emit('uriGlobalSearch')"
-            >
-              URI
-              <i class="icon ik ik-search"></i>
-            </b-button>
-            <!--language button -->
-            <b-dropdown
-              class="langDropdown" 
-              :title="`language - ${this.language}`"
-              variant="link"
-              right
-            >
-              <template v-slot:button-content>
-                <i class="icon ik ik-globe languageIcon"></i>
-              </template>
+                <opensilex-Button 
+                  class="btn settingsButton dropdown-toggle"
+                  id="languageDropdown2" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false" 
+                  :label="`language - ${language}`"
+                  icon="bi-globe" 
+                  :small="true" > 
+                </opensilex-Button>
 
-              <b-dropdown-item
-                v-for="item in languages"
-                :key="`language-${item}`"
-                href="#"
-                @click.prevent="setLanguage(item)"
-                >{{ $t("component.header.language." + item) }}
-              </b-dropdown-item>
-            </b-dropdown>
+                <ul class="dropdown-menu" aria-labelledby="languageDropdown2">
+                  <li v-for="item in languages" :key="`language-${item}`">
+                    <a class="dropdown-item" href="#" @click.prevent="setLanguage(item)">
+                      {{ t('component.header.language.' + item) }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <!-- dashboard homepage button -->
-            <router-link :to="{path: '/'}" :title="$t('component.menu.backToDashboard')">
-              <i class="icon ik ik-home"></i>
-            </router-link>
+              <!-- dashboard homepage button -->
+              <div class="btn-group">
+                <router-link :to="{ path: '/' }" :title="t('component.menu.backToDashboard')">
+                  <i class="icon bi bi-house settingsButton"></i>
+                </router-link>
+              </div>
 
-            <!-- user button-->
-            <b-dropdown
-              v-if="user.isLoggedIn()"
-              id="userDropdown"
-              :title="user.getEmail()"
-              variant="link"
-              right
-            >
-              <template v-slot:button-content>
-                <i class="icon ik ik-user userIcon"></i>
-              </template>
-              <b-dropdown-item href="#" @click.prevent="logout">
-                <i class="ik ik-log-out dropdown-icon"></i>
-                {{ $t("component.header.account.logout") }}
-              </b-dropdown-item>
-            </b-dropdown>
+              <!-- user button -->
+              <div v-if="user.isLoggedIn()" class="dropdown btn-group">
+                <opensilex-Button 
+                  class="btn settingsButton dropdown-toggle" 
+                  id="userDropdown2" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"  
+                  :label="user.getEmail()" 
+                  icon="bi-person" 
+                  :small="true" >
+                </opensilex-Button>
+                <ul class="dropdown-menu" aria-labelledby="userDropdown2">
+                  <li>
+                    <a class="dropdown-item" href="#" @click.prevent="logout">
+                      <i class="bi bi-box-arrow-right dropdown-icon"></i> {{ t('component.header.account.logout') }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-</div>
 </template>
 
+
 <script lang="ts">
-import Vue, { defineComponent } from "vue";
+import { defineComponent, ref, onMounted, onBeforeUnmount, computed , inject} from 'vue';
+import { useI18n } from 'vue-i18n';
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
-
+import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 export default defineComponent({
-    data() {
-        const description: any = undefined;
-        const title: any = undefined;
-        const icon: any = undefined;
-        const $t: any = undefined;
-        const $route: any = undefined;
-        const $opensilex: any = undefined;
-        const $store: any = undefined;
-        const $i18n: any = undefined;
+    setup() {
+         const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+        const { t } = useI18n(); // Initialisation de t pour les traductions
+        const route = useRoute();
+
+        const HeaderBurgerToggle = ref(false);
+        const width = ref<number | undefined>(undefined);
+
+        const description = ref<any>(undefined);
+        const title = ref<any>(undefined);
+        const icon = ref<any>(undefined);
+
+        const user = computed(() => store.state.user);
+       
+        const store = useStore();
+        const i18n = computed(() => store.state.i18n as any);
+
+
+    const iconvalue = computed(() => {
+      const pathicon = store.state.openSilexRouter.sectionAttributes[route.path];
+      console.log("pathicon  :", pathicon)
+      return pathicon ? pathicon.icon : '';
+    });
+
+    const titlevalue = computed(() => {
+      const pathtitle = store.state.openSilexRouter.sectionAttributes[route.path];
+      return pathtitle ? pathtitle.title : undefined;
+    });
+
+    const descriptionevalue = computed(() => {
+      const pathdescription = store.state.openSilexRouter.sectionAttributes[route.path];
+      return pathdescription ? pathdescription.description : undefined;
+    });
+
+
+        // const language = computed(() => i18n.value.locale);
+
+        // OU : 
+        // const { locale } = useI18n();
+        // const language = computed(() => locale.value);
+
+        const language = computed(() => store.state.lang);
+
+        const { messages } = useI18n();
+        const languages = computed(() => Object.keys(messages.value)); 
+        // const languages = computed(() => Object.keys(i18n.value.messages));
+
+        const versionLabel = computed(() => {
+            const config = opensilex.getConfig();
+            if (!config.versionLabel) return undefined;
+            return t("component.header.version-label." + config.versionLabel.toLowerCase());
+        });
+
+        const versionLabelClass = computed(() => {
+            const config = opensilex.getConfig();
+            return config.versionLabel ? config.versionLabel.toLowerCase() : undefined;
+        });
+
+        const applicationName = computed(() => {
+            const config = opensilex.getConfig();
+            return config.applicationName || undefined;
+        });
+
+        onMounted(() => {
+            window.addEventListener('resize', handleResize);
+            handleResize();
+            console.log("languages : ", languages.value)
+        });
+
+        onBeforeUnmount(() => {
+            window.removeEventListener('resize', handleResize);
+        });
+
+        const handleResize = () => {
+            const minSize = 1025;
+            if (document.body.clientWidth <= minSize && (width.value == null || width.value > minSize)) {
+                width.value = document.body.clientWidth;
+                store.commit("hideMenu");
+            } else if (document.body.clientWidth > minSize && (width.value == null || width.value <= minSize)) {
+                width.value = document.body.clientWidth;
+                store.commit("showMenu");
+            }
+        };
+
+        const setLanguage = (lang: string) => {
+            i18n.value.locale = lang;
+            store.commit("lang", lang);
+        };
+
+        const logout = () => {
+            store.commit("logout");
+            store.commit("refresh");
+        };
 
         return {
-          HeaderBurgerToggle : false,
-            $i18n,
-            $store,
-            $opensilex,
-            $route,
-            $t,
-            icon,
-            title,
+            HeaderBurgerToggle,
+            width,
             description,
-            width: undefined
-        }
-    },
-    computed: {
-        user() {
-            return this.$store.state.user;
-        },
-        iconvalue() {
-            const pathicon = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-            if (!pathicon) {
-              return ""
-            }
-            else {
-              return pathicon.icon;
-            }
-        },
-        titlevalue() {
-            let pathtitle = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-            if (!pathtitle) {
-              return undefined
-            }
-            else {
-              return pathtitle.title;
-            }
-        },
-        descriptionevalue() {
-            let pathdescription = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
-            if (!pathdescription) {
-              return undefined
-            }
-            else {
-              return pathdescription.description;
-            }
-        },
-        language() {
-            return this.$i18n.locale;
-        },
-        languages() {
-            return Object.keys(this.$i18n.messages);
-        },
-        versionLabel(): string {
-            if (!this.$opensilex.getConfig().versionLabel) {
-                  return undefined;
-                }
-
-                return this.$t("component.header.version-label." + this.$opensilex.getConfig().versionLabel.toLowerCase())
-                    .toString();
-        },
-        versionLabelClass(): string {
-            if (!this.$opensilex.getConfig().versionLabel) {
-                  return undefined;
-                }
-
-                return this.$opensilex.getConfig().versionLabel.toLowerCase();
-        },
-        applicationName(): string {
-            if (!this.$opensilex.getConfig().applicationName) {
-                  return undefined;
-                }
-
-                return this.$opensilex.getConfig().applicationName;
-        }
-    },
-    created() {
-        window.addEventListener("resize", this.handleResize);
-        this.handleResize();
-    },
-    methods: {
-        setLanguage(lang: string) {
-            this.$i18n.locale = lang;
-            this.$store.commit("lang", lang);
-        },
-        logout() {
-            this.$store.commit("logout");
-        },
-        beforeDestroy() {
-            window.removeEventListener("resize", this.handleResize);
-        },
-        handleResize() {
-            const minSize = 1025;
-            if (
-              document.body.clientWidth <= minSize &&
-              (this.width == null || this.width > minSize)
-            ) {
-              this.width = document.body.clientWidth;
-              this.$store.commit("hideMenu");
-            } else if (
-              document.body.clientWidth > minSize &&
-              (this.width == null || this.width <= minSize)
-            ) {
-              this.width = document.body.clientWidth;
-              this.$store.commit("showMenu");
-            }
-        }
+            title,
+            icon,
+            user,
+            iconvalue,
+            titlevalue,
+            descriptionevalue,
+            language,
+            languages,
+            versionLabel,
+            versionLabelClass,
+            applicationName,
+            setLanguage,
+            logout,
+            t,
+            opensilex
+        };
     }
-})
-
+});
 </script>
+
 
 
 
@@ -321,10 +296,10 @@ export default defineComponent({
 .app-logo {
   text-align: left;
   position: absolute;
-  width: 180px;
-  height:60px;
+  width: 203px;
+  height:65px;
   top: 0;
-  left: 60px;
+  left: 38px;
   background-color: rgb(0, 163, 141);
   padding-top: 6px;
   padding-bottom: 6px;
@@ -341,9 +316,23 @@ export default defineComponent({
   display: inline-block;
 }
 
+.header-brand {
+  display: flex;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.header-brand .logo-img {
+display: inline-block;
+width: 30px;
+margin-top: 5px
+}
 .header-brand .text {
-    margin-left: 16px;
+    margin-left: 21px;
+    margin-top: 10px;
     color: #fff;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .title-icon {
@@ -397,6 +386,31 @@ export default defineComponent({
   position: absolute;
   float: right;
   top: 10px;
+}
+
+.settingsButton {
+  font-size: 1.2em;
+  font-weight: bold;
+  border: none
+}
+
+.settingsButton:hover {
+color: #00A28C;
+}
+
+.btn-group {
+  position: relative;
+  display: inline-flex;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  vertical-align: middle;
+  font-size: 1.2em;
+  font-weight: bold;
+  // margin: 0 3px
+}
+
+.btn-group i {
+  font-weight: bold;
 }
 
 .topbarBtnHelp {

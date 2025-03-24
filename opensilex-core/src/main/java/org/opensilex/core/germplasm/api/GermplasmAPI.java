@@ -32,10 +32,11 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.MultipleErrorException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
+import org.opensilex.server.response.multipleError.MultipleErrorResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -193,9 +194,9 @@ public class GermplasmAPI {
             }
 
         } else {
-            var multipleErrorObject = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
-            if (multipleErrorObject.hasErrors()) {
-                return new MultipleErrorResponse("Germplasm creation error", multipleErrorObject.getErrors()).getResponse();
+            var multipleErrorObjectList = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            if (multipleErrorObjectList.hasErrors()) {
+                return new MultipleErrorResponse(multipleErrorObjectList.toDTO()).getResponse();
             }
             return new ObjectUriResponse().getResponse();
         }

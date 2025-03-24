@@ -242,7 +242,8 @@ export default defineComponent({
     // Gestion du carrousel
     onMounted(() => {
       console.log("🚀 onMounted() déclenché !");
-      console.log("FIREEE 🚀 connectAsGuest : ", connectAsGuest.value)
+      console.log("connectAsGuest dispo ? : ", connectAsGuest.value)
+      console.log("locales : ", availableLocales)
 
       versionInfo.value = $opensilex.versionInfo;
 

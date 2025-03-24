@@ -31,6 +31,7 @@ export class OpenSilexRouter {
     }
     
     public getSectionAttributes() {
+        console.log("RETURN sectionAttributes ", this.sectionAttributes)
         return this.sectionAttributes;
     }
 
@@ -60,6 +61,8 @@ export class OpenSilexRouter {
     
         console.log("this.router ", this.router)
         console.log("Routes avant beforeEach :", this.router.getRoutes().map(route => route.name));
+        console.log("RETURN sectionAttributes ", this.sectionAttributes)
+        
 
 
         // this.router.beforeResolve(async (to, from) => {

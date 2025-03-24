@@ -352,7 +352,7 @@ let store = createStore({
       state.openSilexRouter.refresh();
     },
     lang(state, lang) {
-      console.debug("Define user language", lang);
+      console.log("Define user language", lang);
       state.user.setLocale(lang);
       state.lang = lang;
     },

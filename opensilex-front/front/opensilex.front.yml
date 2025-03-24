@@ -17,300 +17,300 @@ menu:
           icon: fa#fa-sitemap
           title: component.menu.organizations
           description: OrganizationView.description
-  #     - id: projects
-  #       label: component.menu.projects
-  #       route:
-  #         path: /projects
-  #         component: opensilex-ProjectView
-  #         credentials:
-  #           - project-access
-  #         icon: ik#ik-folder
-  #         title: component.menu.projects
-  #         description: component.project.search-description
-  #     - id: experiments
-  #       label: component.menu.experiments
-  #       route:
-  #         path: /experiments
-  #         component: opensilex-ExperimentListView
-  #         credentials:
-  #           - experiment-access
-  #         icon: ik#ik-layers
-  #         title: component.menu.experiments
-  #         description: component.experiment.search.description
-  #     - id: facilities
-  #       label: component.menu.facilities
-  #       route:
-  #         path: /facilities
-  #         component: opensilex-FacilityListView
-  #         credentials:
-  #           - facility-access
-  #         icon: "ik#ik-globe"
-  #         title: "component.menu.facilities"
-  #         description: FacilityListView.description
-  #     - id: devices
-  #       label: component.menu.devices
-  #       route:
-  #         path: /devices
-  #         component: opensilex-DeviceView
-  #         credentials:
-  #           - device-access
-  #         icon: ik#ik-thermometer
-  #         title: Device.title
-  #         description: Device.description
-  #     - id: persons
-  #       label: component.menu.security.persons
-  #       route:
-  #         path: /persons
-  #         component: opensilex-PersonView
-  #         credentials:
-  #           - person-access
-  #         icon: ik#ik-user
-  #         title: PersonView.title
-  #         description: PersonView.description
-  # - id: experimentalDesign
-  #   label: component.menu.experimentalDesign.label
-  #   children:
-  #     - id: scientificObjects
-  #       label: component.menu.scientificObjects
-  #       route:
-  #         path: /scientific-objects
-  #         component: opensilex-ScientificObjectsView
-  #         credentials:
-  #           - scientific-objects-access
-  #         icon: ik#ik-target
-  #         title: component.menu.scientificObjects
-  #         description: ScientificObjectList.description
-  #     - id: variables
-  #       label: component.menu.variables
-  #       route:
-  #         path: /variables
-  #         component: opensilex-VariablesView
-  #         credentials:
-  #           - variable-access
-  #     - id: germplasm
-  #       label: component.menu.experimentalDesign.germplasm
-  #       icon: ik-cloud-rain
-  #       route:
-  #         path: /germplasm
-  #         component: opensilex-GermplasmGlobalView
-  #         credentials:
-  #           - germplasm-access
-  # - id: data-menu
-  #   label: component.menu.data.label
-  #   children:
-  #     # - id: data-template
-  #     #   label: component.menu.data.templatePreparation
-  #     #   route:
-  #     #     path: /template
-  #     #     component: opensilex-Template
-  #     - id: data
-  #       label: component.menu.data.tabularData
-  #       route:
-  #         path: /data
-  #         component: opensilex-DataView
-  #         credentials:
-  #           - data-access
-  #         icon: ik#ik-bar-chart-line
-  #         title: component.menu.data.label
-  #         description: DataView.description
-  #     - id: datafiles
-  #       label: component.menu.data.datafiles
-  #       route:
-  #         path: /files
-  #         component: opensilex-DataFilesView
-  #         credentials:
-  #           - data-access
-  #         icon: fa#file-medical-alt
-  #         title: component.menu.data.datafiles
-  #         description: DataFilesView.description
-  #     - id: provenances
-  #       label: component.menu.data.provenance
-  #       route:
-  #         path: /provenances
-  #         component: opensilex-ProvenanceView
-  #         credentials:
-  #           - provenance-access
-  #         icon: ik#ik-bar-chart-line
-  #         title: component.menu.data.provenance
-  #         description: ProvenanceView.description
-  #     - id: events
-  #       label: component.menu.events
-  #       route:
-  #         path: /events
-  #         component: opensilex-EventsView
-  #         credentials:
-  #           - event-access
-  #         icon: ik#ik-activity
-  #         title: Event.list-title
-  #         description: EventsView.description
-  #     - id: documents
-  #       label: Documents
-  #       route:
-  #         path: /documents
-  #         component: opensilex-DocumentView
-  #         credentials:
-  #           - document-access
-  #         icon: ik#ik-file-text
-  #         title: DocumentView.title
-  #         description: DocumentView.description
-
-      # - id: equipments
-      #   label: component.menu.equipments.label
+      - id: projects
+        label: component.menu.projects
+        route:
+          path: /projects
+          component: opensilex-ProjectView
+          credentials:
+            - project-access
+          icon: ik#ik-folder
+          title: component.menu.projects
+          description: component.project.search-description
+      - id: experiments
+        label: component.menu.experiments
+        route:
+          path: /experiments
+          component: opensilex-ExperimentListView
+          credentials:
+            - experiment-access
+          icon: ik#ik-layers
+          title: component.menu.experiments
+          description: component.experiment.search.description
+      - id: facilities
+        label: component.menu.facilities
+        route:
+          path: /facilities
+          component: opensilex-FacilityListView
+          credentials:
+            - facility-access
+          icon: "ik#ik-globe"
+          title: "component.menu.facilities"
+          description: FacilityListView.description
+      - id: devices
+        label: component.menu.devices
+        route:
+          path: /devices
+          component: opensilex-DeviceView
+          credentials:
+            - device-access
+          icon: ik#ik-thermometer
+          title: Device.title
+          description: Device.description
+      - id: persons
+        label: component.menu.security.persons
+        route:
+          path: /persons
+          component: opensilex-PersonView
+          credentials:
+            - person-access
+          icon: ik#ik-user
+          title: PersonView.title
+          description: PersonView.description
+  - id: experimentalDesign
+    label: component.menu.experimentalDesign.label
+    children:
+      - id: scientificObjects
+        label: component.menu.scientificObjects
+        route:
+          path: /scientific-objects
+          component: opensilex-ScientificObjectsView
+          credentials:
+            - scientific-objects-access
+          icon: ik#ik-target
+          title: component.menu.scientificObjects
+          description: ScientificObjectList.description
+      - id: variables
+        label: component.menu.variables
+        route:
+          path: /variables
+          component: opensilex-VariablesView
+          credentials:
+            - variable-access
+      - id: germplasm
+        label: component.menu.experimentalDesign.germplasm
+        icon: ik-cloud-rain
+        route:
+          path: /germplasm
+          component: opensilex-GermplasmGlobalView
+          credentials:
+            - germplasm-access
+  - id: data-menu
+    label: component.menu.data.label
+    children:
+      # - id: data-template
+      #   label: component.menu.data.templatePreparation
       #   route:
-      #     path: /users
-      #     component: opensilex-AccountView
-      #   children:
-      #     - id: sensors
-      #       label: component.menu.equipments.sensors
-      #       route:
-      #         path: /users
-      #         component: opensilex-AccountView
-      #     - id: actuators
-      #       label: component.menu.equipments.actuators
-      #       route:
-      #         path: /users
-      #         component: opensilex-AccountView
-      #     - id: vectors
-      #       label: component.menu.equipments.vectors
-      #       route:
-      #         path: /users
-      #         component: opensilex-AccountView
-      #     - id: radiometricTargets
-      #       label: component.menu.equipments.radiometricTargets
-      #       route:
-      #         path: /users
-      #         component: opensilex-AccountView
+      #     path: /template
+      #     component: opensilex-Template
+      - id: data
+        label: component.menu.data.tabularData
+        route:
+          path: /data
+          component: opensilex-DataView
+          credentials:
+            - data-access
+          icon: ik#ik-bar-chart-line
+          title: component.menu.data.label
+          description: DataView.description
+      - id: datafiles
+        label: component.menu.data.datafiles
+        route:
+          path: /files
+          component: opensilex-DataFilesView
+          credentials:
+            - data-access
+          icon: fa#file-medical-alt
+          title: component.menu.data.datafiles
+          description: DataFilesView.description
+      - id: provenances
+        label: component.menu.data.provenance
+        route:
+          path: /provenances
+          component: opensilex-ProvenanceView
+          credentials:
+            - provenance-access
+          icon: ik#ik-bar-chart-line
+          title: component.menu.data.provenance
+          description: ProvenanceView.description
+      - id: events
+        label: component.menu.events
+        route:
+          path: /events
+          component: opensilex-EventsView
+          credentials:
+            - event-access
+          icon: ik#ik-activity
+          title: Event.list-title
+          description: EventsView.description
+      - id: documents
+        label: Documents
+        route:
+          path: /documents
+          component: opensilex-DocumentView
+          credentials:
+            - document-access
+          icon: ik#ik-file-text
+          title: DocumentView.title
+          description: DocumentView.description
 
-  # - id: vocabulary
-  #   label: component.menu.vocabulary
-  #   children:
-  #     - id: scientificObjectVocabulary
-  #       label: component.menu.scientificObjectTypes
-  #       route:
-  #         path: /scientific-object-types
-  #         component: opensilex-ScientificObjectTypes
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: ScientificObjectTypes.typeTitle
-  #         description: ScientificObjectTypes.typeDescription
-  #     - id: eventVocabulary
-  #       label: component.menu.eventTypes
-  #       route:
-  #         path: /event-types
-  #         component: opensilex-EventTypes
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: EventTypes.typeTitle
-  #         description: EventTypes.typeDescription
-  #     - id: deviceVocabulary
-  #       label: component.menu.deviceTypes
-  #       route:
-  #         path: /device-types
-  #         component: opensilex-DeviceTypes
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: DeviceTypes.typeTitle
-  #         description: DeviceTypes.typeDescription
-  #     - id: organizationVocabulary
-  #       label: component.menu.facilitiesTypes
-  #       route:
-  #         path: /facilities-types
-  #         component: opensilex-FacilitiesTypes
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: FacilitiesTypes.typeTitle
-  #         description: FacilitiesTypes.typeDescription
-  #     - id: factorCategoryVocabulary
-  #       label: component.menu.factorCategoryTypes
-  #       route:
-  #         path: /factor-category-types
-  #         component: opensilex-FactorCategoryTypes
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: FactorCategoryTypes.typeTitle
-  #         description: FactorCategoryTypes.typeDescription
-  #     - id: namespacesVocabulary
-  #       label: component.menu.namespaces
-  #       route:
-  #         path: /namespaces
-  #         component: opensilex-NamespacesView
-  #         credentials:
-  #           - vocabulary-access
-  #         icon: ik#ik-settings
-  #         title: component.menu.namespaces
-  #         description: Namespaces.description
-  # - id: configuration
-  #   label: component.menu.configuration
-  #   children:
-  #     - id: Accounts
-  #       label: component.menu.security.accounts
-  #       route:
-  #         path: /accounts
-  #         component: opensilex-AccountView
-  #         credentials:
-  #           - account-access
-  #         icon: ik#ik-user
-  #         title: AccountView.title
-  #         description: AccountView.description
-  #     - id: groups
-  #       label: component.menu.security.groups
-  #       route:
-  #         path: /groups
-  #         component: opensilex-GroupView
-  #         credentials:
-  #           - group-access
-  #         icon: ik#ik-users
-  #         title: component.menu.security.groups
-  #         description: component.group.description
-  #     - id: profiles
-  #       label: component.menu.security.profiles
-  #       route:
-  #         path: /profiles
-  #         component: opensilex-ProfileView
-  #         credentials:
-  #           - profile-access
-  #         icon: ik#ik-settings
-  #         title: component.menu.security.profiles
-  #         description: component.profile.description
-  # - id: about
-  #   label: component.menu.about.label
-  #   children:
-  #     - id: system
-  #       label: component.menu.about.system
-  #       route:
-  #         path: /system
-  #         component: opensilex-SystemView
-  #         credentials:
-  #           - is-admin
-  #         icon: ik#ik-layers
-  #         title: SystemView.title
-  #         description: SystemView.title-description
-  #     - id: gdpr
-  #       label: GDPR.title
-  #       route:
-  #         path: /gdpr
-  #         component: opensilex-GDPR
-  #         icon: ik#ik-user
-  #         title: GDPR.title
-  #         description: GDPR.title-description
-  # - id: tools
-  #   label: component.menu.tools.label
-  #   children:
-  #     - id: packages
-  #       label: component.menu.tools.packages
-  #       route:
-  #         path: /packages
-  #         component: opensilex-PackagesView
-  #         credentials:
-  #           - package-access
-  #         icon: ik#ik-layers
-  #         title: PackagesView.title
-  #         description: PackagesView.description
+      - id: equipments
+        label: component.menu.equipments.label
+        route:
+          path: /users
+          component: opensilex-AccountView
+        children:
+          - id: sensors
+            label: component.menu.equipments.sensors
+            route:
+              path: /users
+              component: opensilex-AccountView
+          - id: actuators
+            label: component.menu.equipments.actuators
+            route:
+              path: /users
+              component: opensilex-AccountView
+          - id: vectors
+            label: component.menu.equipments.vectors
+            route:
+              path: /users
+              component: opensilex-AccountView
+          - id: radiometricTargets
+            label: component.menu.equipments.radiometricTargets
+            route:
+              path: /users
+              component: opensilex-AccountView
+
+  - id: vocabulary
+    label: component.menu.vocabulary
+    children:
+      - id: scientificObjectVocabulary
+        label: component.menu.scientificObjectTypes
+        route:
+          path: /scientific-object-types
+          component: opensilex-ScientificObjectTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: ScientificObjectTypes.typeTitle
+          description: ScientificObjectTypes.typeDescription
+      - id: eventVocabulary
+        label: component.menu.eventTypes
+        route:
+          path: /event-types
+          component: opensilex-EventTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: EventTypes.typeTitle
+          description: EventTypes.typeDescription
+      - id: deviceVocabulary
+        label: component.menu.deviceTypes
+        route:
+          path: /device-types
+          component: opensilex-DeviceTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: DeviceTypes.typeTitle
+          description: DeviceTypes.typeDescription
+      - id: organizationVocabulary
+        label: component.menu.facilitiesTypes
+        route:
+          path: /facilities-types
+          component: opensilex-FacilitiesTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: FacilitiesTypes.typeTitle
+          description: FacilitiesTypes.typeDescription
+      - id: factorCategoryVocabulary
+        label: component.menu.factorCategoryTypes
+        route:
+          path: /factor-category-types
+          component: opensilex-FactorCategoryTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: FactorCategoryTypes.typeTitle
+          description: FactorCategoryTypes.typeDescription
+      - id: namespacesVocabulary
+        label: component.menu.namespaces
+        route:
+          path: /namespaces
+          component: opensilex-NamespacesView
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: component.menu.namespaces
+          description: Namespaces.description
+  - id: configuration
+    label: component.menu.configuration
+    children:
+      - id: Accounts
+        label: component.menu.security.accounts
+        route:
+          path: /accounts
+          component: opensilex-AccountView
+          credentials:
+            - account-access
+          icon: ik#ik-user
+          title: AccountView.title
+          description: AccountView.description
+      - id: groups
+        label: component.menu.security.groups
+        route:
+          path: /groups
+          component: opensilex-GroupView
+          credentials:
+            - group-access
+          icon: ik#ik-users
+          title: component.menu.security.groups
+          description: component.group.description
+      - id: profiles
+        label: component.menu.security.profiles
+        route:
+          path: /profiles
+          component: opensilex-ProfileView
+          credentials:
+            - profile-access
+          icon: ik#ik-settings
+          title: component.menu.security.profiles
+          description: component.profile.description
+  - id: about
+    label: component.menu.about.label
+    children:
+      - id: system
+        label: component.menu.about.system
+        route:
+          path: /system
+          component: opensilex-SystemView
+          credentials:
+            - is-admin
+          icon: ik#ik-layers
+          title: SystemView.title
+          description: SystemView.title-description
+      - id: gdpr
+        label: GDPR.title
+        route:
+          path: /gdpr
+          component: opensilex-GDPR
+          icon: ik#ik-user
+          title: GDPR.title
+          description: GDPR.title-description
+  - id: tools
+    label: component.menu.tools.label
+    children:
+      - id: packages
+        label: component.menu.tools.packages
+        route:
+          path: /packages
+          component: opensilex-PackagesView
+          credentials:
+            - package-access
+          icon: ik#ik-layers
+          title: PackagesView.title
+          description: PackagesView.description
 
 routes:
   # - path: /organization/details/:uri
@@ -479,15 +479,6 @@ routes:
   #    component: opensilex-UserCreate
   #    credentials: []
 
-  ## Public routes
-  - path: /forgot-password
-    component: opensilex-ForgotPassword
-    credentials:
-      - public
-  - path: /reset-password/:uri
-    component: opensilex-ResetPassword
-    credentials:
-      - public
 
   - path: /test
     component: opensilex-TestPage
@@ -502,7 +493,20 @@ routes:
   - path: /dash
     component: opensilex-HomeView
     name: HomeView
+    icon: fa#hourglass-half
     credentials: []
+
+    
+  ## Public routes
+  - path: /forgot-password
+    component: opensilex-ForgotPassword
+    credentials:
+      - public
+
+  - path: /reset-password/:uri
+    component: opensilex-ResetPassword
+    credentials:
+      - public
 
   # - path: /app
   #   component: opensilex-DefaultLoginComponent

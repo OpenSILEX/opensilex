@@ -17,6 +17,7 @@
         "@fortawesome/free-brands-svg-icons": "^6.4.0",
         "@fortawesome/free-regular-svg-icons": "^6.4.0",
         "@fortawesome/free-solid-svg-icons": "^6.4.0",
+        "@fortawesome/vue-fontawesome": "^3.0.8",
         "@vue/compat": "^3.5.13",
         "core-js": "3.6.5",
         "csv-string": "^4.0.1",

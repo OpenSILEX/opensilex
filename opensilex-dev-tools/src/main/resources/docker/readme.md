@@ -6,6 +6,6 @@
 cd {opensilex_base_dir}/opensilex-dev/opensilex-dev-tools/src/main/resources/docker
 
 ```bash
-docker-compose down
-docker-compose up
+docker compose down
+docker compose up
 ```

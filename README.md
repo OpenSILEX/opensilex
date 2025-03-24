@@ -45,13 +45,15 @@ NOTE: OpenSILEX Production's installation available at: [https://github.com/Open
 
 First you need to have this software installed :
 
-- [Java JDK 11+](https://jdk.java.net/) (Our project is tested with JDK versions 11 and 17)
-- [Maven 3.9+](https://maven.apache.org/install.html)
-- [Git 2.34.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [docker 27.1.1+](https://docs.docker.com/install/)
-- [docker compose plugin 2+](https://docs.docker.com/compose/install/)
+- [Java JDK 17](https://jdk.java.net/) (Our project is tested with JDK version 17)
+- [Maven 3.9.9](https://maven.apache.org/install.html)
+- [Git 2.40.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [docker 27.1.1+](https://docs.docker.com/engine/install/)
+- [docker compose plugin 2.33.1+](https://docs.docker.com/compose/install/)
 
 Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation where your specific user must have read and write permissions.
+
+For installation instructions, follow the [installation documentation](opensilex-doc/src/main/resources/installation/development.md) steps.
 
 # Check your installed software
 
@@ -65,7 +67,7 @@ Following commands should work from everywhere in your system without errors:
 
 `docker --version`
 
-`docker-compose --version`
+`docker compose --version`
 
 # Download sources
 
@@ -136,7 +138,7 @@ You need to log out and log in again to make it work.
 ```
 cd <BASE_DIR>
 cd opensilex/opensilex-dev-tools/src/main/resources/docker
-docker-compose up -d
+docker compose up -d
 ```
 
 Docker containers will be automatically started on your machine at startup.

@@ -10,42 +10,24 @@
 
 package org.opensilex.server.exceptions.multipleError;
 
+import org.opensilex.server.response.multipleError.MultipleCreateUpdateErrorDTO;
 import org.opensilex.server.response.multipleError.MultipleErrorDTO;
 import org.opensilex.server.response.multipleError.MultipleErrorListDTO;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class to manage multiple errors, it aims to be used in multiple error response. The purpose is to list all errors, for one object.
  *
  * @see MultipleErrorListDTO to a better understanding of the structure and the usage.
  */
-public class MultipleErrorObject {
-    private String uri;
-    private final List<String> errors;
+public class MultipleCreateUpdateErrorObject extends MultipleErrorObject {
+    private boolean isUpdate;
 
-    public MultipleErrorObject() {
-        this.errors = new ArrayList<>();
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public void addError(String error) {
-        errors.add(error);
-    }
-
-    public boolean hasErrors() {
-        return !errors.isEmpty();
+    public void SetIsUpdate(boolean isUpdate) {
+        this.isUpdate = isUpdate;
     }
 
     public MultipleErrorDTO toDTO() {
-        return new MultipleErrorDTO(uri, errors);
+        var dto = super.toDTO();
+        return new MultipleCreateUpdateErrorDTO(dto.uri, dto.errors, isUpdate);
     }
 }

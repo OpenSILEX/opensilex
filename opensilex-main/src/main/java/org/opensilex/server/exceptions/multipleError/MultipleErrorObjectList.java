@@ -16,23 +16,28 @@ import org.opensilex.server.response.multipleError.MultipleErrorListDTO;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Class to manage multiple errors, it aims to be used in multiple error response. The purpose is to list all errors, for each object(represented by their uri as the key).
  *
  * @see MultipleErrorListDTO to a better understanding of the structure and the usage.
  */
-public class MultipleErrorObjectList {
+public class MultipleErrorObjectList<T extends MultipleErrorObject> {
+
     private final String title;
 
     /**
      * multipleErrorObject are map by their uri to easily access to the errors.
      */
-    private final Map<String, MultipleErrorObject> errors;
+    private final Map<String, T> errors;
 
-    public MultipleErrorObjectList(String title) {
+    private final Supplier<T> multipleErrorObjectConstructor;
+
+    public MultipleErrorObjectList(String title, Supplier<T> multipleErrorObjectConstructor) {
         this.errors = new HashMap<>();
         this.title = title;
+        this.multipleErrorObjectConstructor = multipleErrorObjectConstructor;
     }
 
     public MultipleErrorListDTO toDTO() {
@@ -43,7 +48,11 @@ public class MultipleErrorObjectList {
     }
 
     public void addError(String key, String error) {
-        var errorList = errors.computeIfAbsent(key, MultipleErrorObject::new);
+        var errorList = errors.computeIfAbsent(key, k -> {
+            T errorObject = multipleErrorObjectConstructor.get();
+            errorObject.setUri(k);
+            return errorObject;
+        });
 
         errorList.addError(error);
     }

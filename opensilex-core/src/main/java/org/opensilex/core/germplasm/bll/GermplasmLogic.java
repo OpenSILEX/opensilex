@@ -24,6 +24,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
+import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -141,8 +142,8 @@ public class GermplasmLogic {
     /**
      * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
      */
-    public MultipleErrorObjectList checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
-        MultipleErrorObjectList errors = new MultipleErrorObjectList("germplasms errors");
+    public MultipleErrorObjectList<MultipleCreateUpdateErrorObject> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
+        MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors = new MultipleErrorObjectList<>("germplasms errors", MultipleCreateUpdateErrorObject::new);
 
         if (!update) {
             var uriList = germplasmModels.stream().map(SPARQLResourceModel::getUri).toList();
@@ -164,7 +165,7 @@ public class GermplasmLogic {
      * @param germplasmsUris to check if they are not already in the database
      * @param errors map in which to put the errors
      */
-    private void lookForAlreadyExistantUri(List<URI> germplasmsUris, MultipleErrorObjectList errors) throws SPARQLException {
+    private void lookForAlreadyExistantUri(List<URI> germplasmsUris, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws SPARQLException {
         Set<URI> uniqueUris = new HashSet<>(germplasmsUris);
         Set<URI> nonExistingUris = new HashSet<>();
         for (URI germplasmUri : uniqueUris) {
@@ -180,7 +181,7 @@ public class GermplasmLogic {
      * @param germplasmModels to check if their types exist in the database (basically if they are species, variety or accession)
      * @param errors map in which to put the errors. Error format : key = germplasm URI, value = error message (explaining which type doesn't exist)
      */
-    private void validateTypes(List<GermplasmModel> germplasmModels, MultipleErrorObjectList errors) {
+    private void validateTypes(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
         Set<URI> uniqueTypes = germplasmModels.stream()
                 .map(GermplasmModel::getType)
                 .collect(Collectors.toSet());
@@ -209,7 +210,7 @@ public class GermplasmLogic {
     /**
      * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database and has the right type
      */
-    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObjectList errors) throws SPARQLException, DisplayableResponseException {
+    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws SPARQLException, DisplayableResponseException {
         //list every URI by type, type being species, variety or accession
         Map<Resource, Set<URI>> urisByType = Map.of(Oeso.Species, new HashSet<>(), Oeso.Variety, new HashSet<>(), Oeso.Accession, new HashSet<>());
         germplasmModels.forEach(germplasmModel -> {
@@ -281,7 +282,7 @@ public class GermplasmLogic {
     /**
      * A Variety should have a species, an Accession should have a variety or a species, and other types should have a specie, a variety or an accession
      */
-    private void validateAccessionVarietyOrSpeciesAreGiven(List<GermplasmModel> germplasmModels, MultipleErrorObjectList errors) throws DisplayableResponseException {
+    private void validateAccessionVarietyOrSpeciesAreGiven(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws DisplayableResponseException {
         Map<String, String> messages = Map.of(
                 SPARQLDeserializers.getExpandedURI(Oeso.Variety.getURI()), "species",
                 SPARQLDeserializers.getExpandedURI(Oeso.Accession.getURI()), "variety or species"
@@ -301,7 +302,7 @@ public class GermplasmLogic {
         }
     }
 
-    private void checkSpeciesCoherency(List<GermplasmModel> germplasmModels, MultipleErrorObjectList errors){
+    private void checkSpeciesCoherency(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors){
         germplasmModels.forEach( germplasmModel -> {
             boolean isRelated;
             if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {

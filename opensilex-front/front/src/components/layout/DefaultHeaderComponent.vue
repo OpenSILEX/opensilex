@@ -108,6 +108,7 @@
                   aria-expanded="false" 
                   :label="`language - ${language}`"
                   icon="bi-globe" 
+                  @click="setLanguage(item)"
                   :small="true" > 
                 </opensilex-Button>
 
@@ -167,8 +168,12 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 export default defineComponent({
     setup() {
-         const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-        const { t } = useI18n(); // Initialisation de t pour les traductions
+      const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+      const { t, locale, availableLocales } = useI18n({
+      inheritLocale: true,
+      useScope: "local",
+    });
+
         const route = useRoute();
 
         const HeaderBurgerToggle = ref(false);
@@ -208,6 +213,10 @@ export default defineComponent({
         // const language = computed(() => locale.value);
 
         const language = computed(() => store.state.lang);
+
+          // Gestion des langues
+    // const language = ref();
+
 
         const { messages } = useI18n();
         const languages = computed(() => Object.keys(messages.value)); 
@@ -250,10 +259,6 @@ export default defineComponent({
             }
         };
 
-        const setLanguage = (lang: string) => {
-            i18n.value.locale = lang;
-            store.commit("lang", lang);
-        };
 
         const logout = () => {
             store.commit("logout");
@@ -275,11 +280,19 @@ export default defineComponent({
             versionLabel,
             versionLabelClass,
             applicationName,
-            setLanguage,
             logout,
             t,
+            locale,
+            availableLocales,
             opensilex
         };
+    },
+
+    methods: {
+        setLanguage(lang: string) {
+      this.$i18n.locale = lang;
+      this.$store.commit("lang", lang);
+    },
     }
 });
 </script>

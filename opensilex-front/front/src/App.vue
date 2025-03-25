@@ -1,8 +1,48 @@
 
 <template>
+
+ <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
+
+           <!-- <component
+            v-bind:is="headerComponent"
+            v-if="user.isLoggedIn() && !disconnected && !embed"
+            :searchBoxIsActive="uriSearchBoxVisible"
+            @uriGlobalSearch="handleUriGlobalSearchPressed"
+          ></component> -->
+          <opensilex-DefaultHeaderComponent></opensilex-DefaultHeaderComponent>
+
+          <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
+            <component class="header-login" v-bind:is="loginComponent"></component>
+          </header>
+
+          <section 
+            id="content-wrapper" 
+            class="page-wrap"  
+            v-bind:class="{ 'hidden-menu': !menuVisible }" 
+          >
+            <!-- v-if="user.isLoggedIn() && !disconnected" -->
+          <div>
+              <!-- <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component> -->
+              <opensilex-DefaultMenuComponent></opensilex-DefaultMenuComponent>
+            </div>
+
+            <div id="main-content">
+              <main class="main-content">
+                <router-view></router-view>
+              </main>
+
+ </div>
+          </section>
+        </div>
+
+
+
+
+
+
   <!-- <div id="main-content"> -->
     <!-- <main class="main-content"> -->
-      <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
+      <!-- <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
                     <div id="main-content">
               <main class="main-content">
       <opensilex-DefaultMenuComponent></opensilex-DefaultMenuComponent>
@@ -10,12 +50,12 @@
       <router-view></router-view>
       </main>
       </div>
-      </section>
+      </section> -->
 
 <!-- <div v-if="this.$route.meta.public"> -->
 
 
-          <component v-bind:is="headerComponent"></component>
+          <!-- <component v-bind:is="headerComponent"></component> -->
  
           <!-- <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" > -->
             <!-- <div id="main-content">
@@ -101,6 +141,8 @@ const toggleUriSearchBox = (visible) => {
 
 // Lifecycle hooks
 onMounted(() => {
+  console.log("route publique ?  ", route.meta.public)
+  console.log("user : ", user.isLoggedIn())
   // Setup language watcher
   // watch(() => store.getters.language, () => {
   //   notificationMessageDisplayed.value = notificationMessage.value[opensilex.i18n.locale];

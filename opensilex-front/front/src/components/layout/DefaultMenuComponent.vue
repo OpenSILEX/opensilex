@@ -30,11 +30,11 @@
               }"
             >
               <a v-if="item.hasChildren()" href="#" @click.prevent="toggle(item)">
-                <i class="ik" :class="getIcon(item)"></i>
+                <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
               </a>
               <router-link v-else :to="item.route.path">
-                <i class="ik" :class="getIcon(item)"></i>
+                <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
               </router-link>
               <div class="submenu-content" :class="{ open: item.showChildren }">
@@ -80,11 +80,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { useStore } from "vuex"; // ou Pinia selon ton projet
+import { useStore } from "vuex"; 
 import { useRoute } from "vue-router";
 import { Menu } from "../../models/Menu";
 import { versionInfoDTO } from "opensilex-core/index";
 import { useI18n } from 'vue-i18n';
+import en from './../../lang/message-en.json';
+import fr from './../../lang/message-fr.json';
 
 const { t } = useI18n(); 
 const store = useStore();
@@ -119,7 +121,7 @@ const toggle = (item: Menu) => {
 const getIcon = (item: Menu): string => {
   const code = "icon." + item.label;
   const result = t(code);
-  return result !== code ? result.toString() : "ik-folder";
+  return result !== code ? result.toString() : "bi-folder";
 };
 
 const isActive = (item: Menu): boolean => {

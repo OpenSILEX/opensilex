@@ -9,7 +9,6 @@ package org.opensilex.core.data.api;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
-import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
 import com.opencsv.CSVWriter;
 import io.swagger.annotations.*;
@@ -28,9 +27,8 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
-import org.opensilex.core.dataV2.service.BatchHistoryService;
-import org.opensilex.core.dataV2.service.DataService;
+import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
+import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -65,7 +63,6 @@ import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -95,7 +92,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.dataV2.service.DataService.CSV_EXTENSION;
+import static org.opensilex.core.data.bll.dataImport.DataImportLogic.CSV_EXTENSION;
 
 
 /**
@@ -138,6 +135,12 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final int SIZE_MAX = 10000;
     public static final String JSON = "json";
+    public static final String DATA_ALREADY_EXISTS = "Data already exists";
+    public static final String DUPLICATED_DATA_FOUND = "Duplicated data found ";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_ID = "data-delete";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY = "credential.default.delete";
+    public static final String BATCH_HISTORY_URI = "Batch history URI";
+    public static final String BATCH_HISTORY_EXAMPLE_URI = "http://opensilex.dev/id/batchHistory/cd3dde33d6f5dc2";
 
     @Inject
     private MongoDBService nosql;
@@ -150,6 +153,9 @@ public class DataAPI {
 
     @CurrentUser
     AccountModel user;
+
+    DataImportLogic dataImportLogic;
+    BatchHistoryLogic batchHistoryLogic;
 
     @POST
     @ApiProtected
@@ -564,8 +570,6 @@ public class DataAPI {
         return filter;
     }
 
-
-
     @POST
     @Path("/count")
     @ApiOperation("Count data")
@@ -733,7 +737,6 @@ public class DataAPI {
 
         return new SingleObjectResponse<>(dataLogic.deleteManyByFilter(filter)).getResponse();
     }
-
 
     /**
      * @param startDate     startDate
@@ -1352,13 +1355,13 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileDisposition,
-            @ApiParam(value = "The key for file that have already been validated by the API (/core/data-v2/import_validation_v2)",
+            @ApiParam(value = "The key for file that have already been validated by the API (/core/data/import_validation)",
                     example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
         String fileName = getFileName(fileDisposition);
-        this.dataService = new DataService(nosql, sparql, fs, user);
+        this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
         DataCSVValidationDTO csvValidation;
         try {
-            csvValidation = dataService.importCSVDataV2(provenance, experiment, file, fileName, validationKey);
+            csvValidation = dataImportLogic.importCSVData(provenance, experiment, file, fileName, validationKey);
         } catch (MongoDbUniqueIndexConstraintViolation e) {
             return new ErrorResponse(Response.Status.CONFLICT, DATA_ALREADY_EXISTS,
                     DUPLICATED_DATA_FOUND + e.getMessage()).getResponse();
@@ -1385,10 +1388,10 @@ public class DataAPI {
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileDisposition) throws Exception {
-        this.dataService = new DataService(nosql, sparql, fs, user);
+        this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
         String fileName = getFileName(fileDisposition);
-        DataCSVValidationModel csvValidationModel = dataService.validateWholeCsvV2(provenance, experiment, file, fileName);
-        DataCSVValidationDTO csvValidation = dataService.buildDataCSVValidationDTO(csvValidationModel);
+        DataCSVValidationModel csvValidationModel = dataImportLogic.validateWholeCsv(provenance, experiment, file, fileName);
+        DataCSVValidationDTO csvValidation = dataImportLogic.buildDataCSVValidationDTO(csvValidationModel);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1436,8 +1439,8 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
-        this.batchHistoryService = new BatchHistoryService(user, nosql);
-        ListWithPagination<BatchHistoryGetDTO> results = batchHistoryService.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
+        this.batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+        ListWithPagination<BatchHistoryGetDTO> results = batchHistoryLogic.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
         return new PaginatedListResponse<>(results).getResponse();
     }
 
@@ -1455,8 +1458,8 @@ public class DataAPI {
     public Response deleteBatchHistoryByURI(
             @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws NoSQLInvalidURIException {
-        this.batchHistoryService = new BatchHistoryService(user, nosql);
-        return new SingleObjectResponse<>(batchHistoryService.deleteBatchHistoryByURI(uri)).getResponse();
+        this.batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+        return new SingleObjectResponse<>(batchHistoryLogic.deleteBatchHistoryByURI(uri)).getResponse();
     }
 
     private String getFileName(FormDataContentDisposition fileDisposition) {

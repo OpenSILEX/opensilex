@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.dao;
+package org.opensilex.core.data.dal.batchHistory;
 
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 

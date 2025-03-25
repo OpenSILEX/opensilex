@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.model;
+package org.opensilex.core.data.dal.batchHistory;
 
 import org.opensilex.nosql.mongodb.MongoModel;
 

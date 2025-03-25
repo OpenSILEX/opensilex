@@ -1,9 +1,8 @@
-package org.opensilex.core.dataV2.dao;
+package org.opensilex.core.data.dal.batchHistory;
 
 import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
-import org.opensilex.core.dataV2.model.BatchHistoryModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 

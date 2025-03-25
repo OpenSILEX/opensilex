@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.model;
+package org.opensilex.core.data.bll.dataImport;
 
 
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class TargetContext {
     List<String> notExistingTargets = new ArrayList<>();
+    //This represents target uris that already exist multiple times in graph
     List<String> duplicatedTargets = new ArrayList<>();
     Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
     List<String> scientificObjectsNotInXp = new ArrayList<>();

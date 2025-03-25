@@ -228,5 +228,11 @@ public class GermplasmDAO {
         return sparqlDAO.brapiSearch(user, germplasmDbId, germplasmName, germplasmSpecies, page, pageSize);
     }
 
-
+    /**
+     * @return the list of existing URIs in germplasm graph among the given list of URIs
+     */
+    public Collection<URI> checkExistence(List<String> uris) throws Exception {
+        List<URI> urisToCheck = uris.stream().map(URI::create).toList();
+        return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, urisToCheck, true);
+    }
 }

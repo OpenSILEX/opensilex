@@ -367,6 +367,10 @@ public class GermplasmLogic {
         return dao.getDistinctGermplasmAttributesValues(attribute, attributeValue, page, pageSize);
     }
 
+    public Collection<URI> checkExistence(List<String> uris) throws Exception {
+        return dao.checkExistence(uris);
+    }
+
     //#region private methods
 
     /**

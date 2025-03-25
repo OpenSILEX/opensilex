@@ -686,4 +686,23 @@ public class GermplasmAPI {
         new GermplasmLogic(sparql, nosql, currentUser).delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
+
+    @GET
+    @Path("check")
+    @ApiOperation("check germplasms exist")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return existant germplasm uris", response = URI.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+    })
+    public Response checkGermplasmsExist(
+            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") List<String> uris
+    ) throws Exception {
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris);
+
+        return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
+    }
+
 }

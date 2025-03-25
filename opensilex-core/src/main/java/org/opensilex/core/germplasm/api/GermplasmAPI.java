@@ -698,7 +698,7 @@ public class GermplasmAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response checkGermplasmsExist(
-            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") List<String> uris
+            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") @NotNull  @ValidURI List<URI> uris
     ) throws Exception {
         Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris);
 

@@ -231,8 +231,7 @@ public class GermplasmDAO {
     /**
      * @return the list of existing URIs in germplasm graph among the given list of URIs
      */
-    public Collection<URI> checkExistence(List<String> uris) throws Exception {
-        List<URI> urisToCheck = uris.stream().map(URI::create).toList();
-        return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, urisToCheck, true);
+    public Collection<URI> checkExistence(List<URI> uris) throws Exception {
+        return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, uris, true);
     }
 }

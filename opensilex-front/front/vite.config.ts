@@ -18,6 +18,13 @@ export default defineConfig({
   plugins: [vue(), vueDevTools(), VueI18nPlugin({
     defaultSFCLang: "yaml"
   })], // Utilisez le plugin Vue pour Vite
+  // css: {
+  //   preprocessorOptions: {
+  //     scss: {
+  //       // additionalData: `@import "/theme.scss";`
+  //     }
+  //   }
+  // },
   build: {
     outDir: 'dist', // Dossier de sortie
     // lib: {

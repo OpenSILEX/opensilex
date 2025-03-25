@@ -793,35 +793,35 @@
     "icon": {
         "component": {
             "menu": {
-                "default": "ik-folder",
+                "default": "bi-folder",
                 "about": {
-                    "label": "ik-info",
-                    "gdpr": "ik-user"
+                    "label": "bi-info-circle",
+                    "gdpr": "bi-person"
                 },
-                "dashboard": "ik-grid",
+                "dashboard": "bi-grid",
                 "data": {
-                    "label": "ik-bar-chart-line"
+                    "label": "bi-bar-chart"
                 },
                 "equipments": {
                     "label": "ik-aperture"
                 },
-                "experiments": "ik-layers",
-                "image": "ik-bar-chart-line",
-                "installations": "ik-globe",
-                "projects": "ik-folder",
+                "experiments": "bi-layers",
+                "image": "bi-bar-chart",
+                "installations": "bi-globe",
+                "projects": "bi-folder",
                 "security": {
-                    "label": "ik-lock",
-                    "users": "ik-user",
-                    "groups": "ik-users",
-                    "profiles": "ik-settings"
+                    "label": "bi-lock",
+                    "users": "bi-person",
+                    "groups": "bi-people",
+                    "profiles": "bi-gear"
                 },
-                "scientificObjects": "ik-target",
+                "scientificObjects": "bi-target",
                 "experimentalDesign": {
-                    "label": "ik-map"
+                    "label": "bi-map"
                 },
-                "configuration": "ik-settings",
-                "scientificObjectTypes": "ik-settings",
-                "facilitiesTypes": "ik-settings"
+                "configuration": "bi-gear",
+                "scientificObjectTypes": "bi-gear",
+                "facilitiesTypes": "bi-gear"
             }
         }
     },

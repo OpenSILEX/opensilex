@@ -1,7 +1,7 @@
-package org.opensilex.core.dataV2.api.dto;
+package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.opensilex.core.dataV2.model.BatchHistoryModel;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 
 import java.net.URI;
 import java.time.OffsetDateTime;

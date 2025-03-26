@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.model;
+package org.opensilex.core.data.bll.dataImport;
 
 
 import org.opensilex.core.experiment.dal.ExperimentModel;

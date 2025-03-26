@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.service;
+package org.opensilex.core.data.bll;
 
 import com.mongodb.client.result.InsertOneResult;
 import org.apache.jena.graph.Node;
@@ -12,11 +12,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
-import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.dataV2.dao.BatchHistoryDao;
-import org.opensilex.core.dataV2.factory.DAOFactory;
-import org.opensilex.core.dataV2.model.BatchHistoryModel;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryDao;
+import org.opensilex.core.data.factory.DAOFactory;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for the {@link DataService} class.
+ * Unit tests for the {@link DataImportLogic} class.
  * <p>
  * This class validates the functionality of importing CSV data using mocked dependencies.
  * It includes tests for both valid and invalid CSV inputs.
@@ -58,11 +58,11 @@ import static org.mockito.Mockito.*;
  * </p>
  *
  * @author Marouan KOURDI
- * @see DataService
+ * @see DataImportLogic
  * @see DataLogic
  */
 
-public class DataServiceTest {
+public class DataImportLogicTest {
 
     public static final String INVALID_DATASET_TO_IMPORT_CSV = "data/invalidDatasetToImport.csv";
     public static final String VALID_DATASET_TO_IMPORT_CSV = "data/validDatasetToImport.csv";
@@ -109,12 +109,12 @@ public class DataServiceTest {
     @Mock
     DAOFactory daoFactory;
 
-    private DataService dataService;
+    private DataImportLogic dataImportLogic;
     URI provenance;
     URI experiment;
 
     /**
-     * Sets up the test environment by initializing mocked dependencies and the DataService instance.
+     * Sets up the test environment by initializing mocked dependencies and the DataImportLogic instance.
      *
      * @throws URISyntaxException if an error occurs while creating URIs for testing
      */
@@ -130,7 +130,7 @@ public class DataServiceTest {
         when(daoFactory.createExperimentDAO()).thenReturn(experimentDAO);
         when(daoFactory.createScientificObjectDAO()).thenReturn(scientificObjectDAO);
 
-        dataService = spy(new DataService(nosql, sparql, fs, user, dataLogicMock, daoFactory, batchHistoryDao));
+        dataImportLogic = spy(new DataImportLogic(nosql, sparql, fs, user, dataLogicMock, daoFactory, batchHistoryDao));
         provenance = new URI(STANDARD_PROVENANCE);
         experiment = new URI(DEV_ID_EXPERIMENT_TEST_EXP);
     }
@@ -142,7 +142,7 @@ public class DataServiceTest {
         // Mock ProvenanceDaoV2 and ProvenanceModel
         ProvenanceModel mockProvenanceModel = getProvenanceModel();
         when(provenanceDaoV2.get(provenance)).thenReturn(mockProvenanceModel);
-        doReturn(mockProvenanceModel).when(dataService).getProvenanceModel(provenance);
+        doReturn(mockProvenanceModel).when(dataImportLogic).getProvenanceModel(provenance);
 
         // Mock Variable
         when(variableDAO.get(any(URI.class))).thenReturn(getVariableModel());
@@ -157,7 +157,7 @@ public class DataServiceTest {
         doReturn(getMockInsertOneResult()).when(batchHistoryDao).create(any(BatchHistoryModel.class));
 
         // Methode to test
-        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, "fileName", null);
+        DataCSVValidationDTO result = dataImportLogic.importCSVData(provenance, experiment, file, "fileName", null);
 
         // Assert
         Assert.assertNotNull(result);
@@ -183,7 +183,7 @@ public class DataServiceTest {
         // Mock ProvenanceDaoV2 and ProvenanceModel
         ProvenanceModel mockProvenanceModel = getProvenanceModel();
         when(provenanceDaoV2.get(provenance)).thenReturn(mockProvenanceModel);
-        doReturn(mockProvenanceModel).when(dataService).getProvenanceModel(provenance);
+        doReturn(mockProvenanceModel).when(dataImportLogic).getProvenanceModel(provenance);
 
         // Mock Variable
         when(variableDAO.get(any(URI.class))).thenReturn(getVariableModel());
@@ -195,7 +195,7 @@ public class DataServiceTest {
         doNothing().when(dataLogicMock).createManyFromImport(anyList(), any(DataCSVValidationModel.class));
 
         // Methode to test
-        DataCSVValidationDTO result = dataService.importCSVDataV2(provenance, experiment, file, "fileName", validationKey);
+        DataCSVValidationDTO result = dataImportLogic.importCSVData(provenance, experiment, file, "fileName", validationKey);
 
         // Assert
         Assert.assertNotNull(result);

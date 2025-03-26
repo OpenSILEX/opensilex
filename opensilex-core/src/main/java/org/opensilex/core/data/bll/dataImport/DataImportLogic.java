@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.service;
+package org.opensilex.core.data.bll.dataImport;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -12,18 +12,15 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
+import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
-import org.opensilex.core.dataV2.api.DataAPIV2;
-import org.opensilex.core.dataV2.dao.BatchHistoryDao;
-import org.opensilex.core.dataV2.factory.DAOFactory;
-import org.opensilex.core.dataV2.model.*;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryDao;
+import org.opensilex.core.data.factory.DAOFactory;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.document.dal.DocumentDAO;
@@ -80,8 +77,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * @author MKourdi
  */
-public class DataService {
-    protected final static Logger LOGGER = LoggerFactory.getLogger(DataService.class);
+public class DataImportLogic {
+    protected final static Logger LOGGER = LoggerFactory.getLogger(DataImportLogic.class);
     public static final String DEVICE_ID = "DEVICE_ID";
     public static final String DEVICE_AMBIGUITY_ID = "DEVICE_AMBIGUITY_ID";
     public static final String OBJECT_ID = "OBJECT_ID";
@@ -125,7 +122,7 @@ public class DataService {
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .build();
 
-    public DataService(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user) {
+    public DataImportLogic(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user) {
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
@@ -138,7 +135,7 @@ public class DataService {
     }
 
     // For test purpose
-    public DataService(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user, DataLogic dataLogic, DAOFactory daoFactory, BatchHistoryDao batchHistoryDao) {
+    public DataImportLogic(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user, DataLogic dataLogic, DAOFactory daoFactory, BatchHistoryDao batchHistoryDao) {
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
@@ -162,7 +159,7 @@ public class DataService {
      * @return a DataCSVValidationDTO containing the status of the import
      * @throws Exception if an error occurs during the import
      */
-    public DataCSVValidationDTO importCSVDataV2(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
+    public DataCSVValidationDTO importCSVData(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
         // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
@@ -296,7 +293,7 @@ public class DataService {
      * <p>
      * Validates the csv for data import after verifying provenance and experiment
      */
-    public DataCSVValidationModel validateWholeCsvV2(URI provenance, URI experiment, InputStream file, String fileName) throws Exception {
+    public DataCSVValidationModel validateWholeCsv(URI provenance, URI experiment, InputStream file, String fileName) throws Exception {
         // retrieve provenance model
         ProvenanceModel provenanceModel = getProvenanceModel(provenance);
 
@@ -338,7 +335,7 @@ public class DataService {
     private DataCSVValidationModel importCsvValidationStep(URI provenance, URI experiment, InputStream file, String fileName, DataCSVValidationModel validation) throws Exception {
         if (Objects.isNull(validation)) {
             LOGGER.debug("[importCsvValidationStep] Start validation step.");
-            validation = validateWholeCsvV2(provenance, experiment, file, fileName);
+            validation = validateWholeCsv(provenance, experiment, file, fileName);
             validation.setValidationStep(true);
             LOGGER.debug("[importCsvValidationStep] End validation step with status valid {}", validation.isValidCSV());
         }
@@ -368,7 +365,7 @@ public class DataService {
         csvValidationModelCache.put(validationKey, validation);
     }
 
-    protected ProvenanceModel getProvenanceModel(URI provenance) {
+    public ProvenanceModel getProvenanceModel(URI provenance) {
         ProvenanceModel provenanceModel;
         try {
             provenanceModel = new ProvenanceDaoV2(nosql.getServiceV2()).get(provenance);
@@ -443,7 +440,7 @@ public class DataService {
             }
 
             // Check for too large dataset
-            if (allRows.size() > DataAPIV2.SIZE_MAX) {
+            if (allRows.size() > DataAPI.SIZE_MAX) {
                 csvValidation.setValidCSV(false);
                 csvValidation.setTooLargeDataset(true);
                 csvValidation.setNbLinesToImport(allRows.size());
@@ -1137,7 +1134,7 @@ public class DataService {
 
         if (!StringUtils.isEmpty(targetNameOrUri)) {
             if (targetContext.getNameURITargets().containsKey(targetNameOrUri)) {
-                context.setTarget(targetContext.getNameURITargets().get(targetNameOrUri));
+                target = targetContext.getNameURITargets().get(targetNameOrUri);
             } else {
                 // test not in uri list
                 if (targetContext.getDuplicatedTargets().contains(targetNameOrUri)) {

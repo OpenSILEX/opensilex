@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.model;
+package org.opensilex.core.data.dal;
 
 
 import org.opensilex.core.device.dal.DeviceDAO;

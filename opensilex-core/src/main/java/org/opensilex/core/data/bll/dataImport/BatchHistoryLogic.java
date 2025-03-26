@@ -1,11 +1,11 @@
-package org.opensilex.core.dataV2.service;
+package org.opensilex.core.data.bll.dataImport;
 
 import com.mongodb.client.result.DeleteResult;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.dataV2.api.dto.BatchHistoryGetDTO;
-import org.opensilex.core.dataV2.dao.BatchHistoryDao;
-import org.opensilex.core.dataV2.dao.BatchHistorySearchFilter;
-import org.opensilex.core.dataV2.model.BatchHistoryModel;
+import org.opensilex.core.data.api.BatchHistoryGetDTO;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryDao;
+import org.opensilex.core.data.dal.batchHistory.BatchHistorySearchFilter;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
@@ -17,11 +17,11 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 
-public class BatchHistoryService {
+public class BatchHistoryLogic {
     private final AccountModel user;
     private final MongoDBService nosql;
 
-    public BatchHistoryService(AccountModel user, MongoDBService nosql) {
+    public BatchHistoryLogic(AccountModel user, MongoDBService nosql) {
         this.user = user;
         this.nosql = nosql;
     }

@@ -1,4 +1,4 @@
-package org.opensilex.core.dataV2.factory;
+package org.opensilex.core.data.factory;
 
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;

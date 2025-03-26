@@ -51,13 +51,13 @@
           </div>
 
           <!-- Devices selector -->
-          <opensilex-FormSelector
+          <!-- <opensilex-FormSelector
             :multiple="true"
             v-model="selectedDevices"
             :disabled="selectorAccess"
             :options="devicesLoaded"
             placeholder="HistogramSettings.select_devices"
-          />
+          /> -->
         </div>
 
         <!-- Footer -->

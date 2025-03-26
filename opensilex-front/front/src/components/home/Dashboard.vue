@@ -27,7 +27,9 @@
 
       <!-- Graphic -->
       <div class="graph1" v-if="opensilex.getConfig().dashboard.graph1.variable">
-        <opensilex-Histogram :variableChoice="opensilex.getConfig().dashboard.graph1.variable"></opensilex-Histogram>
+        <opensilex-Histogram 
+          :variableChoice="opensilex.getConfig().dashboard.graph1.variable"
+        ></opensilex-Histogram>
       </div>
 
       <!-- Logo -->
@@ -47,9 +49,13 @@ import { defineComponent, onMounted, onUnmounted, ref, inject } from "vue";
 import { useStore } from "vuex";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useI18n } from "vue-i18n";
+import Histogram from "./dashboard/Histogram.vue";
 
 export default defineComponent({
   name: "Dashboard",
+    components: {
+    Histogram,
+  },
   setup() {
     const store = useStore();
     const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -86,8 +92,8 @@ export default defineComponent({
     return {
       opensilex,
       width,
-      title, // Ajoutez 'title' ici pour qu'il soit accessible dans le template
-      t, // Ajoutez aussi 't' ici si vous en avez besoin directement dans le template
+      title,
+      t,
     };
   },
 });

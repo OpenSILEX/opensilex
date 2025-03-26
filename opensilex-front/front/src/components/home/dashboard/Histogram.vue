@@ -45,8 +45,6 @@
 
         <!-- Periods & Devices selection button -->
         <opensilex-Button class="btn settingsButton" @click="histogramSettings.show()" :label="t('Histogram.settings')" icon="fa#cog" :small="true">
-        <!-- <opensilex-Icon icon="fa#cog" /> -->
-        <!-- {{ t("Histogram.settings") }} -->
         </opensilex-Button>
         </div>
       </template>
@@ -82,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, inject, defineProps } from "vue";
+import { ref, watchEffect, onMounted, inject, defineProps } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HistogramSettings from "./HistogramSettings.vue";
 import VisualisationGraphic from "./VisualisationGraphic.vue";
@@ -91,6 +89,7 @@ import { VariablesService } from "opensilex-core/api/variables.service";
 import { DevicesService } from "opensilex-core/api/devices.service";
 import { DeviceGetDTO } from "opensilex-core/index";
 import Xsd from "../../../ontologies/Xsd";
+import { DataGetDTO } from "opensilex-core/index";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import { useI18n } from 'vue-i18n';
 
@@ -100,9 +99,11 @@ export default {
     HistogramSettings,
     VisualisationGraphic,
   },
-  
+  props: {
+    variableChoice: String,
+  },
 
-  setup() {
+  setup(props) {
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
     const isGraphicLoaded = ref(true);
     const period = ref("day");
@@ -112,21 +113,19 @@ export default {
     const selectedVariable = ref(null);
     const selectedVariableName = ref("");
     const { t } = useI18n();
+    let variableChoice = props.variableChoice;
     
     const histogramSettings = ref<InstanceType<typeof HistogramSettings>>();
     const visualisationGraphic = ref<InstanceType<typeof VisualisationGraphic>>();
 
     const dataService = $opensilex.getService<DataService>("opensilex.DataService");
-    const variablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");
+    const variablesService = $opensilex?.getService<VariablesService>("opensilex.VariablesService");
     const devicesService = $opensilex.getService<DevicesService>("opensilex.DevicesService");
 
     const scatter = () => visualisationGraphic.value?.scatter();
     // const fullscreen = () => visualisationGraphic.value?.fullscreen();
     // const exportPNG = () => visualisationGraphic.value?.exportPNG();
 
-    const props = defineProps<{
-        variableChoice?: string
-    }>();
 
     const loadDevices = async () => {
       try {
@@ -143,14 +142,19 @@ export default {
     const loadData = async () => {
       isGraphicLoaded.value = false;
 
+        console.log("histogram loadDevices variableChoice : ", variableChoice)
+
       try {
-        const response = await variablesService.getVariable("variableChoice");
+        const response = await variablesService.getVariable(variableChoice);
+        console.log("Réponse API :", response);
         selectedVariable.value = response.response.result;
         selectedVariableName.value = selectedVariable.value.name;
         dataLocationInformations.value = $opensilex.getConfig().dashboard.graph1.dataLocationInformations;
 
         const datatype = selectedVariable.value.datatype;
+        console.log("Datatype récupéré :", datatype);
         if ($opensilex.checkURIs(datatype, Xsd.DECIMAL) || $opensilex.checkURIs(datatype, Xsd.INTEGER)) {
+          // Ok enter in - TODO : la construction des series de données, et migration Highcharts
           buildColorsDevicesMap();
           buildSeries(devices.value, period.value);
         } else {
@@ -158,6 +162,7 @@ export default {
           $opensilex.showInfoToast("error");
         }
       } catch (error) {
+        console.error("Erreur lors du chargement des données :", error);
         isGraphicLoaded.value = true;
         $opensilex.errorHandler(error);
       }
@@ -274,6 +279,7 @@ export default {
       histogramSettings,
       visualisationGraphic,
       scatter,
+      props,
     //   fullscreen,
     //   exportPNG,
       loadData,

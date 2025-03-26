@@ -220,7 +220,7 @@ public class DataLogic {
         Instant data = Instant.now();
 
         Instant dataTransform = Instant.now();
-        logger.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        logger.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         //Get other stuff we have to get (variables, objects, etc...)
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
@@ -229,7 +229,7 @@ public class DataLogic {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
         Instant variableTime = Instant.now();
-        logger.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + variables.size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
 
         // Provide the experiment as context if there is only one, and only in wide format.
         URI context = null;
@@ -241,14 +241,14 @@ public class DataLogic {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
         List<ProvenanceModel> provenanceModels = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : provenanceModels) {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        logger.debug("Get " + provenanceModels.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + provenanceModels.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -256,7 +256,7 @@ public class DataLogic {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        logger.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+        logger.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
 
 
         //Handle return
@@ -504,7 +504,7 @@ public class DataLogic {
                 startInstant,
                 endInstant);
         end = Instant.now();
-        logger.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+        logger.debug(dataModels.size() + " data retrieved from mongo : " + Duration.between(start, end).toMillis() + " milliseconds elapsed");
 
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 
@@ -604,7 +604,7 @@ public class DataLogic {
      * @return a list of uris if the caller wasn't the import function
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
-        // @todo SI la target est une facility, alors ajouter le lien entre la variable et la facility
+        //  SI la target est une facility, alors ajouter le lien entre la variable et la facility
         var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         //appeler facility logic pour ajouter le lien
         for(DataModel model : models){
@@ -613,7 +613,6 @@ public class DataLogic {
                 if(facilityModel != null){
                     var variableModel = new VariableModel();
                     variableModel.setUri(model.getVariable());
-//                    var facilityVariables = Optional.ofNullable(facilityModel.getVariables()).orElse(new ArrayList<>());
                     var facilityVariables = facilityModel.getVariables();
                     facilityVariables.add(variableModel);
                     facilityModel.setVariables(facilityVariables);
@@ -700,7 +699,7 @@ public class DataLogic {
 
         List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8)) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
@@ -710,11 +709,11 @@ public class DataLogic {
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(DEVICE_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER) && !sensingDeviceFoundFromProvenance) {
-                csvValidation.addMissingHeaders(Arrays.asList(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
+                csvValidation.addMissingHeaders(List.of(DEVICE_HEADER + " or " + TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
             // Check that there is an SCIENTIFICOBJ_HEADER or a TARGET_HEADER if there is an ANNOTATION_HEADER otherwise create error
             if(headers.contains(ANNOTATION_HEADER) && !headers.contains(TARGET_HEADER) && !headers.contains(SCIENTIFICOBJ_HEADER)){
-                csvValidation.addMissingHeaders(Arrays.asList(TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
+                csvValidation.addMissingHeaders(List.of(TARGET_HEADER + " or " + SCIENTIFICOBJ_HEADER));
             }
 
             // 1. check variables
@@ -817,7 +816,7 @@ public class DataLogic {
             }
         }
 
-        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
+        if (csvValidation.getData().size() >  DataAPI.SIZE_MAX) {
             csvValidation.setTooLargeDataset(true);
         }
 

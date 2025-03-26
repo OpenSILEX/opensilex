@@ -22,7 +22,7 @@
 
       <div class="col-md-6">
         <opensilex-AssociatedVariableList
-            :facilityUri="uri"
+            :variableList="selected.variables"
         ></opensilex-AssociatedVariableList>
       </div>
     </div>
@@ -32,7 +32,7 @@
 import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { OrganizationGetDTO } from "opensilex-core/index";
+import { FacilityGetDTO } from "opensilex-core/index";
 import { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
 import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
@@ -46,7 +46,7 @@ import AssociatedVariableList from "../../variables/AssociatedVariableList.vue";
 export default class FacilityDetails extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  selected: OrganizationGetDTO = null;
+  selected: FacilityGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
   devices: Array<DeviceGetDTO> = [];
   experimentName: string = "";
@@ -85,8 +85,8 @@ export default class FacilityDetails extends Vue {
   refresh() {
     this.organizationService
       .getFacility(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
-        let detailDTO: OrganizationGetDTO = http.response.result;
+      .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+        let detailDTO: FacilityGetDTO = http.response.result;
         this.selected = detailDTO;
 
         this.loadExperiments();

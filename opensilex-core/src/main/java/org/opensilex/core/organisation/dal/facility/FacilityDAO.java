@@ -138,10 +138,10 @@ public class FacilityDAO {
         return sparql.executeAskQuery(ask);
     }
 
-    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
-        List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(FacilityModel.class), uri, Oeso.hasVariable, URI.class);
-        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
-    }
+//    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
+//        List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(FacilityModel.class), uri, Oeso.hasVariable, URI.class);
+//        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
+//    }
     //endregion
 
     //#region private

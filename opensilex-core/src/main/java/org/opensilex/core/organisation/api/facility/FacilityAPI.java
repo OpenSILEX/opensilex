@@ -175,7 +175,7 @@ public class FacilityAPI {
                 model,
                 true
         );
-//        List<VariableModel> variables = facilityLogic.getFacilityVariables(uri, currentUser.getLanguage());
+
         List<VariableModel> variables = model.getVariables();
         List<NamedResourceDTO<VariableModel>> logicList = variables.stream()
                 .map(variableModel -> (NamedResourceDTO<VariableModel>) NamedResourceDTO.getDTOFromModel(variableModel))
@@ -400,24 +400,5 @@ public class FacilityAPI {
         }
         return filter;
     }
-
-//    @GET
-//    @Path("{uri}/variables")
-//    @ApiOperation("Get variables linked to the facility")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
-//    })
-
-//    public Response getFacilityVariables(
-//            @ApiParam(value = "Facility URI", example = "http://phenome.inrae.fr/m3p/id/organization/facility.phenoarchfacility1", required = true) @PathParam("uri") @NotNull URI uri
-//    ) throws Exception {
-//        FacilityLogic logic = new FacilityLogic(sparql, nosql);
-//        List<VariableModel> variables = logic.getFacilityVariables(uri, currentUser.getLanguage());
-//        List<NamedResourceDTO> logicList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
-//        return new PaginatedListResponse<>(logicList).getResponse();
-//    }
 
 }

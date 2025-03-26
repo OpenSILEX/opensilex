@@ -32,7 +32,6 @@ import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
@@ -55,11 +54,11 @@ import java.util.stream.Collectors;
 
 public class FacilityLogic {
 
-    private SPARQLService sparql;
-    private MongoDBServiceV2 mongodb;
-    private FacilityDAO facilityDAO;
-    private OrganizationDAO organizationDAO;
-    private SiteLogic siteLogic;
+    private final SPARQLService sparql;
+    private final MongoDBServiceV2 mongodb;
+    private final FacilityDAO facilityDAO;
+    private final OrganizationDAO organizationDAO;
+    private final SiteLogic siteLogic;
     private final GeocodingService geocodingService;
 
 
@@ -125,7 +124,7 @@ public class FacilityLogic {
             validateFacilityAccess(uri, user);
             return facilityDAO.get(uri, user.getLanguage());
         } catch (ForbiddenURIAccessException exception) {
-            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri.toString());
+            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri);
         } catch (Exception e) {
             throw new NotFoundURIException(uri);
         }
@@ -293,11 +292,6 @@ public class FacilityLogic {
         }
     }
 
-    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
-        FacilityDAO dao = new FacilityDAO(sparql);
-        return dao.getFacilityVariables(uri, language);
-    }
-
 
     //#endregion
 
@@ -459,9 +453,6 @@ public class FacilityLogic {
         locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations, true);
     }
 
-    private void updateFacilityVariable(ClientSession session, FacilityModel facilityModel, FacilityModel existingModel, VariableModel variableModel){
-
-    }
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
         //Delete existing
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);

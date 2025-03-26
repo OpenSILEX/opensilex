@@ -79,11 +79,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useStore } from "vuex"; 
 import { useRoute } from "vue-router";
 import { Menu } from "../../models/Menu";
 import { versionInfoDTO } from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useI18n } from 'vue-i18n';
 import en from './../../lang/message-en.json';
 import fr from './../../lang/message-fr.json';
@@ -91,6 +92,7 @@ import fr from './../../lang/message-fr.json';
 const { t } = useI18n(); 
 const store = useStore();
 const route = useRoute();
+const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
 
 const menu = computed(() => store.state.menu);
 const user = computed(() => store.state.user);
@@ -99,7 +101,9 @@ const menuVisible = computed(() => store.state.menuVisible);
 const versionInfo = ref<versionInfoDTO | null>(null);
 
 onMounted(() => {
-  versionInfo.value = store.state.versionInfo;
+  // versionInfo.value = store.state.versionInfo;
+     versionInfo.value = $opensilex.versionInfo;
+  console.log("VInfo : ", versionInfo.value)
 });
 
 const toggleMenu = () => {

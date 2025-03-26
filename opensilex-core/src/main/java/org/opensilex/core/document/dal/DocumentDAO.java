@@ -178,7 +178,20 @@ public class DocumentDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(
+            AccountModel user,
+            URI type,
+            String title,
+            String date,
+            URI targets,
+            String authors,
+            String subject,
+            String multiple,
+            String deprecated,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize
+    ) throws Exception {
         
         return sparql.searchWithPagination(
             DocumentModel.class,

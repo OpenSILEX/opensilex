@@ -756,33 +756,33 @@ test:valentin:deploy:
     - test:valentin:build
 
 ###################################
-##  BERNHARD-TEST-BUILD-DEPLOYMENT
+##  DHRUTHI-TEST-BUILD-DEPLOYMENT
 ###################################
 
-test:bernhard:build:
+test:dhruthi:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
 
-test:bernhard:deploy:
+test:dhruthi:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/bernhard"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
+    INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4091
     OPENSILEX_JAR_PORT: 8091
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/bernhard"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
       when: on_success
   needs:
-    - test:bernhard:build
+    - test:dhruthi:build
 
 ###################################
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT

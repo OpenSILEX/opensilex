@@ -119,6 +119,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.6]
+
+### Fixed or optimized
+
+- (!1350) [Tomcat] Changed tomcat version from 9.0.91 to 9.0.99 
+
 ## [1.4.5]
 
 ### Fixed or optimized

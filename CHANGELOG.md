@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed or optimized
 
-- (!TODO) [Tomcat] Changed tomcat version from 9.0.91 to 9.0.99 
+- (!1350) [Tomcat] Changed tomcat version from 9.0.91 to 9.0.99 
 
 ## [1.4.5]
 

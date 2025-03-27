@@ -20,6 +20,7 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -31,6 +32,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -200,7 +202,7 @@ public class DocumentDAO {
                 Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
                 ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
-               
+                appendUserRightsFilter(select, user);
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
@@ -278,6 +280,15 @@ public class DocumentDAO {
         if (!StringUtils.isEmpty(date)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.DATE_FIELD, date));
         }
+    }
+
+    private void appendUserRightsFilter(SelectBuilder select, AccountModel user) {
+        select.addFilter(
+                SPARQLQueryHelper.or(
+                        SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.eq(DocumentModel.TYPE_FIELD, NodeFactory.createURI(DataImportLogic.VOCABULARY_OESO_IMPORTED_DATASET))),
+                        SPARQLQueryHelper.eq(SPARQLResourceModel.PUBLISHER_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(user.getUri())))
+                )
+        );
     }
 
     private void appendTypeFilter(SelectBuilder select, URI type) throws Exception {

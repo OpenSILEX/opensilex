@@ -23,7 +23,11 @@ const iconName = computed(() => props.icon?.split("#")[1] || "ik-folder");
 
 const ikClasses = computed(() => `ik ${iconName.value} ${props.size || "sm"}`);
 const faClass = computed(() => iconName.value);
-const bootstrapClasses = computed(() => `bi bi-${iconName.value}`);
+const bootstrapClasses = computed(() => {
+  const name = iconName.value.startsWith("bi-") ? iconName.value.slice(3) : iconName.value;
+  return `bi bi-${name}`;
+});
+
 </script>
 
 <style scoped lang="scss">

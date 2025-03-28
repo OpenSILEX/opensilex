@@ -875,6 +875,41 @@
         "existingProperty" : "Cette {_field_} est déjà existante",
         "refuseOperators": "Pas applicable"
     },
+    "icon": {
+        "component": {
+            "menu": {
+                "default": "bi-folder",
+                "about": {
+                    "label": "bi-info-circle",
+                    "gdpr": "bi-person"
+                },
+                "dashboard": "bi-grid",
+                "data": {
+                    "label": "bi-bar-chart"
+                },
+                "equipments": {
+                    "label": "ik-aperture"
+                },
+                "experiments": "bi-layers",
+                "image": "bi-bar-chart",
+                "installations": "bi-globe",
+                "projects": "bi-folder",
+                "security": {
+                    "label": "bi-lock",
+                    "users": "bi-person",
+                    "groups": "bi-people",
+                    "profiles": "bi-gear"
+                },
+                "scientificObjects": "bi-target",
+                "experimentalDesign": {
+                    "label": "bi-map"
+                },
+                "configuration": "bi-gear",
+                "scientificObjectTypes": "bi-gear",
+                "facilitiesTypes": "bi-gear"
+            }
+        }
+    },
     "searchfilter": {
         "label": "Filtres de recherche"
     },

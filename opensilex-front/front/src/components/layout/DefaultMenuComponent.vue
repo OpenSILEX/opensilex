@@ -153,6 +153,10 @@ const isActive = (item: Menu): boolean => {
   outline: none;
 }
 
+.nav-item a { // viens du style global sur les liens normalement (main.scss ?) ..
+  text-decoration: none;
+}
+
 .hamburger .hamburger-inner,
 .hamburger .hamburger-inner::after,
 .hamburger .hamburger-inner::before,

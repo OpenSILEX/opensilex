@@ -10,14 +10,14 @@
     ></opensilex-PageHeader>
 
 
+      <opensilex-DataMonitoring></opensilex-DataMonitoring>
     <!-- DataMonitoring -->
-    <div
+    <!-- <div
       class="dashboardDataMonitoringContainer"
       v-if="opensilex.getConfig().dashboard.showMetrics"
     >
-      <!-- <opensilex-DataMonitoring></opensilex-DataMonitoring> -->
       <span> data monitoring </span>
-    </div>
+    </div> -->
 
     <div class="gridMainContainer">
       <!-- Favorites -->
@@ -50,11 +50,13 @@ import { useStore } from "vuex";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useI18n } from "vue-i18n";
 import Histogram from "./dashboard/Histogram.vue";
+import DataMonitoring from "./dashboard/DataMonitoring.vue"
 
 export default defineComponent({
   name: "Dashboard",
     components: {
     Histogram,
+    DataMonitoring
   },
   setup() {
     const store = useStore();

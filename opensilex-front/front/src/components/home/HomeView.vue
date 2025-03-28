@@ -23,8 +23,4 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-
-.container-fluid {
-  background-color: rgba(95, 158, 160, 0.559);
-}
 </style>

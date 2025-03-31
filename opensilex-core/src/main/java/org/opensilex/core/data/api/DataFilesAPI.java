@@ -18,6 +18,7 @@ import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.data.bll.DataFileLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataFileSearchFilter;
@@ -133,7 +134,7 @@ public class DataFilesAPI {
      * @param file
      * @param fileContentDisposition
      * @return the insertion result.
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     @POST
     @ApiOperation(value = "Add a data file",
@@ -154,26 +155,11 @@ public class DataFilesAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         try {
-            validDataFileDescription(Arrays.asList(dto));
-            DataFileModel model = dto.newModel();
-            model.setPublisher(user.getUri());
-            model.setFilename(fileContentDisposition.getFileName());
-            //generate URI
-            nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, DataFileDaoV2.FILE_PREFIX, DataFileDaoV2.COLLECTION_NAME);
-            final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-            java.nio.file.Path filePath = Paths.get(FS_FILE_PREFIX, filename);
-            model.setPath(filePath.toString());
-            try{
-                nosql.getServiceV2().withSession(session -> {
-                    dao.create(session, model);
-                    fs.writeFile(FS_FILE_PREFIX, filePath, file);
-                });
-            } catch(Exception e){
-                fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-                throw e;
-            }
+            validDataFileDescription(Collections.singletonList(dto));
+            DataFileModel model = dto.newModel(file, fileContentDisposition.getFileName());
+            DataFileLogic logic = new DataFileLogic(sparql, nosql, fs, user);
+            logic.upload(model, file);
             return new CreatedUriResponse(model.getUri()).getResponse();
         }
         catch (MongoDbUniqueIndexConstraintViolation duplicateKey) {
@@ -193,7 +179,7 @@ public class DataFilesAPI {
      * @param dtoList
      * @param context
      * @return the insertion result.
-     * @throws java.lang.Exception
+     * @throws Exception
      * @example [ { "rdfType":
      * "http://www.opensilex.org/vocabulary/oeso#HemisphericalImage", "date":
      * "2017-06-15T10:51:00+0200", "provenanceUri":
@@ -227,55 +213,57 @@ public class DataFilesAPI {
         
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-        try {
-            if (dtoList.size()> DataAPI.SIZE_MAX) {
-                throw new NoSQLTooLargeSetException(DataAPI.SIZE_MAX, dtoList.size());
-            }
-            validDataFileDescription(dtoList);
-            List<DataFileModel> dataList = new ArrayList();
-            for(DataFilePathCreationDTO dto : dtoList ){            
-                DataFileModel model = dto.newModel();
-                // get the the absolute file path according to the fileStorageDirectory
-                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(FS_FILE_PREFIX, Paths.get(model.getPath()));
-
-                if (model.getArchive() == null && !fs.exist(FS_FILE_PREFIX, absoluteFilePath)) {
-                    return new ErrorResponse(
-                                Response.Status.BAD_REQUEST,
-                                "File not found",
-                                absoluteFilePath.toString()
-                    ).getResponse();
-                }
-
-                model.setFilename(absoluteFilePath.getFileName().toString());
-                dataList.add(model);
-            }
-
-            dao.create(dataList);
-            return new CreatedUriResponse(dataList.stream().map(MongoModel::getUri).collect(Collectors.toList())).getResponse();
-
-        } catch(NoSQLTooLargeSetException ex) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",
-                ex.getMessage()).getResponse();
-
-        } catch (MongoBulkWriteException duplicateError) {
-            List<DataFilePathCreationDTO> datas = new ArrayList();
-            List<BulkWriteError> errors = duplicateError.getWriteErrors();
-            for (int i=0 ; i < errors.size() ; i++) {
-                int index = errors.get(i).getIndex();
-                datas.add(dtoList.get(index));
-            }                    
-            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-            String json = mapper.writeValueAsString(datas);
-
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
-            .getResponse();
-
-        } catch (MongoCommandException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
-            .getResponse();
-        } catch (DateValidationException e) {
-            return new DateMappingExceptionResponse().toResponse(e);
-        }       
+//        try {
+//            if (dtoList.size()> DataAPI.SIZE_MAX) {
+//                throw new NoSQLTooLargeSetException(DataAPI.SIZE_MAX, dtoList.size());
+//            }
+//            validDataFileDescription(dtoList);
+//            List<DataFileModel> dataList = new ArrayList();
+//            for(DataFilePathCreationDTO dto : dtoList ){
+//                DataFileModel model = dto.newModel();
+//                // get the the absolute file path according to the fileStorageDirectory
+//                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(FS_FILE_PREFIX, Paths.get(model.getPath()));
+//
+//                if (model.getArchive() == null && !fs.exist(FS_FILE_PREFIX, absoluteFilePath)) {
+//                    return new ErrorResponse(
+//                                Response.Status.BAD_REQUEST,
+//                                "File not found",
+//                                absoluteFilePath.toString()
+//                    ).getResponse();
+//                }
+//
+//                model.setFilename(absoluteFilePath.getFileName().toString());
+//
+//                dataList.add(model);
+//            }
+//
+//            dao.create(dataList);
+//            return new CreatedUriResponse(dataList.stream().map(MongoModel::getUri).collect(Collectors.toList())).getResponse();
+//
+//        } catch(NoSQLTooLargeSetException ex) {
+//            return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",
+//                ex.getMessage()).getResponse();
+//
+//        } catch (MongoBulkWriteException duplicateError) {
+//            List<DataFilePathCreationDTO> datas = new ArrayList();
+//            List<BulkWriteError> errors = duplicateError.getWriteErrors();
+//            for (int i=0 ; i < errors.size() ; i++) {
+//                int index = errors.get(i).getIndex();
+//                datas.add(dtoList.get(index));
+//            }
+//            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+//            String json = mapper.writeValueAsString(datas);
+//
+//            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
+//            .getResponse();
+//
+//        } catch (MongoCommandException e) {
+//            return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
+//            .getResponse();
+//        } catch (DateValidationException e) {
+//            return new DateMappingExceptionResponse().toResponse(e);
+//        }
+        return null;
 
     }
 
@@ -322,11 +310,11 @@ public class DataFilesAPI {
         try {
             DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-            DataFileModel description = dao.get(uri);
+            DataFileModel model = dao.get(uri);
 
-            java.nio.file.Path filePath = Paths.get(description.getPath());
+            java.nio.file.Path filePath = Paths.get(model.getRecord().getPath());
             byte[] fileContent = fs.readFileAsByteArray(FS_FILE_PREFIX, filePath);
-            if(description.getArchive() != null) {
+            if(model.getArchive() != null) {
                 return Response.status(Response.Status.NOT_IMPLEMENTED.getStatusCode()).build();
             }
             if (ArrayUtils.isEmpty(fileContent)) {
@@ -348,7 +336,7 @@ public class DataFilesAPI {
      *
      * @param uri
      * @return the file description
-     * @throws java.lang.Exception
+     * @throws Exception
      * @example {
      * "uri": "http://www.phenome-fppn.fr/diaphen/id/dataFile/RGBImage/55fjbbmtmr4m3kkizslzaddfkdt2ranum3ikz6cdiajqzfdc7yqa31d87b83efac4c358ceb5b0da6ed27ff",
      * "rdfType": "http://www.opensilex.org/vocabulary/oeso#RGBImage",
@@ -392,7 +380,7 @@ public class DataFilesAPI {
      * @param scaledWidth  the width of the thumbnail to return
      * @param response
      * @return The file content or null with a 404 status if it doesn't exists
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     @ApiProtected
     @GET
@@ -413,32 +401,33 @@ public class DataFilesAPI {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         
-        try {
-            DataFileModel description = dao.get(uri);
-
-            // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
-            String fileExt = Files.getFileExtension(description.getFilename());
-
-            // Non handled file type
-            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
-                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
-                return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
-            }
-
-            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
-
-            // Handle tiff : convert to PNG
-            if(TIFF_EXTENSIONS.contains(fileExt)){
-                image = convertTIFFToPNG(image);
-            }
-
-            return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
-
-        } catch (NoSQLInvalidURIException e) {
-            return new NotFoundException(String.format("image with uri : %s was not found in the file system", uri), "image not found").getResponse();
-        } catch (java.io.IOException e) {
-            return new UnexpectedErrorException(e).getResponse();
-        }
+//        try {
+//            DataFileModel description = dao.get(uri);
+//
+//            // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
+//            String fileExt = Files.getFileExtension(description.getFilename());
+//
+//            // Non handled file type
+//            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
+//                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
+//                return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
+//            }
+//
+//            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+//
+//            // Handle tiff : convert to PNG
+//            if(TIFF_EXTENSIONS.contains(fileExt)){
+//                image = convertTIFFToPNG(image);
+//            }
+//
+//            return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
+//
+//        } catch (NoSQLInvalidURIException e) {
+//            return new NotFoundException(String.format("image with uri : %s was not found in the file system", uri), "image not found").getResponse();
+//        } catch (IOException e) {
+//            return new UnexpectedErrorException(e).getResponse();
+//        }
+        return null;
     }
 
     private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
@@ -480,7 +469,7 @@ public class DataFilesAPI {
      * @param startDate
      * @param endDate
      * @return List of file description
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     @GET
     @ApiOperation(value = "Search data files")

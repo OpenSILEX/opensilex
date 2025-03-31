@@ -11,8 +11,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.io.File;
 import java.net.URI;
-import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataFileModel;
@@ -22,6 +23,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.fs.FileRecord;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -121,7 +123,7 @@ public class DataFileCreationDTO {
 
     public void setArchive(URI archive) { this.archive = archive; }
     
-    public DataFileModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
+    public DataFileModel newModel(File file, String filename) throws TimezoneAmbiguityException, TimezoneException {
         DataFileModel model = new DataFileModel();
         model.setMetadata(metadata);
         model.setProvenance(provenance);
@@ -134,7 +136,12 @@ public class DataFileCreationDTO {
         model.setDate(parsedDateTimeMongo.getInstant());
         model.setOffset(parsedDateTimeMongo.getOffset());
         model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-        
+
+        model.setRecord(new FileRecord()
+                .setName(filename)
+                .setSize(file.length())
+        );
+
         return model;
     }
     

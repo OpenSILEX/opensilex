@@ -2,21 +2,17 @@ package org.opensilex.fs.irods;
 
 import org.opensilex.fs.service.FileStorageConnection;
 import org.opensilex.service.BaseService;
+import org.opensilex.utils.ProcessExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 
@@ -26,8 +22,11 @@ import org.opensilex.service.ServiceDefaultDefinition;
 @ServiceDefaultDefinition(config = IrodsFileSystemConfig.class)
 public class IrodsFileSystemConnection extends BaseService implements Service, FileStorageConnection {
 
+    private final ProcessExecutor processExecutor;
+
     public IrodsFileSystemConnection(IrodsFileSystemConfig config) {
         super(config);
+        this.processExecutor = new ProcessExecutor(config.readTimeoutSeconds());
     }
 
     public IrodsFileSystemConfig getImplementedConfig() {
@@ -38,14 +37,17 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
         return Paths.get(getImplementedConfig().basePath());
     }
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
 
-    private final static String IRODS_GET_CMD = "iget";
+    private static final String IRODS_GET_CMD = "iget";
+    private static final String IRODS_IPUT_CMD = "iput";
+    private static final String IRODS_MKDIR_CMD = "imkdir";
 
     /**
      * Option used in order to force IRODS to write the content of a source file into the destination file when using IGET
      */
-    private final static String IRODS_GET_FORCE_WRITE = "-f";
+    private static final String IRODS_FORCE_OPTION = "-f";
+
 
     /**
      * Temp folder used for storing IRODS incoming file(s), the files are created and then deleted after been read.
@@ -61,39 +63,8 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
 
     @Override
     public void shutdown() throws Exception {
-        if(tmpDirectory != null){
+        if (tmpDirectory != null) {
             Files.deleteIfExists(tmpDirectory);
-        }
-    }
-
-    private void irodsCommand(String... args) throws IOException {
-        Process irodsProcess = null;
-        try {
-            irodsProcess = new ProcessBuilder().command(args).start();
-
-            // redirect eventual errors to an IOException
-            checkErrorFromProcess(irodsProcess);
-
-        } finally {
-            if (irodsProcess != null && irodsProcess.isAlive()) {
-                irodsProcess.destroy();
-            }
-        }
-    }
-
-    private void checkErrorFromProcess(Process process) throws IOException {
-        InputStream errorStream = process.getErrorStream();
-        try {
-            byte[] errorBytes =  IOUtils.toByteArray(errorStream);
-            if (errorBytes != null && errorBytes.length > 0) {
-                errorStream.close();
-                if (process.isAlive()) {
-                    process.destroy();
-                }
-                throw new IOException(new String(errorBytes, StandardCharsets.UTF_8));
-            }
-        } finally {
-            errorStream.close();
         }
     }
 
@@ -120,10 +91,10 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
         try {
             tmpFile = Files.createTempFile(tmpDirectory, null, null);
 
-            irodsCommand(IRODS_GET_CMD,
+            processExecutor.execute(IRODS_GET_CMD,
                     filePath.toString(),
                     tmpFile.toString(),
-                    IRODS_GET_FORCE_WRITE
+                    IRODS_FORCE_OPTION
             );
 
             return tmpFile;
@@ -156,7 +127,6 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
 
     }
 
-    private final static String IRODS_IPUT_CMD = "iput";
 
     @Override
     public void writeFile(Path dest, File file) throws IOException {
@@ -168,7 +138,7 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
             LOGGER.debug(e.getMessage());
         }
 
-        irodsCommand(
+        processExecutor.execute(
                 IRODS_IPUT_CMD,
                 file.getPath(),
                 filePath.toString()
@@ -176,28 +146,26 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
 
     }
 
-    private final static String IRODS_MKDIR_CMD = "imkdir";
-
     /**
      * Option used in order to force IRODS make parent directories as needed
      */
-    private final static String IRODS_MKDIR_PARENT = "-p";
+    private static final String IRODS_MKDIR_PARENT = "-p";
 
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
-        irodsCommand(
+        processExecutor.execute(
                 IRODS_MKDIR_CMD,
                 directoryPath.toString(),
                 IRODS_MKDIR_PARENT
         );
     }
 
-    private final static String IRODS_LS_CMD = "ils";
+    private static final String IRODS_LS_CMD = "ils";
 
     @Override
     public boolean exist(Path filePath) throws IOException {
         try {
-            irodsCommand(
+            processExecutor.execute(
                     IRODS_LS_CMD,
                     filePath.toString()
             );
@@ -208,12 +176,12 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
         }
     }
 
-    private final static String IRODS_RM_CMD = "irm";
+    private static final String IRODS_RM_CMD = "irm";
 
     @Override
     public void delete(Path filePath) throws IOException {
         filePath = getAbsolutePath(filePath);
-        irodsCommand(
+        processExecutor.execute(
                 IRODS_RM_CMD,
                 filePath.toString()
         );

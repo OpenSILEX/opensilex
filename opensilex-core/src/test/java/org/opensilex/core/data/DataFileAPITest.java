@@ -29,6 +29,7 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.api.DataFileCreationDTO;
@@ -100,7 +101,7 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
-    //@Test
+    @Test
     public void testCreate() throws Exception {
         File file = tmpFolder.newFile("testFile.txt"); 
         try (OutputStream out = new FileOutputStream(file)) {

@@ -851,25 +851,6 @@ public class DataDAO {
         return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
     }
 
-    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
-        //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
-
-        final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
-        model.setPath(filePath.toString());
-
-        nosql.startTransaction();         
-        try {   
-            createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
-            nosql.commitTransaction();
-        } catch (Exception e) {
-            nosql.rollbackTransaction();
-            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-            throw e;
-        }
-    }
 
     public ListWithPagination<DataFileModel> searchFiles(
             AccountModel user,

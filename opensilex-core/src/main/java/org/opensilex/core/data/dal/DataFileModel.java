@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.opensilex.fs.FileRecord;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
@@ -20,35 +21,17 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 public class DataFileModel extends DataModel {
     
-    private URI rdfType;
-    private String filename;
-    private String path;
     private URI archive;
+    private FileRecord record;
 
     public static final String RDF_TYPE_FIELD = "rdfType";
 
-    public URI getRdfType() {
-        return rdfType;
+    public FileRecord getRecord() {
+        return record;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
+    public void setRecord(FileRecord record) {
+        this.record = record;
     }
 
     public URI getArchive() {

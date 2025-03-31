@@ -9,6 +9,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
  */
 public interface S3FsConfig extends ServiceConfig {
 
+
     /**
      * @return a String representation of S3 endpoint URL
      *

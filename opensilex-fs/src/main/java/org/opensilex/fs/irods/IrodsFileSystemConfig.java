@@ -6,13 +6,14 @@
 package org.opensilex.fs.irods;
 
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.fs.FileStorageConfig;
 import org.opensilex.service.ServiceConfig;
 
 /**
  *
  * @author Alice Boizet
  */
-public interface IrodsFileSystemConfig extends ServiceConfig {
+public interface IrodsFileSystemConfig extends FileStorageConfig {
     
     @ConfigDescription(
             value = "Base path for file storage"

@@ -75,7 +75,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setMetadata(model.getMetadata());   
         dto.setProvenance(model.getProvenance());
         dto.setArchive(model.getArchive());
-        dto.setFilename(model.getFilename());
+        dto.setFilename(model.getRecord().getName());
         if (Objects.nonNull(model.getPublicationDate())) {
             dto.setPublicationDate(OffsetDateTime.ofInstant(model.getPublicationDate(), ZoneOffset.UTC));
         }

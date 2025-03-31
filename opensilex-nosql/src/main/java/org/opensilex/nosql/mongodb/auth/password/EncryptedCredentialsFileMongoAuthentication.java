@@ -3,7 +3,7 @@ package org.opensilex.nosql.mongodb.auth.password;
 import com.mongodb.MongoCredential;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.service.ServiceDefaultDefinition;
-import org.opensilex.utils.ProcessUtils;
+import org.opensilex.utils.ProcessExecutor;
 import org.opensilex.utils.security.SecretReadUtils;
 import org.opensilex.utils.security.OpenSslCipherConfig;
 import org.opensilex.utils.unix.UnixFileUtils;
@@ -65,7 +65,7 @@ public class EncryptedCredentialsFileMongoAuthentication extends CredentialsFile
                     .command(buildOpenSslArgs())
                     .start();
 
-            ProcessUtils.checkErrorFromProcess(openSslProcess);
+            new ProcessExecutor().throwIfStderr(openSslProcess);
 
             // read standard output ((it contains the decrypted credentials)) of the decryption process
             processStdOut = openSslProcess.getInputStream();

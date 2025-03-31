@@ -296,6 +296,27 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         }
     }
 
+    @Override
+    public void generateUri(T instance, boolean checkAlreadyExists) throws URISyntaxException, NoSQLAlreadyExistingUriException {
+        URI uri = instance.getUri();
+
+        if (uri != null) {
+            if (checkAlreadyExists && exists(uri)) {
+                throw new NoSQLAlreadyExistingUriException(uri);
+            }
+            return;
+        }
+
+        int retry = 0;
+        String prefix = UriBuilder.fromUri(mongodb.getGenerationPrefixURI()).path(createPrefix).toString();
+        uri = instance.generateURI(prefix, instance, retry);
+        while (checkAlreadyExists && exists(uri)) {
+            uri = instance.generateURI(prefix, instance, retry++);
+        }
+        instance.setUri(uri);
+    }
+
+
     public Bson getUpdateFilter(T instance) {
         // by default the filter for update is the id filter with the instance uri
         return getIdFilter(instance.getUri());

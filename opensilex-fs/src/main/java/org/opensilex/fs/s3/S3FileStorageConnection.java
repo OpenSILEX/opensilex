@@ -36,6 +36,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      */
     protected final Region region;
 
+    protected final S3FileSource fileSource;
+
     /**
      *
      * @param config S3 config
@@ -60,6 +62,7 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         LOGGER.info("S3FileStorageConnection init [OK]");
 
         createBucketIfNotExists();
+        fileSource = new S3FileSource(config);
     }
 
     /**
@@ -188,5 +191,10 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
     @Override
     public void shutdown() throws Exception {
         s3Client.close();
+    }
+
+    @Override
+    public S3FileSource getFileSource() {
+        return fileSource;
     }
 }

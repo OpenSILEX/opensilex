@@ -1,7 +1,7 @@
 package org.opensilex.core.data.api;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
+import org.opensilex.utils.ProcessExecutor;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -9,8 +9,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +30,8 @@ public class ImageResizer {
     private final static String JPG_MIME_TYPE = "image/jpg";
     private final static String IMAGE_IO_JPEG_TYPE = "JPEG";
 
+    private final ProcessExecutor processExecutor;
+
     private final RESIZE_METHOD defaultResizeMethod;
 
     private ImageResizer() throws IOException {
@@ -40,13 +40,14 @@ public class ImageResizer {
         RESIZED_PICTURE_TMP_DIR.toFile().deleteOnExit();
 
         tika = new Tika();
+        processExecutor = new ProcessExecutor();
 
         // determine if we can use the command convert, else use the java API based method
         RESIZE_METHOD resizeMethod;
         Process testConvertProcess = null;
         try {
             testConvertProcess = new ProcessBuilder(CONVERT_COMMAND, "-version").start();
-            checkErrorFromProcess(testConvertProcess);
+            processExecutor.throwIfStderr(testConvertProcess);
             resizeMethod = RESIZE_METHOD.CONVERT_COMMAND;
         } catch (Exception e) {
             if (testConvertProcess != null && testConvertProcess.isAlive()) {
@@ -89,24 +90,6 @@ public class ImageResizer {
         return this.resize(defaultResizeMethod, img, scaledWidth, scaledHeight);
     }
 
-    private void checkErrorFromProcess(Process process) throws IOException {
-
-        InputStream errorStream = process.getErrorStream();
-        try {
-            byte[] errorBytes = IOUtils.toByteArray(errorStream);
-            if (errorBytes != null && errorBytes.length > 0) {
-                errorStream.close();
-                if (process.isAlive()) {
-                    process.destroy();
-                }
-                throw new IOException(new String(errorBytes, StandardCharsets.UTF_8));
-            }
-        } catch (IOException e) {
-            errorStream.close();
-            throw e;
-        }
-    }
-
     private static final String CONVERT_COMMAND = "convert";
     private static final String CONVERT_RESIZE_OPTION = "-resize";
 
@@ -116,28 +99,43 @@ public class ImageResizer {
     private static final String CONVERT_JPEG_DEFINE_OPTION = "-define";
     private static final String CONVERT_JPEG_SIZE_OPTION = "jpeg:size=";
 
+    /**
+     * @apiNote This implementation
+     */
     private byte[] getResizedImageWithConvertCmd(byte[] img, int scaledWidth, int scaledHeight) throws IOException {
         Process convertProcess = null;
         Path srcImagePath = null;
         Path scaledImagePath = null;
         try {
-            srcImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
+            /* (#TODO #optimisation-0) : Allow to directly perform the fs call to get data (with redirection) or command
+            *
+            *
+            *(#TODO #optimisation-irods-0) : Execute thumbnail of fs (less I/O, more CPU usage on server)
+            */
+            srcImagePath = Files.createTempFile(RESIZED_PICTURE_TMP_DIR, null, null);
             Files.write(srcImagePath, img);
 
             // create tmp file
-            scaledImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
+            scaledImagePath = Files.createTempFile(RESIZED_PICTURE_TMP_DIR, null, null);
 
             List<String> command = new ArrayList<>();
             command.add(CONVERT_COMMAND);
 
             // use convert optimization for JPEG file, could be very efficient for large jpeg file
             String fileExt = tika.detect(img);
-
             if (fileExt.equals(JPEG_MIME_TYPE) || fileExt.equals(JPG_MIME_TYPE)) {
                 int jpegWidth = scaledWidth * 2;
                 int jpegHeight = scaledHeight * 2;
                 command.addAll(Arrays.asList(CONVERT_JPEG_DEFINE_OPTION, CONVERT_JPEG_SIZE_OPTION + jpegWidth + "x" + jpegHeight));
             }
+
+            /* (#TODO #optimisation-1) : Redirect command output instead of writing inside tmp file
+            /* - (no drive write+read)
+            /* - no additional impact on memory allocation (space/time) since the thumbnail has to be read inside a buffer anyway
+            *
+            * (#TODO #optimisation-2) : implement thumbnail cache (ex n:10000, size: 1G)
+            * - no fs read (no disk read from fs-server, no network transfer)
+            */
 
             command.addAll(Arrays.asList(
                     srcImagePath.toString(),
@@ -147,7 +145,7 @@ public class ImageResizer {
             ));
 
             convertProcess = new ProcessBuilder().command(command).start();
-            checkErrorFromProcess(convertProcess);
+            processExecutor.execute(false, command.toArray(new String[0]));
 
             return Files.readAllBytes(scaledImagePath);
 

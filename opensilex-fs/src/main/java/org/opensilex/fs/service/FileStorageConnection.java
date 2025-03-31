@@ -5,6 +5,7 @@
  */
 package org.opensilex.fs.service;
 
+import org.opensilex.fs.source.FileSource;
 import org.opensilex.service.Service;
 
 import java.io.File;
@@ -36,4 +37,12 @@ public interface FileStorageConnection extends Service {
     void delete(Path filePath) throws IOException;
     
     Path getAbsolutePath(Path filePath) throws IOException;
+
+    default boolean allowRedirectOutput(){
+        return false;
+    }
+
+    default FileSource getFileSource(){
+        return null;
+    }
 }

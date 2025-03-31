@@ -8,7 +8,9 @@ package org.opensilex.fs.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +20,7 @@ import java.nio.file.StandardOpenOption;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.opensilex.fs.service.FileStorageConnection;
+import org.opensilex.fs.source.FileSource;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 
@@ -32,20 +35,18 @@ import org.opensilex.service.ServiceDefaultDefinition;
 public class LocalFileSystemConnection extends BaseService implements FileStorageConnection {
 
     private final Path basePath;
+    private final LocalFileSource fileSource;
 
-    public LocalFileSystemConnection() {
-        super(null);
-        this.basePath = null;
-    }
-
-    public LocalFileSystemConnection(Path basePath) {
-        super(null);
-        this.basePath = basePath;
+    public LocalFileSystemConnection(Path basePath) throws UnknownHostException {
+        // Create a LocalFileSystemConfig with anonymous lambda syntax
+        this(basePath::toString);
     }
     
-       public LocalFileSystemConnection(LocalFileSystemConfig config) {
+       public LocalFileSystemConnection(LocalFileSystemConfig config) throws UnknownHostException {
         super(config);
         this.basePath = Paths.get(config.basePath());
+        String hostname = InetAddress.getLocalHost().getHostName();
+        fileSource = new LocalFileSource(config, hostname);
     }
 
     public Path getBasePath() throws IOException {
@@ -102,4 +103,8 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
         Files.delete(getAbsolutePath(filePath));
     }
 
+    @Override
+    public FileSource getFileSource() {
+        return fileSource;
+    }
 }

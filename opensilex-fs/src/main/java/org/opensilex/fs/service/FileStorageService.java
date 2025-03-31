@@ -161,7 +161,7 @@ public class FileStorageService extends BaseService implements Service {
         return (FileStorageServiceConfig) this.getConfig();
     }
 
-    protected FileStorageConnection getConnection(String prefix) {
+    public FileStorageConnection getConnection(String prefix) {
         for (Path candidatePath : pathOrder) {
             if (prefix.equals(candidatePath.toString())) {
                 return customPath.get(candidatePath);

@@ -7,12 +7,19 @@ package org.opensilex.fs;
 
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.service.ServiceConfig;
 
-public interface FileStorageConfig {
+public interface FileStorageConfig extends ServiceConfig {
 
     @ConfigDescription(
             value = "File storage service"
     )
     public FileStorageService fs();
+
+    @ConfigDescription(
+            value = "File storage service",
+            defaultInt = 600
+    )
+    int readTimeoutSeconds();
 
 }

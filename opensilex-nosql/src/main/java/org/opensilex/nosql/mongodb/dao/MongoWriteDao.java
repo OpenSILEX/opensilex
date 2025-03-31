@@ -37,6 +37,9 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      */
     @NotNull InsertOneResult create(@NotNull T instance) throws MongoException, URISyntaxException, NoSQLAlreadyExistingUriException, MongoDbUniqueIndexConstraintViolation;
 
+    void generateUri(@NotNull T instance, boolean checkAlreadyExists) throws URISyntaxException, NoSQLAlreadyExistingUriException;
+
+
     /**
      * Create a new model instance in the database within a client session.
      *

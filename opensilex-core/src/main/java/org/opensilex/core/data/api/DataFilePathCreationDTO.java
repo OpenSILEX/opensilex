@@ -34,7 +34,6 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
         this.relativePath = relativePath;
     }    
     
-    @Override
     public DataFileModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataFileModel model = new DataFileModel();
         
@@ -44,7 +43,7 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
         model.setTarget(getTarget());
         model.setUri(getUri());
         model.setArchive(getArchive());
-        model.setPath(relativePath);        
+//        model.setPath(relativePath);
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
         model.setDate(parsedDateTimeMongo.getInstant());
         model.setOffset(parsedDateTimeMongo.getOffset());

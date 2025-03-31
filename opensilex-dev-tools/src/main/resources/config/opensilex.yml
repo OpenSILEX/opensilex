@@ -24,7 +24,7 @@ file-system:
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:
                         host: localhost
-                        port: 8668
+                        port: 27017
                         database: opensilex
             # customPath:
             #     datafile/: irods
@@ -33,7 +33,7 @@ big-data:
     mongodb:
         config:
             host: localhost
-            port: 8668
+            port: 27017
             database: opensilex
     #            timezone: Europe/Paris
 

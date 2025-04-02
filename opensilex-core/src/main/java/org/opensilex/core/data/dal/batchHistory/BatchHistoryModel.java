@@ -11,21 +11,11 @@ import java.util.UUID;
  * @author MKOURDI
  */
 public class BatchHistoryModel extends MongoModel {
-    public static final String BATCH_ID_FIELD = "batchId";
     public static final String USERNAME = "username";
     public static final String PUBLICATION_DATE_FIELD = "publicationDate";
 
-    private String batchId;
     private String username;
     private URI setDocumentUri;
-
-    public String getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
-    }
 
     public String getUsername() {
         return username;

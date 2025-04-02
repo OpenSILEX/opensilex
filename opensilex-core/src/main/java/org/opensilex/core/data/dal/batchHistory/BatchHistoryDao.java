@@ -8,6 +8,7 @@ import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * BatchHistoryDao used to handle {@link BatchHistoryModel}
@@ -26,11 +27,7 @@ public class BatchHistoryDao extends MongoReadWriteDao<BatchHistoryModel, BatchH
 
     @Override
     public List<Bson> getBsonFilters(BatchHistorySearchFilter filter) {
-        List<Bson> result = new ArrayList<>();
-
-        if (StringUtils.isNotBlank(filter.getBatchId())) {
-            result.add(Filters.regex(BatchHistoryModel.BATCH_ID_FIELD, filter.getBatchId(), CASE_INSENSITIVE_OPTION));
-        }
+        List<Bson> result = super.getBsonFilters(filter);
 
         if (StringUtils.isNotBlank(filter.getUserName())) {
             result.add(Filters.regex(BatchHistoryModel.USERNAME, filter.getUserName(), CASE_INSENSITIVE_OPTION));

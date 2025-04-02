@@ -2,23 +2,24 @@ package org.opensilex.core.data.dal.batchHistory;
 
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
+import java.net.URI;
 import java.time.Instant;
 
 /**
  * @author MKourdi
  */
 public class BatchHistorySearchFilter extends MongoSearchFilter {
-    private String batchId;
+    private URI batchUri;
     private String userName;
     private Instant startDate;
     private Instant endDate;
 
-    public String getBatchId() {
-        return batchId;
+    public URI getBatchUri() {
+        return batchUri;
     }
 
-    public BatchHistorySearchFilter setBatchId(String batchId) {
-        this.batchId = batchId;
+    public BatchHistorySearchFilter setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
         return this;
 
     }

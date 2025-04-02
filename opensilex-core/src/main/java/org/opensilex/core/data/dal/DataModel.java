@@ -56,19 +56,19 @@ public class DataModel extends MongoModel {
     public static final String METADATA_FIELD = "metadata";
 
     /**
-     * batchId : used to trace the insertion batches of data in the database
+     * batchUri : used to trace the insertion batches of data in the database
      * (e.g : for deleting or modifying a batch inserted from a csv file)
      */
-    private String batchId;
+    private URI batchUri;
 
-    public static final String BATCH_ID_FIELD = "batchId";
+    public static final String BATCH_URI_FIELD = "batchUri";
 
-    public String getBatchId() {
-        return batchId;
+    public URI getBatchUri() {
+        return batchUri;
     }
 
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
+    public void setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
     }
 
     public URI getTarget() {

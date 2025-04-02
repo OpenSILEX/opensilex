@@ -181,7 +181,6 @@ public class DataAPI {
             Instant currentTime = Instant.now();
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
-                model.setBatchId(dataBLL.generateBatchId(currentTime, user.getName(), JSON, dtoList.size()));
                 dataList.add(model);
             }
             dtoList.clear();

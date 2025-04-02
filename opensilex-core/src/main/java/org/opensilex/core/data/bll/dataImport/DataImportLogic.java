@@ -38,6 +38,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -61,8 +62,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -155,6 +154,23 @@ public class DataImportLogic {
      * @throws Exception if an error occurs during the import
      */
     public DataCSVValidationDTO importCSVData(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
+        //TODO MAX add transaction
+        /*return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+            DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
+
+            // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
+            File tempFile = createTempFile(file);
+            try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
+                validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
+                if (validation.isValidCSV()) {
+                    importCsvInsertionStep(validationKey, validation);
+                    processAndSaveDocument(tempFile, validation);
+                }
+            } finally {
+                deleteTempFile(tempFile);
+            }
+            return buildDataCSVValidationDTO(validation);
+        });*/
         DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
         // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
@@ -169,6 +185,7 @@ public class DataImportLogic {
             deleteTempFile(tempFile);
         }
         return buildDataCSVValidationDTO(validation);
+
     }
 
     /**
@@ -217,7 +234,7 @@ public class DataImportLogic {
             return null;
         }
 
-        String fileName = validationModel.getBatchId();
+        String fileName = validationModel.getBatchHistoryUri().toString();
         File tempZipFile = File.createTempFile(fileName, ZIP_EXTENSION);
 
         try (FileInputStream fis = new FileInputStream(fileContent);
@@ -255,7 +272,7 @@ public class DataImportLogic {
         }
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
-        documentModel.setTitle(validationModel.getBatchId());
+        documentModel.setTitle(validationModel.getBatchHistoryUri().toString());
         documentModel.setFormat(ZIP);
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");
@@ -1190,20 +1207,16 @@ public class DataImportLogic {
     private void handleDataInsertion(DataCSVValidationModel validation) throws Exception {
         LOGGER.debug("[importCsvInsertionStep] Start insertion step of {} row(s) ", validation.getNbLinesToImport());
         Instant startTime = Instant.now();
-        // Generate batchId
-        String batchId = generateBatchId(startTime, validation.getFileName());
         // Create batch history model to track data insertion
-        BatchHistoryModel batchHistoryModel = createBatchHistoryModel(batchId, startTime);
+        BatchHistoryModel batchHistoryModel = createBatchHistoryModel(startTime);
         List<DataModel> data = new ArrayList<>(validation.getData().keySet());
 
-        // Set batchId and publicationDate for the data
-        setBatchIdAndPublicationDateToData(batchId, startTime, data);
-
-        validation.setBatchId(batchId);
-
         try {
-            dataLogic.createManyFromImport(data, validation);
+            //Insert batch history
             batchHistoryDao.create(batchHistoryModel);
+            // Set batchUri and publicationDate for the data
+            setBatchUriAndPublicationDateToData(batchHistoryModel.getUri(), startTime, data);
+            dataLogic.createManyFromImport(data, validation);
             validation.setBatchHistoryUri(batchHistoryModel.getUri());
             validation.setInsertionStep(true);
             validation.setValidCSV(!validation.hasErrors());
@@ -1219,25 +1232,19 @@ public class DataImportLogic {
         LOGGER.debug("[importCsvInsertionStep] Completed insertion in {} milliseconds", Duration.between(startTime, Instant.now()).toMillis());
     }
 
-    private BatchHistoryModel createBatchHistoryModel(String batchId, Instant startTime) {
+    private BatchHistoryModel createBatchHistoryModel(Instant startTime) {
         BatchHistoryModel batchHistoryModel = new BatchHistoryModel();
-        batchHistoryModel.setBatchId(batchId);
         batchHistoryModel.setPublicationDate(startTime);
         batchHistoryModel.setUsername(user.getName());
         batchHistoryModel.setPublisher(user.getUri());
         return batchHistoryModel;
     }
 
-    private void setBatchIdAndPublicationDateToData(String batchId, Instant startTime, List<DataModel> data) {
+    private void setBatchUriAndPublicationDateToData(URI batchUri, Instant startTime, List<DataModel> data) {
         data.forEach(elm -> {
-            elm.setBatchId(batchId);
+            elm.setBatchUri(batchUri);
             elm.setPublicationDate(startTime);
         });
-    }
-
-    private String generateBatchId(Instant start, String fileName) {
-        String dateTime = DateTimeFormatter.ofPattern(DATE_FORMAT).format(start.atZone(ZoneId.systemDefault()));
-        return fileName + UNDERSCORE + dateTime;
     }
 
     private void handleBulkWriteErrors(MongoBulkWriteException duplicateError, DataCSVValidationModel validation, List<DataModel> data) {

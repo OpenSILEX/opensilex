@@ -21,7 +21,7 @@ public class DataFileSearchFilter extends MongoSearchFilter {
     Float confidenceMax;
     Document metadata;
     Collection<URI> operators;
-    String batchId;
+    URI batchUri;
 
     public AccountModel getUser() {
         return user;
@@ -122,12 +122,12 @@ public class DataFileSearchFilter extends MongoSearchFilter {
         return this;
     }
 
-    public String getBatchId() {
-        return batchId;
+    public URI getBatchUri() {
+        return batchUri;
     }
 
-    public DataFileSearchFilter setBatchId(String batchId) {
-        this.batchId = batchId;
+    public DataFileSearchFilter setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
         return this;
     }
 }

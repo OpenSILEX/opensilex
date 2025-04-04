@@ -96,11 +96,11 @@ export default class PersonContact extends Vue {
   }
 
   get last_name(): string {
-    return this.personContact.last_name
+    return this.personContact?.last_name || this.personContact?.person_last_name || "";
   }
 
   get first_name(): string {
-    return this.personContact.first_name
+    return this.personContact?.first_name || this.personContact?.person_first_name || "";
   }
 
   get orcid(): string {
@@ -125,8 +125,8 @@ export default class PersonContact extends Vue {
 
 
   showPopup() {
-    let modalRef: any = this.$refs.popup
-    modalRef.show()
+    let modalRef: any = this.$refs.popup;
+    modalRef.show();
   }
 
   copyURI(address) {

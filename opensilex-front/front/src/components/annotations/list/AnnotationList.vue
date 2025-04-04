@@ -28,10 +28,12 @@
               </template>
 
               <template v-slot:cell(publisher)="{data}">
-                <opensilex-TextView v-if="data.item.publisher"
-                                    :value="getAccountNames(data.item.publisher)">
-                </opensilex-TextView>
+                <PersonContact v-if="accountsByUri.get(data.item.publisher)"
+                               :personContact="accountsByUri.get(data.item.publisher)"
+                               :customDisplayableName="getAccountNames(data.item.publisher)"
+                />
               </template>
+
 
               <template v-slot:cell(description)="{data}">
                 <opensilex-TextView v-if="data.item.description" :value="data.item.description">
@@ -80,7 +82,12 @@
         </opensilex-PageContent>
       </div>
     </div>
-
+    <!-- Modal pour afficher les détails de l'annotation -->
+    <annotation-details
+        v-model="isModalVisible"
+        :annotationDetails="selectedAnnotation"
+        @close="isModalVisible = false"
+    />
     <opensilex-AnnotationModalForm
 
         ref="annotationModalForm"
@@ -103,10 +110,26 @@ import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
+import AnnotationDetails from "../form/AnnotationDetails.vue";
+import PersonContact from "../../persons/PersonContact.vue";
 
-@Component
+@Component({
+  components: {
+    AnnotationDetails,
+    PersonContact
+  }
+})
 export default class AnnotationList extends Vue {
 
+  data() {
+    return {
+      isModalVisible: false,
+      selectedAnnotation: null
+    };
+  }
+
+  selectedAnnotation: AnnotationGetDTO | null = null;
+  isModalVisible = false; // Contrôle la visibilité de la modale
   $opensilex: OpenSilexVuePlugin;
   $service: AnnotationsService
   $securityService: SecurityService;
@@ -248,9 +271,8 @@ export default class AnnotationList extends Vue {
       return undefined;
     }
     let accountDTO = this.accountsByUri.get(accounturi);
-
     if (accountDTO){
-     return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
+      return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
     }
     return undefined;
   }
@@ -269,8 +291,18 @@ export default class AnnotationList extends Vue {
     this.annotationModalForm.showEditForm(copy);
   }
 
-  showDetails(annotation) {
-      this.annotationModalForm.showDetails(annotation);
+  showDetails(annotation: any) {
+    this.selectedAnnotation = {
+      uri: annotation.uri || "Non spécifié",
+      motivation: annotation.motivation ? { name: annotation.motivation.name } : { name: "Non spécifié" }
+    };
+    this.isModalVisible = true;
+  }
+
+
+  hideDetails() {
+    this.selectedAnnotation = null;
+    this.isModalVisible = false;
   }
 
   get fields() {
@@ -278,7 +310,7 @@ export default class AnnotationList extends Vue {
     let tableFields = [];
 
     if (this.columnsToDisplay.has("published")) {
-      tableFields.push({key: "published", label: "Annotation.date", sortable: true});
+      tableFields.push({key: "published", label: "Annotation.published", sortable: true});
     }
     if (this.columnsToDisplay.has("publisher")) {
       tableFields.push({key: "publisher", label: "Annotation.publisher", sortable: false});
@@ -286,14 +318,6 @@ export default class AnnotationList extends Vue {
     if (this.columnsToDisplay.has("description")) {
       tableFields.push({key: "description", label: "Annotation.description", sortable: true});
     }
-
-      // Retirer "motivation" et "uri" des colonnes affichées
-      // if (this.columnsToDisplay.has("motivation")) {
-      //   tableFields.push({ key: "motivation", label: "Annotation.motivation", sortable: true });
-      // }
-      // if (this.columnsToDisplay.has("uri")) {
-      //   tableFields.push({ key: "uri", label: "component.common.uri", sortable: true });
-      // }
     if (this.columnsToDisplay.has("targets")) {
       tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
     }
@@ -342,7 +366,7 @@ en:
     motivation-help: Intent or motivation for the creation of the Annotation.
     description: Description
     publisher: Publisher
-    date: Date
+    published: Published
     target: Target
     list-title: Annotations
     already-exist: the annotation already exist
@@ -357,7 +381,7 @@ fr:
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"
     description: Description
-    date: Date
+    published: Publié le
     publisher: Publieur
     target: Cible
     list-title: Annotations

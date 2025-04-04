@@ -1,17 +1,17 @@
 <template>
   <b-modal
-    v-if="display"
-    ref="modalRef"
-    :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
-    @ok.prevent="validate"
-    @hide="$emit('hide')"
-    @shown="disableValidation=false"
-    @hidden="disableValidation=true"
-    :size="modalSize"
-    :static="static"
-    no-close-on-backdrop
-    no-close-on-esc
-    @keydown.native.enter="validate"
+      v-if="display"
+      ref="modalRef"
+      :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
+      @ok.prevent="validate"
+      @hide="$emit('hide')"
+      @shown="disableValidation=false"
+      @hidden="disableValidation=true"
+      :size="modalSize"
+      :static="static"
+      no-close-on-backdrop
+      no-close-on-esc
+      @keydown.native.enter="validate"
   >
     <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
     <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
@@ -20,29 +20,28 @@
       <b-row class="mt-1" style="width:100%">
         <b-col cols="10" >
           <i>
-            <h4> 
+            <h4>
               <slot name="icon">
                 <opensilex-Icon :icon="icon" class="icon-title" />
               </slot>
               <span v-if="editMode">{{ $t(editTitle) }}</span>
-              <span v-else-if="readOnlyMode">{{ $t('Annotation.details') }}</span>
               <span v-else>{{ $t(createTitle) }}</span>
             </h4>
           </i>
         </b-col>
 
-          <opensilex-HelpButton
-              v-if="tutorial && !editMode"
-              label="component.tutorial.name"  
-              @click="getFormRef().tutorial()"
-              class="helpButton"
-          ></opensilex-HelpButton> 
+        <opensilex-HelpButton
+            v-if="tutorial && !editMode"
+            label="component.tutorial.name"
+            @click="getFormRef().tutorial()"
+            class="helpButton"
+        ></opensilex-HelpButton>
 
         <!-- Emulate built in modal header close button action -->
         <button type="button" class="close col-1" @click="modalRef.hide()" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-      </b-row> 
+      </b-row>
     </template>
 
     <template v-slot:modal-footer="footer">
@@ -61,18 +60,18 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component
-            ref="componentRef"
-            v-bind:is="component"
-            :editMode="editMode"
-            :form.sync="form"
-            :data="data"
-            :disableValidation="disableValidation"
-            @shownSelector="disableValidation=true"
-            @hideSelector="disableValidation=false"
-        >
-            <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
-        </component>
+      <component
+          ref="componentRef"
+          v-bind:is="component"
+          :editMode="editMode"
+          :form.sync="form"
+          :data="data"
+          :disableValidation="disableValidation"
+          @shownSelector="disableValidation=true"
+          @hideSelector="disableValidation=false"
+      >
+        <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
+      </component>
     </ValidationObserver>
   </b-modal>
 </template>
@@ -109,7 +108,6 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   @Ref("componentRef") readonly componentRef!: any;
 
   editMode = false;
-  readOnlyMode = false;
 
   form: CreationDTOType | UpdateDTOType | {} = {};
 
@@ -143,15 +141,15 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
    */
   data: any;
 
-    /**
-     * Only renders the component when either {@link showEditForm} of {@link showCreateForm} is called.
-     */
+  /**
+   * Only renders the component when either {@link showEditForm} of {@link showCreateForm} is called.
+   */
   @Prop({default: false})
   lazy: boolean;
 
-    /**
-     * Has the modal been opened at least once ?
-     */
+  /**
+   * Has the modal been opened at least once ?
+   */
   opened = false;
 
   @Prop({
@@ -173,14 +171,14 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   successMessage: string | Function;
 
   @Prop({
-      default: false
+    default: false
   })
   overrideSuccessMessage: boolean;
 
   disableValidation: boolean = true;
 
   get display(): boolean {
-      return !this.lazy || this.opened;
+    return !this.lazy || this.opened;
   }
 
   validate() {
@@ -237,15 +235,15 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     }
 
     if (!this.overrideSuccessMessage){
-        if (this.editMode) {
-            successMessage =
-                successMessage +
-                this.$i18n.t("component.common.success.update-success-message");
-        } else {
-            successMessage =
-                successMessage +
-                this.$i18n.t("component.common.success.creation-success-message");
-        }
+      if (this.editMode) {
+        successMessage =
+            successMessage +
+            this.$i18n.t("component.common.success.update-success-message");
+      } else {
+        successMessage =
+            successMessage +
+            this.$i18n.t("component.common.success.creation-success-message");
+      }
     }
     this.$opensilex.showSuccessToast(successMessage);
   }
@@ -259,12 +257,10 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
    */
   showCreateForm(passedForm?: UpdateDTOType | CreationDTOType) {
     this.opened = true;
-    this.editMode = false;
-    this.readOnlyMode = false;
 
     if(!this.static) {
       this.modalRef.show();
-    } 
+    }
     this.editMode = false;
     this.$nextTick(() => {
       //Set passed form or create an empty one
@@ -286,57 +282,32 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     });
   }
 
-    /**
-     *
-     * @param initiallySelectedWithLabels any object type that contains the information required to set the inner-form's initially selected items (for update modals)
-     *
-     * @requires  setSelectorsToFirstTimeOpenAndSetLabels function to be defined in the form ref
-     */
+  /**
+   *
+   * @param initiallySelectedWithLabels any object type that contains the information required to set the inner-form's initially selected items (for update modals)
+   *
+   * @requires  setSelectorsToFirstTimeOpenAndSetLabels function to be defined in the form ref
+   */
   setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels){
     this.getFormRef().setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels);
   }
 
   showEditForm(form: UpdateDTOType) {
-      this.opened = true;
-      this.editMode = true;
-      this.readOnlyMode = false;
+    this.opened = true;
 
-      this.$nextTick(() => {
-          this.form = form;
+    this.editMode = true;
 
-          // Correction ici
-          if (this.getFormRef().readOnlyMode !== undefined) {
-              this.getFormRef().readOnlyMode = false; // On force le mode édition
-          }
-
-          this.modalRef.show();
-          this.validatorRef.reset();
-          if (this.getFormRef().reset) {
-              this.getFormRef().reset();
-          }
-          if(this.getFormRef().onShowEditForm){
-              this.getFormRef().onShowEditForm();
-          }
-      });
-  }
-
-
-  showDetailsForm(form: UpdateDTOType) {
-      this.opened = true;
-      this.editMode = false;
-      this.readOnlyMode = true;
-      this.$nextTick(() => {
-          this.form = form;
-          this.modalRef.show();
-          this.validatorRef.reset();
-          if (this.getFormRef().reset) {
-              this.getFormRef().reset();
-          }
-          // Passer le mode readOnlyMode à true
-          if (this.getFormRef().readOnlyMode !== undefined) {
-              this.getFormRef().readOnlyMode = true;
-          }
-      });
+    this.$nextTick(() => {
+      this.form = form;
+      this.modalRef.show();
+      this.validatorRef.reset();
+      if (this.getFormRef().reset) {
+        this.getFormRef().reset();
+      }
+      if(this.getFormRef().onShowEditForm){
+        this.getFormRef().onShowEditForm();
+      }
+    });
   }
 
   hide() {
@@ -366,7 +337,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   font-size: 1.2em;
   border: none
 }
-  
+
 .helpButton:hover {
   background-color: #00A28C;
   color: #f1f1f1
@@ -376,16 +347,16 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   .helpButton {
     margin-left: 0px;
     margin-right: 15px;
-    }
+  }
 }
 
 </style>;
 
 <i18n>
 en:
-    Move:
-        fieldRequired: Location or position field required
+  Move:
+    fieldRequired: Location or position field required
 fr:
-    Move:
-        fieldRequired: Veuillez saisir les informations de localisation ou de position
+  Move:
+    fieldRequired: Veuillez saisir les informations de localisation ou de position
 </i18n>

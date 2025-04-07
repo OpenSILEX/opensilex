@@ -123,7 +123,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed or optimized
 
-- (!1351) [Tomcat] Added documentation explaining option to add when running server in this version
 - (!1350) [Tomcat] Changed tomcat version from 9.0.91 to 9.0.99 
 
 ## [1.4.5]

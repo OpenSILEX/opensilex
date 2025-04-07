@@ -1,7 +1,7 @@
 <template>
   <b-modal
       v-model="isVisible"
-      title="Détails de l'Annotation"
+      :title="$t('Annotation.details')"
       hide-footer
       no-close-on-backdrop
       no-close-on-esc
@@ -66,4 +66,12 @@ export default class AnnotationDetails extends Vue {
 }
 
 </style>
+<i18n>
+en:
+  Annotation:
+    details: Details annotation
+fr:
+  Annotation:
+    details: Détails de l'annotation
+</i18n>
 

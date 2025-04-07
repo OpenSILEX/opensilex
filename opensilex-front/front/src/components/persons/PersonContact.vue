@@ -96,7 +96,7 @@ export default class PersonContact extends Vue {
   }
 
   get last_name(): string {
-    return this.personContact?.last_name || this.personContact?.person_last_name || "";
+    return this.personContact?.last_name || this.personContact?.person_last_name || "Contact";
   }
 
   get first_name(): string {
@@ -192,4 +192,11 @@ export default class PersonContact extends Vue {
 }
 </style>
 
-
+<i18n>
+en:
+  Annotation:
+    publisher: Publisher
+fr:
+  Annotation:
+    publisher: Publieur
+</i18n>

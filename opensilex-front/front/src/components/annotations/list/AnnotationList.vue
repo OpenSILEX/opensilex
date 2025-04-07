@@ -60,7 +60,8 @@
                   <opensilex-DetailButton
                       v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                       @click="showDetails(data.item)"
-                      label="Annotation details"
+                      label="Annotation.details"
+                      :title="$t('Annotation.details')"
                       :small="true"
                   />
                   <opensilex-EditButton
@@ -361,6 +362,7 @@ en:
     add: Add annotation
     edit: Edit annotation
     delete: Delete annotation
+    details: Details annotation
     motivation: Motivation
     motivation-placeholder: Select a motivation
     motivation-help: Intent or motivation for the creation of the Annotation.
@@ -377,6 +379,7 @@ fr:
     add: Ajouter une annotation
     edit: Éditer l'annotation
     delete: Supprimer l'annotation
+    details: Détailler l'annotation
     motivation: Motivation
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"

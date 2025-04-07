@@ -166,6 +166,7 @@ public class DataAPI {
             }
             dtoList.clear();
 
+
             List<URI> createdResources = dataBLL.createMany(dataList);
             dataList.clear();
 

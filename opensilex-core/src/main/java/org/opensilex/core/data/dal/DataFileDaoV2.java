@@ -99,8 +99,8 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
             filter.getMetadata().forEach((metadataKey, metadataValue) -> bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + metadataKey, metadataValue)));
         }
 
-        if (StringUtils.isNotBlank(filter.getBatchId())) {
-            bsonFilters.add(Filters.regex(DataModel.BATCH_ID_FIELD, filter.getBatchId(), "i"));
+        if (filter.getBatchUri() != null) {
+            bsonFilters.add(Filters.eq(DataModel.BATCH_URI_FIELD, filter.getBatchUri()));
         }
 
         addProvenanceAgentFilter(bsonFilters, filter);

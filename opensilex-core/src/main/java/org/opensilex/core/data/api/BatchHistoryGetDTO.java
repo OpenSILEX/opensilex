@@ -14,8 +14,6 @@ import java.time.ZoneOffset;
 public class BatchHistoryGetDTO {
     @JsonProperty("username")
     private String userName;
-    @JsonProperty("batch_id")
-    private String batchId;
     @JsonProperty("issued")
     private OffsetDateTime publicationDate;
     @JsonProperty("publisher")
@@ -29,14 +27,6 @@ public class BatchHistoryGetDTO {
 
     public void setUserName(String userName) {
         this.userName = userName;
-    }
-
-    public String getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
     }
 
     public OffsetDateTime getPublicationDate() {
@@ -65,7 +55,6 @@ public class BatchHistoryGetDTO {
 
     public static BatchHistoryGetDTO fromModel(BatchHistoryModel batchHistoryModel) {
         BatchHistoryGetDTO batchHistoryDTO = new BatchHistoryGetDTO();
-        batchHistoryDTO.setBatchId(batchHistoryModel.getBatchId());
         batchHistoryDTO.setUserName(batchHistoryModel.getUsername());
         batchHistoryDTO.setPublisher(batchHistoryModel.getPublisher());
         batchHistoryDTO.setUri(batchHistoryModel.getUri());

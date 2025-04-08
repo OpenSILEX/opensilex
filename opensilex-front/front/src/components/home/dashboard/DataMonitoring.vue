@@ -126,7 +126,7 @@ export default {
 const popoverContent = computed(() => {
     console.log("💬 Contenu du popover :", scientificObjectTypes.value);
   if (scientificObjectTypes.value.length === 0) {
-    return `<p>Aucun changement récent</p>`;
+    return `<p>${t("DataMonitoring.noScientificObjectAdded")}</p>`;
   }
 
   return `<p>Types</p>
@@ -406,6 +406,7 @@ en:
     settings: Settings
     lastUpdated: update
     scientificObjetcTypes: Types
+    noScientificObjectAdded: No recent changes
     day: Day
     week: Week
     month: Month
@@ -421,6 +422,7 @@ fr:
     settings: Paramètres
     lastUpdated: statut
     scientificObjetcTypes: Types
+    noScientificObjectAdded: Aucun changement récent
     day: Jour
     week: Semaine
     month: Mois

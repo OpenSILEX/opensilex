@@ -719,6 +719,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public showSuccessToast(message: string) {
+        console.log("showSuccessToast fct")
         this.showToast(message, {
             variant: "success",
             autoHideDelay: 2500,

@@ -89,6 +89,27 @@
             </Transition>
             <!-- Burger menu end -->
 
+                        <!--Uri global search-->
+            <!-- <opensilex-Button
+              class="searchicon"
+              :class="{ 'selected-searchicon': searchBoxIsActive }"
+              :label="component.header.uriSearchHoverMessage"
+              icon="bi-search"
+              @click="$emit('uriGlobalSearch')"
+            >
+              URI
+            </opensilex-Button> -->
+            
+            <opensilex-Button
+              label="URI"
+              icon="bi-search"
+              :title="t('component.header.uriSearchHoverMessage')"
+              @click="$emit('uriGlobalSearch')"
+              class="uri-button"
+            ></opensilex-Button>
+
+
+
             <!-- help button -->
             <opensilex-HelpButton
               class="topbarBtnHelp"
@@ -98,55 +119,57 @@
             ></opensilex-HelpButton>
 
             <span class="headerMenuIcons">
-              <!-- language button -->
-              <div class="dropdown btn-group">
+<!-- language button -->
+<div class="dropdown btn-group">
+  <opensilex-Button 
+    class="btn settingsButton dropdown-toggle"
+    id="languageDropdown2"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    :label="`language - ${language}`"
+    icon="bi-globe"
+    :small="true">
+  </opensilex-Button>
 
-                <opensilex-Button 
-                  class="btn settingsButton dropdown-toggle"
-                  id="languageDropdown2" 
-                  data-bs-toggle="dropdown" 
-                  aria-expanded="false" 
-                  :label="`language - ${language}`"
-                  icon="bi-globe" 
-                  @click="setLanguage(item)"
-                  :small="true" > 
-                </opensilex-Button>
+  <ul class="dropdown-menu" aria-labelledby="languageDropdown2">
+    <li v-for="item in languages" :key="`language-${item}`">
+      <a class="dropdown-item" href="#" @click.prevent="setLanguage(item)">
+        {{ t('component.header.language.' + item) }}
+      </a>
+    </li>
+  </ul>
+</div>
 
-                <ul class="dropdown-menu" aria-labelledby="languageDropdown2">
-                  <li v-for="item in languages" :key="`language-${item}`">
-                    <a class="dropdown-item" href="#" @click.prevent="setLanguage(item)">
-                      {{ t('component.header.language.' + item) }}
-                    </a>
-                  </li>
-                </ul>
-              </div>
 
-              <!-- dashboard homepage button -->
-              <div class="btn-group">
-                <router-link :to="{ path: '/' }" :title="t('component.menu.backToDashboard')">
-                  <i class="icon bi bi-house settingsButton"></i>
-                </router-link>
-              </div>
+<!-- dashboard homepage button -->
+<div class="btn-group dropdown">
+  <router-link :to="{ path: '/' }" :title="t('component.menu.backToDashboard')">
+    <i class="icon bi bi-house settingsButton"></i>
+  </router-link>
+</div>
 
               <!-- user button -->
-              <div v-if="user.isLoggedIn()" class="dropdown btn-group">
-                <opensilex-Button 
-                  class="btn settingsButton dropdown-toggle" 
-                  id="userDropdown2" 
-                  data-bs-toggle="dropdown" 
-                  aria-expanded="false"  
-                  :label="user.getEmail()" 
-                  icon="bi-person" 
-                  :small="true" >
-                </opensilex-Button>
-                <ul class="dropdown-menu" aria-labelledby="userDropdown2">
-                  <li>
-                    <a class="dropdown-item" href="#" @click.prevent="logout">
-                      <i class="bi bi-box-arrow-right dropdown-icon"></i> {{ t('component.header.account.logout') }}
-                    </a>
-                  </li>
-                </ul>
-              </div>
+<!-- user button -->
+<div v-if="user.isLoggedIn()" class="dropdown btn-group">
+  <opensilex-Button 
+    class="btn settingsButton dropdown-toggle" 
+    id="userDropdown2" 
+    data-bs-toggle="dropdown" 
+    aria-expanded="false"  
+    :label="user.getEmail()" 
+    icon="bi-person" 
+    :small="true">
+  </opensilex-Button>
+
+  <ul class="dropdown-menu" aria-labelledby="userDropdown2">
+    <li>
+      <a class="dropdown-item" href="#" @click.prevent="logout">
+        <i class="bi bi-box-arrow-right dropdown-icon"></i> {{ t('component.header.account.logout') }}
+      </a>
+    </li>
+  </ul>
+</div>
+
             </span>
           </div>
         </div>
@@ -404,7 +427,9 @@ margin-top: 5px
 .settingsButton {
   font-size: 1.2em;
   font-weight: bold;
-  border: none
+  border: none;
+  vertical-align: middle;
+  margin: -2px 0 0 12px;
 }
 
 .settingsButton:hover {
@@ -502,10 +527,37 @@ color: #00A28C;
     color: #00A38D;
 }
 
-.ik-home{
+// .bi-house, .settingsButton {
+//   font-size: 1.3em;
+//   vertical-align: middle;
+//   margin: -2px 0 0 12px;
+// }
+
+// bi-house bi-person
+
+.searchicon {
   font-size: 1.3em;
+  color: #212121;
   vertical-align: middle;
-  margin: -2px 0 0 12px
+  padding: 5px;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+}
+
+.burgerMenu-searchIcon{
+  color: #212121;
+  background-color: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+}
+
+.searchicon:hover, burgerMenu-searchIcon:hover {
+  color: #007bff;
+  background-color: #F0F1F5;
+  border-color: #F0F1F5;
+}
+
+.selected-searchicon {
+  color: #007bff;
 }
 
 @media only screen and (min-width: 1380px) {

@@ -245,6 +245,14 @@ export default defineComponent({
       console.log("connectAsGuest dispo ? : ", connectAsGuest.value)
       console.log("locales : ", availableLocales)
 
+      const bootstrapScript = document.createElement("script");
+      bootstrapScript.src =
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js";
+      bootstrapScript.onload = () => {
+        console.log("Bootstrap JS chargé avec succès !");
+      };
+      document.head.appendChild(bootstrapScript);
+
       versionInfo.value = $opensilex.versionInfo;
 
       nextTick(() => {

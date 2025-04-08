@@ -93,6 +93,7 @@ export class User {
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         console.debug("User credentials:", this.credentials);
         this.loggedIn = true;
+        console.log("USER.ts  isLoggedIn ??? ", this.loggedIn)
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
     }
 

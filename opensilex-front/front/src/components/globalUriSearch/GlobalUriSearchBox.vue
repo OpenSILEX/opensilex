@@ -1,106 +1,100 @@
 <template>
-<div>
-  <!-- UriSearch bar and close buttonn-->
-  <div class="header-container">
-    <div>
-      <b-input-group>
-        <opensilex-StringFilter
-          :filter.sync="uriSearchValue"
-          placeholder="component.header.uri-search-placeholder"
-          class="searchFilter"
-          @handlingEnterKey="launchUriGlobalSearch"
-        ></opensilex-StringFilter>
-        <b-input-group-append>
-          <b-button class="greenThemeColor" @click="launchUriGlobalSearch">
-            <i class="icon ik ik-search"></i>
-          </b-button>
-        </b-input-group-append>
-      </b-input-group>
+  <div>
+    <div class="header-container">
+      <div>
+        <div class="input-group">
+          <opensilex-StringFilter
+            v-model:filter="uriSearchValue"
+            placeholder="component.header.uri-search-placeholder"
+            class="searchFilter"
+            @handlingEnterKey="launchUriGlobalSearch"
+          />
+          <button class="btn greenThemeColor" @click="launchUriGlobalSearch">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
+      <opensilex-Button
+        :label="t('component.common.close')"
+        icon="bi-x"
+        class="closeResultBox"
+        :small="true"
+        @click="$emit('hideUriSearch')"
+      />
     </div>
-    <opensilex-Button
-      label="component.common.close"
-      icon="ik#ik-x"
-      class="closeResultBox"
-      @click="$emit('hideUriSearch')"
-    ></opensilex-Button>
-  </div>
 
-  <br>
+    <br />
 
-  <!-- Result-->
-  <div
-    v-if="uriSearchResultVisible"
-  >
-    <opensilex-GlobalUriSearchResult
-      v-if="resultsFound"
-      :searchResult="uriSearchResult"
-      @hideUriSearch="$emit('hideUriSearch')"
-    ></opensilex-GlobalUriSearchResult>
-    <div v-else class="no-results">
-      {{this.$t('GlobalUriSearchBox.noResultsMessage')}}
+    <!-- Résultats -->
+    <div v-if="uriSearchResultVisible">
+      <opensilex-GlobalUriSearchResult
+        v-if="resultsFound"
+        :searchResult="uriSearchResult"
+        @hideUriSearch="$emit('hideUriSearch')"
+      />
+      <div v-else class="no-results">
+        {{ t('GlobalUriSearchBox.noResultsMessage') }}
+      </div>
     </div>
   </div>
-
-</div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
-import {URIGlobalSearchDTO} from "opensilex-core/index";
-import {UriSearchService} from "opensilex-core/api/uriSearch.service";
+<script lang="ts" setup>
+import { ref, computed, onMounted, inject } from "vue";
+import { useI18n } from "vue-i18n";
+import { URIGlobalSearchDTO } from "opensilex-core/index";
+import { UriSearchService } from "opensilex-core/api/uriSearch.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
-@Component({})
-export default class GlobalUriSearchBox extends Vue {
-  //#region: data
-  $opensilex: OpenSilexVuePlugin;
-  private uriSearchResult: URIGlobalSearchDTO = {};
-  private uriSearchValue: string = "";
-  private uriSearchService: UriSearchService;
-  //To keep track of if the actual result, or message to say nothing found is visible
-  private uriSearchResultVisible: boolean = false;
-  //#endregion
+const { t } = useI18n();
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
-  //#region: hooks
-  created() {
-    this.uriSearchService = this.$opensilex.getService("opensilex.UriSearchService");
-  }
-  //#endregion
+const uriSearchResult = ref<URIGlobalSearchDTO | null>(null);
+const uriSearchValue = ref<string>("");
+const uriSearchService = ref<UriSearchService>();
+const uriSearchResultVisible = ref<boolean>(false);
 
-  //#region: EventHandlers
-  launchUriGlobalSearch(){
-    this.uriSearchService.searchByUri(this.uriSearchValue).then( res => {
-        this.uriSearchResult = res.response.result;
-        this.uriSearchResultVisible = true;
-      }
-    ).catch(error =>{
-      this.uriSearchResult = null;
-      this.uriSearchResultVisible = true;
+onMounted(() => {
+  uriSearchService.value = $opensilex.getService("opensilex.UriSearchService");
+});
+
+const resultsFound = computed(() => !!uriSearchResult.value);
+
+function launchUriGlobalSearch() {
+    console.log("sservice : ", uriSearchService.value)
+    console.log("uriSearchVALUE ", uriSearchValue.value)
+  uriSearchService.value.searchByUri(uriSearchValue.value)
+    .then((res) => {
+        console.log("response launchUriGlobalSearch ")
+      uriSearchResult.value = res.response.result;
+      uriSearchResultVisible.value = true;
+    })
+    .catch((err) => {
+        console.log("error launchUriGlobalSearch ", err)
+      uriSearchResult.value = null;
+      uriSearchResultVisible.value = true;
     });
-  }
-  //#endregion
-
-  //#region: computed
-  get resultsFound(): boolean{
-    return !!this.uriSearchResult;
-  }
-  //#endregion
 }
 </script>
 
 <style scoped lang="scss">
-.header-container{
+.header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.closeResultBox{
+.input-group .btn {
+  height: 100%;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+.closeResultBox {
   border: none;
   margin-top: -10px;
   font-size: 1.5em !important;
-  color:rgba(101, 101, 101, 0.5);
+  color: rgba(101, 101, 101, 0.5);
   font-weight: bolder;
   cursor: pointer;
   background: none;
@@ -116,7 +110,6 @@ export default class GlobalUriSearchBox extends Vue {
   align-items: center;
   color: #666666;
 }
-
 </style>
 
 <i18n>
@@ -127,5 +120,4 @@ en:
 fr:
   GlobalUriSearchBox:
     noResultsMessage: Pas trouvé
-
 </i18n>

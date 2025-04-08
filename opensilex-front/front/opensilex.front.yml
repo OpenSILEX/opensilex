@@ -494,7 +494,8 @@ routes:
     component: opensilex-HomeView
     name: HomeView
     icon: fa#hourglass-half
-    credentials: []
+    credentials: 
+    - private
 
     
   ## Public routes

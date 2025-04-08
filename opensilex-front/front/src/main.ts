@@ -6,7 +6,10 @@
 const DEV_BASE_API_PATH = "http://localhost:8666/rest";
 
 
-// import App from './App.vue'
+// Import global de Bootstrap (CSS + JS)
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap';
+
 import { createApp,  ref, reactive, computed  } from "vue";
 import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';

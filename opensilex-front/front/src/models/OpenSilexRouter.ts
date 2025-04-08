@@ -153,21 +153,25 @@ export class OpenSilexRouter {
             console.log("frontConfigDefined")
             routes.push({
                 path: "/",
-                component: this.getAsyncComponentLoader($opensilex, frontConfig.loginComponent)
+                component: this.getAsyncComponentLoader($opensilex, frontConfig.loginComponent),
+                meta: { public: true}
             });
 
             for (let routeConfig in frontConfig.routes) {
                 let route = frontConfig.routes[routeConfig];
+                console.log("route😁", route)
                 // Crée la route en incluant la propriété name si elle est définie dans la config
                 routes.push({
                   path: route.path,
                   name: route.name || undefined, // Si routeConfig.name est défini, l'utiliser, sinon undefined
                   component: this.getAsyncComponentLoader($opensilex, route.component),
-                  meta: { public: true }
+                //   meta: { public: true }
                 });
               }
 
               console.log("🙃 routesz ", routes)
+
+              // GESTION DES DROITS POSSIBLES SUR LES ROUTES PUBLIQUES / PRIVEES
             // for (let i in frontConfig.routes) {
             //     let route = frontConfig.routes[i];
 

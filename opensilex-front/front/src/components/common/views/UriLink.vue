@@ -19,7 +19,7 @@
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="ik#ik-copy" />
+        <opensilex-Icon icon="bi#bi-clipboard" />
       </button>
     </router-link>
 
@@ -39,7 +39,7 @@
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUrl')"
       >
-        <opensilex-Icon icon="ik#ik-copy" />
+        <opensilex-Icon icon="bi#bi-clipboard" />
       </button>
     </a>
 
@@ -52,13 +52,14 @@
     >
       <span>{{ value || uri }}</span>
       &nbsp;
+
       <button
         v-if="allowCopy"
         @click.prevent.stop="copyURI(uri)"
         class="uri-copy-visible"
         :title="$t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="ik#ik-copy" />
+        <opensilex-Icon icon="bi#bi-clipboard" />
       </button>
     </span>
 
@@ -78,15 +79,17 @@
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="ik#ik-copy" />
+        <opensilex-Icon icon="bi#bi-clipboard" />
       </button>
     </a>
   </span>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-// import copy from "copy-to-clipboard";
+import { computed, inject } from "vue";
+import { useI18n } from 'vue-i18n';
+import copy from "copy-to-clipboard";
+import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
 
 const props = defineProps<{
   uri: string;
@@ -98,6 +101,9 @@ const props = defineProps<{
   target?: string;
   isClickable?: boolean;
 }>();
+
+const { t } = useI18n();
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
 const emit = defineEmits<{
   (event: "click", uri: string): void;
@@ -116,10 +122,16 @@ const computeURL = computed(() => {
   return null;
 });
 
-// const copyURI = (address: string) => {
-//   copy(address);
-//   alert(`Copié : ${address}`); // Remplace `$opensilex.showSuccessToast()`
-// };
+const copyURI = (address: string) => {
+  copy(address);
+  alert(`Copié : ${address}`); // Remplace `$opensilex.showSuccessToast()`
+   $opensilex.showSuccessToast(
+      address.startsWith("http://") || address.startsWith("https://")
+        ? t("component.common.url-copy") + ": " + address
+        : t("component.common.uri-copy") + ": " + address
+    );
+
+};
 
 const storePrevious = () => {
   console.log("Stocker la page précédente");
@@ -175,10 +187,10 @@ const handleUriLinkClicked = () => {
   border: 1px solid #d8dde5;
   border-radius: 5px;
   color: #212121;
-  padding: 3px 5px 0;
+  padding: 5px 6px 3px;
   position: absolute;
   right: 0;
-  top: -3px;
+  // top: -3px;
 }
 
 .uri:hover .uri-copy,

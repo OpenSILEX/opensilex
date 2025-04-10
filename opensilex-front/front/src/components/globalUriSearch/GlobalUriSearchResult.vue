@@ -8,7 +8,7 @@
         class="uriLinkGlobalUriSearchRes"
         :uri="uri"
         :value="shortUri"
-        :to="{ path: detailsPath }"
+        :to="detailsPath"
         @linkClicked="$emit('hideUriSearch')"
       />
 
@@ -52,12 +52,12 @@
     </div>
 
     <!-- Metadata -->
-    <!-- <opensilex-MetadataView
+    <opensilex-MetadataView
       v-if="publisher"
       :publisher="publisher"
       :publicationDate="publicationDate"
       :lastUpdatedDate="updatedDate"
-    /> -->
+    />
 
     <!-- Data details -->
     <!-- <opensilex-DataProvenanceModalView
@@ -118,6 +118,51 @@ const uriSearchService: UriSearchService = $opensilex.getService("opensilex.UriS
 const dataProvenanceModalView = ref(null);
 const eventModalView = ref(null);
 
+
+const detailsPath = computed(() => {
+  if (!props.searchResult) return "";
+  console.log("props.searchResult ", props.searchResult)
+
+  // Si le type est un groupe de germoplasm
+  if ($opensilex.checkURIs(type.value, $opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)) {
+    return "/germplasm/group?selected=" + encodeURIComponent(uri.value);
+  }
+
+  let formattedPath = "";
+
+  // Si super_types est défini
+  if (props.searchResult.super_types !== null) {
+    const rdfTypes = props.searchResult.super_types.rdf_types;
+    const basePath = $opensilex.getPathFromUriTypes(rdfTypes);
+
+    const isFactorOrLevel = $opensilex.checkURIs(type.value, $opensilex.Oeso.FACTOR_LEVEL_URI)
+      || $opensilex.checkURIs(type.value, $opensilex.Oeso.FACTOR_URI);
+
+    const context = isFactorOrLevel ? props.searchResult.context : undefined;
+    const targetUri = $opensilex.checkURIs(type.value, $opensilex.Oeso.FACTOR_LEVEL_URI)
+      ? props.searchResult.factor_uri
+      : uri.value;
+
+    formattedPath = $opensilex.getTargetPath(targetUri, context, basePath);
+    return formattedPath;
+  }
+
+  // Sinon, fallback sur la logique vocabulaire
+  if (props.searchResult.root_class !== null) {
+    return $opensilex.getVocabularyPath(
+      uri.value,
+      props.searchResult.root_class,
+      props.searchResult.is_property
+    );
+  }
+
+  return "";
+});
+
+
+
+
+
 const handleSeeDetails = async () => {
   if (props.searchResult.super_types) {
     const isEvent = props.searchResult.super_types.rdf_types.some((type) =>
@@ -136,6 +181,7 @@ const handleSeeDetails = async () => {
     dataProvenanceModalView.value.show();
   }
 };
+
 </script>
 
 <style scoped>

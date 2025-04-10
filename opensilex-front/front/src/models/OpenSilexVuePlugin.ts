@@ -66,7 +66,8 @@ export default class OpenSilexVuePlugin {
     private baseApi: string;
     private config: FrontConfigDTO;
     private themeConfig: ThemeConfigDTO;
-    private app : App
+    private app : App;
+    private toastManager: any = null;
 
     public $store: Store<any>;
     public $i18n;
@@ -132,8 +133,12 @@ export default class OpenSilexVuePlugin {
      * @return if no type matches: return an empty string. Otherwise, return the path for the matching type.
      */
     getPathFromUriTypes(types) {
+        console.log("getPathFromUriTypes")
+        console.log("types : ", types)
+        console.log("routes : ", this.config)
         let path = "";
         types.forEach(type => {
+            // let route = this.config.routes.find(route => route.rdfType == type)
             let route = this.config.routes.find(route => this.checkURIs(route.rdfType, type))
             if (route) {
                 path = route.path;
@@ -158,14 +163,60 @@ export default class OpenSilexVuePlugin {
 
         // pass encoded experiment inside OS path URL,
         if(context && context.length > 0){
-            //Replace :xpUri as well as :experiment, for some reason :xpUri is the used keyword for Factor and FactorLev,
-            // I tried changing this in opensilex.front.yml but the Factor details page became blank
+            console.log("😄 ", osPath)
             osPath = osPath.replace(':xpUri', encodeURIComponent(context));
             return osPath.replace(':experiment', encodeURIComponent(context));
         }else{ // no experiment passed
+            console.log("😁", osPath)
             return osPath.replace(':experiment', "");
         }
     }
+
+     /**
+     *
+     * @param type
+     * @param uri
+     * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
+     *
+     */
+     getVariableComponentPath(type: string, uri:string): string{
+
+        const paths = {
+            [Oeso.ENTITY_TYPE_URI]: "Entity",
+            [Oeso.ENTITY_OF_INTEREST_TYPE_URI]: "InterestEntity",
+            [Oeso.CHARACTERISTIC_TYPE_URI]: "Characteristic",
+            [Oeso.METHOD_TYPE_URI]: "Method",
+            [Oeso.UNIT_TYPE_URI]: "Unit",
+            [Oeso.VARIABLESGROUP_TYPE_URI]: "VariableGroup"
+        };
+
+        const elementType = Object.entries(paths).find(([key]) => this.checkURIs(type, key))?.[1];
+        return elementType ? `/variables?elementType=${elementType}&selected=${encodeURIComponent(uri)}` : null;
+    }
+
+    /**
+     * This is a function to get path for vocabulary pages from a type or domain and if the uri is a property or class
+     *
+     * @param uri the vocabulary we want to try and navigate to
+     * @param rootClassUri to know which page to go to
+     * @param isProperty the uri does not correspond to a class model but a property
+     *
+     */
+    getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string{
+
+        const paths = {
+            [Oeso.SCIENTIFIC_OBJECT_TYPE_URI]: "scientific-object-types",
+            [Oeev.EVENT_TYPE_URI]: "event-types",
+            [Oeso.DEVICE_TYPE_URI]: "device-types",
+            [Oeso.FACILITY_TYPE_URI]: "facilities-types",
+            [Oeso.FACTOR_CATEGORY_URI]: "factor-category-types"
+        };
+
+        const elementType: string = Object.entries(paths).find(([key]) => this.checkURIs(rootClassUri, key))?.[1];
+        const propertyPath: string = isProperty ? '/properties' : '';
+        return elementType ? `/${elementType}${propertyPath}?selected=${encodeURIComponent(uri)}` : null;
+    }
+
 
     /**
      *
@@ -710,75 +761,36 @@ export default class OpenSilexVuePlugin {
         this.showErrorToast(message);
     }
 
-    public showErrorToast(message: string) {
-        this.showToast(message, {
-            variant: "danger",
-            // title: this.$i18n.t("component.common.errors.error-title").toString()
-            title: "error showErrorToast"
-        });
-    }
-
-    public showSuccessToast(message: string) {
-        console.log("showSuccessToast fct")
-        this.showToast(message, {
-            variant: "success",
-            autoHideDelay: 2500,
-        });
-    }
-
-    public showSuccessToastWithDelay(message: string, delay: number) {
-        if (delay == null) {
-            delay = 2500
+    public setToastManager(manager: any) {
+        this.toastManager = manager;
+      }
+    
+      public showToast(message: string, options?: { variant?: string; autoHideDelay?: number }) {
+        if (!this.toastManager || typeof this.toastManager.addToast !== 'function') {
+          console.error("ToastManager not initialized");
+          return;
         }
-        this.showToast(message, {
-            variant: "success",
-            autoHideDelay: delay,
-        });
-    }
-
-    public showInfoToast(message: string) {
-        this.showToast(message, {
-            variant: "info",
-            autoHideDelay: 8000,
-        });
-    }
-
-    public showInfoToastWithoutDelay(message: string) {
-        this.showToast(message, {
-            variant: "info",
-            appendToast: false,
-            solid: false,
-            autoHideDelay: 2000,
-        });
-    }
-
-    public showWarningToast(message: string) {
-        this.showToast(message, {
-            variant: "warning",
-            autoHideDelay: 2000,
-        });
-    }
-
-    public showToast(message: string, options?: BvToastOptions) {
-        const defaultOptions = {
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
-            noCloseButton: true
-        };
-        options = {
-            ...defaultOptions,
-            ...options
-        };
-
-        let toastID = this.computeToastID(message, options);
-        options.id = toastID;
-        let toastElement = document.getElementById(toastID);
-
-        if (!toastElement) {
-            ("error showToast OpensilexVuePlugi");
-        }
-    }
+    
+        const { variant = 'info', autoHideDelay = 3000 } = options || {};
+        this.toastManager.addToast(message, variant, autoHideDelay);
+      }
+    
+      public showSuccessToast(message: string) {
+        this.showToast(message, { variant: "success", autoHideDelay: 2500 });
+      }
+    
+      public showErrorToast(message: string) {
+        this.showToast(message, { variant: "danger", autoHideDelay: 4000 });
+      }
+    
+      public showInfoToast(message: string) {
+        this.showToast(message, { variant: "info", autoHideDelay: 8000 });
+      }
+    
+      public showWarningToast(message: string) {
+        this.showToast(message, { variant: "warning", autoHideDelay: 3000 });
+      }
+    
 
     private computeToastID(message: string, options: any): string {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);

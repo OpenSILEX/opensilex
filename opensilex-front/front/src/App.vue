@@ -43,6 +43,7 @@
           <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
             <component class="header-login" v-bind:is="loginComponent"></component>
           </header>
+           <ToastContainer ref="toastContainer" />
 
           <!-- notification message  -->
           <div
@@ -142,6 +143,9 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { Carousel, Dropdown} from "bootstrap";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
+import ToastContainer from './components/common/ToastContainer.vue';
+
+const toastContainer = ref();
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -235,6 +239,10 @@ console.log("notifMess ", notificationMessage.value)
 notificationEndDate.value = config.notificationEndDate;
 notificationColorTheme.value = config.notificationColorTheme;
 
+ if (toastContainer.value && opensilex) {
+    opensilex.setToastManager(toastContainer.value);
+  }
+
 try {
   if (notificationEndDate.value) {
     new Date(notificationEndDate.value);
@@ -260,6 +268,9 @@ watch(() => locale.value, (newLocale) => {
   }
 });
 
+defineExpose({
+  toastContainer
+})
 
 </script>
 

@@ -61,15 +61,11 @@ const favorites = ref<FavoriteGetDTO[]>([]);
 const favoritesHelpModal = ref<InstanceType<typeof FavoritesHelp> | null>(null);
 
 const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
+const service = $opensilex.getService<SecurityService>("opensilex-security.SecurityService");
 
 const { t } = useI18n();
 
 const getFavorites = async () => {
-
-
-        const service = $opensilex.getService<SecurityService>(
-        "opensilex-security.SecurityService");
-
   const response = await service.getFavorites(FAVORITE_TYPES);
   favorites.value = response.response.result;
 };
@@ -77,13 +73,13 @@ const getFavorites = async () => {
 const getIcon = (type: string) => {
   switch (type) {
     case Oeso.DEVICE_TYPE_URI:
-      return "bi-thermometer-half"; // Équivalent de ik#ik-thermometer
+      return "bi-thermometer-half";
     case Oeso.SCIENTIFIC_OBJECT_TYPE_URI:
-      return "bi-bullseye"; // Équivalent de ik#ik-target
+      return "bi-bullseye";
     case Oeso.EXPERIMENT_TYPE_URI:
-      return "bi-layers"; // Équivalent de ik#ik-layers
+      return "bi-layers";
     default:
-      return "fa#question-circle"; // Garde FontAwesome pour le cas par défaut
+      return "fa#question-circle"; 
   }
 };
 
@@ -105,7 +101,6 @@ const getLink = (type: string, uri: string) => {
 };
 
 const removeFavorite = async (item: string) => {
-  const service: SecurityService = $opensilex.value.getService("opensilex.SecurityService");
   await service.deleteFavorite(item);
   getFavorites();
 };

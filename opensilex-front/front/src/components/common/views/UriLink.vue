@@ -124,7 +124,6 @@ const computeURL = computed(() => {
 
 const copyURI = (address: string) => {
   copy(address);
-  alert(`Copié : ${address}`); // Remplace `$opensilex.showSuccessToast()`
    $opensilex.showSuccessToast(
       address.startsWith("http://") || address.startsWith("https://")
         ? t("component.common.url-copy") + ": " + address

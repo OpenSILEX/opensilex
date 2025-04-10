@@ -9,9 +9,9 @@
       </template>
       
       <template v-slot:rightHeader>
-        <div class="test">
+        <div class="graphicOptions">
         <!-- Period badge -->
-        <span v-if="period" class="badge rounded-pill text-bg-success">
+        <span v-if="period" class="badge rounded-pill greenThemeColor">
         <opensilex-Icon icon="fa#hourglass-half" /> {{ t("Histogram.period." + period) }}
         </span>
 
@@ -324,7 +324,7 @@ export default {
   }
 }
 
-.test {
+.graphicOptions {
     display: flex
 }
 </style>

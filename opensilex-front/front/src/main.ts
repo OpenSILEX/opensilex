@@ -18,6 +18,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
+import ToastContainer from './components/common/toastContainer.vue';
 
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
@@ -132,7 +133,6 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 
 
 (store as any).$opensilex = $opensilex;
-
 
 
 for (let componentName in components) {

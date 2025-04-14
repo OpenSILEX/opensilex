@@ -54,7 +54,7 @@ variables:
   OPENSILEX_RESET_ONTOLOGIES_OPTS: "sparql reset-ontologies --DEBUG"
   OPENSILEX_CONFIG_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
 
-  OPENSILEX_JAVA_EXEC_OPTS: java -jar
+  OPENSILEX_JAVA_EXEC_OPTS: java --add-opens java.base/java.io=ALL-UNNAMED -jar
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   #CACHE

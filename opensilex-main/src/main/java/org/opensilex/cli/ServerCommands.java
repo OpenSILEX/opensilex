@@ -118,6 +118,9 @@ public class ServerCommands extends AbstractOpenSilexCommand implements OpenSile
                 List<String> processArgs = new ArrayList<String>() {
                     {
                         add(System.getProperty("java.home") + "/bin/java");
+                        //These next two lines are related to the java17-tomcat9.0.99 bug TODO delete if we ever fix this properly
+                        add("--add-opens");
+                        add("java.base/java.io=ALL-UNNAMED");
                         add("-jar");
                         add(jarFile.getAbsolutePath());
                         add("server");

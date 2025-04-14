@@ -154,8 +154,10 @@ public class DataImportLogic {
      * @throws Exception if an error occurs during the import
      */
     public DataCSVValidationDTO importCSVData(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
-        //TODO MAX add transaction
-        /*return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+        return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+            //Create a DataLogic with a session so that it knows to not execute more transactions
+            DataLogic dataLogicWithSession = new DataLogic(sparql, nosql, fs, user, session);
+
             DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
 
             // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
@@ -163,29 +165,14 @@ public class DataImportLogic {
             try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
                 validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
                 if (validation.isValidCSV()) {
-                    importCsvInsertionStep(validationKey, validation);
+                    importCsvInsertionStep(validationKey, validation, dataLogicWithSession);
                     processAndSaveDocument(tempFile, validation);
                 }
             } finally {
                 deleteTempFile(tempFile);
             }
             return buildDataCSVValidationDTO(validation);
-        });*/
-        DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
-
-        // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
-        File tempFile = createTempFile(file);
-        try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
-            validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
-            if (validation.isValidCSV()) {
-                importCsvInsertionStep(validationKey, validation);
-                processAndSaveDocument(tempFile, validation);
-            }
-        } finally {
-            deleteTempFile(tempFile);
-        }
-        return buildDataCSVValidationDTO(validation);
-
+        });
     }
 
     /**
@@ -280,7 +267,7 @@ public class DataImportLogic {
         documentModel.setTargets(Collections.singletonList(validationModel.getBatchHistoryUri()));
         documentModel.setDate(new Date().toString());
 
-        DocumentModel savedDocument = documentDAO.createWithFile(documentModel, tempZipFile);
+        DocumentModel savedDocument = documentDAO.createWithFile(documentModel, tempZipFile, false);
         LOGGER.info("Document {} successfully saved.", savedDocument.getTitle());
         return savedDocument;
     }
@@ -333,8 +320,12 @@ public class DataImportLogic {
      * @param validation    the DataCSVValidationModel to insert
      * @throws Exception if an error occurs during the insertion
      */
-    private void importCsvInsertionStep(String validationKey, DataCSVValidationModel validation) throws Exception {
-        handleDataInsertion(validation);
+    private void importCsvInsertionStep(
+            String validationKey,
+            DataCSVValidationModel validation,
+            DataLogic dataLogicWithSession
+    ) throws Exception {
+        handleDataInsertion(validation, dataLogicWithSession);
         removeValidationDataInCacheBy(validationKey);
     }
 
@@ -1204,7 +1195,7 @@ public class DataImportLogic {
         }
     }
 
-    private void handleDataInsertion(DataCSVValidationModel validation) throws Exception {
+    private void handleDataInsertion(DataCSVValidationModel validation, DataLogic dataLogicWithSession) throws Exception {
         LOGGER.debug("[importCsvInsertionStep] Start insertion step of {} row(s) ", validation.getNbLinesToImport());
         Instant startTime = Instant.now();
         // Create batch history model to track data insertion
@@ -1216,7 +1207,7 @@ public class DataImportLogic {
             batchHistoryDao.create(batchHistoryModel);
             // Set batchUri and publicationDate for the data
             setBatchUriAndPublicationDateToData(batchHistoryModel.getUri(), startTime, data);
-            dataLogic.createManyFromImport(data, validation);
+            dataLogicWithSession.createManyFromImport(data, validation);
             validation.setBatchHistoryUri(batchHistoryModel.getUri());
             validation.setInsertionStep(true);
             validation.setValidCSV(!validation.hasErrors());

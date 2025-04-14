@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.bll;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
 import org.apache.commons.lang3.StringUtils;
@@ -20,11 +21,13 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.utils.ApiUtils;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -38,6 +41,7 @@ import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -61,6 +65,8 @@ public class DataLogic {
     private final SPARQLService sparql;
     private final MongoDBService nosql;
     private final FileStorageService fs;
+    //If client session is null then we know we need to handle transactions
+    private final ClientSession clientSession;
 
     //TODO these daos are the ones that will need to be deleted in the class when logic classes are done.
     //VariableDAO
@@ -70,6 +76,7 @@ public class DataLogic {
     //ProvenanceDaoV2
     //OntologyDAO
 
+    //#region constructors
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         this.dao = new DataDaoV2(sparql, nosql, fs);
@@ -77,8 +84,19 @@ public class DataLogic {
         this.nosql = nosql;
         this.user = user;
         this.fs = fs;
+        this.clientSession = null;
     }
 
+    public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user, ClientSession clientSession) {
+        this.dao = new DataDaoV2(sparql, nosql, fs);
+        this.sparql = sparql;
+        this.nosql = nosql;
+        this.user = user;
+        this.fs = fs;
+        this.clientSession = clientSession;
+    }
+
+    //#endregion
     //#region PUBLIC METHODS
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
@@ -518,27 +536,47 @@ public class DataLogic {
             models.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
         }
 
-        //Transaction to add data and to add link to devices/annotations
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-            //Create data and device links
-            dao.create(session, models);
-            new DeviceDAO(sparql, nosql, fs).linkDevicesToVariables(postInsert.devicesToVariables);
+        //Transaction to add data and to add link to devices/annotations, if we were not already in a transaction
+        ApiUtils.wrapWithTransaction(
+                (session) -> createManyNoTransaction(
+                        session,
+                        models,
+                        postInsert,
+                        csvImport,
+                        csvValidation
+                ),
+                this.clientSession,
+                sparql,
+                nosql
+        );
 
-            //In the case of import set number of imported lines and create any annotations that were imported on the targets
-            if (csvImport) {
-                csvValidation.setNbLinesImported(models.size());
-                //If the data import was successful, post the annotations on objects
-                AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
-                annotationDAO.create(csvValidation.getAnnotationsOnObjects());
-            }
-            return 0;
-        });
         if (csvImport) {
             return Collections.emptyList();
         }
         return models.stream()
                 .map(MongoModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    private int createManyNoTransaction(
+            ClientSession session,
+            List<DataModel> models,
+            DataPostInsert postInsert,
+            boolean csvImport,
+            DataCSVValidationModel csvValidation
+    ) throws Exception {
+        //Create data and device links
+        dao.create(session, models);
+        new DeviceDAO(sparql, nosql, fs).linkDevicesToVariables(postInsert.devicesToVariables);
+
+        //In the case of import set number of imported lines and create any annotations that were imported on the targets
+        if (csvImport) {
+            csvValidation.setNbLinesImported(models.size());
+            //If the data import was successful, post the annotations on objects
+            AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+            annotationDAO.create(csvValidation.getAnnotationsOnObjects());
+        }
+        return 0;
     }
 
     /**

@@ -78,7 +78,7 @@ public class DocumentDAO {
         if (file == null) {
             return createWithSource(instance);
         }
-        return createWithFile(instance, file);
+        return createWithFile(instance, file, true);
     }
 
     /**
@@ -86,21 +86,29 @@ public class DocumentDAO {
      *
      * @param instance
      * @param file
+     * @param withTransaction in case a transaction was already started by the caller. Set to true if we need to launch a transaction.
      * @return
      * @throws Exception If the file is empty.
      */
-    public DocumentModel createWithFile(DocumentModel instance, File file) throws Exception {
+    public DocumentModel createWithFile(DocumentModel instance, File file, boolean withTransaction) throws Exception {
         if (file.length() == 0) {
             throw new IOException(instance.getUri()+ " : empty document "+file.getPath());
         }
 
-        sparql.startTransaction();
+        if(withTransaction){
+            sparql.startTransaction();
+        }
+
         sparql.create(instance);
         try{
             fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
-            sparql.commitTransaction();
+            if(withTransaction){
+                sparql.commitTransaction();
+            }
         }catch (IOException e){
-            sparql.rollbackTransaction(e);
+            if(withTransaction){
+                sparql.rollbackTransaction(e);
+            }
         }
 
         return instance;

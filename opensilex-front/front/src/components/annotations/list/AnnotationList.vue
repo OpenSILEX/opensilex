@@ -28,12 +28,12 @@
               </template>
 
               <template v-slot:cell(publisher)="{data}">
-                <PersonContact v-if="accountsByUri.get(data.item.publisher)"
-                               :personContact="accountsByUri.get(data.item.publisher)"
-                               :customDisplayableName="getAccountNames(data.item.publisher)"
+                <PersonContact
+                    v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
+                    :personContact="accountsByUri.get(data.item.publisher)"
+                    :customDisplayableName="getAccountNames(data.item.publisher)"
                 />
               </template>
-
 
               <template v-slot:cell(description)="{data}">
                 <opensilex-TextView v-if="data.item.description" :value="data.item.description">
@@ -85,12 +85,12 @@
     </div>
     <!-- Modal pour afficher les détails de l'annotation -->
     <annotation-details
+        v-if="selectedAnnotation"
         v-model="isModalVisible"
         :annotationDetails="selectedAnnotation"
         @close="isModalVisible = false"
     />
     <opensilex-AnnotationModalForm
-
         ref="annotationModalForm"
         @onCreate="refresh"
         @onUpdate="refresh"
@@ -224,7 +224,6 @@ export default class AnnotationList extends Vue {
   }
 
   search(options) {
-
     return new Promise((resolve, reject) => {
       this.$service.searchAnnotations(
           this.filter.bodyValue,
@@ -257,7 +256,9 @@ export default class AnnotationList extends Vue {
 
     let uniqueUsers = new Set<string>();
     annotations.forEach(annotation => {
-      uniqueUsers.add(annotation.publisher);
+      if (annotation.publisher) {
+        uniqueUsers.add(annotation.publisher);
+      }
     });
 
     return this.$securityService.getAccountsByURI(Array.from(uniqueUsers)).then(http => {
@@ -271,9 +272,11 @@ export default class AnnotationList extends Vue {
     if (!accounturi) {
       return undefined;
     }
-    let accountDTO = this.accountsByUri.get(accounturi);
-    if (accountDTO){
-      return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
+    const accountDTO = this.accountsByUri.get(accounturi);
+    if (accountDTO) {
+      return accountDTO.linked_person
+          ? `${accountDTO.person_first_name} ${accountDTO.person_last_name}`
+          : accountDTO.email;
     }
     return undefined;
   }

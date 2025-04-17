@@ -20,6 +20,8 @@ public class BatchHistoryGetDTO {
     private URI publisher;
     @JsonProperty("uri")
     private URI uri;
+    @JsonProperty("documentUri")
+    private URI documentUri;
 
     public String getUserName() {
         return userName;
@@ -53,12 +55,23 @@ public class BatchHistoryGetDTO {
         this.uri = uri;
     }
 
+    public URI getDocumentUri() {
+        return documentUri;
+    }
+
+    public void setDocumentUri(URI documentUri) {
+        this.documentUri = documentUri;
+    }
+
     public static BatchHistoryGetDTO fromModel(BatchHistoryModel batchHistoryModel) {
         BatchHistoryGetDTO batchHistoryDTO = new BatchHistoryGetDTO();
         batchHistoryDTO.setUserName(batchHistoryModel.getUsername());
         batchHistoryDTO.setPublisher(batchHistoryModel.getPublisher());
         batchHistoryDTO.setUri(batchHistoryModel.getUri());
         batchHistoryDTO.setPublicationDate(OffsetDateTime.ofInstant(batchHistoryModel.getPublicationDate(), ZoneOffset.UTC));
+        batchHistoryDTO.setDocumentUri(batchHistoryModel.getDocumentUri());
         return batchHistoryDTO;
     }
+
+
 }

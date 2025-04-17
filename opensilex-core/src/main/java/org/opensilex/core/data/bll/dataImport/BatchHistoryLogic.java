@@ -26,6 +26,16 @@ public class BatchHistoryLogic {
         this.nosql = nosql;
     }
 
+    /**
+     *
+     * @param batchHistoryUri
+     * @return The batch history model associated with this uri
+     * @throws NoSQLInvalidURIException if no batch history model found or invalid uri
+     */
+    public BatchHistoryModel get(URI batchHistoryUri) throws NoSQLInvalidURIException {
+        BatchHistoryDao dao = new BatchHistoryDao(nosql.getServiceV2());
+        return dao.get(batchHistoryUri);
+    }
 
     /**
      * Retrieves the batch history items with pagination.

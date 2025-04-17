@@ -67,6 +67,8 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
+import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
 
 @Component
 export default class DataList extends Vue {
@@ -189,6 +191,22 @@ export default class DataList extends Vue {
         }
     }
 
+
+    /**
+     * Gets the batch history dto, containing a link to csv document
+     *
+     * @param uri
+     */
+    getBatch(uri):Promise<BatchHistoryGetDTO> {
+        if (uri != undefined) {
+          return this.dataService
+            .getBatchHistory(uri)
+            .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
+              return http.response.result;
+            });
+        }
+  }
+
     loadProvenance(selectedValue) {
         if (selectedValue != undefined) {
             this.getProvenance(selectedValue.id).then((prov) => {
@@ -197,18 +215,23 @@ export default class DataList extends Vue {
         }
     }
 
-    showDataProvenanceDetailsModal(item) {
+    async showDataProvenanceDetailsModal(item: DataGetSearchDTO) {
         this.$opensilex.enableLoader();
-        this.getProvenance(item.provenance.uri)
-            .then(result => {
-                let value = {
-                    provenance: result,
-                    data: item
-                }
-                this.dataProvenanceModalView.setProvenance(value);
-                this.dataProvenanceModalView.show();
-            });
+        try {
+            const provenanceSearchResult = await this.getProvenance(item.provenance.uri);
+            const batchSearchResult = await this.getBatch(item.batchUri)
+            const value = {
+                provenance: provenanceSearchResult,
+                data: item,
+                batch: batchSearchResult
+            };
+            this.dataProvenanceModalView.setProvenance(value);
+            this.dataProvenanceModalView.show();
+        } catch (error) {
+            console.error("Failed to fetch provenance or Batch:", error);
+        }
     }
+
 
     objects : {[key : string] : string} = {};
     objectsPath : {[key : string] : string} = {};

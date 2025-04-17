@@ -25,6 +25,7 @@ import org.opensilex.core.data.bll.DataWideExportInformation;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
@@ -1423,8 +1424,32 @@ public class DataAPI {
     }
 
     @GET
+    @Path("batch_history/{uri}")
+    @ApiOperation("Get batch")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Batch retrieved", response = BatchHistoryGetDTO.class),
+            @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
+    public Response getBatchHistory(
+            @ApiParam(value = "Batch URI", required = true) @PathParam("uri") @NotNull URI uri) {
+        BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+
+        try {
+            BatchHistoryModel model = batchHistoryLogic.get(uri);
+            BatchHistoryGetDTO dto = BatchHistoryGetDTO.fromModel(model);
+
+            return new SingleObjectResponse<>(dto).getResponse();
+
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Invalid or unknown batch URI ", uri);
+        }
+    }
+
+    @GET
     @Path("batch_history")
-    @ApiOperation("Get data batch history")
+    @ApiOperation("Search data batch history")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

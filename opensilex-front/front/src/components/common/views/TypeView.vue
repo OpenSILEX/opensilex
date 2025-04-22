@@ -1,8 +1,9 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{ t("component.common.type") }}</span>
+    <span :class="['field-view-title', customClass]">{{ t("component.common.type") }}</span>
     <span class="static-field-line">
-      <opensilex-Icon :icon="$opensilex?.getRDFIcon(type)" />&nbsp;
+      <opensilex-Icon :icon="$opensilex?.getRDFIcon(type)" />
+      <!-- &nbsp; -->
       <opensilex-UriLink
         v-if="copyableTypeUri"
         :uri="$opensilex?.getShortUri(type)"
@@ -23,12 +24,21 @@ const props = defineProps<{
   type: string;
   typeLabel: string;
   copyableTypeUri?: boolean;
+  customClass?: string;
 }>();
 
 const { t } = useI18n();
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const customClass = props.customClass || '';
 </script>
 
 <style scoped lang="scss">
+
+.sectionTitle {
+  font-weight: bold;
+  min-width: 60px;
+  display:inline-block
+  // margin-right: 10px;
+}
 </style>

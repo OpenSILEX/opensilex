@@ -22,8 +22,9 @@ import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import type { UserGetDTO } from "opensilex-security";
 import DateTimeFormatter from "./../../../models/DateTimeFormatter";
 
-const { locale, t } = useI18n();
-const formatter = new DateTimeFormatter({ locale, t } as Composer);
+const i18n = useI18n();
+const { t } = i18n;
+const formatter = new DateTimeFormatter(i18n);
 
 // Props
 const props = defineProps<{
@@ -31,43 +32,40 @@ const props = defineProps<{
   publicationDate?: string;
   lastUpdatedDate?: string;
 }>();
-
-// i18n & plugin
-
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
-// Format helper
+// pour le nom de l’auteur
 const getName = (publisher: UserGetDTO) =>
   publisher.first_name && publisher.last_name
     ? `${publisher.first_name} ${publisher.last_name}`
     : publisher.uri;
 
-// Computed metadata
+// fct traduction formatées
 const completeMetadata = computed(() =>
   t("MetadataView.complete-sentence", {
-    datePublication: $opensilex?.$dateTimeFormatter.formatLocaleDate(props.publicationDate, { timeStyle: "medium" }),
+    datePublication: formatter.formatLocaleDate(props.publicationDate, { timeStyle: "medium" }),
     publisher: getName(props.publisher),
-    lastUpdateDate: $opensilex?.$dateTimeFormatter.formatLocaleDate(props.lastUpdatedDate, { timeStyle: "medium" })
+    lastUpdateDate: formatter.formatLocaleDate(props.lastUpdatedDate, { timeStyle: "medium" }),
   })
 );
 
 const withoutPublication = computed(() =>
   t("MetadataView.without-publication-with-update-sentence", {
     publisher: getName(props.publisher),
-    lastUpdateDate: $opensilex?.$dateTimeFormatter.formatLocaleDate(props.lastUpdatedDate, { timeStyle: "medium" })
+    lastUpdateDate: formatter.formatLocaleDate(props.lastUpdatedDate, { timeStyle: "medium" }),
   })
 );
 
 const withoutUpdate = computed(() =>
   t("MetadataView.without-update-with-publication-sentence", {
-    datePublication: $opensilex?.$dateTimeFormatter.formatLocaleDate(props.publicationDate, { timeStyle: "medium" }),
-    publisher: getName(props.publisher)
+    datePublication: formatter.formatLocaleDate(props.publicationDate, { timeStyle: "medium" }),
+    publisher: getName(props.publisher),
   })
 );
 
 const onlyPublisher = computed(() =>
   t("MetadataView.only-publisher-sentence", {
-    publisher: getName(props.publisher)
+    publisher: getName(props.publisher),
   })
 );
 </script>

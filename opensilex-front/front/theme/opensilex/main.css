@@ -525,6 +525,10 @@ a.external-url-link:hover {
 * MODALS
 *********************************/
 
+body.modal-open {
+    overflow: hidden;
+}
+
 .advancedMultiSelectorModal .modal-dialog
 {
     max-width: 80%;

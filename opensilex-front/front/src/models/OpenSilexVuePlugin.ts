@@ -32,7 +32,6 @@ import {ServiceBinder} from "../services/ServiceBinder";
 import {OntologyService, VariableDatatypeDTO, VariablesService} from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
-import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';

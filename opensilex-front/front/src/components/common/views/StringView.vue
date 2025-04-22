@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="props.allowCopy" class="static-field">
-      <span class="field-view-title">{{ t(props.label) }}</span>
+      <span :class="['field-view-title', customClass]">{{ t(props.label) }}</span>
 
       <span>
         <a
@@ -25,7 +25,7 @@
       
     </div>
     <div v-else class="static-field">
-      <span class="field-view-title">{{ t(props.label) }}</span>
+      <span :class="['field-view-title', customClass]">{{ t(props.label) }}</span>
       <span class="static-field-line capitalize-first-letter">
         <slot>{{ props.value }}</slot>
       </span>
@@ -50,6 +50,7 @@ const props = defineProps<{
   allowCopy?: boolean;
   underlineTextForCopy?: boolean;
   copyValue?: string;
+  customClass?: string;
 }>();
 
 // Emits
@@ -59,6 +60,7 @@ const emit = defineEmits<{
 
 // OpenSilex
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
+const customClass = props.customClass || '';
 
 // Valeur à copier
 const copySource = computed(() => props.copyValue || props.value);
@@ -130,7 +132,12 @@ a span {
   color: #212121;
 }
 
-.field-view-title {
-    font-weight: bold;
+// .field-view-title {
+//   font-weight: bold;
+// }
+.sectionTitle {
+  font-weight: bold;
+  min-width: 60px;
+  display:inline-block
 }
 </style>

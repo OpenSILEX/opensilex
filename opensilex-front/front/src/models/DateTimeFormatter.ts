@@ -24,6 +24,7 @@ export default class DateTimeFormatter {
 
     constructor(i18n) {
         this.$i18n = i18n;
+        console.log("constructor i18n ", this.$i18n)
     }
 
     /**
@@ -74,8 +75,11 @@ export default class DateTimeFormatter {
             dateStyle: 'short',
             ...options
         };
-        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+        const locale = this.$i18n.locale?.value || "en"; // fallback si probleme avec la locale
+        console.log("locale ??? ", locale)
+        return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
             .format(new Date(dateTimeValue));
+    
     }
 
     /**
@@ -91,8 +95,12 @@ export default class DateTimeFormatter {
             timeStyle: 'long',
             ...options
         };
-        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
-            .format(new Date(dateTimeValue));
+        // return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+        //     .format(new Date(dateTimeValue));
+        const locale = this.$i18n.locale?.value || "en";
+        return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
+        .format(new Date(dateTimeValue));
+
     }
 
     /**

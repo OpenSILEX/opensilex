@@ -288,6 +288,7 @@
         return this.$DataService
             .countData(
                 undefined,
+              undefined,
                 undefined,
                 undefined,
                 [this.uri],

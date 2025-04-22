@@ -102,7 +102,8 @@ export default class DataList extends Vue {
                     targets: [],
                     devices: [],
                     facilities: [],
-                    operators: []
+                    operators: [],
+                    batch_uri: null
                 };
             },
         })
@@ -250,6 +251,7 @@ export default class DataList extends Vue {
        }
 
        return this.dataService.countData(
+           this.filter.batch_uri,
            // Count data, set limit to  since here we want the exact/total data count according the current filter
            this.$opensilex.prepareGetParameter(this.filter.start_date),
            this.$opensilex.prepareGetParameter(this.filter.end_date),
@@ -281,7 +283,7 @@ export default class DataList extends Vue {
 
         return new Promise((resolve, reject) => {
             this.dataService.searchDataListByTargets(
-                undefined,
+                this.filter.batch_uri,
                 this.$opensilex.prepareGetParameter(this.filter.start_date),
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,

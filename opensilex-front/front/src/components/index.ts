@@ -705,6 +705,8 @@ import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import BatchDetails from './data/BatchDetails.vue';
+components["opensilex-BatchDetails"] = BatchDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';

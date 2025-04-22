@@ -580,6 +580,7 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Return the number of data ", response = Long.class)
     })
     public Response countData(
+            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -600,7 +601,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(null, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
             if(filter == null){
                 return new SingleObjectResponse<>(0).getResponse();
             }

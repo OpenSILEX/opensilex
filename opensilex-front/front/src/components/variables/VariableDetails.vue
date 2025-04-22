@@ -254,6 +254,7 @@ export default class VariableDetails extends Vue {
     // Check if there exist at least one data linked to the variable
     return this.dataService.countData(
         undefined,
+      undefined,
         undefined,
         undefined,
         undefined,

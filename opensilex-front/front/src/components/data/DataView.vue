@@ -246,6 +246,19 @@
                     ></opensilex-TagInputForm>
                   </opensilex-FilterField>
                 </div>
+                <!-- Batch URI -->
+                <div>
+                  <opensilex-FilterField>
+                    <label>{{ $t('DataView.filter.batch-uri') }}</label>
+                    <opensilex-StringFilter
+                      :filter.sync="filter.batch_uri"
+                      placeholder="DataView.filter.uri-placeholder"
+                      class="searchFilter"
+                      @handlingEnterKey="refresh()"
+                    ></opensilex-StringFilter>
+                  </opensilex-FilterField>
+                  <br>
+                </div>
               </template>
             </opensilex-SearchFilterField>
           </div>
@@ -325,7 +338,8 @@ export default class DataView extends Vue {
     devices: [],
     facilities: [],
     operators: [],
-    germplasm: []
+    germplasm: [],
+    batch_uri: undefined
   };
 
   soFilter = {
@@ -380,7 +394,8 @@ export default class DataView extends Vue {
       devices: [],
       facilities: [],
       operators: [],
-      germplasm: []
+      germplasm: [],
+      batch_uri: undefined
     };
 
     this.soSelector.refreshModalSearch();
@@ -433,23 +448,24 @@ export default class DataView extends Vue {
   }
 
   afterCreateData(results) {
-    if (results instanceof Promise) {
-      results.then((res) => {
-        this.resultModal.setNbLinesImported(
-            res.validation.dataErrors.nbLinesImported
-        );
-        let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
-        if(annotationsOnObjects){
-            this.resultModal.setNbAnnotationsImported(
-                annotationsOnObjects.length
-            );
-        }
-        this.resultModal.setProvenance(res.form.provenance);
-        this.resultModal.show();
-        this.refreshKey += 1;
-        this.clear();
-        this.filter.provenance = res.form.provenance.uri;
-      });
+      if (results instanceof Promise) {
+        results.then((res) => {
+          this.resultModal.setNbLinesImported(
+              res.validation.dataErrors.nbLinesImported
+          );
+          let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
+          if(annotationsOnObjects){
+              this.resultModal.setNbAnnotationsImported(
+                  annotationsOnObjects.length
+              );
+          }
+          this.resultModal.setProvenance(res.form.provenance);
+          this.resultModal.setBatch(res.validation.dataErrors.batchHistoryUri);
+          this.resultModal.show();
+          this.refreshKey += 1;
+          this.clear();
+          this.filter.provenance = res.form.provenance.uri;
+        });
     } else {
       this.resultModal.setNbLinesImported(
           results.validation.dataErrors.nbLinesImported
@@ -460,6 +476,7 @@ export default class DataView extends Vue {
               annotationsOnObjects.length
           );
       }
+      this.resultModal.setBatch(results.validation.dataErrors.batchHistoryUri);
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.refreshKey += 1;
@@ -545,6 +562,8 @@ en:
       targets: Target(s)
       targets-help: Copy target's URI here
       operator: Operators
+      batch-uri : Batch URI
+      uri-placeholder: Enter a part of an uri
 
 fr:
   DataView:
@@ -571,5 +590,7 @@ fr:
       targets: Cible(s)
       targets-help: Copier les URI des cibles ici
       operator: Opérateurs
+      batch-uri : URI de Batch
+      uri-placeholder: Entrer une partie d'une uri
 
 </i18n>

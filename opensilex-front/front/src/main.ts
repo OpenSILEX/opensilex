@@ -23,14 +23,49 @@ import ToastContainer from './components/common/toastContainer.vue';
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
 
+let lang = navigator.language;
+
+if (lang && lang.length > 2) {
+  lang = lang.substring(0, 2);
+}
+
 
 const i18n = createI18n({
-  locale: 'fr',
+  fallbackLocale: 'en',
+  locale: lang,
+  
   messages: {
     en,
     fr
+  },
+  dateTimeFormats: {
+    "en": {
+      short: {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+      }
+    },
+    "fr": {
+      short: {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      }
+    }
+  },
+  numberFormats: {
+    "en": {
+      decimal: {
+        style: 'decimal',  
+      },
+    },
+    "fr": {
+      decimal: {
+        style: 'decimal' 
+      },
+    }
   }
+
 });
+
+console.log("iiii : ", i18n)
 
 import "reflect-metadata"
 

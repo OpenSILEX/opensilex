@@ -3,6 +3,7 @@
     <!-- All main info (non metadata stuff) -->
     <div class="main-info-style">
       <!-- URI -->
+      <!-- si page de detail  -->
       <opensilex-UriView
         v-if="!hasNoDetailsPage"
         class="uriLinkGlobalUriSearchRes"
@@ -10,10 +11,12 @@
         :value="shortUri"
         :to="detailsPath"
         @linkClicked="$emit('hideUriSearch')"
+        customClass="sectionTitle"
       />
 
+      <!-- si pas de page de detail  -->
       <span v-else class="data-uri-details">
-        <opensilex-UriView :uri="shortUri" :value="shortUri" />
+        <opensilex-UriView :uri="shortUri" :value="shortUri" customClass="sectionTitle"/>
         <opensilex-Button
           v-if="dataDto.uri"
           :small="true"
@@ -32,6 +35,7 @@
         v-if="!hasNoDetailsPage" 
         :value="name" 
         label="component.common.name" 
+        customClass="sectionTitle"
        />
 
       <!-- Type -->
@@ -40,6 +44,7 @@
         :type="type"
         :typeLabel="typeName"
         :copyableTypeUri="true"
+        customClass="sectionTitle"
       />
       <opensilex-TypeView v-else :typeLabel="$t('GlobalUriSearch.dataTypeName')" />
 
@@ -60,17 +65,16 @@
     />
 
     <!-- Data details -->
-    <!-- <opensilex-DataProvenanceModalView
+    <opensilex-DataProvenanceModalView
       v-if="hasNoDetailsPage"
       ref="dataProvenanceModalView"
-    /> -->
+    />
 
     <!-- Event details -->
-    <!-- <opensilex-EventModalView
+    <opensilex-EventModalView
       modalSize="lg"
       ref="eventModalView"
-      :static="false"
-    /> -->
+    />
   </div>
 </template>
 
@@ -105,7 +109,9 @@ const rdfsComment = computed(() => props.searchResult.rdfs_comment);
 const publisher = computed(() => props.searchResult.publisher);
 const publicationDate = computed(() => props.searchResult.publication_date);
 const updatedDate = computed(() => props.searchResult.last_updated_date);
+
 const dataDto = computed(() => props.searchResult.data_dto || props.searchResult.datafile_dto);
+
 const hasNoDetailsPage = computed(() => dataDto.value !== null);
 const isData = computed(() => props.searchResult.data_dto !== null);
 
@@ -164,21 +170,32 @@ const detailsPath = computed(() => {
 
 
 const handleSeeDetails = async () => {
+    console.log("handleSeeDetails triggered — dataDto.value:", dataDto.value);
+    console.log("searchResult:", props.searchResult);
+
+
   if (props.searchResult.super_types) {
     const isEvent = props.searchResult.super_types.rdf_types.some((type) =>
       $opensilex.Oeev.checkURIs(type, $opensilex.Oeev.EVENT_TYPE_URI)
     );
     if (isEvent) {
       const http = await eventsService.getEventDetails(uri.value);
-      await eventModalView.value.show(http);
+      eventModalView.value.show(http);
+      // eventModalView.value.show();
+
       return;
     }
   }
 
   if (dataDto.value?.provenance?.uri) {
+        console.log("globalUriSearchResult data provenance found")
     const result = await dataService.getProvenance(dataDto.value.provenance.uri);
     dataProvenanceModalView.value.setProvenance({ provenance: result, data: dataDto.value });
+    console.log("dataProvenanceModalView ref:", dataProvenanceModalView.value);
+
     dataProvenanceModalView.value.show();
+  } else {
+    console.log("no provenance URI found")
   }
 };
 

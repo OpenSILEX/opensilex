@@ -65,7 +65,7 @@ function launchUriGlobalSearch() {
     console.log("uriSearchVALUE ", uriSearchValue.value)
   uriSearchService.value.searchByUri(uriSearchValue.value)
     .then((res) => {
-        console.log("response launchUriGlobalSearch ")
+        console.log("response launchUriGlobalSearch  ", uriSearchResult)
       uriSearchResult.value = res.response.result;
       uriSearchResultVisible.value = true;
     })

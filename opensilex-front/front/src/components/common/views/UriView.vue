@@ -44,4 +44,10 @@ const emit = defineEmits<{
 .specificProperties {
   min-width: 250px;
 }
+
+.sectionTitle {
+  font-weight: bold;
+  min-width: 60px;
+  display:inline-block
+}
 </style>

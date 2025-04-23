@@ -1,6 +1,7 @@
 <template>
   <div class="testComponentContainer">
     <header>
+      <opensilex-DataTable />
       <h1>
         Voici mon composant test 
         <span class="media">🐶</span>
@@ -18,6 +19,7 @@
 import { defineComponent, computed } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import DataTable from '../components/home/DataTable.vue';
 
 export default defineComponent({
   name: "TestPage",

@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import ToastContainer from './components/common/toastContainer.vue';
+import { create, NButton, NDataTable } from 'naive-ui';
 
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
@@ -29,6 +30,9 @@ if (lang && lang.length > 2) {
   lang = lang.substring(0, 2);
 }
 
+const naive = create({
+  components: [NButton, NDataTable]
+});
 
 const i18n = createI18n({
   fallbackLocale: 'en',
@@ -164,6 +168,7 @@ app.config.globalProperties.$opensilex = $opensilex;
 app.use(i18n)
 app.use($opensilex);
 app.use(store);
+app.use(naive);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
 

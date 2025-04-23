@@ -155,6 +155,10 @@ import { Router } from 'vue-router';
 // @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
 import App from './App.vue';
+import HighchartsVue from "highcharts-vue";
+import Highcharts from 'highcharts';
+
+
 
 const app = createApp(App);
 const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
@@ -169,6 +173,7 @@ app.use(i18n)
 app.use($opensilex);
 app.use(store);
 app.use(naive);
+app.use(HighchartsVue);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
 

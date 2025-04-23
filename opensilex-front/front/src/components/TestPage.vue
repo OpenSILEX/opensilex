@@ -11,15 +11,18 @@
         <button class="btn super" @click="redirectToSuper">Vers Un Super Composant 🦖</button>
         <button class="btn dash" @click="redirectToDash">Vers Un Dashboard Extraordinaire 🙈</button>
       </h3>
+      <highcharts :options="chartOptions" />
     </header>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, ref } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import DataTable from '../components/home/DataTable.vue';
+import Highcharts from 'highcharts';
+import HighchartsVue from 'highcharts-vue';
 
 export default defineComponent({
   name: "TestPage",
@@ -43,10 +46,20 @@ export default defineComponent({
       router.push('/dash'); 
     };
 
+    const chartOptions = ref({
+      title: {
+        text: 'Exemple de graphique'
+      },
+      series: [{
+        data: [1, 2, 3, 4, 5]
+      }]
+    });
+
     return {
       logout, 
       redirectToSuper,
-      redirectToDash
+      redirectToDash,
+      chartOptions
     };
   }
 });

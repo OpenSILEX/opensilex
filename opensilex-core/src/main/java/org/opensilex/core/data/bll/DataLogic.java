@@ -9,14 +9,18 @@ package org.opensilex.core.data.bll;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.DeleteResult;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.data.api.*;
+import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.document.dal.DocumentDAO;
+import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
@@ -297,8 +301,14 @@ public class DataLogic {
         validation.validate();
         dao.update(model);
     }
-    public DeleteResult deleteManyByFilter(DataSearchFilter filter){
-        return dao.deleteMany(filter);
+    public DeleteResult deleteManyByFilter(DataSearchFilter filter) throws Exception {
+        DeleteResult deleteResult = dao.deleteMany(filter);
+        if(filter.getBatchUri() == null){
+            return deleteResult;
+        }
+        //If we deleted via batch uri then perform some other operations
+        handleBatchAndDocumentAfterDeleteByBatch(filter);
+        return deleteResult;
     }
 
     public List<URI> createMany(List<DataModel> modelList) throws Exception {
@@ -307,12 +317,6 @@ public class DataLogic {
 
     public void createManyFromImport(List<DataModel> modelList, DataCSVValidationModel csvValidationModel) throws Exception {
         createMany(modelList, true, csvValidationModel);
-    }
-
-
-    public String generateBatchId(Instant start, String userName, String importMethod, int dataSize) {
-        String dateTime = DateTimeFormatter.ofPattern(DATE_FORMAT).format(start.atZone(ZoneId.systemDefault()));
-        return userName + UNDERSCORE + dataSize + UNDERSCORE + importMethod + UNDERSCORE + dateTime;
     }
 
     public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments) {
@@ -607,6 +611,38 @@ public class DataLogic {
         }
 
         return dto;
+    }
+
+    /**
+     * If there are no data left after deleting data via batch uri. Then runs a transaction to delete the batch and
+     * sets the document to deprecated
+     *
+     * @param filter used to determine if we deleted with batch AND experiment
+     * @throws Exception
+     */
+    private void handleBatchAndDocumentAfterDeleteByBatch(DataSearchFilter filter) throws Exception {
+        //If we are deleting within experiment then verify if any data from this batch still exist before deleting it
+        boolean doDeleteBatch = true;
+        if(!CollectionUtils.isEmpty(filter.getExperiments())){
+            filter.setExperiments(null);
+            if(dao.count(filter) > 0){
+                doDeleteBatch = false;
+            }
+        }
+        //If required delete batch and set document status to outdated
+        if(doDeleteBatch){
+            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+            URI documentUri = batchHistoryLogic.get(filter.getBatchUri()).getDocumentUri();
+            DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+            DocumentModel oldDoc = documentDAO.getMetadata(documentUri, user);
+            oldDoc.setDeprecated("true");
+            new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+                documentDAO.update(oldDoc, user);
+                batchHistoryLogic.deleteBatchHistoryByURI(filter.getBatchUri());
+                return 0;
+            });
+
+        }
     }
 
     //#endregion

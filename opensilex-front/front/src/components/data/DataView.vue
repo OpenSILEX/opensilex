@@ -1,6 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageActions>
+      <!-- Create Button -->
       <opensilex-CreateButton
           v-if="user.hasCredential(
               credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
@@ -9,12 +10,22 @@
           class="createButton greenThemeColor"
       >
       </opensilex-CreateButton>
+      <!-- Export button-->
       <b-button
           @click="exportModal.show()"
           class="exportButton greenThemeColor createButton"
       >
         export
       </b-button>
+      <!-- Delete by batch button -->
+      <opensilex-Button
+        @click="deleteByBatchModal.show()"
+        class="createButton greenThemeColor"
+        icon="fa#trash-alt"
+        :small="false"
+        label="DataView.buttons.delete-by-batch"
+        :disabled="false"
+      ></opensilex-Button>
     </opensilex-PageActions>
 
 
@@ -22,6 +33,11 @@
         ref="exportModal"
         :filter="filter"
     ></opensilex-DataExportModal>
+
+    <opensilex-DeleteByBatchModal
+      ref="deleteByBatchModal"
+      @deleted="refresh"
+    ></opensilex-DeleteByBatchModal>
 
       <!-- Toggle Sidebar-->
 
@@ -288,6 +304,7 @@ import {ProvenanceGetDTO} from "opensilex-core/index";
 import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import DeleteByBatchModal from "./DeleteByBatchModal.vue";
 
 @Component
 export default class DataView extends Vue {
@@ -325,6 +342,7 @@ export default class DataView extends Vue {
   @Ref("exportModal") readonly exportModal!: any;
   @Ref("deviceSelector") readonly deviceSelector!: any;
   @Ref("facilitySelector") readonly facilitySelector!: any;
+  @Ref("deleteByBatchModal") readonly deleteByBatchModal!: DeleteByBatchModal;
 
   filter = {
     germplasm_group: undefined,
@@ -542,6 +560,7 @@ en:
     buttons:
       create-data: Add data
       generate-template: Generate template
+      delete-by-batch: Delete by Batch
     description: View and export data
     list:
       date: Date
@@ -570,6 +589,7 @@ fr:
     buttons:
       create-data: Ajouter un jeu de données
       generate-template: Générer un gabarit
+      delete-by-batch: Supprimer par Batch
     description: Visualiser et exporter des données
     list:
       date: Date

@@ -12,6 +12,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
@@ -100,7 +101,7 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         }
 
         if (filter.getBatchUri() != null) {
-            bsonFilters.add(Filters.eq(DataModel.BATCH_URI_FIELD, filter.getBatchUri()));
+            bsonFilters.add(Filters.eq(DataModel.BATCH_URI_FIELD, SPARQLDeserializers.getExpandedURI(filter.getBatchUri())));
         }
 
         addProvenanceAgentFilter(bsonFilters, filter);

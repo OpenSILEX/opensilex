@@ -733,7 +733,7 @@ public class DataAPI {
             filter.setVariables(Collections.singletonList(variableUri));
         }
         if (batchUri != null) {
-            filter.setUri(batchUri);
+            filter.setBatchUri(batchUri);
         }
 
         return new SingleObjectResponse<>(dataLogic.deleteManyByFilter(filter)).getResponse();

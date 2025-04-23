@@ -742,6 +742,8 @@ import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
+import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
+components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';

@@ -1,25 +1,41 @@
 <template>
   <div>
     <opensilex-PageActions>
+      <!-- Create Button -->
       <opensilex-CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
         @click="showImportForm()"
         label="OntologyCsvImporter.import"
         class="greenThemeColor createButton"
       ></opensilex-CreateButton>
-      
+      <!-- Export button-->
       <b-button
         @click="exportModal.show()"
         class="exportButton greenThemeColor createButton"
       >
         export
       </b-button>
+      <!-- Delete by batch button -->
+      <opensilex-Button
+        @click="deleteByBatchModal.show()"
+        class="createButton greenThemeColor"
+        icon="fa#trash-alt"
+        :small="false"
+        label="DataView.buttons.delete-by-batch"
+        :disabled="false"
+      ></opensilex-Button>
     </opensilex-PageActions>
 
     <opensilex-DataExportModal
       ref="exportModal"
       :filter="filter"
     ></opensilex-DataExportModal>
+
+    <opensilex-DeleteByBatchModal
+      ref="deleteByBatchModal"
+      :experimentUri="this.uri"
+      @deleted="refresh"
+    ></opensilex-DeleteByBatchModal>
 
     <template>
       <opensilex-PageContent class="pagecontent">
@@ -220,6 +236,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import DeleteByBatchModal from "../../data/DeleteByBatchModal.vue";
 
 @Component
 export default class ExperimentData extends Vue {
@@ -276,6 +293,7 @@ export default class ExperimentData extends Vue {
   @Ref("soSelector") readonly soSelector!: any;
   @Ref("varSelector") readonly varSelector!: any;
   @Ref("exportModal") readonly exportModal!: any;
+  @Ref("deleteByBatchModal") readonly deleteByBatchModal!: DeleteByBatchModal;
 
   get credentials() {
     return this.$store.state.credentials;
@@ -371,7 +389,6 @@ export default class ExperimentData extends Vue {
     this.refresh();
   }
 
-  //TODO MAX DUPLICATE code?? in DataView
   afterCreateData(results) {
     if (results instanceof Promise) {
       results.then((res) => {

@@ -303,7 +303,8 @@ public class DataLogic {
     }
     public DeleteResult deleteManyByFilter(DataSearchFilter filter) throws Exception {
         DeleteResult deleteResult = dao.deleteMany(filter);
-        if(filter.getBatchUri() == null){
+        //If no batch was passed or if nothing was deleted we do not need to handle deletion of the batch.
+        if(filter.getBatchUri() == null || deleteResult.getDeletedCount() == 0){
             return deleteResult;
         }
         //If we deleted via batch uri then perform some other operations

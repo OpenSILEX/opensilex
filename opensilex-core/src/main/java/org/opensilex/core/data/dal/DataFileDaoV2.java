@@ -148,6 +148,8 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
                     Filters.in(PROVENANCE_EXPERIMENT_FIELD, userExperiments),
                     NO_EXPERIMENT_FILTER
             ));
+        }else{
+            bsonFilters.add(NO_EXPERIMENT_FILTER);
         }
     }
 

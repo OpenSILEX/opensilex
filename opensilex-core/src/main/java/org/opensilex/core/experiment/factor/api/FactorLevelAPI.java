@@ -71,7 +71,7 @@ public class FactorLevelAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDTO.class),
         @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
     })
     public Response getFactorLevel(
@@ -107,7 +107,7 @@ public class FactorLevelAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDetailDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDetailDTO.class),
         @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
     })
     public Response getFactorLevelDetail(

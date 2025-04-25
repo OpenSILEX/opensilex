@@ -23,10 +23,12 @@ import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.IOException;
@@ -241,6 +243,65 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     }
 
+    @Override
+    protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+        // inside an XP
+        if (withinExperiment()) {
+            // query used to check if a SO with a name already exists in XP
+            SPARQLNamedResourceModel alreadyExistingOsWithName = scientificObjectDAO.getUriByNameAndGraph(SPARQLDeserializers.nodeURI(experiment),model.getName());
+            if (model.getUri() != null) {
+                // query used to check existence of a URI (return false/true) in XP
+                SelectBuilder checkUriQuery = checkUriExistInXP(model.getUri());
+                List<SPARQLResult> result = sparql.executeSelectQuery(checkUriQuery);
+                String isURIExistInXP = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
+
+                // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
+                if ((isURIExistInXP.equalsIgnoreCase("") || isURIExistInXP.equalsIgnoreCase("false"))
+                        && (alreadyExistingOsWithName == null)) {
+                    // register URI to the set of URIs to create new SOs
+                    filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                }
+
+                // Scenario 3: If the URI entered in CSV exist in XP -> update the SO
+                else if (isURIExistInXP.equalsIgnoreCase("true")) {
+                    // register URI to the set of URIs to update the existing SOs
+                    filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                }
+
+            }
+            // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
+            else if (model.getUri() == null && alreadyExistingOsWithName != null) {
+                // register URI to the set of URIs to create new SOs
+                filledUrisToUpdateIndexesInChunk.put(alreadyExistingOsWithName.getUri().toString(), totalRowIdx);
+            }
+            // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
+            else if (model.getUri() == null && alreadyExistingOsWithName == null) {
+                // register URI to the set of URIs to update the existing SOs
+                generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+            }
+        }
+
+        // global flow (not inside an XP)
+        else {
+            super.handleURIMapping(validator, model, totalRowIdx,generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
+        }
+    }
+
+    private SelectBuilder checkUriExistInXP(URI uri) {
+        return sparql.getCheckUriListExistQuery(Stream.of(String.valueOf(uri)), 1, rootClassURI.toString(), graphNode);
+    }
+
+    @Override
+    protected void checkUrisUniqueness(CsvOwlRestrictionValidator validator, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, List<ScientificObjectModel> modelChunk) throws SPARQLException {
+        if(withinExperiment()) {
+            // check generated uniqueness in batch way
+            if(validator.isValid()){
+                checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
+            }
+        }
+        else super.checkUrisUniqueness(validator, filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, modelChunk);
+    }
+
     private boolean withinExperiment() {
         return experiment != null;
     }
@@ -287,18 +348,19 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         return super.getCheckUrisUniquenessQuery(urisToCheck, streamSize);
     }
 
+    // to remove this method after validating
     @Override
     protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) throws IOException {
-
-        if (experiment != null) {
-            try {
-                scientificObjectDAO.checkUniqueNameByGraph(modelChunk, experiment);
-            } catch (DuplicateNameListException e) {
-                addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
-            } catch (SPARQLException e) {
-                throw new IOException(e);
-            }
-        }
+//
+//        if (experiment != null) {
+//            try {
+//                scientificObjectDAO.checkUniqueNameByGraph(modelChunk, experiment);
+//            } catch (DuplicateNameListException e) {
+//                // addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
+//            } catch (SPARQLException e) {
+//                throw new IOException(e);
+//            }
+//        }
     }
 
     private void addDuplicateNameErrors(List<ScientificObjectModel> objects, CsvOwlRestrictionValidator validator, Map<String, URI> existingUriByName, int offset) {

@@ -244,7 +244,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             List<T> modelChunk = new ArrayList<>(batchSize);
             Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
             Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-
+            Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
             int chunkRowIdx = 0;
 
             // continue while batch size or max error limit is not reached
@@ -257,23 +257,13 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     // read model and performs local validation
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
                     modelChunk.add(model);
-
-                    // generate new URI and register it to set of URI to check
-                    if (model.getUri() == null) {
-                        generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
-                    } else {
-                        // register URI to the set of URI to check
-                        filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
-                    }
+                    // handle URI generation or map filled URIs to the model object
+                    handleURIMapping(validator, model, totalRowIdx, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
                 }
                 totalRowIdx++;
             }
 
-            // check generated and filled URI uniqueness in batch way
-            if(validator.isValid()){
-                checkUrisUniqueness(filledUrisToIndexesInChunk, validator);
-                checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
-            }
+            checkUrisUniqueness(validator, filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, modelChunk);
 
             // batch validation and custom consumer use
             if(validator.isValid()){
@@ -291,6 +281,24 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         }
         if (allOk) {
             validator.getValidationModel().setNbObjectImported(totalRowIdx);
+        }
+    }
+
+    protected void handleURIMapping(CsvOwlRestrictionValidator validator, T model, int totalRowIdx, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+        // generate new URI and register it to set of URI to check
+        if (model.getUri() == null) {
+            generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+        } else {
+            // register URI to the set of URI to check
+            filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+        }
+    }
+
+    protected void checkUrisUniqueness(CsvOwlRestrictionValidator validator, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, List<T> modelChunk) throws SPARQLException {
+        // check generated and filled URI uniqueness in batch way
+        if(validator.isValid()){
+            checkUrisUniqueness(filledUrisToIndexesInChunk, validator);
+            checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
         }
     }
 
@@ -353,7 +361,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * if error occurs during URI parsing, then {@link CSVValidationModel#addInvalidURIError(CSVCell)} is called for error registration
      *
      */
-    private void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
+    protected void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
 
         if (generatedUrisToIndexes.isEmpty()) {
             return;
@@ -490,7 +498,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * @param validation CSV validation
      * @param generatedUrisToIndexes index between URI (string representation) and corresponding row index in CSV file
      */
-    private void generateLocallyUniqueUri(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> generatedUrisToIndexes) {
+    protected void generateLocallyUniqueUri(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> generatedUrisToIndexes) {
 
         // generate URI after relations building
         try {

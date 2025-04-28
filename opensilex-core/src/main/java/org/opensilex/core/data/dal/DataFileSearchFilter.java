@@ -10,6 +10,7 @@ import java.util.Collection;
 
 public class DataFileSearchFilter extends MongoSearchFilter {
 
+    String name;
     AccountModel user;
     Collection<URI> experiments;
     Collection<URI> targets;
@@ -128,6 +129,15 @@ public class DataFileSearchFilter extends MongoSearchFilter {
 
     public DataFileSearchFilter setBatchUri(URI batchUri) {
         this.batchUri = batchUri;
+        return this;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public DataFileSearchFilter setName(String name) {
+        this.name = name;
         return this;
     }
 }

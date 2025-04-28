@@ -82,6 +82,10 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
             bsonFilters.add(Filters.in(PROVENANCE_URI_FIELD, filter.getProvenances()));
         }
 
+        if (filter.getName() != null && !filter.getName().isEmpty()) {
+            bsonFilters.add(Filters.regex("filename", filter.getName(), "i"));
+        }
+
         if (filter.getStartDate() != null) {
             bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, filter.getStartDate()));
         }

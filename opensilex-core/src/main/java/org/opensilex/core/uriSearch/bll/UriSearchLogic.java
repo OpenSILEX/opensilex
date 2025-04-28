@@ -9,12 +9,17 @@
  */
 package org.opensilex.core.uriSearch.bll;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.document.dal.DocumentDAO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.URITypesDTO;
@@ -28,9 +33,11 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -40,6 +47,7 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -115,6 +123,26 @@ public class UriSearchLogic {
         //Get super types, needed to identify details page path in front
         URITypesDTO types = getSuperTypesFromUri((sparqlMatch.getFactor() == null ? uri : sparqlMatch.getFactor()));
         result.setSuperTypes(types);
+
+        //If the found uri happens to be a document or a person then just do an extra call to get the title
+        if(types.getRdfTypes().stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, Oeso.Document.getURI()))){
+            DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+            result.setName(documentDAO.getMetadata(uri, currentUser).getTitle());
+        }else if(SPARQLDeserializers.compareURIs(result.getType(), FOAF.Person.getURI())){
+            PersonDAO personDAO = new PersonDAO(sparql);
+            PersonModel foundPerson = personDAO.get(uri);
+            StringBuilder personNameBuilder = new StringBuilder();
+            if(foundPerson != null){
+                if(foundPerson.getFirstName() != null){
+                    personNameBuilder.append(foundPerson.getFirstName());
+                    personNameBuilder.append(" ");
+                }
+                if(foundPerson.getLastName() != null){
+                    personNameBuilder.append(foundPerson.getLastName());
+                }
+            }
+            result.setName(personNameBuilder.toString());
+        }
 
         return result;
     }
@@ -231,9 +259,39 @@ public class UriSearchLogic {
 
         //Set DataDto
         Set<URI> dateVariables = new VariableDAO(sparql, nosql, fs, currentUser).getAllDateVariables();
-        result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+        //For data security we set the dataDTO to emptyDTO if this user doesn't have access to the experiment from where it came.
+        //We have to set an emptyDTO as otherwise the front-end thinks there was no result
+        result.setDataDto(new DataGetSearchDTO());
+        if(userHasAccessToProvenance(dataModel.getProvenance())){
+            result.setDataDto(DataGetSearchDTO.getDtoFromModel(dataModel, dateVariables));
+        }
 
         return result;
+    }
+
+    //Used for data and datafile access control, looks at the provenances experiments and validates with currentUser.
+    //Returns true if user is admin, or if the provenance has no experiments
+    private boolean userHasAccessToProvenance(DataProvenanceModel provenance){
+        List<URI> xpsContainingData = provenance.getExperiments();
+        if (Boolean.TRUE.equals(currentUser.isAdmin()) || CollectionUtils.isEmpty(xpsContainingData)) {
+            return true;
+        }
+
+        Set<URI> userExperiments;
+        try {
+            userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(currentUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error when retrieving user experiments during uri search for a found data", e);
+        }
+        if (!CollectionUtils.isEmpty(userExperiments)) {
+            boolean hasMatch = userExperiments.stream()
+                    .anyMatch(xpsContainingData::contains);
+
+            if (hasMatch) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private URIGlobalSearchDTO searchInDataFiles(URI uri) throws Exception {
@@ -254,12 +312,20 @@ public class UriSearchLogic {
         setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, result.getType());
 
         //Set DatafileDto
-        result.setDatafileDto(DataFileGetDTO.fromModel(dataFileModel));
+        //For data security we set the dataFileDTO to emptyDTO if this user doesn't have access to the experiment from where it came.
+        //We have to set an emptyDTO as otherwise the front-end thinks there was no result
+        result.setDatafileDto(new DataFileGetDTO());
+        if(userHasAccessToProvenance(dataFileModel.getProvenance())){
+            result.setDatafileDto(DataFileGetDTO.fromModel(dataFileModel));
+        }
 
         return result;
     }
 
     private <T extends MongoModel> void loadPublisherInfoIntoDtoFromMongoModel(T model, URIGlobalSearchDTO result) throws Exception {
+        if(model.getPublisher() == null){
+            return;
+        }
         AccountModel publisherAccount = new AccountDAO(sparql).get(model.getPublisher());
         UserGetDTO publisherAsUser = new UserGetDTO();
         publisherAsUser.setUri(publisherAccount.getUri());

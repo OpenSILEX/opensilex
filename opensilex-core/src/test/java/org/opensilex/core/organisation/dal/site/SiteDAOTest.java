@@ -7,6 +7,7 @@ import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -77,8 +78,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         siteC.setFacilities(Arrays.asList(facilityA, facilityB));
         sparql.create(SiteModel.class, Arrays.asList(siteA, siteB, siteC));
 
-        MongoDBService mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        dao = new SiteDAO(sparql);
+        MongoDBServiceV2 mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
         logic = new SiteLogic(sparql, mongo);
     }
 
@@ -102,7 +102,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUri() throws Exception {
-        SiteModel site = dao.get(siteA.getUri(), user);
+        SiteModel site = logic.get(siteA.getUri(), user);
 
         assertModelEquals(site, siteA);
     }

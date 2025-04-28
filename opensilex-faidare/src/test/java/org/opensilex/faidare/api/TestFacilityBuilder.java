@@ -1,6 +1,6 @@
 package org.opensilex.faidare.api;
 
-import org.geojson.GeoJsonObject;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
@@ -41,7 +41,7 @@ public class TestFacilityBuilder  {
 
     private FacilityAddressDTO address = new FacilityAddressDTO();
 
-    private GeoJsonObject geometry;
+    private List<LocationObservationDTO> locations;
 
     private List<URI> organizations;
 
@@ -106,13 +106,12 @@ public class TestFacilityBuilder  {
         return this;
     }
 
-    public GeoJsonObject getGeometry() {
-        return geometry;
+    public List<LocationObservationDTO> getLocations() {
+        return locations;
     }
 
-    public TestFacilityBuilder setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
-        return this;
+    public void setLocations(List<LocationObservationDTO> locations) {
+        this.locations = locations;
     }
 
     public List<URI> getOrganizations() {
@@ -157,7 +156,7 @@ public class TestFacilityBuilder  {
         dto.setRelations(getRelations());
         dto.setTypeLabel(getTypeLabel());
         dto.setAddress(getAddress());
-        dto.setGeometry(getGeometry());
+        dto.setLocations(getLocations());
         dto.setOrganizations(getOrganizations());
         dto.setSites(getSites());
         dto.setVariableGroups(getVariableGroups());

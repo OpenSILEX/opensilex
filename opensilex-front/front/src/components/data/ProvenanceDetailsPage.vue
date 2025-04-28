@@ -113,7 +113,6 @@
                 ref="tableRef"
                 :items="provenance.prov_agent"
                 defaultSortBy="name"
-                :defaultPageSize="10"
                 :fields="tableFields"
               >
                 <template v-slot:cell(name)="{data}">

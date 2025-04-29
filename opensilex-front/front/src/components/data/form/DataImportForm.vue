@@ -173,6 +173,7 @@ export default class DataImportForm extends Vue {
   selectDefaultProvenance: boolean = true;
   hasDeviceAgent: boolean = false;
   standardProvURI;
+  validationKey: string = null;
 
   @Prop({
     default: () => {
@@ -319,6 +320,7 @@ export default class DataImportForm extends Vue {
           {
             provenance: this.form.provenance.uri,
             experiment: this.form.experiment ? this.form.experiment : null,
+            validationKey: this.validationKey
           }
         );
 
@@ -444,6 +446,7 @@ export default class DataImportForm extends Vue {
     this.validationReport.sizeMax = response.result.sizeMax;
     this.validationReport.checkValidation(errors, false);
     this.isValid = this.validationReport.isValid;
+    this.validationKey = errors.validationKey ? errors.validationKey : null;
   }
 
   provenanceGetDTOToSelectNode(dto) {

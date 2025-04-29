@@ -1,25 +1,41 @@
 <template>
   <div>
     <opensilex-PageActions>
+      <!-- Create Button -->
       <opensilex-CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
         @click="showImportForm()"
         label="OntologyCsvImporter.import"
         class="greenThemeColor createButton"
       ></opensilex-CreateButton>
-      
+      <!-- Export button-->
       <b-button
         @click="exportModal.show()"
         class="exportButton greenThemeColor createButton"
       >
         export
       </b-button>
+      <!-- Delete by batch button -->
+      <opensilex-Button
+        @click="deleteByBatchModal.show()"
+        class="createButton greenThemeColor"
+        icon="fa#trash-alt"
+        :small="false"
+        label="DataView.buttons.delete-by-batch"
+        :disabled="false"
+      ></opensilex-Button>
     </opensilex-PageActions>
 
     <opensilex-DataExportModal
       ref="exportModal"
       :filter="filter"
     ></opensilex-DataExportModal>
+
+    <opensilex-DeleteByBatchModal
+      ref="deleteByBatchModal"
+      :experimentUri="this.uri"
+      @deleted="refresh"
+    ></opensilex-DeleteByBatchModal>
 
     <template>
       <opensilex-PageContent class="pagecontent">
@@ -164,6 +180,20 @@
                     ></opensilex-DateTimeForm>
                   </opensilex-FilterField>
                 </div>
+
+                <!-- Batch URI -->
+                <div>
+                  <opensilex-FilterField>
+                    <label>{{ $t('ExperimentData.batch-uri') }}</label>
+                    <opensilex-StringFilter
+                      :filter.sync="filter.batch_uri"
+                      placeholder="ExperimentData.uri-placeholder"
+                      class="searchFilter"
+                      @handlingEnterKey="refresh()"
+                    ></opensilex-StringFilter>
+                  </opensilex-FilterField>
+                  <br>
+                </div>
               </template>
             </opensilex-SearchFilterField>
           </div>
@@ -206,6 +236,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import DeleteByBatchModal from "../../data/DeleteByBatchModal.vue";
 
 @Component
 export default class ExperimentData extends Vue {
@@ -230,7 +261,8 @@ export default class ExperimentData extends Vue {
     targets: [],
     devices: [],
     facilities: [],
-    operators: []
+    operators: [],
+    batch_uri: undefined
   };
 
   soFilter = {
@@ -261,6 +293,7 @@ export default class ExperimentData extends Vue {
   @Ref("soSelector") readonly soSelector!: any;
   @Ref("varSelector") readonly varSelector!: any;
   @Ref("exportModal") readonly exportModal!: any;
+  @Ref("deleteByBatchModal") readonly deleteByBatchModal!: DeleteByBatchModal;
 
   get credentials() {
     return this.$store.state.credentials;
@@ -316,7 +349,8 @@ export default class ExperimentData extends Vue {
       targets: [],
       devices: [],
       facilities: [],
-      operators: []
+      operators: [],
+      batch_uri: undefined
     };
     // Only if search and reset button are use in list
   }
@@ -368,6 +402,7 @@ export default class ExperimentData extends Vue {
             );
         }
         this.resultModal.setProvenance(res.form.provenance);
+        this.resultModal.setBatch(res.validation.dataErrors.batchHistoryUri);
         this.resultModal.show();
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
@@ -386,6 +421,7 @@ export default class ExperimentData extends Vue {
           );
       }
       this.resultModal.setProvenance(results.form.provenance);
+      this.resultModal.setBatch(results.validation.dataErrors.batchHistoryUri);
       this.resultModal.show();
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
@@ -521,6 +557,8 @@ en:
         export-wide-help : A given date, provenance, scientific object of an observation represents a row and each variable value is in a specific column.
         export-long : Long format
         export-long-help : Each line represent an observation (Same as the result table)
+        batch-uri : Batch URI
+        uri-placeholder: Enter a part of an uri
 fr:
     ExperimentData:
         object: Objet Scientifique
@@ -533,5 +571,7 @@ fr:
         export-wide-help : Une date, une provenance, un objet scientifique donné d'une observation représente une ligne et chaque valeur de variable est dans une colonne spécifique.
         export-long : Format long
         export-long-help : Une ligne représente une observation (identique au tableau de résultat)
+        batch-uri : URI de Batch
+        uri-placeholder: Entrer une partie d'une uri
 
 </i18n>

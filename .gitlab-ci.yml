@@ -54,7 +54,7 @@ variables:
   OPENSILEX_RESET_ONTOLOGIES_OPTS: "sparql reset-ontologies --DEBUG"
   OPENSILEX_CONFIG_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
 
-  OPENSILEX_JAVA_EXEC_OPTS: java -jar
+  OPENSILEX_JAVA_EXEC_OPTS: java --add-opens java.base/java.io=ALL-UNNAMED -jar
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   #CACHE
@@ -756,33 +756,33 @@ test:valentin:deploy:
     - test:valentin:build
 
 ###################################
-##  BERNHARD-TEST-BUILD-DEPLOYMENT
+##  DHRUTHI-TEST-BUILD-DEPLOYMENT
 ###################################
 
-test:bernhard:build:
+test:dhruthi:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
 
-test:bernhard:deploy:
+test:dhruthi:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/bernhard"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
+    INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4091
     OPENSILEX_JAR_PORT: 8091
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/bernhard"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
       when: on_success
   needs:
-    - test:bernhard:build
+    - test:dhruthi:build
 
 ###################################
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT

@@ -12,6 +12,7 @@ import com.mongodb.client.result.InsertOneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
@@ -20,9 +21,6 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
-
-import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
-
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.utils.ListWithPagination;
@@ -45,6 +43,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.mongodb.client.model.Filters.eq;
+import static org.opensilex.nosql.mongodb.logging.MongoLogger.*;
 import static org.opensilex.utils.pagination.PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH;
 import static org.opensilex.utils.pagination.PaginatedSearchStrategy.HAS_NEXT_PAGE;
 
@@ -278,22 +277,60 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             }
         }
 
+        int batchSize = 1000;
+        List<List<T>> batches = splitIntoBatches(instances, batchSize);
         // Transaction handling for data integrity since insertMany() can update several documents
-        try {
-            InsertManyResult result = session != null ?
-                    collection.insertMany(session, instances) :
-                    mongodb.computeTransaction(newSession -> collection.insertMany(newSession, instances));
+        InsertManyResult finalResult = null;
+        for (List<T> batch : batches) {
+            try {
+                InsertManyResult batchResult = session != null ?
+                        collection.insertMany(session, batch) :
+                        mongodb.computeTransaction(newSession -> collection.insertMany(newSession, batch));
 
-            mongoLogger.logOperationOk(INSERT_MANY, operationStart, INSERT_MANY_COUNT, result.getInsertedIds().size());
-            return result;
+                // Fusionner les IDs insérés (exemple simplifié)
+                finalResult = aggregateInsertManyResults(finalResult, batchResult);
+                mongoLogger.logOperationOk(INSERT_MANY, operationStart, INSERT_MANY_COUNT, batchResult.getInsertedIds().size());
 
-        } catch (MongoBulkWriteException e) {
-            // Check a DUPLICATE_KEY error inside write errors
-            if (e.getWriteErrors().isEmpty() || ErrorCategory.fromErrorCode(e.getWriteErrors().get(0).getCode()) != ErrorCategory.DUPLICATE_KEY) {
-                throw e;
+            } catch (MongoBulkWriteException e) {
+                // Check a DUPLICATE_KEY error inside write errors
+                handleBatchError(e);
             }
-            throw new MongoDbUniqueIndexConstraintViolation(e);
         }
+        return finalResult;
+    }
+
+    private void handleBatchError(MongoBulkWriteException e) {
+        if (e.getWriteErrors().isEmpty() || ErrorCategory.fromErrorCode(e.getWriteErrors().get(0).getCode()) != ErrorCategory.DUPLICATE_KEY) {
+            throw e;
+        }
+        throw new MongoDbUniqueIndexConstraintViolation(e);
+    }
+
+    /**
+     * Divise la liste en lots de taille fixe.
+     */
+    private List<List<T>> splitIntoBatches(List<T> instances, int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+        for (int i = 0; i < instances.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, instances.size());
+            batches.add(instances.subList(i, end));
+        }
+        return batches;
+    }
+
+    /**
+     * Agrège les résultats d'insertion des différents lots.
+     */
+    private InsertManyResult aggregateInsertManyResults(InsertManyResult currentResult, InsertManyResult batchResult) {
+        if (currentResult == null) {
+            return batchResult;
+        }
+
+        // Fusionner les IDs insérés
+        Map<Integer, BsonValue> aggregatedIds = new HashMap<>(currentResult.getInsertedIds());
+        aggregatedIds.putAll(batchResult.getInsertedIds());
+
+        return InsertManyResult.acknowledged(aggregatedIds);
     }
 
     public Bson getUpdateFilter(T instance) {
@@ -343,9 +380,9 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * Update an existing model instance in the database if it exists,
      * otherwise insert it.
      *
-     * @param model new model to upsert
-     * @param filter   additional BSON filter
-     * @param session  current session
+     * @param model   new model to upsert
+     * @param filter  additional BSON filter
+     * @param session current session
      * @throws NoSQLInvalidURIException if no previous corresponding model was found in the collection
      */
     protected void upsert(T model, Bson filter, ClientSession session) {
@@ -362,12 +399,12 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
-    public void upsert(ClientSession session, @NotNull T instance) throws MongoException{
+    public void upsert(ClientSession session, @NotNull T instance) throws MongoException {
         upsert(instance, getUpdateFilter(instance), session);
     }
 
     @Override
-    public void upsert(@NotNull T instance) throws MongoException{
+    public void upsert(@NotNull T instance) throws MongoException {
         upsert(instance, getUpdateFilter(instance), null);
     }
 
@@ -537,7 +574,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return countDocuments(session, filter, countOptions == null ? getDefaultCountOptions(filter) : countOptions);
     }
 
-    private void initializeSearchFilter(F filter){
+    private void initializeSearchFilter(F filter) {
         List<Bson> bsonFilters = getBsonFilters(filter);
         filter.setFilterList(bsonFilters);
         Bson bsonFilter = getBsonFilter(bsonFilters, filter.isLogicalAnd());
@@ -966,7 +1003,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     /**
      * Append a Default Sort in case where the List of {@link OrderBy} passed to {@link #buildSort(List)} is empty
      */
-    protected void addDefaultSort(Document sort){
+    protected void addDefaultSort(Document sort) {
         // no default sort
     }
 

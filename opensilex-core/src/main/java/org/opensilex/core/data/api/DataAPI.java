@@ -300,7 +300,6 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
     })
     public Response searchDataListByTargets(
-            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -315,6 +314,7 @@ public class DataAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -537,7 +537,9 @@ public class DataAPI {
         }
 
         DataSearchFilter filter = new DataSearchFilter();
-        filter.setBatchUri(batchUri);
+        if(batchUri != null){
+            filter.setBatchUri(batchUri);
+        }
         filter.setUser(user);
         filter.setExperiments(experiments);
         filter.setVariables(variables);
@@ -580,7 +582,6 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Return the number of data ", response = Long.class)
     })
     public Response countData(
-            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -595,7 +596,8 @@ public class DataAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
     ) throws Exception {
 
         DataSearchFilter filter;

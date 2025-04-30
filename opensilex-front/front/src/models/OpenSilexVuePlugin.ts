@@ -344,6 +344,7 @@ export default class OpenSilexVuePlugin {
         this.app = app;
         // const pluginInstance = new OpenSilexVuePlugin(app, options, undefined);
         app.config.globalProperties.$opensilex = this;
+        app.provide('opensilex', this);
         // app.prototype.$opensilex = this;
         // app.$opensilex = this;
     }
@@ -453,7 +454,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadComponentModule(componentDef: ModuleComponentDefinition) {
-        console.debug("Load component", componentDef.getId());
+        console.log("Load component", componentDef);
         let moduleName = componentDef.getModule();
 
         if (!this.loadingModules[moduleName]) {

@@ -124,7 +124,7 @@ export default {
 
     const popoverTarget = ref<HTMLElement | null>(null);
 const popoverContent = computed(() => {
-    console.log("💬 Contenu du popover :", scientificObjectTypes.value);
+    // console.log("💬 Contenu du popover :", scientificObjectTypes.value);
   if (scientificObjectTypes.value.length === 0) {
     return `<p>${t("DataMonitoring.noScientificObjectAdded")}</p>`;
   }
@@ -159,7 +159,7 @@ const calculateTotalDifference = (items: { difference_count: number }[]) => {
 service.getSystemMetricsSummary(period.value, 0, 20)
   .then((http: OpenSilexResponse<MetricPeriodDTO>) => {
       const result = http.response.result;
-    console.log("📝 Données  de l'API :", JSON.stringify(result, null, 2));
+    // console.log("📝 Données  de l'API :", JSON.stringify(result, null, 2));
 
     // console.log("✅ Résultat API :", result);
 
@@ -177,15 +177,15 @@ service.getSystemMetricsSummary(period.value, 0, 20)
 
 
     // Vérifie les valeurs reçues
-    console.log("🔍 Nombre d'objets scientifiques :", result.scientific_object_list?.total_items_count);
-    console.log("🔍 Delta d'objets scientifiques :", result.scientific_object_list?.total_difference_item_count);
+    // console.log("🔍 Nombre d'objets scientifiques :", result.scientific_object_list?.total_items_count);
+    // console.log("🔍 Delta d'objets scientifiques :", result.scientific_object_list?.total_difference_item_count);
 
     try {
       nbScientificObjects.value = result.scientific_object_list?.total_items_count?.toLocaleString() || "0";
       deltaScientificObjects.value = formatDelta(result.scientific_object_list?.total_difference_item_count);
 
   // Vérifier s'il y a des ajouts, sinon réinitialiser la liste des types
-  console.log(" diff item count : ", result.scientific_object_list?.total_difference_item_count)
+  // console.log(" diff item count : ", result.scientific_object_list?.total_difference_item_count)
         if (result.scientific_object_list?.total_difference_item_count > 0) {
           scientificObjectTypes.value = getAddedTypes(result.scientific_object_list.difference_items);
         } else {
@@ -197,11 +197,10 @@ service.getSystemMetricsSummary(period.value, 0, 20)
       nbData.value = result.data_list?.total_items_count?.toLocaleString() || "0";
       deltaData.value = formatDelta(result.data_list?.total_difference_item_count);
 
-            console.log("📝 Valeurs après assignation :",
-      "nbScientificObjects: ", nbScientificObjects.value,
-      "deltaScientificObjects :", deltaScientificObjects.value,
-    
-    );
+    // console.log("📝 Valeurs après assignation :",
+    //   "nbScientificObjects: ", nbScientificObjects.value,
+    //   "deltaScientificObjects :", deltaScientificObjects.value,
+    // );
 
       isSearching.value = false;
     } catch (err) {

@@ -1,9 +1,8 @@
-
 <template>
 
  <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
 
-      <div v-if="route.meta.public" >
+      <div v-if="isPublicRoute">
           <!-- <component v-bind:is="headerComponent"></component> -->
           <!-- <opensilex-DefaultHeaderComponent></opensilex-DefaultHeaderComponent> -->
 
@@ -12,6 +11,7 @@
                       <main class="main-content">
                         <div> public</div>
                         <router-view />
+
                       </main>
 
                   <!--    <footer v-if="!embed">
@@ -92,11 +92,11 @@
 
             <div id="main-content">
               <main class="main-content">
-        <div> pas public</div>
+                <div> pas public</div>
           
-                <router-view></router-view>
-              </main>
+                <router-view />
 
+              </main>
             </div>
           </section>
         </div>
@@ -163,7 +163,8 @@ const route = useRoute();
 const store = useStore();
 const { t, locale } = useI18n();
 
-// const opensilex = inject('opensilex');
+// const opensilex = getCurrentInstance()?.proxy?.$opensilex;
+const opensilex = inject('opensilex');
 // const bvToast = inject('bvToast');
 
 // Data properties
@@ -180,6 +181,8 @@ const disconnected = computed(() => store.state.disconnected);
 const user = computed(() => store.state.user);
 const isLoaderVisible = computed(() => store.state.loaderVisible);
 const menuVisible = computed(() => store.state.menuVisible);
+const isPublicRoute = computed(() => route.meta.public);
+
 
 // Computed for notification color class
 const notificationColorClass = computed(() => {
@@ -225,10 +228,7 @@ onMounted(() => {
   //   notificationMessageDisplayed.value = notificationMessage.value[opensilex.i18n.locale];
   // });
 
-const opensilex = getCurrentInstance()?.proxy?.$opensilex;
-
-        const config = opensilex.getConfig();
-        console.log("Configuration :", config);
+  const config = opensilex.getConfig();
 
 // Created lifecycle - initialize data
 // opensilex.bvToast = bvToast;
@@ -250,11 +250,9 @@ try {
   if (!notificationEndDate.value || notificationEndDate.value > formattedCurrentDate) {
     displayNotificationMessage.value = true;
 
-    console.log("dispNotifMess ? ", displayNotificationMessage.value)
     console.log("store.state.lang  ", lang.value)
     console.log("usei18n locale :  ", locale)
     notificationMessageDisplayed.value = notificationMessage.value[locale.value];
-    console.log("notifMessDisplayed : ", notificationMessageDisplayed.value)
   }
 } catch {
   // opensilex.showErrorToast(t("component.header.bad-notification-end-date"));

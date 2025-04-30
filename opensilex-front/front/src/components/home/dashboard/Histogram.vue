@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { ref, watchEffect, onMounted, inject, defineProps } from "vue";
+import { ref, watchEffect, onMounted, inject, defineProps, nextTick } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HistogramSettings from "./HistogramSettings.vue";
 import VisualisationGraphic from "./VisualisationGraphic.vue";
@@ -92,6 +92,8 @@ import Xsd from "../../../ontologies/Xsd";
 import { DataGetDTO } from "opensilex-core/index";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import { useI18n } from 'vue-i18n';
+import { useStore } from 'vuex';
+import type { HttpResponse, OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 
 export default {
@@ -113,6 +115,7 @@ export default {
     const selectedVariable = ref(null);
     const selectedVariableName = ref("");
     const { t } = useI18n();
+    const store = useStore();
     let variableChoice = props.variableChoice;
     
     const histogramSettings = ref<InstanceType<typeof HistogramSettings>>();
@@ -128,13 +131,18 @@ export default {
 
 
     const loadDevices = async () => {
+      console.log("variableChoice pour loadDevices : ", variableChoice);
+
       try {
-        const response = await devicesService.searchDevices(undefined, undefined, undefined, undefined, undefined);
+        const response = await devicesService.searchDevices(undefined, undefined, undefined, variableChoice, undefined);
+        console.log("loadDevices - response devices : ", response)
         devices.value = response.response.result.map((device: DeviceGetDTO) => ({
           id: device.uri,
           label: device.name,
         }));
       } catch (error) {
+        console.log("loadDevices - error - variable choice : ", variableChoice)
+        console.log("loadDevices - error ", error)
         $opensilex.errorHandler(error);
       }
     };
@@ -146,7 +154,7 @@ export default {
 
       try {
         const response = await variablesService.getVariable(variableChoice);
-        console.log("Réponse API :", response);
+        console.log("histogram loadDevices Réponse API (variable):", response);
         selectedVariable.value = response.response.result;
         selectedVariableName.value = selectedVariable.value.name;
         dataLocationInformations.value = $opensilex.getConfig().dashboard.graph1.dataLocationInformations;
@@ -180,93 +188,160 @@ export default {
     };
 
     const buildSeries = async (devicesToDisplay, period) => {
-    //   const series = await Promise.all(
-    //     (devicesToDisplay || devices.value).map((device) => buildDataSerie(device, period))
-    //   );
+      console.log("buildSeries")
+    let promises = [];
+    let promise;
+    const series = [];
+    let serie;
+    
+    promise = buildDataSeries(devicesToDisplay, period);
+    promises.push(promise);
+
+    Promise.all(promises).then(values => {
+      let series = [];
+
+      if (values[0]) {
+        values[0].forEach(serie => {
+          series.push(serie);
+        });
+      }
+
+      if (values[1]) {
+        values[1].forEach(serie => {
+          series.push(serie);
+        });
+      }
+
       isGraphicLoaded.value = true;
-    //   visualisationGraphic.value?.reload(series.filter(Boolean), selectedVariable.value);
-    };
+      nextTick(() => {
+        visualisationGraphic.reload(series, selectedVariable, undefined);
+      });
+    }
+    )}
 
-    // const buildDataSerie = async (device, period) => {
-    //     const todayDate = new Date();
+
+
+
+
+function buildDataSeries(devicesToDisplay?: any[], period?: any): Promise<any[]> {
+  console.log("buildDataSeries")
+  const promises: Promise<any>[] = [];
+
+  const devicesToUse = devicesToDisplay ?? devices.value;
+
+  devicesToUse.forEach((device) => {
+    const promise = buildDataSerie(device, period);
+    promises.push(promise);
+  });
+
+  return Promise.all(promises).then((values) => {
+    const series: any[] = [];
+    let totalData = 0;
+
+    values.forEach((serie) => {
+      if (serie !== undefined) {
+        series.push(serie);
+        totalData += serie.data.length;
+      }
+    });
+
+    if (totalData === 0) {
+      $opensilex.showInfoToast(
+        t("Histogram.noDataFound") + selectedVariableName.value
+      );
+    }
+
+    return series;
+  });
+}
+
+
+
+
+
+    const buildDataSerie = async (device, period) => {
+      console.log("passage buildDataSerie")
+        const todayDate = new Date();
             
-    //         const yesterdayDate = new Date();
-    //         yesterdayDate.setDate(todayDate.getDate()-1);
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(todayDate.getDate()-1);
 
-    //         const weekDate = new Date();
-    //         weekDate.setDate(todayDate.getDate()-7);
+            const weekDate = new Date();
+            weekDate.setDate(todayDate.getDate()-7);
 
-    //         const monthDate = new Date();
-    //         monthDate.setMonth(todayDate.getMonth()-1);
+            const monthDate = new Date();
+            monthDate.setMonth(todayDate.getMonth()-1);
 
-    //         const yearDate = new Date();
-    //         yearDate.setDate(todayDate.getDate()-365);
+            const yearDate = new Date();
+            yearDate.setDate(todayDate.getDate()-365);
 
-    //         let chosenPeriod;
+            let chosenPeriod;
 
-    //         if (period === "day") {
-    //         chosenPeriod = yesterdayDate
-    //         }
-    //         if (period === "week") {
-    //         chosenPeriod = weekDate
-    //         }
-    //         if (period === "month") {
-    //         chosenPeriod = monthDate
-    //         }
-    //         if (period === "year") {
-    //         chosenPeriod = yearDate
-    //         }
+            if (period === "day") {
+            chosenPeriod = yesterdayDate
+            }
+            if (period === "week") {
+            chosenPeriod = weekDate
+            }
+            if (period === "month") {
+            chosenPeriod = monthDate
+            }
+            if (period === "year") {
+            chosenPeriod = yearDate
+            }
 
-    //         return this.dataService
-    //         .searchDataList(
-    //             chosenPeriod.toISOString(),
-    //             todayDate.toISOString(),
-    //             undefined,
-    //             undefined,
-    //             undefined,
-    //             [variableChoice],
-    //             [device.id],
-    //             undefined,
-    //             undefined,
-    //             undefined,
-    //             undefined,
-    //             undefined,
-    //             ["date=asc"],
-    //             0,
-    //             this.$store.state.graphDataLimit,
-    //         )
-    //         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-    //             const data = http.response.result as Array<DataGetDTO>;
+            return dataService
+            .searchDataList(
+                chosenPeriod.toISOString(),
+                todayDate.toISOString(),
+                undefined,
+                undefined,
+                undefined,
+                [variableChoice],
+                [device.id],
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                ["date=asc"],
+                0,
+                store.state.graphDataLimit,
+            )
+            .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+              console.log("buildDataSerie dataService  response ", http.response.result)
+                const data = http.response.result as Array<DataGetDTO>;
 
-    //             let dataLength = data.length;
-    //             if (dataLength >= 0) {
-    //             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: device.uri});
+                let dataLength = data.length;
+                if (dataLength >= 0) {
+                const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: device.uri});
 
-    //             if (dataLength > this.$store.state.graphDataLimit) {
-    //                 this.$opensilex.showErrorToast(
-    //                 this.$i18n.t("Histogram.limitSizeMessageA") +
-    //                 " " +
-    //                 dataLength +
-    //                 " " +
-    //                 this.$i18n.t("Histogram.limitSizeMessageB") +
-    //                 device.name +
-    //                 this.$i18n.t("Histogram.limitSizeMessageC")
-    //                 );
-    //             }
+                if (dataLength > store.state.graphDataLimit) {
+                    $opensilex.showErrorToast(
+                    t("Histogram.limitSizeMessageA") +
+                    " " +
+                    dataLength +
+                    " " +
+                    t("Histogram.limitSizeMessageB") +
+                    device.name +
+                    t("Histogram.limitSizeMessageC")
+                    );
+                }
 
-    //             let name = device.label ? device.label : device.id
-    //             return {
-    //                 name: name,
-    //                 data: cleanData,
-    //                 visible: true,
-    //                 color: this.deviceColorMap[device.id],
-    //                 legendColor: this.deviceColorMap[device.id]
-    //             };
-    //             }
-    //         })
-    //         .catch(error => {
-    //         });
-    // };
+                let name = device.label ? device.label : device.id
+                return {
+                    name: name,
+                    data: cleanData,
+                    visible: true,
+                    color: deviceColorMap[device.id],
+                    legendColor: deviceColorMap[device.id]
+                };
+                }
+            })
+            .catch(error => {
+              console.log("error buildDataSerie ", error)
+            });
+    };
 
     onMounted(() => {
       loadDevices().then(loadData);

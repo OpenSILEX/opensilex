@@ -19,7 +19,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  name: "mySUperComponent",
+  name: "mySuperComponent",
   setup() {
     const store = useStore();
     const router = useRouter();

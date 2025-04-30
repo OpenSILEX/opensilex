@@ -1,5 +1,5 @@
 import { User } from './User';
-import { App } from 'vue';
+import { App, defineAsyncComponent } from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
 import {useStore} from 'vuex';
@@ -21,24 +21,27 @@ export class OpenSilexRouter {
     private PUBLIC_ROUTE: string = "public";
     private sectionAttributes : any = {};
     private app : App;
+    private $opensilex: OpenSilexVuePlugin;
+
 
     constructor(pathPrefix: string, app: App) {
         this.pathPrefix = pathPrefix;
         this.app = app;
+        this.$opensilex = this.app.config.globalProperties.$opensilex;
         this.router = this.createRouter(User.ANONYMOUS());
         // const store = useStore();
-       
+        
     }
     
     public getSectionAttributes() {
         console.log("RETURN sectionAttributes ", this.sectionAttributes)
         return this.sectionAttributes;
     }
-
+    
     public getMenu() {
         return this.menu;
     }
-
+    
     public setConfig(config: FrontConfigDTO) {
         this.frontConfig = config;
     }
@@ -58,9 +61,8 @@ export class OpenSilexRouter {
             history: createWebHistory(this.pathPrefix + "/app"),
             routes: routes,
         });
-    
-        console.log("this.router ", this.router)
-        console.log("Routes avant beforeEach :", this.router.getRoutes().map(route => route.name));
+
+        console.log("Routes enregistrées - createRouter :", this.router.getRoutes());
         console.log("RETURN sectionAttributes ", this.sectionAttributes)
         
 
@@ -93,37 +95,43 @@ export class OpenSilexRouter {
                 return next({ path: '/', query: { redirect: to.fullPath } });
             }
 
-            // si deja log et veut aller sur /app : renvoi sur /test
+            // si deja log et veut aller sur /app : renvoi sur /dash
             if (isLoggedIn && to.path === '/' && !redirectTo) {
-                console.log("🍫 deja log et veut aller sur /app -> renvoi /test")
-                return next({ path: '/test', query: { redirect: redirectTo } }); 
+                console.log("🍫 deja log et veut aller sur /app -> renvoi /dash")
+                return next({ path: '/dash', query: { redirect: redirectTo } }); 
             }
 
             console.log("redirectTo : ", redirectTo)
             // a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app : 
-                // redirect soit sur /test si pas d'historique, 
+                // redirect soit sur /dash si pas d'historique, 
                 // sinon renvoi sur la derniere page consulté
-            // if (isLoggedIn && from.path === '/' && to.path !== '/') {
                 if (isLoggedIn && to.path === '/' && redirectTo) {
-            
-                // to.redirectedFrom.query.redirect
-                console.log("to.redirectedFrom : ", to.redirectedFrom)
-                console.log("🍫 Redirection après login vers:", redirectTo);
-                return next({ path: redirectTo });
-            }
-
-
-             // Vérification pour éviter la redirection infinie
-            if (to.path === from.path) {
-                console.log("🍫 déjà sur la même page, redirection annulée");
-                return next(); 
-            }
-
+                    
+                    // to.redirectedFrom.query.redirect
+                    console.log("to.redirectedFrom : ", to.redirectedFrom)
+                    console.log("🍫 Redirection après login vers:", redirectTo);
+                    return next({ path: redirectTo });
+                }
+                
+                
+                // Vérification pour éviter la redirection infinie
+                if (to.path === from.path) {
+                    console.log("🍫 déjà sur la même page, redirection annulée");
+                    return next(); 
+                }
+                
+                console.log("to ", to, " from " , from)
             next(); // aucun des cas ? on laisse passer
         });
-
         //   console.log(" 😶‍🌫️ Routes enregistrées :", this.router.getRoutes().map(route => route.name));
+           console.log("this.router ", this.router)
 
+           this.router.afterEach((to, from, failure) => {
+            if (failure) {
+                console.log(  "failure");
+                console.log(to, from, failure)
+            }
+          })
         return this.router;
     }
 
@@ -141,104 +149,109 @@ export class OpenSilexRouter {
         this.router = newRouter;
         return this.router
     }
-    
 
     public computeMenuRoutes(user: User) {
-        console.log("🧨 compute menu route")
-        let routes: Array<any> = [];
-
-        let $opensilex: OpenSilexVuePlugin = this.app.config.globalProperties.$opensilex ;
-        let frontConfig = this.frontConfig;
-        if (frontConfig != undefined) {
-            console.log("frontConfigDefined")
+        console.log("🧨 compute menu route");
+    
+        const routes: Array<any> = [];
+        const $opensilex: OpenSilexVuePlugin = this.$opensilex;
+        const frontConfig = this.frontConfig;
+    
+        const loadComponent = (componentId: string) => {
+            return defineAsyncComponent(() => this.getAsyncComponentLoader(componentId));
+        };
+    
+        // 📌 Routes générales depuis frontConfig
+        if (frontConfig) {
+    
+            // Route par défaut
             routes.push({
                 path: "/",
-                component: this.getAsyncComponentLoader($opensilex, frontConfig.loginComponent),
-                meta: { public: true}
+                component: loadComponent(frontConfig.loginComponent),
+                meta: { public: true }
             });
-
-            for (let routeConfig in frontConfig.routes) {
-                let route = frontConfig.routes[routeConfig];
-                console.log("route😁", route)
-                // Crée la route en incluant la propriété name si elle est définie dans la config
+    
+            for (const routeConfig of frontConfig.routes) {
+                console.log("🛤️ Route from frontConfig", routeConfig);
                 routes.push({
-                  path: route.path,
-                  name: route.name || undefined, // Si routeConfig.name est défini, l'utiliser, sinon undefined
-                  component: this.getAsyncComponentLoader($opensilex, route.component),
-                //   meta: { public: true }
+                    path: routeConfig.path,
+                    name: routeConfig.name || undefined,
+                    component: loadComponent(routeConfig.component),
+                    // meta: routeConfig.meta || {}
                 });
-              }
-
-              console.log("🙃 routesz ", routes)
-
-              // GESTION DES DROITS POSSIBLES SUR LES ROUTES PUBLIQUES / PRIVEES
-            // for (let i in frontConfig.routes) {
-            //     let route = frontConfig.routes[i];
-
-            //     if (user.hasAllCredentials(route.credentials)) {
-            //         console.log("🧨 user have credentials")
-            //         routes.push({
-            //             path: route.path,
-            //             name: route["name"],
-            //             component: this.getAsyncComponentLoader($opensilex, route.component),
-            //             meta:{public: false}
-            //         });
-            //     }
-            //     if(route.credentials.includes(this.PUBLIC_ROUTE)){ 
-            //         console.log("🧨 public routes")
-            //         console.log(" 🧨 path : ", route.path, " component : ", route.component)
-            //         routes.push({
-            //             path: route.path,
-            //             name: route["name"],
-            //             component: this.getAsyncComponentLoader($opensilex, route.component),
-            //             meta:{public: true}
-            //         });
-                    
-            //     }
-            // }
-
-            // ??????
-            // routes.push({
-            //     // path: "*",
-            //     path: "/:catchAll(.*)",
-            //     component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
-            // });
+            }
         }
-
+    
+        // 📌 Routes dynamiques depuis le menu utilisateur à verifier si toujours necessaire (duplicata de declarations ?)
         if (this.userFrontConfig) {
+            console.log("👤 userFrontConfig:", this.userFrontConfig);
             this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
+    
+            const addMenuRoutes = (menuItems: any[]) => {
+                menuItems.forEach(item => {
+                    if (item.route) {
+                        routes.push({
+                            path: item.route.path,
+                            name: item.id || undefined,
+                            component: loadComponent(item.route.component),
+                        });
+                    }
+                    if (item.children?.length) {
+                        addMenuRoutes(item.children);
+                    }
+                });
+            };
+    
+            addMenuRoutes(this.userFrontConfig.menu);
+        }
+    
+        // 📌 Route "catch-all" (404) - idee de créer une page "not found"
+        if (frontConfig?.notFoundComponent) {
+            routes.push({
+                path: "/:catchAll(.*)",
+                name: "NotFound",
+                component: loadComponent(frontConfig.notFoundComponent)
+            });
         }
 
+        console.log("✅ Final routes:", routes);
         return routes;
     }
 
-    private getAsyncComponentLoader($opensilex, componentId) {
-        return () => {
+    private getAsyncComponentLoader(componentId) {
             return new Promise((resolve, reject) => {
                 let componentDef = ModuleComponentDefinition.fromString(componentId);
                 // let override = $opensilex.themeConfig.componentOverrides[componentId];
                 // if (override) {
                 //     componentDef = ModuleComponentDefinition.fromString(override);
                 // }
-                $opensilex.loadComponentModule(componentDef)
+
+                this.$opensilex.loadComponentModule(componentDef)
                     .then(() => {
                         let component: any = this.app.component(componentDef.getId());
                         if (component) {
                             resolve(component)
                         } else {
-                            let result = this.getAsyncComponentLoader($opensilex, this.frontConfig.notFoundComponent)();
+                            let result = this.getAsyncComponentLoader( this.frontConfig.notFoundComponent);
                             if (result instanceof Promise) {
                                 result
                                     .then(resolve)
-                                    .catch(reject);
+                                    .catch((error) => {
+                                        console.error(error);
+                                        reject(error);
+
+                                      });
                             } else {
+                                console.error("result",result);
                                 resolve(result);
                             }
                         }
                     })
-                    .catch(reject);
+                    .catch((error) => {
+                        console.error(error);
+                        reject(error);
+                    });
             })
-        }
     }
 
     public refresh() {
@@ -261,7 +274,7 @@ export class OpenSilexRouter {
                 menu.push(item);
                 routes.push({
                     path: route.path,
-                    component: this.getAsyncComponentLoader($opensilex, route.component)
+                    component: this.getAsyncComponentLoader(route.component)
                 });
                 this.sectionAttributes[route.path] = {
                     icon: route.icon,

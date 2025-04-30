@@ -159,8 +159,19 @@ import HighchartsVue from "highcharts-vue";
 import Highcharts from 'highcharts';
 
 
-
 const app = createApp(App);
+
+
+// Import des modules Highcharts de manière asynchrone
+// import('highcharts/modules/exporting').then(module => {
+//   module.default(Highcharts);
+// });
+
+// import('highcharts/modules/stock').then(module => {
+//   module.default(Highcharts);
+// });
+
+
 const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
 
 // Fournit l'instance pour injection dans Vue 3
@@ -184,7 +195,7 @@ for (let componentName in components) {
   console.log("Load default components : ", componentName);
   let component = components[componentName];
   //@todo est-ce qu'on a vraiment besoin ? pas de manière plus propre de faire ? sinon trouver le moyen en vue 3 
-  // Vue.component(componentName, component);
+  app.component(componentName, component);
   $opensilex.loadComponentTranslations(component);
 }
 
@@ -382,6 +393,8 @@ $opensilex.loadModules([
                 store.commit("resetRouter");
                 let router: Router = store.state.openSilexRouter.getRouter();
                 app.use(router);
+                console.log("Registered routes:");
+                router.getRoutes().forEach(route => console.log("route.path " ,route.path));
 
                 // Initialise main layout components from configuration
                 console.debug("Define initial modules to load...");

@@ -19,6 +19,7 @@
       <div class="sidebar-content">
         <div class="nav-container">
           <nav id="main-menu-navigation" class="navigation-main">
+          
             <div
               v-for="item in menu"
               :key="item.id"
@@ -33,7 +34,7 @@
                 <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
               </a>
-              <router-link v-else :to="item.route.path">
+              <router-link v-else :to="{ path: item.route.path }">
                 <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
               </router-link>
@@ -89,6 +90,8 @@ import { useI18n } from 'vue-i18n';
 import en from './../../lang/message-en.json';
 import fr from './../../lang/message-fr.json';
 
+import { useRouter } from "vue-router";
+const router = useRouter();
 const { t } = useI18n(); 
 const store = useStore();
 const route = useRoute();
@@ -129,7 +132,8 @@ const getIcon = (item: Menu): string => {
 };
 
 const isActive = (item: Menu): boolean => {
-  return item.route && route.path.startsWith(item.route.path);
+  console.log("item.route", item.route)
+  return item.route && route.path.indexOf(item.route.path) === 0;
 };
 </script>
 

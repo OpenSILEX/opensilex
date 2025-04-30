@@ -50,6 +50,7 @@ export default defineComponent({
       title: {
         text: 'Exemple de graphique'
       },
+      exporting: { enabled: true },
       series: [{
         data: [1, 2, 3, 4, 5]
       }]

@@ -1,9 +1,4 @@
 menu:
-  # - id: dashboard
-  #   label: component.menu.dashboard
-  #   route:
-  #     path: /users
-  #     component: opensilex-AccountView
   - id: scientific-organisation
     label: component.menu.scientific-organisation
     children:
@@ -312,6 +307,7 @@ menu:
           title: PackagesView.title
           description: PackagesView.description
 
+
 routes:
   # - path: /organization/details/:uri
   #   component: opensilex-OrganizationDetailView
@@ -478,7 +474,6 @@ routes:
   #  - path: /users/create
   #    component: opensilex-UserCreate
   #    credentials: []
-
 
   - path: /test
     component: opensilex-TestPage

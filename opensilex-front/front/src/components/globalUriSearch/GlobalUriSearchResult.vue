@@ -18,7 +18,7 @@
       <span v-else class="data-uri-details">
         <opensilex-UriView :uri="shortUri" :value="shortUri" customClass="sectionTitle"/>
         <opensilex-Button
-          v-if="dataDto.uri"
+          v-if="(dataDto && dataDto.uri) || isSubTypeOfEvent"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"
@@ -112,7 +112,10 @@ const updatedDate = computed(() => props.searchResult.last_updated_date);
 
 const dataDto = computed(() => props.searchResult.data_dto || props.searchResult.datafile_dto);
 
-const hasNoDetailsPage = computed(() => dataDto.value !== null);
+const hasNoDetailsPage = computed(() => {
+  return dataDto.value !== null || isSubTypeOfEvent.value;
+});
+
 const isData = computed(() => props.searchResult.data_dto !== null);
 
 const dataService: DataService = $opensilex.getService("opensilex.DataService");
@@ -165,39 +168,94 @@ const detailsPath = computed(() => {
   return "";
 });
 
-
-
-
-
-const handleSeeDetails = async () => {
-    console.log("handleSeeDetails triggered — dataDto.value:", dataDto.value);
-    console.log("searchResult:", props.searchResult);
-
-
+const isSubTypeOfEvent = computed(() => {
+  console.log("props.searchResult ", props.searchResult)
   if (props.searchResult.super_types) {
-    const isEvent = props.searchResult.super_types.rdf_types.some((type) =>
-      $opensilex.Oeev.checkURIs(type, $opensilex.Oeev.EVENT_TYPE_URI)
-    );
-    if (isEvent) {
-      const http = await eventsService.getEventDetails(uri.value);
-      eventModalView.value.show(http);
-      // eventModalView.value.show();
-
-      return;
+    for (const currentType of props.searchResult.super_types.rdf_types) {
+      if ($opensilex.Oeev.checkURIs(currentType, $opensilex.Oeev.EVENT_TYPE_URI)) {
+        console.log("trueeve")
+        return true;
+      }
     }
+  }
+  return false;
+});
+
+
+
+// const handleSeeDetails = async () => {
+//     console.log("handleSeeDetails triggered — dataDto.value:", dataDto.value);
+//     console.log("searchResult:", props.searchResult);
+
+
+//   if (props.searchResult.super_types) {
+//     const isEvent = props.searchResult.super_types.rdf_types.some((type) =>
+//       $opensilex.Oeev.checkURIs(type, $opensilex.Oeev.EVENT_TYPE_URI)
+//     );
+//     if (isEvent) {
+//       const http = await eventsService.getEventDetails(uri.value);
+//       eventModalView.value.show(http);
+//       // eventModalView.value.show();
+
+//       return;
+//     }
+//   }
+
+//   if (dataDto.value?.provenance?.uri) {
+//         console.log("globalUriSearchResult data provenance found")
+//     const result = await dataService.getProvenance(dataDto.value.provenance.uri);
+//     dataProvenanceModalView.value.setProvenance({ provenance: result, data: dataDto.value });
+//     console.log("dataProvenanceModalView ref:", dataProvenanceModalView.value);
+
+//     dataProvenanceModalView.value.show();
+//   } else {
+//     console.log("no provenance URI found")
+//   }
+// };
+
+
+async function handleSeeDetails() {
+  $opensilex.enableLoader();
+  if (isSubTypeOfEvent.value) {
+    const http = await getEventPromise();
+    await eventModalView.value.show(http);
+    return;
   }
 
   if (dataDto.value?.provenance?.uri) {
-        console.log("globalUriSearchResult data provenance found")
-    const result = await dataService.getProvenance(dataDto.value.provenance.uri);
-    dataProvenanceModalView.value.setProvenance({ provenance: result, data: dataDto.value });
-    console.log("dataProvenanceModalView ref:", dataProvenanceModalView.value);
-
+    const result = await getProvenance(dataDto.value.provenance.uri);
+    const value = {
+      provenance: result,
+      data: dataDto.value
+    };
+    dataProvenanceModalView.value.setProvenance(value);
     dataProvenanceModalView.value.show();
-  } else {
-    console.log("no provenance URI found")
   }
-};
+}
+
+function getProvenance(uri: string) {
+  return dataService.getProvenance(uri)
+    .then((http) => http.response.result);
+}
+
+function getEventPromise() {
+  console.log("isMove?" , isMove())
+  if (isMove()) {
+    console.log("isMove")
+    console.log("uri ", uri.value)
+    return eventsService.getMoveEvent(uri.value);
+  } else {
+    console.log("event not move")
+    return eventsService.getEventDetails(uri.value);
+  }
+}
+
+function isMove() {
+  console.log("move type.value ", type.value)
+  return $opensilex.Oeev.checkURIs(type.value, $opensilex.Oeev.MOVE_TYPE_URI);
+}
+
+
 
 </script>
 

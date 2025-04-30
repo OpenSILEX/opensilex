@@ -127,6 +127,7 @@ const sendUpdate = () => {
 
     emit("update", devicesToDisplay.value.length ? devicesToDisplay.value : props.devicesLoaded, selectedPeriod.value);
   }
+  console.log("selected devices to display ", selectedDevices)
 };
 
 const show = () => {

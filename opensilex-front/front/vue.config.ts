@@ -24,7 +24,8 @@ module.exports = {
                 'Vue$': '@vue/runtime-dom',
                 "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
                 "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),
-                "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src")
+                "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src"),
+                "opensilex-dataverse": path.resolve(__dirname,"../../opensilex-dataverse/front/src")
             }
         },
         performance: {

@@ -217,50 +217,8 @@ export default class OpenSilexVuePlugin {
     }
 
 
-    /**
-     *
-     * @param type
-     * @param uri
-     * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
-     *
-     */
-    getVariableComponentPath(type: string, uri:string): string{
-
-        const paths = {
-            [Oeso.ENTITY_TYPE_URI]: "Entity",
-            [Oeso.ENTITY_OF_INTEREST_TYPE_URI]: "InterestEntity",
-            [Oeso.CHARACTERISTIC_TYPE_URI]: "Characteristic",
-            [Oeso.METHOD_TYPE_URI]: "Method",
-            [Oeso.UNIT_TYPE_URI]: "Unit",
-            [Oeso.VARIABLESGROUP_TYPE_URI]: "VariableGroup"
-        };
-
-        const elementType = Object.entries(paths).find(([key]) => this.checkURIs(type, key))?.[1];
-        return elementType ? `/variables?elementType=${elementType}&selected=${encodeURIComponent(uri)}` : null;
-    }
-
-    /**
-     * This is a function to get path for vocabulary pages from a type or domain and if the uri is a property or class
-     *
-     * @param uri the vocabulary we want to try and navigate to
-     * @param rootClassUri to know which page to go to
-     * @param isProperty the uri does not correspond to a class model but a property
-     *
-     */
-    getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string{
-
-        const paths = {
-            [Oeso.SCIENTIFIC_OBJECT_TYPE_URI]: "scientific-object-types",
-            [Oeev.EVENT_TYPE_URI]: "event-types",
-            [Oeso.DEVICE_TYPE_URI]: "device-types",
-            [Oeso.FACILITY_TYPE_URI]: "facilities-types",
-            [Oeso.FACTOR_CATEGORY_URI]: "factor-category-types"
-        };
-
-        const elementType: string = Object.entries(paths).find(([key]) => this.checkURIs(rootClassUri, key))?.[1];
-        const propertyPath: string = isProperty ? '/properties' : '';
-        return elementType ? `/${elementType}${propertyPath}?selected=${encodeURIComponent(uri)}` : null;
-    }
+ 
+    
 
     /**
      * Creates strings of format 'name (type)', places them in a uri to result map with vue.set

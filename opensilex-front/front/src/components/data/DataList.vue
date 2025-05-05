@@ -284,7 +284,6 @@ export default class DataList extends Vue {
 
         return new Promise((resolve, reject) => {
             this.dataService.searchDataListByTargets(
-                this.filter.batch_uri,
                 this.$opensilex.prepareGetParameter(this.filter.start_date),
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,
@@ -298,6 +297,7 @@ export default class DataList extends Vue {
                 this.filter.germplasm_group,
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 this.filter.germplasm,
+                this.filter.batch_uri,
                 options.orderBy,
                 options.currentPage,
                 options.pageSize,

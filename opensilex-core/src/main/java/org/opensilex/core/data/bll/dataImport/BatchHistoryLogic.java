@@ -54,7 +54,6 @@ public class BatchHistoryLogic {
         Instant endInstant = StringUtils.isNotBlank(endDate) ? Instant.parse(endDate) : Instant.now();
 
         BatchHistorySearchFilter filter = (BatchHistorySearchFilter) new BatchHistorySearchFilter()
-                .setUserName(user.getName())
                 .setStartDate(startInstant)
                 .setEndDate(endInstant)
                 .setPage(page)

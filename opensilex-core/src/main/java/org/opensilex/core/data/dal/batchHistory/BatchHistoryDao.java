@@ -29,10 +29,6 @@ public class BatchHistoryDao extends MongoReadWriteDao<BatchHistoryModel, BatchH
     public List<Bson> getBsonFilters(BatchHistorySearchFilter filter) {
         List<Bson> result = super.getBsonFilters(filter);
 
-        if (StringUtils.isNotBlank(filter.getUserName())) {
-            result.add(Filters.regex(BatchHistoryModel.USERNAME, filter.getUserName(), CASE_INSENSITIVE_OPTION));
-        }
-
         if (filter.getStartDate() != null) {
             result.add(Filters.gte(BatchHistoryModel.PUBLICATION_DATE_FIELD, filter.getStartDate()));
         }

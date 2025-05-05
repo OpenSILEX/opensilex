@@ -1226,7 +1226,6 @@ public class DataImportLogic {
     private BatchHistoryModel createBatchHistoryModel(Instant startTime) {
         BatchHistoryModel batchHistoryModel = new BatchHistoryModel();
         batchHistoryModel.setPublicationDate(startTime);
-        batchHistoryModel.setUsername(user.getName());
         batchHistoryModel.setPublisher(user.getUri());
         return batchHistoryModel;
     }

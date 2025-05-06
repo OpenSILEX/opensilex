@@ -302,7 +302,8 @@ export default class GlobalUriSearchResult extends Vue {
   get hasNoDetailsPage(): boolean{
     return this.searchResult.data_dto !== null ||
       this.searchResult.datafile_dto !== null ||
-      this.isSubTypeOfEvent();
+      this.isSubTypeOfEvent() ||
+      this.searchResult.is_batch_history;
   }
 
   get isData(): boolean{
@@ -355,11 +356,13 @@ en:
     seeDetails: See details
     dataTypeName: Data
     comment: Description
+    batchTypeName: Batch of data
 
 fr:
   GlobalUriSearch:
     seeDetails: Voir détails
     dataTypeName: Donnée
     comment: Description
+    batchTypeName: Batch de données
 
 </i18n>

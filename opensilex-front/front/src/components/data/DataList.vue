@@ -69,6 +69,7 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
 import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
+import{DataProvenanceModalView} from "./DataProvenanceModalView.vue"
 
 @Component
 export default class DataList extends Vue {
@@ -119,7 +120,7 @@ export default class DataList extends Vue {
 
     @Ref("templateForm") readonly templateForm!: any;
     @Ref("tableRef") readonly tableRef!: any;
-    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: DataProvenanceModalView;
     @Ref("exportModal") readonly exportModal!: any;
 
     get fields() {
@@ -182,9 +183,9 @@ export default class DataList extends Vue {
         }
     }
 
-    getProvenance(uri) {
+    static getProvenance(uri: string, dataServiceToUse: DataService) {
         if (uri != undefined) {
-            return this.dataService
+            return dataServiceToUse
                 .getProvenance(uri)
                 .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
                     return http.response.result;
@@ -197,10 +198,11 @@ export default class DataList extends Vue {
      * Gets the batch history dto, containing a link to csv document
      *
      * @param uri
+     * @param dataServiceToUse
      */
-    getBatch(uri):Promise<BatchHistoryGetDTO> {
+    static getBatch(uri: string, dataServiceToUse: DataService):Promise<BatchHistoryGetDTO> {
         if (uri != undefined) {
-          return this.dataService
+          return dataServiceToUse
             .getBatchHistory(uri)
             .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
               return http.response.result;
@@ -210,7 +212,7 @@ export default class DataList extends Vue {
 
     loadProvenance(selectedValue) {
         if (selectedValue != undefined) {
-            this.getProvenance(selectedValue.id).then((prov) => {
+            DataList.getProvenance(selectedValue.id, this.dataService).then((prov) => {
                 this.selectedProvenance = prov;
             });
         }
@@ -219,14 +221,14 @@ export default class DataList extends Vue {
     async showDataProvenanceDetailsModal(item: DataGetSearchDTO) {
         this.$opensilex.enableLoader();
         try {
-            const provenanceSearchResult = await this.getProvenance(item.provenance.uri);
-            const batchSearchResult = await this.getBatch(item.batchUri)
+            const provenanceSearchResult = await DataList.getProvenance(item.provenance.uri, this.dataService);
+            const batchSearchResult = await DataList.getBatch(item.batchUri, this.dataService);
             const value = {
                 provenance: provenanceSearchResult,
                 data: item,
                 batch: batchSearchResult
             };
-            this.dataProvenanceModalView.setProvenance(value);
+            this.dataProvenanceModalView.setProvenanceAndBatch(value);
             this.dataProvenanceModalView.show();
         } catch (error) {
             console.error("Failed to fetch provenance or Batch:", error);

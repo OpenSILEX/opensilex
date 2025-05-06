@@ -25,7 +25,7 @@
         ></opensilex-UriView>
 
         <opensilex-Button
-          v-if="isSubTypeOfEvent || this.dataDto.uri"
+          v-if="!isBatch && (isSubTypeOfEvent || this.dataDto.uri)"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"
@@ -46,14 +46,18 @@
       ></opensilex-StringView>
       <!-- Type -->
       <opensilex-TypeView
-        v-if="!isData"
-        :type="type"
-        :typeLabel="typeName"
-        :copyableTypeUri="true"
+        v-if="isData"
+        :typeLabel="$t('GlobalUriSearch.dataTypeName')"
+      ></opensilex-TypeView>
+      <opensilex-TypeView
+        v-else-if="isBatch"
+        :typeLabel="$t('GlobalUriSearch.batchTypeName')"
       ></opensilex-TypeView>
       <opensilex-TypeView
         v-else
-        :typeLabel="$t('GlobalUriSearch.dataTypeName')"
+        :type="type"
+        :typeLabel="typeName"
+        :copyableTypeUri="true"
       ></opensilex-TypeView>
       <!-- rdfsComment -->
       <opensilex-TextView
@@ -73,12 +77,13 @@
 
     <!-- Data details -->
     <opensilex-DataProvenanceModalView
-      v-if="hasNoDetailsPage"
+      v-if="dataDto"
       ref="dataProvenanceModalView"
     ></opensilex-DataProvenanceModalView>
 
     <!-- Event details -->
     <opensilex-EventModalView
+      v-if="isSubTypeOfEvent"
       modalSize="lg"
       ref="eventModalView"
       :static="false"
@@ -99,6 +104,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
+import DataList from "../data/DataList.vue";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -137,15 +143,23 @@ export default class GlobalUriSearchResult extends Vue {
     }
 
     //If the result is a data or datafile
-    this.getProvenance(this.dataDto.provenance.uri)
-      .then(result => {
-        let value = {
-          provenance: result,
-          data: this.dataDto
-        }
-        this.dataProvenanceModalView.setProvenance(value);
-        this.dataProvenanceModalView.show();
-      });
+    try {
+      const provenanceSearchResult = await DataList.getProvenance(this.dataDto.provenance.uri, this.dataService);
+      //Only get Batch if it is data
+      let batchSearchResult = null;
+      if(this.isData){
+        batchSearchResult = await DataList.getBatch(this.searchResult.data_dto.batchUri, this.dataService);
+      }
+      const value = {
+        provenance: provenanceSearchResult,
+        data: this.dataDto,
+        batch: batchSearchResult
+      };
+      this.dataProvenanceModalView.setProvenanceAndBatch(value);
+      this.dataProvenanceModalView.show();
+    } catch (error) {
+      console.error("Failed to fetch provenance or Batch:", error);
+    }
 
   }
   //#endregion
@@ -158,15 +172,6 @@ export default class GlobalUriSearchResult extends Vue {
   //#endregion
 
   //#region: private functions
-  private getProvenance(uri) {
-    if (uri != undefined) {
-      return this.dataService
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
-  }
 
   private isSubTypeOfEvent(){
     if(this.searchResult.super_types){
@@ -308,6 +313,10 @@ export default class GlobalUriSearchResult extends Vue {
 
   get isData(): boolean{
     return this.searchResult.data_dto !== null;
+  }
+
+  get isBatch() : boolean{
+    return this.searchResult.is_batch_history;
   }
 
   //#endregion

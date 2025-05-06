@@ -25,7 +25,7 @@
         ></opensilex-UriView>
 
         <opensilex-Button
-          v-if="dataDto.uri"
+          v-if="isSubTypeOfEvent || this.dataDto.uri"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"

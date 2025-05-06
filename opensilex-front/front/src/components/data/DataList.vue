@@ -69,7 +69,7 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
 import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
-import{DataProvenanceModalView} from "./DataProvenanceModalView.vue"
+import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 
 @Component
 export default class DataList extends Vue {

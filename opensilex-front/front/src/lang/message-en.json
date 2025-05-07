@@ -255,7 +255,8 @@
             "vocabulary" : "Vocabulary",
             "about" : {
                 "label": "About",
-                "system": "System"
+                "system": "System",
+                "gdpr": "GDPR"
             },
             "tools" : {
                 "label": "Tools",
@@ -832,6 +833,9 @@
                     "gdpr": "bi-person"
                 },
                 "dashboard": "bi-grid",
+                "spatial": {
+                    "label": "bi-geo-alt"
+                },
                 "data": {
                     "label": "bi-bar-chart"
                 },

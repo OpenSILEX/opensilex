@@ -255,7 +255,8 @@
             "vocabulary" : "Vocabulaire",
             "about" : {
                 "label": "A propos",
-                "system": "System"
+                "system": "System",
+                "gdpr": "RGPD"
             },
             "tools" : {
                 "label": "Outils",
@@ -886,6 +887,9 @@
                 "dashboard": "bi-grid",
                 "data": {
                     "label": "bi-bar-chart"
+                },
+                "spatial": {
+                    "label": "bi-geo-alt"
                 },
                 "equipments": {
                     "label": "ik-aperture"

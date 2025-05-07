@@ -150,18 +150,6 @@ onMounted(() => {
   max-width: 100%;
 }
 
-/* opensilex colors style */
-.helpButton {
-  color: #00A28C;
-  /* font-size: 1.2em; */
-  border: none
-}
-  
-.helpButton:hover {
-  background-color: #00A28C;
-  color: #f1f1f1
-}
-
 .deleteButton{
   border: none;
   padding: 1px 8px;

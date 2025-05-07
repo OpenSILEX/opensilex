@@ -25,4 +25,16 @@ const emit = defineEmits(["click"]);
 </script>
 
 <style scoped lang="scss">
+
+.helpButton {
+  color: #00A28C;
+  border: none;
+  height: 30px;
+  padding: .375rem .75rem
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
 </style>

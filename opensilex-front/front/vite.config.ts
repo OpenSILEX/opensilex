@@ -25,6 +25,7 @@ export default defineConfig({
   //     }
   //   }
   // },
+  assetsInclude: ['**/*.md'] ,
   build: {
     outDir: 'dist', // Dossier de sortie
     // lib: {

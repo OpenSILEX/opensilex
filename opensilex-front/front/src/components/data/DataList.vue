@@ -43,7 +43,7 @@
                 <b-button-group size="sm">
                     <opensilex-DetailButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-                        @click="showDataProvenanceDetailsModal(data.item)"
+                        @click="showDataDetailsModal(data.item)"
                         label="DataView.list.details"
                         :small="true"
                     ></opensilex-DetailButton>
@@ -218,7 +218,7 @@ export default class DataList extends Vue {
         }
     }
 
-    async showDataProvenanceDetailsModal(item: DataGetSearchDTO) {
+    async showDataDetailsModal(item: DataGetSearchDTO) {
         this.$opensilex.enableLoader();
         try {
             const provenanceSearchResult = await DataList.getProvenance(item.provenance.uri, this.dataService);

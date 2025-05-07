@@ -13,14 +13,14 @@ import java.util.UUID;
 public class BatchHistoryModel extends MongoModel {
     public static final String PUBLICATION_DATE_FIELD = "publicationDate";
 
-    private URI setDocumentUri;
+    private URI documentUri;
 
     public void setDocumentUri(URI uri) {
-        this.setDocumentUri = uri;
+        this.documentUri = uri;
     }
 
     public URI getDocumentUri() {
-        return setDocumentUri;
+        return documentUri;
     }
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {

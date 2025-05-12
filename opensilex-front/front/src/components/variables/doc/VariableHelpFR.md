@@ -1,7 +1,5 @@
 # Variable aide
 
-Auteur: Jean-Eudes Hollebecq - Opensilex (23/11/2020)
-
 ## Créer des variables
 
 Une variable est une série d’observations sur des individus.
@@ -9,7 +7,7 @@ Il existe beaucoup de sujets à observer (**Entités**), caractéristiques à ob
  façons d’y arriver (**Méthodes**), unités ou échelles pour exprimer ces résultats (**Unités**). 
  Ces quatre composants forment le modèle de variable.
  
-<!-- ### <span style="color:blue">**Nom précis**</span> -->
+### <span style="color:blue">**Nom précis**</span>
 
 Les variables sont constituées de quatre parties, séparées par des tirets-bas ( _ ). 
 En particulier, les deux champs forment le **trait=Entité_Charactéristique**. 
@@ -54,7 +52,7 @@ Un suffixe peut être ajouté pour préciser davantage la mesure :
     - Un écart-type : on ajoute Std
     - D’un indice de confiance sur la qualité de la mesure : Flag
     
-    <!-- -  <span style="color:red">**REMARQUE**</span> :  -->
+    -  <span style="color:red">**REMARQUE**</span> : 
         <p>
         Il ne s’agit pas de variables calculées à partir de la série temporelle (moyenne), 
         mais d’une sortie capteur décrivant une hétérogénéité spatiale de l’entité, 
@@ -89,7 +87,7 @@ Un suffixe peut être ajouté pour préciser davantage la mesure :
     - PhysicalModel (Radiative Transfer Model Inversion)
     - EmpiricalModel
 
- <!-- <span style="color:red">**REMARQUE**</span> : Il est chaudement recommandé de créer de nouvelles méthodes  -->
+ <span style="color:red">**REMARQUE**</span> : Il est chaudement recommandé de créer de nouvelles méthodes 
  pour expliquer votre façon de faire et ainsi d'avoir le plus de détails possibles.
 
 **`Unité`**: l’unité utilisée pour exprimer la mesure. On préférera les lettres minuscules, 
@@ -109,7 +107,7 @@ Pour des grandeurs au carré, ajouter le suffixe “2”.
 
 Pour les grandeurs au cube, ajouter suffixe “3”.
 
-<!-- ### <span style="color:blue">**Nom abrégé**</span> -->
+### <span style="color:blue">**Nom abrégé**</span>
 
 <p>
 Il est aussi recommandé d’utiliser un nom abrégé, qui sera plus adapté lors de la manipulation des données 

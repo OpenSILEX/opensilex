@@ -1,7 +1,5 @@
 # Variable help
 
-Author: Jean-Eudes Hollebecq - Opensilex (23/11/2020)
-
 ## Create variables
 
 A variable is a series of observations on some individuals.
@@ -9,7 +7,7 @@ A variable is a series of observations on some individuals.
 Different ways to create different variables are : change the subject of observation (**Entity**), change the **characteristic** observed, 
 change the **method** used to observe, and change the **unit** to express the result. 
  
-<!-- ### <span style="color:blue">**Detailed names**</span> -->
+### <span style="color:blue">**Detailed names**</span>
 
 Variables are made of four main fields. Fields are separated by underscores. 
 Note that the two first fields define the **trait=Entity_Quality**. Each field is using the CamelCase format.
@@ -53,7 +51,7 @@ A suffix is added when necessary to indicate more precisely the measure:
     - `Std`: for Standard Deviation
     - `Flag`: for indicating classes of measurement quality
     
-    <!-- - <span style="color:red">**NOTA BENE**</span> :  -->
+    - <span style="color:red">**NOTA BENE**</span> : 
         <p>
         This is not a computation of the « mean » variable, but another output of the sensor describing 
         the spatial heterogeneity of the entity or some unsuitables conditions leading to possibly false measurement. <br>
@@ -94,7 +92,7 @@ A suffix is added when necessary to indicate more precisely the measure:
     - Radiothermometer
     - DirectMeasurement (thermocouple)
 
- <!-- <span style="color:red">**NOTA BENE**</span> : Addition of new methods is much welcome to explain your way to proceed  -->
+ <span style="color:red">**NOTA BENE**</span> : Addition of new methods is much welcome to explain your way to proceed 
  and thus have as much details as possible.
 
 **`Unit `**: the unit used to measure the trait. The abbreviations are made to be consistent with the current use. 
@@ -113,7 +111,7 @@ To combine units, add “per” (abbreviation “p”) <br>
 For area, add suffix “2” <br>
 For volume, add suffix “3” <br>
 
-<!-- ### <span style="color:blue">**Short name**</span> -->
+### <span style="color:blue">**Short name**</span>
 
 <p>
 For conveniance purpose a short name is given as well, by default is only the trait (Entity+characteristic). 

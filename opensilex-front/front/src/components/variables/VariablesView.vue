@@ -115,7 +115,7 @@
 import { ref, computed, inject, defineAsyncComponent, nextTick } from 'vue';
 import PageActions from '@/components/PageActions.vue';
 import { useI18n } from 'vue-i18n';
-import type { OpenSilexVuePlugin } from '@/opensilex/OpenSilexVuePlugin';
+import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import VariableHelp from "./views/VariableHelp.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -145,7 +145,7 @@ const tabs = computed(() => [
 
 const currentTab = ref<string>('variables');
 
-// Composants dynamiques (à décommenter quand migrés)
+// Composants dynamiques
 const tabComponents: Record<string, any> = {
   variables: defineAsyncComponent(() => import('./VariableList.vue')),
   entities: defineAsyncComponent(() => import('./agroportal/AgroportalEntityForm.vue')),

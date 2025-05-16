@@ -183,6 +183,14 @@ export default class ExperimentDataVisualisationView extends Vue {
 
   private langUnwatcher;
 
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  get user() {
+    return this.$store.state.user;
+  }
+
   mounted() {
     this.langUnwatcher = this.$store.watch(
         () => this.$store.getters.language,

@@ -19,7 +19,7 @@
                         :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.factors") }}
                     <span
-                        v-if="!factorsCountIsLoading && factors > 0"
+                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!factorsCountIsLoading && factors > 0)"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(factors)}}
@@ -97,25 +97,25 @@
                         :uri="uri"
                 ></opensilex-ExperimentDetail>
                 <opensilex-ExperimentFactors
-                        v-else-if="isFactorsTab()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isFactorsTab()"
                         :uri="uri"
                 ></opensilex-ExperimentFactors>
                 <opensilex-ExperimentScientificObjects
-                        v-else-if="isScientificObjectsTab()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isScientificObjectsTab()"
                         :uri="uri"
                 ></opensilex-ExperimentScientificObjects>
                 <opensilex-ExperimentData
-                        v-else-if="isDataTab()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isDataTab()"
                         :uri="uri"
                 ></opensilex-ExperimentData>
                 <opensilex-ExperimentDataVisualisation
-                        v-else-if="isDataVisualisation()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isDataVisualisation()"
                         :uri="uri"
                         :elementName="name"
                 ></opensilex-ExperimentDataVisualisation>
 
                 <opensilex-MapView
-                        v-else-if="isMap()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isMap()"
                         :uri="uri"
                 ></opensilex-MapView>
 

@@ -66,7 +66,7 @@
                         :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
                 >{{ $t("Annotation.list-title") }}
                     <span
-                        v-if="!annotationsCountIsLoading && annotations > 0"
+                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!annotationsCountIsLoading && annotations > 0)"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(annotations)}}
@@ -78,7 +78,7 @@
                   :to="{path: '/experiment/document/' + encodeURIComponent(uri)}"
                 >{{ $t('ExperimentView.document') }}
                     <span
-                        v-if="!documentsCountIsLoading && documents > 0"
+                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!documentsCountIsLoading && documents > 0)"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(documents)}}
@@ -120,13 +120,13 @@
                 ></opensilex-MapView>
 
                 <opensilex-DocumentTabList
-                        v-else-if="isDocumentTab()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isDocumentTab()"
                         :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
                         :uri="uri"
                 ></opensilex-DocumentTabList>
                 
                 <opensilex-AnnotationList
-                        v-else-if="isAnnotationTab()"
+                        v-else-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && isAnnotationTab()"
                         ref="annotationList"
                         :target="uri"
                         :displayTargetColumn="false"

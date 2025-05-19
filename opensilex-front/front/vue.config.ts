@@ -21,6 +21,7 @@ module.exports = {
             extensions: ['.md'],
             alias: {
                 // 'Vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                '@' :  path.resolve(__dirname,'/src'),
                 'Vue$': '@vue/runtime-dom',
                 "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
                 "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),

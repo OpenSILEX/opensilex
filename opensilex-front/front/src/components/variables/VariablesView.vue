@@ -7,187 +7,133 @@
       :title="t('VariableView.title')"
       :description="t('VariableView.description')"
       class="detail-element-header"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions
-      :actions="actions"
     />
 
+    <!-- Actions principales -->
+    <opensilex-PageActions :actions="actions" />
+
     <!-- Onglets -->
-    <ul class="nav nav-tabs mb-3">
-      <li class="nav-item" v-for="tab in tabs" :key="tab.key">
-        <button
-          class="nav-link"
-          :class="{ active: currentTab === tab.key }"
-          @click="currentTab = tab.key"
-        >
-          {{ tab.label }}
-        </button>
-      </li>
-    </ul>
+    <nav class="tabs mb-3">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        :class="['tab', { active: currentTab === tab.key }]"
+        @click="currentTab = tab.key"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
 
-
+    <!-- Actions secondaires -->
     <opensilex-PageActions>
       <opensilex-HelpButton
         @click="openHelpModal"
         label="component.common.help-button"
         :small="true"
         class="helpButton"
-      ></opensilex-HelpButton>
-
-      <!-- <b-modal ref="helpModal" size="xl" hide-header hide-footer>
-          <opensilex-VariableHelp v-if="elementType != 'VariableGroup'" @hideBtnIsClicked="hide()"></opensilex-VariableHelp>
-          <opensilex-GroupVariablesHelp v-else @hideBtnIsClicked="hide()"></opensilex-GroupVariablesHelp>
-      </b-modal> -->
-
-          <!-- v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)" -->
+      />
       <opensilex-CreateButton
-          @click="showCreateForm"
-          :label="buttonTitle"
-          class="createButton"
-      ></opensilex-CreateButton>
+        @click="showCreateForm"
+        :label="buttonTitle"
+        class="createButton"
+      />
     </opensilex-PageActions>
 
-    <!-- Contenu des onglets -->
-    <div>
+    <!-- Composant dynamique selon l'onglet -->
     <component
-      v-if="currentTab === 'variables'"
-      :is="tabComponents.variables"
+      v-if="currentTabComponent"
+      :is="currentTabComponent"
+      :ref="getCurrentFormRefKey"
+      @ready="markTabReady(currentTab)"
+      v-on="currentTab === 'variables' ? variableListeners : {}"
+      v-show="currentTab !== 'groups' || loadGroupForm"
+    />
+
+    <!-- Composant de crea/edit variable (invisible) -->
+    <opensilex-VariableCreate
       ref="variableCreate"
-      @ready="markTabReady('variables')"
+      style="display: none;"
     />
 
-    <component
-      v-else-if="currentTab === 'entities'"
-      :is="tabComponents.entities"
-      ref="entityForm"
-      @ready="markTabReady('entities')"
-    />
-
-    <component
-      v-else-if="currentTab === 'interestEntity'"
-      :is="tabComponents.interestEntity"
-      ref="interestEntityForm"
-      @ready="markTabReady('interestEntity')"
-    />
-
-    <component
-      v-else-if="currentTab === 'characteristics'"
-      :is="tabComponents.characteristics"
-      ref="characteristicForm"
-      @ready="markTabReady('characteristics')"
-    />
-
-    <component
-      v-else-if="currentTab === 'methods'"
-      :is="tabComponents.methods"
-      ref="methodForm"
-      @ready="markTabReady('methods')"
-    />
-
-    <component
-      v-else-if="currentTab === 'units'"
-      :is="tabComponents.units"
-      ref="unitForm"
-      @ready="markTabReady('units')"
-    />
-
-    <component
-      v-else-if="currentTab === 'groups'"
-      :is="tabComponents.groups"
-      ref="groupVariablesForm"
-      v-show="loadGroupForm"
-      @ready="markTabReady('groups')"
-    />
-
-    </div>
-
-    <!-- Fenêtre modale d'aide-->
-    <div v-if="showHelpModal" class="modal-backdrop">
-      <div class="modal-content">
-        <opensilex-VariableHelp @close="closeHelpModal" />
+    <!-- Modale d'aide -->
+    <teleport to="body">
+      <div v-if="showHelpModal" class="modal-backdrop">
+        <div class="modal-content">
+          <component
+            :is="currentTab === 'groups' ? 'opensilex-GroupVariablesHelp' : 'opensilex-VariableHelp'"
+            @close="closeHelpModal"
+          />
+        </div>
       </div>
-    </div>
+    </teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject, defineAsyncComponent, nextTick } from 'vue';
-import PageActions from '@/components/PageActions.vue';
 import { useI18n } from 'vue-i18n';
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
-import VariableHelp from "./views/VariableHelp.vue";
+import { VariablesService, DataService } from 'opensilex-core/index';
+import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
+
+import VariableCreate from './form/VariableCreate.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
+const datasService = opensilex.getService<DataService>("opensilex.DataService");
 const { t } = useI18n();
-const helpModal = ref<InstanceType<typeof VariableHelp> | null>(null);
-
-const showHelpModal = ref(false)
-
-function openHelpModal() {
-  showHelpModal.value = true
-}
-
-function closeHelpModal() {
-  showHelpModal.value = false
-}
 
 // Onglets
-const tabs = computed(() => [
-  { key: 'variables', label: t('component.menu.variables') },
-  { key: 'entities', label: t('VariableView.entity') },
-  { key: 'interestEntity', label: t('VariableView.entityOfInterest') },
-  { key: 'characteristics', label: t('VariableView.characteristic') },
-  { key: 'methods', label: t('VariableView.method') },
-  { key: 'units', label: t('VariableView.unit') },
-  { key: 'groups', label: t('VariableView.groupVariable') },
-]);
+const tabDefinitions = [
+  { key: 'variables', labelKey: 'component.menu.variables', component: () => import('./VariableList.vue'), refKey: 'variableList' },
+  { key: 'entities', labelKey: 'VariableView.entity', component: () => import('./agroportal/AgroportalEntityForm.vue'), refKey: 'entityForm' },
+  { key: 'interestEntity', labelKey: 'VariableView.entityOfInterest', component: () => import('./agroportal/AgroportalEntityOfInterestForm.vue'), refKey: 'interestEntityForm' },
+  { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./agroportal/AgroportalCharacteristicForm.vue'), refKey: 'characteristicForm' },
+  { key: 'methods', labelKey: 'VariableView.method', component: () => import('./agroportal/AgroportalMethodForm.vue'), refKey: 'methodForm' },
+  { key: 'units', labelKey: 'VariableView.unit', component: () => import('./agroportal/AgroportalUnitForm.vue'), refKey: 'unitForm' },
+  { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesForm.vue'), refKey: 'groupVariablesForm' }
+];
 
-const currentTab = ref<string>('variables');
+const tabs = computed(() =>
+  tabDefinitions.map(({ key, labelKey }) => ({ key, label: t(labelKey) }))
+);
 
-// Composants dynamiques
-const tabComponents: Record<string, any> = {
-  variables: defineAsyncComponent(() => import('./VariableList.vue')),
-  entities: defineAsyncComponent(() => import('./agroportal/AgroportalEntityForm.vue')),
-  interestEntity: defineAsyncComponent(() => import('./agroportal/AgroportalEntityOfInterestForm.vue')),
-  characteristics: defineAsyncComponent(() => import('./agroportal/AgroportalCharacteristicForm.vue')),
-  methods: defineAsyncComponent(() => import('./agroportal/AgroportalMethodForm.vue')),
-  units: defineAsyncComponent(() => import('./agroportal/AgroportalUnitForm.vue')),
-  groups: defineAsyncComponent(() => import('./../groupVariable/GroupVariablesForm.vue'))
+const currentTab = ref('variables');
+const readyTabs = new Set<string>();
+
+// Composants asynchrones & références
+const tabComponents = Object.fromEntries(
+  tabDefinitions.map(tab => [tab.key, defineAsyncComponent(tab.component)])
+);
+
+// ajout de toutes les refs, y compris celle pour VariableCreate
+const formRefs = {
+  variableCreate: ref(null),
+  ...Object.fromEntries(
+    tabDefinitions.map(tab => [tab.refKey, ref()])
+  )
 };
 
+const variableCreate = formRefs.variableCreate; // pour lier dans le template
+
 const currentTabComponent = computed(() => tabComponents[currentTab.value]);
+const getCurrentFormRefKey = computed(() =>
+  tabDefinitions.find(tab => tab.key === currentTab.value)?.refKey || ''
+);
 
+function getFormInstance() {
+  const key = getCurrentFormRefKey.value;
+  return formRefs[key]?.value || null;
+}
 
-// Refs vers les composants enfants
-const variableCreate = ref();
-const entityForm = ref();
-const interestEntityForm = ref();
-const characteristicForm = ref();
-const methodForm = ref();
-const unitForm = ref();
-const groupVariablesForm = ref();
-const loadGroupForm = ref(false); 
-
-// Actions de la page
+// Actions
 const actions = ref([
   {
     label: t('actions.create'),
     icon: 'bi bi-plus-circle',
-    // TODO: ajouter une méthode d'ouverture de formulaire
-    onClick: () => console.log('create clicked')
+    onClick: () => showCreateForm()
   }
 ]);
-
-
-const readyTabs = new Set<string>();
-
-function markTabReady(tabKey: string) {
-  console.log("markTabReady tab ", tabKey)
-  readyTabs.add(tabKey);
-}
-
-
 
 const tabToLabelKey = new Map<string, string>([
   ['variables', 'VariableView.add-variable'],
@@ -199,64 +145,109 @@ const tabToLabelKey = new Map<string, string>([
   ['groups', 'VariableView.add-groupVariable']
 ]);
 
-const elementTypeToForm = new Map<string, any>([
-  ['variables', variableCreate],
-  ['entities', entityForm],
-  ['interestEntity', interestEntityForm],
-  ['characteristics', characteristicForm],
-  ['methods', methodForm],
-  ['units', unitForm],
-  ['groups', groupVariablesForm]
-]);
-
-function getForm() {
-  console.log("variablesView getForm : ", elementTypeToForm.get(currentTab.value).value)
-  return elementTypeToForm.get(currentTab.value)?.value;
-}
-
-// function showCreateForm() {
-//   if (currentTab.value === 'groups') {
-//     loadGroupForm.value = true;
-//     nextTick(() => {
-//       getForm()?.showCreateForm();
-//     });
-//   } else {
-//     console.log("variablesView showCreateForm")
-//     getForm()?.showCreateForm();
-//   }
-// }
-
-function showCreateForm() {
-  if (!readyTabs.has(currentTab.value)) {
-    console.warn(`Component pour l'onglet '${currentTab.value}' pas encore pret.`);
-    return;
-  }
-
-  const form = getForm();
-
-  if (form?.showCreateForm) {
-    form.showCreateForm();
-  } else {
-    console.log("showCreateForm", form)
-    console.warn(`showCreateForm pas dispo pour l'onglet :  '${currentTab.value}'`);
-  }
-}
-
-
-
 const buttonTitle = computed(() => {
   const key = tabToLabelKey.get(currentTab.value);
   return key ? t(key) : t('actions.create');
 });
+
+// Gestion modale
+const showHelpModal = ref(false);
+function openHelpModal() {
+  showHelpModal.value = true;
+}
+function closeHelpModal() {
+  showHelpModal.value = false;
+}
+
+// Onglets prêts
+function markTabReady(tabKey: string) {
+  readyTabs.add(tabKey);
+}
+
+// Création
+const loadGroupForm = ref(false);
+function showCreateForm() {
+  if (!readyTabs.has(currentTab.value)) {
+    console.warn(`Composant pour l'onglet '${currentTab.value}' non prêt.`);
+    return;
+  }
+  if (currentTab.value === 'groups') {
+    loadGroupForm.value = true;
+    nextTick(() => {
+      getFormInstance()?.showCreateForm();
+    });
+  } else {
+    getFormInstance()?.showCreateForm();
+  }
+}
+
+// Edition de variable
+function getCountDataPromise(variable: string) {
+  return datasService.countData(undefined, undefined, undefined, undefined, [variable], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 1, undefined);
+}
+
+function onEditVariable(uri: string) {
+  console.log("formRefs : ", formRefs)
+  if (!formRefs.variableCreate) return;
+
+  getCountDataPromise(uri).then(countResult => {
+    if (countResult?.response) {
+      variablesService.getVariable(uri).then((getResult: HttpResponse<OpenSilexResponse>) => {
+        if (getResult?.response) {
+          console.log("response")
+          const form = getResult.response.result;
+          const linkedDataNb = countResult.response.result;
+          console.log("linkedDatanb ", linkedDataNb)
+          formRefs.variableCreate.value?.showEditForm(form, linkedDataNb);
+        }
+      });
+    }
+  });
+}
+
+// Event binding conditionnel
+const variableListeners = {
+  edit: onEditVariable,
+  interoperability: (item: any) => console.log("Interop:", item),
+  delete: (item: any) => console.log("Delete:", item),
+  reset: () => console.log("Reset")
+};
 </script>
 
+
 <style scoped>
-.nav-tabs .nav-link.active {
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab.active {
   font-weight: bold;
+  border-bottom-color: #007bff;
 }
-.nav-link {
-  color: black
+/* .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+} */
 
 .createButton, .helpButton{
   margin: -10px 15px 5px -10px
@@ -280,8 +271,8 @@ const buttonTitle = computed(() => {
   max-width: 800px;
   width: 100%;
 }
-
 </style>
+
 
 <i18n>
 en:
@@ -303,7 +294,7 @@ en:
         method: Method
         add-method: Add method
         method-placeholder: Image analysis
-        unit: "Unit/Scale"
+        unit: Unit/Scale
         add-unit: Add unit
         groupVariable: Group of variables
         groupVariableAssociated: Group of associated variables

@@ -1,160 +1,157 @@
 <template>
-  <div class="modal fade" :class="{ show: isVisible }" tabindex="-1" style="display: block;" v-if="isVisible" @click.self="hide">
-    <div class="modal-dialog" :class="modalSizeClass">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <slot name="icon">
-              <opensilex-Icon :icon="icon" class="icon-title" />
-            </slot>
-            {{ editMode ? $t(editTitle) : $t(createTitle) }}
-          </h5>
-          <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            
-            <!-- vee-validate remplacé ?  -->
-
-          <!-- <ValidationObserver ref="validatorRef">
-            <component
-              :is="component"
-              ref="componentRef"
-              v-model:form="form"
-              :editMode="editMode"
-              :data="data"
-              :disableValidation="disableValidation"
-              @shownSelector="disableValidation = true"
-              @hideSelector="disableValidation = false"
-            >
-              <slot name="customFields" :form="form" :editMode="editMode"></slot>
-            </component>
-          </ValidationObserver> -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="hide">
-            {{ $t('component.common.cancel') }}
-          </button>
-          <button type="button" class="btn btn-primary" @click="validate">
-            {{ $t('component.common.ok') }}
-          </button>
-        </div>
+  <opensilex-Modal ref="modalRef">
+    <template #header>
+      <div class="flex justify-between items-center">
+        <h4>
+          <slot name="icon">
+            <opensilex-Icon :icon="icon" class="icon-title" />
+          </slot>
+          {{ translatedTitle }}
+        </h4>
+        <opensilex-HelpButton
+          v-if="tutorial && !editMode"
+          label="component.tutorial.name"
+          @click="getFormRef()?.tutorial?.()"
+        />
       </div>
-    </div>
-  </div>
+    </template>
+
+    <n-form
+      :model="form"
+      :rules="rules"
+      ref="formRef"
+    >
+      <component
+        ref="componentRef"
+        :is="component"
+        v-model:form="form"
+        :editMode="editMode"
+        :data="data"
+      >
+        <slot name="customFields" :form="form" :editMode="editMode" />
+      </component>
+    </n-form>
+
+    <template #footer>
+      <button class="btn btn-secondary" @click="hide">{{ t('component.common.cancel') }}</button>
+      <button class="btn greenThemeColor" @click="validate">{{ t('component.common.ok') }}</button>
+    </template>
+  </opensilex-Modal>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, defineExpose, nextTick, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-// import { ValidationObserver } from '@vee-validate/components';
+import { FormInst } from 'naive-ui';
 
-export default defineComponent({
-  name: 'ModalForm',
-  props: {
-    component: { type: String, required: true },
-    editTitle: { type: String, required: true },
-    createTitle: { type: String, required: true },
-    icon: { type: String, required: false },
-    modalSize: { type: String, default: 'md' },
-    data: { type: Object, default: () => ({}) },
-    tutorial: { type: Boolean, default: false },
-    static: { type: Boolean, default: true },
-    doNotHideOnError: { type: Boolean, default: false },
-    lazy: { type: Boolean, default: false },
-    initForm: { type: Function, default: (form) => form },
-    createAction: { type: Function },
-    updateAction: { type: Function },
-    successMessage: { type: [String, Function], default: 'component.common.element' },
-    overrideSuccessMessage: { type: Boolean, default: false },
-  },
-  setup(props, { emit }) {
-    const { t } = useI18n();
-    const isVisible = ref(false);
-    const editMode = ref(false);
-    const form = ref({});
-    const disableValidation = ref(true);
-    const validatorRef = ref(null);
-    const componentRef = ref(null);
+const { t } = useI18n();
 
-    const modalSizeClass = computed(() => {
-      return props.modalSize === 'full' ? 'modal-fullscreen' : `modal-${props.modalSize}`;
-    });
+const modalRef = ref();
+const formRef = ref<FormInst | null>(null);
+const componentRef = ref();
 
-    const showCreateForm = (passedForm = null) => {
-      editMode.value = false;
-      isVisible.value = true;
-      form.value = passedForm || componentRef.value?.getEmptyForm() || {};
-      form.value = props.initForm(form.value);
-      validatorRef.value?.reset();
-      componentRef.value?.reset?.();
-    };
+const props = defineProps({
+  component: { type: [String, Object], required: true },
+  icon: String,
+  createTitle: { type: String, required: true },
+  editTitle: { type: String, required: true },
+  tutorial: Boolean,
+  editMode: Boolean,
+  data: Object,
+  createAction: Function,
+  updateAction: Function,
+  successMessage: [String, Function],
+  overrideSuccessMessage: Boolean,
+});
 
-    const showEditForm = (editForm) => {
-      editMode.value = true;
-      isVisible.value = true;
-      form.value = editForm;
-      validatorRef.value?.reset();
-      componentRef.value?.reset?.();
-      componentRef.value?.onShowEditForm?.();
-    };
+const emit = defineEmits(['hide', 'onCreate', 'onUpdate']);
 
-    const hide = () => {
-      isVisible.value = false;
-      emit('hide');
-    };
+const editMode = ref(false);
+const form = ref({});
+const rules = ref({});
 
-    const validate = () => {
-      if (!disableValidation.value) {
-        validatorRef.value?.validate().then((isValid) => {
-          if (isValid) {
-            let submitMethod = editMode.value ? props.updateAction || componentRef.value?.update : props.createAction || componentRef.value?.create;
-            let successEvent = editMode.value ? 'onUpdate' : 'onCreate';
+const translatedTitle = computed(() => {
+  return editMode.value ? t(props.editTitle) : t(props.createTitle);
+});
 
-            let submitResult = submitMethod(form.value);
-            if (!(submitResult instanceof Promise)) {
-              submitResult = Promise.resolve(submitResult);
+function getFormRef() {
+  return componentRef.value;
+}
+
+function validate() {
+  formRef.value?.validate((errors) => {
+    if (!errors) {
+      let submit = props.createAction ?? getFormRef()?.create;
+      let event = 'onCreate';
+
+      if (editMode.value) {
+        submit = props.updateAction ?? getFormRef()?.update;
+        event = 'onUpdate';
+      }
+
+      const result = submit?.(form.value);
+
+      Promise.resolve(result)
+        .then((res) => {
+          if (res !== false) {
+            creationOrUpdateMessage();
+
+            if (editMode.value) {
+              emit('onUpdate', res);
+            } else {
+              emit('onCreate', res);
             }
-            submitResult
-              .then((result) => {
-                if (result !== false && result !== undefined) {
-                  creationOrUpdateMessage();
-                }
-                if (result !== false || !props.doNotHideOnError) {
-                  hide();
-                }
-                emit(successEvent, result);
-              })
-              .catch((error) => {
-                componentRef.value?.handleSubmitError?.(error);
-              });
+
+            modalRef.value?.hide();
           }
+        })
+        .catch((err) => {
+          getFormRef()?.handleSubmitError?.(err);
         });
-      }
-    };
+    }
+  });
+}
 
-    const creationOrUpdateMessage = () => {
-      let successMsg = typeof props.successMessage === 'function' ? props.successMessage(form.value) : t(props.successMessage);
-      if (!props.overrideSuccessMessage) {
-        successMsg += editMode.value ? t('component.common.success.update-success-message') : t('component.common.success.creation-success-message');
-      }
-      // Remplacer par le toaster 
-      console.log(successMsg);
-    };
+function creationOrUpdateMessage() {
+  let msg = typeof props.successMessage === 'function'
+    ? props.successMessage(form.value)
+    : t(props.successMessage ?? 'component.common.element');
 
-    return {
-      isVisible,
-      editMode,
-      form,
-      disableValidation,
-      validatorRef,
-      componentRef,
-      modalSizeClass,
-      showCreateForm,
-      showEditForm,
-      hide,
-      validate,
-      t,
-    };
-  },
+  if (!props.overrideSuccessMessage) {
+    msg += t(editMode.value
+      ? 'component.common.success.update-success-message'
+      : 'component.common.success.creation-success-message');
+  }
+
+  // TODO : afficher le message dans un toast
+}
+
+function showCreateForm(passedForm?: any) {
+  editMode.value = false;
+  nextTick(() => {
+    form.value = passedForm ?? getFormRef()?.getEmptyForm?.() ?? {};
+    getFormRef()?.reset?.();
+    modalRef.value?.show();
+  });
+}
+
+function showEditForm(editForm: any) {
+  editMode.value = true;
+  nextTick(() => {
+    form.value = editForm;
+    getFormRef()?.reset?.();
+    getFormRef()?.onShowEditForm?.();
+    modalRef.value?.show();
+  });
+}
+
+function hide() {
+  modalRef.value?.hide();
+}
+
+defineExpose({
+  showCreateForm,
+  showEditForm,
+  hide,
 });
 </script>

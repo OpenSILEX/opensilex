@@ -173,7 +173,7 @@ public class GermplasmAPI {
             @ApiResponse(code = 200, message = "germplasms are created and/or updated", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
 
-    public Response createGermplasms(
+    public Response upsertGermplasms(
             @ApiParam("List of germplasm description") @Valid List<GermplasmCreationDTO> germplasmDTOs,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {

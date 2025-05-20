@@ -65,24 +65,11 @@ public class GermplasmLogic {
     }
 
     /**
-     * Create a new germplasm after checking the coherence of the data (see {@link #checkBeforeCreateOrUpdate(List, boolean)})
-     *
-     * @param germplasmModel Germplasm to create
-     * @return Created germplasm as {@link GermplasmModel}
+     * Create ( or update if uri already exists) a list of germplasm after checking the coherence of the data (see {@link #checkBeforeCreateOrUpdate(List, boolean)})
+     * @param germplasmModels to create and/or update. A mix of both is possible.
+     * @return updated or created germplasm as {@link List<GermplasmModel>}
      */
-    public GermplasmModel create(GermplasmModel germplasmModel) throws Exception {
-        var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), false);
-        if (multipleErrorObjectList.hasErrors()){
-            throw new MultipleErrorException("getting errors while creating germplasm", multipleErrorObjectList);
-        }
-        retrieveLinkedSpeciesAndVariety(germplasmModel);
-        GermplasmModel model = germplasmModel;
-        model.setPublisher(currentUser.getUri());
-        model = dao.create(model);
-        return model;
-    }
-
-    public List<GermplasmModel> create(List<GermplasmModel> germplasmModels) throws Exception {
+    public List<GermplasmModel> upsert(List<GermplasmModel> germplasmModels) throws Exception {
         var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, false);
         if (multipleErrorObject.hasErrors()){
             throw new MultipleErrorException("getting errors while creating germplasms", multipleErrorObject);
@@ -91,6 +78,24 @@ public class GermplasmLogic {
         germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
         germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
         return dao.createListWithoutUriExistsCheck(germplasmModels);
+    }
+
+    /**
+     * Create a new germplasm after checking the coherence of the data (see {@link #checkBeforeCreateOrUpdate(List, boolean)})
+     *
+     * @param germplasmModel Germplasm to create
+     * @return Created germplasm as {@link GermplasmModel}
+     */
+    public GermplasmModel create(GermplasmModel germplasmModel) throws Exception {
+        var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
+        if (multipleErrorObjectList.hasErrors()){
+            throw new MultipleErrorException("getting errors while creating germplasm", multipleErrorObjectList);
+        }
+        retrieveLinkedSpeciesAndVariety(germplasmModel);
+        GermplasmModel model = germplasmModel;
+        model.setPublisher(currentUser.getUri());
+        model = dao.create(model);
+        return model;
     }
 
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {

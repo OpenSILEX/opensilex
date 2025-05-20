@@ -183,7 +183,7 @@ public class GermplasmAPI {
         if (!checkOnly) {
 
             try {
-                List<GermplasmModel> germplasms = germplasmBusiness.create(models);
+                List<GermplasmModel> germplasms = germplasmBusiness.upsert(models);
                 List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
                 return new CreatedUriResponse(uris).getResponse();
             } catch (MultipleErrorException exception){

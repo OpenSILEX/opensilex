@@ -208,7 +208,7 @@ export default class DocumentDetails extends Vue {
     this.service
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
-        this.document = http.response.result;        
+        this.document = http.response.result;
         if (this.document.targets.length>0) {
           this.loadTargetsTypes();
         }  
@@ -267,7 +267,7 @@ export default class DocumentDetails extends Vue {
     }
     ontologyService.checkURIsTypes(types, body)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
-      this.targetsTypes = http.response.result;          
+      this.targetsTypes = http.response.result;
     })
     .catch(this.$opensilex.errorHandler); 
   }   

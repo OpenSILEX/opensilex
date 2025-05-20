@@ -153,7 +153,7 @@ public class GermplasmAPI {
     }
 
     /**
-     *  create many germplasms if everything is correct, block everything if there is an error
+     *  create and/or update many germplasms if everything is correct, block everything if there is an error
      * @param germplasmDTOs
      * @param checkOnly
      * @return
@@ -161,7 +161,7 @@ public class GermplasmAPI {
      */
     @POST
     @Path("import")
-    @ApiOperation("Add many germplasms")
+    @ApiOperation("Add or update many germplasms")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
@@ -170,9 +170,8 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Added germplasms (variety, accession, plantMaterialLot)", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "germplasms are created and/or updated", response = URI.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
 
     public Response createGermplasms(
             @ApiParam("List of germplasm description") @Valid List<GermplasmCreationDTO> germplasmDTOs,

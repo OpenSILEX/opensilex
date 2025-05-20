@@ -44,7 +44,7 @@
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
         <!-- Front-end Node & Npm version -->
-        <node.version>v22.9.0</node.version>
+        <node.version>v22.15.1</node.version>
         <npm.version>11.1.0</npm.version>
         <!-- Java supported version -->
         <java.compiler.version>17</java.compiler.version>

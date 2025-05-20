@@ -18,7 +18,9 @@ const props = defineProps<{
   disabled?: boolean;
 }>();
 
-  
+export default {
+  props,
+};
 
 </script>
 

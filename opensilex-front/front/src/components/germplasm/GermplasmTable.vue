@@ -217,6 +217,10 @@ export default class GermplasmTable extends Vue {
   @Watch("tableData", {deep: true})
   newData(value: string, oldValue: string) {
     this.tabulator.replaceData(value);
+    this.getExistingGermplasmsUri()
+        .then(uris => {
+          this.updateStatus(uris, "UPDATE");
+        });
   }
 
   private csvUploadedData = [];
@@ -593,6 +597,22 @@ export default class GermplasmTable extends Vue {
 
     this.tabulator.on("dataProcessed", () => {
       this.$opensilex.hideLoader();
+    });
+
+    //after edited a cell, check if the uri is already in the database and update the status
+    this.tabulator.on("cellEdited", (cell) => {
+      this.getExistingGermplasmsUri()
+          .then(uris => {
+            let status = "";
+            if (uris.includes(cell.getRow().getData().uri)) {
+              status = "UPDATE"
+            }
+
+            this.tabulator.updateData([{
+              rowNumber: cell.getRow().getIndex(),
+              status: status,
+            }]);
+          });
     });
 
     this.jsonForTemplate = [];

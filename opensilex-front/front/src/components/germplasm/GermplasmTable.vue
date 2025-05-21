@@ -331,6 +331,29 @@ export default class GermplasmTable extends Vue {
     this.langUnwatcher();
   }
 
+  private async created() {
+    this.service = this.$opensilex.getService("opensilex.GermplasmService");
+    //Existing duplicatable rdf property stuff
+    let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
+    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
+      return http.response.result;
+    }).catch(this.$opensilex.errorHandler);
+    this.existingDuplicatablePropertiesNameList = [];
+    existingProperties.forEach(property => {
+          this.existingDuplicatableRdfAttributesObjects.push({
+            id: property.uri,
+            label: property.name
+          });
+          this.existingDuplicatablePropertiesNameList.push(property.name);
+        }
+    );
+    //Add stuff to existing property string rule (to prevent duplicates)
+    if (this.existingRdfAttributesStringRule === "") {
+      this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
+    } else {
+      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
+    }
+  }
   //endregion
 
   //#region Private methods
@@ -919,30 +942,6 @@ export default class GermplasmTable extends Vue {
     }
     
     return creationDtos;
-  }
-
-  private async created() {
-    this.service = this.$opensilex.getService("opensilex.GermplasmService");
-    //Existing duplicatable rdf property stuff
-    let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
-      return http.response.result;
-    }).catch(this.$opensilex.errorHandler);
-    this.existingDuplicatablePropertiesNameList = [];
-    existingProperties.forEach(property => {
-          this.existingDuplicatableRdfAttributesObjects.push({
-            id: property.uri,
-            label: property.name
-          });
-          this.existingDuplicatablePropertiesNameList.push(property.name);
-        }
-    );
-    //Add stuff to existing property string rule (to prevent duplicates)
-    if (this.existingRdfAttributesStringRule === "") {
-      this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
-    } else {
-      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
-    }
   }
 
   /**

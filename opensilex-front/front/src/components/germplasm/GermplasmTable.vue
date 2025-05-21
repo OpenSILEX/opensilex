@@ -666,15 +666,14 @@ export default class GermplasmTable extends Vue {
   }
 
   private async upsertOrCheckData() {
-    let creationDtos: Array<GermplasmCreationDTO> = [];
-    let updateDtos: Array<GermplasmUpdateDTO> = [];
-    await this.getDtosFromTableData(creationDtos, updateDtos);
+    let DTOs: Array<GermplasmCreationDTO> = [];
+    await this.getDtosFromTableData(DTOs);
     this.$opensilex.enableLoader();
     this.$opensilex.showLoader();
     await this.resetStatus();
     await Promise.all([
       this.updateStatus(updateDtos.map((dto) => dto.uri), "UPDATE"),
-      this.callCreationService(creationDtos),
+      this.callCreationService(DTOs),
       this.callUpdateService(updateDtos),
     ])
         .finally(() => {
@@ -790,17 +789,15 @@ export default class GermplasmTable extends Vue {
     return ( await this.service.checkGermplasmsExist(uris) ).response.result
   }
 
-  private async getDtosFromTableData(creationDtos: Array<GermplasmCreationDTO>, updateDtos: Array<GermplasmUpdateDTO>) {
+  private async getDtosFromTableData(creationDtos: Array<GermplasmCreationDTO>) {
     let uris: string[] = this.tabulator.getData().map((row) => {
       return row.uri;
     });
-    let existantsCompleteUri = ( await this.service.checkGermplasmsExist(uris) ).response.result
     this.rowIndexByUri.clear();
 
     let dataToInsert = this.tabulator.getData();
 
     for (let idx = 0; idx < dataToInsert.length; idx++) {
-      let isUpdate = false;
       let form = {
         rdf_type: null,
         name: null,
@@ -823,9 +820,6 @@ export default class GermplasmTable extends Vue {
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
         this.rowIndexByUri.set(dataToInsert[idx].uri, idx+1);
-        if (existantsCompleteUri.includes(this.$opensilex.getLongUri(dataToInsert[idx].uri))) {
-          isUpdate = true;
-        }
       }
       if (dataToInsert[idx].name != null && dataToInsert[idx].name != "") {
         form.name = dataToInsert[idx].name;
@@ -939,8 +933,7 @@ export default class GermplasmTable extends Vue {
       ) {
         return;
       } else {
-        let arrayToFill = isUpdate ? updateDtos : creationDtos;
-        arrayToFill.push(form);
+        creationDtos.push(form);
       }
     }
   }

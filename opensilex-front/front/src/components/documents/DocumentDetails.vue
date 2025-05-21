@@ -211,6 +211,20 @@ export default class DocumentDetails extends Vue {
         this.document = http.response.result;        
         if (this.document.targets.length>0) {
           this.loadTargetsTypes();
+          console.log("document:");
+          console.log(this.document);
+          console.log("document.targets:");
+          console.log(this.document.targets);
+          for (let i = 0; i < this.document.targets.length; i++) {
+            console.log("target:");
+            console.log(this.document.targets[i]);
+            console.log(this.getTargetType(this.document.targets[i]));
+            let targetType:string = this.getTargetType(this.document.targets[i]);
+            if(targetType === "experiment") {
+              console.log(this.document.targets[i]);
+              this.getExperiment(this.document.targets[i]);
+            }
+          }
         }  
       })
       .catch(this.$opensilex.errorHandler);
@@ -267,10 +281,27 @@ export default class DocumentDetails extends Vue {
     }
     ontologyService.checkURIsTypes(types, body)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
-      this.targetsTypes = http.response.result;          
+      this.targetsTypes = http.response.result;
     })
     .catch(this.$opensilex.errorHandler); 
-  }   
+  }
+
+  getTargetType(uri: string) {
+    const parts = uri.split("/");
+    const secondElement = parts[1]; // "experiment"
+    return secondElement;
+  }
+
+  getExperiment(uri: string) {
+    this.$opensilex
+      .getService("opensilex.ExperimentsService")
+      .getExperiment(uri)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        console.log("getExperiment :");
+        console.log(http.response.result);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

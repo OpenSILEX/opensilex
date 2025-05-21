@@ -783,6 +783,13 @@ export default class GermplasmTable extends Vue {
     });
   }
 
+  private async getExistingGermplasmsUri(): Promise<Array<string>>{
+    let uris: string[] = this.tabulator.getData().map((row) => {
+      return row.uri;
+    });
+    return ( await this.service.checkGermplasmsExist(uris) ).response.result
+  }
+
   private async getDtosFromTableData(creationDtos: Array<GermplasmCreationDTO>, updateDtos: Array<GermplasmUpdateDTO>) {
     let uris: string[] = this.tabulator.getData().map((row) => {
       return row.uri;

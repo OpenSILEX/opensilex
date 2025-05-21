@@ -28,8 +28,8 @@ Vue.use(AsyncComputed)
 let urlParams = new URLSearchParams(window.location.search);
 
 // Define if script in debug mode
-let isDebug = true;
-let isDevMode = true;
+let isDebug = false;
+let isDevMode = false;
 if (window["webpackHotUpdate"]) {
   isDevMode = true;
   isDebug = true;

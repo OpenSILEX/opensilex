@@ -19,7 +19,7 @@
                         :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.factors") }}
                     <span
-                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!factorsCountIsLoading && factors > 0)"
+                        v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && !factorsCountIsLoading && factors > 0"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(factors)}}
@@ -66,7 +66,7 @@
                         :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
                 >{{ $t("Annotation.list-title") }}
                     <span
-                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!annotationsCountIsLoading && annotations > 0)"
+                        v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && !annotationsCountIsLoading && annotations > 0"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(annotations)}}
@@ -78,7 +78,7 @@
                   :to="{path: '/experiment/document/' + encodeURIComponent(uri)}"
                 >{{ $t('ExperimentView.document') }}
                     <span
-                        v-if="(user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)) && (!documentsCountIsLoading && documents > 0)"
+                        v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID) && !documentsCountIsLoading && documents > 0"
                         class ="tabWithElements"
                     >
                         {{$opensilex.$numberFormatter.formateResponse(documents)}}

@@ -44,6 +44,7 @@ public class Oeso {
     public static final Property startDate = Ontology.property(NS, "startDate");
     public static final Property endDate = Ontology.property(NS, "endDate");
     public static final Property hasPart = Ontology.property(NS, "hasPart");
+    public static final Property isPartOf = Ontology.property(NS, "isPartOf");
 
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
@@ -64,6 +65,9 @@ public class Oeso {
     public static final Property hasEntityOfInterest = Ontology.property(NS, "hasEntityOfInterest");
 
     public static final Property fromSharedResourceInstance = Ontology.property(NS, "fromSharedResourceInstance");
+    public static final Property hasSpecies = Ontology.property(NS, "hasSpecies");
+
+//    public static final Property measuredBy = Ontology.property(NS, "measuredBy");
 
     // ---- VARIABLES Unit ----
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");
@@ -83,7 +87,6 @@ public class Oeso {
 
     // ---- PROJECTS ----
     public static final Resource Project = Ontology.resource(NS, "Project");
-
     public static final Property hasShortname = Ontology.property(NS, "hasShortname");
     public static final Property hasObjective = Ontology.property(NS, "hasObjective");
     public static final Property hasAdministrativeContact = Ontology.property(NS, "hasAdministrativeContact");
@@ -94,20 +97,16 @@ public class Oeso {
 
     // ---- EXPERIMENTS ----
     public static final Resource Experiment = Ontology.resource(NS, "Experiment");
-
-    public static final Property hasDevice = Ontology.property(NS, "hasDevice");
     public static final Property usesOrganization = Ontology.property(NS, "usesOrganization");
     public static final Property usesFacility = Ontology.property(NS, "usesFacility");
     public static final Property hasProject = Ontology.property(NS, "hasProject");
     public static final Property hasScientificSupervisor = Ontology.property(NS, "hasScientificSupervisor");
     public static final Property hasTechnicalSupervisor = Ontology.property(NS, "hasTechnicalSupervisor");
     public static final Property hasCampaign = Ontology.property(NS, "hasCampaign");
-    public static final Property hasSpecies = Ontology.property(NS, "hasSpecies");
     public static final Property isPublic = Ontology.property(NS, "isPublic");
-    public static final Property measures = Ontology.property(NS, "measures");
     public static final Property participatesIn = Ontology.property(NS, "participatesIn");
 
-    // ---- ORGANIZATIONS AND INSTALLATION
+    // ---- ORGANIZATIONS AND INSTALLATION, FACILITY
     public static final Resource Facility = Ontology.resource(NS, "Facility");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
     public static final Property isHosted = Ontology.property(NS, "isHosted");
@@ -116,6 +115,8 @@ public class Oeso {
     public static final Property hasGeometry = Ontology.property(NS, "hasGeometry");
     public static final Property hasVariablesGroup = Ontology.property(NS, "hasVariablesGroup");
     public static final Property hasVariable = Ontology.property(NS, "hasVariable");
+    public static final Property hasDevice = Ontology.property(NS, "hasDevice");
+
 
     // ---- SPECIES ----
     // public static final Resource Species = Ontology.resource(NS, "Species");
@@ -159,7 +160,6 @@ public class Oeso {
 
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
-    public static final Property isPartOf = Ontology.property(NS, "isPartOf");
     public static final Resource ScientificObjectClass = Ontology.resource(NS, "ScientificObjectClass");
     public static final Property hasCreationDate = Ontology.property(NS, "hasCreationDate");
     public static final Property hasDestructionDate = Ontology.property(NS, "hasDestructionDate");
@@ -186,5 +186,9 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
+    public static final Property measures = Ontology.property(NS, "measures");
+
+   // measures.setInverseOf(measuredBy);
+
 
 }

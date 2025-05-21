@@ -7,6 +7,7 @@ package org.opensilex.core.organisation.dal.facility;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD4;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
@@ -20,7 +21,9 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @SPARQLResource(
@@ -78,13 +81,21 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             ignoreUpdateIfNull = true
     )
     private List<VariableModel> variables;
-    public static final String VARIABLE_FIELD = "variables";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDevice"
+    )
+    private List<DeviceModel> devices;
+
+    private Map<VariableModel, List<DeviceModel>> variableDeviceMap = new HashMap<>();
 
     @SPARQLProperty(
             ontology = VCARD4.class,
             property = "hasAddress",
             cascadeDelete = true
     )
+
 
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
@@ -131,13 +142,6 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
                 .collect(Collectors.toList());
     }
 
-    public List<VariableModel> getVariables() {
-        return variables;
-    }
-
-    public void setVariables(List<VariableModel> variables) {
-        this.variables = variables;
-    }
 
     public List<SiteModel> getSites() {
         return sites;
@@ -178,5 +182,35 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
                 instance.getName()
         };
     }
+
+
+    public List<VariableModel> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableModel> variables) {
+        this.variables = variables;
+    }
+
+    public List<DeviceModel> getDevices() {return devices;}
+
+    public void setDevices(List<DeviceModel> devices) {this.devices = devices;}
+
+
+    public Map<VariableModel, List<DeviceModel>> getVariableDeviceMap() {
+        return variableDeviceMap;
+    }
+
+    public void setVariableDeviceMap(Map<VariableModel, List<DeviceModel>> variableDeviceMap) {
+        this.variableDeviceMap = variableDeviceMap;
+    }
+
+    public void addVariableDeviceMapping(VariableModel variable, List<DeviceModel> devices) {
+        this.variableDeviceMap.put(variable, devices);
+        if (!variables.contains(variable)) {
+            variables.add(variable);
+        }
+    }
+
 
 }

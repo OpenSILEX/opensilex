@@ -19,6 +19,7 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -560,6 +561,8 @@ public class DataLogic {
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
         //  SI la target est une facility, alors ajouter le lien entre la variable et la facility
         var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+
+        Map<VariableModel, List<DeviceModel>> variableToDevicesMap = new HashMap<>();
         //appeler facility logic pour ajouter le lien
         for(DataModel model : models){
             if(model.getTarget() != null){
@@ -567,9 +570,19 @@ public class DataLogic {
                 if(facilityModel != null){
                     var variableModel = new VariableModel();
                     variableModel.setUri(model.getVariable());
-                    var facilityVariables = facilityModel.getVariables();
+                    VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs,user );
+
+                   var facilityVariables = facilityModel.getVariables();
                     facilityVariables.add(variableModel);
                     facilityModel.setVariables(facilityVariables);
+                    List<DeviceModel> associatedDevices = variableDAO.getDeviceFromVariable(variableModel.getUri(), user.getLanguage());
+                   facilityModel.getDevices().addAll(associatedDevices);
+
+//                    for (VariableModel variable : facilityModel.getVariables()) {
+//                        List<DeviceModel> associatedDevices = variableDAO.getDeviceFromVariable(variable.getUri(), user.getLanguage());
+//                        facilityModel.addVariableDeviceMapping(variable, associatedDevices);
+//                    }
+
                     facilityLogic.update(facilityModel,null , user);
                 }
             }
@@ -604,6 +617,13 @@ public class DataLogic {
         if (csvImport) {
             return Collections.emptyList();
         }
+//        for (DataModel dataModel : models) {
+//            for (ProvEntityModel agent : dataModel.getProvenance().getProvWasAssociatedWith()) {
+//                SPARQLDeserializers.compareURIs(agent.getType(), Oeso.SensingDevice.getURI());
+//            }
+//        }
+
+
         return models.stream()
                 .map(MongoModel::getUri)
                 .collect(Collectors.toList());

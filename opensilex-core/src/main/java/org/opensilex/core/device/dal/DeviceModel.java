@@ -10,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -17,6 +18,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author sammy
@@ -83,6 +85,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     MetaDataModel metaDataModel;
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "measures",
+            inverse = true
+    )
+    private List<VariableModel> variables;
+
     public String getBrand() {
         return brand;
     }
@@ -145,6 +154,14 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setMetaDataModel(MetaDataModel metaDataModel) {
         this.metaDataModel = metaDataModel;
+    }
+
+    public List<VariableModel> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableModel> variables) {
+        this.variables = variables;
     }
 
     @Override

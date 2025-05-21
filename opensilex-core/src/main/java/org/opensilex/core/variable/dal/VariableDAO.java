@@ -24,6 +24,7 @@ import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -51,6 +52,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.opensilex.sparql.model.SPARQLResourceModel.URI_FIELD;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -87,12 +89,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private final AccountModel user;
 
 
+
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
         this.nosql = nosql;
         this.fs = fs;
         this.user = user;
     }
+
 
     public void delete(URI uri, AccountModel currentUser) throws Exception {
         long linkedDataNb = getLinkedDataNb(uri, currentUser);
@@ -348,7 +352,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      */
     public Set<URI> getAllDateVariables() throws Exception {
         return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
-            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            Var uriVar = SPARQLQueryHelper.makeVar(URI_FIELD);
             selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
         }));
     }
@@ -363,13 +367,39 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
-            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
-                return true;
-            }
+            return variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())));
         }
         return false;
 
     }
+
+    /**
+     * Returns the device if the given variable is associated with it.
+     *
+     * @param device the device to check
+     * @param variable the variable URI to look for
+     * @return the device if associated, otherwise null
+     */
+    public DeviceModel getDeviceAssociatedToVariable(DeviceModel device, URI variable) {
+        boolean isAssociated = variableIsAssociatedToDevice(device, variable);
+        if (isAssociated) {
+            return device;
+        }
+        return null;
+    }
+
+
+// seconde method to get list of devices from variable
+    public List<DeviceModel> getDeviceFromVariable(URI variable, String language) throws Exception {
+        List<URI> deviceURIs = sparql.searchURIs(
+                VariableModel.class,
+                user.getLanguage(),
+                (select) -> {
+                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.measures, SPARQLDeserializers.nodeURI(variable));
+                });
+        return sparql.getListByURIs(DeviceModel.class, deviceURIs, language);
+    }
+
 
     /**
      * Update the given SPARQL query by applying filter
@@ -381,7 +411,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private void addFilter(SelectBuilder select, VariableSearchFilter filter, Map<Expr, Order> orderByExprMap) throws Exception {
 
         ExprFactory exprFactory = select.getExprFactory();
-        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(SPARQLResourceModel.URI_FIELD));
+        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(URI_FIELD));
 
         if (!StringUtils.isEmpty(filter.getNamePattern())) {
 
@@ -425,12 +455,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
         if (filter.getIncludedInGroup() != null) {
-            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(URI_FIELD));
         }
 
         if (filter.getNotIncludedInGroup() != null) {
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(
-                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD))
+                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(URI_FIELD))
             ));
         }
 
@@ -443,12 +473,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
         if (filter.getIncludedUris() != null) {
-            SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, filter.getIncludedUris());
+            SPARQLQueryHelper.addWhereUriValues(select, URI_FIELD, filter.getIncludedUris());
         }
 
         if (!CollectionUtils.isEmpty(filter.getSpecies())) {
             //  add ?uri vocabulary:hasSpecies ?species
-            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.hasSpecies, makeVar(VariableModel.SPECIES_FIELD_NAME));
+            select.addWhere(makeVar(URI_FIELD), Oeso.hasSpecies, makeVar(VariableModel.SPECIES_FIELD_NAME));
 
             // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME, filter.getSpecies()));

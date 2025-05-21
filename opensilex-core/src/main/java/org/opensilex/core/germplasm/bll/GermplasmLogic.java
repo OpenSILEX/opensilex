@@ -70,14 +70,36 @@ public class GermplasmLogic {
      * @return updated or created germplasm as {@link List<GermplasmModel>}
      */
     public List<GermplasmModel> upsert(List<GermplasmModel> germplasmModels) throws Exception {
+        Collection<URI> existingUris = checkExistence(germplasmModels.stream()
+                .map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toList()));
+        List<GermplasmModel> germplasmModelsToUpdate = new ArrayList<>();
+        List<GermplasmModel> germplasmModelsToCreate = new ArrayList<>();
+        germplasmModels.forEach(germplasmModel -> {
+            if (existingUris.contains(germplasmModel.getUri())) {
+                germplasmModelsToUpdate.add(germplasmModel);
+            } else {
+                germplasmModelsToCreate.add(germplasmModel);
+            }
+        });
+
         var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, false);
         if (multipleErrorObject.hasErrors()){
-            throw new MultipleErrorException("getting errors while creating germplasms", multipleErrorObject);
+            multipleErrorObject.getErrors()
+                    .forEach((uri, error) -> {
+                        if (existingUris.stream().anyMatch( existingUri -> SPARQLDeserializers.compareURIs(URI.create(uri), existingUri))) {
+                            error.SetIsUpdate(true);
+                        }
+                    });
+            throw new MultipleErrorException("getting errors while upserting germplasms", multipleErrorObject);
         }
 
         germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
         germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
-        return dao.createListWithoutUriExistsCheck(germplasmModels);
+
+        List<GermplasmModel> result = dao.createListWithoutUriExistsCheck(germplasmModelsToCreate);
+        result.addAll(dao.update(germplasmModelsToUpdate));
+        return result;
     }
 
     /**
@@ -367,6 +389,9 @@ public class GermplasmLogic {
         return dao.getDistinctGermplasmAttributesValues(attribute, attributeValue, page, pageSize);
     }
 
+    /**
+     * @return the uris of already existing germplasms
+     */
     public Collection<URI> checkExistence(List<URI> uris) throws Exception {
         return dao.checkExistence(uris);
     }

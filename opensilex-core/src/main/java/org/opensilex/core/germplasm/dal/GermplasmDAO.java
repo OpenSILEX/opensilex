@@ -79,6 +79,13 @@ public class GermplasmDAO {
         return model;
     }
 
+    public List<GermplasmModel> update(List<GermplasmModel> models) throws Exception {
+        for (GermplasmModel model : models) {
+            update(model);
+        }
+        return models;
+    }
+
     public GermplasmModel create(GermplasmModel model) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
             sparqlDAO.create(model);

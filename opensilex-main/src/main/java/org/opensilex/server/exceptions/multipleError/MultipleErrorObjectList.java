@@ -13,6 +13,7 @@ package org.opensilex.server.exceptions.multipleError;
 import org.opensilex.server.response.multipleError.MultipleErrorDTO;
 import org.opensilex.server.response.multipleError.MultipleErrorListDTO;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,5 +60,9 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject> {
 
     public boolean hasErrors() {
         return !errors.isEmpty();
+    }
+
+    public Map<String, T> getErrors() {
+        return errors;
     }
 }

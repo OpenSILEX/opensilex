@@ -686,32 +686,28 @@ export default class GermplasmTable extends Vue {
   }
 
   private async upsertOrCheckData() {
-    let DTOs: Array<GermplasmCreationDTO> = [];
-    await this.getDtosFromTableData(DTOs);
     this.$opensilex.enableLoader();
     this.$opensilex.showLoader();
-    await this.resetStatus();
-    await Promise.all([
-      this.updateStatus(updateDtos.map((dto) => dto.uri), "UPDATE"),
-      this.callCreationService(DTOs),
-      this.callUpdateService(updateDtos),
-    ])
+    
+    let DTOs: Array<GermplasmCreationDTO> = await this.getDtosFromTableData();
+
+    this.callUpsertService(DTOs)
         .finally(() => {
           this.$opensilex.hideLoader()
           this.$opensilex.disableLoader();
         })
   }
 
-  private async callCreationService(creationDtos: Array<GermplasmCreationDTO>) {
-    return this.service.createGermplasms(this.onlyChecking, creationDtos)
+  private async callUpsertService(creationDtos: Array<GermplasmCreationDTO>) {
+    return this.service.upsertGermplasms(this.onlyChecking, creationDtos)
         .then( response => {
-          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckInsertMessage").toString() : this.$t("GermplasmTable.successInsertMessage").toString();
+          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckInsertMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
-          let uris = response.response.result;
-          this.updateStatus(uris, "OK");
+          this.updateStatusOfEachRows("OK");
         })
         .catch( error => {
+          this.updateStatusOfEachRows("OK");
           this.filter = "NOK";
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorInsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
@@ -737,45 +733,12 @@ export default class GermplasmTable extends Vue {
           });
         })
   }
-
-  private async callUpdateService(updateDtos: Array<GermplasmUpdateDTO>) {
-    return this.service.updateGermplasms(this.onlyChecking, updateDtos)
-        .then( () => {
-          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckUpdateMessage").toString() : this.$t("GermplasmTable.successUpdateMessage").toString();
-          this.$opensilex.showSuccessToast(successMessage);
-        })
-        .catch(error => {
-          this.filter = "NOK";
-          let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorUpdateMessage").toString();
-          this.$opensilex.showErrorToast(errorMessage);
-
-          let errorsByUri = error.response.result.errors; //object of type {uriWithErrors: ["error1", "error2"]}
-          if (errorsByUri == null) return;
-
-          Object.entries(errorsByUri).forEach(([uri, errorList]) => {
-            if (!Array.isArray(errorList)) {
-              console.error(`Expected errorList to be an array for URI ${uri}`);
-              return;
-            }
-
-            let rowIndex = this.rowIndexByUri.get(uri);
-            if (rowIndex != null) {
-              this.tabulator.updateData([{
-                rowNumber: rowIndex,
-                insertionStatus: errorList.join(", "),
-                checkingStatus: errorList.join(", "),
-                status: "NOK",
-              }]);
-            }
-          });
-        })
-  }
-
+  
   /**
    * update the status of each row with the uri in the uris array, and set the status.
    * This will trigger the rowFormatter to change the color of the row.
    */
-  private async updateStatus(uris: string[], status: string){
+  private updateStatus(uris: string[], status: string){
     this.tabulator.getData().forEach((data, index) => {
       if (uris.includes(data.uri)) {
         this.tabulator.updateData([{
@@ -790,9 +753,9 @@ export default class GermplasmTable extends Vue {
   }
 
   /**
-   * reset the status of each row to ""
+   * reset the status of each row to status value. Default is empty string.
    */
-  private async resetStatus(){
+  private updateStatusOfEachRows(status: string){
     this.tabulator.getData().forEach((data, index) => {
       this.tabulator.updateData([{
         rowNumber: index+1,
@@ -809,10 +772,8 @@ export default class GermplasmTable extends Vue {
     return ( await this.service.checkGermplasmsExist(uris) ).response.result
   }
 
-  private async getDtosFromTableData(creationDtos: Array<GermplasmCreationDTO>) {
-    let uris: string[] = this.tabulator.getData().map((row) => {
-      return row.uri;
-    });
+  private async getDtosFromTableData(): Promise<Array<GermplasmCreationDTO>> {
+    let creationDtos: Array<GermplasmCreationDTO> = [];
     this.rowIndexByUri.clear();
 
     let dataToInsert = this.tabulator.getData();
@@ -956,6 +917,8 @@ export default class GermplasmTable extends Vue {
         creationDtos.push(form);
       }
     }
+    
+    return creationDtos;
   }
 
   private async created() {
@@ -1191,10 +1154,8 @@ en:
     successCheckInsertMessage: germplasms are ready to be inserted
     successCheckUpdateMessage: germplasms are ready to be updated
     insert: Insert
-    errorInsertMessage: insertion shows some errors, nothing was inserted. See the table for more details
-    successInsertMessage: germplasms inserted
-    errorUpdateMessage: update shows some errors, nothing was updated. See the table for more details
-    successUpdateMessage: germplasms updated
+    errorInsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
+    successUpsertMessage: germplasms inserted and/or updated
     emptyMessage: The table is empty
     close: Close
     addRow: Add Row
@@ -1247,10 +1208,8 @@ fr:
     successCheckInsertMessage: Les ressources génétiques sont prêts à être insérées
     successCheckUpdateMessage: Les ressources génétiques sont prêts à être mis à jour
     insert: Insérer
-    errorInsertMessage: Des erreurs sont apparues lors de l'insertion, rien n'a été inséré. Voir le tableau pour plus de détails
-    successInsertMessage: Les ressources génétiques ont été insérées
-    errorUpdateMessage: Des erreurs sont apparues lors de la mise à jour, rien n'a été mis à jour. Voir le tableau pour plus de détails
-    successUpdateMessage: Les ressources génétiques ont été mises à jour
+    errorInsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
+    successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
     emptyMessage: Le tableau est vide
     close: Fermer
     addRow: Ajouter ligne

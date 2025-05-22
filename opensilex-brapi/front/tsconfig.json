@@ -15,9 +15,7 @@
         "sourceMap": true,
         "baseUrl": ".",
         "typeRoots": ["node_modules"],
-        "types": [
-            "webpack-env"
-        ],
+   
         "paths": {
             "@/*": [
                 "src/*"

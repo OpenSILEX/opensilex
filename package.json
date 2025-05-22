@@ -2,7 +2,8 @@
     "name": "opensilex-vue-extension",
     "version": "0.1.0",
     "private": true,
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
+    "type": "module",
     "scripts": {
         "serve": "vite serve",
         "build": "vite build",
@@ -43,11 +44,9 @@
         "eslint-plugin-vue": "^9.32.0",
         "sass": "1.89.0",
         "sass-loader": "16.0.5",
-        "terser-webpack-plugin": "5.3.14",
         "typescript": "^5.8.3",
         "vite": "^6.3.5",
-        "vite-plugin-vue-devtools": "^7.7.6",
-        "webpack": "^5.99.8"
+        "vite-plugin-vue-devtools": "^7.7.6"
     },
     "eslintConfig": {
         "root": true,

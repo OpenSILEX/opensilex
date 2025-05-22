@@ -1,5 +1,7 @@
 {
     "name": "opensilex-security",
+    "license":"AGPL-3.0-only", 
+    "type": "module",
     "files": ["dist"],
     "main": "./dist/mopensilex-security.umd.min.js",
     "module": "./dist/opensilex-security.umd.min.js",

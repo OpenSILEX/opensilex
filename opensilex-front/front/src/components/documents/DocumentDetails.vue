@@ -144,6 +144,8 @@ import Vue from "vue";
 import { DocumentGetDTO, DocumentsService } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+
 
 @Component
 export default class DocumentDetails extends Vue {
@@ -153,10 +155,15 @@ export default class DocumentDetails extends Vue {
   $t: any; 
   $i18n: any;
   service: DocumentsService;
+  //securityService: SecurityService;
   uri: string = null;
 
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
+
+  groupDetailsByAccountUri :{
+    [id: string]: NamedResourceDTO[];
+  } =  {}
 
   get user() {
     return this.$store.state.user;
@@ -293,12 +300,33 @@ export default class DocumentDetails extends Vue {
   }
 
   getExperiment(uri: string) {
+    let exp:any = [];
     this.$opensilex
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         console.log("getExperiment :");
-        console.log(http.response.result);
+        exp = http.response.result;
+        console.log(exp);
+        console.log(this.user.isAdmin());
+        console.log(this.$store.state.user.tokenData.sub);//user URI
+        this.getUserGroups(this.$store.state.user.tokenData.sub);
+        console.log(exp.is_public);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  getUserGroups(uri: string) {
+    let groups:any = [];
+    this.$opensilex
+      .getService("opensilex.SecurityService")
+      .getUserGroups(uri)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        console.log("getUserGroups :");
+        groups = http.response.result;
+        console.log(groups);
+        console.log(this.user.isAdmin());
+        console.log(this.$store.state.user.tokenData.sub);
       })
       .catch(this.$opensilex.errorHandler);
   }

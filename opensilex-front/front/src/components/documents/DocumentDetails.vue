@@ -158,6 +158,9 @@ export default class DocumentDetails extends Vue {
   //securityService: SecurityService;
   uri: string = null;
 
+  expData:any = [];
+  groupsData:any = [];
+
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
 
@@ -223,13 +226,17 @@ export default class DocumentDetails extends Vue {
           console.log("document.targets:");
           console.log(this.document.targets);
           for (let i = 0; i < this.document.targets.length; i++) {
-            console.log("target:");
+            console.log("target : " + i);
             console.log(this.document.targets[i]);
             console.log(this.getTargetType(this.document.targets[i]));
             let targetType:string = this.getTargetType(this.document.targets[i]);
             if(targetType === "experiment") {
               console.log(this.document.targets[i]);
               this.getExperiment(this.document.targets[i]);
+              console.log("this.expData :");
+              console.log(this.expData);
+              console.log("this.groupsData :");
+              console.log(this.groupsData);
             }
           }
         }  
@@ -300,31 +307,31 @@ export default class DocumentDetails extends Vue {
   }
 
   getExperiment(uri: string) {
-    let exp:any = [];
+    //let exp:any = [];
     this.$opensilex
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         console.log("getExperiment :");
-        exp = http.response.result;
-        console.log(exp);
+        this.expData.push(http.response.result);
+        console.log(this.expData);
         console.log(this.user.isAdmin());
         console.log(this.$store.state.user.tokenData.sub);//user URI
         this.getUserGroups(this.$store.state.user.tokenData.sub);
-        console.log(exp.is_public);
+        console.log(this.expData.is_public);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
   getUserGroups(uri: string) {
-    let groups:any = [];
+    //let groups:any = [];
     this.$opensilex
       .getService("opensilex.SecurityService")
       .getUserGroups(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         console.log("getUserGroups :");
-        groups = http.response.result;
-        console.log(groups);
+        this.groupsData.push(http.response.result);
+        console.log(this.groupsData);
         console.log(this.user.isAdmin());
         console.log(this.$store.state.user.tokenData.sub);
       })

@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineExpose, nextTick, computed } from 'vue';
+import { ref, nextTick, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FormInst } from 'naive-ui';
 

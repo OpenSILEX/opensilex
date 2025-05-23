@@ -19,7 +19,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, defineExpose, nextTick, inject, onMounted } from 'vue';
+import { ref, computed, nextTick, inject, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import DTOConverter from './../../../models/DTOConverter';

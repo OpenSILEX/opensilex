@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits, defineExpose } from "vue";
+import { ref, computed  } from "vue";
 import { useI18n } from "vue-i18n";
 
 // i18n

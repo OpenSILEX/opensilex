@@ -1,14 +1,11 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import {User} from './User'
-import Router from 'vue-router';
+ 
+import {User} from './User' 
 import {Menu} from './Menu';
 import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
 import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
-import { createStore } from 'vuex';
-import { getCurrentInstance } from 'vue';
+import { createStore } from 'vuex'; 
 import { App } from 'vue';
 
 // Vue.use(VueRouter)

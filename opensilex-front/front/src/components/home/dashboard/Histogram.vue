@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { ref, watchEffect, onMounted, inject, defineProps, nextTick } from "vue";
+import { ref, watchEffect, onMounted, inject, nextTick } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HistogramSettings from "./HistogramSettings.vue";
 import VisualisationGraphic from "./VisualisationGraphic.vue";

@@ -4,8 +4,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed, defineProps, defineEmits } from 'vue';
+<script setup lang="ts"> 
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 

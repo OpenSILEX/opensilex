@@ -17,7 +17,7 @@
         "typeRoots": ["node_modules"],
         "types": [
             "node", 
-            "vite/client"
+            "vite/client" 
         ],
         "paths": {
             "@/*": [

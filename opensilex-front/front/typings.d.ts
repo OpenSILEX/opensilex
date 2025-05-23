@@ -5,13 +5,9 @@ declare module '*.md' {
 }
 
 
-declare module 'vue' {
-  import { CompatVue } from '@vue/runtime-dom'
-  const Vue: CompatVue
+declare module '*.vue' {
+  import Vue from 'vue'
   export default Vue
-  export * from '@vue/runtime-dom'
-  const { configureCompat } = Vue
-  export { configureCompat }
 }
 declare module 'vue-easy-lightbox/dist/external-css/vue-easy-lightbox.esm.min.js' {
   import VueEasyLightbox from 'vue-easy-lightbox'

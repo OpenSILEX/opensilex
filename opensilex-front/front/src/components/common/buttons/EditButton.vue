@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, }  from 'vue';
 
 const props = defineProps<{
   label: string;

@@ -37,7 +37,6 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class GermplasmLogic {

@@ -150,6 +150,7 @@ import VueI18n from "vue-i18n";
 import {User} from "../../models/User";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
 import {GermplasmUpdateDTO} from "opensilex-core/model/germplasmUpdateDTO";
+import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -714,7 +715,6 @@ export default class GermplasmTable extends Vue {
     
     let DTOs: Array<GermplasmCreationDTO> = await this.getDtosFromTableData();
 
-    console.log(DTOs)
     this.callUpsertService(DTOs)
         .finally(() => {
           this.$opensilex.hideLoader()
@@ -731,31 +731,40 @@ export default class GermplasmTable extends Vue {
           this.updateStatusOfEachRows("OK");
         })
         .catch( error => {
+          if (error.response.status < 400 || error.response.status >= 500) {
+            this.$opensilex.showErrorToast(this.$t("GermplasmTable.errorServerMessage").toString());
+            return;
+          }
+
           this.updateStatusOfEachRows("OK");
           this.filter = "NOK";
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorInsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
 
-          let errorsByUri = error.response.result.errors; //object of type {uriWithErrors: ["error1", "error2"]}
-          if (errorsByUri == null) return;
+          let errors: Array<MultipleErrorDTO> = error.response.result.errors;
+          if (errors == null) return;
 
-          Object.entries(errorsByUri).forEach(([uri, errorList]) => {
-            if (!Array.isArray(errorList)) {
-              console.error(`Expected errorList to be an array for URI ${uri}`);
-              return;
-            }
+          errors.forEach(errorDto => {
 
-            let rowIndex = this.rowIndexByUri.get(uri);
+            let rowIndex = this.getRowIndexForUri(errorDto.uri);
             if (rowIndex != null) {
               this.tabulator.updateData([{
                 rowNumber: rowIndex,
-                insertionStatus: errorList.join(", "),
-                checkingStatus: errorList.join(", "),
+                insertionStatus: errorDto.errors.join(", "),
+                checkingStatus: errorDto.errors.join(", "),
                 status: "NOK",
               }]);
             }
           });
         })
+  }
+
+  private getRowIndexForUri(uri: string): number {
+    let res = this.rowIndexByUri.get(this.$opensilex.getShortUri(uri));
+    if (res == null) {
+      res = this.rowIndexByUri.get(this.$opensilex.getLongUri(uri));
+    }
+    return res;
   }
   
   /**
@@ -938,11 +947,9 @@ export default class GermplasmTable extends Vue {
       ) {
         break;
       } else {
-        console.log("pushed")
         creationDtos.push(form);
       }
     }
-    console.log("creationDtos", creationDtos);
     return creationDtos;
   }
 

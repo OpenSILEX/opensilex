@@ -108,7 +108,6 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   @Ref("componentRef") readonly componentRef!: any;
 
   editMode = false;
-  isSubmitting: boolean = false;
 
   form: CreationDTOType | UpdateDTOType | {} = {};
 
@@ -183,9 +182,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   validate() {
-    if (!this.disableValidation && !this.isSubmitting) {
-      this.isSubmitting = true;  // Verrouiller les soumissions en cours
-
+    if(!this.disableValidation){
       this.validatorRef.validate().then(isValid => {
         if (isValid) {
           let submitMethod: any = this.getFormRef().create;
@@ -207,7 +204,6 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
           if (!(submitResult instanceof Promise)) {
             submitResult = Promise.resolve(submitResult);
           }
-
           submitResult
               .then(result => {
                 if (result !== false && result !== undefined) {
@@ -223,13 +219,8 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
                 });
               })
               .catch((error) => {
-                this.getFormRef().handleSubmitError?.(error);
-              })
-              .finally(() => {
-                this.isSubmitting = false;
+                this.getFormRef().handleSubmitError?.(error)
               });
-        } else {
-          this.isSubmitting = false;
         }
       });
     }

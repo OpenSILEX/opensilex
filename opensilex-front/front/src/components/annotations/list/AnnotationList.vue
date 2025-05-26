@@ -40,19 +40,9 @@
                 </opensilex-TextView>
               </template>
 
-              <template v-slot:cell(motivation)="{data}">
-                <opensilex-TextView v-if="data.item.motivation" :value="data.item.motivation.name">
-                </opensilex-TextView>
-              </template>
-
               <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
                 <opensilex-TextView :value="data.item.targets[0]">
                 </opensilex-TextView>
-              </template>
-
-              <template v-slot:cell(uri)="{data}">
-                <opensilex-UriLink :uri="data.item.uri" :value="data.item.uri">
-                </opensilex-UriLink>
               </template>
 
               <template v-slot:cell(actions)="{data}">
@@ -86,7 +76,7 @@
     <!-- Modal pour afficher les détails de l'annotation -->
     <annotation-details
         v-if="selectedAnnotation"
-        v-model="isModalVisible"
+        :value="isModalVisible"
         :annotationDetails="selectedAnnotation"
         @close="isModalVisible = false"
     />
@@ -122,15 +112,9 @@ import PersonContact from "../../persons/PersonContact.vue";
 })
 export default class AnnotationList extends Vue {
 
-  data() {
-    return {
-      isModalVisible: false,
-      selectedAnnotation: null
-    };
-  }
+  private selectedAnnotation: AnnotationGetDTO | null = null;
+  private isModalVisible = false;
 
-  selectedAnnotation: AnnotationGetDTO | null = null;
-  isModalVisible = false; // Contrôle la visibilité de la modale
   $opensilex: OpenSilexVuePlugin;
   $service: AnnotationsService
   $securityService: SecurityService;
@@ -166,7 +150,7 @@ export default class AnnotationList extends Vue {
 
 
   static getDefaultColumns() {
-    return new Set(["published", "description", "publisher", "motivation", "uri"]);
+    return new Set(["published", "description", "publisher"]);
   }
 
   get user() {
@@ -297,16 +281,10 @@ export default class AnnotationList extends Vue {
 
   showDetails(annotation: any) {
     this.selectedAnnotation = {
-      uri: annotation.uri || "Non spécifié",
-      motivation: annotation.motivation ? { name: annotation.motivation.name } : { name: "Non spécifié" }
+      uri: annotation.uri,
+      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined
     };
     this.isModalVisible = true;
-  }
-
-
-  hideDetails() {
-    this.selectedAnnotation = null;
-    this.isModalVisible = false;
   }
 
   get fields() {
@@ -371,7 +349,7 @@ en:
     motivation-help: Intent or motivation for the creation of the Annotation.
     description: Description
     publisher: Publisher
-    published: Published
+    published: Date
     target: Target
     list-title: Annotations
     already-exist: the annotation already exist
@@ -387,7 +365,7 @@ fr:
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"
     description: Description
-    published: Publié le
+    published: Date
     publisher: Publieur
     target: Cible
     list-title: Annotations

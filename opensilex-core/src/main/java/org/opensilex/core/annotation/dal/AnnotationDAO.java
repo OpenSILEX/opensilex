@@ -144,10 +144,10 @@ public class AnnotationDAO {
             return Stream.of(motivationNameOrdering, motivationDefaultNameOrdering);
         }));
 
-        // Ajouter le tri par date de publication
+        // sorting by publication date
         specificExprMapping.put("published", publishedField -> Stream.of(new ExprVar(AnnotationModel.PUBLICATION_DATE_FIELD)));
 
-        // Ajouter un tri par défaut (du plus récent au plus ancien)
+        // Default sort is in reverse chronological order (from latest to oldest)
         defaultOrderByList.add(new OrderBy(AnnotationModel.PUBLICATION_DATE_FIELD, Order.DESCENDING));
 
         SPARQLQueryHelper.computeCustomOrderByList(orderByList,defaultOrderByList,specificOrderMap,specificExprMapping);

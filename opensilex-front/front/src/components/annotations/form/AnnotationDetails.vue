@@ -6,9 +6,15 @@
       no-close-on-backdrop
       no-close-on-esc
       centered
+      @close="close()"
   >
     <div class="details-container">
-      <p><strong>URI :</strong> {{ annotationDetails.uri || "Non spécifié" }}</p>
+      <p><strong>URI :</strong>
+        <opensilex-UriLink
+            :uri="annotationDetails.uri"
+            :value="annotationDetails.uri"
+        />
+      </p>
       <p><strong>Motivation :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name ? annotationDetails.motivation.name : "Non spécifié" }}</p>
     </div>
     <div class="text-right">
@@ -18,20 +24,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
 
 @Component
 export default class AnnotationDetails extends Vue {
   @Prop({ default: () => ({}) }) annotationDetails!: { uri?: string; motivation?: { name?: string } };
-  @Prop({ default: false }) value!: boolean;
-
-  get isVisible() {
-    return this.value;
-  }
-
-  set isVisible(value: boolean) {
-    this.$emit("input", value); // Synchronisation avec le parent
-  }
+  @PropSync("value",{ default: false }) isVisible!: boolean;
 
   close() {
     this.$emit("input", false); // Ferme la modale correctement

@@ -255,4 +255,8 @@ public class SPARQLDeserializers {
     public static boolean compareURIs(URI uri1, String uri2) {
         return getExpandedURI(uri1).equals(getExpandedURI(uri2));
     }
+
+    public static boolean containsURI(Collection<URI> uris, URI uri) {
+        return uris.stream().anyMatch(u -> compareURIs(u, uri));
+    }
 }

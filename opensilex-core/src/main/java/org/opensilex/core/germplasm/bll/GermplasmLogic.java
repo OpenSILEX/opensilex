@@ -76,14 +76,14 @@ public class GermplasmLogic {
         List<GermplasmModel> germplasmModelsToUpdate = new ArrayList<>();
         List<GermplasmModel> germplasmModelsToCreate = new ArrayList<>();
         germplasmModels.forEach(germplasmModel -> {
-            if (existingUris.contains(germplasmModel.getUri())) {
+            if (SPARQLDeserializers.containsURI(existingUris, germplasmModel.getUri())) {
                 germplasmModelsToUpdate.add(germplasmModel);
             } else {
                 germplasmModelsToCreate.add(germplasmModel);
             }
         });
 
-        var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, false);
+        var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, true);
         if (multipleErrorObject.hasErrors()){
             multipleErrorObject.getErrors()
                     .forEach((uri, error) -> {

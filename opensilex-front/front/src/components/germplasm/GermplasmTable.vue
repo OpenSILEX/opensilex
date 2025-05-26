@@ -728,7 +728,7 @@ export default class GermplasmTable extends Vue {
           let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckInsertMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
-          this.updateStatusOfEachRows("OK");
+          this.updateStatusOfEachRows("OK", "creation or update ok");
         })
         .catch( error => {
           if (error.response.status < 400 || error.response.status >= 500) {
@@ -736,7 +736,7 @@ export default class GermplasmTable extends Vue {
             return;
           }
 
-          this.updateStatusOfEachRows("OK");
+          this.updateStatusOfEachRows("OK", "creation or update ok");
           this.filter = "NOK";
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorInsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
@@ -788,12 +788,12 @@ export default class GermplasmTable extends Vue {
   /**
    * reset the status of each row to status value. Default is empty string.
    */
-  private updateStatusOfEachRows(status: string){
+  private updateStatusOfEachRows(status: string, insertionStatus: string): void {
     this.tabulator.getData().forEach((data, index) => {
       this.tabulator.updateData([{
         rowNumber: index+1,
-        checkingStatus: "",
-        status: "",
+        insertionStatus: insertionStatus,
+        status: status,
       }]);
     });
   }

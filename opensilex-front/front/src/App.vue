@@ -1,6 +1,7 @@
 <template>
 
  <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
+    <opensilex-ToastContainer ref="toastContainer" class="toast-container"></opensilex-ToastContainer>
 
       <div v-if="isPublicRoute">
           <!-- <component v-bind:is="headerComponent"></component> -->
@@ -9,7 +10,7 @@
           <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
                     <div id="main-content">
                       <main class="main-content">
-                        <div> public</div>
+                        <!-- <div> public</div> -->
                         <router-view />
 
                       </main>
@@ -43,7 +44,6 @@
           <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
             <component class="header-login" v-bind:is="loginComponent"></component>
           </header>
-           <ToastContainer ref="toastContainer" />
 
           <!-- notification message  -->
           <div
@@ -312,6 +312,10 @@ defineExpose({
 // .header-top.logged-out {
 //   box-shadow: none;
 // }
+
+.toast-container {
+  z-index: 9999 !important;
+}
 
 .wrapper.embed .page-wrap .main-content {
   margin-top: 0px;

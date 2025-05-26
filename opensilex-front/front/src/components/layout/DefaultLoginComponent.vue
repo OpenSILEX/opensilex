@@ -304,8 +304,7 @@ export default defineComponent({
         store.commit("refresh");
       } catch (error: any) {
         if (error.status === 403) {
-          console.error("⚠️ Login Invalid credentials", error);
-          $opensilex.errorHandler(error,  t("component.login.errors.invalid-credentials"));
+          $opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
         } else {
           console.log("⚠️ Login other error")
           $opensilex.errorHandler(error);
@@ -344,7 +343,7 @@ export default defineComponent({
       } catch (error: any) {
         if (error.status === 403) {
           console.error("🌳 onLogin - Invalid credentials", error);
-          $opensilex.errorHandler(error, t("component.login.errors.invalid-credentials"));
+          $opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
         } else {
           // $opensilex.errorHandler(error);
           console.log("🌳 onLogin - other error.... ", error)
@@ -392,7 +391,7 @@ export default defineComponent({
 .carousel-item {
   transition: opacity 1.5s ease-in-out !important;
 }
-
+invalidCredentials
 .fullmodal {
   display: block;
   position: absolute;
@@ -402,7 +401,7 @@ export default defineComponent({
   right: 0;
   height: 100%;
   width: 100%;
-  z-index: 9999;
+  z-index: 9998; /*behind global toaster box*/ 
 }
 
 .authentication-form .error-message {
@@ -436,6 +435,7 @@ en:
     loginAsGuest: Connect as guest
     email: Email or URI
     password: Password
+    invalidCredentials: User does not exists, is disabled or password is invalid
     language:
       fr: French
       en: English
@@ -455,6 +455,7 @@ fr:
     loginAsGuest: Connexion en tant qu'invité
     email: Email ou URI
     password: Mot de passe
+    invalidCredentials: L'utilisateur n'existe pas, est désactivé ou le mot de passe est invalide
     language:
       fr: Français
       en: Anglais

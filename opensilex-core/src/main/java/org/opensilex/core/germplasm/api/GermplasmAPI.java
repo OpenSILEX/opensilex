@@ -193,7 +193,7 @@ public class GermplasmAPI {
             }
 
         } else {
-            var multipleErrorObjectList = germplasmBusiness.checkBeforeCreateOrUpdate(models, false);
+            var multipleErrorObjectList = germplasmBusiness.checkBeforeCreateOrUpdate(models, true);
             if (multipleErrorObjectList.hasErrors()) {
                 return new MultipleErrorResponse(multipleErrorObjectList.toDTO()).getResponse();
             }

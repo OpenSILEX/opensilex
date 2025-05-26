@@ -176,7 +176,7 @@ export default class Histogram extends Vue {
         this.selectedVariableName = this.selectedVariable.name;
         this.dataLocationInformations = this.$opensilex.getConfig().dashboard.graph1.dataLocationInformations;
         const datatype = this.selectedVariable.datatype;
-        if (this.$opensilex.checkURIs(datatype, Xsd.DECIMAL) || this.$opensilex.checkURIs(datatype, Xsd.INTEGER)){
+        if (this.$opensilex.compareUris(datatype, Xsd.DECIMAL) || this.$opensilex.compareUris(datatype, Xsd.INTEGER)){
           this.buildColorsDevicesMap();
           this.buildSeries(devicesToDisplay, this.period);
         } else {

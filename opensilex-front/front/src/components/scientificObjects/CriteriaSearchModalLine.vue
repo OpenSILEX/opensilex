@@ -138,7 +138,7 @@ export default class CriteriaSearchModalLine extends Vue {
       lineFieldsToChange['datatype'] = allreadyFetchedType;
     }
     lineFieldsToChange['criteria_rules']="";
-    if(this.$opensilex.checkURIs(lineFieldsToChange['datatype'], Xsd.BOOLEAN)){
+    if(this.$opensilex.compareUris(lineFieldsToChange['datatype'], Xsd.BOOLEAN)){
       lineFieldsToChange['criteria_rules'] ="refuseOperators:vocabulary:LessThan,vocabulary:MoreThan,vocabulary:MoreOrEqualThan,vocabulary:LessOrEqualThan"
     }
     this.$emit("updateLine", lineFieldsToChange, this.lineIndex);

@@ -24,12 +24,8 @@ import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.utils.ApiUtils;
@@ -52,10 +48,6 @@ import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 
-import javax.swing.text.html.Option;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -568,15 +560,22 @@ public class DataLogic {
             if(model.getTarget() != null){
                 var facilityModel = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
                 if(facilityModel != null){
-                    var variableModel = new VariableModel();
+                    VariableModel variableModel = new VariableModel();
                     variableModel.setUri(model.getVariable());
-                    VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs,user );
 
-                   var facilityVariables = facilityModel.getVariables();
+                    VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs,user );
+                    List<DeviceModel> associatedDevices = variableDAO.getDevicesFromVariable(variableModel.getUri(), user.getLanguage());
+                    //variableModel.setDevices(associatedDevices);
+
+                    List<VariableModel> facilityVariables = facilityModel.getVariables();
+
                     facilityVariables.add(variableModel);
                     facilityModel.setVariables(facilityVariables);
-                    List<DeviceModel> associatedDevices = variableDAO.getDeviceFromVariable(variableModel.getUri(), user.getLanguage());
-                   facilityModel.getDevices().addAll(associatedDevices);
+
+
+                    List<DeviceModel> facilityDevices = facilityModel.getDevices();
+                    facilityDevices.addAll(associatedDevices);
+                    facilityModel.setDevices(facilityDevices);
 
 //                    for (VariableModel variable : facilityModel.getVariables()) {
 //                        List<DeviceModel> associatedDevices = variableDAO.getDeviceFromVariable(variable.getUri(), user.getLanguage());

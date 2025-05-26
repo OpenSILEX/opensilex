@@ -20,11 +20,9 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -390,7 +388,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
 
 // seconde method to get list of devices from variable
-    public List<DeviceModel> getDeviceFromVariable(URI variable, String language) throws Exception {
+    public List<DeviceModel> getDevicesFromVariable(URI variable, String language) throws Exception {
         List<URI> deviceURIs = sparql.searchURIs(
                 VariableModel.class,
                 user.getLanguage(),

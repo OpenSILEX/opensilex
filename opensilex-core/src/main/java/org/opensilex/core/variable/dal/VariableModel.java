@@ -6,7 +6,7 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.SKOS;
-import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -112,13 +112,13 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
-//
+
 //    @SPARQLProperty(
 //            ontology = Oeso.class,
 //            property = "measuredBy",
 //            inverse = true
 //    )
-//    private List<DataModel> devices;
+//    private List<DeviceModel> devices;
 
     public String getAlternativeName() { return alternativeName; }
 
@@ -196,11 +196,11 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-//    public List<DataModel> getDevices() {
+//    public List<DeviceModel> getDevices() {
 //        return devices;
 //    }
 //
-//    public void setDevices(List<DataModel> devices) {
+//    public void setDevices(List<DeviceModel> devices) {
 //        this.devices = devices;
 //    }
 }

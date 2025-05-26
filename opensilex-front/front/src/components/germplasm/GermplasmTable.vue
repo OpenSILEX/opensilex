@@ -714,6 +714,7 @@ export default class GermplasmTable extends Vue {
     
     let DTOs: Array<GermplasmCreationDTO> = await this.getDtosFromTableData();
 
+    console.log(DTOs)
     this.callUpsertService(DTOs)
         .finally(() => {
           this.$opensilex.hideLoader()
@@ -935,12 +936,13 @@ export default class GermplasmTable extends Vue {
           (form.relations == null || form.relations.length === 0) &&
           form.website == null
       ) {
-        return;
+        break;
       } else {
+        console.log("pushed")
         creationDtos.push(form);
       }
     }
-    
+    console.log("creationDtos", creationDtos);
     return creationDtos;
   }
 

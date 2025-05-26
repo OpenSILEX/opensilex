@@ -1394,7 +1394,17 @@ export default class OpenSilexVuePlugin {
      * @returns The short URI of the first URI is being compared to the short URI of the second URI.
      */
     public compareUris(uri1, uri2) : boolean {
-        return this.getShortUri(uri1) === this.getShortUri(uri2);
+        return this.getLongUri(uri1) === this.getLongUri(uri2);
+    }
+
+    /**
+     * returns true if the given uri is in the list of uris, wether the uri is a short or long uri
+     */
+    public includesUri(uris: Array<string>, uri: string): boolean {
+        if (!uris || !Array.isArray(uris)) {
+            return false;
+        }
+        return uris.some((item) => this.compareUris(item, uri));
     }
 
     public versionInfo: any = [];

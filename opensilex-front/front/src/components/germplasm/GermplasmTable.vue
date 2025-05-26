@@ -627,7 +627,7 @@ export default class GermplasmTable extends Vue {
       this.getExistingGermplasmsUri()
           .then(uris => {
             let status = "";
-            if (uris.includes(cell.getRow().getData().uri)) {
+            if (this.$opensilex.includesUri(uris, cell.getRow().getData().uri)) {
               status = "UPDATE"
             }
 

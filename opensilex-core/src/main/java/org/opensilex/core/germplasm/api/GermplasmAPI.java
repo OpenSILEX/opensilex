@@ -207,6 +207,9 @@ public class GermplasmAPI {
      */
     private List<GermplasmModel> getGermplasmModels(List<GermplasmCreationDTO> germplasmDTOs) throws URISyntaxException, SPARQLException {
         List<GermplasmModel> models = new ArrayList<>();
+        if (CollectionUtils.isEmpty(germplasmDTOs)) {
+            return models;
+        }
 
         Map<URI, ClassModel> classModels = new HashMap<>();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);

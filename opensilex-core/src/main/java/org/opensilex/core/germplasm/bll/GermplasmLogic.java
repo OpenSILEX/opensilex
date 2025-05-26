@@ -258,32 +258,34 @@ public class GermplasmLogic {
             checkUrisExistsWithType(entry.getKey(), entry.getValue(), uriThatDoesntExistWithThisType);
         }
 
-        BiConsumer<URI, Resource> addErrorIfUriDoesntExistWithType = (uri, type) -> {
-            var uriList = uriThatDoesntExistWithThisType.get(type);
-            if (uriList != null && uriList.contains(uri)) {
-                errors.addError(uri.toString(), String.format("no %s found with this uri : %s .",type.getLocalName() ,uri));
-            }
-        };
-
         // fill the errors map
         if (!uriThatDoesntExistWithThisType.isEmpty()) {
             germplasmModels.forEach(germplasmModel -> {
                 if (germplasmModel.getSpecies() != null) {
                     var specieUri = germplasmModel.getSpecies().getUri();
                     var typeToCheck = Oeso.Species;
-                    addErrorIfUriDoesntExistWithType.accept(specieUri, typeToCheck);
+                    var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, specieUri, nonExistingURI, errors);
                 }
                 if (germplasmModel.getVariety() != null) {
                     var varietyUri = germplasmModel.getVariety().getUri();
                     var typeToCheck = Oeso.Variety;
-                    addErrorIfUriDoesntExistWithType.accept(varietyUri, typeToCheck);
+                    var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, varietyUri, nonExistingURI, errors);
                 }
                 if (germplasmModel.getAccession() != null) {
                     var accessionUri = germplasmModel.getAccession().getUri();
                     var typeToCheck = Oeso.Accession;
-                    addErrorIfUriDoesntExistWithType.accept(accessionUri, typeToCheck);
+                    var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, accessionUri, nonExistingURI, errors);
                 }
             });
+        }
+    }
+
+    private void addErrorIfUriDoesntExistForDependency(URI germplasmUri, Resource type, URI dependencyUri, List<URI>notExistingURI, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+        if (notExistingURI != null && SPARQLDeserializers.containsURI(notExistingURI, dependencyUri)) {
+            errors.addError(germplasmUri.toString(), String.format("no %s found with this uri : %s .", type.getLocalName(), dependencyUri));
         }
     }
 
@@ -297,7 +299,7 @@ public class GermplasmLogic {
             if (!sparql.uriExists(typeURI, uri)) {
                 var uriList = uriThatDoesntExistWithThisType.get(type);
                 if (uriList == null) {
-                    uriList = new ArrayList<>();
+                    uriList = List.of(uri);
                     uriThatDoesntExistWithThisType.put(type, uriList);
                 } else {
                     uriList.add(uri);

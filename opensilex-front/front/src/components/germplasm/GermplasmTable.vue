@@ -763,7 +763,7 @@ export default class GermplasmTable extends Vue {
    */
   private updateStatus(uris: string[], status: string){
     this.tabulator.getData().forEach((data, index) => {
-      if (uris.includes(data.uri)) {
+      if (this.$opensilex.includesUri(uris, data.uri)) {
         this.tabulator.updateData([{
           rowNumber: index+1,
           checkingStatus: this.$t(

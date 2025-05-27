@@ -315,6 +315,9 @@ export default class GermplasmTable extends Vue {
     this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map(column => column.value) : []
   }
 
+  private onErrorDetailsClick(log: string){
+    alert(log)
+  }
   //#endregion
 
   //#region Hooks
@@ -762,10 +765,6 @@ export default class GermplasmTable extends Vue {
         })
   }
 
-  private onErrorBtnClick(log: string){
-    alert(log)
-  }
-
   private getRowIndexForUri(uri: string): number {
     let res = this.rowIndexByUri.get(this.$opensilex.getShortUri(uri));
     if (res == null) {
@@ -1104,16 +1103,16 @@ export default class GermplasmTable extends Vue {
   errorFormaterFunction(cell, formatterParams, onRendered) {
     // Use onRendered to attach the click event listener
     onRendered(() => {
-      const button = cell.getElement().querySelector("button");
+      const button = cell.getElement().querySelector(".errorLog");
       if (button) {
         button.addEventListener("click", () => {
-          this.onErrorBtnClick(cell.getValue());
+          this.onErrorDetailsClick(cell.getValue());
         });
       }
     });
 
     // Return the button HTML
-    return `<button class="btn btn-danger">${this.$t("GermplasmTable.errorInsertButton")}</button>`;
+    return `<div class="errorLog">${cell.getValue()||""}</div>`;
   }
 
   //endregion

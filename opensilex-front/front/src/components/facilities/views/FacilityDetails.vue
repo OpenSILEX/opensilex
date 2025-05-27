@@ -4,7 +4,6 @@
         <div class="facilityDescription">
             <opensilex-FacilityDescription
               :selected="selected"
-              :devices="devices"
               :withActions="true"
               @onUpdate="refresh"
             >
@@ -23,6 +22,7 @@
       <div class="col-md-6">
         <opensilex-AssociatedVariableList
             :variableList="selected.variables"
+            :deviceList="devices"
         ></opensilex-AssociatedVariableList>
       </div>
     </div>
@@ -40,7 +40,7 @@ import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsList.vue";
-import AssociatedVariableList from "../../variables/AssociatedVariableList.vue";
+import AssociatedVariablesList from "../../variables/AssociatedVariableList.vue";
 
 @Component
 export default class FacilityDetails extends Vue {
@@ -59,6 +59,7 @@ export default class FacilityDetails extends Vue {
   @Ref("organizationFacilityForm") readonly organizationFacilityForm!: any;
   @Ref("experimentsView")
   experimentsView: AssociatedExperimentsList;
+
 
   get user() {
     return this.$store.state.user;

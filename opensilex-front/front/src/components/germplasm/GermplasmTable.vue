@@ -310,6 +310,7 @@ export default class GermplasmTable extends Vue {
   }
 
   private onResetTableBtnClick() {
+    this.filter = "all";
     this.updateColumns();
   }
 
@@ -974,7 +975,7 @@ export default class GermplasmTable extends Vue {
           (form.relations == null || form.relations.length === 0) &&
           form.website == null
       ) {
-        break;
+        continue;
       } else {
         creationDtos.push(form);
       }

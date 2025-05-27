@@ -492,6 +492,8 @@ export default class GermplasmTable extends Vue {
       field: "checkingStatus",
       visible: false,
       editor: false,
+      minWidth: 400,
+      formatter: this.errorFormaterFunction,
     };
     let insertionStatusCol = {
       title: this.$t("GermplasmTable.insertionStatus"),
@@ -499,6 +501,7 @@ export default class GermplasmTable extends Vue {
       visible: false,
       editor: false,
       minWidth: 400,
+      formatter: this.errorFormaterFunction,
     };
 
     if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.SPECIES_TYPE_URI)) {
@@ -757,6 +760,10 @@ export default class GermplasmTable extends Vue {
             }
           });
         })
+  }
+
+  private onErrorBtnClick(log: string){
+    alert(log)
   }
 
   private getRowIndexForUri(uri: string): number {
@@ -1092,6 +1099,21 @@ export default class GermplasmTable extends Vue {
         }
       }
     }
+  }
+
+  errorFormaterFunction(cell, formatterParams, onRendered) {
+    // Use onRendered to attach the click event listener
+    onRendered(() => {
+      const button = cell.getElement().querySelector("button");
+      if (button) {
+        button.addEventListener("click", () => {
+          this.onErrorBtnClick(cell.getValue());
+        });
+      }
+    });
+
+    // Return the button HTML
+    return `<button class="btn btn-danger">${this.$t("GermplasmTable.errorInsertButton")}</button>`;
   }
 
   //endregion

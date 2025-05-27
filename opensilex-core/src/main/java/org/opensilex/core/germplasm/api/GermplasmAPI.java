@@ -691,6 +691,9 @@ public class GermplasmAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
+    /**
+     * Check if germplasms exist in the database, empty uris or not well-formed URIs are ignored.
+     */
     @GET
     @Path("check")
     @ApiOperation("check germplasms exist")
@@ -702,7 +705,7 @@ public class GermplasmAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response checkGermplasmsExist(
-            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") @NotNull  @ValidURI List<URI> uris
+            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris);
 

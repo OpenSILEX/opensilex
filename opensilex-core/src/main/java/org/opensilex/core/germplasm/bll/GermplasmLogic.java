@@ -421,10 +421,14 @@ public class GermplasmLogic {
     }
 
     /**
-     * @return the uris of already existing germplasms
+     * @return the uris of already existing germplasms. If Uris are not valid, they are ignored.
      */
     public Collection<URI> checkExistence(List<URI> uris) throws Exception {
-        return dao.checkExistence(uris);
+        //sort uris to keep only well formatted ones
+        List<URI> validUris = uris.stream()
+                .filter(uri -> uri != null && !uri.toString().isBlank() && URIDeserializer.validateURI(uri.toString()))
+                .toList();
+        return dao.checkExistence(validUris);
     }
 
     //#region private methods

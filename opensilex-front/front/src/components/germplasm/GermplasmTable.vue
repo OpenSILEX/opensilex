@@ -127,6 +127,20 @@
       </b-button>
 
     </b-modal>
+
+    <b-modal
+        :no-close-on-backdrop="true"
+        :no-close-on-esc="true"
+        ref="errorDetailsModal"
+        centered
+        hide-footer
+
+        :title="$t('GermplasmTable.newColumns')"
+    >
+      <div v-for="error in errorsByIndex.get(indexRowOfErrorsToShowInModal)" :key="error.length">
+        {{error}}
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -187,6 +201,7 @@ export default class GermplasmTable extends Vue {
   @Ref("table") readonly table!: any;
   @Ref("newcolsModal") readonly newcolsModal!: any;
   @Ref("helpModal") readonly helpModal!: any;
+  @Ref("errorDetailsModal") readonly errorDetailsModal!: any;
   //#endregion
 
   //#region Data
@@ -249,6 +264,9 @@ export default class GermplasmTable extends Vue {
    * Map where keys are URIs of the germplasm and values are the row index in the table. Used to update the table with the status of the insertion/update. Instantiated in getDtosFromTableData, just before API calls.
    */
   private rowIndexByUri: Map<string, number> = new Map<string, number>();
+
+  private errorsByIndex: Map<number, Array<string>> = new Map<number, Array<string>>();
+  private indexRowOfErrorsToShowInModal: number = null;
   //endregion
 
   //#region Computed
@@ -749,6 +767,7 @@ export default class GermplasmTable extends Vue {
           let errors: Array<MultipleErrorDTO> = error.response.result.errors;
           if (errors == null) return;
 
+          this.errorsByIndex = new Map<number, Array<string>>();
           errors.forEach(errorDto => {
 
             let rowIndex = this.getRowIndexForUri(errorDto.uri);
@@ -760,6 +779,8 @@ export default class GermplasmTable extends Vue {
                 status: "NOK",
               }]);
             }
+
+            this.errorsByIndex.set(rowIndex, errorDto.errors);
           });
 
           this.filter = "NOK";
@@ -1101,13 +1122,14 @@ export default class GermplasmTable extends Vue {
     }
   }
 
-  errorFormaterFunction(cell, formatterParams, onRendered) {
+  private errorFormaterFunction(cell, formatterParams, onRendered) {
     // Use onRendered to attach the click event listener
     onRendered(() => {
       const button = cell.getElement().querySelector(".errorLog");
       if (button) {
         button.addEventListener("click", () => {
-          this.onErrorDetailsClick(cell.getValue());
+          this.indexRowOfErrorsToShowInModal = cell.getRow().getIndex();
+          this.errorDetailsModal.show();
         });
       }
     });
@@ -1115,6 +1137,8 @@ export default class GermplasmTable extends Vue {
     // Return the button HTML
     return `<div class="errorLog">${cell.getValue()||""}</div>`;
   }
+
+
 
   //endregion
 

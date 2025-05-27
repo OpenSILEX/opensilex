@@ -153,7 +153,8 @@ public class GermplasmAPI {
     }
 
     /**
-     *  create and/or update many germplasms if everything is correct, block everything if there is an error
+     *  create and/or update many germplasms if everything is correct, block everything if there is an error.
+     *  JSon validation id disabled to handle manually errors like uri format, it allows to return errors as multiple errors
      * @param germplasmDTOs
      * @param checkOnly
      * @return
@@ -174,7 +175,7 @@ public class GermplasmAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
 
     public Response upsertGermplasms(
-            @ApiParam("List of germplasm description") @Valid List<GermplasmCreationDTO> germplasmDTOs,
+            @ApiParam("List of germplasm description") List<GermplasmCreationDTO> germplasmDTOs,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);

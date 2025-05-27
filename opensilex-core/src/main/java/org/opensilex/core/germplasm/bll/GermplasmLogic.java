@@ -28,6 +28,7 @@ import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorOb
 import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -176,6 +177,8 @@ public class GermplasmLogic {
             lookForAlreadyExistantUri(uriList, errors);
         }
 
+        globalFormatValidation(germplasmModels, errors);
+
         validateTypes(germplasmModels, errors);
 
         validateGermplasmDependenciesExists(germplasmModels, errors);
@@ -185,6 +188,23 @@ public class GermplasmLogic {
         checkSpeciesCoherency(germplasmModels, errors);
 
         return errors;
+    }
+
+    /**
+     * check the uri format of the germplasm and its type, check also the germplasm has a name
+     */
+    private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+        germplasmModels.forEach(germplasmModel -> {
+            if (!URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
+                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+            }
+            if (germplasmModel.getType() == null || !URIDeserializer.validateURI(germplasmModel.getType().toString())) {
+                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+            }
+            if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
+                errors.addError(germplasmModel.getUri().toString(), "Germplasm name is mandatory");
+            }
+        });
     }
 
     /**
@@ -234,20 +254,30 @@ public class GermplasmLogic {
     }
 
     /**
-     * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database and has the right type
+     * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database and has the right type, and the URI is valid.
      */
     private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws SPARQLException, DisplayableResponseException {
-        //list every URI by type, type being species, variety or accession
+
+        //list every URI by type, type being species, variety or accession only if uri is valid
         Map<Resource, Set<URI>> urisByType = Map.of(Oeso.Species, new HashSet<>(), Oeso.Variety, new HashSet<>(), Oeso.Accession, new HashSet<>());
         germplasmModels.forEach(germplasmModel -> {
             if (germplasmModel.getSpecies() != null) {
-                urisByType.get(Oeso.Species).add(germplasmModel.getSpecies().getUri());
+                if (URIDeserializer.validateURI(germplasmModel.getSpecies().getUri().toString())) {
+                    urisByType.get(Oeso.Species).add(germplasmModel.getSpecies().getUri());
+                }
+                else errors.addError(germplasmModel.getUri().toString(), "Invalid species URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getVariety() != null) {
-                urisByType.get(Oeso.Variety).add(germplasmModel.getVariety().getUri());
+                if (URIDeserializer.validateURI(germplasmModel.getVariety().getUri().toString())) {
+                    urisByType.get(Oeso.Variety).add(germplasmModel.getVariety().getUri());
+                }
+                else errors.addError(germplasmModel.getUri().toString(), "Invalid variety URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getAccession() != null) {
-                urisByType.get(Oeso.Accession).add(germplasmModel.getAccession().getUri());
+                if (URIDeserializer.validateURI(germplasmModel.getAccession().getUri().toString())) {
+                    urisByType.get(Oeso.Accession).add(germplasmModel.getAccession().getUri());
+                }
+                else errors.addError(germplasmModel.getUri().toString(), "Invalid accession URI format for URI: " + germplasmModel.getUri().toString());
             }
         });
 

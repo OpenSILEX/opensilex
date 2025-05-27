@@ -507,10 +507,10 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
-        synonymCol,
-        commentCol,
         checkingStatusCol,
         insertionStatusCol,
+        synonymCol,
+        commentCol,
       ];
     } else if (
         Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
@@ -526,14 +526,14 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         subtaxaCol,
         codeVar,
         speciesCol,
         instituteCol,
         websiteCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
       ];
     } else if (
         Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
@@ -549,6 +549,8 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         subtaxaCol,
         codeAcc,
         speciesCol,
@@ -556,8 +558,6 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
       ];
     } else {
       let codeLot = {
@@ -571,6 +571,8 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         synonymCol,
         codeLot,
         speciesCol,
@@ -580,8 +582,6 @@ export default class GermplasmTable extends Vue {
         websiteCol,
         productionYearCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
       ];
     }
 

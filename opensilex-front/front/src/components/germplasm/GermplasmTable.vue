@@ -743,7 +743,6 @@ export default class GermplasmTable extends Vue {
           }
 
           this.updateStatusOfEachRows("OK", "creation or update ok");
-          this.filter = "NOK";
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorInsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
 
@@ -762,6 +761,8 @@ export default class GermplasmTable extends Vue {
               }]);
             }
           });
+
+          this.filter = "NOK";
         })
   }
 

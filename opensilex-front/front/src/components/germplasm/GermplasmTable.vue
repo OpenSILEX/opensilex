@@ -326,6 +326,7 @@ export default class GermplasmTable extends Vue {
   }
 
   private onNewColsModalHidden() {
+    this.filter = "all";
     this.tableData = this.csvUploadedData;
   }
 

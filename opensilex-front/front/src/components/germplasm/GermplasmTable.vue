@@ -773,12 +773,16 @@ export default class GermplasmTable extends Vue {
           this.errorsByIndex = new Map<number, Array<string>>();
           errors.forEach(errorDto => {
 
+            let errorMessage = errorDto.errors.length > 1 ?
+                this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}) :
+                errorDto.errors[0];
+
             let rowIndex = this.getRowIndexForUri(errorDto.uri);
             if (rowIndex != null) {
               this.tabulator.updateData([{
                 rowNumber: rowIndex,
-                insertionStatus: errorDto.errors.join(", "),
-                checkingStatus: errorDto.errors.join(", "),
+                insertionStatus: errorMessage,
+                checkingStatus: errorMessage,
                 status: "NOK",
               }]);
             }
@@ -1130,7 +1134,7 @@ export default class GermplasmTable extends Vue {
   private errorFormaterFunction(cell, formatterParams, onRendered) {
     // Use onRendered to attach the click event listener
     onRendered(() => {
-      const button = cell.getElement().querySelector(".errorLog");
+      const button = cell.getElement().querySelector(".error-log");
       if (button) {
         button.addEventListener("click", () => {
           this.indexRowOfErrorsToShowInModal = cell.getRow().getIndex();
@@ -1140,7 +1144,7 @@ export default class GermplasmTable extends Vue {
     });
 
     // Return the button HTML
-    return `<div class="errorLog">${cell.getValue()||""}</div>`;
+    return `<div class="error-log">${cell.getValue()||""}</div>`;
   }
 
 
@@ -1181,13 +1185,19 @@ export default class GermplasmTable extends Vue {
   height: 30px;
 }
 
-// .tabulator .tabulator-header .tabulator-row  {
-//   height: 30px;
-// }
-
 .loadCsvButton {
   float: right;
   margin-right: 10px;
+}
+
+//tabulator-cell:has(.error-log) {
+//  background-color: #f8d7da;
+//}
+</style>
+
+<style lang="scss">
+.error-log{
+  color: blue;
 }
 </style>
 
@@ -1213,6 +1223,7 @@ en:
     errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
     errorModalTitle: Germplasm contain following errors
+    multipleErrorMessage: click here to see {count} errors for this germplasm
     addRow: Add Row
     accessionNumber: AccessionNumber
     varietyCode: Variety Code
@@ -1250,6 +1261,7 @@ fr:
     errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
     errorModalTitle: Erreurs concernant les ressources génétiques
+    multipleErrorMessage: Cliquez ici pour voir {count} erreurs pour cette ressource génétique
     addRow: Ajouter ligne
     accessionNumber: Code Accession
     varietyCode: Code Variété

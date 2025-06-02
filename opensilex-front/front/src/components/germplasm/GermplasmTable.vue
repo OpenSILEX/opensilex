@@ -164,8 +164,8 @@ import {OpenSilexStore} from "../../models/Store";
 import VueI18n from "vue-i18n";
 import {User} from "../../models/User";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
-import {GermplasmUpdateDTO} from "opensilex-core/model/germplasmUpdateDTO";
 import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
+import {URIsListPostDTO} from "opensilex-core/model/uRIsListPostDTO";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -830,9 +830,11 @@ export default class GermplasmTable extends Vue {
   }
 
   private async getExistingGermplasmsUri(): Promise<Array<string>>{
-    let uris: string[] = this.tabulator.getData().map((row) => {
-      return row.uri;
-    });
+    let uris: URIsListPostDTO = {
+      uris: this.tabulator.getData().map((row) => {
+        return row.uri as string;
+      })
+    }
     return ( await this.service.checkGermplasmsExist(uris) ).response.result
   }
 

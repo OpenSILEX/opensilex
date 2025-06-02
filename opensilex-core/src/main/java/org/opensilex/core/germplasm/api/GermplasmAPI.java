@@ -19,6 +19,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.bll.GermplasmLogic;
@@ -32,9 +33,9 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.response.multipleError.MultipleErrorResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -694,7 +695,7 @@ public class GermplasmAPI {
     /**
      * Check if germplasms exist in the database, empty uris or not well-formed URIs are ignored.
      */
-    @GET
+    @POST
     @Path("check")
     @ApiOperation("check germplasms exist")
     @ApiProtected
@@ -705,9 +706,9 @@ public class GermplasmAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response checkGermplasmsExist(
-            @ApiParam(value = "list of uris to check for existence") @QueryParam("uris") @NotNull List<URI> uris
-    ) throws Exception {
-        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris);
+            @ApiParam(value = "list of uris to check for existence") URIsListPostDTO uris
+            ) throws Exception {
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris.getUris());
 
         return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
     }

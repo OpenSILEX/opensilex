@@ -192,19 +192,31 @@ public class GermplasmLogic {
 
     /**
      * check the uri format of the germplasm and its type, check also the germplasm has a name
+     * WARNING : this method modifies the germplasmModels list by removing the germplasm that don't have any URI, this avoids further errors
      */
     private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+        List<GermplasmModel> germplasmModelsToRemove = new ArrayList<>();
         germplasmModels.forEach(germplasmModel -> {
-            if (!URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
+            //germplasm URI
+            if (germplasmModel.getUri() == null || germplasmModel.getUri().toString().isBlank()) {
+                errors.addError("", "Germplasm URI is mandatory");
+                germplasmModelsToRemove.add(germplasmModel);
+            } else if (!URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
                 errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
-            if (germplasmModel.getType() == null || !URIDeserializer.validateURI(germplasmModel.getType().toString())) {
-                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+            //germplasm type URI
+            if (germplasmModel.getType() == null || germplasmModel.getType().toString().isBlank()) {
+                errors.addError(germplasmModel.getUri().toString(), "Germplasm type is mandatory");
+            } else if (!URIDeserializer.validateURI(germplasmModel.getType().toString())) {
+                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getType().toString());
             }
+            // germplasm name
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
                 errors.addError(germplasmModel.getUri().toString(), "Germplasm name is mandatory");
             }
         });
+
+        germplasmModels.removeAll(germplasmModelsToRemove);
     }
 
     /**

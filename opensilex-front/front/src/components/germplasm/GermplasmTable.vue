@@ -752,7 +752,7 @@ export default class GermplasmTable extends Vue {
   private async callUpsertService(creationDtos: Array<GermplasmCreationDTO>) {
     return this.service.upsertGermplasms(this.onlyChecking, creationDtos)
         .then( response => {
-          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckInsertMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
+          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
           this.updateStatusOfEachRows("OK", "creation or update ok");
@@ -764,7 +764,7 @@ export default class GermplasmTable extends Vue {
           }
 
           this.updateStatusOfEachRows("OK", "creation or update ok");
-          let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorInsertMessage").toString();
+          let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorUpsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
 
           let errors: Array<MultipleErrorDTO> = error.response.result.errors;
@@ -1194,8 +1194,6 @@ export default class GermplasmTable extends Vue {
 en:
   GermplasmTable:
     name: Name
-    uri: URI
-    rdfType: Type
     fromSpecies: Species URI
     fromVariety: Variety URI
     fromAccession: Accession URI
@@ -1208,14 +1206,11 @@ en:
     resetTable: Reset table
     check: Check
     errorCheckMessage: checking shows some errors, see the table for more details
-    successCheckInsertMessage: germplasms are ready to be inserted
-    successCheckUpdateMessage: germplasms are ready to be updated
+    successCheckMessage: germplasms are ready to be inserted
     insert: Insert
-    errorInsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
+    errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
     errorModalTitle: Germplasm contain following errors
-    emptyMessage: The table is empty
-    close: Close
     addRow: Add Row
     accessionNumber: AccessionNumber
     varietyCode: Variety Code
@@ -1224,33 +1219,18 @@ en:
     subtaxa: Subtaxa
     website: Website
     addColumn: Add column
-    infoSynonyms: To add several synonyms or subtaxa, use | as separator
-    infoAttributes: To add additional information, you can add columns
-    infoLot: You have to fill species, variety or accession
-    infoAccession: You have to fill at least species or variety
-    help: Help
-    infoMessageErrors: errors
-    infoMessageGermplInserted: germplasm inserted
-    infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
     checkingStatusMessage: ready
-    updateStatusMessage: uri already exists
     insertionStatusMessage: created
-    filterLines: Filter the lines
-    infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
-    alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
     missingName: The name is missing at line
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
-    missingHeader: Uri or name columns missing
     toggleAll: Select all / Unselect all
 
 fr:
   GermplasmTable:
     name: Nom
-    uri: URI
-    rdfType: Type
     fromSpecies: URI de l'espèce
     fromVariety: URI de variété
     fromAccession: URI d'accession
@@ -1263,14 +1243,11 @@ fr:
     resetTable: Vider tableau
     check: Valider
     errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
-    successCheckInsertMessage: Les ressources génétiques sont prêts à être insérées
-    successCheckUpdateMessage: Les ressources génétiques sont prêts à être mis à jour
+    successCheckMessage: Les ressources génétiques sont prêts à être insérées
     insert: Insérer
-    errorInsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
+    errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
-    errorModalTitle: Erreures concernant les ressources génétiques
-    emptyMessage: Le tableau est vide
-    close: Fermer
+    errorModalTitle: Erreurs concernant les ressources génétiques
     addRow: Ajouter ligne
     accessionNumber: Code Accession
     varietyCode: Code Variété
@@ -1279,25 +1256,12 @@ fr:
     subtaxa: Subtaxa
     website: Site web
     addColumn: Ajouter colonne
-    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
-    infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
-    infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
-    infoAccession: Vous devez renseigner l'espèce ou la variété
-    help: Aide
-    infoMessageErrors: erreurs
-    infoMessageGermplInserted: ressources génétiques insérées
-    infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
     checkingStatusMessage: validé
-    updateStatusMessage: uri déjà existante
     insertionStatusMessage: créé
-    seeErrorLines: See lines
-    seeAll: see all
-    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
     missingName: Le nom n'est pas renseigné à la ligne
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
-    missingHeader: Colonne uri ou nom manquant
     toggleAll: Tout sélectionner / Tout désélectionner
 </i18n>

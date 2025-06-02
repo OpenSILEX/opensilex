@@ -134,12 +134,13 @@
         ref="errorDetailsModal"
         centered
         hide-footer
-
-        :title="$t('GermplasmTable.newColumns')"
+        :title="$t('GermplasmTable.errorModalTitle')"
     >
-      <div v-for="error in errorsByIndex.get(indexRowOfErrorsToShowInModal)" :key="error.length">
-        {{error}}
-      </div>
+      <ul>
+        <li v-for="error in errorsByIndex.get(indexRowOfErrorsToShowInModal)" :key="error.length">
+          {{ error }}
+        </li>
+      </ul>
     </b-modal>
   </div>
 </template>
@@ -1212,6 +1213,7 @@ en:
     insert: Insert
     errorInsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
+    errorModalTitle: Germplasm contain following errors
     emptyMessage: The table is empty
     close: Close
     addRow: Add Row
@@ -1266,6 +1268,7 @@ fr:
     insert: Insérer
     errorInsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
+    errorModalTitle: Erreures concernant les ressources génétiques
     emptyMessage: Le tableau est vide
     close: Fermer
     addRow: Ajouter ligne

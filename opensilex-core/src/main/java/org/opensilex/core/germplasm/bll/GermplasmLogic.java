@@ -98,7 +98,7 @@ public class GermplasmLogic {
         germplasmModels.forEach(germplasmModel -> germplasmModel.setPublisher(currentUser.getUri()));
 
         List<GermplasmModel> result = dao.createListWithoutUriExistsCheck(germplasmModelsToCreate);
-        result.addAll(dao.update(germplasmModelsToUpdate));
+        result.addAll(dao.updateList(germplasmModelsToUpdate));
         return result;
     }
 

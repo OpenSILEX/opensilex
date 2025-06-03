@@ -1,44 +1,29 @@
 <template>
 
- <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
+  <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
     <opensilex-ToastContainer ref="toastContainer" class="toast-container"></opensilex-ToastContainer>
 
       <div v-if="isPublicRoute">
-          <!-- <component v-bind:is="headerComponent"></component> -->
-          <!-- <opensilex-DefaultHeaderComponent></opensilex-DefaultHeaderComponent> -->
+        <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
+          <div id="main-content">
+            <main class="main-content">
+              <router-view />
+            </main>
 
-          <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
-                    <div id="main-content">
-                      <main class="main-content">
-                        <!-- <div> public</div> -->
-                        <router-view />
-
-                      </main>
-
-                  <!--    <footer v-if="!embed">
-                        <component v-bind:is="footerComponent"></component>
-                      </footer> -->
-                    </div>
-          </section>
-        </div>  
-
-
-
+            <footer v-if="!embed">
+              <component :is="footerComponent"></component>
+            </footer>
+          </div>
+        </section>
+      </div>  
           
-                 
+                
       <div v-else>
-          <!-- <component
-            v-bind:is="headerComponent"
+          <component :is="headerComponent"
             v-if="user.isLoggedIn() && !disconnected && !embed"
             :searchBoxIsActive="uriSearchBoxVisible"
             @uriGlobalSearch="handleUriGlobalSearchPressed"
-          ></component> -->
-          <opensilex-DefaultHeaderComponent
-           v-if="user.isLoggedIn() && !disconnected && !embed"
-            :searchBoxIsActive="uriSearchBoxVisible"
-            @uriGlobalSearch="handleUriGlobalSearchPressed"
-
-          ></opensilex-DefaultHeaderComponent>
+          ></component>
 
 
           <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
@@ -76,9 +61,6 @@
 
           </div>
 
-
-
-
           <section 
             id="content-wrapper" 
             class="page-wrap"  
@@ -86,9 +68,8 @@
             v-if="user.isLoggedIn() && !disconnected"
           >
           <div>
-              <!-- <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component> -->
-              <opensilex-DefaultMenuComponent></opensilex-DefaultMenuComponent>
-            </div>
+            <component id="menu-container" v-if="!embed" :is="menuComponent"></component>
+          </div>
 
             <div id="main-content">
               <main class="main-content">
@@ -101,39 +82,6 @@
           </section>
         </div>
  </div>
-
-
-
-
-
-
-  <!-- <div id="main-content"> -->
-    <!-- <main class="main-content"> -->
-      <!-- <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
-                    <div id="main-content">
-              <main class="main-content">
-      <opensilex-DefaultMenuComponent></opensilex-DefaultMenuComponent>
-      <opensilex-DefaultHeaderComponent></opensilex-DefaultHeaderComponent>
-      <router-view></router-view>
-      </main>
-      </div>
-      </section> -->
-
-<!-- <div v-if="this.$route.meta.public"> -->
-
-
-          <!-- <component v-bind:is="headerComponent"></component> -->
- 
-          <!-- <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" > -->
-            <!-- <div id="main-content">
-              <main class="main-content"> -->
-                <!-- <router-view :key="$route.fullPath" /> -->
-              <!-- </main> -->
-
-            <!-- </div> -->
-          <!-- </section> -->
-              <!-- </main> -->
-            <!-- </div> -->
 </template>
 
 <script setup>
@@ -152,10 +100,10 @@ const toastContainer = ref();
 // Props definitions
 const props = defineProps({
   embed: Boolean,
-  headerComponent: [String, Object],
-  loginComponent: [String, Object],
-  menuComponent: [String, Object],
-  footerComponent: [String, Object]
+  headerComponent: String,
+  loginComponent: String,
+  menuComponent: String,
+  footerComponent: String
 });
 
 // Setup composition API variables
@@ -183,6 +131,18 @@ const isLoaderVisible = computed(() => store.state.loaderVisible);
 const menuVisible = computed(() => store.state.menuVisible);
 const isPublicRoute = computed(() => route.meta.public);
 
+// const resolvedHeaderComponent = ref();
+const headerComponent = computed(() => {
+  return opensilex.getConfig().headerComponent
+})
+
+const footerComponent = computed(() => {
+  return opensilex.getConfig().footerComponent
+})
+
+const menuComponent = computed(() => {
+  return opensilex.getConfig().menuComponent
+})
 
 // Computed for notification color class
 const notificationColorClass = computed(() => {
@@ -222,6 +182,7 @@ onMounted(() => {
   console.log("route publique ?  ", route.meta.public)
   console.log("route : ", route)
   console.log("user 👨: ", user)
+  console.log("props.headerComponent dans App.vue:", props.headerComponent);
   // console.log("logged in ? ", user.isLoggedIn())
   // Setup language watcher
   // watch(() => store.getters.language, () => {

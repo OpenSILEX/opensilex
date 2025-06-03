@@ -427,23 +427,28 @@ $opensilex.loadModules([
                 ]).then(() => {
                   // Initialize main application rendering
                   console.debug("Initialize main application rendering");
-                  let vueOptions: any = {
-                    router,
-                    store,
-                    render: h => h(App, {
-                      props: {
-                        embed: embed,
-                        footerComponent: config.footerComponent,
-                        headerComponent: config.headerComponent,
-                        loginComponent: config.loginComponent,
-                        menuComponent: config.menuComponent
-                      }
-                    },
-                    ),
-                    // i18n
-                    undefined
-                  };
-
+                  console.log("headerComponent dans render() :", config.headerComponent);
+                  
+                  // let vueOptions: any = {
+                  //   router,
+                  //   store,
+                  //   render: h => h(App, {
+                  //     props: {
+                  //       embed: embed,
+                  //       footerComponent: config.footerComponent,
+                  //       headerComponent: config.headerComponent,
+                  //       loginComponent: config.loginComponent,
+                  //       menuComponent: config.menuComponent
+                  //     }
+                  //   },
+                  //   ),
+                  //   // i18n
+                  //   undefined
+                  // };
+                  
+                  // console.log("app.config.globalProperties.headerComponent ", app.config.globalProperties.headerComponent)
+                  // console.log("config.headerComponent ", config.headerComponent)
+                  // app.config.globalProperties.headerComponent= config.headerComponent;
                   // Load matomo
                   // if (config.matomo.serverUrl) {
                   //   console.debug(`Configuring Matomo with server URL ${config.matomo.serverUrl}`);

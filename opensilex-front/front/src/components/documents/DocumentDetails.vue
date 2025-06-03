@@ -10,7 +10,7 @@
     <opensilex-PageActions :returnButton="true" >   
     </opensilex-PageActions>
 
-    <opensilex-PageContent>
+    <opensilex-PageContent v-if="canDisplayDocument">
       <b-row>
         <b-col sm="5">
           <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">            
@@ -161,6 +161,8 @@ export default class DocumentDetails extends Vue {
   expData:any = [];
   groupsData:any = [];
 
+  canDisplayDocument: boolean = true; // par défaut true pour les documents publics
+
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
 
@@ -217,31 +219,77 @@ export default class DocumentDetails extends Vue {
   loadDocument(uri: string) {
     this.service
       .getDocumentMetadata(uri)
-      .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
-        this.document = http.response.result;        
+      .then(async (http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
+        this.document = http.response.result;
+        if (!this.document.source) {
+          this.canDisplayDocument = false; // document avec fichier non public, vérifier les droits
+          console.log("canDisplayDocument : ");
+          console.log(this.canDisplayDocument);
+        }
         if (this.document.targets.length>0) {
-          this.loadTargetsTypes();
-          console.log("document:");
-          console.log(this.document);
-          console.log("document.targets:");
-          console.log(this.document.targets);
-          for (let i = 0; i < this.document.targets.length; i++) {
-            console.log("target : " + i);
-            console.log(this.document.targets[i]);
-            console.log(this.getTargetType(this.document.targets[i]));
-            let targetType:string = this.getTargetType(this.document.targets[i]);
-            if(targetType === "experiment") {
-              console.log(this.document.targets[i]);
-              this.getExperiment(this.document.targets[i]);
-              console.log("this.expData :");
-              console.log(this.expData);
-              console.log("this.groupsData :");
-              console.log(this.groupsData);
-            }
+          await this.loadTargetsTypes();
+          console.log("this.targetsTypes :");
+          console.log(this.targetsTypes);
+          let experimentTargets = this.targetsTypes.filter(target =>
+            target.rdf_types.includes(this.$opensilex.Oeso.EXPERIMENT_TYPE_URI)
+          );
+          console.log("experimentTargets.length :");
+          console.log(experimentTargets.length);
+          if (experimentTargets.length > 0) {
+            this.checkUserAccess(experimentTargets.map(t => t.uri));
+          } else {
+            this.canDisplayDocument = true;
+            console.log("canDisplayDocument : ");
+            console.log(this.canDisplayDocument);
           }
-        }  
+        } else {
+          this.canDisplayDocument = true;
+          console.log("canDisplayDocument : ");
+          console.log(this.canDisplayDocument);
+        }
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  async checkUserAccess(experimentUris: string[]) {
+    console.log("checkUserAccess : ");
+    let userUri = this.$store.state.user.tokenData.sub;
+    console.log("userUri :");
+    console.log(userUri);
+    console.log("this.user.isAdmin() :");
+    console.log(this.user.isAdmin());
+    let userGroupsHttp = await this.$opensilex.getService("opensilex.SecurityService").getUserGroups(userUri);
+    let userGroups = userGroupsHttp.response.result.map(group => group.uri);
+    console.log("userGroups :");
+    console.log(userGroups);
+    for (let uri of experimentUris) {
+      let experimentHttp = await this.$opensilex.getService("opensilex.ExperimentsService").getExperiment(uri);
+      let experiment = experimentHttp.response.result;
+      if (experiment.is_public) {
+        this.canDisplayDocument = true;
+        console.log("canDisplayDocument : ");
+        console.log(this.canDisplayDocument);
+        return;
+      }
+      console.log("experiment : ");
+      console.log(experiment);
+      //const experimentGroupsHttp = await this.$opensilex.getService("opensilex.SecurityService").getUserGroups(experiment.creator);
+      //const experimentGroups = experimentGroupsHttp.response.result.map(group => group.uri);
+      let experimentGroups = experiment.groups;
+      console.log("experimentGroups :");
+      console.log(experimentGroups);
+      let intersection = userGroups.filter(uri => experimentGroups.includes(uri));
+      if (intersection.length > 0) {
+        this.canDisplayDocument = true;
+        console.log("canDisplayDocument : ");
+        console.log(this.canDisplayDocument);
+        return;
+      }
+    }
+    // Si aucune expérience n’est publique ni partagée avec les groupes de l’utilisateur
+    this.canDisplayDocument = false;
+    console.log("canDisplayDocument : ");
+    console.log(this.canDisplayDocument);
   }
 
   loadFile(uri: string, title: string, format: string) {
@@ -287,22 +335,30 @@ export default class DocumentDetails extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
   
-  loadTargetsTypes() {
-    let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI, Oeso.VARIABLESGROUP_TYPE_URI);
-    let body = {
-      uris: this.document.targets
-    }
-    ontologyService.checkURIsTypes(types, body)
-    .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
-      this.targetsTypes = http.response.result;
-    })
-    .catch(this.$opensilex.errorHandler); 
+  loadTargetsTypes(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+      let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI, Oeso.VARIABLESGROUP_TYPE_URI);
+      let body = {
+        uris: this.document.targets
+      }
+      ontologyService.checkURIsTypes(types, body)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
+        this.targetsTypes = http.response.result;
+        console.log("this.targetsTypes l :");
+        console.log(this.targetsTypes);
+        resolve();
+      })
+      .catch((error) => {
+          this.$opensilex.errorHandler(error);
+          reject(error);
+        });
+    });
   }
 
   getTargetType(uri: string) {
-    const parts = uri.split("/");
-    const secondElement = parts[1]; // "experiment"
+    let parts = uri.split("/");
+    let secondElement = parts[1]; // "experiment"
     return secondElement;
   }
 

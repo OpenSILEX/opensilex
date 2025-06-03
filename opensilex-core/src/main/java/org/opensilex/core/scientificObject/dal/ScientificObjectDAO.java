@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.apache.jena.sparql.path.*;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.geojson.GeoJsonObject;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveNosqlModel;
@@ -28,6 +30,8 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -934,24 +938,22 @@ public class ScientificObjectDAO {
         if (Objects.nonNull(publicationDate)) {
             object.setPublicationDate(publicationDate);
         }
-        object.setLastUpdateDate(OffsetDateTime.now());
+        setLastUpdateDateInSO(object);
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
+        List<URI> childrenURIs = fetchChildrenURIs(objectURI, currentUser, graphNode);
+        boolean hasFacilityURI = checkIfSOHasFacilityURIs(object);
 
-        List<URI> childrenURIs = sparql.searchURIs(
-                graphNode,
-                ScientificObjectModel.class,
-                currentUser.getLanguage(),
-                (select) -> {
-                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
-                });
+        updateSOAndMove(objectURI, currentUser, graphNode, object, childrenURIs, hasFacilityURI);
+        return object.getUri();
+    }
 
-        boolean hasFacilityURI = object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
+    public boolean checkIfSOHasFacilityURIs(SPARQLResourceModel object) {
+        return object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
+    }
 
+    public void updateSOAndMove(URI objectURI, AccountModel currentUser, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs, boolean hasFacilityURI) throws Exception {
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-            sparql.update(graphNode, object);
-            if (!childrenURIs.isEmpty()) {
-                sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
-            }
+            updateSOAndChildren(objectURI, graphNode, object, childrenURIs);
 
             //TODO dont invoke MoveLogic here, put it in a ScientificObjectLogic class in future
             MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, session);
@@ -1003,7 +1005,43 @@ public class ScientificObjectDAO {
             sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
             return 0;
         });
-        return object.getUri();
+    }
+
+    private void updateSOAndChildren(URI objectURI, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs) throws Exception {
+        sparql.update(graphNode, object);
+        if (!childrenURIs.isEmpty()) {
+            sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
+        }
+    }
+
+    public List<URI> fetchChildrenURIs(URI objectURI, AccountModel currentUser, Node graphNode) throws Exception {
+        List<URI> childrenURIs = sparql.searchURIs(
+                graphNode,
+                ScientificObjectModel.class,
+                currentUser.getLanguage(),
+                (select) -> {
+                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
+                });
+        return childrenURIs;
+    }
+
+    public void setLastUpdateDateInSO(SPARQLResourceModel object) {
+        object.setLastUpdateDate(OffsetDateTime.now());
+    }
+
+    public void updateGeoSpatialModel(GeoJsonObject geometry, String soName, URI soURI, URI soType, URI contextURI, GeospatialDAO geoDAO)
+            throws JsonProcessingException {
+        if (geometry != null) {
+            GeospatialModel geospatialModel = new GeospatialModel();
+            geospatialModel.setUri(soURI);
+            geospatialModel.setName(soName);
+            geospatialModel.setRdfType(soType);
+            geospatialModel.setGraph(contextURI);
+            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(geometry));
+            geoDAO.update(geospatialModel, soURI, contextURI);
+        } else {
+            geoDAO.delete(soURI, contextURI);
+        }
     }
 
     private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {

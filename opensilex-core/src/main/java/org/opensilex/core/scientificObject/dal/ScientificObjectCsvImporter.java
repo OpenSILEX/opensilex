@@ -4,19 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -30,11 +33,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,7 +67,7 @@ import java.util.stream.Stream;
  * </ul>
  *
  * <hr>
- * <b>Creation : {@link #create(CSVValidationModel, List)} </b>
+ * <b>Creation : {@link #upsert(CSVValidationModel, List, List)} </b>
  * <ul>
  *     <li>In experimental context, object name and type are copied into global OS graph</li>
  *     <li>In experimental context, experiment species are updated according OS germplasms. {@link ExperimentDAO#updateExperimentSpeciesFromScientificObjects(URI)}</li>
@@ -81,6 +85,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     private final ScientificObjectDAO scientificObjectDAO;
     private final ExperimentDAO experimentDAO;
     private ExperimentModel experimentModel;
+    private final AccountModel currentUser;
 
     /**
      * @param sparql     SPARQL service
@@ -99,6 +104,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         Objects.requireNonNull(user);
         Objects.requireNonNull(mongoDB);
 
+        this.currentUser = user;
         this.experiment = experiment;
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
 
@@ -244,7 +250,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     }
 
     @Override
-    protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+    protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, List<ScientificObjectModel> modelChunkToCreate, List<ScientificObjectModel> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
         // inside an XP
         if (withinExperiment()) {
             // query used to check if a SO with a name already exists in XP
@@ -258,12 +264,14 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
                 if ((isURIExistInXP.equalsIgnoreCase("") || isURIExistInXP.equalsIgnoreCase("false"))
                         && (alreadyExistingOsWithName == null)) {
+                    addModelInModelChunk(model, modelChunkToCreate);
                     // register URI to the set of URIs to create new SOs
                     filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
                 }
 
                 // Scenario 3: If the URI entered in CSV exist in XP -> update the SO
                 else if (isURIExistInXP.equalsIgnoreCase("true")) {
+                    addModelInModelChunk(model, modelChunkToUpdate);
                     // register URI to the set of URIs to update the existing SOs
                     filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
                 }
@@ -271,19 +279,24 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             }
             // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
             else if (model.getUri() == null && alreadyExistingOsWithName != null) {
+                // fetching existing SO URI
+                URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
+                model.setUri(alreadyExistingOSUri);
+                addModelInModelChunk(model, modelChunkToUpdate);
                 // register URI to the set of URIs to create new SOs
-                filledUrisToUpdateIndexesInChunk.put(alreadyExistingOsWithName.getUri().toString(), totalRowIdx);
+                filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
             }
             // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
             else if (model.getUri() == null && alreadyExistingOsWithName == null) {
                 // register URI to the set of URIs to update the existing SOs
                 generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+                addModelInModelChunk(model, modelChunkToCreate);
             }
         }
 
         // global flow (not inside an XP)
         else {
-            super.handleURIMapping(validator, model, totalRowIdx,generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
+            super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
         }
     }
 
@@ -304,6 +317,13 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     private boolean withinExperiment() {
         return experiment != null;
+    }
+
+    @Override
+    protected <T extends SPARQLResourceModel & ClassURIGenerator> void mapObjectsToUpdate(CsvOwlRestrictionValidator validator, List<T> modelChunkToUpdate) {
+        // map modelchunkToUpdate List into getObjectsToUpdate List in validator
+        // modelChunkToUpdate will be used to call the update method later
+        modelChunkToUpdate.forEach(validator.getValidationModel().getObjectsToUpdate()::add);
     }
 
     /**
@@ -391,17 +411,106 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         }
     }
 
+    private static void cleanUpGeometryData(CSVValidationModel validation, Map<SPARQLNamedResourceModel, Geometry> objectsGeometry, List<GeospatialModel> geospatialModels) {
+        // clear map and values
+        objectsGeometry.clear();
+        geospatialModels.clear();
+        validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
+    }
+
+    @NotNull
+    private static Set<URI> fetchURIsFromSOModel(List<ScientificObjectModel> models) {
+        // fetch URIs from ScientificObjectModel
+        return models.stream()
+                .map(ScientificObjectModel::getUri)
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private static List<GeospatialModel> getGeospatialModelList(List<GeospatialModel> geospatialModels, Set<URI> URIsFromModel) {
+        // fetch geospatial models which has matching URIs from Model
+        return geospatialModels.stream()
+                .filter(geoModel -> URIsFromModel.contains(geoModel.getUri()))
+                .toList();
+    }
+
+    private void setExperimentInSOObj(ScientificObjectModel model) {
+        if(experimentModel != null) {
+            model.setExperiment(experimentModel);
+        }
+    }
+
+    /**
+     * Check that new factor levels we want to add to the OS are associated to the experiment. Throw an exception if not.
+     * experimentModel Experiment model that is (or will be) linked to the OS.
+     * @throws InvalidValueException if a factor level is not part of the experiment.
+     */
+    private void checkFactorLevelsInXP(ScientificObjectModel model) {
+        List<URI> experimentFactorLevels = experimentModel.getFactors().stream()
+                .flatMap(factor -> factor.getFactorLevels().stream().map(FactorLevelModel::getUri))
+                .toList();
+        List<URI> descriptionFactorLevels = model.getRelations().stream()
+                .filter( relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFactorLevel.getURI()))
+                .map(relation -> {
+                    try {
+                        return new URI(relation.getValue());
+                    } catch (URISyntaxException e) {
+                        throw new InvalidValueException("Invalid factor level URI"+ relation.getValue());
+                    }
+                }).toList();
+        descriptionFactorLevels.forEach(factorLevel -> {
+            if (!experimentFactorLevels.contains(factorLevel)) {
+                throw new InvalidValueException("Following factor level is not part of the experiment: "+factorLevel);
+            }
+        });
+    }
+
     @Override
-    public void create(CSVValidationModel validation, List<ScientificObjectModel> models) throws Exception {
+    public void upsert(CSVValidationModel validation, List<ScientificObjectModel> modelsToCreate, List<ScientificObjectModel> modelsToUpdate) throws Exception {
+        Object geometryMetadatas = validation.getObjectsMetadata().get(Oeso.hasGeometry.getURI());
+        List<GeospatialModel> geospatialModelsToCreate = new ArrayList<>();
+        List<GeospatialModel> geospatialModelsToUpdate = new ArrayList<>();
+        List<GeospatialModel> geospatialModels = new ArrayList<>();
+        Map<SPARQLNamedResourceModel, Geometry> objectsGeometry = new HashMap<>();
+
+        if (geometryMetadatas != null) {
+
+            objectsGeometry = (Map<SPARQLNamedResourceModel, Geometry>) geometryMetadatas;
+
+            // convert (object,geometry) map into list of GeospatialModel
+            geospatialModels = objectsGeometry
+                    .entrySet()
+                    .stream()
+                    .map(entry -> new GeospatialModel(entry.getKey(), graph, entry.getValue()))
+                    .collect(Collectors.toList());
+
+            // Step 1: Build a set of URIs from modelToCreateURIs and modelToUpdateURIs
+            Set<URI> modelToCreateURIs = fetchURIsFromSOModel(modelsToCreate);
+            Set<URI> modelToUpdateURIs = fetchURIsFromSOModel(modelsToUpdate);
+
+            // separate the geospatialModels which are to be created and updated
+            geospatialModelsToCreate = getGeospatialModelList(geospatialModels, modelToCreateURIs);
+            geospatialModelsToUpdate = getGeospatialModelList(geospatialModels, modelToUpdateURIs);
+
+        }
+        // create ScientificObjects: modelsToCreate
+        create(modelsToCreate, geospatialModelsToCreate);
+
+        // update ScientificObjects: modelsToUpdate
+        update(modelsToUpdate, geospatialModelsToUpdate);
+
+        // cleanup the geometry data from validation, objectsGeometry, geospatialModels after creation & modification
+        cleanUpGeometryData(validation, objectsGeometry, geospatialModels);
+    }
+
+    private void create(List<ScientificObjectModel> models, List<GeospatialModel> geospatialModelsToCreate) throws Exception {
         if (Objects.nonNull(this.publisher) || experimentModel != null) {
             for (ScientificObjectModel model : models) {
                 if (this.publisher != null && Objects.isNull(model.getPublisher())) {
                     model.setPublisher(this.publisher);
                 }
                 // setting experiment in SO model if we try creating a SO from an XP
-                if(experimentModel != null) {
-                   model.setExperiment(experimentModel);
-                }
+                setExperimentInSOObj(model);
             }
         }
         scientificObjectDAO.create(models, graph);
@@ -430,27 +539,53 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
         }
 
-        Object geometryMetadatas = validation.getObjectsMetadata().get(Oeso.hasGeometry.getURI());
+        if (!geospatialModelsToCreate.isEmpty()) {
+            // Geometry creation into MongoDB
+            geoDAO.createAll(geospatialModelsToCreate);
+        }
+    }
 
-        // Geometry creation into MongoDB
-        if (geometryMetadatas != null) {
+    private void update(List<ScientificObjectModel> models, List<GeospatialModel> geospatialModelsToUpdate) throws Exception {
 
-            Map<SPARQLNamedResourceModel,Geometry> objectsGeometry = (Map<SPARQLNamedResourceModel,Geometry>) geometryMetadatas;
+        GeospatialModel geospatialToBeUpdated;
 
-            // convert (object,geometry) map into list of GeospatialModel
-            List<GeospatialModel> geospatialModels = objectsGeometry
-                    .entrySet()
-                    .stream()
-                    .map(entry -> new GeospatialModel(entry.getKey(),graph,entry.getValue()))
-                    .collect(Collectors.toList());
+        // TODO validate if this is a valid scenario in case of Update
+        // check unique name within an experiment
+        // scientificObjectDAO.checkUniqueNameByGraph(models, experiment);
 
-            geoDAO.createAll(geospatialModels);
+        // DELETE and INSERT
+        for(ScientificObjectModel model : models) {
+            // setting experiment in SO model if we try updating a SO from an XP
+            setExperimentInSOObj(model);
+            scientificObjectDAO.setLastUpdateDateInSO(model);
+            Node graphNode = SPARQLDeserializers.nodeURI(experiment);
+            List<URI> childrenURIs = scientificObjectDAO.fetchChildrenURIs(model.getUri(), currentUser, graphNode);
 
-            // clear map and values
-            objectsGeometry.clear();
-            geospatialModels.clear();
+            boolean hasFacilityURI = scientificObjectDAO.checkIfSOHasFacilityURIs(model);
+            scientificObjectDAO.updateSOAndMove(model.getUri(), currentUser, graphNode, model, childrenURIs, hasFacilityURI);
 
-            validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
+            if(experiment != null) {
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
+            }
+
+            if(model.getRelations() != null) {
+                checkFactorLevelsInXP(model);
+            }
+            // geospatialModelsToUpdate - all geoSpatialModels for the SOs(which has to be updated)
+            // geospatialToBeUpdated - geoSpatialModels to be updated
+            geospatialToBeUpdated = geospatialModelsToUpdate.stream()
+                    .filter(geospatialModel -> model.getUri().equals(geospatialModel.getUri()))
+                    .findFirst()
+                    .orElse(null);
+
+            // Geometry modification in MongoDB
+            if (geospatialToBeUpdated != null) {
+                geoDAO.update(geospatialToBeUpdated, model.getUri(), experiment);
+            }
+            // Geometry info is deleted from a SO
+            else {
+                geoDAO.delete(model.getUri(), experiment);
+            }
         }
     }
 

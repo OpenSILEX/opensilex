@@ -28,7 +28,7 @@
               </template>
 
               <template v-slot:cell(publisher)="{data}">
-                <PersonContact
+                <opensilex-PersonContact
                     v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
                     :personContact="accountsByUri.get(data.item.publisher)"
                     :customDisplayableName="getAccountNames(data.item.publisher)"
@@ -74,7 +74,7 @@
       </div>
     </div>
     <!-- Modal pour afficher les détails de l'annotation -->
-    <annotation-details
+    <opensilex-AnnotationDetails
         v-if="selectedAnnotation"
         :value="isModalVisible"
         :annotationDetails="selectedAnnotation"
@@ -101,15 +101,8 @@ import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
-import AnnotationDetails from "../form/AnnotationDetails.vue";
-import PersonContact from "../../persons/PersonContact.vue";
 
-@Component({
-  components: {
-    AnnotationDetails,
-    PersonContact
-  }
-})
+@Component
 export default class AnnotationList extends Vue {
 
   private selectedAnnotation: AnnotationGetDTO | null = null;

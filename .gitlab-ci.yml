@@ -301,8 +301,6 @@ merge-request:check:
     -   fi
     -   exit 1
     - fi
-    - echo "$MR_CONTENT_JSON"
-
     - FRONT_MATTER=$(echo $MR_CONTENT_JSON
       | yq '.description'
       | yq -f extract -o json '.')

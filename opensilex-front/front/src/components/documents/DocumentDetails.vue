@@ -221,75 +221,46 @@ export default class DocumentDetails extends Vue {
       .getDocumentMetadata(uri)
       .then(async (http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
         this.document = http.response.result;
-        if (!this.document.source) {
+        if ((!this.document.source) && (!this.user.isAdmin())) {
           this.canDisplayDocument = false; // document avec fichier non public, vérifier les droits
-          console.log("canDisplayDocument : ");
-          console.log(this.canDisplayDocument);
         }
         if (this.document.targets.length>0) {
           await this.loadTargetsTypes();
-          console.log("this.targetsTypes :");
-          console.log(this.targetsTypes);
           let experimentTargets = this.targetsTypes.filter(target =>
             target.rdf_types.includes(this.$opensilex.Oeso.EXPERIMENT_TYPE_URI)
           );
-          console.log("experimentTargets.length :");
-          console.log(experimentTargets.length);
-          if (experimentTargets.length > 0) {
+          if (experimentTargets.length > 0 && !this.user.isAdmin()) {
             this.checkUserAccess(experimentTargets.map(t => t.uri));
           } else {
             this.canDisplayDocument = true;
-            console.log("canDisplayDocument : ");
-            console.log(this.canDisplayDocument);
           }
         } else {
           this.canDisplayDocument = true;
-          console.log("canDisplayDocument : ");
-          console.log(this.canDisplayDocument);
         }
       })
       .catch(this.$opensilex.errorHandler);
   }
 
   async checkUserAccess(experimentUris: string[]) {
-    console.log("checkUserAccess : ");
     let userUri = this.$store.state.user.tokenData.sub;
-    console.log("userUri :");
-    console.log(userUri);
-    console.log("this.user.isAdmin() :");
-    console.log(this.user.isAdmin());
     let userGroupsHttp = await this.$opensilex.getService("opensilex.SecurityService").getUserGroups(userUri);
     let userGroups = userGroupsHttp.response.result.map(group => group.uri);
-    console.log("userGroups :");
-    console.log(userGroups);
     for (let uri of experimentUris) {
       let experimentHttp = await this.$opensilex.getService("opensilex.ExperimentsService").getExperiment(uri);
       let experiment = experimentHttp.response.result;
       if (experiment.is_public) {
         this.canDisplayDocument = true;
-        console.log("canDisplayDocument : ");
-        console.log(this.canDisplayDocument);
         return;
       }
-      console.log("experiment : ");
-      console.log(experiment);
-      //const experimentGroupsHttp = await this.$opensilex.getService("opensilex.SecurityService").getUserGroups(experiment.creator);
-      //const experimentGroups = experimentGroupsHttp.response.result.map(group => group.uri);
       let experimentGroups = experiment.groups;
-      console.log("experimentGroups :");
-      console.log(experimentGroups);
       let intersection = userGroups.filter(uri => experimentGroups.includes(uri));
       if (intersection.length > 0) {
         this.canDisplayDocument = true;
-        console.log("canDisplayDocument : ");
-        console.log(this.canDisplayDocument);
         return;
       }
     }
     // Si aucune expérience n’est publique ni partagée avec les groupes de l’utilisateur
     this.canDisplayDocument = false;
-    console.log("canDisplayDocument : ");
-    console.log(this.canDisplayDocument);
   }
 
   loadFile(uri: string, title: string, format: string) {
@@ -345,8 +316,6 @@ export default class DocumentDetails extends Vue {
       ontologyService.checkURIsTypes(types, body)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
         this.targetsTypes = http.response.result;
-        console.log("this.targetsTypes l :");
-        console.log(this.targetsTypes);
         resolve();
       })
       .catch((error) => {
@@ -368,13 +337,8 @@ export default class DocumentDetails extends Vue {
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        console.log("getExperiment :");
         this.expData.push(http.response.result);
-        console.log(this.expData);
-        console.log(this.user.isAdmin());
-        console.log(this.$store.state.user.tokenData.sub);//user URI
         this.getUserGroups(this.$store.state.user.tokenData.sub);
-        console.log(this.expData.is_public);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -385,11 +349,7 @@ export default class DocumentDetails extends Vue {
       .getService("opensilex.SecurityService")
       .getUserGroups(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        console.log("getUserGroups :");
         this.groupsData.push(http.response.result);
-        console.log(this.groupsData);
-        console.log(this.user.isAdmin());
-        console.log(this.$store.state.user.tokenData.sub);
       })
       .catch(this.$opensilex.errorHandler);
   }

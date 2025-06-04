@@ -11,6 +11,7 @@ import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -88,6 +89,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -614,20 +616,22 @@ public class DataFilesAPI {
 
         //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
         Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
-        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
-                new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
-                        .setFilter(filter)
-                        .setConvertFunction(model -> {
-                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
-                            if (Objects.nonNull(model.getPublisher())) {
-                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
-                                publishersDataFiles.add(next);
-                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
-                            }
-                            return next;
-                        })
-                        .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
-        );
+        MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO> query = new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
+                .setFilter(filter)
+                .setConvertFunction(model -> {
+                    DataFileGetDTO next = DataFileGetDTO.fromModel(model);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                        publishersDataFiles.add(next);
+                        publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
+                    }
+                    return next;
+                })
+                .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH);
+
+        query.setCountOptions(new CountOptions().limit(0).maxTime(120000, TimeUnit.MILLISECONDS));
+
+        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call
         new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
                 accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(

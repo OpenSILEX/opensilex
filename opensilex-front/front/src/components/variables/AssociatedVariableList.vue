@@ -43,6 +43,7 @@ import Vue from 'vue';
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 @Component({})
 export default class AssociatedVariablesList extends Vue {
@@ -53,7 +54,10 @@ export default class AssociatedVariablesList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
-  facility!: FacilityGetDTO;
+  variableList!: Array<NamedResourceDTOVariableModel>;
+
+  @Prop()
+  facilityUri!: string;
 
   variableAndDeviceListData: Array<any> = [];
 
@@ -72,15 +76,12 @@ export default class AssociatedVariablesList extends Vue {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
-  @Watch('facility', { immediate: true })
-  onFacilityChanged(newVal: FacilityGetDTO) {
-    if (newVal && newVal.variables) {
-      this.loadVariableAndDeviceList();
-    }
+  mounted(){
+    this.loadVariableAndDeviceList();
   }
 
   async loadVariableAndDeviceList() {
-    const promises = this.facility.variables.map(variable => {
+    const promises = this.variableList.map(variable => {
       return this.service.searchDevices(
           undefined,
           true,
@@ -88,7 +89,7 @@ export default class AssociatedVariablesList extends Vue {
           variable.uri,
           undefined,
           undefined,
-          this.facility.uri,
+          this.facilityUri,
           undefined,
           undefined,
           undefined,

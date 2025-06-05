@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups"})
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups", "variables"})
 public class FacilityGetDTO extends FacilityDTO {
-
+    @JsonProperty("variables")
     protected List<NamedResourceDTO<VariableModel>> variables;
-    protected List<NamedResourceDTO<DeviceModel>> devices;
+
     @JsonProperty("organizations")
     protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
@@ -93,6 +93,16 @@ public class FacilityGetDTO extends FacilityDTO {
             });
             model.setVariableGroups(variablesGroupModels);
         }
+
+        if (Objects.nonNull(getVariables())) {
+            List<VariableModel> variableModels = new ArrayList<>();
+            getVariables().forEach(variable -> {
+                VariableModel variableModel = new VariableModel();
+                variableModel.setUri(variable.getUri());
+                variableModels.add(variableModel);
+            });
+            model.setVariables(variableModels);
+        }
     }
 
     public void fromModel(FacilityModel model) {
@@ -119,6 +129,13 @@ public class FacilityGetDTO extends FacilityDTO {
                             (NamedResourceDTO<VariablesGroupModel>) NamedResourceDTO.getDTOFromModel(groupModel))
                     .collect(Collectors.toList()));
         }
+
+        if (Objects.nonNull(model.getVariables())) {
+            setVariables(model.getVariables().stream()
+                    .map(variableModel ->
+                            (NamedResourceDTO<VariableModel>) NamedResourceDTO.getDTOFromModel(variableModel))
+                    .collect(Collectors.toList()));
+        }
     }
 
     public LocationObservationDTO getLastPosition() {
@@ -137,11 +154,4 @@ public class FacilityGetDTO extends FacilityDTO {
         this.variables = variables;
     }
 
-    public List<NamedResourceDTO<DeviceModel>> getDevices() {
-        return devices;
-    }
-
-    public void setDevices(List<NamedResourceDTO<DeviceModel>> devices) {
-        this.devices = devices;
-    }
 }

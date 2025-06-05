@@ -38,12 +38,11 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from 'vue';
-import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
-import {NamedResourceDTODeviceModel} from "opensilex-core/model/namedResourceDTODeviceModel";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
 
 @Component({})
 export default class AssociatedVariablesList extends Vue {
@@ -54,10 +53,7 @@ export default class AssociatedVariablesList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
-  variableList!: Array<NamedResourceDTOVariableModel>;
-
-  @Prop()
-  deviceList!: Array<NamedResourceDTODeviceModel>;
+  facility!: FacilityGetDTO;
 
   variableAndDeviceListData: Array<any> = [];
 
@@ -76,12 +72,15 @@ export default class AssociatedVariablesList extends Vue {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
-  async mounted() {
-    await this.loadVariableAndDeviceList();
+  @Watch('facility', { immediate: true })
+  onFacilityChanged(newVal: FacilityGetDTO) {
+    if (newVal && newVal.variables) {
+      this.loadVariableAndDeviceList();
+    }
   }
 
   async loadVariableAndDeviceList() {
-    const promises = this.variableList.map(variable => {
+    const promises = this.facility.variables.map(variable => {
       return this.service.searchDevices(
           undefined,
           true,
@@ -89,7 +88,7 @@ export default class AssociatedVariablesList extends Vue {
           variable.uri,
           undefined,
           undefined,
-          undefined,
+          this.facility.uri,
           undefined,
           undefined,
           undefined,

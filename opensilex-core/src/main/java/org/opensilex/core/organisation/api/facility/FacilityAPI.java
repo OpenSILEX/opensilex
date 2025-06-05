@@ -188,17 +188,6 @@ public class FacilityAPI {
         // Set the list of variable DTOs in the facility DTO
         facilityGetDTO.setVariables(variableLogicList);
 
-        // Get the list of devices from the facility model
-        List<DeviceModel> devices = model.getDevices();
-
-        // Convert each DeviceModel to a NamedResourceDTO and collect them into a list
-        List<NamedResourceDTO<DeviceModel>> deviceLogicList = devices.stream()
-                .map(deviceModel -> (NamedResourceDTO<DeviceModel>) NamedResourceDTO.getDTOFromModel(deviceModel))
-                .toList();
-
-        // Set the list of device DTOs in the facility DTO
-        facilityGetDTO.setDevices(deviceLogicList);
-
 
         if (Objects.nonNull(model.getPublisher())) {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));

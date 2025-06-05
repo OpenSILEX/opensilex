@@ -551,41 +551,44 @@ public class DataLogic {
      * @return a list of uris if the caller wasn't the import function
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
-        //  SI la target est une facility, alors ajouter le lien entre la variable et la facility
+        // Create logic handler for Facility operations
         var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
 
-        Map<VariableModel, List<DeviceModel>> variableToDevicesMap = new HashMap<>();
-        //appeler facility logic pour ajouter le lien
-        for(DataModel model : models){
-            if(model.getTarget() != null){
+
+// Loop through each data model
+        for (DataModel model : models) {
+
+            // Check if the model has a defined target
+            if (model.getTarget() != null) {
+
+                // Retrieve the facility corresponding to the target URI
                 var facilityModel = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
-                if(facilityModel != null){
+
+                if (facilityModel != null) {
+                    // Create a new variable model from the variable URI
                     VariableModel variableModel = new VariableModel();
                     variableModel.setUri(model.getVariable());
 
-                    VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs,user );
+                    // Fetch devices associated with this variable
+                    VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
                     List<DeviceModel> associatedDevices = variableDAO.getDevicesFromVariable(variableModel.getUri(), user.getLanguage());
-                    //variableModel.setDevices(associatedDevices);
 
+                    // Add the variable to the facility's list of variables
                     List<VariableModel> facilityVariables = facilityModel.getVariables();
-
                     facilityVariables.add(variableModel);
                     facilityModel.setVariables(facilityVariables);
 
-
+                    // Add the associated devices to the facility's list of devices
                     List<DeviceModel> facilityDevices = facilityModel.getDevices();
                     facilityDevices.addAll(associatedDevices);
                     facilityModel.setDevices(facilityDevices);
 
-//                    for (VariableModel variable : facilityModel.getVariables()) {
-//                        List<DeviceModel> associatedDevices = variableDAO.getDeviceFromVariable(variable.getUri(), user.getLanguage());
-//                        facilityModel.addVariableDeviceMapping(variable, associatedDevices);
-//                    }
-
-                    facilityLogic.update(facilityModel,null , user);
+                    // Update the facility in the database
+                    facilityLogic.update(facilityModel, null, user);
                 }
             }
         }
+
 
         DataPostInsert postInsert;
         if (!csvImport) {

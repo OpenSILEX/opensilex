@@ -22,7 +22,7 @@
       <div class="col-md-6">
         <opensilex-AssociatedVariableList
             :variableList="selected.variables"
-            :deviceList="devices"
+            :deviceList="selected.devices"
         ></opensilex-AssociatedVariableList>
       </div>
     </div>

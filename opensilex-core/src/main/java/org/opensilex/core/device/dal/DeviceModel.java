@@ -90,7 +90,8 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "measures",
             inverse = true
     )
-    private List<VariableModel> variables;
+    List<VariableModel> variables;
+    public static final String VARIABLES_FIELD = "variables";
 
     public String getBrand() {
         return brand;

@@ -313,6 +313,9 @@ public class DeviceDAO {
 
     public List<DeviceModel> getDevicesByURI(List<URI> devicesURI, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = null;
+
+        // true or false first element
+        // filter device element by move
         if (sparql.uriListExists(DeviceModel.class, devicesURI)) {
             devices = sparql.getListByURIs(DeviceModel.class, devicesURI, currentUser.getLanguage());
         }

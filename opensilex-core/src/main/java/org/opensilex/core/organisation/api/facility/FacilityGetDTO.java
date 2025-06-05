@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.api.facility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 public class FacilityGetDTO extends FacilityDTO {
 
     protected List<NamedResourceDTO<VariableModel>> variables;
+    protected List<NamedResourceDTO<DeviceModel>> devices;
     @JsonProperty("organizations")
     protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
@@ -133,5 +135,13 @@ public class FacilityGetDTO extends FacilityDTO {
 
     public void setVariables(List<NamedResourceDTO<VariableModel>> variables) {
         this.variables = variables;
+    }
+
+    public List<NamedResourceDTO<DeviceModel>> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<NamedResourceDTO<DeviceModel>> devices) {
+        this.devices = devices;
     }
 }

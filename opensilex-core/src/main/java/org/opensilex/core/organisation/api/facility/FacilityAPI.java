@@ -18,6 +18,7 @@ package org.opensilex.core.organisation.api.facility;
 import io.swagger.annotations.*;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -176,16 +177,28 @@ public class FacilityAPI {
                 true
         );
 
+        // Get the list of variables from the facility model
         List<VariableModel> variables = model.getVariables();
-        List<NamedResourceDTO<VariableModel>> logicList = variables.stream()
+
+        // Convert each VariableModel to a NamedResourceDTO and collect them into a list
+        List<NamedResourceDTO<VariableModel>> variableLogicList = variables.stream()
                 .map(variableModel -> (NamedResourceDTO<VariableModel>) NamedResourceDTO.getDTOFromModel(variableModel))
                 .toList();
 
-//        var variableDtoList = new ArrayList<>();
-//        for (var variable : variables) {
-//            variableDtoList.add(NamedResourceDTO.getDTOFromModel(variable));
-//        }
-        facilityGetDTO.setVariables(logicList);
+        // Set the list of variable DTOs in the facility DTO
+        facilityGetDTO.setVariables(variableLogicList);
+
+        // Get the list of devices from the facility model
+        List<DeviceModel> devices = model.getDevices();
+
+        // Convert each DeviceModel to a NamedResourceDTO and collect them into a list
+        List<NamedResourceDTO<DeviceModel>> deviceLogicList = devices.stream()
+                .map(deviceModel -> (NamedResourceDTO<DeviceModel>) NamedResourceDTO.getDTOFromModel(deviceModel))
+                .toList();
+
+        // Set the list of device DTOs in the facility DTO
+        facilityGetDTO.setDevices(deviceLogicList);
+
 
         if (Objects.nonNull(model.getPublisher())) {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));

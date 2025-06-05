@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
@@ -138,10 +139,8 @@ public class FacilityDAO {
         return sparql.executeAskQuery(ask);
     }
 
-//    public List<VariableModel> getFacilityVariables(URI uri, String language) throws Exception {
-//        List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(FacilityModel.class), uri, Oeso.hasVariable, URI.class);
-//        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
-//    }
+
+
     //endregion
 
     //#region private

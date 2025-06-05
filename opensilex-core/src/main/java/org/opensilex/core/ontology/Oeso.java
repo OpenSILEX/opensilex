@@ -67,7 +67,7 @@ public class Oeso {
     public static final Property fromSharedResourceInstance = Ontology.property(NS, "fromSharedResourceInstance");
     public static final Property hasSpecies = Ontology.property(NS, "hasSpecies");
 
-//    public static final Property measuredBy = Ontology.property(NS, "measuredBy");
+    public static final Property measuredBy = Ontology.property(NS, "measuredBy");
 
     // ---- VARIABLES Unit ----
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");

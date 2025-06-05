@@ -113,12 +113,13 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
 
-//    @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "measuredBy",
-//            inverse = true
-//    )
-//    private List<DeviceModel> devices;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "measuredBy",
+            inverse = true
+    )
+    private List<DeviceModel> devices;
+    public static final String DEVICES_FIELD_NAME = "devices";
 
     public String getAlternativeName() { return alternativeName; }
 
@@ -196,12 +197,12 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-//    public List<DeviceModel> getDevices() {
-//        return devices;
-//    }
-//
-//    public void setDevices(List<DeviceModel> devices) {
-//        this.devices = devices;
-//    }
+    public List<DeviceModel> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<DeviceModel> devices) {
+        this.devices = devices;
+    }
 }
 

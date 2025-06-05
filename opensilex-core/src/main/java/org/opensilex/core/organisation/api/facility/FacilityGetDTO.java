@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups", "variables"})
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups","variables"})
 public class FacilityGetDTO extends FacilityDTO {
     @JsonProperty("variables")
     protected List<NamedResourceDTO<VariableModel>> variables;

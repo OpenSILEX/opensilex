@@ -177,18 +177,6 @@ public class FacilityAPI {
                 true
         );
 
-        // Get the list of variables from the facility model
-        List<VariableModel> variables = model.getVariables();
-
-        // Convert each VariableModel to a NamedResourceDTO and collect them into a list
-        List<NamedResourceDTO<VariableModel>> variableLogicList = variables.stream()
-                .map(variableModel -> (NamedResourceDTO<VariableModel>) NamedResourceDTO.getDTOFromModel(variableModel))
-                .toList();
-
-        // Set the list of variable DTOs in the facility DTO
-        facilityGetDTO.setVariables(variableLogicList);
-
-
         if (Objects.nonNull(model.getPublisher())) {
             facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
         }

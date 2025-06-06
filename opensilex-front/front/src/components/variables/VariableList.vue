@@ -1,196 +1,224 @@
 <template>
-  <div class="variable-list-container">
-    <div class="table-responsive">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>{{ $t('component.common.name') }}</th>
-            <th>{{ $t('VariableView.entity') }}</th>
-            <th>{{ $t('VariableView.characteristic') }}</th>
-            <th>{{ $t('VariableView.method') }}</th>
-            <th>{{ $t('VariableView.unit') }}</th>
-            <th v-if="!noActions">{{ $t('component.common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="data in variables" :key="data.item.uri">
-            <tr>
-              <td>
-                <router-link :to="getDetailsPageUrl(data.item)">
-                  {{ data.item.name }}
-                </router-link>
-                <br>
-                <small class="text-muted">{{ data.item.alternative_name }}</small>
-              </td>
-              <td>{{ data.item.entity?.name }}</td>
-              <td>{{ data.item.characteristic?.name }}</td>
-              <td>{{ data.item.method?.name }}</td>
-              <td>{{ data.item.unit?.name }}</td>
-              <td v-if="!noActions">
-                <div class="btn-group btn-group-sm" role="group">
-                  <opensilex-DetailButton
-                    label="component.common.details-label"
-                    :small="true"
-                    @click="loadVariablesGroupFromVariable(data)"
-                    :detailVisible="data.detailsShowing"
-                  />
-                  <opensilex-EditButton
-                    @click="$emit('edit', data.item.uri)"
-                    label="component.common.list.buttons.update"
-                    :small="true"
-                  />
-                  <button 
-                    class="btn btn-outline-danger" 
-                    @click="$emit('delete', data.item)"
-                  >
-                    {{ $t('component.common.delete') }}
-                  </button>
-                </div>
-              </td>
-            </tr>
-
-            <tr v-if="data.detailsShowing">
-              <td :colspan="noActions ? 5 : 6">
-                <div>    
-                  <template v-if="variableGroupsList[data.item.uri] !== undefined">
-                    <ul v-if="variableGroupsList[data.item.uri].length > 0">
-                      <p>{{ t('VariableList.variablesGroup') }}</p>
-                      <li v-for="group in variableGroupsList[data.item.uri]" :key="group.uri">
-                        {{ group.name }} ({{ group.uri }})
-                      </li>
-                    </ul>
-                    <p v-else>{{ t('VariableList.not-used-in-variablesGroup') }}</p>
-                  </template>
-                </div>
-              </td>
-            </tr>
-
-          </template>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <n-data-table
+    :columns="columns"
+    :data="variables"
+    :row-key="rowKey"
+    :pagination="{ pageSize: 10 }"
+    :expanded-row-keys="expandedRowKeys"
+    @update:expanded-row-keys="handleExpandedRowChange"
+    :sorter="defaultSorter"
+  />
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, inject, reactive } from 'vue';
-import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO';
-import { VariablesService } from 'opensilex-core';
-import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
+<script lang="ts" setup>
+import { ref, h, inject, reactive, onMounted, resolveComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { NButton, NTag, NDataTable } from 'naive-ui';
+import { VariablesService } from 'opensilex-core';
+import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO';
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
+import EditButton from './../common/buttons/EditButton.vue';
 
-export default defineComponent({
-  name: 'VariableList',
-  props: {
-    noActions: {
-      type: Boolean,
-      default: false
-    },
-  },
-  emits: ['edit', 'delete'],
-  setup(props, { emit }) {
-    const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-    const { t } = useI18n();
-    const $service = ref<VariablesService | null>(null);
-    const variables = ref<Array<{
-      item: VariableGetDTO;
-      detailsShowing: boolean;
-    }>>([]);
-    const variableGroupsList = reactive<Record<string, { uri: string; name: string }[]>>({});
+const { t } = useI18n();
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const $service = ref<VariablesService | null>(null);
 
-    const getDetailsPageUrl = (variable: VariableGetDTO) => {
-      return `/variable/details/${encodeURIComponent(variable.uri)}`;
-    };
+const variables = ref<Array<{ item: VariableGetDTO }>>([]);
+const variableGroupsList = reactive<Record<string, { uri: string; name: string }[]>>({});
+const expandedRowKeys = ref<string[]>([]);
 
-    const loadAllVariables = async () => {
-      if (!$opensilex) {
-        console.error("OpenSilex plugin not available");
-        return;
-      }
+const rowKey = (row: { item: VariableGetDTO }) => row.item.uri;
 
-      $service.value = $opensilex.getService<VariablesService>("opensilex.VariablesService");
+const loadAllVariables = async () => {
+  if (!$opensilex) return;
 
-      try {
-        const response = await $service.value.searchVariables(
-          undefined, undefined, undefined, undefined, undefined,
-          undefined, undefined, undefined, undefined, undefined,
-          undefined, undefined, undefined, undefined,
-          undefined, // orderBy
-          0, // currentPage
-          0  // pageSize: 0 to get everything
-        );
+  $service.value = $opensilex.getService<VariablesService>('opensilex.VariablesService');
+  try {
+    const response = await $service.value.searchVariables(undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, 0, 0
+    );
 
-        const result = response.response.result || [];
-
-        variables.value = result.map(variable => ({
-          item: variable,
-          detailsShowing: false
-        }));
-
-      } catch (error) {
-        console.error("Error loading variables", error);
-      }
-    };
-
-    const loadVariablesGroupFromVariable = async (data: {
-      item: VariableGetDTO;
-      detailsShowing: boolean;
-    }) => {
-      const uri = data.item.uri;
-
-      if (!data.detailsShowing) {
-        try {
-          $opensilex?.disableLoader();
-          const response = await $service.value?.searchVariablesGroups(
-            undefined, uri, ['name=asc']
-          );
-
-          const list = (response?.response.result || []).map((group: any) => ({
-            uri: group.uri,
-            name: group.name
-          }));
-
-          variableGroupsList[uri] = list;
-          data.detailsShowing = true;
-        } catch (error) {
-          $opensilex?.errorHandler(error);
-        } finally {
-          $opensilex?.enableLoader();
-        }
-      } else {
-        data.detailsShowing = false;
-      }
-    };
-
-    onMounted(() => {
-      loadAllVariables();
-    });
-
-    return {
-      variables,
-      variableGroupsList,
-      getDetailsPageUrl,
-      loadVariablesGroupFromVariable,
-      t
-    };
+    const result = response.response.result || [];
+    variables.value = result.map(variable => ({ item: variable }));
+  } catch (error) {
+    console.error("Error loading variables", error);
   }
+};
+
+const defaultSorter = ref({
+  columnKey: 'item.name',
+  order: 'ascend'
+});
+
+
+const toggleExpand = async (uri: string) => {
+  const index = expandedRowKeys.value.indexOf(uri);
+  if (index === -1) {
+    expandedRowKeys.value.push(uri);
+    await handleExpandedRowChange([...expandedRowKeys.value]);
+  } else {
+    expandedRowKeys.value.splice(index, 1);
+  }
+};
+
+
+const handleExpandedRowChange = async (keys: string[]) => {
+  expandedRowKeys.value = keys;
+
+  for (const uri of keys) {
+    if (!variableGroupsList[uri]) {
+      try {
+        $opensilex?.disableLoader();
+        const response = await $service.value?.searchVariablesGroups(undefined, uri, ['name=asc']);
+        variableGroupsList[uri] = (response?.response.result || []).map(group => ({
+          uri: group.uri,
+          name: group.name
+        }));
+      } catch (error) {
+        $opensilex?.errorHandler(error);
+      } finally {
+        $opensilex?.enableLoader();
+      }
+    }
+  }
+};
+
+const emit = defineEmits<{
+  (e: 'edit', uri: string): void,
+  (e: 'delete', item: VariableGetDTO): void
+}>();
+
+
+// COLUMNS
+
+//  const uri = row.item.uri;
+//       const groups = variableGroupsList[uri];
+//       console.log("groups ", groups)
+// if (groups.length === 0) {
+//   return h('p', {}, t('VariableList.not-used-in-variablesGroup'));
+// }
+//       return h('div', {}, [
+//         h('p', {}, t('VariableList.variablesGroup')),
+//         h('ul', {}, groups.map(group =>
+//           h('li', { key: group.uri }, `${group.name} (${group.uri})`)
+//         ))
+//       ]);
+//     }
+//   },
+//   {
+//     title: t('component.common.name'),
+
+
+
+function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariable: Function) {
+  return [
+    {
+      type: 'expand',
+      expandable: () => true,
+      renderExpand: (row: any) => {
+         const uri = row.item.uri;
+         console.log("uri ", uri)
+      const groups = variableGroupsList[uri];
+        // const groups = row.groups || [];
+console.log("groups ", groups)
+        if (groups.length === 0) {
+          return h('p', {}, t('VariableList.not-used-in-variablesGroup'));
+        }
+
+        return h('ul', {}, groups.map(group =>
+          h('li', { key: group.uri }, `${group.name} (${group.uri})`)
+        ));
+      }
+    },
+    {
+      title: t('component.common.name'),
+      key: 'item.name',
+      sortable: true,
+      sorter: (a, b) => a.item.name.localeCompare(b.item.name),
+      render(row: any) {
+        return h('div', {}, [
+          h(
+            'router-link',
+            { to: `/variable/details/${encodeURIComponent(row.item.uri)}` },
+            { default: () => row.item.name }
+          ),
+          h('br'),
+          h('small', { class: 'text-muted' }, row.item.alternative_name)
+        ]);
+      }
+    },
+    {
+      title: t('VariableView.entity'),
+      key: 'item.entity.name',
+      sortable: true,
+      sorter: (a, b) => (a.item.entity?.name || '').localeCompare(b.item.entity?.name || ''),
+      render: row => row.item.entity?.name
+    },
+    {
+      title: t('VariableView.characteristic'),
+      key: 'item.characteristic.name',
+      sortable: true,
+      sorter: (a, b) => (a.item.characteristic?.name || '').localeCompare(b.item.characteristic?.name || ''),
+      render: row => row.item.characteristic?.name
+    },
+    {
+      title: t('VariableView.method'),
+      key: 'item.method.name',
+      sortable: true,
+      sorter: (a, b) => (a.item.method?.name || '').localeCompare(b.item.method?.name || ''),
+      render: row => row.item.method?.name
+    },
+    {
+      title: t('VariableView.unit'),
+      key: 'item.unit.name',
+      sortable: true,
+      sorter: (a, b) => (a.item.unit?.name || '').localeCompare(b.item.unit?.name || ''),
+      render: row => row.item.unit?.name
+    },
+    {
+      title: t('component.common.actions'),
+      key: 'actions',
+      render(row) {
+  const EditButton = resolveComponent('opensilex-EditButton');
+  const DetailButton = resolveComponent('opensilex-DetailButton');
+  return h('div', { class: 'btn-group btn-group-sm', role: 'group' }, [
+    h(DetailButton, {
+      label: 'component.common.details-label',
+      small: true,
+      detailVisible: expandedRowKeys.value.includes(row.item.uri),
+      onClick: () => loadVariablesGroupFromVariable(row.item.uri)
+    }),
+    h(EditButton, {
+      label: 'component.common.list.buttons.update',
+      small: true,
+      onClick: () => emit('edit', row.item.uri)
+    }),
+    h(
+      'button',
+      {
+        class: 'btn btn-outline-danger',
+        onClick: () => emit('delete', row.item)
+      },
+      t('component.common.delete')
+    )
+  ]);
+}
+
+    }
+  ];
+}
+
+
+
+const columns = createColumns(t, emit, toggleExpand);
+
+
+
+onMounted(() => {
+  loadAllVariables();
 });
 </script>
-
-<style scoped>
-.variable-list-container {
-  width: 100%;
-}
-
-.table {
-  margin-bottom: 1rem;
-}
-
-.btn-group-sm > .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-}
-</style>
 
 <i18n>
 
@@ -224,11 +252,12 @@ fr:
         export-variables: Exporter la liste de variables
         export-variables-details: Exporter la liste détaillée de variables
         import-variables-from-shared-resources: Importer depuis la source partagée
-        variablesGroup: La variable est utilisée dans un ou plusieurs groupe de variables 
-        not-used-in-variablesGroup: La variable n'est utilisée dans aucun groupe de variables
+        variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
+        not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
         selected-all: Toutes les variables
         display: Affichage
         withoutGroup: Pas dans ce groupe
         withoutGroup-info: Cocher la case pour filtrer les variables qui n'appartiennent pas au groupe sélectionné
 
 </i18n>
+

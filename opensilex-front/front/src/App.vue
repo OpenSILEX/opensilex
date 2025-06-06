@@ -74,8 +74,10 @@
             <div id="main-content">
               <main class="main-content">
                 <div> pas public</div>
-          
+
+            <n-message-provider>
                 <router-view />
+            </n-message-provider>
 
               </main>
             </div>
@@ -92,6 +94,7 @@ import { useI18n } from 'vue-i18n';
 import { Carousel, Dropdown} from "bootstrap";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import ToastContainer from './components/common/ToastContainer.vue';
+import { NConfigProvider, useMessage, NMessageProvider } from 'naive-ui';
 
 const toastContainer = ref();
 // import 'bootstrap/dist/css/bootstrap.min.css';
@@ -165,7 +168,6 @@ const closeNotification = () => {
 
 // recupere event du clic sur le bouton dans le header
 const handleUriGlobalSearchPressed = () => {
-  console.log("clic sur uri btn")
   toggleUriSearchBox();
 };
 
@@ -182,7 +184,6 @@ onMounted(() => {
   console.log("route publique ?  ", route.meta.public)
   console.log("route : ", route)
   console.log("user 👨: ", user)
-  console.log("props.headerComponent dans App.vue:", props.headerComponent);
   // console.log("logged in ? ", user.isLoggedIn())
   // Setup language watcher
   // watch(() => store.getters.language, () => {
@@ -196,7 +197,6 @@ onMounted(() => {
 const currentDate = new Date();
 const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
 notificationMessage.value = config.notificationMessage;
-console.log("notifMess ", notificationMessage.value)
 notificationEndDate.value = config.notificationEndDate;
 notificationColorTheme.value = config.notificationColorTheme;
 

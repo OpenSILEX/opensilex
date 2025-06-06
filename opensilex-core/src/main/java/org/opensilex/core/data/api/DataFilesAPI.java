@@ -629,7 +629,7 @@ public class DataFilesAPI {
                 })
                 .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH);
 
-        query.setCountOptions(new CountOptions().limit(0).maxTime(120000, TimeUnit.MILLISECONDS));
+        //TODO MAX Change above line to has next page when ive debugged other thing
 
         ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call

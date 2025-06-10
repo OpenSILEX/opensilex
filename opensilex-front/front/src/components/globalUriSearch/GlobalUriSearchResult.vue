@@ -210,7 +210,7 @@ export default class GlobalUriSearchResult extends Vue {
       return formattedPath;
     }
     //If type is a germplasm group then build path manually
-    if(this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
+    if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
       return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
     }
     //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
@@ -223,7 +223,7 @@ export default class GlobalUriSearchResult extends Vue {
         //Pass factor as uri to getTargetPath if the uri was a FactorLevel (to navigate to its parent Factor)
         //Only pass context if we the type is factor or factor level, only things inside experiments that we can navigate to for now.
         //Errors get created otherwise as the context will always be the global graph instead of an xp
-        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), (this.isFactorLevelOrFactor() ? this.context : undefined), unformattedPath);
+        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), (this.isFactorLevelOrFactor() ? this.context : undefined), unformattedPath);
     }else if(this.searchResult.root_class !== null){
       return this.$opensilex.getVocabularyPath(this.uri, this.searchResult.root_class, this.searchResult.is_property);
     }

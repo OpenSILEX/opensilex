@@ -157,7 +157,7 @@ import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {SelectableItem} from '../common/forms/FormSelector.vue';
+import { SelectableItem } from '../common/forms/FormSelector.vue';
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import VueRouter from "vue-router";
 import {OpenSilexStore} from "../../models/Store";
@@ -740,7 +740,7 @@ export default class GermplasmTable extends Vue {
   private async upsertOrCheckData() {
     this.$opensilex.enableLoader();
     this.$opensilex.showLoader();
-    
+
     let DTOs: Array<GermplasmCreationDTO> = await this.getDtosFromTableData();
 
     this.callUpsertService(DTOs)
@@ -823,7 +823,7 @@ export default class GermplasmTable extends Vue {
     }
     return res;
   }
-  
+
   /**
    * update the status of each row with the uri in the uris array, and set the status.
    * This will trigger the rowFormatter to change the color of the row.

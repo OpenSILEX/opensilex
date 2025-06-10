@@ -168,7 +168,7 @@ variables:
         exit 0;
       fi
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forge.inrae.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
     # Directory details
     - ls $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
@@ -422,7 +422,7 @@ opensilex-release:close:
     - RELEASE_INTERMEDIATE_BRANCH="release-$RELEASE_TAG"
     - git config user.name "OpenSILEX Team"
     - git config user.email opensilex@gmail.com
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
     # Fetch and unshallows the project
     - git fetch origin --unshallow
     # Remove local tags
@@ -460,7 +460,7 @@ opensilex-release:close:
       curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release"
       -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop"
       -F "remove_source_branch=true" -F "labels[]=finishing release"
-      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+      https://forge.inrae.fr/api/v4/projects/1675/merge_requests
     # Transmit release tag variable to next job (name must be different)
     - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
   rules:
@@ -540,7 +540,7 @@ update:nightly:builds:branch:
     - apt update && apt install -y git
     - git config --global user.name "anonymous"
     - git config --global user.email "anonymous@opensilex.org"
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git fetch origin
     - git reset --hard origin/develop

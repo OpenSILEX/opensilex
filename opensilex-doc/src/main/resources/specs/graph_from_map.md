@@ -33,7 +33,7 @@ The `searchScientificObjectsWithGeometryListByUris` service get first the geomet
 In the visualization form, the scientific objects selected on the map are listed in the scientific object selector.
 In the scientific object search mode, with the list of scientific objects in the experiment, the pre-selected scientific objects on the map are checked, and clicking on the "show>only selected" button lists all pre-selected scientific objects.
 
-To achieve this, the code for this [merge request in II.3.B ](https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-/merge_requests/1020) (for germplasm groups) has been partially implemented and adapted.
+To achieve this, the code for this [merge request in II.3.B ](https://forge.inrae.fr/OpenSILEX/opensilex-dev/-/merge_requests/1020) (for germplasm groups) has been partially implemented and adapted.
 ### Tests
 
 Scientific objects tests are located in `ScientificObjectApiTest`.

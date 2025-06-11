@@ -3,6 +3,7 @@
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDatafiles"
+      :countMethod="countDatafiles"
       :fields="fields"
       defaultSortBy="name"
     >
@@ -78,12 +79,13 @@ import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import {DataService} from "opensilex-core/api/data.service";
 
 @Component
 export default class DataFilesList extends Vue {
   $opensilex: any;
   $store: any;
-  service: any;
+  service: DataService;
   ontologyService: OntologyService;
   routeArr : string[] = this.$route.path.split('/');
 
@@ -240,6 +242,40 @@ export default class DataFilesList extends Vue {
   objects = {};
   provenances = {};
   objectsPath = {};
+
+  countDatafiles(options) {
+    /*let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+    if (provUris != undefined) {
+      provUris = [provUris];
+    }*/
+
+    return this.service.countDatafiles(
+      this.filter.scientificObjects,
+      this.filter.devices
+    );
+
+    /*return this.service.count(
+      // Count data, set limit to  since here we want the exact/total data count according the current filter
+      this.$opensilex.prepareGetParameter(this.filter.start_date),
+      this.$opensilex.prepareGetParameter(this.filter.end_date),
+      undefined,
+      this.filter.experiments,
+      this.$opensilex.prepareGetParameter(this.filter.variables),
+      this.$opensilex.prepareGetParameter(this.filter.devices),
+      undefined,
+      undefined,
+      provUris,
+      undefined,
+      this.$opensilex.prepareGetParameter(this.filter.operators),
+      this.filter.germplasm_group,
+      this.filter.germplasm,
+      0,
+      [].concat(
+        this.filter.scientificObjects,
+        this.filter.facilities,
+        this.filter.targets) // targets & os & facilities
+    )*/
+  }
 
   searchDatafiles(options) {
     let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);

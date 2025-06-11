@@ -627,9 +627,7 @@ public class DataFilesAPI {
                     }
                     return next;
                 })
-                .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH);
-
-        //TODO MAX Change above line to has next page when ive debugged other thing
+                .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE);
 
         ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call

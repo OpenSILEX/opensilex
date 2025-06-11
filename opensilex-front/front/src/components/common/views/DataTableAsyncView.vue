@@ -81,7 +81,7 @@
 
         <opensilex-Button
           :small="true"
-          @click="loadAll"
+          @click="countAll"
           label="component.common.list.pagination.showTotalCount"
           class="totalCountDetailButton"
         >
@@ -638,7 +638,7 @@ export default class DataTableAsyncView<T extends NamedResourceDTO> extends Vue 
     return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 || !this.hasResults ? 0  :  (this.pageSize * (this.currentPage -1))+1 )
   }
 
-  loadAll(){
+  countAll(){
     return this.countMethod({
       })
     .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {

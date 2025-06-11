@@ -93,6 +93,7 @@ export default class DataFilesList extends Vue {
   @Prop({
     default: () => {
       return {
+        name: null,
         start_date: null,
         end_date: null,
         rdf_type: null,
@@ -248,6 +249,7 @@ export default class DataFilesList extends Vue {
 
     return new Promise((resolve, reject) => {
         this.service.getDataFileDescriptionsByTargets(
+          this.$opensilex.prepareGetParameter(this.filter.name),
           this.$opensilex.prepareGetParameter(this.filter.rdf_type),
           this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
           this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date

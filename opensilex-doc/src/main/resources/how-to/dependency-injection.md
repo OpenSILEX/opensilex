@@ -10,10 +10,12 @@
     * [`@Contract`](#contract)
     * [`@Service`](#service)
     * [`@Inject`](#inject)
+    * [`@SelfBound`](#selfbound)
   * [Binding](#binding)
     * [Other ways of binding contracts](#other-ways-of-binding-contracts)
   * [Usage](#usage)
   * [Example](#example)
+  * [Services registered by default](#services-registered-by-default)
   * [Sources](#sources)
 <!-- TOC -->
 
@@ -84,6 +86,11 @@ framework that it can be injected as an implementation of this contract.
 
 A class member or a method parameter annotated with `@Contract` can be provided by the dependency injection framework
 instead of being instantiated by any class that depends on it.
+
+### `@SelfBound`
+
+A class annotated with `@Service` can also be annotated with `@SelfBound` to be automatically registered as both
+a **contract** and a **service implementation** of itself.
 
 ## Binding
 
@@ -203,6 +210,18 @@ request :
 5. The framework finds that the `OpenSilex` contract is bound to a singleton instance of the `OpenSilex` class
 6. The framework can now call the `StapleApiUtils` constructor using the instance of `OpenSilex` that it found
 7. The framework can now instantiate `StapleAPI` using the `StapleApiUtils` that was just instantiated
+
+## Services registered by default
+
+Some services are registered at the startup by the `RestApplication` class. These are :
+
+- The unique instance of the `OpenSilex` class
+- For each module :
+  - The instance of the module class (subclass of `OpenSilexModule`)
+  - The instance of the configuration object, if defined (such as `CoreConfig` for the core module)
+- Classes that implements `Service` and their factory (such as `SPARQLServiceFactory` which provides `SPARQLService` 
+  objects)
+- Classes that are annotated with both `@Service` and `@SelfBound` annotations
 
 ## Sources
 

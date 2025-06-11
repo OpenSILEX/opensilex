@@ -12,33 +12,15 @@
             <span v-else-if="selectMode!=='single'" class="badge badge-pill greenThemeColor" v-b-tooltip.hover.top="$t(badgeHelpMessage)">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
-          <span class="numberOfElementsPerPageSelector">
-            <select 
-              v-model="selectedItemPerPage" 
-              @change="updateItemsPerPage" 
-              :title="$t('component.common.list.pagination.numberOfElementsPerPageSelector')"
-            >
-              <option value="10">{{$t('component.common.list.pagination.tenElements')}}</option>
-              <option value="20">{{$t('component.common.list.pagination.twentyElements')}}</option>
-              <option value="50">{{$t('component.common.list.pagination.fiftyElements')}}</option>
-              <option value="100">{{$t('component.common.list.pagination.hundredElements')}}</option>
-            </select>
-          </span>
+        <opensilex-NbElementPerPageSelector
+            @change="OnNbElementPerPageChange"
+        />
       </div>
       <!-- on other tables -->
       <div v-if="!isSelectable && tableRef" class="numberOfElementsSelectorListsWthCheckbox">
-          <span class="numberOfElementsPerPageSelector">
-            <select 
-              v-model="selectedItemPerPage" 
-              @change="updateItemsPerPage" 
-              :title="$t('component.common.list.pagination.numberOfElementsPerPageSelector')"
-            >
-              <option value="10">{{$t('component.common.list.pagination.tenElements')}}</option>
-              <option value="20">{{$t('component.common.list.pagination.twentyElements')}}</option>
-              <option value="50">{{$t('component.common.list.pagination.fiftyElements')}}</option>
-              <option value="100">{{$t('component.common.list.pagination.hundredElements')}}</option>
-            </select>
-          </span>
+        <opensilex-NbElementPerPageSelector
+            @change="OnNbElementPerPageChange"
+        />
       </div>
 
       <b-input-group size="sm">
@@ -243,12 +225,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
   }
 
-  @Watch("selectedItemPerPage")
-  defineNumberOfElements(){
-    this.$opensilex.updateURLParameter("page_size", this.selectedItemPerPage, 20);
-    localStorage.setItem("numberOfElements", this.selectedItemPerPage);
-  }
-
   currentPage: number = 1;
   tabPage: number = 1;
   currentStartPath: string = "";
@@ -261,8 +237,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   isSearching = false;
   selectAll = false;
   onlySelected: boolean = false; // false if you display all the elements, true if you display only the selected elements
-  selectedItemPerPage: string = "20";
-  
+
   @Prop({
     default: 10000
   })
@@ -278,13 +253,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       this.currentPage = parseInt(localStorage.getItem("page"), 10);
       this.currentStartPath = localStorage.getItem("startPath");
       }
-
-    if (localStorage.getItem("numberOfElements") === null || localStorage.getItem("numberOfElements") === undefined) {
-      localStorage.setItem("numberOfElements", "20");
-      this.selectedItemPerPage = "20";
-    }
-     this.selectedItemPerPage = localStorage.getItem("numberOfElements");
-     this.defaultPageSize = parseInt(this.selectedItemPerPage, 10);
 
     if (this.isSelectable && this.selectMode!="single") {
       this.fields.unshift({
@@ -614,13 +582,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
   }
 
-  getSelectAllLimit(){
-    return this.selectAllLimit;
-  }
-
-
-  updateItemsPerPage() {
-    this.pageSize = parseInt(this.selectedItemPerPage)
+  OnNbElementPerPageChange(itemPerPage: string) {
+    this.pageSize = parseInt(itemPerPage)
     this.defaultPageSize = this.pageSize
     this.changeCurrentPage(1)
     this.refresh();

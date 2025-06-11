@@ -7,17 +7,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.opensilex.core.data.dal.DataProvenanceModel.*;
@@ -84,6 +80,10 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
             bsonFilters.add(Filters.in(PROVENANCE_URI_FIELD, filter.getProvenances()));
         }
 
+        if (filter.getName() != null && !filter.getName().isEmpty()) {
+            bsonFilters.add(Filters.regex("filename", filter.getName(), "i"));
+        }
+
         if (filter.getStartDate() != null) {
             bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, filter.getStartDate()));
         }
@@ -146,7 +146,12 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
                     Filters.in(PROVENANCE_EXPERIMENT_FIELD, userExperiments),
                     NO_EXPERIMENT_FILTER
             ));
+        } else{
+            //Handle case where the user has 0 experiments, add only the NO_EXPERIMENT_FILTER,
+            // otherwise he/she can see ALL experiments
+            bsonFilters.add(NO_EXPERIMENT_FILTER);
         }
+
     }
 
     protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataFileSearchFilter filter) {

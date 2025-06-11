@@ -512,13 +512,13 @@ public class ScientificObjectDAO {
         // Add factor level filter
         if (! CollectionUtils.isEmpty(searchFilter.getFactorLevels())) {
             Var factorLevelVar = makeVar("__factorLevel");
-            if (searchFilter.getExperiment() != null) {
-                builder.addGraph(contextNode, uriVar, Oeso.hasFactorLevel, factorLevelVar);
-            } else {
-                builder.addWhere(uriVar, Oeso.hasFactorLevel, factorLevelVar);
+            for (var factorLevel : searchFilter.getFactorLevels()) {
+                if (searchFilter.getExperiment() != null) {
+                    builder.addGraph(contextNode, uriVar, Oeso.hasFactorLevel, SPARQLDeserializers.nodeURI(factorLevel));
+                } else {
+                    builder.addWhere(uriVar, Oeso.hasFactorLevel, SPARQLDeserializers.nodeURI(factorLevel));
+                }
             }
-
-            builder.addFilter(SPARQLQueryHelper.inURIFilter(factorLevelVar, searchFilter.getFactorLevels()));
         }
 
         // Add germplasm filter
@@ -1013,7 +1013,8 @@ public class ScientificObjectDAO {
         ScientificObjectModel object = new ScientificObjectModel();
         object.setType(soType);
         object.setName(name);
-
+        // Add XP in SO while creating an obj of SO model
+        object.setExperiment(xp);
         /*if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
@@ -1336,4 +1337,5 @@ public class ScientificObjectDAO {
         }
 
     }
+
 }

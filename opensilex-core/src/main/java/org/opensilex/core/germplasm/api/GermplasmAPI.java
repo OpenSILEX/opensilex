@@ -471,8 +471,13 @@ public class GermplasmAPI {
         ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance, list);
 
         Builder csvSchemaBuilder = CsvSchema.builder();
-        JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
+
+        var columnNameSet = new LinkedHashSet<String>();
+        for (var node : arrayNode) {
+            node.fieldNames().forEachRemaining(columnNameSet::add);
+        }
+        columnNameSet.forEach(csvSchemaBuilder::addColumn);
+
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
         StringWriter stringWriter = new StringWriter();
 

@@ -980,6 +980,7 @@ public class DataLogic {
                         object = existingOs;
                         // object exist, put it into name/URI cache
                         nameURIScientificObjects.put(objectNameOrUri,existingOs);
+
                     }
                 }
 

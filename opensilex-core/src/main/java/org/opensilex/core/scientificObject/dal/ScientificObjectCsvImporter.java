@@ -534,7 +534,13 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                     false,
                     sparql.getDefaultGraph(ScientificObjectModel.class));
             if (!soToCreateUriSet.isEmpty()) {
-                scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> soToCreateUriSet.contains(model.getUri())));
+                scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> {
+                    try {
+                        return soToCreateUriSet.contains(new URI(SPARQLDeserializers.getExpandedURI(model.getUri())));
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                }));
             }
             experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
         }

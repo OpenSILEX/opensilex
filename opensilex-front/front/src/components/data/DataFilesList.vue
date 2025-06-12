@@ -243,38 +243,24 @@ export default class DataFilesList extends Vue {
   provenances = {};
   objectsPath = {};
 
-  countDatafiles(options) {
-    /*let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+  countDatafiles() {
+    let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
     if (provUris != undefined) {
       provUris = [provUris];
-    }*/
+    }
 
     return this.service.countDatafiles(
       this.filter.scientificObjects,
-      this.filter.devices
+      this.filter.devices,
+      this.$opensilex.prepareGetParameter(this.filter.name),
+      this.$opensilex.prepareGetParameter(this.filter.rdf_type),
+      this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
+      this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
+      undefined, // timezone,
+      this.filter.experiments, // experiments
+      provUris, // provenances
+      undefined // metadata
     );
-
-    /*return this.service.count(
-      // Count data, set limit to  since here we want the exact/total data count according the current filter
-      this.$opensilex.prepareGetParameter(this.filter.start_date),
-      this.$opensilex.prepareGetParameter(this.filter.end_date),
-      undefined,
-      this.filter.experiments,
-      this.$opensilex.prepareGetParameter(this.filter.variables),
-      this.$opensilex.prepareGetParameter(this.filter.devices),
-      undefined,
-      undefined,
-      provUris,
-      undefined,
-      this.$opensilex.prepareGetParameter(this.filter.operators),
-      this.filter.germplasm_group,
-      this.filter.germplasm,
-      0,
-      [].concat(
-        this.filter.scientificObjects,
-        this.filter.facilities,
-        this.filter.targets) // targets & os & facilities
-    )*/
   }
 
   searchDatafiles(options) {

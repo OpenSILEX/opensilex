@@ -370,7 +370,11 @@
             }
         },
         "variable" : {
-            "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}"
+            "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}",
+            "entity" : "Entité",
+            "characteristic" : "Caractéristique",
+            "method" : "Méthode",
+            "unit" : "Unité/Echelle"
         },
         "profile": {
             "description": "Gérer et configurer les profils",

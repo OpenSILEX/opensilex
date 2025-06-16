@@ -6,7 +6,7 @@
       :target="target"
       :title="uri"
       :to="to"
-      class="uri"
+      :class="['uri', { 'uri-in-table': inTable }]"
       @focus="storePrevious"
       @click="handleUriLinkClicked"
     >
@@ -27,7 +27,7 @@
     <a
       v-else-if="computeURL"
       :href="computeURL"
-      class="uri"
+      :class="['uri', { 'uri-in-table': inTable }]"
       :title="uri"
       target="about:blank"
     >
@@ -48,11 +48,12 @@
       v-else-if="!isClickable"
       @click.prevent.stop="copyURI(uri)"
       :title="uri"
-      class="uri onlyCopyAllowed"
+      :class="['uri', 'onlyCopyAllowed', { 'uri-in-table': inTable }]"
     >
       <span>{{ value || uri }}</span>
       &nbsp;
 
+      <!-- class="uri onlyCopyAllowed" -->
       <button
         v-if="allowCopy"
         @click.prevent.stop="copyURI(uri)"
@@ -100,6 +101,7 @@ const props = defineProps<{
   allowCopy?: boolean;
   target?: string;
   isClickable?: boolean;
+  inTable?: boolean;
 }>();
 
 const { t } = useI18n();
@@ -156,19 +158,26 @@ const handleUriLinkClicked = () => {
 
 .uri {
   display: inline-flex;
+  //  Changements de style pour la colonne "nom" de la table des variables qui n'etait pas reductible sous une certaine taille ⬇️
+  // finalement remplacé une prop inTable (booleen) passée par la colonne à uriLink.vue, qui ajoute une classe dynamique uri-in-table'
+  // cela permet de conserver le style des autres cas de figure hors tables, et eviter les effets de bord
   max-width: 400px;
+  //  max-width: 100%; /* <-- Ajout */
   padding-right: 30px;
   position: relative;
 }
 
 .uri > span {
   display: inline-block;
+  //  max-width: 100%; /* <-- Ajout */
   max-width: 370px;
   word-break: keep-all;
+  white-space: nowrap;
+  // white-space: normal; /* <-- Permet le retour à la ligne */
+  // word-break: break-word; /* <-- Permet de couper les longs mots/URI */
   text-overflow: ellipsis;
   overflow: hidden;
   word-wrap: normal;
-  white-space: nowrap;
 }
 
 .uri .uri-copy {
@@ -213,4 +222,16 @@ const handleUriLinkClicked = () => {
   text-decoration: none !important;
   color: #018371 !important;
 }
+
+.uri-in-table {
+  max-width: 100% !important;
+}
+
+.uri-in-table > span {
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+
 </style>

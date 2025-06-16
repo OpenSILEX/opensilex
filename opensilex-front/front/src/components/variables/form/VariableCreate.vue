@@ -6,7 +6,7 @@
     :tutorial="true"
     :component="formComponent"
     :createTitle="'VariableForm.add'"
-    editTitle="'VariableForm.edit'"
+    :editTitle="'VariableForm.edit'"
     icon="fa#vials"
     :create-action="create"
     :update-action="update"
@@ -53,6 +53,7 @@ const credentials = computed(() => store.state.credentials);
 onMounted(() => emit('ready'));
 
 function showCreateForm() {
+  console.log("variableCreate showCreateForm")
   refresh();
   loadForm.value = true;
   nextTick(() => {

@@ -43,17 +43,24 @@
     <component
       v-if="currentTabComponent"
       :is="currentTabComponent"
-      :ref="getCurrentFormRefKey"
-      @ready="markTabReady(currentTab)"
       v-on="currentTab === 'variables' ? variableListeners : {}"
+      :ref="tabDefinitions.find(tab => tab.key === currentTab)?.refKey"
       v-show="currentTab !== 'groups' || loadGroupForm"
     />
+      <!-- @ready="markTabReady(currentTab)" -->
 
     <!-- Composant de crea/edit variable (invisible) -->
     <opensilex-VariableCreate
-      ref="variableCreate"
-      style="display: none;"
+      ref="variableCreate" 
     />
+
+<opensilex-ExternalReferencesModalForm
+  ref="skosReferences"
+  v-model:references="selected"
+  :includeAgroportalSearch="true"
+  @onUpdate="updateReferences"
+/>
+
 
     <!-- Modale d'aide -->
     <teleport to="body">
@@ -117,14 +124,7 @@ const formRefs = {
 const variableCreate = formRefs.variableCreate; // pour lier dans le template
 
 const currentTabComponent = computed(() => tabComponents[currentTab.value]);
-const getCurrentFormRefKey = computed(() =>
-  tabDefinitions.find(tab => tab.key === currentTab.value)?.refKey || ''
-);
 
-function getFormInstance() {
-  const key = getCurrentFormRefKey.value;
-  return formRefs[key]?.value || null;
-}
 
 // Actions
 const actions = ref([
@@ -166,49 +166,75 @@ function markTabReady(tabKey: string) {
 
 // Création
 const loadGroupForm = ref(false);
+
+const tabRefMap = {
+  variables: formRefs.variableCreate,
+  entities: formRefs.entityForm,
+  interestEntity: formRefs.interestEntityForm,
+  characteristics: formRefs.characteristicForm,
+  methods: formRefs.methodForm,
+  units: formRefs.unitForm,
+  groups: formRefs.groupVariablesForm
+};
+
 function showCreateForm() {
-  if (!readyTabs.has(currentTab.value)) {
-    console.warn(`Composant pour l'onglet '${currentTab.value}' non prêt.`);
-    return;
-  }
   if (currentTab.value === 'groups') {
     loadGroupForm.value = true;
     nextTick(() => {
-      getFormInstance()?.showCreateForm();
+      tabRefMap[currentTab.value]?.value?.showCreateForm();
     });
   } else {
-    getFormInstance()?.showCreateForm();
+    tabRefMap[currentTab.value]?.value?.showCreateForm();
   }
 }
 
+
 // Edition de variable
-function getCountDataPromise(variable: string) {
-  return datasService.countData(undefined, undefined, undefined, undefined, [variable], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 1, undefined);
-}
 
-function onEditVariable(uri: string) {
-  console.log("formRefs : ", formRefs)
-  if (!formRefs.variableCreate) return;
+let currentEditRequest = null;
 
-  getCountDataPromise(uri).then(countResult => {
-    if (countResult?.response) {
-      variablesService.getVariable(uri).then((getResult: HttpResponse<OpenSilexResponse>) => {
-        if (getResult?.response) {
-          console.log("response")
-          const form = getResult.response.result;
-          const linkedDataNb = countResult.response.result;
-          console.log("linkedDatanb ", linkedDataNb)
-          formRefs.variableCreate.value?.showEditForm(form, linkedDataNb);
-        }
-      });
+async function onEditVariable(uri: string) {
+  if (currentEditRequest) {
+    console.warn("Édition déjà en cours, annulation de la nouvelle demande.");
+    return;
+  }
+
+  try {
+    currentEditRequest = variablesService.getVariable(uri);
+    const getResult = await currentEditRequest;
+    currentEditRequest = null;
+
+    if (getResult?.response) {
+      formRefs.variableCreate.value?.showEditForm(getResult.response.result);
     }
-  });
+  } catch (e) {
+    console.error(e);
+    currentEditRequest = null;
+  }
 }
+
+
+
+const selected = ref(null);
+const skosReferences = ref(null); // accès à la modale
+
+const showVariableReferences = async (uri: string) => {
+  try {
+    const http = await variablesService.getVariable(uri);
+    selected.value = http.response.result;
+    skosReferences.value?.show(); // appelle la méthode show() sur la modale
+  } catch (error) {
+    opensilex.errorHandler(error);
+  }
+};
+
 
 // Event binding conditionnel
 const variableListeners = {
   edit: onEditVariable,
-  interoperability: (item: any) => console.log("Interop:", item),
+    onInteroperability: (variable: any) => {
+    showVariableReferences(variable);
+  },
   delete: (item: any) => console.log("Delete:", item),
   reset: () => console.log("Reset")
 };

@@ -44,11 +44,12 @@ defineExpose({ addToast });
 </script>
 
 <style scoped>
-/* .toast-container {
-  z-index: 1080;
+.toast-container {
+  word-break: break-word /* evite que le message depasse du toast */
+  /* z-index: 1080;
   width: max-content;
-  max-width: 90vw;
-} */
+  max-width: 90vw; */
+}
 
 /* .toast {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);

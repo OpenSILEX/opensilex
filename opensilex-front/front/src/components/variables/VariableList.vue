@@ -1,42 +1,100 @@
 <template>
+<div v-if="showCount">
+  <div v-if="hasResults">
+    <strong>
+      <span class="ml-1">
+        {{ t('component.common.list.pagination.nbEntries', {
+          limit: start,
+          offset: end,
+          totalRow: n(total)  
+        }) }}
+      </span>
+    </strong>
+  </div>
+  <div v-else>
+    <strong>
+      <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
+    </strong>
+  </div>
+</div>
+
+<!-- <p>{{ paginationInfo }}</p> -->
+
+  <n-p>
+    {{ t('VariableList.selected')}} : <span class="badge badge-pill greenThemeColor">{{ checkedRowKeys.length }} </span>
+  </n-p>
+
   <n-data-table
     :columns="columns"
     :data="variables"
     :row-key="rowKey"
-    :pagination="{ pageSize: 10 }"
+    :pagination="pagination"
     :expanded-row-keys="expandedRowKeys"
     @update:expanded-row-keys="handleExpandedRowChange"
+    @update:checked-row-keys="handleCheck"
+    @update:page="(page) => pagination.page = page"
+    @update:page-size="(size) => pagination.pageSize = size"
     :sorter="defaultSorter"
   />
+
 </template>
 
 <script lang="ts" setup>
-import { ref, h, inject, reactive, onMounted, resolveComponent } from 'vue';
+import { ref, h, inject, reactive, onMounted, resolveComponent, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { NButton, NTag, NDataTable } from 'naive-ui';
+import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
 import { VariablesService } from 'opensilex-core';
 import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
-import EditButton from './../common/buttons/EditButton.vue';
+// import EditButton from './../common/buttons/EditButton.vue';
 
-const { t } = useI18n();
+const { t, n } = useI18n();
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const $service = ref<VariablesService | null>(null);
+const EditButton = resolveComponent('opensilex-EditButton');
+const DetailButton = resolveComponent('opensilex-DetailButton');
+const InteroperabilityButton = resolveComponent('opensilex-InteroperabilityButton');
+const DeleteButton = resolveComponent('opensilex-DeleteButton');
+const UriLink = resolveComponent('opensilex-UriLink');
 
 const variables = ref<Array<{ item: VariableGetDTO }>>([]);
 const variableGroupsList = reactive<Record<string, { uri: string; name: string }[]>>({});
+const variableGroupsCache = new Map<string, { uri: string; name: string }[]>();
+
 const expandedRowKeys = ref<string[]>([]);
+const checkedRowKeys = ref<DataTableRowKey[]>([]);
+
+const countCache = new Map<string, number>();
+
+const props = defineProps({
+  showCount: { type: Boolean, default: true }
+})
+
+
 
 const rowKey = (row: { item: VariableGetDTO }) => row.item.uri;
 
 const loadAllVariables = async () => {
-  if (!$opensilex) return;
-
   $service.value = $opensilex.getService<VariablesService>('opensilex.VariablesService');
   try {
-    const response = await $service.value.searchVariables(undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-      undefined, 0, 0
+    const response = await $service.value.searchVariables(
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined,
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined,
+      undefined, 
+      0, 
+      0
     );
 
     const result = response.response.result || [];
@@ -50,6 +108,34 @@ const defaultSorter = ref({
   columnKey: 'item.name',
   order: 'ascend'
 });
+
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  pageSizes: [10, 20, 50, 100],
+  showSizePicker: true
+});
+
+
+const paginationInfo = computed(() => {
+  const total = variables.value.length;
+  const page = pagination.value.page;
+  const pageSize = pagination.value.pageSize;
+
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  return {
+    start,
+    end,
+    total,
+    hasResults: total > 0
+  };
+});
+const start = computed(() => paginationInfo.value.start);
+const end = computed(() => paginationInfo.value.end);
+const total = computed(() => paginationInfo.value.total);
+const hasResults = computed(() => paginationInfo.value.hasResults);
 
 
 const toggleExpand = async (uri: string) => {
@@ -90,57 +176,48 @@ const emit = defineEmits<{
 }>();
 
 
-// COLUMNS
-
-//  const uri = row.item.uri;
-//       const groups = variableGroupsList[uri];
-//       console.log("groups ", groups)
-// if (groups.length === 0) {
-//   return h('p', {}, t('VariableList.not-used-in-variablesGroup'));
-// }
-//       return h('div', {}, [
-//         h('p', {}, t('VariableList.variablesGroup')),
-//         h('ul', {}, groups.map(group =>
-//           h('li', { key: group.uri }, `${group.name} (${group.uri})`)
-//         ))
-//       ]);
-//     }
-//   },
-//   {
-//     title: t('component.common.name'),
-
-
 
 function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariable: Function) {
   return [
     {
+      type: "selection"
+    },
+    {
       type: 'expand',
       expandable: () => true,
       renderExpand: (row: any) => {
-         const uri = row.item.uri;
-         console.log("uri ", uri)
-      const groups = variableGroupsList[uri];
-        // const groups = row.groups || [];
-console.log("groups ", groups)
+        const uri = row.item.uri;
+        const groups = variableGroupsList[uri];
         if (groups.length === 0) {
           return h('p', {}, t('VariableList.not-used-in-variablesGroup'));
         }
 
-        return h('ul', {}, groups.map(group =>
-          h('li', { key: group.uri }, `${group.name} (${group.uri})`)
-        ));
+        return h('div', {}, [
+          h('p', {}, t('VariableList.variablesGroup')),
+          h('ul', {}, groups.map(group =>
+            h('li', { key: group.uri }, `${group.name} (${group.uri})`)
+          ))
+        ]);
       }
     },
     {
       title: t('component.common.name'),
       key: 'item.name',
       sortable: true,
+      resizable: true,
       sorter: (a, b) => a.item.name.localeCompare(b.item.name),
       render(row: any) {
         return h('div', {}, [
           h(
-            'router-link',
-            { to: `/variable/details/${encodeURIComponent(row.item.uri)}` },
+            UriLink,
+            {  
+              uri: row.item.uri,
+              value: row.item.name,
+              to: { path: `/variable/details/${encodeURIComponent(row.item.uri)}` } ,
+              allowCopy: true,
+              class: 'uri-in-table',
+              inTable: true
+            },
             { default: () => row.item.name }
           ),
           h('br'),
@@ -149,28 +226,28 @@ console.log("groups ", groups)
       }
     },
     {
-      title: t('VariableView.entity'),
+      title: t('component.variable.entity'),
       key: 'item.entity.name',
       sortable: true,
       sorter: (a, b) => (a.item.entity?.name || '').localeCompare(b.item.entity?.name || ''),
       render: row => row.item.entity?.name
     },
     {
-      title: t('VariableView.characteristic'),
+      title: t('component.variable.characteristic'),
       key: 'item.characteristic.name',
       sortable: true,
       sorter: (a, b) => (a.item.characteristic?.name || '').localeCompare(b.item.characteristic?.name || ''),
       render: row => row.item.characteristic?.name
     },
     {
-      title: t('VariableView.method'),
+      title: t('component.variable.method'),
       key: 'item.method.name',
       sortable: true,
       sorter: (a, b) => (a.item.method?.name || '').localeCompare(b.item.method?.name || ''),
       render: row => row.item.method?.name
     },
     {
-      title: t('VariableView.unit'),
+      title: t('component.variable.unit'),
       key: 'item.unit.name',
       sortable: true,
       sorter: (a, b) => (a.item.unit?.name || '').localeCompare(b.item.unit?.name || ''),
@@ -180,8 +257,6 @@ console.log("groups ", groups)
       title: t('component.common.actions'),
       key: 'actions',
       render(row) {
-  const EditButton = resolveComponent('opensilex-EditButton');
-  const DetailButton = resolveComponent('opensilex-DetailButton');
   return h('div', { class: 'btn-group btn-group-sm', role: 'group' }, [
     h(DetailButton, {
       label: 'component.common.details-label',
@@ -194,11 +269,15 @@ console.log("groups ", groups)
       small: true,
       onClick: () => emit('edit', row.item.uri)
     }),
-    h(
-      'button',
-      {
-        class: 'btn btn-outline-danger',
-        onClick: () => emit('delete', row.item)
+    h(InteroperabilityButton, {
+      label: 'component.common.list.buttons.interoperability',
+      small: true,
+      onClick: () => emit('onInteroperability', row.item.uri)
+    }),
+    h(DeleteButton, {
+        label: 'component.common.list.buttons.delete',
+        small: true,
+        onClick: () => emit('delete', row.item.uri)
       },
       t('component.common.delete')
     )
@@ -209,9 +288,11 @@ console.log("groups ", groups)
   ];
 }
 
+function handleCheck(rowKeys: DataTableRowKey[]) {
+        checkedRowKeys.value = rowKeys
+      }
 
-
-const columns = createColumns(t, emit, toggleExpand);
+const columns = computed(() => createColumns(t, emit, toggleExpand));
 
 
 
@@ -253,7 +334,7 @@ fr:
         export-variables-details: Exporter la liste détaillée de variables
         import-variables-from-shared-resources: Importer depuis la source partagée
         variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
-        not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
+        not-used-in-variablesGroup: La variable n'est utilisé dans aucun groupe de variables
         selected-all: Toutes les variables
         display: Affichage
         withoutGroup: Pas dans ce groupe

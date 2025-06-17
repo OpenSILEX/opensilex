@@ -28,6 +28,6 @@ public class MultipleCreateUpdateErrorObject extends MultipleErrorObject {
 
     public MultipleErrorDTO toDTO() {
         var dto = super.toDTO();
-        return new MultipleCreateUpdateErrorDTO(dto.uri, dto.errors, isUpdate);
+        return new MultipleCreateUpdateErrorDTO(dto.index, dto.errors, isUpdate);
     }
 }

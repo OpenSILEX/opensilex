@@ -25,7 +25,7 @@ public class MultipleCreateUpdateErrorDTO extends MultipleErrorDTO {
     public final boolean isUpdate;
 
 
-    public MultipleCreateUpdateErrorDTO(String title, List<String> errors, boolean isUpdate) {
+    public MultipleCreateUpdateErrorDTO(int title, List<String> errors, boolean isUpdate) {
         super(title, errors);
         this.isUpdate = isUpdate;
     }

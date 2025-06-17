@@ -16,6 +16,28 @@ import org.opensilex.server.response.PaginationDTO;
 
 import javax.ws.rs.core.Response.Status;
 
+/*
+ * <pre>
+ * Json response to represent many lists of errors, each corresponding to an object (a creation or update DTO).
+ *
+ * for each ocject (DTO) that has been given and contain an error, the response will contain an error list identified
+ *  by the index of the object in the original list.
+ *
+ * exemple:
+ * Original DTO list :
+ * [ {value: "error"},
+ *   {value: "ok"}]
+ * ]
+ *
+ * Error response:
+ * [ {index: 0, errors: ["error"]} ]
+ *
+ * explanation:
+ * The first object (index 0) has an error, so it is represented by an error list with the index 0 and the error message.
+ * </pre>
+ *
+ * @see MultipleErrorListDTO and @see MultipleErrorDTO for more information about the structure of the response.
+ */
 public class MultipleErrorResponse extends JsonResponse<MultipleErrorListDTO> {
 
     public MultipleErrorResponse(MultipleErrorListDTO result) {

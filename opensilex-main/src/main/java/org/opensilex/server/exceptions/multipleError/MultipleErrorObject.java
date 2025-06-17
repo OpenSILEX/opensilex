@@ -22,15 +22,15 @@ import java.util.List;
  * @see MultipleErrorListDTO to a better understanding of the structure and the usage.
  */
 public class MultipleErrorObject {
-    private String uri;
+    private int index;
     private final List<String> errors;
 
     public MultipleErrorObject() {
         this.errors = new ArrayList<>();
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public List<String> getErrors() {
@@ -46,6 +46,6 @@ public class MultipleErrorObject {
     }
 
     public MultipleErrorDTO toDTO() {
-        return new MultipleErrorDTO(uri, errors);
+        return new MultipleErrorDTO(index, errors);
     }
 }

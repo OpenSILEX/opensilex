@@ -155,7 +155,8 @@ public class GermplasmAPI {
 
     /**
      *  create and/or update many germplasms if everything is correct, block everything if there is an error.
-     *  JSon validation id disabled to handle manually errors like uri format, it allows to return errors as multiple errors
+     *  JSon validation id disabled to handle manually errors like uri format, it allows to return errors as multiple errors.
+     *  Errors are returned with the index of the germplasm in the list as key.
      * @param germplasmDTOs
      * @param checkOnly
      * @return

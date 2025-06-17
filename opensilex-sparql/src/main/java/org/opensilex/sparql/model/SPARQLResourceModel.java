@@ -150,9 +150,6 @@ public class SPARQLResourceModel implements SPARQLModel {
             return false;
         }
         final SPARQLResourceModel other = (SPARQLResourceModel) obj;
-        if (this.uri == null || other.uri == null) {
-            return false;
-        }
         return SPARQLDeserializers.compareURIs(this.uri, other.uri);
     }
 

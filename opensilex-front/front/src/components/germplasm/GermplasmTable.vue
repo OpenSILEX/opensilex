@@ -441,7 +441,7 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
       minWidth: 150,
-      validator: ["unique", "required"],
+      validator: "unique",
     };
 
     let labelCol = {
@@ -450,7 +450,6 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
       minWidth: 150,
-      validator: "required",
     };
     let synonymCol = {
       title: this.$t("GermplasmTable.synonyms"),
@@ -791,29 +790,8 @@ export default class GermplasmTable extends Vue {
             this.errorsByIndex.set(rowIndex, errorDto.errors);
           });
 
-          this.setErrorMessageForEmptyUri();
-
           this.filter = "NOK";
         })
-  }
-
-  /**
-   * Set an error message to each row with uri null or empty.
-   */
-  private setErrorMessageForEmptyUri() {
-    let errorMessage = "URI field cannot be empty";
-    this.tabulator.getData().forEach((data, index) => {
-      if (data.uri == null || data.uri == "") {
-        this.tabulator.updateData([{
-          rowNumber: index + 1,
-          insertionStatus: errorMessage,
-          checkingStatus: errorMessage,
-          status: "NOK",
-        }]);
-      }
-
-      this.errorsByIndex.set(index + 1, [errorMessage]);
-    });
   }
 
   private getRowIndexForUri(uri: string): number {

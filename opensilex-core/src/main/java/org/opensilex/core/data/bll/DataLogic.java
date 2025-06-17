@@ -65,7 +65,7 @@ public class DataLogic {
     private final MongoDBService nosql;
     private final FileStorageService fs;
     //If client session is null then we know we need to handle transactions
-    private final ClientSession clientSession;
+    private ClientSession clientSession;
 
     //TODO these daos are the ones that will need to be deleted in the class when logic classes are done.
     //VariableDAO
@@ -535,6 +535,10 @@ public class DataLogic {
         return dto;
     }
 
+    public void setClientSession(ClientSession clientSession) {
+        this.clientSession = clientSession;
+    }
+
     //#endregion
 
     //#region PRIVATE METHODS
@@ -664,7 +668,7 @@ public class DataLogic {
         }
         //If required delete batch and set document status to outdated
         if(doDeleteBatch){
-            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
             URI documentUri = batchHistoryLogic.get(filter.getBatchUri()).getDocumentUri();
             DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
             DocumentModel oldDoc = documentDAO.getMetadata(documentUri, user);

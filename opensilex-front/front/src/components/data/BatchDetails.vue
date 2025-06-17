@@ -54,10 +54,10 @@ export default class BatchDetails extends Vue {
   batchDetails = null;
 
   @Prop()
-  batch: string;
+  batchUri: string;
 
   async mounted(){
-    this.batchDetails = (await this.dataService.getBatchHistory(this.batch)).response.result;
+    this.batchDetails = (await this.dataService.getBatchHistory(this.batchUri)).response.result;
   }
 
   created(){

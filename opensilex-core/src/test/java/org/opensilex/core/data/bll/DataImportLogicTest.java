@@ -1,6 +1,8 @@
 package org.opensilex.core.data.bll;
 
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.ClientSession;
 import org.apache.jena.graph.Node;
 import org.bson.BsonObjectId;
 import org.bson.types.ObjectId;
@@ -27,9 +29,12 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ThrowingFunction;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -109,9 +114,16 @@ public class DataImportLogicTest {
     @Mock
     DAOFactory daoFactory;
 
+    @Mock
+    MongoDBServiceV2 nosqlV2;
+
+    @Mock
+    MongoDatabase mockDatabase;
+
     private DataImportLogic dataImportLogic;
     URI provenance;
     URI experiment;
+
 
     /**
      * Sets up the test environment by initializing mocked dependencies and the DataImportLogic instance.
@@ -119,16 +131,34 @@ public class DataImportLogicTest {
      * @throws URISyntaxException if an error occurs while creating URIs for testing
      */
     @Before
-    public void setUp() throws URISyntaxException {
-        // initialise les objets mock.
+    public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
 
-        // mock DAOFactory pour retourner des DAO simulés
         when(daoFactory.createDeviceDAO()).thenReturn(deviceDAO);
         when(daoFactory.createVariableDAO()).thenReturn(variableDAO);
         when(daoFactory.createOntologyDAO()).thenReturn(ontologyDAO);
         when(daoFactory.createExperimentDAO()).thenReturn(experimentDAO);
         when(daoFactory.createScientificObjectDAO()).thenReturn(scientificObjectDAO);
+
+        //Mock mongoDBv2
+        when(nosql.getServiceV2()).thenReturn(nosqlV2);
+
+        when(nosqlV2.getDatabase()).thenReturn(mockDatabase);
+
+        // Stub startTransaction and commit/rollback
+        doNothing().when(sparql).startTransaction();
+        when(sparql.hasActiveTransaction()).thenReturn(true);
+        doNothing().when(sparql).commitTransaction();
+        doNothing().when(sparql).rollbackTransaction(any());
+
+        // Stub computeThrowingTransaction to directly call the lambda
+        when(nosqlV2.computeThrowingTransaction(any()))
+                .thenAnswer(invocation -> {
+                    ThrowingFunction<ClientSession, ?, ?> lambda = invocation.getArgument(0);
+                    return lambda.apply(mock(ClientSession.class));
+                });
+
+        when(nosqlV2.getGenerationPrefixURI()).thenReturn(URI.create(""));
 
         dataImportLogic = spy(new DataImportLogic(nosql, sparql, fs, user, dataLogicMock, daoFactory, batchHistoryDao));
         provenance = new URI(STANDARD_PROVENANCE);
@@ -160,6 +190,7 @@ public class DataImportLogicTest {
         DataCSVValidationDTO result = dataImportLogic.importCSVData(provenance, experiment, file, "fileName", null);
 
         // Assert
+        assertNotNull("CSV file input stream is null", file);
         Assert.assertNotNull(result);
         assertTrue(result.getDataErrors().isValidCSV());
         assertTrue(result.getDataErrors().isValidationStep());
@@ -198,6 +229,7 @@ public class DataImportLogicTest {
         DataCSVValidationDTO result = dataImportLogic.importCSVData(provenance, experiment, file, "fileName", validationKey);
 
         // Assert
+        assertNotNull("CSV file input stream is null", file);
         Assert.assertNotNull(result);
         assertFalse(result.getDataErrors().isValidCSV());
         assertTrue(result.getDataErrors().isValidationStep());

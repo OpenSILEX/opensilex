@@ -3,7 +3,6 @@ package org.opensilex.core.utils;
 import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingFunction;
 

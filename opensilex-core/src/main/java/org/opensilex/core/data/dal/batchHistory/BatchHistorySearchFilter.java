@@ -1,8 +1,6 @@
 package org.opensilex.core.data.dal.batchHistory;
 
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
-
-import java.net.URI;
 import java.time.Instant;
 
 /**

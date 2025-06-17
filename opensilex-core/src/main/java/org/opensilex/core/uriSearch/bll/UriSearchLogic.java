@@ -254,7 +254,7 @@ public class UriSearchLogic {
     private URIGlobalSearchDTO searchInBatchHistory(URI uri) throws Exception{
         BatchHistoryModel batchHistoryModel = null;
         try{
-            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(currentUser, nosql);
+            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
             batchHistoryModel = batchHistoryLogic.get(uri);
         }catch(Exception notFound){
             return null;

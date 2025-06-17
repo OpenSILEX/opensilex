@@ -116,6 +116,11 @@ public class DataImportLogic {
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .build();
 
+    /**
+     * Default document name if batch history model has no uri (happens during mocked tests)
+     */
+    private static final String DEFAULT_DOCUMENT_NAME = "imported_data";
+
     public DataImportLogic(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user) {
         this.nosql = nosql;
         this.sparql = sparql;
@@ -128,7 +133,9 @@ public class DataImportLogic {
 
     }
 
-    // For test purpose
+    /**
+     * For test purposes only, allows injection of mocked dependencies
+     */
     public DataImportLogic(MongoDBService nosql, SPARQLService sparql, FileStorageService fs, AccountModel user, DataLogic dataLogic, DAOFactory daoFactory, BatchHistoryDao batchHistoryDao) {
         this.nosql = nosql;
         this.sparql = sparql;
@@ -154,25 +161,28 @@ public class DataImportLogic {
      * @throws Exception if an error occurs during the import
      */
     public DataCSVValidationDTO importCSVData(URI provenance, URI experiment, InputStream file, String fileName, String validationKey) throws Exception {
-        return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-            //Create a DataLogic with a session so that it knows to not execute more transactions
-            DataLogic dataLogicWithSession = new DataLogic(sparql, nosql, fs, user, session);
+        try{
+            return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+                //Set DataLogic's session so that it knows to not execute more transactions
+                dataLogic.setClientSession(session);
 
-            DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
-
-            // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
-            File tempFile = createTempFile(file);
-            try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
-                validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
-                if (validation.isValidCSV()) {
-                    importCsvInsertionStep(validationKey, validation, dataLogicWithSession);
-                    processAndSaveDocument(tempFile, validation);
+                DataCSVValidationModel validation = getValidationDataInCacheBy(validationKey);
+                // Create temp file from input stream to reuse it in the validation step and save it after the insertion step in the document system
+                File tempFile = createTempFile(file);
+                try (FileInputStream tempFileInputStream = new FileInputStream(tempFile)) {
+                    validation = importCsvValidationStep(provenance, experiment, tempFileInputStream, fileName, validation);
+                    if (validation.isValidCSV()) {
+                        importCsvInsertionStep(validationKey, validation, dataLogic);
+                        processAndSaveDocument(tempFile, validation);
+                    }
+                } finally {
+                    deleteTempFile(tempFile);
                 }
-            } finally {
-                deleteTempFile(tempFile);
-            }
-            return buildDataCSVValidationDTO(validation);
-        });
+                return buildDataCSVValidationDTO(validation);
+            });
+        }catch(Exception e){
+            throw e;
+        }
     }
 
     /**
@@ -221,7 +231,7 @@ public class DataImportLogic {
             return null;
         }
 
-        String fileName = validationModel.getBatchHistoryUri().toString();
+        String fileName = (validationModel.getBatchHistoryUri() == null ? DEFAULT_DOCUMENT_NAME : validationModel.getBatchHistoryUri().toString());
         File tempZipFile = File.createTempFile(fileName, ZIP_EXTENSION);
 
         try (FileInputStream fis = new FileInputStream(fileContent);
@@ -259,7 +269,7 @@ public class DataImportLogic {
         }
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
-        documentModel.setTitle(validationModel.getBatchHistoryUri().toString());
+        documentModel.setTitle(validationModel.getBatchHistoryUri() == null ? DEFAULT_DOCUMENT_NAME : validationModel.getBatchHistoryUri().toString());
         documentModel.setFormat(ZIP);
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");
@@ -571,9 +581,20 @@ public class DataImportLogic {
     }
 
 
-    private DataCSVValidationModel processBatch(ProvenanceModel provenance, boolean sensingDeviceFoundFromProvenance, Map<Integer, String> headerByIndex,
-                                                ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext, DAOContext daoContext,
-                                                int start, List<String[]> batch, AtomicBoolean stopProcessing, AtomicInteger nbError, DataCSVValidationModel csvValidation) throws Exception {
+    private DataCSVValidationModel processBatch(
+            ProvenanceModel provenance,
+            boolean sensingDeviceFoundFromProvenance,
+            Map<Integer, String> headerByIndex,
+            ExperimentContext experimentContext,
+            TargetContext targetContext,
+            DeviceContext deviceContext,
+            DAOContext daoContext,
+            int start,
+            List<String[]> batch,
+            AtomicBoolean stopProcessing,
+            AtomicInteger nbError,
+            DataCSVValidationModel csvValidation
+    ) throws Exception {
         // foreach thread we create a localValidation to collect (data, errors)
         DataCSVValidationModel localValidation = new DataCSVValidationModel();
         ValidationContext validationContext = null;
@@ -586,8 +607,19 @@ public class DataImportLogic {
                 break;
             }
             // Initialize the validation context for each row validation
-            validationContext = new ValidationContext(provenance, row, localRowIndex, headerByIndex, experimentContext, targetContext, deviceContext,
-                    daoContext, localValidation, csvValidation, sensingDeviceFoundFromProvenance);
+            validationContext = new ValidationContext(
+                    provenance,
+                    row,
+                    localRowIndex,
+                    headerByIndex,
+                    experimentContext,
+                    targetContext,
+                    deviceContext,
+                    daoContext,
+                    localValidation,
+                    csvValidation,
+                    sensingDeviceFoundFromProvenance
+            );
             try {
                 boolean isValid = validateCSVRowV2(validationContext);
                 if (!isValid) {

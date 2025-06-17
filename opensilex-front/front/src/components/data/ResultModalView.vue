@@ -42,7 +42,7 @@
         <opensilex-BatchDetails
           label="ResultModalView.batchLabel"
           v-if="batch"
-          :batch="batch"
+          :batchUri="batch"
         />
       </div>
     </template>
@@ -72,7 +72,7 @@ export default class ResultModalView extends Vue {
   nbAnnotationsImported: number = null;
 
   provenance: any = null;
-  batch: any = null;
+  batch: string = null;
 
   setNbLinesImported(value: number) {
     this.nbLinesImported = value;
